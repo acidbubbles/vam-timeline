@@ -167,7 +167,11 @@ public class VamTimelineController : MVRScript
     private void AddSelectedController()
     {
         if (_selectedController != null)
+        {
+            _selectedController.currentPositionState = FreeControllerV3.PositionState.On;
+            _selectedController.currentRotationState = FreeControllerV3.RotationState.On;
             _state.Add(_selectedController);
+        }
     }
 
     private void RemoveSelectedController()
@@ -201,7 +205,10 @@ public class VamTimelineController : MVRScript
         {
             var existing = Controllers.FirstOrDefault(c => c.Controller == controller);
             if (existing != null)
+            {
                 Controllers.Remove(existing);
+                OnUpdated.Invoke();
+            }
         }
 
         internal void Play()
