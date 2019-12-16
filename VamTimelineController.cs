@@ -14,11 +14,11 @@ using UnityEngine.Events;
 public class VamTimelineController : MVRScript
 {
     private State _state;
+    private JSONStorableAction _playJSON;
     private JSONStorableString _displayJSON;
     private JSONStorableStringChooser _atomJSON;
     private JSONStorableStringChooser _controllerJSON;
     private FreeControllerV3 _selectedController;
-    private Animation _animation;
 
     #region Lifecycle
 
@@ -28,7 +28,10 @@ public class VamTimelineController : MVRScript
         {
             _state = new State();
 
-            CreateButton("Play").button.onClick.AddListener(() => _state.Play());
+            _playJSON = new JSONStorableAction("Play", () => _state.Play());
+            RegisterAction(_playJSON);
+            CreateButton("Play").button.onClick.AddListener(() => _playJSON.actionCallback());
+
             _displayJSON = new JSONStorableString("TimelineDisplay", "");
             CreateTextField(_displayJSON);
 
@@ -235,8 +238,8 @@ public class VamTimelineController : MVRScript
         {
             Controller = controller;
             AddKey(0, controller.transform.position, controller.transform.rotation);
-            AddKey(1f, controller.transform.position + Vector3.right * 0.2f, Quaternion.Euler(0, 0, 15f));
-            AddKey(2f, controller.transform.position + Vector3.left * 0.2f, Quaternion.Euler(0, 0, -15f));
+            AddKey(1f, controller.transform.position + Vector3.right * UnityEngine.Random.Range(-0.2f, 0.2f), Quaternion.Euler(0, 0, UnityEngine.Random.Range(-15f, 15f)));
+            AddKey(2f, controller.transform.position + Vector3.left * UnityEngine.Random.Range(-0.2f, 0.2f), Quaternion.Euler(0, 0, UnityEngine.Random.Range(-15f, 15f)));
             AddKey(3f, controller.transform.position, controller.transform.rotation);
 
             Clip.legacy = true;
