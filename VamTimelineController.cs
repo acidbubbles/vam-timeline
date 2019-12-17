@@ -14,11 +14,31 @@ using UnityEngine.Events;
 public class VamTimelineController : MVRScript
 {
     private State _state;
+    private JSONStorableBool _lockedJSON;
     private JSONStorableAction _playJSON;
+    private JSONStorableAction _stopJSON;
     private JSONStorableString _displayJSON;
     private JSONStorableStringChooser _atomJSON;
     private JSONStorableStringChooser _controllerJSON;
     private FreeControllerV3 _selectedController;
+
+    #region TODOs
+    /*
+    [ ] Select a keyframe
+    [ ] When moving a gameobject in an existing keyframe, update the keyframe
+    [ ] When moving a gameobject without keyframe, add the keyframe
+    [ ] Undo / Redo
+    [ ] Save the animation in another plugin for "backup"
+    [ ] Loop
+    [ ] Delete keyframe
+    [ ] Move keyframes (all keyframes together)
+    [ ] Display more information about animation
+    [ ] Update Add/Remove buttons enabled when the target exists or not
+    [ ] Choose whether to loop, ping pong, or play once
+    [ ] Trigger on animation complete
+    [ ] Autoplay on load
+    */
+    #endregion
 
     #region Lifecycle
 
@@ -28,9 +48,16 @@ public class VamTimelineController : MVRScript
         {
             _state = new State();
 
+            _lockedJSON = new JSONStorableBool("Locked", false);
+            RegisterBool(_lockedJSON);
+
             _playJSON = new JSONStorableAction("Play", () => _state.Play());
             RegisterAction(_playJSON);
             CreateButton("Play").button.onClick.AddListener(() => _playJSON.actionCallback());
+
+            _stopJSON = new JSONStorableAction("Stop", () => _state.Stop());
+            RegisterAction(_stopJSON);
+            CreateButton("Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
 
             _displayJSON = new JSONStorableString("TimelineDisplay", "");
             CreateTextField(_displayJSON);
@@ -51,6 +78,17 @@ public class VamTimelineController : MVRScript
     {
         try
         {
+            if (_lockedJSON.val) return;
+
+            // NOTE: If we had access to SuperController.instance.rightGrabbedController (and left) and grabbedControllerMouse we would not have to scan the controllers.
+            if (SuperController.singleton.GetRightGrab() || SuperController.singleton.GetLeftGrab() || Input.GetMouseButton(0))
+            {
+                // SuperController.LogMessage(_state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
+                var grabbedController = _state.Controllers.FirstOrDefault(c => c.Controller.linkToRB?.gameObject.name == "MouseGrab");
+                if (grabbedController == null) return;
+                SuperController.LogMessage("Update!");
+
+            }
         }
         catch (Exception exc)
         {
@@ -73,6 +111,7 @@ public class VamTimelineController : MVRScript
     {
         try
         {
+            _state.Stop();
         }
         catch (Exception exc)
         {
@@ -219,13 +258,19 @@ public class VamTimelineController : MVRScript
             foreach (var controller in Controllers)
                 controller.Animation.Play("test");
         }
+
+        internal void Stop()
+        {
+            foreach (var controller in Controllers)
+                controller.Animation.Stop("test");
+        }
     }
 
     public class ControllerState
     {
         public FreeControllerV3 Controller;
         public readonly Animation Animation;
-        public AnimationClip Clip = new AnimationClip();
+        public readonly AnimationClip Clip;
         public AnimationCurve X = new AnimationCurve();
         public AnimationCurve Y = new AnimationCurve();
         public AnimationCurve Z = new AnimationCurve();
@@ -242,6 +287,9 @@ public class VamTimelineController : MVRScript
             AddKey(2f, controller.transform.position + Vector3.left * UnityEngine.Random.Range(-0.2f, 0.2f), Quaternion.Euler(0, 0, UnityEngine.Random.Range(-15f, 15f)));
             AddKey(3f, controller.transform.position, controller.transform.rotation);
 
+            Clip = new AnimationClip();
+            // TODO: Make that an option in the UI
+            Clip.wrapMode = WrapMode.Loop;
             Clip.legacy = true;
             Clip.SetCurve("", typeof(Transform), "localPosition.x", X);
             Clip.SetCurve("", typeof(Transform), "localPosition.y", Y);
@@ -276,7 +324,10 @@ public class VamTimelineController : MVRScript
     {
         var display = new StringBuilder();
         foreach (var controller in _state.Controllers)
+        {
             display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
+            display.AppendLine($"  X: {string.Join(", ", controller.X.keys.Select(k => k.time.ToString("0.00")).ToArray())}");
+        }
         _displayJSON.val = display.ToString();
     }
 
