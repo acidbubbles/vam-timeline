@@ -15,7 +15,7 @@ public class VamTimelineBackup : MVRScript
     {
         try
         {
-            _backupJSON = new JSONStorableString("BackupJSON", "");
+            _backupJSON = new JSONStorableString("Backup", "");
             RegisterString(_backupJSON);
             CreateTextField(_backupJSON);
         }

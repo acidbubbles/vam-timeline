@@ -28,6 +28,7 @@ public class VamTimelineController : MVRScript
     [ ] Select a keyframe
     [ ] When moving a gameobject in an existing keyframe, update the keyframe
     [ ] When moving a gameobject without keyframe, add the keyframe
+    [ ] Scrubbing
     [ ] Undo / Redo
     [ ] Save the animation in another plugin for "backup"
     [ ] Loop
@@ -38,6 +39,10 @@ public class VamTimelineController : MVRScript
     [ ] Choose whether to loop, ping pong, or play once
     [ ] Trigger on animation complete
     [ ] Autoplay on load
+    [ ] Animate position, rotation separately (or check what the FreeControllerV3 allow instead of modifying it)
+    [ ] Animate morphs
+    [ ] Attach triggers to the animation (maybe sync with an animation pattern for scrubbing?)
+    [ ] Animate any property
     */
     #endregion
 
@@ -138,17 +143,24 @@ public class VamTimelineController : MVRScript
 
     public void RestoreState()
     {
-        if (!string.IsNullOrEmpty(_saveJSON.val))
+        try
         {
-            _state = DeserializeState(_saveJSON.val);
-            return;
+            if (!string.IsNullOrEmpty(_saveJSON.val))
+            {
+                _state = DeserializeState(_saveJSON.val);
+                return;
+            }
+
+            var backupJSON = containingAtom.GetStorableByID("VamTimelineBackup")?.GetStringParamValue("Backup");
+
+            if (!string.IsNullOrEmpty(backupJSON))
+            {
+                _state = DeserializeState(backupJSON);
+            }
         }
-
-        var backupJSON = containingAtom.GetStorableByID("VamTimelineBackup")?.GetStringParamValue("Backup");
-
-        if (!string.IsNullOrEmpty(backupJSON))
+        catch (Exception exc)
         {
-            _state = DeserializeState(backupJSON);
+            SuperController.LogError("VamTimelineController RestoreState: " + exc);
         }
     }
 
@@ -160,13 +172,40 @@ public class VamTimelineController : MVRScript
 
     public void SaveState()
     {
-        var serialized = "";
-        _saveJSON.val = serialized;
+        try
+        {
+            var serialized = SerializeState(_state);
+            _saveJSON.val = serialized;
 
-        var backupJSON = containingAtom.GetStorableByID("VamTimelineBackup")?.GetStringJSONParam("Backup");
+            var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
+            SuperController.LogMessage(backupStorableID);
+            if (backupStorableID != null)
+            {
+                var backupStorable = containingAtom.GetStorableByID(backupStorableID);
+                var backupJSON = backupStorable.GetStringJSONParam("Backup");
+                SuperController.LogMessage(backupJSON.val);
+                backupJSON.val = serialized;
+                SuperController.LogMessage(backupJSON.val);
+            }
+        }
+        catch (Exception exc)
+        {
+            SuperController.LogError("VamTimelineController SaveState: " + exc);
+        }
+    }
 
-        if (backupJSON != null)
-            backupJSON.val = serialized;
+    private string SerializeState(State state)
+    {
+        var sb = new StringBuilder();
+        foreach (var controller in _state.Controllers)
+        {
+            sb.AppendLine($"{controller.Controller.containingAtom.name}/{controller.Controller.name}");
+            sb.AppendLine($"  X");
+            foreach (var x in controller.X.keys)
+                sb.AppendLine($"    {x.time}: {x.value}");
+
+        }
+        return sb.ToString();
     }
 
     #endregion
@@ -307,7 +346,11 @@ public class VamTimelineController : MVRScript
         internal void Stop()
         {
             foreach (var controller in Controllers)
+            {
+                controller.Animation["test"].time = 0;
+                controller.Animation.Sample();
                 controller.Animation.Stop("test");
+            }
         }
     }
 
