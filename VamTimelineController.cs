@@ -21,6 +21,7 @@ public class VamTimelineController : MVRScript
     private JSONStorableStringChooser _atomJSON;
     private JSONStorableStringChooser _controllerJSON;
     private FreeControllerV3 _selectedController;
+    private JSONStorableString _saveJSON;
 
     #region TODOs
     /*
@@ -67,6 +68,13 @@ public class VamTimelineController : MVRScript
             InitializeTargetSelection();
 
             _state.OnUpdated.AddListener(() => RenderState());
+
+            _saveJSON = new JSONStorableString("Save", "");
+            RegisterString(_saveJSON);
+            RestoreState();
+
+            CreateButton("Save").button.onClick.AddListener(() => SaveState());
+            CreateButton("Restore").button.onClick.AddListener(() => RestoreState());
         }
         catch (Exception exc)
         {
@@ -122,6 +130,43 @@ public class VamTimelineController : MVRScript
     public void OnDestroy()
     {
         OnDisable();
+    }
+
+    #endregion
+
+    #region Load / Save
+
+    public void RestoreState()
+    {
+        if (!string.IsNullOrEmpty(_saveJSON.val))
+        {
+            _state = DeserializeState(_saveJSON.val);
+            return;
+        }
+
+        var backupJSON = containingAtom.GetStorableByID("VamTimelineBackup")?.GetStringParamValue("Backup");
+
+        if (!string.IsNullOrEmpty(backupJSON))
+        {
+            _state = DeserializeState(backupJSON);
+        }
+    }
+
+    private State DeserializeState(string val)
+    {
+        SuperController.LogMessage("Deserializing: " + val);
+        return new State();
+    }
+
+    public void SaveState()
+    {
+        var serialized = "";
+        _saveJSON.val = serialized;
+
+        var backupJSON = containingAtom.GetStorableByID("VamTimelineBackup")?.GetStringJSONParam("Backup");
+
+        if (backupJSON != null)
+            backupJSON.val = serialized;
     }
 
     #endregion
