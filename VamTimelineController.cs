@@ -14,6 +14,7 @@ using UnityEngine.Events;
 public class VamTimelineController : MVRScript
 {
     private State _state;
+    private JSONStorableFloat _scrubberJSON;
     private JSONStorableBool _lockedJSON;
     private JSONStorableAction _playJSON;
     private JSONStorableAction _stopJSON;
@@ -22,6 +23,7 @@ public class VamTimelineController : MVRScript
     private JSONStorableStringChooser _controllerJSON;
     private FreeControllerV3 _selectedController;
     private JSONStorableString _saveJSON;
+    private JSONStorableAction _pauseToggleJSON;
 
     #region TODOs
     /*
@@ -43,6 +45,8 @@ public class VamTimelineController : MVRScript
     [ ] Animate morphs
     [ ] Attach triggers to the animation (maybe sync with an animation pattern for scrubbing?)
     [ ] Animate any property
+    [ ] Control speed
+    [ ] Define animation transitions using built-in unity animation blending
     */
     #endregion
 
@@ -54,12 +58,18 @@ public class VamTimelineController : MVRScript
         {
             _state = new State();
 
-            _lockedJSON = new JSONStorableBool("Locked", false);
-            RegisterBool(_lockedJSON);
+            _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, 2f, true);
+            RegisterFloat(_scrubberJSON);
+            CreateSlider(_scrubberJSON);
 
             _playJSON = new JSONStorableAction("Play", () => _state.Play());
             RegisterAction(_playJSON);
             CreateButton("Play").button.onClick.AddListener(() => _playJSON.actionCallback());
+
+            // TODO: Should be a checkbox
+            _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _state.PauseToggle());
+            RegisterAction(_pauseToggleJSON);
+            CreateButton("Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
 
             _stopJSON = new JSONStorableAction("Stop", () => _state.Stop());
             RegisterAction(_stopJSON);
@@ -67,6 +77,10 @@ public class VamTimelineController : MVRScript
 
             _displayJSON = new JSONStorableString("TimelineDisplay", "");
             CreateTextField(_displayJSON);
+
+            _lockedJSON = new JSONStorableBool("Locked", false);
+            RegisterBool(_lockedJSON);
+            CreateToggle(_lockedJSON, true);
 
             _atomJSON = new JSONStorableStringChooser("Target atom", SuperController.singleton.GetAtomUIDs(), "", "Target atom", uid => OnTargetAtomChanged(uid));
             _controllerJSON = new JSONStorableStringChooser("Target controller", new List<string>(), "", "Target controller", uid => OnTargetControllerChanged(uid));
@@ -340,16 +354,44 @@ public class VamTimelineController : MVRScript
         internal void Play()
         {
             foreach (var controller in Controllers)
+            {
+                controller.Animation["test"].time = 0;
                 controller.Animation.Play("test");
+            }
         }
 
         internal void Stop()
         {
             foreach (var controller in Controllers)
             {
-                controller.Animation["test"].time = 0;
-                controller.Animation.Sample();
                 controller.Animation.Stop("test");
+            }
+
+            SetTime(0);
+        }
+
+        public void SetTime(float time)
+        {
+            foreach (var controller in Controllers)
+            {
+                var animState = controller.Animation["test"];
+                animState.time = time;
+                if (!animState.enabled)
+                {
+                    // TODO: Can we set this once?
+                    animState.enabled = true;
+                    controller.Animation.Sample();
+                    animState.enabled = false;
+                }
+            }
+        }
+
+        public void PauseToggle()
+        {
+            foreach (var controller in Controllers)
+            {
+                var animState = controller.Animation["test"];
+                animState.enabled = !animState.enabled;
             }
         }
     }
