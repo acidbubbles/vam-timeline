@@ -25,6 +25,8 @@ public class VamTimelineController : MVRScript
     private JSONStorableString _saveJSON;
     private JSONStorableAction _pauseToggleJSON;
     private ControllerState _grabbedController;
+    private JSONStorableAction _nextFrameJSON;
+    private JSONStorableAction _previousFrameJSON;
 
     #region TODOs
     /*
@@ -51,6 +53,8 @@ public class VamTimelineController : MVRScript
     [ ] Copy/paste frame (all controllers in frame)
     [ ] OnUpdate is broken
     [ ] Save / Load / Backup is broken
+    [ ] Next / Previous Frame not working
+    [ ] Scrubber not updated on stop
     */
     #endregion
 
@@ -62,9 +66,18 @@ public class VamTimelineController : MVRScript
         {
             _state = new State();
 
+            // TODO: Hardcoded loop length
             _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, 5f, true);
             RegisterFloat(_scrubberJSON);
             CreateSlider(_scrubberJSON);
+
+            _nextFrameJSON = new JSONStorableAction("Next Frame", () => _state.NextFrame());
+            RegisterAction(_nextFrameJSON);
+            CreateButton("NextFrame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
+
+            _previousFrameJSON = new JSONStorableAction("previous Frame", () => _state.PreviousFrame());
+            RegisterAction(_previousFrameJSON);
+            CreateButton("previousFrame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
             _playJSON = new JSONStorableAction("Play", () => _state.Play());
             RegisterAction(_playJSON);
@@ -84,11 +97,24 @@ public class VamTimelineController : MVRScript
 
             _lockedJSON = new JSONStorableBool("Locked", false);
             RegisterBool(_lockedJSON);
-            CreateToggle(_lockedJSON, true);
+            var lockedToggle = CreateToggle(_lockedJSON, true);
+            lockedToggle.label = "Locked (performance mode)";
 
             _atomJSON = new JSONStorableStringChooser("Target atom", SuperController.singleton.GetAtomUIDs(), "", "Target atom", uid => OnTargetAtomChanged(uid));
             _controllerJSON = new JSONStorableStringChooser("Target controller", new List<string>(), "", "Target controller", uid => OnTargetControllerChanged(uid));
-            InitializeTargetSelection();
+
+            var atomPopup = CreateScrollablePopup(_atomJSON, true);
+            atomPopup.popupPanelHeight = 800f;
+            atomPopup.popup.onOpenPopupHandlers += () => _atomJSON.choices = SuperController.singleton.GetAtomUIDs();
+
+            var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
+            controllerPopup.popupPanelHeight = 800f;
+
+            SuperController.singleton.onAtomUIDsChangedHandlers += (uids) => OnAtomsChanged(uids);
+            OnAtomsChanged(SuperController.singleton.GetAtomUIDs());
+
+            CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
+            CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
 
             _state.OnUpdated.AddListener(() => RenderState());
 
@@ -241,21 +267,6 @@ public class VamTimelineController : MVRScript
     #endregion
 
     #region Target Selection
-
-    private void InitializeTargetSelection()
-    {
-        var atomPopup = CreateScrollablePopup(_atomJSON, true);
-        atomPopup.popupPanelHeight = 800f;
-
-        var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
-        controllerPopup.popupPanelHeight = 800f;
-
-        SuperController.singleton.onAtomUIDsChangedHandlers += (uids) => OnAtomsChanged(uids);
-        OnAtomsChanged(SuperController.singleton.GetAtomUIDs());
-
-        CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
-        CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
-    }
 
     private void OnAtomsChanged(List<string> uids)
     {
@@ -411,17 +422,44 @@ public class VamTimelineController : MVRScript
             }
         }
 
-        internal bool IsPlaying()
+        public bool IsPlaying()
         {
             if (Controllers.Count == 0) return false;
             return Controllers[0].Animation.IsPlaying("test");
         }
 
-        internal float GetTime()
+        public float GetTime()
         {
             if (Controllers.Count == 0) return 0f;
             var animState = Controllers[0].Animation["test"];
             return animState.time % animState.length;
+        }
+
+        public void NextFrame()
+        {
+            var time = GetTime();
+            // TODO: Hardcoded loop length
+            var nextTime = 5f;
+            foreach (var controller in Controllers)
+            {
+                var animState = controller.Animation["test"];
+                var controllerNextTime = controller.X.keys.FirstOrDefault(k => k.time > time).time;
+                if (controllerNextTime != 0 && controllerNextTime < nextTime) nextTime = controllerNextTime;
+            }
+            SetTime(nextTime);
+        }
+
+        public void PreviousFrame()
+        {
+            var time = GetTime();
+            var previousTime = 0f;
+            foreach (var controller in Controllers)
+            {
+                var animState = controller.Animation["test"];
+                var controllerNextTime = controller.X.keys.LastOrDefault(k => k.time < time).time;
+                if (controllerNextTime != 0 && controllerNextTime < previousTime) previousTime = controllerNextTime;
+            }
+            SetTime(previousTime);
         }
     }
 
@@ -481,24 +519,29 @@ public class VamTimelineController : MVRScript
 
         public void SetKey(float time, Vector3 position, Quaternion rotation)
         {
-            X.AddKey(time, position.x);
-            Y.AddKey(time, position.y);
-            Z.AddKey(time, position.z);
-            RotX.AddKey(time, rotation.x);
-            RotY.AddKey(time, rotation.y);
-            RotZ.AddKey(time, rotation.z);
-            RotW.AddKey(time, rotation.w);
+            AddKey(X, time, position.x);
+            AddKey(Y, time, position.y);
+            AddKey(Z, time, position.z);
+            AddKey(RotX, time, rotation.x);
+            AddKey(RotY, time, rotation.y);
+            AddKey(RotZ, time, rotation.z);
+            AddKey(RotW, time, rotation.w);
         }
-        
+
         private static void AddKey(AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
-            // TODO: If this returns -1, it means the key was not added
-            // if(key == -1) return;
-            // var keyframe = curve.keys[key];
+            // TODO: If this returns -1, it means the key was not added. Maybe use MoveKey?
+            if (key == -1) return;
+            var keyframe = curve.keys[key];
             // keyframe.weightedMode = WeightedMode.Both;
             // https://docs.unity3d.com/ScriptReference/AnimationUtility.TangentMode.html
-            // keyframe.tangentMode = 0;
+            // TODO: This should only be set for first/last frames AND should use longer weight AND should copy last/first frame instead of using zero
+            keyframe.inTangent = 0;
+            keyframe.outTangent = 0;
+            // keyframe.weightedMode = WeightedMode.Both;
+            // curve.SmoothTangents(key, 0);
+            curve.MoveKey(key, keyframe);
         }
     }
 
