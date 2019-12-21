@@ -24,6 +24,7 @@ public class VamTimelineController : MVRScript
     private FreeControllerV3 _selectedController;
     private JSONStorableString _saveJSON;
     private JSONStorableAction _pauseToggleJSON;
+    private ControllerState _grabbedController;
 
     #region TODOs
     /*
@@ -47,6 +48,9 @@ public class VamTimelineController : MVRScript
     [ ] Animate any property
     [ ] Control speed
     [ ] Define animation transitions using built-in unity animation blending
+    [ ] Copy/paste frame (all controllers in frame)
+    [ ] OnUpdate is broken
+    [ ] Save / Load / Backup is broken
     */
     #endregion
 
@@ -58,7 +62,7 @@ public class VamTimelineController : MVRScript
         {
             _state = new State();
 
-            _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, 2f, true);
+            _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, 5f, true);
             RegisterFloat(_scrubberJSON);
             CreateSlider(_scrubberJSON);
 
@@ -107,14 +111,25 @@ public class VamTimelineController : MVRScript
         {
             if (_lockedJSON.val) return;
 
-            // NOTE: If we had access to SuperController.instance.rightGrabbedController (and left) and grabbedControllerMouse we would not have to scan the controllers.
-            if (SuperController.singleton.GetRightGrab() || SuperController.singleton.GetLeftGrab() || Input.GetMouseButton(0))
+            if (_state.IsPlaying())
             {
-                // SuperController.LogMessage(_state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
-                var grabbedController = _state.Controllers.FirstOrDefault(c => c.Controller.linkToRB?.gameObject.name == "MouseGrab");
-                if (grabbedController == null) return;
-                SuperController.LogMessage("Update!");
-
+                _scrubberJSON.val = _state.GetTime();
+            }
+            else
+            {
+                // NOTE: If we had access to SuperController.instance.rightGrabbedController (and left) and grabbedControllerMouse we would not have to scan the controllers.
+                var grabbing = SuperController.singleton.GetRightGrab() || SuperController.singleton.GetLeftGrab() || Input.GetMouseButton(0);
+                if (_grabbedController == null && grabbing)
+                {
+                    // SuperController.LogMessage(_state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
+                    _grabbedController = _state.Controllers.FirstOrDefault(c => c.Controller.linkToRB?.gameObject.name == "MouseGrab");
+                }
+                else if (_grabbedController != null && !grabbing)
+                {
+                    _grabbedController.SetKeyToCurrentPositionAndUpdate(_scrubberJSON.val);
+                    SuperController.LogMessage($"Frame of {_grabbedController.Controller.name} updated at {_scrubberJSON.val}");
+                    _grabbedController = null;
+                }
             }
         }
         catch (Exception exc)
@@ -394,6 +409,19 @@ public class VamTimelineController : MVRScript
                 animState.enabled = !animState.enabled;
             }
         }
+
+        internal bool IsPlaying()
+        {
+            if (Controllers.Count == 0) return false;
+            return Controllers[0].Animation.IsPlaying("test");
+        }
+
+        internal float GetTime()
+        {
+            if (Controllers.Count == 0) return 0f;
+            var animState = Controllers[0].Animation["test"];
+            return animState.time % animState.length;
+        }
     }
 
     public class ControllerState
@@ -412,15 +440,22 @@ public class VamTimelineController : MVRScript
         public ControllerState(FreeControllerV3 controller)
         {
             Controller = controller;
-            AddKey(0, controller.transform.position, controller.transform.rotation);
-            AddKey(1f, controller.transform.position + Vector3.right * UnityEngine.Random.Range(-0.2f, 0.2f), Quaternion.Euler(0, 0, UnityEngine.Random.Range(-15f, 15f)));
-            AddKey(2f, controller.transform.position + Vector3.left * UnityEngine.Random.Range(-0.2f, 0.2f), Quaternion.Euler(0, 0, UnityEngine.Random.Range(-15f, 15f)));
-            AddKey(3f, controller.transform.position, controller.transform.rotation);
+            // TODO: These should not be set internally, but rather by the initializer
+            SetKey(0f, controller.transform.position, controller.transform.rotation);
+            SetKey(5f, controller.transform.position, controller.transform.rotation);
 
             Clip = new AnimationClip();
             // TODO: Make that an option in the UI
             Clip.wrapMode = WrapMode.Loop;
             Clip.legacy = true;
+            UpdateCurves();
+
+            Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
+            Animation.AddClip(Clip, "test");
+        }
+
+        private void UpdateCurves()
+        {
             Clip.SetCurve("", typeof(Transform), "localPosition.x", X);
             Clip.SetCurve("", typeof(Transform), "localPosition.y", Y);
             Clip.SetCurve("", typeof(Transform), "localPosition.z", Z);
@@ -429,13 +464,23 @@ public class VamTimelineController : MVRScript
             Clip.SetCurve("", typeof(Transform), "localRotation.z", RotZ);
             Clip.SetCurve("", typeof(Transform), "localRotation.w", RotW);
             Clip.EnsureQuaternionContinuity();
+        }
 
-            Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
+        public void SetKeyToCurrentPositionAndUpdate(float time)
+        {
+            SetKey(time, Controller.transform.position, Controller.transform.rotation);
+            UpdateAnimation();
+        }
+
+        private void UpdateAnimation()
+        {
+            UpdateCurves();
             Animation.AddClip(Clip, "test");
         }
 
-        private void AddKey(float time, Vector3 position, Quaternion rotation)
+        public void SetKey(float time, Vector3 position, Quaternion rotation)
         {
+            // TODO: If this returns -1, it means the key was not added
             X.AddKey(time, position.x);
             Y.AddKey(time, position.y);
             Z.AddKey(time, position.z);
