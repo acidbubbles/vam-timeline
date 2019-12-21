@@ -73,11 +73,11 @@ public class VamTimelineController : MVRScript
 
             _nextFrameJSON = new JSONStorableAction("Next Frame", () => _state.NextFrame());
             RegisterAction(_nextFrameJSON);
-            CreateButton("NextFrame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
+            CreateButton("Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-            _previousFrameJSON = new JSONStorableAction("previous Frame", () => _state.PreviousFrame());
+            _previousFrameJSON = new JSONStorableAction("Previous Frame", () => _state.PreviousFrame());
             RegisterAction(_previousFrameJSON);
-            CreateButton("previousFrame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
+            CreateButton("Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
             _playJSON = new JSONStorableAction("Play", () => _state.Play());
             RegisterAction(_playJSON);
@@ -131,6 +131,8 @@ public class VamTimelineController : MVRScript
         }
     }
 
+    private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "MouseGrab", "SelectionHandles" };
+
     public void Update()
     {
         try
@@ -139,7 +141,7 @@ public class VamTimelineController : MVRScript
 
             if (_state.IsPlaying())
             {
-                _scrubberJSON.val = _state.GetTime();
+                RenderState();
             }
             else
             {
@@ -147,8 +149,9 @@ public class VamTimelineController : MVRScript
                 var grabbing = SuperController.singleton.GetRightGrab() || SuperController.singleton.GetLeftGrab() || Input.GetMouseButton(0);
                 if (_grabbedController == null && grabbing)
                 {
-                    // SuperController.LogMessage(_state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
-                    _grabbedController = _state.Controllers.FirstOrDefault(c => c.Controller.linkToRB?.gameObject.name == "MouseGrab");
+                    // SuperController.singleton.ClearMessages();
+                    // SuperController.LogMessage("Grabbing: " + _state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
+                    _grabbedController = _state.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
                 }
                 else if (_grabbedController != null && !grabbing)
                 {
@@ -411,6 +414,8 @@ public class VamTimelineController : MVRScript
                     animState.enabled = false;
                 }
             }
+            
+            OnUpdated.Invoke();
         }
 
         public void PauseToggle()
@@ -444,6 +449,7 @@ public class VamTimelineController : MVRScript
             {
                 var animState = controller.Animation["test"];
                 var controllerNextTime = controller.X.keys.FirstOrDefault(k => k.time > time).time;
+                SuperController.LogMessage($"Time: {time}, controllerNextTime: {controllerNextTime}");
                 if (controllerNextTime != 0 && controllerNextTime < nextTime) nextTime = controllerNextTime;
             }
             SetTime(nextTime);
@@ -457,7 +463,7 @@ public class VamTimelineController : MVRScript
             {
                 var animState = controller.Animation["test"];
                 var controllerNextTime = controller.X.keys.LastOrDefault(k => k.time < time).time;
-                if (controllerNextTime != 0 && controllerNextTime < previousTime) previousTime = controllerNextTime;
+                if (controllerNextTime != 0 && controllerNextTime > previousTime) previousTime = controllerNextTime;
             }
             SetTime(previousTime);
         }
@@ -508,6 +514,7 @@ public class VamTimelineController : MVRScript
         public void SetKeyToCurrentPositionAndUpdate(float time)
         {
             SetKey(time, Controller.transform.position, Controller.transform.rotation);
+            // TODO: If the time is zero, also update the last frame!
             UpdateAnimation();
         }
 
@@ -531,11 +538,15 @@ public class VamTimelineController : MVRScript
         private static void AddKey(AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
-            // TODO: If this returns -1, it means the key was not added. Maybe use MoveKey?
-            if (key == -1) return;
+            if (key == -1)
+            {
+                // TODO: If this returns -1, it means the key was not added. Maybe use MoveKey?
+                curve.RemoveKey(key);
+                key = curve.AddKey(time, value);
+            }
             var keyframe = curve.keys[key];
             // keyframe.weightedMode = WeightedMode.Both;
-            // https://docs.unity3d.com/ScriptReference/AnimationUtility.TangentMode.html
+            // TODO: We should not set tangents on everything, they are fine by default.
             // TODO: This should only be set for first/last frames AND should use longer weight AND should copy last/first frame instead of using zero
             keyframe.inTangent = 0;
             keyframe.outTangent = 0;
@@ -551,11 +562,18 @@ public class VamTimelineController : MVRScript
 
     public void RenderState()
     {
+        var time = _state.GetTime();
+        if (time != _scrubberJSON.val)
+            _scrubberJSON.val = time;
+
         var display = new StringBuilder();
         foreach (var controller in _state.Controllers)
         {
+            display.AppendLine($"Time: {time}s");
             display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
-            display.AppendLine($"  X: {string.Join(", ", controller.X.keys.Select(k => k.time.ToString("0.00")).ToArray())}");
+            display.AppendLine($"  X");
+            foreach (var keyframe in controller.X.keys)
+                display.AppendLine($"    [{(keyframe.time == time ? "X" : "")}] {keyframe.time:0.00}s: {keyframe.value:0.00}");
         }
         _displayJSON.val = display.ToString();
     }
