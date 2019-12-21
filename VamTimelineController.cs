@@ -127,7 +127,8 @@ public class VamTimelineController : MVRScript
                 else if (_grabbedController != null && !grabbing)
                 {
                     _grabbedController.SetKeyToCurrentPositionAndUpdate(_scrubberJSON.val);
-                    SuperController.LogMessage($"Frame of {_grabbedController.Controller.name} updated at {_scrubberJSON.val}");
+                    // TODO: This should not be here (the state should keep track of itself)
+                    _state.OnUpdated.Invoke();
                     _grabbedController = null;
                 }
             }
@@ -480,7 +481,6 @@ public class VamTimelineController : MVRScript
 
         public void SetKey(float time, Vector3 position, Quaternion rotation)
         {
-            // TODO: If this returns -1, it means the key was not added
             X.AddKey(time, position.x);
             Y.AddKey(time, position.y);
             Z.AddKey(time, position.z);
@@ -488,6 +488,17 @@ public class VamTimelineController : MVRScript
             RotY.AddKey(time, rotation.y);
             RotZ.AddKey(time, rotation.z);
             RotW.AddKey(time, rotation.w);
+        }
+        
+        private static void AddKey(AnimationCurve curve, float time, float value)
+        {
+            var key = curve.AddKey(time, value);
+            // TODO: If this returns -1, it means the key was not added
+            // if(key == -1) return;
+            // var keyframe = curve.keys[key];
+            // keyframe.weightedMode = WeightedMode.Both;
+            // https://docs.unity3d.com/ScriptReference/AnimationUtility.TangentMode.html
+            // keyframe.tangentMode = 0;
         }
     }
 
