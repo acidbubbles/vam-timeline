@@ -1,4 +1,5 @@
 VamTimeline.KeyframeModify.cs
+VamTimeline.Serializer.cs
 VamTimeline.ControllerState.cs
 VamTimeline.State.cs
 VamTimeline.MainScript.cs

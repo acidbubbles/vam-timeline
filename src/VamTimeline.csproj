@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <Compile Include="VamTimeline.KeyframeModify.cs" />
+    <Compile Include="VamTimeline.Serializer.cs" />
     <Compile Include="VamTimeline.ControllerState.cs" />
     <Compile Include="VamTimeline.State.cs" />
     <Compile Include="VamTimeline.MainScript.cs" />

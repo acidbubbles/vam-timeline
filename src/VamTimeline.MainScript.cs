@@ -29,12 +29,15 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
 
+        private Serializer _serializer;
+
         #region Lifecycle
 
         public override void Init()
         {
             try
             {
+                _serializer = new Serializer(this);
                 _state = new State();
 
                 // TODO: Hardcoded loop length
@@ -180,7 +183,7 @@ namespace AcidBubbles.VamTimeline
             {
                 if (!string.IsNullOrEmpty(_saveJSON.val))
                 {
-                    _state = DeserializeState(_saveJSON.val);
+                    _state = _serializer.DeserializeState(_saveJSON.val);
                     return;
                 }
 
@@ -188,7 +191,7 @@ namespace AcidBubbles.VamTimeline
 
                 if (!string.IsNullOrEmpty(backupJSON))
                 {
-                    _state = DeserializeState(backupJSON);
+                    _state = _serializer.DeserializeState(backupJSON);
                 }
             }
             catch (Exception exc)
@@ -197,17 +200,11 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        private State DeserializeState(string val)
-        {
-            SuperController.LogMessage("Deserializing: " + val);
-            return new State();
-        }
-
         public void SaveState()
         {
             try
             {
-                var serialized = SerializeState(_state);
+                var serialized = _serializer.SerializeState(_state);
                 _saveJSON.val = serialized;
 
                 var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
