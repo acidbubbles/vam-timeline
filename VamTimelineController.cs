@@ -479,6 +479,8 @@ public class VamTimelineController : MVRScript
         }
     }
 
+    public delegate void KeyframeModify(AnimationCurve curve, ref Keyframe keyframe);
+
     public class ControllerState
     {
         public FreeControllerV3 Controller;
@@ -507,10 +509,14 @@ public class VamTimelineController : MVRScript
 
             Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
             Animation.AddClip(Clip, "test");
+
+            Animation.Play("test");
+            Animation.Stop("test");
         }
 
         private void UpdateCurves()
         {
+            Clip.ClearCurves();
             Clip.SetCurve("", typeof(Transform), "localPosition.x", X);
             Clip.SetCurve("", typeof(Transform), "localPosition.y", Y);
             Clip.SetCurve("", typeof(Transform), "localPosition.z", Z);
@@ -518,16 +524,30 @@ public class VamTimelineController : MVRScript
             Clip.SetCurve("", typeof(Transform), "localRotation.y", RotY);
             Clip.SetCurve("", typeof(Transform), "localRotation.z", RotZ);
             Clip.SetCurve("", typeof(Transform), "localRotation.w", RotW);
-            // Clip.EnsureQuaternionContinuity();
+            Clip.EnsureQuaternionContinuity();
         }
 
         public void SetKeyToCurrentPositionAndUpdate(float time)
         {
-            SetKey(time, Controller.transform.localPosition, Controller.transform.localRotation);
             if (time == 0f)
             {
                 // TODO: Here we should also set the tangents
-                SetKey(5f, Controller.transform.localPosition, Controller.transform.localRotation);
+                SetKey(0f, Controller.transform.localPosition, Controller.transform.localRotation, (AnimationCurve c, ref Keyframe k) =>
+                {
+                    Keyframe last = c.keys.Last();
+                    k.inTangent = last.inTangent;
+                    k.outTangent = c.keys.Last().outTangent;
+                });
+                SetKey(5f, Controller.transform.localPosition, Controller.transform.localRotation, (AnimationCurve c, ref Keyframe k) =>
+                {
+                    Keyframe first = c.keys.First();
+                    k.inTangent = first.inTangent;
+                    k.outTangent = c.keys.First().outTangent;
+                });
+            }
+            else
+            {
+                SetKey(time, Controller.transform.localPosition, Controller.transform.localRotation);
             }
             // TODO: If the time is zero, also update the last frame!
             UpdateAnimation();
@@ -539,18 +559,18 @@ public class VamTimelineController : MVRScript
             Animation.AddClip(Clip, "test");
         }
 
-        public void SetKey(float time, Vector3 position, Quaternion rotation)
+        public void SetKey(float time, Vector3 position, Quaternion rotation, KeyframeModify fn = null)
         {
-            AddKey(X, time, position.x);
-            AddKey(Y, time, position.y);
-            AddKey(Z, time, position.z);
-            AddKey(RotX, time, rotation.x);
-            AddKey(RotY, time, rotation.y);
-            AddKey(RotZ, time, rotation.z);
-            AddKey(RotW, time, rotation.w);
+            AddKey(X, time, position.x, fn);
+            AddKey(Y, time, position.y, fn);
+            AddKey(Z, time, position.z, fn);
+            AddKey(RotX, time, rotation.x, fn);
+            AddKey(RotY, time, rotation.y, fn);
+            AddKey(RotZ, time, rotation.z, fn);
+            AddKey(RotW, time, rotation.w, fn);
         }
 
-        private static void AddKey(AnimationCurve curve, float time, float value)
+        private static void AddKey(AnimationCurve curve, float time, float value, KeyframeModify fn = null)
         {
             var key = curve.AddKey(time, value);
             Keyframe keyframe;
@@ -563,15 +583,12 @@ public class VamTimelineController : MVRScript
                 keyframe.value = value;
                 curve.MoveKey(key, keyframe);
             }
-            keyframe = curve.keys[key];
-            // keyframe.weightedMode = WeightedMode.Both;
-            // TODO: We should not set tangents on everything, they are fine by default.
-            // TODO: This should only be set for first/last frames AND should use longer weight AND should copy last/first frame instead of using zero
-            keyframe.inTangent = 0;
-            keyframe.outTangent = 0;
-            // keyframe.weightedMode = WeightedMode.Both;
-            // curve.SmoothTangents(key, 0);
-            curve.MoveKey(key, keyframe);
+            if (fn != null)
+            {
+                keyframe = curve.keys[key];
+                fn(curve, ref keyframe);
+                curve.MoveKey(key, keyframe);
+            }
         }
     }
 
@@ -603,9 +620,13 @@ public class VamTimelineController : MVRScript
 
     private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
     {
-        display.AppendLine($"  {name}");
+        display.AppendLine($"{name}");
         foreach (var keyframe in curve.keys)
-            display.AppendLine($"    [{(keyframe.time == time ? "X" : " ")}] {keyframe.time:0.00}s: {keyframe.value:0.00}");
+        {
+            display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
+            display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
+            display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
+        }
     }
 
     #endregion
