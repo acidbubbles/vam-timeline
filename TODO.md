@@ -1,0 +1,31 @@
+# Vam Timeline TODOs
+
+- Select a keyframe
+- When moving a gameobject in an existing keyframe, update the keyframe
+- When moving a gameobject without keyframe, add the keyframe
+- Scrubbing
+- Undo / Redo
+- Save the animation in another plugin for "backup"
+- Loop
+- Delete keyframe
+- Move keyframes (all keyframes together)
+- Display more information about animation
+- Update Add/Remove buttons enabled when the target exists or not
+- Choose whether to loop, ping pong, or play once
+- Trigger on animation complete
+- Autoplay on load
+- Animate position, rotation separately (or check what the FreeControllerV3 allow instead of modifying it)
+- Animate morphs
+- Attach triggers to the animation (maybe sync with an animation pattern for scrubbing?)
+- Animate any property
+- Control speed
+- Define animation transitions using built-in unity animation blending
+- Copy/paste frame (all controllers in frame)
+- OnUpdate is broken
+- Save / Load / Backup is broken
+- Next / Previous Frame not working
+- Scrubber not updated on stop
+- Render modes (light, details, verbose)
+- Delete keyframes
+- Filter keyframes (only show one controller at a time)
+- When locked, disable all controls

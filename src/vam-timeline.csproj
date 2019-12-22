@@ -38,7 +38,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="VamTimelineController.cs" />
+    <!-- Main Script -->
+    <Compile Include="VamTimeline.KeyframeModify.cs" />
+    <Compile Include="VamTimeline.ControllerState.cs" />
+    <Compile Include="VamTimeline.State.cs" />
+    <Compile Include="VamTimeline.MainScript.cs" />
+    <!-- Additional Tools -->
     <Compile Include="VamTimelineBackup.cs" />
   </ItemGroup>
 
