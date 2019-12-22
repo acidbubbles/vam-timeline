@@ -56,6 +56,9 @@ public class VamTimelineController : MVRScript
     [ ] Next / Previous Frame not working
     [ ] Scrubber not updated on stop
     [ ] Render modes (light, details, verbose)
+    [ ] Delete keyframes
+    [ ] Filter keyframes (only show one controller at a time)
+    [ ] When locked, disable all controls
     */
     #endregion
 
@@ -132,7 +135,7 @@ public class VamTimelineController : MVRScript
         }
     }
 
-    private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "MouseGrab", "SelectionHandles" };
+    private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
     public void Update()
     {
