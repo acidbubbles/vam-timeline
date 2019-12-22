@@ -55,6 +55,7 @@ public class VamTimelineController : MVRScript
     [ ] Save / Load / Backup is broken
     [ ] Next / Previous Frame not working
     [ ] Scrubber not updated on stop
+    [ ] Render modes (light, details, verbose)
     */
     #endregion
 
@@ -155,7 +156,10 @@ public class VamTimelineController : MVRScript
                 }
                 else if (_grabbedController != null && !grabbing)
                 {
+                    // TODO: This should be done by the controller (updating the animatino resets the time)
+                    var time = _state.GetTime();
                     _grabbedController.SetKeyToCurrentPositionAndUpdate(_scrubberJSON.val);
+                    _state.SetTime(time);
                     // TODO: This should not be here (the state should keep track of itself)
                     _state.OnUpdated.Invoke();
                     _grabbedController = null;
@@ -414,7 +418,7 @@ public class VamTimelineController : MVRScript
                     animState.enabled = false;
                 }
             }
-            
+
             OnUpdated.Invoke();
         }
 
@@ -449,10 +453,12 @@ public class VamTimelineController : MVRScript
             {
                 var animState = controller.Animation["test"];
                 var controllerNextTime = controller.X.keys.FirstOrDefault(k => k.time > time).time;
-                SuperController.LogMessage($"Time: {time}, controllerNextTime: {controllerNextTime}");
                 if (controllerNextTime != 0 && controllerNextTime < nextTime) nextTime = controllerNextTime;
             }
-            SetTime(nextTime);
+            if (nextTime == 5f)
+                SetTime(0f);
+            else
+                SetTime(nextTime);
         }
 
         public void PreviousFrame()
@@ -465,7 +471,11 @@ public class VamTimelineController : MVRScript
                 var controllerNextTime = controller.X.keys.LastOrDefault(k => k.time < time).time;
                 if (controllerNextTime != 0 && controllerNextTime > previousTime) previousTime = controllerNextTime;
             }
-            SetTime(previousTime);
+            if (previousTime == 0f)
+                // TODO: Instead, move to the last frame
+                SetTime(0f);
+            else
+                SetTime(previousTime);
         }
     }
 
@@ -486,8 +496,8 @@ public class VamTimelineController : MVRScript
         {
             Controller = controller;
             // TODO: These should not be set internally, but rather by the initializer
-            SetKey(0f, controller.transform.position, controller.transform.rotation);
-            SetKey(5f, controller.transform.position, controller.transform.rotation);
+            SetKey(0f, controller.transform.localPosition, controller.transform.localRotation);
+            SetKey(5f, controller.transform.localPosition, controller.transform.localRotation);
 
             Clip = new AnimationClip();
             // TODO: Make that an option in the UI
@@ -508,12 +518,17 @@ public class VamTimelineController : MVRScript
             Clip.SetCurve("", typeof(Transform), "localRotation.y", RotY);
             Clip.SetCurve("", typeof(Transform), "localRotation.z", RotZ);
             Clip.SetCurve("", typeof(Transform), "localRotation.w", RotW);
-            Clip.EnsureQuaternionContinuity();
+            // Clip.EnsureQuaternionContinuity();
         }
 
         public void SetKeyToCurrentPositionAndUpdate(float time)
         {
-            SetKey(time, Controller.transform.position, Controller.transform.rotation);
+            SetKey(time, Controller.transform.localPosition, Controller.transform.localRotation);
+            if (time == 0f)
+            {
+                // TODO: Here we should also set the tangents
+                SetKey(5f, Controller.transform.localPosition, Controller.transform.localRotation);
+            }
             // TODO: If the time is zero, also update the last frame!
             UpdateAnimation();
         }
@@ -538,13 +553,17 @@ public class VamTimelineController : MVRScript
         private static void AddKey(AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
+            Keyframe keyframe;
             if (key == -1)
             {
                 // TODO: If this returns -1, it means the key was not added. Maybe use MoveKey?
-                curve.RemoveKey(key);
-                key = curve.AddKey(time, value);
+                key = Array.FindIndex(curve.keys, k => k.time == time);
+                if (key == -1) throw new InvalidOperationException($"Cannot AddKey at time {time}, but no keys exist at this position");
+                keyframe = curve.keys[key];
+                keyframe.value = value;
+                curve.MoveKey(key, keyframe);
             }
-            var keyframe = curve.keys[key];
+            keyframe = curve.keys[key];
             // keyframe.weightedMode = WeightedMode.Both;
             // TODO: We should not set tangents on everything, they are fine by default.
             // TODO: This should only be set for first/last frames AND should use longer weight AND should copy last/first frame instead of using zero
@@ -571,11 +590,22 @@ public class VamTimelineController : MVRScript
         {
             display.AppendLine($"Time: {time}s");
             display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
-            display.AppendLine($"  X");
-            foreach (var keyframe in controller.X.keys)
-                display.AppendLine($"    [{(keyframe.time == time ? "X" : "")}] {keyframe.time:0.00}s: {keyframe.value:0.00}");
+            RenderStateController(time, display, "X", controller.X);
+            RenderStateController(time, display, "Y", controller.Y);
+            RenderStateController(time, display, "Z", controller.Z);
+            RenderStateController(time, display, "RotX", controller.RotX);
+            RenderStateController(time, display, "RotY", controller.RotY);
+            RenderStateController(time, display, "RotZ", controller.RotZ);
+            RenderStateController(time, display, "RotW", controller.RotW);
         }
         _displayJSON.val = display.ToString();
+    }
+
+    private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
+    {
+        display.AppendLine($"  {name}");
+        foreach (var keyframe in curve.keys)
+            display.AppendLine($"    [{(keyframe.time == time ? "X" : " ")}] {keyframe.time:0.00}s: {keyframe.value:0.00}");
     }
 
     #endregion
