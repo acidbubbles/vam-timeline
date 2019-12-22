@@ -25,11 +25,12 @@ namespace AcidBubbles.VamTimeline
         private FreeControllerV3 _selectedController;
         private JSONStorableString _saveJSON;
         private JSONStorableAction _pauseToggleJSON;
-        private ControllerState _grabbedController;
+        private FreeControllerV3Animation _grabbedController;
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
 
         private Serializer _serializer;
+        private JSONStorableStringChooser _frameFilterJSON;
 
         #region Lifecycle
 
@@ -41,9 +42,14 @@ namespace AcidBubbles.VamTimeline
                 _state = new State();
 
                 // TODO: Hardcoded loop length
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, 5f, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, State.AnimationLength - float.Epsilon, true);
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
+
+                _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => _state.SetFilter(val));
+                var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
+                frameFilterPopup.popupPanelHeight = 800f;
+                frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = _state.GetFilters();
 
                 _nextFrameJSON = new JSONStorableAction("Next Frame", () => _state.NextFrame());
                 RegisterAction(_nextFrameJSON);

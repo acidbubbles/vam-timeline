@@ -10,9 +10,10 @@ namespace AcidBubbles.VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class ControllerState
+    public class FreeControllerV3Animation
     {
         public FreeControllerV3 Controller;
+        private readonly float _animationLength;
         public readonly Animation Animation;
         public readonly AnimationClip Clip;
         public AnimationCurve X = new AnimationCurve();
@@ -23,12 +24,18 @@ namespace AcidBubbles.VamTimeline
         public AnimationCurve RotZ = new AnimationCurve();
         public AnimationCurve RotW = new AnimationCurve();
 
-        public ControllerState(FreeControllerV3 controller)
+        public string AnimationName { get; }
+        // TODO: Cache this, but if we do detect renames!
+        public string Name => $"{Controller.containingAtom.name}/{Controller.name}";
+
+        public FreeControllerV3Animation(FreeControllerV3 controller, string animationName, float animationLength)
         {
             Controller = controller;
+            AnimationName = animationName;
+            _animationLength = animationLength;
             // TODO: These should not be set internally, but rather by the initializer
             SetKey(0f, controller.transform.localPosition, controller.transform.localRotation);
-            SetKey(5f, controller.transform.localPosition, controller.transform.localRotation);
+            SetKey(_animationLength, controller.transform.localPosition, controller.transform.localRotation);
 
             Clip = new AnimationClip();
             // TODO: Make that an option in the UI
@@ -37,10 +44,10 @@ namespace AcidBubbles.VamTimeline
             UpdateCurves();
 
             Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
-            Animation.AddClip(Clip, "test");
+            Animation.AddClip(Clip, AnimationName);
 
-            Animation.Play("test");
-            Animation.Stop("test");
+            Animation.Play(AnimationName);
+            Animation.Stop(AnimationName);
         }
 
         private void UpdateCurves()
@@ -67,7 +74,7 @@ namespace AcidBubbles.VamTimeline
                     k.inTangent = last.inTangent;
                     k.outTangent = c.keys.Last().outTangent;
                 });
-                SetKey(5f, Controller.transform.localPosition, Controller.transform.localRotation, (AnimationCurve c, ref Keyframe k) =>
+                SetKey(_animationLength, Controller.transform.localPosition, Controller.transform.localRotation, (AnimationCurve c, ref Keyframe k) =>
                 {
                     Keyframe first = c.keys.First();
                     k.inTangent = first.inTangent;
@@ -85,7 +92,7 @@ namespace AcidBubbles.VamTimeline
         private void UpdateAnimation()
         {
             UpdateCurves();
-            Animation.AddClip(Clip, "test");
+            Animation.AddClip(Clip, AnimationName);
         }
 
         public void SetKey(float time, Vector3 position, Quaternion rotation, KeyframeModify fn = null)
