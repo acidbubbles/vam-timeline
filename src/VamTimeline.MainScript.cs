@@ -12,7 +12,7 @@ namespace AcidBubbles.VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public partial class VamTimelineController : MVRScript
+    public class MainScript : MVRScript
     {
         private State _state;
         private JSONStorableFloat _scrubberJSON;
