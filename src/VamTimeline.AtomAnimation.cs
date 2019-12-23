@@ -24,6 +24,7 @@ namespace AcidBubbles.VamTimeline
 
         public readonly string AnimationName = "Anim1";
         public float AnimationLength = 5f;
+        public float Speed = 1f;
 
         public readonly UnityEvent OnUpdated = new UnityEvent();
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
@@ -71,7 +72,9 @@ namespace AcidBubbles.VamTimeline
         {
             foreach (var controller in Controllers)
             {
-                controller.Animation[AnimationName].time = 0;
+                AnimationState animState = controller.Animation[AnimationName];
+                animState.time = 0;
+                animState.speed = Speed;
                 controller.Animation.Play(AnimationName);
             }
         }
@@ -84,6 +87,16 @@ namespace AcidBubbles.VamTimeline
             }
 
             SetTime(0);
+        }
+
+        public void SetSpeed(float speed)
+        {
+            Speed = speed;
+            foreach (var controller in Controllers)
+            {
+                AnimationState animState = controller.Animation[AnimationName];
+                animState.speed = Speed;
+            }
         }
 
         public void SetTime(float time)

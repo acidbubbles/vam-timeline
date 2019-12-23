@@ -30,6 +30,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableAction _previousFrameJSON;
         private Serializer _serializer;
         private JSONStorableStringChooser _frameFilterJSON;
+        private JSONStorableFloat _speedJSON;
 
         #region Lifecycle
 
@@ -49,6 +50,10 @@ namespace AcidBubbles.VamTimeline
 
                 var lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.SetLength(v); _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
                 CreateSlider(lengthJSON, true);
+
+                _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.SetSpeed(v), 0.001f, 5f, false);
+                RegisterFloat(_speedJSON);
+                CreateSlider(_speedJSON, true);
 
                 _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => _animation.SetFilter(val));
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);

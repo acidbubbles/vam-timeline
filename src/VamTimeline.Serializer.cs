@@ -21,6 +21,7 @@ namespace AcidBubbles.VamTimeline
         {
             var json = JSON.Parse(val);
             var animation = new AtomAnimation();
+            animation.Speed = DeserializeFloat(json["Speed"], 1f);
             JSONArray controllersJSON = json["Controllers"].AsArray;
             if (controllersJSON == null) throw new NullReferenceException("Saved state does not have controllers");
             foreach (JSONClass controllerJSON in controllersJSON)
@@ -51,21 +52,29 @@ namespace AcidBubbles.VamTimeline
             {
                 var keyframe = new Keyframe
                 {
-                    time = float.Parse(keyframeJSON["time"].Value),
-                    value = float.Parse(keyframeJSON["value"].Value),
-                    inTangent = float.Parse(keyframeJSON["inTangent"].Value),
-                    outTangent = float.Parse(keyframeJSON["outTangent"].Value)
+                    time = DeserializeFloat(keyframeJSON["time"]),
+                    value = DeserializeFloat(keyframeJSON["value"]),
+                    inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
+                    outTangent = DeserializeFloat(keyframeJSON["outTangent"])
                 };
                 curve.AddKey(keyframe);
             }
         }
 
-        public string SerializeAnimation(AtomAnimation state)
+        private float DeserializeFloat(JSONNode node, float defaultVal = 0)
+        {
+            if (node == null || string.IsNullOrEmpty(node.Value))
+                return defaultVal;
+            return float.Parse(node.Value);
+        }
+
+        public string SerializeAnimation(AtomAnimation animation)
         {
             var animationJSON = new JSONClass();
+            animationJSON.Add("Speed", animation.Speed.ToString());
             var controllersJSON = new JSONArray();
             animationJSON.Add("Controllers", controllersJSON);
-            foreach (var controller in state.Controllers)
+            foreach (var controller in animation.Controllers)
             {
                 var controllerJSON = new JSONClass();
                 controllerJSON.Add("Atom", controller.Controller.containingAtom.uid);
