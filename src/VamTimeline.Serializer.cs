@@ -13,11 +13,8 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class Serializer
     {
-        private readonly MVRScript _script;
-
-        public Serializer(MVRScript mainScript)
+        public Serializer()
         {
-            _script = mainScript;
         }
 
         public AtomAnimation DeserializeAnimation(string val)

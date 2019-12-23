@@ -37,8 +37,11 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                _serializer = new Serializer(this);
-                _animation = new AtomAnimation();
+                _serializer = new Serializer();
+
+                _saveJSON = new JSONStorableString("Save", "");
+                RegisterString(_saveJSON);
+                RestoreState();
 
                 // TODO: Hardcoded loop length
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.SetTime(v), 0f, _animation.AnimationLength - float.Epsilon, true);
@@ -85,6 +88,8 @@ namespace AcidBubbles.VamTimeline
                 var atomPopup = CreateScrollablePopup(_atomJSON, true);
                 atomPopup.popupPanelHeight = 800f;
                 atomPopup.popup.onOpenPopupHandlers += () => _atomJSON.choices = SuperController.singleton.GetAtomUIDs();
+                if (_animation.Controllers.Count >= 1)
+                    _atomJSON.val = _animation.Controllers[0].Controller.containingAtom.uid;
 
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
@@ -97,12 +102,8 @@ namespace AcidBubbles.VamTimeline
 
                 _animation.OnUpdated.AddListener(() => RenderState());
 
-                _saveJSON = new JSONStorableString("Save", "");
-                RegisterString(_saveJSON);
-                RestoreState();
-
                 CreateButton("Save").button.onClick.AddListener(() => SaveState());
-                CreateButton("Restore").button.onClick.AddListener(() => RestoreState());
+                CreateButton("Restore").button.onClick.AddListener(() => { RestoreState(); RenderState(); });
 
                 CreateButton("Delete Frame", true).button.onClick.AddListener(() => _animation.DeleteFrame());
 
@@ -110,10 +111,12 @@ namespace AcidBubbles.VamTimeline
                 changeCurveJSON = new JSONStorableStringChooser("Change Curve", _animation.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
                 var changeCurvePopup = CreatePopup(changeCurveJSON, true);
                 changeCurvePopup.popupPanelHeight = 800f;
+
+                RenderState();
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Init: " + exc);
+                SuperController.LogError("VamTimeline Init: " + exc);
             }
         }
 
@@ -131,19 +134,20 @@ namespace AcidBubbles.VamTimeline
                 }
                 else
                 {
-                    // NOTE: If we had access to SuperController.instance.rightGrabbedController (and left) and grabbedControllerMouse we would not have to scan the controllers.
-                    var grabbing = SuperController.singleton.GetRightGrab() || SuperController.singleton.GetLeftGrab() || Input.GetMouseButton(0);
-                    if (_grabbedController == null && grabbing)
+                    var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
+                    if (_grabbedController == null && grabbing != null)
                     {
-                        // SuperController.singleton.ClearMessages();
-                        // SuperController.LogMessage("Grabbing: " + _state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
+                        _grabbedController = _animation.Controllers.FirstOrDefault(c => c.Controller == grabbing);
+                    }
+                    else if (_grabbedController == null && grabbing == null && Input.GetMouseButton(0))
+                    {
                         _grabbedController = _animation.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
                     }
                     else if (_grabbedController != null && !grabbing)
                     {
                         // TODO: This should be done by the controller (updating the animatino resets the time)
                         var time = _animation.GetTime();
-                        _grabbedController.SetKeyToCurrentPositionAndUpdate(_scrubberJSON.val);
+                        _grabbedController.SetKeyToCurrentPositionAndUpdate(time);
                         _animation.SetTime(time);
                         // TODO: This should not be here (the state should keep track of itself)
                         _animation.OnUpdated.Invoke();
@@ -153,7 +157,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Update: " + exc);
+                SuperController.LogError("VamTimeline Update: " + exc);
             }
         }
 
@@ -164,7 +168,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Enable: " + exc);
+                SuperController.LogError("VamTimeline Enable: " + exc);
             }
         }
 
@@ -176,7 +180,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Disable: " + exc);
+                SuperController.LogError("VamTimeline Disable: " + exc);
             }
         }
 
@@ -212,19 +216,21 @@ namespace AcidBubbles.VamTimeline
                     }
                 }
 
-                if (_animation == null) throw new InvalidOperationException("Could not deserialize the animation from save");
-
-                _animation.OnUpdated.AddListener(() => RenderState());
-                RenderState();
-
-                if (_animation.Controllers.Count >= 1)
-                {
-                    _atomJSON.val = _animation.Controllers[0].Controller.containingAtom.uid;
-                }
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController RestoreState: " + exc);
+                SuperController.LogError("VamTimeline RestoreState: " + exc);
+            }
+
+            try
+            {
+                if (_animation == null) _animation = new AtomAnimation();
+
+                _animation.OnUpdated.AddListener(() => RenderState());
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline RestoreState: " + exc);
             }
         }
 
@@ -245,7 +251,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController SaveState: " + exc);
+                SuperController.LogError("VamTimeline SaveState: " + exc);
             }
         }
 
@@ -263,7 +269,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController OnAtomsChanged: " + exc);
+                SuperController.LogError("VamTimeline OnAtomsChanged: " + exc);
             }
         }
 
