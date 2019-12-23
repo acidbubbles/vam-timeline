@@ -158,6 +158,20 @@ namespace AcidBubbles.VamTimeline
                 SetTime(previousTime);
         }
 
+        public void DeleteFrame()
+        {
+            var time = GetTime();
+            foreach (var controller in GetAllOrSelectedControllers())
+            {
+                foreach (var curve in controller.Curves)
+                {
+                    var key = Array.FindIndex(curve.keys, k => k.time == time);
+                    if (key != -1) curve.RemoveKey(key);
+                }
+                controller.RebuildAnimation();
+            }
+        }
+
         private IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
         {
             if (_selected != null) return new[] { _selected };

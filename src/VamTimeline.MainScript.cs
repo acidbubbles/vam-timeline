@@ -104,6 +104,8 @@ namespace AcidBubbles.VamTimeline
                 CreateButton("Save").button.onClick.AddListener(() => SaveState());
                 CreateButton("Restore").button.onClick.AddListener(() => RestoreState());
 
+                CreateButton("Delete Frame", true).button.onClick.AddListener(() => _animation.DeleteFrame());
+
                 JSONStorableStringChooser changeCurveJSON = null;
                 changeCurveJSON = new JSONStorableStringChooser("Change Curve", _animation.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
                 var changeCurvePopup = CreatePopup(changeCurveJSON, true);
