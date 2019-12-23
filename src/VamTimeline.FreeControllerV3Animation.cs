@@ -96,6 +96,21 @@ namespace AcidBubbles.VamTimeline
 
         public void RebuildAnimation()
         {
+            // Smooth loop
+            foreach (var curve in Curves)
+            {
+                curve.SmoothTangents(0, 0f);
+                curve.SmoothTangents(curve.keys.Length - 1, 0f);
+                var first = curve.keys[0];
+                var last = curve.keys[curve.keys.Length];
+                var tangent = (first.inTangent + last.outTangent) / 2f;
+                first.inTangent = tangent;
+                first.outTangent = tangent;
+                last.inTangent = tangent;
+                last.outTangent = tangent;
+                curve.MoveKey(0, first);
+                curve.MoveKey(curve.keys.Length - 1, last);
+            }
             UpdateCurves();
             Animation.AddClip(Clip, _animationName);
         }

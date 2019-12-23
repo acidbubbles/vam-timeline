@@ -19,6 +19,7 @@ namespace AcidBubbles.VamTimeline
             public const string Flat = "Flat";
             public const string Linear = "Linear";
             public const string Smooth = "Smooth";
+            public const string Bounce = "Bounce";
         }
 
         public readonly string AnimationName = "Anim1";
@@ -28,7 +29,7 @@ namespace AcidBubbles.VamTimeline
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
         private FreeControllerV3Animation _selected;
 
-        public readonly List<string> CurveTypes = new List<string> { CurveTypeValues.Flat, CurveTypeValues.Linear, CurveTypeValues.Smooth };
+        public readonly List<string> CurveTypes = new List<string> { CurveTypeValues.Flat, CurveTypeValues.Linear, CurveTypeValues.Smooth, CurveTypeValues.Bounce };
 
         public AtomAnimation()
         {
@@ -195,6 +196,31 @@ namespace AcidBubbles.VamTimeline
                         var next = curve.keys[key + 1];
                         keyframe.inTangent = CalculateLinearTangent(before, keyframe);
                         keyframe.outTangent = CalculateLinearTangent(keyframe, next);
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                case CurveTypeValues.Bounce:
+                    foreach (var curve in _selected.Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        var before = curve.keys[key - 1];
+                        var keyframe = curve.keys[key];
+                        var next = curve.keys[key + 1];
+                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
+                        if (keyframe.inTangent > 0)
+                            keyframe.inTangent = 0.8f;
+                        else if (keyframe.inTangent < 0)
+                            keyframe.inTangent = -0.8f;
+                        else
+                            keyframe.inTangent = 0;
+                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
+                        if (keyframe.outTangent > 0)
+                            keyframe.outTangent = 0.8f;
+                        else if (keyframe.outTangent < 0)
+                            keyframe.outTangent = -0.8f;
+                        else
+                            keyframe.outTangent = 0;
                         curve.MoveKey(key, keyframe);
                     }
                     break;
