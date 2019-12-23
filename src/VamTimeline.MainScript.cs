@@ -19,6 +19,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableBool _lockedJSON;
         private JSONStorableAction _playJSON;
         private JSONStorableAction _stopJSON;
+        private JSONStorableStringChooser _displayModeJSON;
         private JSONStorableString _displayJSON;
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _controllerJSON;
@@ -55,10 +56,10 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_speedJSON);
                 CreateSlider(_speedJSON, true);
 
-                _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => _animation.SetFilter(val));
+                _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => { _animation.SelectControllerByName(val); RenderState(); });
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
-                frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = _animation.GetFilters();
+                frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
 
                 _nextFrameJSON = new JSONStorableAction("Next Frame", () => _animation.NextFrame());
                 RegisterAction(_nextFrameJSON);
@@ -81,7 +82,10 @@ namespace AcidBubbles.VamTimeline
                 RegisterAction(_stopJSON);
                 CreateButton("Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
 
-                _displayJSON = new JSONStorableString("TimelineDisplay", "");
+                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode");
+                CreatePopup(_displayModeJSON);
+
+                _displayJSON = new JSONStorableString("Display", "");
                 CreateTextField(_displayJSON);
 
                 _lockedJSON = new JSONStorableBool("Locked", false);
@@ -349,16 +353,58 @@ namespace AcidBubbles.VamTimeline
 
         #region State Rendering
 
+        public class RenderingModes
+        {
+            public const string Default = "Default";
+            public const string Debug = "Debug";
+
+            public static readonly List<string> Values = new List<string> { Default, Debug };
+        }
+
         public void RenderState()
         {
             var time = _animation.GetTime();
             if (time != _scrubberJSON.val)
                 _scrubberJSON.val = time;
 
-            var display = new StringBuilder();
-            foreach (var controller in _animation.Controllers)
+            switch (_displayModeJSON.val)
             {
-                display.AppendLine($"Time: {time}s");
+                case RenderingModes.Default:
+                    RenderStateDefault();
+                    break;
+                case RenderingModes.Debug:
+                    RenderStateDebug();
+                    break;
+                default:
+                    throw new NotSupportedException($"Unknown rendering mode {_displayModeJSON.val}");
+            }
+        }
+
+        public void RenderStateDefault()
+        {
+            var time = _scrubberJSON.val;
+            var display = new StringBuilder();
+            display.AppendLine($"Time: {time}s");
+            foreach (var controller in _animation.GetAllOrSelectedControllers())
+            {
+                display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
+                var keyTimes = controller.Curves.SelectMany(c => c.keys).Select(k => k.time).Distinct();
+                foreach (var keyTime in keyTimes)
+                {
+                    display.Append($"{(keyTime == time ? "[" : " ")}{keyTime:0.00}{(keyTime == time ? "]" : " ")}");
+                }
+                display.AppendLine();
+            }
+            _displayJSON.val = display.ToString();
+        }
+
+        public void RenderStateDebug()
+        {
+            var time = _scrubberJSON.val;
+            var display = new StringBuilder();
+            display.AppendLine($"Time: {time}s");
+            foreach (var controller in _animation.GetAllOrSelectedControllers())
+            {
                 display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
                 RenderStateController(time, display, "X", controller.X);
                 RenderStateController(time, display, "Y", controller.Y);

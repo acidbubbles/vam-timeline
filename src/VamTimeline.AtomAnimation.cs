@@ -117,14 +117,14 @@ namespace AcidBubbles.VamTimeline
             OnUpdated.Invoke();
         }
 
-        public void SetFilter(string val)
+        public void SelectControllerByName(string val)
         {
             _selected = string.IsNullOrEmpty(val)
                 ? null
                 : Controllers.FirstOrDefault(c => c.Name == val);
         }
 
-        public List<string> GetFilters()
+        public List<string> GetControllersName()
         {
             return Controllers.Select(c => c.Name).ToList();
         }
@@ -199,7 +199,7 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        private IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
+        public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
         {
             if (_selected != null) return new[] { _selected };
             return Controllers;
