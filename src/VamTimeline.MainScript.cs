@@ -28,10 +28,8 @@ namespace AcidBubbles.VamTimeline
         private FreeControllerV3Animation _grabbedController;
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
-
         private Serializer _serializer;
         private JSONStorableStringChooser _frameFilterJSON;
-
 
         #region Lifecycle
 

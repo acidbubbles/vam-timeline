@@ -50,9 +50,6 @@ namespace AcidBubbles.VamTimeline
 
             Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
             Animation.AddClip(Clip, _animationName);
-
-            Animation.Play(_animationName);
-            Animation.Stop(_animationName);
         }
 
         private void UpdateCurves()
@@ -96,13 +93,15 @@ namespace AcidBubbles.VamTimeline
 
         public void RebuildAnimation()
         {
+            var time = Animation[_animationName].time;
             // Smooth loop
             foreach (var curve in Curves)
             {
+                if (curve.keys.Length <= 2) continue;
                 curve.SmoothTangents(0, 0f);
                 curve.SmoothTangents(curve.keys.Length - 1, 0f);
                 var first = curve.keys[0];
-                var last = curve.keys[curve.keys.Length];
+                var last = curve.keys[curve.keys.Length - 1];
                 var tangent = (first.inTangent + last.outTangent) / 2f;
                 first.inTangent = tangent;
                 first.outTangent = tangent;
@@ -113,6 +112,10 @@ namespace AcidBubbles.VamTimeline
             }
             UpdateCurves();
             Animation.AddClip(Clip, _animationName);
+            // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+            Animation.Play(_animationName);
+            Animation.Stop(_animationName);
+            Animation[_animationName].time = time;
         }
 
         public void SetKey(float time, Vector3 position, Quaternion rotation, KeyframeModify fn = null)
