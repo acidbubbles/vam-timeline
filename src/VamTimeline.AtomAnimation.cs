@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace AcidBubbles.VamTimeline
@@ -12,12 +14,21 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class AtomAnimation
     {
-        public const string AnimationName = "Anim1";
-        public const float AnimationLength = 5f;
+        private static class CurveTypeValues
+        {
+            public const string Flat = "Flat";
+            public const string Linear = "Linear";
+            public const string Smooth = "Smooth";
+        }
+
+        public readonly string AnimationName = "Anim1";
+        public readonly float AnimationLength = 5f;
 
         public readonly UnityEvent OnUpdated = new UnityEvent();
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
         private FreeControllerV3Animation _selected;
+
+        public readonly List<string> CurveTypes = new List<string> { CurveTypeValues.Flat, CurveTypeValues.Linear, CurveTypeValues.Smooth };
 
         public AtomAnimation()
         {
@@ -150,6 +161,61 @@ namespace AcidBubbles.VamTimeline
         {
             if (_selected != null) return new[] { _selected };
             return Controllers;
+        }
+
+        public void ChangeCurve(string val)
+        {
+            var time = GetTime();
+            if (_selected == null) return;
+            if (time == 0 || time == AnimationLength) return;
+
+            switch (val)
+            {
+                case null:
+                case "":
+                    return;
+                case CurveTypeValues.Flat:
+                    foreach (var curve in _selected.Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        var keyframe = curve.keys[key];
+                        keyframe.inTangent = 0f;
+                        keyframe.outTangent = 0f;
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                case CurveTypeValues.Linear:
+                    foreach (var curve in _selected.Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        var before = curve.keys[key - 1];
+                        var keyframe = curve.keys[key];
+                        var next = curve.keys[key + 1];
+                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
+                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                case CurveTypeValues.Smooth:
+                    foreach (var curve in _selected.Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        curve.SmoothTangents(key, 0f);
+                    };
+                    break;
+                default:
+                    throw new NotSupportedException($"Curve type {val} is not supported");
+            }
+            _selected.RebuildAnimation();
+        }
+
+        private static float CalculateLinearTangent(Keyframe from, Keyframe to)
+        {
+            SuperController.LogMessage($"({from.value} - {to.value}) / ({from.time} - {to.time}))");
+            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
         }
     }
 }

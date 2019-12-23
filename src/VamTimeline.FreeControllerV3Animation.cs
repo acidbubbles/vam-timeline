@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -12,8 +13,9 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class FreeControllerV3Animation
     {
-        public FreeControllerV3 Controller;
         private readonly float _animationLength;
+        private string _animationName;
+        public FreeControllerV3 Controller;
         public readonly Animation Animation;
         public readonly AnimationClip Clip;
         public AnimationCurve X = new AnimationCurve();
@@ -23,15 +25,18 @@ namespace AcidBubbles.VamTimeline
         public AnimationCurve RotY = new AnimationCurve();
         public AnimationCurve RotZ = new AnimationCurve();
         public AnimationCurve RotW = new AnimationCurve();
+        public List<AnimationCurve> Curves;
 
-        public string AnimationName { get; }
         // TODO: Cache this, but if we do detect renames!
         public string Name => $"{Controller.containingAtom.name}/{Controller.name}";
 
         public FreeControllerV3Animation(FreeControllerV3 controller, string animationName, float animationLength)
         {
+            Curves = new List<AnimationCurve> {
+                X, Y, Z, RotX, RotY, RotZ, RotW
+            };
             Controller = controller;
-            AnimationName = animationName;
+            _animationName = animationName;
             _animationLength = animationLength;
             // TODO: These should not be set internally, but rather by the initializer
             SetKey(0f, controller.transform.localPosition, controller.transform.localRotation);
@@ -44,10 +49,10 @@ namespace AcidBubbles.VamTimeline
             UpdateCurves();
 
             Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
-            Animation.AddClip(Clip, AnimationName);
+            Animation.AddClip(Clip, _animationName);
 
-            Animation.Play(AnimationName);
-            Animation.Stop(AnimationName);
+            Animation.Play(_animationName);
+            Animation.Stop(_animationName);
         }
 
         private void UpdateCurves()
@@ -86,13 +91,13 @@ namespace AcidBubbles.VamTimeline
                 SetKey(time, Controller.transform.localPosition, Controller.transform.localRotation);
             }
             // TODO: If the time is zero, also update the last frame!
-            UpdateAnimation();
+            RebuildAnimation();
         }
 
-        private void UpdateAnimation()
+        public void RebuildAnimation()
         {
             UpdateCurves();
-            Animation.AddClip(Clip, AnimationName);
+            Animation.AddClip(Clip, _animationName);
         }
 
         public void SetKey(float time, Vector3 position, Quaternion rotation, KeyframeModify fn = null)

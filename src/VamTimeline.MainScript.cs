@@ -43,7 +43,7 @@ namespace AcidBubbles.VamTimeline
                 _animation = new AtomAnimation();
 
                 // TODO: Hardcoded loop length
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.SetTime(v), 0f, AtomAnimation.AnimationLength - float.Epsilon, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.SetTime(v), 0f, _animation.AnimationLength - float.Epsilon, true);
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
@@ -105,6 +105,11 @@ namespace AcidBubbles.VamTimeline
 
                 CreateButton("Save").button.onClick.AddListener(() => SaveState());
                 CreateButton("Restore").button.onClick.AddListener(() => RestoreState());
+
+                JSONStorableStringChooser changeCurveJSON = null;
+                changeCurveJSON = new JSONStorableStringChooser("Change Curve", _animation.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
+                var changeCurvePopup = CreatePopup(changeCurveJSON, true);
+                changeCurvePopup.popupPanelHeight = 800f;
             }
             catch (Exception exc)
             {
