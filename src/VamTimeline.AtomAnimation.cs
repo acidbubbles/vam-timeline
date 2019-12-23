@@ -35,12 +35,13 @@ namespace AcidBubbles.VamTimeline
         {
         }
 
-        public void Add(FreeControllerV3 controller)
+        public FreeControllerV3Animation Add(FreeControllerV3 controller)
         {
-            if (Controllers.Any(c => c.Controller == controller)) return;
+            if (Controllers.Any(c => c.Controller == controller)) return null;
             FreeControllerV3Animation controllerState = new FreeControllerV3Animation(controller, AnimationName, AnimationLength);
             Controllers.Add(controllerState);
             OnUpdated.Invoke();
+            return controllerState;
         }
 
         public void Remove(FreeControllerV3 controller)
@@ -254,7 +255,6 @@ namespace AcidBubbles.VamTimeline
 
         private static float CalculateLinearTangent(Keyframe from, Keyframe to)
         {
-            SuperController.LogMessage($"({from.value} - {to.value}) / ({from.time} - {to.time}))");
             return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
         }
     }

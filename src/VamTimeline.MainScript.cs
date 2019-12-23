@@ -193,17 +193,33 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
+                if (_animation != null) _animation.OnUpdated.RemoveAllListeners();
+
                 if (!string.IsNullOrEmpty(_saveJSON.val))
                 {
-                    _animation = _serializer.DeserializeState(_saveJSON.val);
+                    _animation = _serializer.DeserializeAnimation(_saveJSON.val);
                     return;
                 }
 
-                var backupJSON = containingAtom.GetStorableByID("VamTimelineBackup")?.GetStringParamValue("Backup");
-
-                if (!string.IsNullOrEmpty(backupJSON))
+                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
+                if (backupStorableID != null)
                 {
-                    _animation = _serializer.DeserializeState(backupJSON);
+                    var backupStorable = containingAtom.GetStorableByID(backupStorableID);
+                    var backupJSON = backupStorable.GetStringJSONParam("Backup");
+                    if (!string.IsNullOrEmpty(backupJSON.val))
+                    {
+                        _animation = _serializer.DeserializeAnimation(backupJSON.val);
+                    }
+                }
+
+                if (_animation == null) throw new InvalidOperationException("Could not deserialize the animation from save");
+
+                _animation.OnUpdated.AddListener(() => RenderState());
+                RenderState();
+
+                if (_animation.Controllers.Count >= 1)
+                {
+                    _atomJSON.val = _animation.Controllers[0].Controller.containingAtom.uid;
                 }
             }
             catch (Exception exc)
@@ -216,38 +232,21 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                var serialized = _serializer.SerializeState(_animation);
+                var serialized = _serializer.SerializeAnimation(_animation);
                 _saveJSON.val = serialized;
 
                 var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
-                SuperController.LogMessage(backupStorableID);
                 if (backupStorableID != null)
                 {
                     var backupStorable = containingAtom.GetStorableByID(backupStorableID);
                     var backupJSON = backupStorable.GetStringJSONParam("Backup");
-                    SuperController.LogMessage(backupJSON.val);
                     backupJSON.val = serialized;
-                    SuperController.LogMessage(backupJSON.val);
                 }
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimelineController SaveState: " + exc);
             }
-        }
-
-        private string SerializeState(AtomAnimation state)
-        {
-            var sb = new StringBuilder();
-            foreach (var controller in _animation.Controllers)
-            {
-                sb.AppendLine($"{controller.Controller.containingAtom.name}/{controller.Controller.name}");
-                sb.AppendLine($"  X");
-                foreach (var x in controller.X.keys)
-                    sb.AppendLine($"    {x.time}: {x.value}");
-
-            }
-            return sb.ToString();
         }
 
         #endregion
