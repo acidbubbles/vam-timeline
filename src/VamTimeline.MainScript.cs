@@ -14,7 +14,7 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class MainScript : MVRScript
     {
-        private State _state;
+        private AtomAnimation _animation;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableBool _lockedJSON;
         private JSONStorableAction _playJSON;
@@ -32,6 +32,7 @@ namespace AcidBubbles.VamTimeline
         private Serializer _serializer;
         private JSONStorableStringChooser _frameFilterJSON;
 
+
         #region Lifecycle
 
         public override void Init()
@@ -39,36 +40,36 @@ namespace AcidBubbles.VamTimeline
             try
             {
                 _serializer = new Serializer(this);
-                _state = new State();
+                _animation = new AtomAnimation();
 
                 // TODO: Hardcoded loop length
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _state.SetTime(v), 0f, State.AnimationLength - float.Epsilon, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.SetTime(v), 0f, AtomAnimation.AnimationLength - float.Epsilon, true);
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => _state.SetFilter(val));
+                _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => _animation.SetFilter(val));
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
-                frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = _state.GetFilters();
+                frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = _animation.GetFilters();
 
-                _nextFrameJSON = new JSONStorableAction("Next Frame", () => _state.NextFrame());
+                _nextFrameJSON = new JSONStorableAction("Next Frame", () => _animation.NextFrame());
                 RegisterAction(_nextFrameJSON);
                 CreateButton("Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => _state.PreviousFrame());
+                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => _animation.PreviousFrame());
                 RegisterAction(_previousFrameJSON);
                 CreateButton("Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
-                _playJSON = new JSONStorableAction("Play", () => _state.Play());
+                _playJSON = new JSONStorableAction("Play", () => _animation.Play());
                 RegisterAction(_playJSON);
                 CreateButton("Play").button.onClick.AddListener(() => _playJSON.actionCallback());
 
                 // TODO: Should be a checkbox
-                _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _state.PauseToggle());
+                _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _animation.PauseToggle());
                 RegisterAction(_pauseToggleJSON);
                 CreateButton("Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
 
-                _stopJSON = new JSONStorableAction("Stop", () => _state.Stop());
+                _stopJSON = new JSONStorableAction("Stop", () => _animation.Stop());
                 RegisterAction(_stopJSON);
                 CreateButton("Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
 
@@ -96,7 +97,7 @@ namespace AcidBubbles.VamTimeline
                 CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
                 CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
 
-                _state.OnUpdated.AddListener(() => RenderState());
+                _animation.OnUpdated.AddListener(() => RenderState());
 
                 _saveJSON = new JSONStorableString("Save", "");
                 RegisterString(_saveJSON);
@@ -119,7 +120,7 @@ namespace AcidBubbles.VamTimeline
             {
                 if (_lockedJSON.val) return;
 
-                if (_state.IsPlaying())
+                if (_animation.IsPlaying())
                 {
                     RenderState();
                 }
@@ -131,16 +132,16 @@ namespace AcidBubbles.VamTimeline
                     {
                         // SuperController.singleton.ClearMessages();
                         // SuperController.LogMessage("Grabbing: " + _state.Controllers.FirstOrDefault()?.Controller.linkToRB?.gameObject.name);
-                        _grabbedController = _state.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
+                        _grabbedController = _animation.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
                     }
                     else if (_grabbedController != null && !grabbing)
                     {
                         // TODO: This should be done by the controller (updating the animatino resets the time)
-                        var time = _state.GetTime();
+                        var time = _animation.GetTime();
                         _grabbedController.SetKeyToCurrentPositionAndUpdate(_scrubberJSON.val);
-                        _state.SetTime(time);
+                        _animation.SetTime(time);
                         // TODO: This should not be here (the state should keep track of itself)
-                        _state.OnUpdated.Invoke();
+                        _animation.OnUpdated.Invoke();
                         _grabbedController = null;
                     }
                 }
@@ -166,7 +167,7 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                _state.Stop();
+                _animation.Stop();
             }
             catch (Exception exc)
             {
@@ -189,7 +190,7 @@ namespace AcidBubbles.VamTimeline
             {
                 if (!string.IsNullOrEmpty(_saveJSON.val))
                 {
-                    _state = _serializer.DeserializeState(_saveJSON.val);
+                    _animation = _serializer.DeserializeState(_saveJSON.val);
                     return;
                 }
 
@@ -197,7 +198,7 @@ namespace AcidBubbles.VamTimeline
 
                 if (!string.IsNullOrEmpty(backupJSON))
                 {
-                    _state = _serializer.DeserializeState(backupJSON);
+                    _animation = _serializer.DeserializeState(backupJSON);
                 }
             }
             catch (Exception exc)
@@ -210,7 +211,7 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                var serialized = _serializer.SerializeState(_state);
+                var serialized = _serializer.SerializeState(_animation);
                 _saveJSON.val = serialized;
 
                 var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
@@ -230,10 +231,10 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        private string SerializeState(State state)
+        private string SerializeState(AtomAnimation state)
         {
             var sb = new StringBuilder();
-            foreach (var controller in _state.Controllers)
+            foreach (var controller in _animation.Controllers)
             {
                 sb.AppendLine($"{controller.Controller.containingAtom.name}/{controller.Controller.name}");
                 sb.AppendLine($"  X");
@@ -317,14 +318,14 @@ namespace AcidBubbles.VamTimeline
             {
                 _selectedController.currentPositionState = FreeControllerV3.PositionState.On;
                 _selectedController.currentRotationState = FreeControllerV3.RotationState.On;
-                _state.Add(_selectedController);
+                _animation.Add(_selectedController);
             }
         }
 
         private void RemoveSelectedController()
         {
             if (_selectedController != null)
-                _state.Remove(_selectedController);
+                _animation.Remove(_selectedController);
         }
 
         #endregion
@@ -333,12 +334,12 @@ namespace AcidBubbles.VamTimeline
 
         public void RenderState()
         {
-            var time = _state.GetTime();
+            var time = _animation.GetTime();
             if (time != _scrubberJSON.val)
                 _scrubberJSON.val = time;
 
             var display = new StringBuilder();
-            foreach (var controller in _state.Controllers)
+            foreach (var controller in _animation.Controllers)
             {
                 display.AppendLine($"Time: {time}s");
                 display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");

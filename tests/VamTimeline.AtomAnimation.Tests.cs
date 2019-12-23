@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 namespace VamTimeline.Tests.csproj
 {
-    public class StateTests
+    public class AtomAnimationTests
     {
         [Test]
         public void DummyTest()
         {
-            var state = new State();
+            var sut = new AtomAnimation();
         }
     }
 }

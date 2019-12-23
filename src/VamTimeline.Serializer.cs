@@ -18,14 +18,14 @@ namespace AcidBubbles.VamTimeline
             _script = mainScript;
         }
 
-        public State DeserializeState(string val)
+        public AtomAnimation DeserializeState(string val)
         {
             var json = JSON.Parse(val);
             // TODO
-            return new State();
+            return new AtomAnimation();
         }
 
-        public string SerializeState(State state)
+        public string SerializeState(AtomAnimation state)
         {
             var json = new JSONClass();
             // TODO

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Events;
@@ -11,7 +10,7 @@ namespace AcidBubbles.VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class State
+    public class AtomAnimation
     {
         public const string AnimationName = "Anim1";
         public const float AnimationLength = 5f;
@@ -20,7 +19,7 @@ namespace AcidBubbles.VamTimeline
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
         private FreeControllerV3Animation _selected;
 
-        public State()
+        public AtomAnimation()
         {
         }
 
