@@ -43,10 +43,12 @@ namespace AcidBubbles.VamTimeline
                 RegisterString(_saveJSON);
                 RestoreState();
 
-                // TODO: Hardcoded loop length
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.SetTime(v), 0f, _animation.AnimationLength - float.Epsilon, true);
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
+
+                var lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.SetLength(v); _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
+                CreateSlider(lengthJSON, true);
 
                 _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => _animation.SetFilter(val));
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);

@@ -23,7 +23,7 @@ namespace AcidBubbles.VamTimeline
         }
 
         public readonly string AnimationName = "Anim1";
-        public readonly float AnimationLength = 5f;
+        public float AnimationLength = 5f;
 
         public readonly UnityEvent OnUpdated = new UnityEvent();
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
@@ -51,6 +51,19 @@ namespace AcidBubbles.VamTimeline
             {
                 Controllers.Remove(existing);
                 OnUpdated.Invoke();
+            }
+        }
+
+        public void SetLength(float length)
+        {
+            if (length == AnimationLength)
+            {
+                return;
+            }
+            AnimationLength = length;
+            foreach (var controller in Controllers)
+            {
+                controller.SetLength(length);
             }
         }
 

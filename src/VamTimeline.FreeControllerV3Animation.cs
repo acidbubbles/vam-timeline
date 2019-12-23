@@ -13,8 +13,8 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class FreeControllerV3Animation
     {
-        private readonly float _animationLength;
-        private string _animationName;
+        private readonly string _animationName;
+        private float _animationLength;
         public FreeControllerV3 Controller;
         public readonly Animation Animation;
         public readonly AnimationClip Clip;
@@ -63,6 +63,27 @@ namespace AcidBubbles.VamTimeline
             Clip.SetCurve("", typeof(Transform), "localRotation.z", RotZ);
             Clip.SetCurve("", typeof(Transform), "localRotation.w", RotW);
             Clip.EnsureQuaternionContinuity();
+        }
+
+        public void SetLength(float length)
+        {
+            foreach (var curve in Curves)
+            {
+                if (length > _animationLength)
+                {
+                    for (var i = 0; i < curve.keys.Length - 1; i++)
+                    {
+                        if (curve.keys[i].time < length) continue;
+                        curve.RemoveKey(i);
+                    }
+                }
+
+                var last = curve.keys[curve.keys.Length - 1];
+                last.time = length;
+                curve.MoveKey(curve.keys.Length - 1, last);
+            }
+            _animationLength = length;
+            RebuildAnimation();
         }
 
         public void SetKeyToCurrentPositionAndUpdate(float time)
