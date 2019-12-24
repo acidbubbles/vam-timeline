@@ -24,9 +24,6 @@ namespace AcidBubbles.VamTimeline
         public AnimationCurve RotW = new AnimationCurve();
         public List<AnimationCurve> Curves;
 
-        // TODO: Cache this, but if we do detect renames!
-        public string Name => $"{Controller.containingAtom.name}/{Controller.name}";
-
         public FreeControllerV3Animation(FreeControllerV3 controller, float animationLength)
         {
             Curves = new List<AnimationCurve> {

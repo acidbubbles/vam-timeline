@@ -263,6 +263,7 @@ namespace AcidBubbles.VamTimeline
             controller.currentPositionState = FreeControllerV3.PositionState.On;
             controller.currentRotationState = FreeControllerV3.RotationState.On;
             _animation.Add(controller);
+            RenderState();
         }
 
         private void RemoveSelectedController()
@@ -275,6 +276,7 @@ namespace AcidBubbles.VamTimeline
                 return;
             }
             _animation.Remove(controller);
+            RenderState();
         }
 
         #endregion

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace AcidBubbles.VamTimeline
 {
@@ -124,12 +123,12 @@ namespace AcidBubbles.VamTimeline
         {
             _selected = string.IsNullOrEmpty(val)
                 ? null
-                : Controllers.FirstOrDefault(c => c.Name == val);
+                : Controllers.FirstOrDefault(c => c.Controller.name == val);
         }
 
         public List<string> GetControllersName()
         {
-            return Controllers.Select(c => c.Name).ToList();
+            return Controllers.Select(c => c.Controller.name).ToList();
         }
 
         public void PauseToggle()
