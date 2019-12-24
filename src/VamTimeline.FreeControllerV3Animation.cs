@@ -31,7 +31,6 @@ namespace AcidBubbles.VamTimeline
             };
             Controller = controller;
             _animationLength = animationLength;
-            // TODO: These should not be set internally, but rather by the initializer
             SetKey(0f, controller.transform.localPosition, controller.transform.localRotation);
             SetKey(_animationLength, controller.transform.localPosition, controller.transform.localRotation);
         }
@@ -145,7 +144,6 @@ namespace AcidBubbles.VamTimeline
             Keyframe keyframe;
             if (key == -1)
             {
-                // TODO: If this returns -1, it means the key was not added. Maybe use MoveKey?
                 key = Array.FindIndex(curve.keys, k => k.time == time);
                 if (key == -1) throw new InvalidOperationException($"Cannot AddKey at time {time}, but no keys exist at this position");
                 keyframe = curve.keys[key];

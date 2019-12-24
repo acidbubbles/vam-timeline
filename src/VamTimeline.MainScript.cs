@@ -285,10 +285,11 @@ namespace AcidBubbles.VamTimeline
 
         public class RenderingModes
         {
+            public const string None = "None";
             public const string Default = "Default";
             public const string Debug = "Debug";
 
-            public static readonly List<string> Values = new List<string> { Default, Debug };
+            public static readonly List<string> Values = new List<string> { None, Default, Debug };
         }
 
         public void RenderState()
@@ -304,6 +305,9 @@ namespace AcidBubbles.VamTimeline
 
             switch (_displayModeJSON.val)
             {
+                case RenderingModes.None:
+                    _displayJSON.val = "";
+                    break;
                 case RenderingModes.Default:
                     RenderStateDefault();
                     break;

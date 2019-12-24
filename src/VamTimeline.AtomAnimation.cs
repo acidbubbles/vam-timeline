@@ -152,7 +152,6 @@ namespace AcidBubbles.VamTimeline
         public void NextFrame()
         {
             var time = GetTime();
-            // TODO: Hardcoded loop length
             var nextTime = AnimationLength;
             foreach (var controller in GetAllOrSelectedControllers())
             {
@@ -168,17 +167,18 @@ namespace AcidBubbles.VamTimeline
         public void PreviousFrame()
         {
             var time = GetTime();
+            if (time == 0f)
+            {
+                SetTime(GetAllOrSelectedControllers().SelectMany(c => c.Curves).SelectMany(c => c.keys).Select(c => c.time).Where(t => t != AnimationLength).Max());
+                return;
+            }
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedControllers())
             {
                 var controllerNextTime = controller.X.keys.LastOrDefault(k => k.time < time).time;
                 if (controllerNextTime != 0 && controllerNextTime > previousTime) previousTime = controllerNextTime;
             }
-            if (previousTime == 0f)
-                // TODO: Instead, move to the last frame
-                SetTime(0f);
-            else
-                SetTime(previousTime);
+            SetTime(previousTime);
         }
 
         public void DeleteFrame()
