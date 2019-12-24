@@ -43,7 +43,7 @@ namespace AcidBubbles.VamTimeline
                 RegisterString(_saveJSON);
                 RestoreState();
 
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.SetTime(v), 0f, _animation.AnimationLength - float.Epsilon, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.Time = v, 0f, _animation.AnimationLength - float.Epsilon, true);
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
@@ -104,7 +104,7 @@ namespace AcidBubbles.VamTimeline
                 CreateButton("Delete Frame", true).button.onClick.AddListener(() => _animation.DeleteFrame());
 
                 JSONStorableStringChooser changeCurveJSON = null;
-                changeCurveJSON = new JSONStorableStringChooser("Change Curve", _animation.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
+                changeCurveJSON = new JSONStorableStringChooser("Change Curve", CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
                 var changeCurvePopup = CreatePopup(changeCurveJSON, true);
                 changeCurvePopup.popupPanelHeight = 800f;
 
@@ -133,19 +133,19 @@ namespace AcidBubbles.VamTimeline
                     var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
                     if (_grabbedController == null && grabbing != null)
                     {
-                        _grabbedController = _animation.Controllers.FirstOrDefault(c => c.Controller == grabbing);
+                        _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
                     }
                     else if (_grabbedController == null && grabbing == null && Input.GetMouseButton(0))
                     {
-                        _grabbedController = _animation.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
+                        _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
                     }
                     else if (_grabbedController != null && grabbing == null && !Input.GetMouseButton(0))
                     {
                         // TODO: This should be done by the controller (updating the animatino resets the time)
-                        var time = _animation.GetTime();
+                        var time = _animation.Time;
                         _grabbedController.SetKeyToCurrentPositionAndUpdate(time);
                         _animation.RebuildAnimation();
-                        _animation.SetTime(time);
+                        _animation.Time = time;
                         _grabbedController = null;
                         RenderState();
                     }
@@ -218,7 +218,11 @@ namespace AcidBubbles.VamTimeline
 
             try
             {
-                if (_animation == null) _animation = new AtomAnimation(containingAtom);
+                if (_animation == null)
+                {
+                    _animation = new AtomAnimation(containingAtom);
+                    _animation.Initialize();
+                }
             }
             catch (Exception exc)
             {
@@ -299,7 +303,7 @@ namespace AcidBubbles.VamTimeline
                 _displayJSON.val = "Locked";
                 return;
             }
-            var time = _animation.GetTime();
+            var time = _animation.Time;
             if (time != _scrubberJSON.val)
                 _scrubberJSON.val = time;
 
@@ -327,7 +331,7 @@ namespace AcidBubbles.VamTimeline
             foreach (var controller in _animation.GetAllOrSelectedControllers())
             {
                 display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
-                var keyTimes = controller.Curves.SelectMany(c => c.keys).Select(k => k.time).Distinct();
+                var keyTimes = controller.Curves.SelectMany(c => c.keys.Take(c.keys.Length - 1)).Select(k => k.time).Distinct();
                 foreach (var keyTime in keyTimes)
                 {
                     display.Append($"{(keyTime == time ? "[" : " ")}{keyTime:0.00}{(keyTime == time ? "]" : " ")}");
@@ -359,7 +363,7 @@ namespace AcidBubbles.VamTimeline
         private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
         {
             display.AppendLine($"{name}");
-            foreach (var keyframe in curve.keys)
+            foreach (var keyframe in curve.keys.Take(curve.keys.Length - 1))
             {
                 display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
                 display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");

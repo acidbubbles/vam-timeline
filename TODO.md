@@ -14,3 +14,6 @@
 - Copy/paste frame (all controllers in frame)
 - Delete keyframes
 - When locked, disable all controls
+- Speed should be at the clip level
+- Move the "current clip" inside the clip for faster access
+- Speed is not saved

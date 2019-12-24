@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,49 +12,41 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class AtomAnimation
     {
-        private static class CurveTypeValues
-        {
-            public const string Flat = "Flat";
-            public const string Linear = "Linear";
-            public const string Smooth = "Smooth";
-            public const string Bounce = "Bounce";
-        }
-
         private readonly Atom _atom;
         public readonly Animation Animation;
-        public readonly AnimationClip Clip;
-        public readonly string AnimationName = "Anim1";
-        private float _animationLength = 5f;
-        public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
-        private FreeControllerV3Animation _selected;
-
-        public readonly List<string> CurveTypes = new List<string> { CurveTypeValues.Flat, CurveTypeValues.Linear, CurveTypeValues.Smooth, CurveTypeValues.Bounce };
+        public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
+        public AtomAnimationClip Current;
 
         public AtomAnimation(Atom atom)
         {
             _atom = atom;
             Animation = _atom.gameObject.GetComponent<Animation>() ?? _atom.gameObject.AddComponent<Animation>();
-            Clip = new AnimationClip();
-            // TODO: Make that an option in the UI
-            Clip.wrapMode = WrapMode.Loop;
-            Clip.legacy = true;
-            Animation.AddClip(Clip, AnimationName);
+        }
+
+        public void Initialize()
+        {
+            if (Clips.Count == 0)
+                Clips.Add(new AtomAnimationClip("Anim1"));
+            if (Current == null)
+                Current = Clips.First();
+        }
+
+        public void AddClip(AtomAnimationClip clip)
+        {
+            Clips.Add(clip);
+            Animation.AddClip(clip.Clip, clip.AnimationName);
         }
 
         public FreeControllerV3Animation Add(FreeControllerV3 controller)
         {
-            if (Controllers.Any(c => c.Controller == controller)) return null;
-            FreeControllerV3Animation controllerState = new FreeControllerV3Animation(controller, AnimationLength);
-            Controllers.Add(controllerState);
+            var added = Current.Add(controller);
             RebuildAnimation();
-            return controllerState;
+            return added;
         }
 
         public void Remove(FreeControllerV3 controller)
         {
-            var existing = Controllers.FirstOrDefault(c => c.Controller == controller);
-            if (existing == null) return;
-            Controllers.Remove(existing);
+            Current.Remove(controller);
             RebuildAnimation();
         }
 
@@ -63,237 +54,123 @@ namespace AcidBubbles.VamTimeline
         {
             get
             {
-                return _animationLength;
+                return Current.AnimationLength;
             }
             set
             {
-                if (value == _animationLength)
-                    return;
-                _animationLength = value;
-                foreach (var controller in Controllers)
-                {
-                    controller.SetLength(value);
-                }
+                Current.AnimationLength = value;
                 RebuildAnimation();
             }
         }
 
         public void Play()
         {
-            AnimationState animState = Animation[AnimationName];
+            AnimationState animState = Animation[Current.AnimationName];
             animState.time = 0;
-            Animation.Play(AnimationName);
+            Animation.Play(Current.AnimationName);
         }
 
         internal void Stop()
         {
-            Animation.Stop(AnimationName);
-            SetTime(0);
+            Animation.Stop(Current.AnimationName);
+            Time = 0;
         }
 
         public float Speed
         {
             get
             {
-                AnimationState animState = Animation[AnimationName];
+                AnimationState animState = Animation[Current.AnimationName];
                 return animState.speed;
             }
 
             set
             {
-                AnimationState animState = Animation[AnimationName];
+                AnimationState animState = Animation[Current.AnimationName];
                 animState.speed = value;
-            }
-        }
-
-        public void SetTime(float time)
-        {
-            var animState = Animation[AnimationName];
-            animState.time = time;
-            if (!animState.enabled)
-            {
-                // TODO: Can we set this once?
-                animState.enabled = true;
-                Animation.Sample();
-                animState.enabled = false;
             }
         }
 
         public void SelectControllerByName(string val)
         {
-            _selected = string.IsNullOrEmpty(val)
-                ? null
-                : Controllers.FirstOrDefault(c => c.Controller.name == val);
+            Current.SelectControllerByName(val);
         }
 
         public List<string> GetControllersName()
         {
-            return Controllers.Select(c => c.Controller.name).ToList();
+            return Current.GetControllersName();
         }
 
         public void PauseToggle()
         {
-            var animState = Animation[AnimationName];
+            var animState = Animation[Current.AnimationName];
             animState.enabled = !animState.enabled;
         }
 
         public bool IsPlaying()
         {
-            return Animation.IsPlaying(AnimationName);
+            return Animation.IsPlaying(Current.AnimationName);
         }
 
-        public float GetTime()
+        public float Time
         {
-            var animState = Animation[AnimationName];
-            if (animState == null) return 0f;
-            return animState.time % animState.length;
+            get
+            {
+                var animState = Animation[Current.AnimationName];
+                if (animState == null) return 0f;
+                return animState.time % animState.length;
+            }
+            set
+            {
+                var animState = Animation[Current.AnimationName];
+                animState.time = value;
+                if (!animState.enabled)
+                {
+                    // TODO: Can we set this once?
+                    animState.enabled = true;
+                    Animation.Sample();
+                    animState.enabled = false;
+                }
+            }
         }
 
         public void NextFrame()
         {
-            var time = GetTime();
-            var nextTime = AnimationLength;
-            foreach (var controller in GetAllOrSelectedControllers())
-            {
-                var controllerNextTime = controller.X.keys.FirstOrDefault(k => k.time > time).time;
-                if (controllerNextTime != 0 && controllerNextTime < nextTime) nextTime = controllerNextTime;
-            }
-            if (nextTime == AnimationLength)
-                SetTime(0f);
-            else
-                SetTime(nextTime);
+            Time = Current.GetNextFrame(Time);
         }
 
         public void PreviousFrame()
         {
-            var time = GetTime();
-            if (time == 0f)
-            {
-                SetTime(GetAllOrSelectedControllers().SelectMany(c => c.Curves).SelectMany(c => c.keys).Select(c => c.time).Where(t => t != AnimationLength).Max());
-                return;
-            }
-            var previousTime = 0f;
-            foreach (var controller in GetAllOrSelectedControllers())
-            {
-                var controllerNextTime = controller.X.keys.LastOrDefault(k => k.time < time).time;
-                if (controllerNextTime != 0 && controllerNextTime > previousTime) previousTime = controllerNextTime;
-            }
-            SetTime(previousTime);
+            Time = Current.GetPreviousFrame(Time);
         }
 
         public void DeleteFrame()
         {
-            var time = GetTime();
-            foreach (var controller in GetAllOrSelectedControllers())
-            {
-                foreach (var curve in controller.Curves)
-                {
-                    var key = Array.FindIndex(curve.keys, k => k.time == time);
-                    if (key != -1) curve.RemoveKey(key);
-                }
-            }
+            Current.DeleteFrame(Time);
             RebuildAnimation();
         }
 
         public void RebuildAnimation()
         {
-            var time = Animation[AnimationName].time;
-            Clip.ClearCurves();
-            foreach (var controller in Controllers)
-            {
-                controller.RebuildAnimation(Clip);
-            }
-            Animation.AddClip(Clip, AnimationName);
-            Clip.EnsureQuaternionContinuity();
+            var time = Animation[Current.AnimationName].time;
+            Current.RebuildAnimation();
+            Animation.AddClip(Current.Clip, Current.AnimationName);
             // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
-            Animation.Play(AnimationName);
-            Animation.Stop(AnimationName);
-            Animation[AnimationName].time = time;
+            Animation.Play(Current.AnimationName);
+            Animation.Stop(Current.AnimationName);
+            Animation[Current.AnimationName].time = time;
         }
 
         public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
         {
-            if (_selected != null) return new[] { _selected };
-            return Controllers;
+            return Current.GetAllOrSelectedControllers();
         }
 
         public void ChangeCurve(string val)
         {
-            var time = GetTime();
-            if (_selected == null) return;
-            if (time == 0 || time == AnimationLength) return;
-
-            switch (val)
-            {
-                case null:
-                case "":
-                    return;
-                case CurveTypeValues.Flat:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var keyframe = curve.keys[key];
-                        keyframe.inTangent = 0f;
-                        keyframe.outTangent = 0f;
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Linear:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var before = curve.keys[key - 1];
-                        var keyframe = curve.keys[key];
-                        var next = curve.keys[key + 1];
-                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Bounce:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var before = curve.keys[key - 1];
-                        var keyframe = curve.keys[key];
-                        var next = curve.keys[key + 1];
-                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                        if (keyframe.inTangent > 0)
-                            keyframe.inTangent = 0.8f;
-                        else if (keyframe.inTangent < 0)
-                            keyframe.inTangent = -0.8f;
-                        else
-                            keyframe.inTangent = 0;
-                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                        if (keyframe.outTangent > 0)
-                            keyframe.outTangent = 0.8f;
-                        else if (keyframe.outTangent < 0)
-                            keyframe.outTangent = -0.8f;
-                        else
-                            keyframe.outTangent = 0;
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Smooth:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        curve.SmoothTangents(key, 0f);
-                    };
-                    break;
-                default:
-                    throw new NotSupportedException($"Curve type {val} is not supported");
-            }
+            var time = Time;
+            Current.ChangeCurve(time, val);
             RebuildAnimation();
-        }
-
-        private static float CalculateLinearTangent(Keyframe from, Keyframe to)
-        {
-            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
         }
     }
 }

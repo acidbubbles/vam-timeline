@@ -1,5 +1,7 @@
+VamTimeline.CurveTypeValues.cs
 VamTimeline.KeyframeModify.cs
 VamTimeline.Serializer.cs
 VamTimeline.FreeControllerV3Animation.cs
+VamTimeline.AtomAnimationClip.cs
 VamTimeline.AtomAnimation.cs
 VamTimeline.MainScript.cs
