@@ -1,27 +1,31 @@
 using System;
 using System.Collections.Generic;
 
-/// <summary>
-/// VaM Timeline Controller
-/// By Acidbubbles
-/// Animation timeline with keyframes
-/// Source: https://github.com/acidbubbles/vam-timeline
-/// </summary>
-public class VamTimelineBackup : MVRScript
+namespace AcidBubbles.VamTimeline.Tools
 {
-    private JSONStorableString _backupJSON;
-
-    public override void Init()
+    /// <summary>
+    /// VaM Timeline Controller
+    /// By Acidbubbles
+    /// Animation timeline with keyframes
+    /// Source: https://github.com/acidbubbles/vam-timeline
+    /// </summary>
+    public class VamTimelineBackup : MVRScript
     {
-        try
+        private JSONStorableString _backupJSON;
+
+        public override void Init()
         {
-            _backupJSON = new JSONStorableString("Backup", "");
-            RegisterString(_backupJSON);
-            CreateTextField(_backupJSON);
-        }
-        catch (Exception exc)
-        {
-            SuperController.LogError("VamTimelineBackup Init: " + exc);
+            try
+            {
+                _backupJSON = new JSONStorableString("Backup", "");
+                RegisterString(_backupJSON);
+                var textfield = CreateTextField(_backupJSON);
+                textfield.height = 1200;
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimelineBackup Init: " + exc);
+            }
         }
     }
 }

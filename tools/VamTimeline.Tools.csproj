@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
-    <RootNamespace>AcidBubbles.VamTimeline</RootNamespace>
+    <RootNamespace>AcidBubbles.VamTimeline.Tools</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>6</LangVersion>
   </PropertyGroup>
@@ -54,11 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="VamTimeline.KeyframeModify.cs" />
-    <Compile Include="VamTimeline.Serializer.cs" />
-    <Compile Include="VamTimeline.FreeControllerV3Animation.cs" />
-    <Compile Include="VamTimeline.AtomAnimation.cs" />
-    <Compile Include="VamTimeline.MainScript.cs" />
+    <Compile Include="VamTimelineBackup.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

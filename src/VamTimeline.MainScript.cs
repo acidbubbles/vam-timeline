@@ -47,10 +47,10 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                var lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.SetLength(v); _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
+                var lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.AnimationLength = v; _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
                 CreateSlider(lengthJSON, true);
 
-                _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.SetSpeed(v), 0.001f, 5f, false);
+                _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.Speed = v, 0.001f, 5f, false);
                 RegisterFloat(_speedJSON);
                 CreateSlider(_speedJSON, true);
 
@@ -59,11 +59,11 @@ namespace AcidBubbles.VamTimeline
                 frameFilterPopup.popupPanelHeight = 800f;
                 frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
 
-                _nextFrameJSON = new JSONStorableAction("Next Frame", () => _animation.NextFrame());
+                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.NextFrame(); RenderState(); });
                 RegisterAction(_nextFrameJSON);
                 CreateButton("Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => _animation.PreviousFrame());
+                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { _animation.PreviousFrame(); RenderState(); });
                 RegisterAction(_previousFrameJSON);
                 CreateButton("Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
@@ -76,17 +76,17 @@ namespace AcidBubbles.VamTimeline
                 RegisterAction(_pauseToggleJSON);
                 CreateButton("Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
 
-                _stopJSON = new JSONStorableAction("Stop", () => _animation.Stop());
+                _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); });
                 RegisterAction(_stopJSON);
                 CreateButton("Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
 
-                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode");
+                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => RenderState());
                 CreatePopup(_displayModeJSON);
 
                 _displayJSON = new JSONStorableString("Display", "");
                 CreateTextField(_displayJSON);
 
-                _lockedJSON = new JSONStorableBool("Locked", false);
+                _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => RenderState());
                 RegisterBool(_lockedJSON);
                 var lockedToggle = CreateToggle(_lockedJSON, true);
                 lockedToggle.label = "Locked (performance mode)";
@@ -97,8 +97,6 @@ namespace AcidBubbles.VamTimeline
 
                 CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
                 CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
-
-                _animation.OnUpdated.AddListener(() => RenderState());
 
                 CreateButton("Save").button.onClick.AddListener(() => SaveState());
                 CreateButton("Restore").button.onClick.AddListener(() => { RestoreState(); RenderState(); });
@@ -141,15 +139,15 @@ namespace AcidBubbles.VamTimeline
                     {
                         _grabbedController = _animation.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
                     }
-                    else if (_grabbedController != null && !grabbing)
+                    else if (_grabbedController != null && grabbing == null && !Input.GetMouseButton(0))
                     {
                         // TODO: This should be done by the controller (updating the animatino resets the time)
                         var time = _animation.GetTime();
                         _grabbedController.SetKeyToCurrentPositionAndUpdate(time);
+                        _animation.RebuildAnimation();
                         _animation.SetTime(time);
-                        // TODO: This should not be here (the state should keep track of itself)
-                        _animation.OnUpdated.Invoke();
                         _grabbedController = null;
+                        RenderState();
                     }
                 }
             }
@@ -195,22 +193,20 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                if (_animation != null) _animation.OnUpdated.RemoveAllListeners();
-
                 if (!string.IsNullOrEmpty(_saveJSON.val))
                 {
-                    _animation = _serializer.DeserializeAnimation(_saveJSON.val);
+                    _animation = _serializer.DeserializeAnimation(containingAtom, _saveJSON.val);
                     return;
                 }
 
-                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
+                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimelineBackup"));
                 if (backupStorableID != null)
                 {
                     var backupStorable = containingAtom.GetStorableByID(backupStorableID);
                     var backupJSON = backupStorable.GetStringJSONParam("Backup");
                     if (!string.IsNullOrEmpty(backupJSON.val))
                     {
-                        _animation = _serializer.DeserializeAnimation(backupJSON.val);
+                        _animation = _serializer.DeserializeAnimation(containingAtom, backupJSON.val);
                     }
                 }
 
@@ -222,9 +218,7 @@ namespace AcidBubbles.VamTimeline
 
             try
             {
-                if (_animation == null) _animation = new AtomAnimation();
-
-                _animation.OnUpdated.AddListener(() => RenderState());
+                if (_animation == null) _animation = new AtomAnimation(containingAtom);
             }
             catch (Exception exc)
             {
@@ -239,7 +233,7 @@ namespace AcidBubbles.VamTimeline
                 var serialized = _serializer.SerializeAnimation(_animation);
                 _saveJSON.val = serialized;
 
-                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("_VamTimelineBackup"));
+                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimelineBackup"));
                 if (backupStorableID != null)
                 {
                     var backupStorable = containingAtom.GetStorableByID(backupStorableID);
@@ -297,6 +291,11 @@ namespace AcidBubbles.VamTimeline
 
         public void RenderState()
         {
+            if (_lockedJSON.val)
+            {
+                _displayJSON.val = "Locked";
+                return;
+            }
             var time = _animation.GetTime();
             if (time != _scrubberJSON.val)
                 _scrubberJSON.val = time;

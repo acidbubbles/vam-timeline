@@ -13,11 +13,8 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class FreeControllerV3Animation
     {
-        private readonly string _animationName;
         private float _animationLength;
         public FreeControllerV3 Controller;
-        public readonly Animation Animation;
-        public readonly AnimationClip Clip;
         public AnimationCurve X = new AnimationCurve();
         public AnimationCurve Y = new AnimationCurve();
         public AnimationCurve Z = new AnimationCurve();
@@ -30,39 +27,43 @@ namespace AcidBubbles.VamTimeline
         // TODO: Cache this, but if we do detect renames!
         public string Name => $"{Controller.containingAtom.name}/{Controller.name}";
 
-        public FreeControllerV3Animation(FreeControllerV3 controller, string animationName, float animationLength)
+        public FreeControllerV3Animation(FreeControllerV3 controller, float animationLength)
         {
             Curves = new List<AnimationCurve> {
                 X, Y, Z, RotX, RotY, RotZ, RotW
             };
             Controller = controller;
-            _animationName = animationName;
             _animationLength = animationLength;
             // TODO: These should not be set internally, but rather by the initializer
             SetKey(0f, controller.transform.localPosition, controller.transform.localRotation);
             SetKey(_animationLength, controller.transform.localPosition, controller.transform.localRotation);
-
-            Clip = new AnimationClip();
-            // TODO: Make that an option in the UI
-            Clip.wrapMode = WrapMode.Loop;
-            Clip.legacy = true;
-            UpdateCurves();
-
-            Animation = controller.gameObject.GetComponent<Animation>() ?? controller.gameObject.AddComponent<Animation>();
-            Animation.AddClip(Clip, _animationName);
         }
 
-        private void UpdateCurves()
+        private void UpdateCurves(AnimationClip clip)
         {
-            Clip.ClearCurves();
-            Clip.SetCurve("", typeof(Transform), "localPosition.x", X);
-            Clip.SetCurve("", typeof(Transform), "localPosition.y", Y);
-            Clip.SetCurve("", typeof(Transform), "localPosition.z", Z);
-            Clip.SetCurve("", typeof(Transform), "localRotation.x", RotX);
-            Clip.SetCurve("", typeof(Transform), "localRotation.y", RotY);
-            Clip.SetCurve("", typeof(Transform), "localRotation.z", RotZ);
-            Clip.SetCurve("", typeof(Transform), "localRotation.w", RotW);
-            Clip.EnsureQuaternionContinuity();
+            var path = GetRelativePath();
+            clip.SetCurve(path, typeof(Transform), "localPosition.x", X);
+            clip.SetCurve(path, typeof(Transform), "localPosition.y", Y);
+            clip.SetCurve(path, typeof(Transform), "localPosition.z", Z);
+            clip.SetCurve(path, typeof(Transform), "localRotation.x", RotX);
+            clip.SetCurve(path, typeof(Transform), "localRotation.y", RotY);
+            clip.SetCurve(path, typeof(Transform), "localRotation.z", RotZ);
+            clip.SetCurve(path, typeof(Transform), "localRotation.w", RotW);
+        }
+
+        private string GetRelativePath()
+        {
+            var root = Controller.containingAtom.transform;
+            var target = Controller.transform;
+            var parts = new List<string>();
+            Transform t = target;
+            while (t != root && t != t.root)
+            {
+                parts.Add(t.name);
+                t = t.parent;
+            }
+            parts.Reverse();
+            return string.Join("/", parts.ToArray());
         }
 
         public void SetLength(float length)
@@ -83,7 +84,6 @@ namespace AcidBubbles.VamTimeline
                 curve.MoveKey(curve.keys.Length - 1, last);
             }
             _animationLength = length;
-            RebuildAnimation();
         }
 
         public void SetKeyToCurrentPositionAndUpdate(float time)
@@ -108,13 +108,10 @@ namespace AcidBubbles.VamTimeline
             {
                 SetKey(time, Controller.transform.localPosition, Controller.transform.localRotation);
             }
-            // TODO: If the time is zero, also update the last frame!
-            RebuildAnimation();
         }
 
-        public void RebuildAnimation()
+        public void RebuildAnimation(AnimationClip clip)
         {
-            var time = Animation[_animationName].time;
             // Smooth loop
             foreach (var curve in Curves)
             {
@@ -131,12 +128,7 @@ namespace AcidBubbles.VamTimeline
                 curve.MoveKey(0, first);
                 curve.MoveKey(curve.keys.Length - 1, last);
             }
-            UpdateCurves();
-            Animation.AddClip(Clip, _animationName);
-            // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
-            Animation.Play(_animationName);
-            Animation.Stop(_animationName);
-            Animation[_animationName].time = time;
+            UpdateCurves(clip);
         }
 
         public void SetKey(float time, Vector3 position, Quaternion rotation, KeyframeModify fn = null)

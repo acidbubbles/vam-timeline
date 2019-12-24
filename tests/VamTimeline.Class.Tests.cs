@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 namespace VamTimeline.Tests.csproj
 {
-    public class AtomAnimationTests
+    public class ClassTests
     {
         [Test]
-        public void DummyTest()
+        public void ToDo()
         {
-            var sut = new AtomAnimation();
+            Assert.Inconclusive();
         }
     }
 }

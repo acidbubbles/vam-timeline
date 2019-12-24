@@ -17,21 +17,19 @@ namespace AcidBubbles.VamTimeline
         {
         }
 
-        public AtomAnimation DeserializeAnimation(string val)
+        public AtomAnimation DeserializeAnimation(Atom atom, string val)
         {
             var json = JSON.Parse(val);
-            var animation = new AtomAnimation();
+            var animation = new AtomAnimation(atom);
+            animation.AnimationLength = DeserializeFloat(json["AnimationLength"], 1f);
             animation.Speed = DeserializeFloat(json["Speed"], 1f);
             JSONArray controllersJSON = json["Controllers"].AsArray;
             if (controllersJSON == null) throw new NullReferenceException("Saved state does not have controllers");
             foreach (JSONClass controllerJSON in controllersJSON)
             {
-                string atomUID = controllerJSON["Atom"].Value;
-                var atom = SuperController.singleton.GetAtomByUid(atomUID);
-                if (atom == null) throw new NullReferenceException($"Atom '{atomUID}' does not exist");
                 var controllerName = controllerJSON["Controller"].Value;
                 var controller = atom.freeControllers.Single(fc => fc.name == controllerName);
-                if (atom == null) throw new NullReferenceException($"Atom '{atomUID}' does not have a controller '{controllerName}'");
+                if (atom == null) throw new NullReferenceException($"Atom '{atom.uid}' does not have a controller '{controllerName}'");
                 var fcAnimation = animation.Add(controller);
                 DeserializeCurve(fcAnimation.X, controllerJSON["X"]);
                 DeserializeCurve(fcAnimation.X, controllerJSON["X"]);
@@ -41,8 +39,8 @@ namespace AcidBubbles.VamTimeline
                 DeserializeCurve(fcAnimation.RotY, controllerJSON["RotY"]);
                 DeserializeCurve(fcAnimation.RotZ, controllerJSON["RotZ"]);
                 DeserializeCurve(fcAnimation.RotW, controllerJSON["RotW"]);
-                fcAnimation.RebuildAnimation();
             }
+            animation.RebuildAnimation();
             return animation;
         }
 
@@ -71,13 +69,13 @@ namespace AcidBubbles.VamTimeline
         public string SerializeAnimation(AtomAnimation animation)
         {
             var animationJSON = new JSONClass();
+            animationJSON.Add("AnimationLength", animation.AnimationLength.ToString());
             animationJSON.Add("Speed", animation.Speed.ToString());
             var controllersJSON = new JSONArray();
             animationJSON.Add("Controllers", controllersJSON);
             foreach (var controller in animation.Controllers)
             {
                 var controllerJSON = new JSONClass();
-                controllerJSON.Add("Atom", controller.Controller.containingAtom.uid);
                 controllerJSON.Add("Controller", controller.Controller.name);
                 controllerJSON.Add("X", SerializeCurve(controller.X));
                 controllerJSON.Add("Y", SerializeCurve(controller.Y));

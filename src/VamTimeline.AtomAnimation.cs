@@ -22,99 +22,102 @@ namespace AcidBubbles.VamTimeline
             public const string Bounce = "Bounce";
         }
 
+        private readonly Atom _atom;
+        public readonly Animation Animation;
+        public readonly AnimationClip Clip;
         public readonly string AnimationName = "Anim1";
-        public float AnimationLength = 5f;
-        public float Speed = 1f;
-
-        public readonly UnityEvent OnUpdated = new UnityEvent();
+        private float _animationLength = 5f;
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
         private FreeControllerV3Animation _selected;
 
         public readonly List<string> CurveTypes = new List<string> { CurveTypeValues.Flat, CurveTypeValues.Linear, CurveTypeValues.Smooth, CurveTypeValues.Bounce };
 
-        public AtomAnimation()
+        public AtomAnimation(Atom atom)
         {
+            _atom = atom;
+            Animation = _atom.gameObject.GetComponent<Animation>() ?? _atom.gameObject.AddComponent<Animation>();
+            Clip = new AnimationClip();
+            // TODO: Make that an option in the UI
+            Clip.wrapMode = WrapMode.Loop;
+            Clip.legacy = true;
+            Animation.AddClip(Clip, AnimationName);
         }
 
         public FreeControllerV3Animation Add(FreeControllerV3 controller)
         {
             if (Controllers.Any(c => c.Controller == controller)) return null;
-            FreeControllerV3Animation controllerState = new FreeControllerV3Animation(controller, AnimationName, AnimationLength);
+            FreeControllerV3Animation controllerState = new FreeControllerV3Animation(controller, AnimationLength);
             Controllers.Add(controllerState);
-            OnUpdated.Invoke();
+            RebuildAnimation();
             return controllerState;
         }
 
         public void Remove(FreeControllerV3 controller)
         {
             var existing = Controllers.FirstOrDefault(c => c.Controller == controller);
-            if (existing != null)
-            {
-                Controllers.Remove(existing);
-                OnUpdated.Invoke();
-            }
+            if (existing == null) return;
+            Controllers.Remove(existing);
+            RebuildAnimation();
         }
 
-        public void SetLength(float length)
+        public float AnimationLength
         {
-            if (length == AnimationLength)
+            get
             {
-                return;
+                return _animationLength;
             }
-            AnimationLength = length;
-            foreach (var controller in Controllers)
+            set
             {
-                controller.SetLength(length);
+                if (value == _animationLength)
+                    return;
+                _animationLength = value;
+                foreach (var controller in Controllers)
+                {
+                    controller.SetLength(value);
+                }
+                RebuildAnimation();
             }
         }
 
         public void Play()
         {
-            foreach (var controller in Controllers)
-            {
-                AnimationState animState = controller.Animation[AnimationName];
-                animState.time = 0;
-                animState.speed = Speed;
-                controller.Animation.Play(AnimationName);
-            }
+            AnimationState animState = Animation[AnimationName];
+            animState.time = 0;
+            Animation.Play(AnimationName);
         }
 
         internal void Stop()
         {
-            foreach (var controller in Controllers)
-            {
-                controller.Animation.Stop(AnimationName);
-            }
-
+            Animation.Stop(AnimationName);
             SetTime(0);
         }
 
-        public void SetSpeed(float speed)
+        public float Speed
         {
-            Speed = speed;
-            foreach (var controller in Controllers)
+            get
             {
-                AnimationState animState = controller.Animation[AnimationName];
-                animState.speed = Speed;
+                AnimationState animState = Animation[AnimationName];
+                return animState.speed;
+            }
+
+            set
+            {
+                AnimationState animState = Animation[AnimationName];
+                animState.speed = value;
             }
         }
 
         public void SetTime(float time)
         {
-            foreach (var controller in Controllers)
+            var animState = Animation[AnimationName];
+            animState.time = time;
+            if (!animState.enabled)
             {
-                var animState = controller.Animation[AnimationName];
-                animState.time = time;
-                if (!animState.enabled)
-                {
-                    // TODO: Can we set this once?
-                    animState.enabled = true;
-                    controller.Animation.Sample();
-                    animState.enabled = false;
-                }
+                // TODO: Can we set this once?
+                animState.enabled = true;
+                Animation.Sample();
+                animState.enabled = false;
             }
-
-            OnUpdated.Invoke();
         }
 
         public void SelectControllerByName(string val)
@@ -131,23 +134,19 @@ namespace AcidBubbles.VamTimeline
 
         public void PauseToggle()
         {
-            foreach (var controller in Controllers)
-            {
-                var animState = controller.Animation[AnimationName];
-                animState.enabled = !animState.enabled;
-            }
+            var animState = Animation[AnimationName];
+            animState.enabled = !animState.enabled;
         }
 
         public bool IsPlaying()
         {
-            if (Controllers.Count == 0) return false;
-            return Controllers[0].Animation.IsPlaying(AnimationName);
+            return Animation.IsPlaying(AnimationName);
         }
 
         public float GetTime()
         {
-            if (Controllers.Count == 0) return 0f;
-            var animState = Controllers[0].Animation[AnimationName];
+            var animState = Animation[AnimationName];
+            if (animState == null) return 0f;
             return animState.time % animState.length;
         }
 
@@ -158,7 +157,6 @@ namespace AcidBubbles.VamTimeline
             var nextTime = AnimationLength;
             foreach (var controller in GetAllOrSelectedControllers())
             {
-                var animState = controller.Animation[AnimationName];
                 var controllerNextTime = controller.X.keys.FirstOrDefault(k => k.time > time).time;
                 if (controllerNextTime != 0 && controllerNextTime < nextTime) nextTime = controllerNextTime;
             }
@@ -174,7 +172,6 @@ namespace AcidBubbles.VamTimeline
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedControllers())
             {
-                var animState = controller.Animation[AnimationName];
                 var controllerNextTime = controller.X.keys.LastOrDefault(k => k.time < time).time;
                 if (controllerNextTime != 0 && controllerNextTime > previousTime) previousTime = controllerNextTime;
             }
@@ -195,8 +192,24 @@ namespace AcidBubbles.VamTimeline
                     var key = Array.FindIndex(curve.keys, k => k.time == time);
                     if (key != -1) curve.RemoveKey(key);
                 }
-                controller.RebuildAnimation();
             }
+            RebuildAnimation();
+        }
+
+        public void RebuildAnimation()
+        {
+            var time = Animation[AnimationName].time;
+            Clip.ClearCurves();
+            foreach (var controller in Controllers)
+            {
+                controller.RebuildAnimation(Clip);
+            }
+            Animation.AddClip(Clip, AnimationName);
+            Clip.EnsureQuaternionContinuity();
+            // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+            Animation.Play(AnimationName);
+            Animation.Stop(AnimationName);
+            Animation[AnimationName].time = time;
         }
 
         public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
@@ -276,7 +289,7 @@ namespace AcidBubbles.VamTimeline
                 default:
                     throw new NotSupportedException($"Curve type {val} is not supported");
             }
-            _selected.RebuildAnimation();
+            RebuildAnimation();
         }
 
         private static float CalculateLinearTangent(Keyframe from, Keyframe to)
