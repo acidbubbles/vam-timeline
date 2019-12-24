@@ -21,9 +21,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableAction _stopJSON;
         private JSONStorableStringChooser _displayModeJSON;
         private JSONStorableString _displayJSON;
-        private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _controllerJSON;
-        private FreeControllerV3 _selectedController;
         private JSONStorableString _saveJSON;
         private JSONStorableAction _pauseToggleJSON;
         private FreeControllerV3Animation _grabbedController;
@@ -93,20 +91,9 @@ namespace AcidBubbles.VamTimeline
                 var lockedToggle = CreateToggle(_lockedJSON, true);
                 lockedToggle.label = "Locked (performance mode)";
 
-                _atomJSON = new JSONStorableStringChooser("Target atom", SuperController.singleton.GetAtomUIDs(), "", "Target atom", uid => OnTargetAtomChanged(uid));
-                _controllerJSON = new JSONStorableStringChooser("Target controller", new List<string>(), "", "Target controller", uid => OnTargetControllerChanged(uid));
-
-                var atomPopup = CreateScrollablePopup(_atomJSON, true);
-                atomPopup.popupPanelHeight = 800f;
-                atomPopup.popup.onOpenPopupHandlers += () => _atomJSON.choices = SuperController.singleton.GetAtomUIDs();
-                if (_animation.Controllers.Count >= 1)
-                    _atomJSON.val = _animation.Controllers[0].Controller.containingAtom.uid;
-
+                _controllerJSON = new JSONStorableStringChooser("Target controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Target controller");
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
-
-                SuperController.singleton.onAtomUIDsChangedHandlers += (uids) => OnAtomsChanged(uids);
-                OnAtomsChanged(SuperController.singleton.GetAtomUIDs());
 
                 CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
                 CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
@@ -270,83 +257,30 @@ namespace AcidBubbles.VamTimeline
 
         #region Target Selection
 
-        private void OnAtomsChanged(List<string> uids)
-        {
-            try
-            {
-                var atoms = new List<string>(uids);
-                atoms.Insert(0, "");
-                _atomJSON.choices = atoms;
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("VamTimeline OnAtomsChanged: " + exc);
-            }
-        }
-
-        private void OnTargetAtomChanged(string uid)
-        {
-            try
-            {
-                if (uid == "")
-                {
-                    _controllerJSON.choices = new List<string>(new[] { "" });
-                    _controllerJSON.val = "";
-                    _selectedController = null;
-                    return;
-                }
-
-                var atom = SuperController.singleton.GetAtomByUid(uid);
-                if (atom == null)
-                {
-                    SuperController.LogError($"Atom {uid} does not exist");
-                    return;
-                }
-                var controllers = atom.freeControllers.Select(x => x.name).ToList();
-                controllers.Insert(0, "");
-                _controllerJSON.choices = controllers;
-                _controllerJSON.val = controllers.FirstOrDefault(s => s == _controllerJSON.val) ?? "";
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("UISlider OnTargetAtomChanged: " + exc);
-            }
-        }
-
-        private void OnTargetControllerChanged(string uid)
-        {
-            _selectedController = null;
-
-            var atom = SuperController.singleton.GetAtomByUid(_atomJSON.val);
-            if (atom == null)
-            {
-                SuperController.LogError($"Atom {_atomJSON.val} does not exist");
-                return;
-            }
-            var controller = atom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
-            if (controller == null)
-            {
-                SuperController.LogError($"Controller {uid} in atom {_atomJSON.val} does not exist");
-                return;
-            }
-
-            _selectedController = controller;
-        }
-
         private void AddSelectedController()
         {
-            if (_selectedController != null)
+            var uid = _controllerJSON.val;
+            var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
+            if (controller == null)
             {
-                _selectedController.currentPositionState = FreeControllerV3.PositionState.On;
-                _selectedController.currentRotationState = FreeControllerV3.RotationState.On;
-                _animation.Add(_selectedController);
+                SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
+                return;
             }
+            controller.currentPositionState = FreeControllerV3.PositionState.On;
+            controller.currentRotationState = FreeControllerV3.RotationState.On;
+            _animation.Add(controller);
         }
 
         private void RemoveSelectedController()
         {
-            if (_selectedController != null)
-                _animation.Remove(_selectedController);
+            var uid = _controllerJSON.val;
+            var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
+            if (controller == null)
+            {
+                SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
+                return;
+            }
+            _animation.Remove(controller);
         }
 
         #endregion
