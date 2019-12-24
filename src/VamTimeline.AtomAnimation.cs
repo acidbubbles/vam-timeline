@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -153,9 +154,12 @@ namespace AcidBubbles.VamTimeline
         public void RebuildAnimation()
         {
             var time = Animation[Current.AnimationName].time;
-            Current.RebuildAnimation();
-            Animation.AddClip(Current.Clip, Current.AnimationName);
-            // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+            foreach (var clip in Clips)
+            {
+                clip.RebuildAnimation();
+                Animation.AddClip(clip.Clip, clip.AnimationName);
+                // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+            }
             Animation.Play(Current.AnimationName);
             Animation.Stop(Current.AnimationName);
             Animation[Current.AnimationName].time = time;
@@ -171,6 +175,26 @@ namespace AcidBubbles.VamTimeline
             var time = Time;
             Current.ChangeCurve(time, val);
             RebuildAnimation();
+        }
+
+        public void ChangeAnimation(string animationName)
+        {
+            var anim = Clips.FirstOrDefault(c => c.AnimationName == animationName);
+            if (anim == null) return;
+            var time = Time;
+            var isPlaying = IsPlaying();
+            if (isPlaying)
+            {
+                // TODO: Harcoded duration
+                const float duration = 1f;
+                Animation.Blend(Current.AnimationName, 0f, duration);
+                Animation.Blend(animationName, 1f, duration);
+            }
+            Current = anim;
+            if (!isPlaying)
+            {
+                Time = time;
+            }
         }
     }
 }

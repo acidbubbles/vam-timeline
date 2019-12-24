@@ -17,3 +17,5 @@
 - Speed should be at the clip level
 - Move the "current clip" inside the clip for faster access
 - Speed is not saved
+- Improve naming of animation (guid?)
+- Bring controllers when creating new animations

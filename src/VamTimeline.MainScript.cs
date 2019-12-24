@@ -15,6 +15,7 @@ namespace AcidBubbles.VamTimeline
     public class MainScript : MVRScript
     {
         private AtomAnimation _animation;
+        private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableBool _lockedJSON;
         private JSONStorableAction _playJSON;
@@ -42,6 +43,11 @@ namespace AcidBubbles.VamTimeline
                 _saveJSON = new JSONStorableString("Save", "");
                 RegisterString(_saveJSON);
                 RestoreState();
+
+                _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val));
+                var animationPopup = CreateScrollablePopup(_animationJSON, true);
+                animationPopup.popupPanelHeight = 800f;
+                animationPopup.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
 
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.Time = v, 0f, _animation.AnimationLength - float.Epsilon, true);
                 RegisterFloat(_scrubberJSON);
@@ -108,12 +114,28 @@ namespace AcidBubbles.VamTimeline
                 var changeCurvePopup = CreatePopup(changeCurveJSON, true);
                 changeCurvePopup.popupPanelHeight = 800f;
 
+                CreateButton("New Animation", true).button.onClick.AddListener(() => AddAnimation());
+
                 RenderState();
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimeline Init: " + exc);
             }
+        }
+
+        private void ChangeAnimation(string animationName)
+        {
+            _animation.ChangeAnimation(animationName);
+            if (_animationJSON.val != animationName) _animationJSON.val = animationName;
+            RenderState();
+        }
+
+        private void AddAnimation()
+        {
+            var animationName = Guid.NewGuid().ToString();
+            _animation.AddClip(new AtomAnimationClip(animationName));
+            ChangeAnimation(animationName);
         }
 
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
