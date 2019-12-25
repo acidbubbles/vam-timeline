@@ -32,6 +32,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableStringChooser _frameFilterJSON;
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _lengthJSON;
+        private JSONStorableFloat _blendDurationJSON;
 
         #region Lifecycle
 
@@ -58,6 +59,7 @@ namespace AcidBubbles.VamTimeline
                 CreateSlider(_lengthJSON, true);
 
                 _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.Speed = v, 0.001f, 5f, false);
+                // TODO: Do not register JSON we don't want accessible outside. Everything is saved in local state.
                 RegisterFloat(_speedJSON);
                 CreateSlider(_speedJSON, true);
 
@@ -116,6 +118,10 @@ namespace AcidBubbles.VamTimeline
                 changeCurvePopup.popupPanelHeight = 800f;
 
                 CreateButton("New Animation", true).button.onClick.AddListener(() => AddAnimation());
+
+                _blendDurationJSON = new JSONStorableFloat("Blend Duration", _animation.BlendDuration, v => _animation.BlendDuration = v, 0.001f, 5f, false);
+                RegisterFloat(_blendDurationJSON);
+                CreateSlider(_blendDurationJSON, true);
 
                 RenderState();
             }

@@ -17,6 +17,7 @@ namespace AcidBubbles.VamTimeline
         public readonly Animation Animation;
         public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
         public AtomAnimationClip Current;
+        public float BlendDuration { get; set; } = 1f;
 
         public float AnimationLength
         {
@@ -195,8 +196,8 @@ namespace AcidBubbles.VamTimeline
             {
                 // TODO: Harcoded duration
                 const float duration = 1f;
-                Animation.Blend(Current.AnimationName, 0f, duration);
-                Animation.Blend(animationName, 1f, duration);
+                Animation.Blend(Current.AnimationName, 0f, BlendDuration);
+                Animation.Blend(animationName, 1f, BlendDuration);
             }
             Current = anim;
             if (!isPlaying)

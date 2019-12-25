@@ -23,6 +23,7 @@ namespace AcidBubbles.VamTimeline
 
             var animationJSON = JSON.Parse(val);
             var animation = new AtomAnimation(atom);
+            animation.BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f);
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
@@ -79,6 +80,7 @@ namespace AcidBubbles.VamTimeline
         public string SerializeAnimation(AtomAnimation animation)
         {
             var animationJSON = new JSONClass();
+            animationJSON.Add("BlendDuration", animation.BlendDuration.ToString());
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);
             foreach (var clip in animation.Clips)
