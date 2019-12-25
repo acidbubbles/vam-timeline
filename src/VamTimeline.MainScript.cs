@@ -142,15 +142,16 @@ namespace AcidBubbles.VamTimeline
                 else
                 {
                     var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
+                    if (Input.GetMouseButton(0) && grabbing == null)
+                        grabbing = containingAtom.freeControllers.FirstOrDefault(c => GrabbingControllers.Contains(c.linkToRB?.gameObject.name));
+
                     if (_grabbedController == null && grabbing != null)
                     {
                         _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
+                        if (grabbing.containingAtom == containingAtom)
+                            _controllerJSON.val = grabbing.name;
                     }
-                    else if (_grabbedController == null && grabbing == null && Input.GetMouseButton(0))
-                    {
-                        _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => GrabbingControllers.Contains(c.Controller.linkToRB?.gameObject.name));
-                    }
-                    else if (_grabbedController != null && grabbing == null && !Input.GetMouseButton(0))
+                    else if (_grabbedController != null && grabbing == null)
                     {
                         // TODO: This should be done by the controller (updating the animatino resets the time)
                         var time = _animation.Time;
