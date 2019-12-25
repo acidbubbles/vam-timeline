@@ -314,9 +314,12 @@ namespace AcidBubbles.VamTimeline
             var lastAnimationName = _animation.Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
+            var controllers = _animation.Current.Controllers.Select(c => c.Controller);
             _animation.AddClip(new AtomAnimationClip(animationName));
             _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
             ChangeAnimation(animationName);
+            foreach (var controller in controllers)
+                _animation.Current.Add(controller);
         }
 
         #endregion
