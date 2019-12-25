@@ -31,6 +31,7 @@ namespace AcidBubbles.VamTimeline
         private Serializer _serializer;
         private JSONStorableStringChooser _frameFilterJSON;
         private JSONStorableFloat _speedJSON;
+        private JSONStorableFloat _lengthJSON;
 
         #region Lifecycle
 
@@ -53,8 +54,8 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                var lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.AnimationLength = v; _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
-                CreateSlider(lengthJSON, true);
+                _lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.AnimationLength = v; _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
+                CreateSlider(_lengthJSON, true);
 
                 _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.Speed = v, 0.001f, 5f, false);
                 RegisterFloat(_speedJSON);
@@ -124,27 +125,15 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        private void ChangeAnimation(string animationName)
-        {
-            _animation.ChangeAnimation(animationName);
-            if (_animationJSON.val != animationName) _animationJSON.val = animationName;
-            RenderState();
-        }
-
-        private void AddAnimation()
-        {
-            var animationName = Guid.NewGuid().ToString();
-            _animation.AddClip(new AtomAnimationClip(animationName));
-            ChangeAnimation(animationName);
-        }
-
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         public void Update()
         {
             try
             {
+                if (_lockedJSON == null) return;
                 if (_lockedJSON.val) return;
+                if (_animation.Current == null) return;
 
                 if (_animation.IsPlaying())
                 {
@@ -194,7 +183,7 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                _animation.Stop();
+                _animation?.Stop();
             }
             catch (Exception exc)
             {
@@ -245,6 +234,13 @@ namespace AcidBubbles.VamTimeline
                     _animation = new AtomAnimation(containingAtom);
                     _animation.Initialize();
                 }
+
+                if (_animationJSON != null)
+                    _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
+                if (_lengthJSON != null)
+                    _lengthJSON.val = _animation.AnimationLength;
+                if (_speedJSON != null)
+                    _speedJSON.val = _animation.Speed;
             }
             catch (Exception exc)
             {
@@ -303,6 +299,24 @@ namespace AcidBubbles.VamTimeline
             }
             _animation.Remove(controller);
             RenderState();
+        }
+
+        private void ChangeAnimation(string animationName)
+        {
+            _animation.ChangeAnimation(animationName);
+            if (_animationJSON.val != animationName) _animationJSON.val = animationName;
+            RenderState();
+        }
+
+        private void AddAnimation()
+        {
+            // TODO: Let the user name the animation
+            var lastAnimationName = _animation.Clips.Last().AnimationName;
+            var lastAnimationIndex = lastAnimationName.Substring(4);
+            var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
+            _animation.AddClip(new AtomAnimationClip(animationName));
+            _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
+            ChangeAnimation(animationName);
         }
 
         #endregion

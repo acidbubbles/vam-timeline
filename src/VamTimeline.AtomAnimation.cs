@@ -18,10 +18,68 @@ namespace AcidBubbles.VamTimeline
         public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
         public AtomAnimationClip Current;
 
+        public float AnimationLength
+        {
+            get
+            {
+                return Current.AnimationLength;
+            }
+            set
+            {
+                Current.AnimationLength = value;
+                RebuildAnimation();
+            }
+        }
+
+        public float Speed
+        {
+            get
+            {
+                if (Current == null) return 1f;
+                AnimationState animState = Animation[Current.AnimationName];
+                if (animState == null) return 1f;
+                return animState.speed;
+            }
+
+            set
+            {
+                if (Current == null) throw new InvalidOperationException("Cannot set speed without a current animation");
+                AnimationState animState = Animation[Current.AnimationName];
+                if (animState == null) throw new InvalidOperationException("Cannot set speed without a current animation state");
+                animState.speed = value;
+            }
+        }
+
+        public float Time
+        {
+            get
+            {
+                if (Current == null) return 0f;
+                var animState = Animation[Current.AnimationName];
+                if (animState == null) return 0f;
+                return animState.time % animState.length;
+            }
+            set
+            {
+                if (Current == null) throw new InvalidOperationException("Cannot set time without a current animation");
+                var animState = Animation[Current.AnimationName];
+                if (animState == null) throw new InvalidOperationException("Cannot set time without a current animation state");
+                animState.time = value;
+                if (!animState.enabled)
+                {
+                    // TODO: Can we set this once?
+                    animState.enabled = true;
+                    Animation.Sample();
+                    animState.enabled = false;
+                }
+            }
+        }
+
         public AtomAnimation(Atom atom)
         {
             _atom = atom;
             Animation = _atom.gameObject.GetComponent<Animation>() ?? _atom.gameObject.AddComponent<Animation>();
+            if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
         public void Initialize()
@@ -51,45 +109,19 @@ namespace AcidBubbles.VamTimeline
             RebuildAnimation();
         }
 
-        public float AnimationLength
-        {
-            get
-            {
-                return Current.AnimationLength;
-            }
-            set
-            {
-                Current.AnimationLength = value;
-                RebuildAnimation();
-            }
-        }
-
         public void Play()
         {
             AnimationState animState = Animation[Current.AnimationName];
+            if (animState == null) return;
             animState.time = 0;
             Animation.Play(Current.AnimationName);
         }
 
-        internal void Stop()
+        public void Stop()
         {
+            if (Current == null || Animation[Current.AnimationName] == null) return;
             Animation.Stop(Current.AnimationName);
             Time = 0;
-        }
-
-        public float Speed
-        {
-            get
-            {
-                AnimationState animState = Animation[Current.AnimationName];
-                return animState.speed;
-            }
-
-            set
-            {
-                AnimationState animState = Animation[Current.AnimationName];
-                animState.speed = value;
-            }
         }
 
         public void SelectControllerByName(string val)
@@ -113,28 +145,6 @@ namespace AcidBubbles.VamTimeline
             return Animation.IsPlaying(Current.AnimationName);
         }
 
-        public float Time
-        {
-            get
-            {
-                var animState = Animation[Current.AnimationName];
-                if (animState == null) return 0f;
-                return animState.time % animState.length;
-            }
-            set
-            {
-                var animState = Animation[Current.AnimationName];
-                animState.time = value;
-                if (!animState.enabled)
-                {
-                    // TODO: Can we set this once?
-                    animState.enabled = true;
-                    Animation.Sample();
-                    animState.enabled = false;
-                }
-            }
-        }
-
         public void NextFrame()
         {
             Time = Current.GetNextFrame(Time);
@@ -153,7 +163,8 @@ namespace AcidBubbles.VamTimeline
 
         public void RebuildAnimation()
         {
-            var time = Animation[Current.AnimationName].time;
+            if (Current == null) throw new NullReferenceException("No current animation set");
+            var time = Time;
             foreach (var clip in Clips)
             {
                 clip.RebuildAnimation();

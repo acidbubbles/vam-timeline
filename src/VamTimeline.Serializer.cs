@@ -19,6 +19,8 @@ namespace AcidBubbles.VamTimeline
 
         public AtomAnimation DeserializeAnimation(Atom atom, string val)
         {
+            if (string.IsNullOrEmpty(val)) return null;
+
             var animationJSON = JSON.Parse(val);
             var animation = new AtomAnimation(atom);
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;

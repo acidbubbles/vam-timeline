@@ -19,3 +19,4 @@
 - Speed is not saved
 - Improve naming of animation (guid?)
 - Bring controllers when creating new animations
+- Make a UI that actually changes based on the selection (like tabs, one to configure animation, one to scrub, one to modify keyframes...)
