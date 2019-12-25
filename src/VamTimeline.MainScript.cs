@@ -307,8 +307,8 @@ namespace AcidBubbles.VamTimeline
         {
             _animation.ChangeAnimation(animationName);
             if (_animationJSON.val != animationName) _animationJSON.val = animationName;
-            _speedJSON.val = _animation.Speed;
-            _lengthJSON.val = _animation.AnimationLength;
+            _speedJSON.valNoCallback = _animation.Speed;
+            _lengthJSON.valNoCallback = _animation.AnimationLength;
             RenderState();
         }
 
