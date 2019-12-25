@@ -142,14 +142,15 @@ namespace AcidBubbles.VamTimeline
                 else
                 {
                     var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
-                    if (Input.GetMouseButton(0) && grabbing == null)
+                    if (grabbing != null && grabbing.containingAtom != containingAtom)
+                        grabbing = null;
+                    else if (Input.GetMouseButton(0) && grabbing == null)
                         grabbing = containingAtom.freeControllers.FirstOrDefault(c => GrabbingControllers.Contains(c.linkToRB?.gameObject.name));
 
                     if (_grabbedController == null && grabbing != null)
                     {
                         _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
-                        if (grabbing.containingAtom == containingAtom)
-                            _controllerJSON.val = grabbing.name;
+                        _controllerJSON.val = grabbing.name;
                     }
                     else if (_grabbedController != null && grabbing == null)
                     {
@@ -316,9 +317,13 @@ namespace AcidBubbles.VamTimeline
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
             var controllers = _animation.Current.Controllers.Select(c => c.Controller);
+            var speed = _animation.Speed;
+            var length = _animation.AnimationLength;
             _animation.AddClip(new AtomAnimationClip(animationName));
             _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
             ChangeAnimation(animationName);
+            _animation.Speed = speed;
+            _animation.AnimationLength = length;
             foreach (var controller in controllers)
                 _animation.Current.Add(controller);
         }
