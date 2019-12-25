@@ -141,14 +141,14 @@ namespace AcidBubbles.VamTimeline
             return Animation.IsPlaying(Current.AnimationName);
         }
 
-        public void NextFrame()
+        public float GetNextFrame()
         {
-            Time = Current.GetNextFrame(Time);
+            return Current.GetNextFrame(Time);
         }
 
-        public void PreviousFrame()
+        public float GetPreviousFrame()
         {
-            Time = Current.GetPreviousFrame(Time);
+            return Current.GetPreviousFrame(Time);
         }
 
         public void DeleteFrame()
@@ -194,8 +194,6 @@ namespace AcidBubbles.VamTimeline
             var isPlaying = IsPlaying();
             if (isPlaying)
             {
-                // TODO: Harcoded duration
-                const float duration = 1f;
                 Animation.Blend(Current.AnimationName, 0f, BlendDuration);
                 Animation.Blend(animationName, 1f, BlendDuration);
             }

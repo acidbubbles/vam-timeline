@@ -68,11 +68,11 @@ namespace AcidBubbles.VamTimeline
                 frameFilterPopup.popupPanelHeight = 800f;
                 frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
 
-                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.NextFrame(); RenderState(); });
+                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.Time = _animation.GetNextFrame(); RenderState(); });
                 RegisterAction(_nextFrameJSON);
                 CreateButton("Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { _animation.PreviousFrame(); RenderState(); });
+                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { _animation.Time = _animation.GetPreviousFrame(); RenderState(); });
                 RegisterAction(_previousFrameJSON);
                 CreateButton("Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
