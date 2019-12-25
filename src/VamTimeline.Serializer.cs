@@ -28,6 +28,7 @@ namespace AcidBubbles.VamTimeline
             foreach (JSONClass clipJSON in clipsJSON)
             {
                 var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value);
+                clip.Speed = DeserializeFloat(clipJSON["Speed"], 1f);
                 clip.AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f);
                 JSONArray controllersJSON = clipJSON["Controllers"].AsArray;
                 if (controllersJSON == null) throw new NullReferenceException("Saved state does not have controllers");
@@ -84,6 +85,7 @@ namespace AcidBubbles.VamTimeline
             {
                 var clipJSON = new JSONClass();
                 clipJSON.Add("AnimationName", clip.AnimationName);
+                clipJSON.Add("Speed", clip.Speed.ToString());
                 clipJSON.Add("AnimationLength", clip.AnimationLength.ToString());
                 var controllersJSON = new JSONArray();
                 clipJSON.Add("Controllers", controllersJSON);

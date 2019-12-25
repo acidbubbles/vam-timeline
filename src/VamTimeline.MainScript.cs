@@ -307,6 +307,8 @@ namespace AcidBubbles.VamTimeline
         {
             _animation.ChangeAnimation(animationName);
             if (_animationJSON.val != animationName) _animationJSON.val = animationName;
+            _speedJSON.val = _animation.Speed;
+            _lengthJSON.val = _animation.AnimationLength;
             RenderState();
         }
 
@@ -316,16 +318,14 @@ namespace AcidBubbles.VamTimeline
             var lastAnimationName = _animation.Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
-            var controllers = _animation.Current.Controllers.Select(c => c.Controller);
-            var speed = _animation.Speed;
-            var length = _animation.AnimationLength;
-            _animation.AddClip(new AtomAnimationClip(animationName));
+            var clip = new AtomAnimationClip(animationName);
+            clip.Speed = _animation.Speed;
+            clip.AnimationLength = _animation.AnimationLength;
+            foreach (var controller in _animation.Current.Controllers.Select(c => c.Controller))
+                clip.Add(controller);
+            _animation.AddClip(clip);
             _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
             ChangeAnimation(animationName);
-            _animation.Speed = speed;
-            _animation.AnimationLength = length;
-            foreach (var controller in controllers)
-                _animation.Current.Add(controller);
         }
 
         #endregion

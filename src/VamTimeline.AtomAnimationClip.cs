@@ -21,6 +21,7 @@ namespace AcidBubbles.VamTimeline
         private FreeControllerV3Animation _selected;
 
         public string AnimationName { get; }
+        public float Speed { get; set; } = 1f;
 
         public AtomAnimationClip(string animationName)
         {

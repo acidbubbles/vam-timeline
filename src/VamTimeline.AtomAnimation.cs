@@ -35,18 +35,13 @@ namespace AcidBubbles.VamTimeline
         {
             get
             {
-                if (Current == null) return 1f;
-                AnimationState animState = Animation[Current.AnimationName];
-                if (animState == null) return 1f;
-                return animState.speed;
+                return Current.Speed;
             }
 
             set
             {
-                if (Current == null) throw new InvalidOperationException("Cannot set speed without a current animation");
-                AnimationState animState = Animation[Current.AnimationName];
-                if (animState == null) throw new InvalidOperationException("Cannot set speed without a current animation state");
-                animState.speed = value;
+                Current.Speed = value;
+                RebuildAnimation();
             }
         }
 
@@ -169,8 +164,10 @@ namespace AcidBubbles.VamTimeline
             {
                 clip.RebuildAnimation();
                 Animation.AddClip(clip.Clip, clip.AnimationName);
-                // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+                var state = Animation[clip.AnimationName];
+                state.speed = clip.Speed;
             }
+            // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
             Animation.Play(Current.AnimationName);
             Animation.Stop(Current.AnimationName);
             Animation[Current.AnimationName].time = time;
