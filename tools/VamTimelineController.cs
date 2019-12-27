@@ -264,23 +264,29 @@ namespace AcidBubbles.VamTimeline.Tools
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 var link = LinkedAnimation.FromAtom(atom);
                 _linkedAnimations.Add(link);
+                // TODO: Instead add a drop down of which animation to control
                 if (_mainLinkedAnimation == null)
                 {
-                    // TODO: Instead add a drop down of which animation to control
                     _mainLinkedAnimation = link;
-                    // TODO: Needs a refresh setting
-                    _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
-                    _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
-                    SuperController.LogMessage(string.Join(", ", _mainLinkedAnimation.Animations.choices.ToArray()));
-                    _animationJSON.choices = _mainLinkedAnimation.Animations.choices;
-                    _animationJSON.valNoCallback = _mainLinkedAnimation.Animations.val;
+                    VamTimelineAnimationUpdated(atom.uid);
                 }
-                _scrubberJSON.slider.interactable = true;
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimelineController LinkAtom: " + exc);
             }
+        }
+
+        public void VamTimelineAnimationUpdated(string uid)
+        {
+            if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid == uid)
+                return;
+
+            _scrubberJSON.slider.interactable = true;
+            _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
+            _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
+            _animationJSON.choices = _mainLinkedAnimation.Animations.choices;
+            _animationJSON.valNoCallback = _mainLinkedAnimation.Animations.val;
         }
 
         public void Update()

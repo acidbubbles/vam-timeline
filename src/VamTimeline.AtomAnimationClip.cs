@@ -18,6 +18,7 @@ namespace AcidBubbles.VamTimeline
         public readonly AnimationClip Clip;
         private float _animationLength = 5f;
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
+        // TODO: Replace this by a parameter so we can do the same from external tools
         private FreeControllerV3Animation _selected;
 
         public string AnimationName { get; }

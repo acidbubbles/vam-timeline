@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -109,7 +110,7 @@ namespace AcidBubbles.VamTimeline
                 CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
 
                 CreateButton("Save").button.onClick.AddListener(() => SaveState());
-                CreateButton("Restore").button.onClick.AddListener(() => { RestoreState(); RenderState(); });
+                CreateButton("Restore").button.onClick.AddListener(() => { RestoreState(); AnimationUpdated(); });
 
                 CreateButton("Delete Frame", true).button.onClick.AddListener(() => _animation.DeleteFrame());
 
@@ -124,11 +125,11 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_blendDurationJSON);
                 CreateSlider(_blendDurationJSON, true);
 
-                RenderState();
+                StartCoroutine(DelayedAnimationUpdated());
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline Init: " + exc);
+                SuperController.LogError("VamTimeline.Init: " + exc);
             }
         }
 
@@ -173,7 +174,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline Update: " + exc);
+                SuperController.LogError("VamTimeline.Update: " + exc);
             }
         }
 
@@ -184,7 +185,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline Enable: " + exc);
+                SuperController.LogError("VamTimeline.Enable: " + exc);
             }
         }
 
@@ -196,7 +197,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline Disable: " + exc);
+                SuperController.LogError("VamTimeline.Disable: " + exc);
             }
         }
 
@@ -213,47 +214,48 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
+                if (_animation != null)
+                {
+                    _animation.Updated.RemoveAllListeners();
+                    _animation = null;
+                }
+
                 if (!string.IsNullOrEmpty(_saveJSON.val))
                 {
                     _animation = _serializer.DeserializeAnimation(containingAtom, _saveJSON.val);
-                    return;
                 }
 
-                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimelineBackup"));
-                if (backupStorableID != null)
+                if (_animation == null)
                 {
-                    var backupStorable = containingAtom.GetStorableByID(backupStorableID);
-                    var backupJSON = backupStorable.GetStringJSONParam("Backup");
-                    if (!string.IsNullOrEmpty(backupJSON.val))
+                    var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimelineBackup"));
+                    if (backupStorableID != null)
                     {
-                        _animation = _serializer.DeserializeAnimation(containingAtom, backupJSON.val);
+                        var backupStorable = containingAtom.GetStorableByID(backupStorableID);
+                        var backupJSON = backupStorable.GetStringJSONParam("Backup");
+                        if (!string.IsNullOrEmpty(backupJSON.val))
+                        {
+                            _animation = _serializer.DeserializeAnimation(containingAtom, backupJSON.val);
+                        }
                     }
                 }
 
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline RestoreState: " + exc);
+                SuperController.LogError("VamTimeline.RestoreState: " + exc);
             }
 
             try
             {
                 if (_animation == null)
-                {
                     _animation = new AtomAnimation(containingAtom);
-                    _animation.Initialize();
-                }
 
-                if (_animationJSON != null)
-                    _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
-                if (_lengthJSON != null)
-                    _lengthJSON.val = _animation.AnimationLength;
-                if (_speedJSON != null)
-                    _speedJSON.val = _animation.Speed;
+                _animation.Initialize();
+                _animation.Updated.AddListener(() => AnimationUpdated());
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline RestoreState: " + exc);
+                SuperController.LogError("VamTimeline.RestoreState: " + exc);
             }
         }
 
@@ -274,7 +276,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline SaveState: " + exc);
+                SuperController.LogError("VamTimeline.SaveState: " + exc);
             }
         }
 
@@ -284,30 +286,42 @@ namespace AcidBubbles.VamTimeline
 
         private void AddSelectedController()
         {
-            var uid = _controllerJSON.val;
-            var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
-            if (controller == null)
+            try
             {
-                SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
-                return;
+                var uid = _controllerJSON.val;
+                var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
+                if (controller == null)
+                {
+                    SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
+                    return;
+                }
+                controller.currentPositionState = FreeControllerV3.PositionState.On;
+                controller.currentRotationState = FreeControllerV3.RotationState.On;
+                _animation.Add(controller);
             }
-            controller.currentPositionState = FreeControllerV3.PositionState.On;
-            controller.currentRotationState = FreeControllerV3.RotationState.On;
-            _animation.Add(controller);
-            RenderState();
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AddSelectedController: " + exc);
+            }
         }
 
         private void RemoveSelectedController()
         {
-            var uid = _controllerJSON.val;
-            var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
-            if (controller == null)
+            try
             {
-                SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
-                return;
+                var uid = _controllerJSON.val;
+                var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
+                if (controller == null)
+                {
+                    SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
+                    return;
+                }
+                _animation.Remove(controller);
             }
-            _animation.Remove(controller);
-            RenderState();
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AddSelectedController: " + exc);
+            }
         }
 
         private void ChangeAnimation(string animationName)
@@ -355,6 +369,7 @@ namespace AcidBubbles.VamTimeline
                 _displayJSON.val = "Locked";
                 return;
             }
+
             var time = _animation.Time;
             if (time != _scrubberJSON.val)
                 _scrubberJSON.val = time;
@@ -420,6 +435,45 @@ namespace AcidBubbles.VamTimeline
                 display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
                 display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
                 display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
+            }
+        }
+
+        #endregion
+
+        #region Updates
+
+        private IEnumerator DelayedAnimationUpdated()
+        {
+            yield return 0f;
+            AnimationUpdated();
+        }
+
+        private void AnimationUpdated()
+        {
+            try
+            {
+                // Update UI
+                if (_animationJSON != null)
+                    _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
+                if (_lengthJSON != null)
+                    _lengthJSON.valNoCallback = _animation.AnimationLength;
+                if (_speedJSON != null)
+                    _speedJSON.valNoCallback = _animation.Speed;
+
+                // Save
+                SaveState();
+
+                // Dispatch to VamTimelineController
+                var controllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
+                foreach (var controller in controllers)
+                    controller.SendMessage("VamTimelineAnimationUpdated", containingAtom.uid);
+
+                // Render
+                RenderState();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AnimationUpdated: " + exc);
             }
         }
 

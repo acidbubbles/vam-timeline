@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace AcidBubbles.VamTimeline
 {
@@ -18,6 +19,7 @@ namespace AcidBubbles.VamTimeline
         public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
         public AtomAnimationClip Current;
         public float BlendDuration { get; set; } = 1f;
+        public UnityEvent Updated = new UnityEvent();
 
         public float AnimationLength
         {
@@ -172,6 +174,7 @@ namespace AcidBubbles.VamTimeline
             Animation.Play(Current.AnimationName);
             Animation.Stop(Current.AnimationName);
             Animation[Current.AnimationName].time = time;
+            Updated.Invoke();
         }
 
         public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
