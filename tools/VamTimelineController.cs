@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace AcidBubbles.VamTimeline.Tools
 {
@@ -28,15 +27,35 @@ namespace AcidBubbles.VamTimeline.Tools
         private class LinkedAnimation
         {
             public Atom Atom;
+            private static JSONStorable Storable;
             public JSONStorableFloat Scrubber;
+
+            public static LinkedAnimation FromAtom(Atom atom)
+            {
+                var link = new LinkedAnimation();
+                var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.MainScript"));
+                Storable = atom.GetStorableByID(storableId);
+                link.Scrubber = Storable.GetFloatJSONParam("Time");
+                link.Atom = atom;
+                return link;
+            }
+
+            public void Play()
+            {
+                Storable.CallAction("Play");
+            }
+
+            public void Stop()
+            {
+                Storable.CallAction("Stop");
+            }
         }
 
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableStringChooser _targetJSON;
         private LinkedAnimation _mainLinkedAnimation;
         private Atom _atom;
-        private Transform _scrubberTransform;
-        private UIDynamicSlider _scrubberSlider;
+        private List<Transform> _canvasComponents;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         public override void Init()
@@ -87,7 +106,10 @@ namespace AcidBubbles.VamTimeline.Tools
 
             try
             {
-                CreateUISliderInCanvas();
+                _canvasComponents = new List<Transform>();
+                CreateUISliderInCanvas(_scrubberJSON, 0.35f, 0.30f);
+                CreateUIButtonInCanvas("Play", 0.35f, 0.75f).button.onClick.AddListener(() => Play());
+                CreateUIButtonInCanvas("Stop", 0.35f, 0.80f).button.onClick.AddListener(() => Stop());
             }
             catch (Exception exc)
             {
@@ -95,36 +117,62 @@ namespace AcidBubbles.VamTimeline.Tools
             }
         }
 
-        private void CreateUISliderInCanvas()
+        private UIDynamicSlider CreateUISliderInCanvas(JSONStorableFloat jsf, float x, float y)
         {
             var canvas = _atom.GetComponentInChildren<Canvas>();
             if (canvas == null) throw new NullReferenceException("Could not find a canvas to attach to");
 
-            _scrubberTransform = Instantiate(manager.configurableSliderPrefab.transform);
-            if (_scrubberTransform == null) throw new NullReferenceException("Could not instantiate configurableSliderPrefab");
-            _scrubberTransform.SetParent(canvas.transform, false);
-            _scrubberTransform.gameObject.SetActive(true);
+            var transform = Instantiate(manager.configurableSliderPrefab.transform);
+            if (transform == null) throw new NullReferenceException("Could not instantiate configurableSliderPrefab");
+            _canvasComponents.Add(transform);
+            transform.SetParent(canvas.transform, false);
+            transform.gameObject.SetActive(true);
 
-            _scrubberSlider = _scrubberTransform.GetComponent<UIDynamicSlider>();
-            if (_scrubberSlider == null) throw new NullReferenceException("Could not find a UIDynamicSlider component");
-            _scrubberSlider.Configure("Time", 0, 5f, 0f, true, "F2", true, false);
-            _scrubberJSON.slider = _scrubberSlider.slider;
-            _scrubberSlider.slider.interactable = true;
+            var ui = transform.GetComponent<UIDynamicSlider>();
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicSlider component");
+            ui.Configure(jsf.name, jsf.min, jsf.max, jsf.defaultVal, jsf.constrained, "F2", true, !jsf.constrained);
+            jsf.slider = ui.slider;
+            ui.slider.interactable = true;
 
-            _scrubberTransform.Translate(Vector3.down * 0.3f, Space.Self);
-            _scrubberTransform.Translate(Vector3.right * 0.35f, Space.Self);
+            transform.Translate(Vector3.down * y, Space.Self);
+            transform.Translate(Vector3.right * x, Space.Self);
+
+            return ui;
+        }
+
+        private UIDynamicButton CreateUIButtonInCanvas(string label, float x, float y)
+        {
+            var canvas = _atom.GetComponentInChildren<Canvas>();
+            if (canvas == null) throw new NullReferenceException("Could not find a canvas to attach to");
+
+            var transform = Instantiate(manager.configurableButtonPrefab.transform);
+            if (transform == null) throw new NullReferenceException("Could not instantiate configurableButtonPrefab");
+            _canvasComponents.Add(transform);
+            transform.SetParent(canvas.transform, false);
+            transform.gameObject.SetActive(true);
+
+            var ui = transform.GetComponent<UIDynamicButton>();
+            ui.label = label;
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicButton component");
+
+            transform.Translate(Vector3.down * y, Space.Self);
+            transform.Translate(Vector3.right * x, Space.Self);
+
+            return ui;
         }
 
         public void OnDisable()
         {
-            if (_scrubberTransform == null) return;
+            if (_canvasComponents == null) return;
 
             try
             {
                 _scrubberJSON.slider = null;
-                Destroy(_scrubberTransform.gameObject);
-                _scrubberTransform = null;
-                _scrubberSlider = null;
+                foreach (var component in _canvasComponents)
+                {
+                    Destroy(component.gameObject);
+                }
+                _canvasComponents = null;
             }
             catch (Exception exc)
             {
@@ -163,26 +211,17 @@ namespace AcidBubbles.VamTimeline.Tools
         {
             // TODO: This is not saved anywhere
             var atom = SuperController.singleton.GetAtomByUid(uid);
-            var link = new LinkedAnimation { Atom = atom };
-            if (atom.type == "AnimationPattern")
+            var link = LinkedAnimation.FromAtom(atom);
+            _linkedAnimations.Add(link);
+            if (_mainLinkedAnimation == null)
             {
-                // TODO
+                // TODO: Instead add a drop down of which animation to control
+                _mainLinkedAnimation = link;
+                // TODO: Needs a refresh setting
+                _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
+                _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             }
-            else
-            {
-                var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.MainScript"));
-                var storable = atom.GetStorableByID(storableId);
-                link.Scrubber = storable.GetFloatJSONParam("Time");
-                _linkedAnimations.Add(link);
-                if (_mainLinkedAnimation == null)
-                {
-                    _mainLinkedAnimation = link;
-                    // TODO: Needs a refresh setting
-                    _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
-                    _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
-                }
-                _scrubberSlider.slider.interactable = true;
-            }
+            _scrubberJSON.slider.interactable = true;
         }
 
         public void Update()
@@ -199,6 +238,22 @@ namespace AcidBubbles.VamTimeline.Tools
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimelineController Update: " + exc);
+            }
+        }
+
+        private void Play()
+        {
+            foreach (var animation in _linkedAnimations)
+            {
+                animation.Play();
+            }
+        }
+
+        private void Stop()
+        {
+            foreach (var animation in _linkedAnimations)
+            {
+                animation.Stop();
             }
         }
     }
