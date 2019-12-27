@@ -27,19 +27,33 @@ namespace AcidBubbles.VamTimeline.Tools
         private class LinkedAnimation
         {
             public Atom Atom;
-            private static JSONStorable Storable;
-            public JSONStorableFloat Scrubber;
-            public JSONStorableStringChooser Animations;
 
-            public static LinkedAnimation FromAtom(Atom atom)
+            public LinkedAnimation(Atom atom)
             {
-                var link = new LinkedAnimation();
-                var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.MainScript"));
-                Storable = atom.GetStorableByID(storableId);
-                link.Scrubber = Storable.GetFloatJSONParam("Time");
-                link.Animations = Storable.GetStringChooserJSONParam("Animation");
-                link.Atom = atom;
-                return link;
+                Atom = atom;
+            }
+
+            private JSONStorable Storable
+            {
+                get
+                {
+                    var storableId = Atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.MainScript"));
+                    return Atom.GetStorableByID(storableId);
+                }
+            }
+            public JSONStorableFloat Scrubber
+            {
+                get
+                {
+                    return Storable.GetFloatJSONParam("Time");
+                }
+            }
+            public JSONStorableStringChooser Animation
+            {
+                get
+                {
+                    return Storable.GetStringChooserJSONParam("Animation");
+                }
             }
 
             public void Play()
@@ -64,14 +78,15 @@ namespace AcidBubbles.VamTimeline.Tools
 
             public void ChangeAnimation(string name)
             {
-                if (Animations.choices.Contains(name))
-                    Animations.val = name;
+                if (Animation.choices.Contains(name))
+                    Animation.val = name;
             }
         }
 
         private Atom _atom;
-        private JSONStorableFloat _scrubberJSON;
+        private JSONStorableStringChooser _atomsJSON;
         private JSONStorableStringChooser _animationJSON;
+        private JSONStorableFloat _scrubberJSON;
         private JSONStorableStringChooser _targetJSON;
         private LinkedAnimation _mainLinkedAnimation;
         private List<Transform> _canvasComponents;
@@ -85,18 +100,21 @@ namespace AcidBubbles.VamTimeline.Tools
 
                 UIDynamicButton linkButton = null;
 
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true);
-                RegisterFloat(_scrubberJSON);
+                _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string>(), "", "Atoms", (string v) => SelectCurrentAtom(v));
+                RegisterStringChooser(_atomsJSON);
 
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v));
                 RegisterStringChooser(_animationJSON);
 
-                _targetJSON = new JSONStorableStringChooser("Target", GetAtomsWithVamTimeline().ToList(), "", "Target", v => linkButton.button.interactable = !string.IsNullOrEmpty(v));
-                var targetPopup = CreateScrollablePopup(_targetJSON, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true);
+                RegisterFloat(_scrubberJSON);
+
+                _targetJSON = new JSONStorableStringChooser("Target", GetAtomsWithVamTimeline().ToList(), "", "Add", v => linkButton.button.interactable = !string.IsNullOrEmpty(v));
+                var targetPopup = CreateScrollablePopup(_targetJSON);
                 targetPopup.popupPanelHeight = 800f;
                 targetPopup.popup.onOpenPopupHandlers += () => _targetJSON.choices = GetAtomsWithVamTimeline().ToList();
 
-                linkButton = CreateButton("Link", true);
+                linkButton = CreateButton("Link");
                 linkButton.button.interactable = false;
                 linkButton.button.onClick.AddListener(() => LinkAtom(_targetJSON.val));
 
@@ -130,8 +148,9 @@ namespace AcidBubbles.VamTimeline.Tools
             {
                 var x = 0.40f;
                 _canvasComponents = new List<Transform>();
-                CreateUISliderInCanvas(_scrubberJSON, x, 0.30f);
+                CreateUIPopupInCanvas(_atomsJSON, x, 0.40f);
                 CreateUIPopupInCanvas(_animationJSON, x, 0.50f);
+                CreateUISliderInCanvas(_scrubberJSON, x, 0.30f);
                 CreateUIButtonInCanvas("Play", x, 0.75f).button.onClick.AddListener(() => Play());
                 CreateUIButtonInCanvas("Stop", x, 0.80f).button.onClick.AddListener(() => Stop());
                 CreateUIButtonInCanvas("Next Frame", x, 0.85f).button.onClick.AddListener(() => NextFrame());
@@ -262,14 +281,11 @@ namespace AcidBubbles.VamTimeline.Tools
             {
                 // TODO: This is not saved anywhere
                 var atom = SuperController.singleton.GetAtomByUid(uid);
-                var link = LinkedAnimation.FromAtom(atom);
+                var link = new LinkedAnimation(atom);
                 _linkedAnimations.Add(link);
-                // TODO: Instead add a drop down of which animation to control
+                _atomsJSON.choices = _linkedAnimations.Select(la => la.Atom.uid).ToList();
                 if (_mainLinkedAnimation == null)
-                {
-                    _mainLinkedAnimation = link;
-                    VamTimelineAnimationUpdated(atom.uid);
-                }
+                    SelectCurrentAtom(atom.uid);
             }
             catch (Exception exc)
             {
@@ -279,14 +295,16 @@ namespace AcidBubbles.VamTimeline.Tools
 
         public void VamTimelineAnimationUpdated(string uid)
         {
-            if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid == uid)
+            if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
+
+            SuperController.LogMessage(string.Join(", ", _mainLinkedAnimation.Animation.choices.ToArray()));
 
             _scrubberJSON.slider.interactable = true;
             _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
-            _animationJSON.choices = _mainLinkedAnimation.Animations.choices;
-            _animationJSON.valNoCallback = _mainLinkedAnimation.Animations.val;
+            _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
+            _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
         }
 
         public void Update()
@@ -303,6 +321,21 @@ namespace AcidBubbles.VamTimeline.Tools
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimelineController Update: " + exc);
+            }
+        }
+
+        private void SelectCurrentAtom(string uid)
+        {
+            _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
+            _atomsJSON.valNoCallback = _mainLinkedAnimation.Atom.uid;
+            VamTimelineAnimationUpdated(_mainLinkedAnimation.Atom.uid);
+        }
+
+        private void ChangeAnimation(string name)
+        {
+            foreach (var animation in _linkedAnimations)
+            {
+                animation.ChangeAnimation(name);
             }
         }
 
@@ -335,14 +368,6 @@ namespace AcidBubbles.VamTimeline.Tools
             foreach (var animation in _linkedAnimations)
             {
                 animation.PreviousFrame();
-            }
-        }
-
-        private void ChangeAnimation(string name)
-        {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.ChangeAnimation(name);
             }
         }
     }

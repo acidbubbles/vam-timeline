@@ -57,7 +57,7 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                _lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { _animation.AnimationLength = v; _scrubberJSON.max = v - float.Epsilon; }, 0.5f, 120f);
+                _lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => _animation.AnimationLength = v, 0.5f, 120f);
                 CreateSlider(_lengthJSON, true);
 
                 _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.Speed = v, 0.001f, 5f, false);
@@ -68,7 +68,6 @@ namespace AcidBubbles.VamTimeline
                 _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => { _animation.SelectControllerByName(val); RenderState(); });
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
-                frameFilterPopup.popup.onOpenPopupHandlers += () => _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
 
                 _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.Time = _animation.GetNextFrame(); RenderState(); });
                 RegisterAction(_nextFrameJSON);
@@ -326,6 +325,7 @@ namespace AcidBubbles.VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
+            SuperController.LogMessage("Ok");
             _animation.ChangeAnimation(animationName);
             if (_animationJSON.val != animationName) _animationJSON.val = animationName;
             _speedJSON.valNoCallback = _animation.Speed;
@@ -345,7 +345,6 @@ namespace AcidBubbles.VamTimeline
             foreach (var controller in _animation.Current.Controllers.Select(c => c.Controller))
                 clip.Add(controller);
             _animation.AddClip(clip);
-            _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
             ChangeAnimation(animationName);
         }
 
@@ -459,6 +458,8 @@ namespace AcidBubbles.VamTimeline
                     _lengthJSON.valNoCallback = _animation.AnimationLength;
                 if (_speedJSON != null)
                     _speedJSON.valNoCallback = _animation.Speed;
+                if (_scrubberJSON != null)
+                    _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
 
                 // Save
                 SaveState();
