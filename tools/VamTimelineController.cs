@@ -319,8 +319,6 @@ namespace AcidBubbles.VamTimeline.Tools
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
 
-            SuperController.LogMessage(string.Join(", ", _mainLinkedAnimation.Animation.choices.ToArray()));
-
             _scrubberJSON.slider.interactable = true;
             _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
@@ -378,11 +376,21 @@ namespace AcidBubbles.VamTimeline.Tools
         private void NextFrame()
         {
             _mainLinkedAnimation.NextFrame();
+            var time = _mainLinkedAnimation.Scrubber.val;
+            foreach (var animation in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
+            {
+                animation.Scrubber.val = time;
+            }
         }
 
         private void PreviousFrame()
         {
             _mainLinkedAnimation.PreviousFrame();
+            var time = _mainLinkedAnimation.Scrubber.val;
+            foreach (var animation in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
+            {
+                animation.Scrubber.val = time;
+            }
         }
     }
 }

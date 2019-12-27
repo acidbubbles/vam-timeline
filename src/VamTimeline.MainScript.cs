@@ -325,7 +325,6 @@ namespace AcidBubbles.VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
-            SuperController.LogMessage("Ok");
             _animation.ChangeAnimation(animationName);
             if (_animationJSON.val != animationName) _animationJSON.val = animationName;
             _speedJSON.valNoCallback = _animation.Speed;
