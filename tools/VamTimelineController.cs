@@ -313,10 +313,9 @@ namespace AcidBubbles.VamTimeline.Tools
             {
                 if (_mainLinkedAnimation == null) return;
 
-                // TODO: Track "versions" on every animation, if one changes, refresh everything.
-
-                if (_mainLinkedAnimation.Scrubber.val != _scrubberJSON.val)
-                    _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
+                var scrubber = _mainLinkedAnimation.Scrubber;
+                if (scrubber.val != _scrubberJSON.val)
+                    _scrubberJSON.valNoCallback = scrubber.val;
             }
             catch (Exception exc)
             {
@@ -357,18 +356,12 @@ namespace AcidBubbles.VamTimeline.Tools
 
         private void NextFrame()
         {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.NextFrame();
-            }
+            _mainLinkedAnimation.NextFrame();
         }
 
         private void PreviousFrame()
         {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.PreviousFrame();
-            }
+            _mainLinkedAnimation.PreviousFrame();
         }
     }
 }
