@@ -459,6 +459,9 @@ namespace AcidBubbles.VamTimeline
                     _speedJSON.valNoCallback = _animation.Speed;
                 if (_scrubberJSON != null)
                     _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
+                if (_frameFilterJSON != null)
+                    _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
+
 
                 // Save
                 SaveState();

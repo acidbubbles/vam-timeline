@@ -7,6 +7,9 @@ using UnityEngine;
 namespace AcidBubbles.VamTimeline.Tools
 {
     /*
+    Bugs:
+    - Animation length not always updated
+    - New animations not showing up
     Notes:
     - I want a way to control a series of animations, some of them loops, some of them transitions.
     - I want to control multiple atoms at the same time throughout those animations.
