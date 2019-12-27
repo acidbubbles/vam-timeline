@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -90,6 +91,7 @@ namespace AcidBubbles.VamTimeline.Tools
         private JSONStorableStringChooser _targetJSON;
         private LinkedAnimation _mainLinkedAnimation;
         private List<Transform> _canvasComponents;
+        private JSONStorableString _savedAtomsJSON;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         public override void Init()
@@ -118,11 +120,28 @@ namespace AcidBubbles.VamTimeline.Tools
                 linkButton.button.interactable = false;
                 linkButton.button.onClick.AddListener(() => LinkAtom(_targetJSON.val));
 
+                _savedAtomsJSON = new JSONStorableString("Atoms", "");
+                RegisterString(_savedAtomsJSON);
+                StartCoroutine(Restore());
+
                 OnEnable();
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimelineController Init: " + exc);
+            }
+        }
+
+        private IEnumerator Restore()
+        {
+            yield return 0f;
+
+            if (!string.IsNullOrEmpty(_savedAtomsJSON.val))
+            {
+                foreach (var atomUid in _savedAtomsJSON.val.Split(';'))
+                {
+                    LinkAtom(atomUid);
+                }
             }
         }
 
@@ -286,6 +305,8 @@ namespace AcidBubbles.VamTimeline.Tools
                 _atomsJSON.choices = _linkedAnimations.Select(la => la.Atom.uid).ToList();
                 if (_mainLinkedAnimation == null)
                     SelectCurrentAtom(atom.uid);
+                // TODO: If an atom contains ';' it won't work
+                _savedAtomsJSON.val = string.Join(";", _atomsJSON.choices.ToArray());
             }
             catch (Exception exc)
             {
