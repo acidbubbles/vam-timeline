@@ -47,6 +47,7 @@ namespace AcidBubbles.VamTimeline
                 RestoreState();
 
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val));
+                RegisterStringChooser(_animationJSON);
                 var animationPopup = CreateScrollablePopup(_animationJSON, true);
                 animationPopup.popupPanelHeight = 800f;
                 animationPopup.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
