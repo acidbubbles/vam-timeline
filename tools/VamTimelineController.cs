@@ -31,20 +31,9 @@ namespace AcidBubbles.VamTimeline.Tools
                     return Atom.GetStorableByID(storableId);
                 }
             }
-            public JSONStorableFloat Scrubber
-            {
-                get
-                {
-                    return Storable.GetFloatJSONParam("Time");
-                }
-            }
-            public JSONStorableStringChooser Animation
-            {
-                get
-                {
-                    return Storable.GetStringChooserJSONParam("Animation");
-                }
-            }
+            public JSONStorableFloat Scrubber { get { return Storable.GetFloatJSONParam("Time"); } }
+            public JSONStorableStringChooser Animation { get { return Storable.GetStringChooserJSONParam("Animation"); } }
+            public JSONStorableStringChooser SelectedController { get { return Storable.GetStringChooserJSONParam("Selected Controller"); } }
 
             public void Play()
             {
@@ -81,6 +70,7 @@ namespace AcidBubbles.VamTimeline.Tools
         private LinkedAnimation _mainLinkedAnimation;
         private List<Transform> _canvasComponents;
         private JSONStorableString _savedAtomsJSON;
+        private JSONStorableStringChooser _controllerJSON;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         public override void Init()
@@ -98,6 +88,10 @@ namespace AcidBubbles.VamTimeline.Tools
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v));
                 _animationJSON.isStorable = false;
                 RegisterStringChooser(_animationJSON);
+
+                _controllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string>(), "", "Selected Controller", (string v) => SelectControllerFilter(v));
+                _controllerJSON.isStorable = false;
+                RegisterStringChooser(_controllerJSON);
 
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true);
                 _scrubberJSON.isStorable = false;
@@ -159,8 +153,9 @@ namespace AcidBubbles.VamTimeline.Tools
             {
                 var x = 0.40f;
                 _canvasComponents = new List<Transform>();
-                CreateUIPopupInCanvas(_atomsJSON, x, 0.40f);
-                CreateUIPopupInCanvas(_animationJSON, x, 0.50f);
+                CreateUIPopupInCanvas(_animationJSON, x, 0.35f);
+                CreateUIPopupInCanvas(_atomsJSON, x, 0.43f);
+                CreateUIPopupInCanvas(_controllerJSON, x, 0.51f);
                 CreateUISliderInCanvas(_scrubberJSON, x, 0.30f);
                 CreateUIButtonInCanvas("Play", x, 0.75f).button.onClick.AddListener(() => Play());
                 CreateUIButtonInCanvas("Stop", x, 0.80f).button.onClick.AddListener(() => Stop());
@@ -324,6 +319,8 @@ namespace AcidBubbles.VamTimeline.Tools
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
+            _controllerJSON.choices = _mainLinkedAnimation.SelectedController.choices;
+            _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
         }
 
         public void VamTimelineContextChanged(string uid)
@@ -332,6 +329,7 @@ namespace AcidBubbles.VamTimeline.Tools
                 return;
 
             _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
+            _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
         }
 
         public void Update()
@@ -385,6 +383,7 @@ namespace AcidBubbles.VamTimeline.Tools
 
         private void NextFrame()
         {
+            if (_mainLinkedAnimation == null) return;
             _mainLinkedAnimation.NextFrame();
             var time = _mainLinkedAnimation.Scrubber.val;
             foreach (var animation in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
@@ -395,12 +394,19 @@ namespace AcidBubbles.VamTimeline.Tools
 
         private void PreviousFrame()
         {
+            if (_mainLinkedAnimation == null) return;
             _mainLinkedAnimation.PreviousFrame();
             var time = _mainLinkedAnimation.Scrubber.val;
             foreach (var animation in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
             {
                 animation.Scrubber.val = time;
             }
+        }
+
+        private void SelectControllerFilter(string v)
+        {
+            if (_mainLinkedAnimation == null) return;
+            _mainLinkedAnimation.SelectedController.val = v;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
         private Serializer _serializer;
-        private JSONStorableStringChooser _frameFilterJSON;
+        private JSONStorableStringChooser _selectedControllerJSON;
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _blendDurationJSON;
@@ -66,10 +66,10 @@ namespace AcidBubbles.VamTimeline
                 _speedJSON = new JSONStorableFloat("Speed", 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
                 CreateSlider(_speedJSON, true);
 
-                _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => { _animation.SelectControllerByName(val); RenderState(); });
-                _frameFilterJSON.isStorable = false;
-                RegisterStringChooser(_frameFilterJSON);
-                var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
+                _selectedControllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string>(), "", "Selected Controller", val => { _animation.SelectControllerByName(val); RenderState(); ContextUpdated(); });
+                _selectedControllerJSON.isStorable = false;
+                RegisterStringChooser(_selectedControllerJSON);
+                var frameFilterPopup = CreateScrollablePopup(_selectedControllerJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
 
                 _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.Time = _animation.GetNextFrame(); RenderState(); });
@@ -466,7 +466,7 @@ namespace AcidBubbles.VamTimeline
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
                 _blendDurationJSON.valNoCallback = _animation.BlendDuration;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-                _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
+                _selectedControllerJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
 
                 // Save
                 SaveState();
