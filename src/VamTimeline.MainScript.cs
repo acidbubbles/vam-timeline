@@ -57,15 +57,14 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                _lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => _animation.AnimationLength = v, 0.5f, 120f);
+                _lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
                 CreateSlider(_lengthJSON, true);
 
-                _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => _animation.Speed = v, 0.001f, 5f, false);
-                // TODO: Do not register JSON we don't want accessible outside. Everything is saved in local state.
-                RegisterFloat(_speedJSON);
+                _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
                 CreateSlider(_speedJSON, true);
 
                 _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => { _animation.SelectControllerByName(val); RenderState(); });
+                RegisterStringChooser(_frameFilterJSON);
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
 
@@ -121,7 +120,6 @@ namespace AcidBubbles.VamTimeline
                 CreateButton("New Animation", true).button.onClick.AddListener(() => AddAnimation());
 
                 _blendDurationJSON = new JSONStorableFloat("Blend Duration", _animation.BlendDuration, v => _animation.BlendDuration = v, 0.001f, 5f, false);
-                RegisterFloat(_blendDurationJSON);
                 CreateSlider(_blendDurationJSON, true);
 
                 StartCoroutine(DelayedAnimationUpdated());
@@ -262,6 +260,10 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
+                // Never save an empty animation.
+                if (_animation.Clips.Count == 0) return;
+                if (_animation.Clips.Count == 1 && _animation.Clips[0].Controllers.Count == 0) return;
+
                 var serialized = _serializer.SerializeAnimation(_animation);
                 _saveJSON.val = serialized;
 
@@ -330,6 +332,7 @@ namespace AcidBubbles.VamTimeline
             _speedJSON.valNoCallback = _animation.Speed;
             _lengthJSON.valNoCallback = _animation.AnimationLength;
             RenderState();
+            ContextUpdated();
         }
 
         private void AddAnimation()
@@ -339,11 +342,14 @@ namespace AcidBubbles.VamTimeline
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
             var clip = new AtomAnimationClip(animationName);
+
             clip.Speed = _animation.Speed;
             clip.AnimationLength = _animation.AnimationLength;
             foreach (var controller in _animation.Current.Controllers.Select(c => c.Controller))
                 clip.Add(controller);
+
             _animation.AddClip(clip);
+            AnimationUpdated();
             ChangeAnimation(animationName);
         }
 
@@ -467,9 +473,9 @@ namespace AcidBubbles.VamTimeline
                 SaveState();
 
                 // Dispatch to VamTimelineController
-                var controllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
-                foreach (var controller in controllers)
-                    controller.SendMessage("VamTimelineAnimationUpdated", containingAtom.uid);
+                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
+                foreach (var controller in externalControllers)
+                    controller.BroadcastMessage("VamTimelineAnimationUpdated", containingAtom.uid);
 
                 // Render
                 RenderState();
@@ -477,6 +483,21 @@ namespace AcidBubbles.VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimeline.AnimationUpdated: " + exc);
+            }
+        }
+
+        private void ContextUpdated()
+        {
+            try
+            {
+                // Dispatch to VamTimelineController
+                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
+                foreach (var controller in externalControllers)
+                    controller.BroadcastMessage("VamTimelineContextChanged", containingAtom.uid);
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.ContextUpdated: " + exc);
             }
         }
 

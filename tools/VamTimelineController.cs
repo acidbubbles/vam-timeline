@@ -284,7 +284,7 @@ namespace AcidBubbles.VamTimeline.Tools
             }
         }
 
-        private static IEnumerable<string> GetAtomsWithVamTimeline()
+        private IEnumerable<string> GetAtomsWithVamTimeline()
         {
             var atoms = SuperController.singleton.GetAtoms();
             foreach (var atom in atoms)
@@ -293,7 +293,11 @@ namespace AcidBubbles.VamTimeline.Tools
                 if (atom.type == "AnimationPattern")
                     yield return atom.uid;
                 if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.MainScript")))
+                {
+                    if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
+
                     yield return atom.uid;
+                }
             }
         }
 
@@ -301,8 +305,11 @@ namespace AcidBubbles.VamTimeline.Tools
         {
             try
             {
+                if (_linkedAnimations.Any(la => la.Atom.uid == uid)) return;
+
                 // TODO: This is not saved anywhere
                 var atom = SuperController.singleton.GetAtomByUid(uid);
+                if (atom == null) return;
                 var link = new LinkedAnimation(atom);
                 _linkedAnimations.Add(link);
                 _atomsJSON.choices = _linkedAnimations.Select(la => la.Atom.uid).ToList();
@@ -310,6 +317,7 @@ namespace AcidBubbles.VamTimeline.Tools
                     SelectCurrentAtom(atom.uid);
                 // TODO: If an atom contains ';' it won't work
                 _savedAtomsJSON.val = string.Join(";", _atomsJSON.choices.ToArray());
+                _targetJSON.val = "";
             }
             catch (Exception exc)
             {
@@ -326,6 +334,14 @@ namespace AcidBubbles.VamTimeline.Tools
             _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
+            _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
+        }
+
+        public void VamTimelineContextChanged(string uid)
+        {
+            if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
+                return;
+
             _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
         }
 
@@ -348,6 +364,7 @@ namespace AcidBubbles.VamTimeline.Tools
         private void SelectCurrentAtom(string uid)
         {
             _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
+            if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Atom.uid;
             VamTimelineAnimationUpdated(_mainLinkedAnimation.Atom.uid);
         }

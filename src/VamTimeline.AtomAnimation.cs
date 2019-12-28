@@ -18,8 +18,8 @@ namespace AcidBubbles.VamTimeline
         public readonly Animation Animation;
         public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
         public AtomAnimationClip Current;
-        public float BlendDuration { get; set; } = 1f;
         public UnityEvent Updated = new UnityEvent();
+        private float _blendDuration = 1f;
 
         public float AnimationLength
         {
@@ -45,6 +45,19 @@ namespace AcidBubbles.VamTimeline
             {
                 Current.Speed = value;
                 RebuildAnimation();
+            }
+        }
+
+        public float BlendDuration
+        {
+            get
+            {
+                return _blendDuration;
+            }
+            set
+            {
+                _blendDuration = value;
+                Updated.Invoke();
             }
         }
 
