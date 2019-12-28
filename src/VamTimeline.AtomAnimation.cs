@@ -213,6 +213,7 @@ namespace AcidBubbles.VamTimeline
                 Animation.Blend(Current.AnimationName, 0f, BlendDuration);
                 Animation.Blend(animationName, 1f, BlendDuration);
             }
+            Current.SelectControllerByName("");
             Current = anim;
             if (!isPlaying)
             {

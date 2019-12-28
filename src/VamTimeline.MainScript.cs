@@ -340,6 +340,8 @@ namespace AcidBubbles.VamTimeline
             if (_animationJSON.val != animationName) _animationJSON.val = animationName;
             _speedJSON.valNoCallback = _animation.Speed;
             _lengthJSON.valNoCallback = _animation.AnimationLength;
+            _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
+            _selectedControllerJSON.valNoCallback = "";
             RenderState();
             ContextUpdated();
         }
