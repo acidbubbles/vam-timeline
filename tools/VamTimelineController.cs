@@ -6,20 +6,6 @@ using UnityEngine;
 
 namespace AcidBubbles.VamTimeline.Tools
 {
-    /*
-    Bugs:
-    - Animation length not always updated
-    - New animations not showing up
-    Notes:
-    - I want a way to control a series of animations, some of them loops, some of them transitions.
-    - I want to control multiple atoms at the same time throughout those animations.
-    - I want to control morphs using an animation pattern.
-    Idea: Create a single timeline using an animation pattern, which controls everything, including switching animations.
-          Add an option to loop or not
-          Add an option to select which animation to select on _all_ targets
-          Add an option to select which timeline to control (animation pattern OR one of the animations)
-    */
-
     /// <summary>
     /// VaM Timeline Controller
     /// By Acidbubbles
@@ -106,12 +92,15 @@ namespace AcidBubbles.VamTimeline.Tools
                 UIDynamicButton linkButton = null;
 
                 _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string>(), "", "Atoms", (string v) => SelectCurrentAtom(v));
+                _atomsJSON.isStorable = false;
                 RegisterStringChooser(_atomsJSON);
 
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v));
+                _animationJSON.isStorable = false;
                 RegisterStringChooser(_animationJSON);
 
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true);
+                _scrubberJSON.isStorable = false;
                 RegisterFloat(_scrubberJSON);
 
                 _targetJSON = new JSONStorableStringChooser("Target", GetAtomsWithVamTimeline().ToList(), "", "Add", v => linkButton.button.interactable = !string.IsNullOrEmpty(v));
@@ -123,9 +112,8 @@ namespace AcidBubbles.VamTimeline.Tools
                 linkButton.button.interactable = false;
                 linkButton.button.onClick.AddListener(() => LinkAtom(_targetJSON.val));
 
-                _savedAtomsJSON = new JSONStorableString("Atoms", "");
+                _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => StartCoroutine(Restore(v)));
                 RegisterString(_savedAtomsJSON);
-                StartCoroutine(Restore());
 
                 OnEnable();
             }
@@ -135,13 +123,14 @@ namespace AcidBubbles.VamTimeline.Tools
             }
         }
 
-        private IEnumerator Restore()
+        private IEnumerator Restore(string v)
         {
-            yield return 0f;
+            // TODO: This is an ugly way to wait for the target atom restore
+            yield return new WaitForEndOfFrame();
 
-            if (!string.IsNullOrEmpty(_savedAtomsJSON.val))
+            if (!string.IsNullOrEmpty(v))
             {
-                foreach (var atomUid in _savedAtomsJSON.val.Split(';'))
+                foreach (var atomUid in v.Split(';'))
                 {
                     LinkAtom(atomUid);
                 }
@@ -367,6 +356,7 @@ namespace AcidBubbles.VamTimeline.Tools
             if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Atom.uid;
             VamTimelineAnimationUpdated(_mainLinkedAnimation.Atom.uid);
+            VamTimelineContextChanged(_mainLinkedAnimation.Atom.uid);
         }
 
         private void ChangeAnimation(string name)

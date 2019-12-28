@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +14,8 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class MainScript : MVRScript
     {
+        private const int MaxUndo = 30;
+
         private AtomAnimation _animation;
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
@@ -34,6 +35,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _blendDurationJSON;
+        private readonly List<string> _undoList = new List<string>();
 
         #region Lifecycle
 
@@ -43,27 +45,29 @@ namespace AcidBubbles.VamTimeline
             {
                 _serializer = new Serializer();
 
-                _saveJSON = new JSONStorableString("Save", "");
+                _saveJSON = new JSONStorableString("Save", "", (string v) => RestoreState(v));
                 RegisterString(_saveJSON);
-                RestoreState();
 
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val));
+                _animationJSON.isStorable = false;
                 RegisterStringChooser(_animationJSON);
                 var animationPopup = CreateScrollablePopup(_animationJSON, true);
                 animationPopup.popupPanelHeight = 800f;
                 animationPopup.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
 
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.Time = v, 0f, _animation.AnimationLength - float.Epsilon, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.Time = v, 0f, 5f - float.Epsilon, true);
+                _scrubberJSON.isStorable = false;
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                _lengthJSON = new JSONStorableFloat("Animation Length", _animation.AnimationLength, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
+                _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
                 CreateSlider(_lengthJSON, true);
 
-                _speedJSON = new JSONStorableFloat("Speed", _animation.Speed, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
+                _speedJSON = new JSONStorableFloat("Speed", 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
                 CreateSlider(_speedJSON, true);
 
                 _frameFilterJSON = new JSONStorableStringChooser("Frame Filter", new List<string>(), "", "Frame Filter", val => { _animation.SelectControllerByName(val); RenderState(); });
+                _frameFilterJSON.isStorable = false;
                 RegisterStringChooser(_frameFilterJSON);
                 var frameFilterPopup = CreateScrollablePopup(_frameFilterJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
@@ -101,14 +105,14 @@ namespace AcidBubbles.VamTimeline
                 lockedToggle.label = "Locked (performance mode)";
 
                 _controllerJSON = new JSONStorableStringChooser("Target controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Target controller");
+                _controllerJSON.isStorable = false;
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
                 CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
                 CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
 
-                CreateButton("Save").button.onClick.AddListener(() => SaveState());
-                CreateButton("Restore").button.onClick.AddListener(() => { RestoreState(); AnimationUpdated(); });
+                CreateButton("Restore Backup").button.onClick.AddListener(() => { RestoreState(""); AnimationUpdated(); });
 
                 CreateButton("Delete Frame", true).button.onClick.AddListener(() => _animation.DeleteFrame());
 
@@ -119,10 +123,12 @@ namespace AcidBubbles.VamTimeline
 
                 CreateButton("New Animation", true).button.onClick.AddListener(() => AddAnimation());
 
-                _blendDurationJSON = new JSONStorableFloat("Blend Duration", _animation.BlendDuration, v => _animation.BlendDuration = v, 0.001f, 5f, false);
+                _blendDurationJSON = new JSONStorableFloat("Blend Duration", 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
                 CreateSlider(_blendDurationJSON, true);
 
-                StartCoroutine(DelayedAnimationUpdated());
+                // Try loading from backup
+                if (!string.IsNullOrEmpty(_saveJSON.val))
+                    RestoreState(_saveJSON.val);
             }
             catch (Exception exc)
             {
@@ -136,9 +142,7 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                if (_lockedJSON == null) return;
-                if (_lockedJSON.val) return;
-                if (_animation.Current == null) return;
+                if (_lockedJSON == null || _lockedJSON.val || _animation == null || _animation.Current == null) return;
 
                 if (_animation.IsPlaying())
                 {
@@ -207,7 +211,7 @@ namespace AcidBubbles.VamTimeline
 
         #region Load / Save
 
-        public void RestoreState()
+        public void RestoreState(string json)
         {
             try
             {
@@ -217,7 +221,7 @@ namespace AcidBubbles.VamTimeline
                     _animation = null;
                 }
 
-                if (!string.IsNullOrEmpty(_saveJSON.val))
+                if (!string.IsNullOrEmpty(json))
                 {
                     _animation = _serializer.DeserializeAnimation(containingAtom, _saveJSON.val);
                 }
@@ -249,6 +253,8 @@ namespace AcidBubbles.VamTimeline
 
                 _animation.Initialize();
                 _animation.Updated.AddListener(() => AnimationUpdated());
+                AnimationUpdated();
+                ContextUpdated();
             }
             catch (Exception exc)
             {
@@ -264,8 +270,11 @@ namespace AcidBubbles.VamTimeline
                 if (_animation.Clips.Count == 0) return;
                 if (_animation.Clips.Count == 1 && _animation.Clips[0].Controllers.Count == 0) return;
 
+                _undoList.Add(_saveJSON.val);
+                if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
+
                 var serialized = _serializer.SerializeAnimation(_animation);
-                _saveJSON.val = serialized;
+                _saveJSON.valNoCallback = serialized;
 
                 var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimelineBackup"));
                 if (backupStorableID != null)
@@ -446,28 +455,18 @@ namespace AcidBubbles.VamTimeline
 
         #region Updates
 
-        private IEnumerator DelayedAnimationUpdated()
-        {
-            yield return 0f;
-            AnimationUpdated();
-        }
-
         private void AnimationUpdated()
         {
             try
             {
                 // Update UI
-                if (_animationJSON != null)
-                    _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
-                if (_lengthJSON != null)
-                    _lengthJSON.valNoCallback = _animation.AnimationLength;
-                if (_speedJSON != null)
-                    _speedJSON.valNoCallback = _animation.Speed;
-                if (_scrubberJSON != null)
-                    _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-                if (_frameFilterJSON != null)
-                    _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
-
+                _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
+                _lengthJSON.valNoCallback = _animation.AnimationLength;
+                _speedJSON.valNoCallback = _animation.Speed;
+                _lengthJSON.valNoCallback = _animation.AnimationLength;
+                _blendDurationJSON.valNoCallback = _animation.BlendDuration;
+                _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
+                _frameFilterJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
 
                 // Save
                 SaveState();

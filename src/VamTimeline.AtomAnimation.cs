@@ -131,7 +131,7 @@ namespace AcidBubbles.VamTimeline
         public void Stop()
         {
             if (Current == null || Animation[Current.AnimationName] == null) return;
-            Animation.Stop(Current.AnimationName);
+            Animation.Stop();
             Time = 0;
         }
 
