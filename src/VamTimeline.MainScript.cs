@@ -112,8 +112,7 @@ namespace AcidBubbles.VamTimeline
                 var lockedToggle = CreateToggle(_lockedJSON, true);
                 lockedToggle.label = "Locked (Performance Mode)";
 
-                CreateButton("Insert New Animation Before", true).button.onClick.AddListener(() => AddAnimation(-1));
-                CreateButton("Add New Animation After", true).button.onClick.AddListener(() => AddAnimation(1));
+                CreateButton("Add New Animation", true).button.onClick.AddListener(() => AddAnimation());
 
                 _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
                 CreateSlider(_lengthJSON, true);
@@ -450,9 +449,8 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        private void AddAnimation(int index)
+        private void AddAnimation()
         {
-            // TODO: Deal with the index
             // TODO: Let the user name the animation
             var lastAnimationName = _animation.Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
