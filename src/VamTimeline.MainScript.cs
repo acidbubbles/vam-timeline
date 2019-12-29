@@ -99,7 +99,7 @@ namespace AcidBubbles.VamTimeline
                 var changeCurvePopup = CreatePopup(changeCurveJSON, false);
                 changeCurvePopup.popupPanelHeight = 800f;
 
-                CreateButton("Smooth all frames", false).button.onClick.AddListener(() => SmoothAllFrames());
+                CreateButton("Smooth All Frames", false).button.onClick.AddListener(() => SmoothAllFrames());
 
                 CreateButton("Cut / Delete Frame", false).button.onClick.AddListener(() => Cut());
                 CreateButton("Copy Frame", false).button.onClick.AddListener(() => Copy());
@@ -110,7 +110,7 @@ namespace AcidBubbles.VamTimeline
                 _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => { RenderState(); ContextUpdated(); });
                 RegisterBool(_lockedJSON);
                 var lockedToggle = CreateToggle(_lockedJSON, true);
-                lockedToggle.label = "Locked (performance mode)";
+                lockedToggle.label = "Locked (Performance Mode)";
 
                 CreateButton("Insert New Animation Before", true).button.onClick.AddListener(() => AddAnimation(-1));
                 CreateButton("Add New Animation After", true).button.onClick.AddListener(() => AddAnimation(1));
@@ -129,7 +129,7 @@ namespace AcidBubbles.VamTimeline
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
-                CreateButton("Add/Remove controller", true).button.onClick.AddListener(() => AddSelectedController());
+                CreateButton("Add/Remove Controller", true).button.onClick.AddListener(() => AddSelectedController());
 
                 var undoButton = CreateButton("Undo", true);
                 // TODO: Right now it doesn't work for some reason...
