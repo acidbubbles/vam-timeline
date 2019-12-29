@@ -126,6 +126,11 @@ namespace AcidBubbles.VamTimeline
             if (animState == null) return;
             animState.time = 0;
             Animation.Play(Current.AnimationName);
+            if (Current.AnimationPattern)
+            {
+                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
+                Current.AnimationPattern.ResetAndPlay();
+            }
         }
 
         public void Stop()
@@ -133,6 +138,14 @@ namespace AcidBubbles.VamTimeline
             if (Current == null || Animation[Current.AnimationName] == null) return;
             Animation.Stop();
             Time = 0;
+            foreach (var clip in Clips)
+            {
+                if (clip.AnimationPattern)
+                {
+                    clip.AnimationPattern.SetBoolParamValue("loopOnce", true);
+                    clip.AnimationPattern.ResetAnimation();
+                }
+            }
         }
 
         public void SelectControllerByName(string val)
@@ -143,12 +156,6 @@ namespace AcidBubbles.VamTimeline
         public List<string> GetControllersName()
         {
             return Current.GetControllersName();
-        }
-
-        public void PauseToggle()
-        {
-            var animState = Animation[Current.AnimationName];
-            animState.enabled = !animState.enabled;
         }
 
         public bool IsPlaying()
@@ -212,6 +219,11 @@ namespace AcidBubbles.VamTimeline
             {
                 Animation.Blend(Current.AnimationName, 0f, BlendDuration);
                 Animation.Blend(animationName, 1f, BlendDuration);
+                if (Current.AnimationPattern != null)
+                {
+                    // Let the loop finish during the transition
+                    Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
+                }
             }
             Current.SelectControllerByName("");
             Current = anim;
@@ -220,6 +232,11 @@ namespace AcidBubbles.VamTimeline
                 Play();
                 Stop();
                 Time = time;
+            }
+            if (isPlaying && Current.AnimationPattern != null)
+            {
+                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
+                Current.AnimationPattern.ResetAndPlay();
             }
         }
 

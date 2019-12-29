@@ -28,7 +28,6 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableString _displayJSON;
         private JSONStorableStringChooser _controllerJSON;
         private JSONStorableString _saveJSON;
-        private JSONStorableAction _pauseToggleJSON;
         private FreeControllerV3Animation _grabbedController;
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
@@ -71,10 +70,6 @@ namespace AcidBubbles.VamTimeline
                 _playJSON = new JSONStorableAction("Play", () => { _animation.Play(); ContextUpdated(); });
                 RegisterAction(_playJSON);
                 CreateButton("\u25B6 Play").button.onClick.AddListener(() => _playJSON.actionCallback());
-
-                _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _animation.PauseToggle());
-                RegisterAction(_pauseToggleJSON);
-                CreateButton("\u258C\u258C Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
 
                 _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); ContextUpdated(); });
                 RegisterAction(_stopJSON);
@@ -164,15 +159,26 @@ namespace AcidBubbles.VamTimeline
             if (_animation.Current.AnimationPattern != null)
                 _animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
         }
-
         private void LinkAnimationPattern(string uid)
         {
-            var animationPattern = string.IsNullOrEmpty(uid) ? null : SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
+            if (string.IsNullOrEmpty(uid))
+            {
+                _animation.Current.AnimationPattern = null;
+                return;
+            }
+            var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
+            if (animationPattern == null)
+            {
+                SuperController.LogError($"Could not find Animation Pattern '{uid}'");
+                return;
+            }
             _animation.Current.AnimationPattern = animationPattern;
-            if (animationPattern == null) return;
-            animationPattern.GetBoolJSONParam("autoPlay").val = false;
-            animationPattern.GetBoolJSONParam("pause").val = true;
+            animationPattern.SetBoolParamValue("autoPlay", false);
+            animationPattern.SetBoolParamValue("pause", false);
+            animationPattern.SetBoolParamValue("loop", false);
+            animationPattern.SetBoolParamValue("loopOnce", false);
             animationPattern.ResetAnimation();
+            AnimationUpdated();
         }
 
         private void SmoothAllFrames()
@@ -263,8 +269,6 @@ namespace AcidBubbles.VamTimeline
                     var time = _animation.Time;
                     if (time != _scrubberJSON.val)
                         _scrubberJSON.valNoCallback = time;
-                    if (_animation.Current.AnimationPattern != null)
-                        _animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
                     // RenderState() // In practice, we don't see anything useful
                 }
                 else
@@ -599,6 +603,7 @@ namespace AcidBubbles.VamTimeline
                 _blendDurationJSON.valNoCallback = _animation.BlendDuration;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
                 _selectedControllerJSON.choices = new List<string> { AllControllers }.Concat(_animation.GetControllersName()).ToList();
+                _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 
                 // Save
                 SaveState();
