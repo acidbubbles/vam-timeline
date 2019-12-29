@@ -39,8 +39,6 @@ namespace AcidBubbles.VamTimeline
             };
             Controller = controller;
             _animationLength = animationLength;
-            SetKey(0f, controller.transform.localPosition, controller.transform.localRotation);
-            SetKey(_animationLength, controller.transform.localPosition, controller.transform.localRotation);
         }
 
         private void UpdateCurves(AnimationClip clip)

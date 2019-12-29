@@ -161,9 +161,10 @@ namespace AcidBubbles.VamTimeline
 
                 if (_animation.IsPlaying())
                 {
-                    // Show state every few frames, since in practice we won't really need that information
-                    if (Time.frameCount % 10 == 0)
-                        RenderState();
+                    var time = _animation.Time;
+                    if (time != _scrubberJSON.val)
+                        _scrubberJSON.valNoCallback = time;
+                    // RenderState() // In practice, we don't see anything useful
                 }
                 else
                 {
@@ -324,7 +325,9 @@ namespace AcidBubbles.VamTimeline
                 }
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
-                _animation.Add(controller);
+                var animController = _animation.Add(controller);
+                animController.SetKeyToCurrentPositionAndUpdate(0f);
+                _animation.Updated.Invoke();
             }
             catch (Exception exc)
             {
