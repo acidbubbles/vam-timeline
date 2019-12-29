@@ -402,7 +402,7 @@ namespace AcidBubbles.VamTimeline
 
             var time = _animation.Time;
             if (time != _scrubberJSON.val)
-                _scrubberJSON.val = time;
+                _scrubberJSON.valNoCallback = time;
 
             switch (_displayModeJSON.val)
             {

@@ -360,7 +360,7 @@ namespace AcidBubbles.VamTimeline.Tools
             if (_linkedAnimations.Where(la => la.Atom != _mainLinkedAnimation.Atom).All(la => la.Animation.val == _mainLinkedAnimation.Animation.val))
                 _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
             else
-                _animationJSON.valNoCallback = "";
+                _animationJSON.valNoCallback = "(Multiple animations selected)";
             _controllerJSON.choices = _mainLinkedAnimation.SelectedController.choices;
             _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
         }
@@ -373,7 +373,8 @@ namespace AcidBubbles.VamTimeline.Tools
             if (_linkedAnimations.Where(la => la.Atom != _mainLinkedAnimation.Atom).All(la => la.Animation.val == _mainLinkedAnimation.Animation.val))
                 _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
             else
-                _animationJSON.valNoCallback = "";
+                _animationJSON.valNoCallback = "(Multiple animations selected)";
+            _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
             _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
             _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
         }
