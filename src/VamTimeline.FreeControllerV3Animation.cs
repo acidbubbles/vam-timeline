@@ -23,11 +23,19 @@ namespace AcidBubbles.VamTimeline
         public AnimationCurve RotZ = new AnimationCurve();
         public AnimationCurve RotW = new AnimationCurve();
         public List<AnimationCurve> Curves;
+        public List<AnimationCurve> PositionCurves;
+        public List<AnimationCurve> RotationCurves;
 
         public FreeControllerV3Animation(FreeControllerV3 controller, float animationLength)
         {
             Curves = new List<AnimationCurve> {
                 X, Y, Z, RotX, RotY, RotZ, RotW
+            };
+            PositionCurves = new List<AnimationCurve> {
+                X, Y, Z
+            };
+            RotationCurves = new List<AnimationCurve> {
+                RotX, RotY, RotZ, RotW
             };
             Controller = controller;
             _animationLength = animationLength;

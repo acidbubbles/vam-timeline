@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -131,13 +132,19 @@ namespace AcidBubbles.VamTimeline
                 CreateSlider(_blendDurationJSON, true);
 
                 // Try loading from backup
-                if (!string.IsNullOrEmpty(_saveJSON.val))
-                    RestoreState(_saveJSON.val);
+                StartCoroutine(CreateAnimationIfNoneIsLoaded());
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimeline.Init: " + exc);
             }
+        }
+
+        private IEnumerator CreateAnimationIfNoneIsLoaded()
+        {
+            if (_animation != null) yield break;
+            yield return new WaitForEndOfFrame();
+            RestoreState("");
         }
 
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };

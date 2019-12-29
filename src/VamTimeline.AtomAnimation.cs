@@ -122,6 +122,7 @@ namespace AcidBubbles.VamTimeline
 
         public void Play()
         {
+            if (Current == null) return;
             AnimationState animState = Animation[Current.AnimationName];
             if (animState == null) return;
             animState.time = 0;

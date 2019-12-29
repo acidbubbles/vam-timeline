@@ -135,74 +135,75 @@ namespace AcidBubbles.VamTimeline
 
         public void ChangeCurve(float time, string val)
         {
-            if (_selected == null) return;
             if (time == 0 || time == AnimationLength) return;
 
-            switch (val)
+            foreach (var controller in GetAllOrSelectedControllers())
             {
-                case null:
-                case "":
-                    return;
-                case CurveTypeValues.Flat:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var keyframe = curve.keys[key];
-                        keyframe.inTangent = 0f;
-                        keyframe.outTangent = 0f;
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Linear:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var before = curve.keys[key - 1];
-                        var keyframe = curve.keys[key];
-                        var next = curve.keys[key + 1];
-                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Bounce:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var before = curve.keys[key - 1];
-                        var keyframe = curve.keys[key];
-                        var next = curve.keys[key + 1];
-                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                        if (keyframe.inTangent > 0)
-                            keyframe.inTangent = 0.8f;
-                        else if (keyframe.inTangent < 0)
-                            keyframe.inTangent = -0.8f;
-                        else
-                            keyframe.inTangent = 0;
-                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                        if (keyframe.outTangent > 0)
-                            keyframe.outTangent = 0.8f;
-                        else if (keyframe.outTangent < 0)
-                            keyframe.outTangent = -0.8f;
-                        else
-                            keyframe.outTangent = 0;
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Smooth:
-                    foreach (var curve in _selected.Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        curve.SmoothTangents(key, 0f);
-                    };
-                    break;
-                default:
-                    throw new NotSupportedException($"Curve type {val} is not supported");
+                switch (val)
+                {
+                    case null:
+                    case "":
+                        return;
+                    case CurveTypeValues.Flat:
+                        foreach (var curve in controller.Curves)
+                        {
+                            var key = Array.FindIndex(curve.keys, k => k.time == time);
+                            if (key == -1) return;
+                            var keyframe = curve.keys[key];
+                            keyframe.inTangent = 0f;
+                            keyframe.outTangent = 0f;
+                            curve.MoveKey(key, keyframe);
+                        }
+                        break;
+                    case CurveTypeValues.Linear:
+                        foreach (var curve in controller.Curves)
+                        {
+                            var key = Array.FindIndex(curve.keys, k => k.time == time);
+                            if (key == -1) return;
+                            var before = curve.keys[key - 1];
+                            var keyframe = curve.keys[key];
+                            var next = curve.keys[key + 1];
+                            keyframe.inTangent = CalculateLinearTangent(before, keyframe);
+                            keyframe.outTangent = CalculateLinearTangent(keyframe, next);
+                            curve.MoveKey(key, keyframe);
+                        }
+                        break;
+                    case CurveTypeValues.Bounce:
+                        foreach (var curve in controller.PositionCurves)
+                        {
+                            var key = Array.FindIndex(curve.keys, k => k.time == time);
+                            if (key == -1) return;
+                            var before = curve.keys[key - 1];
+                            var keyframe = curve.keys[key];
+                            var next = curve.keys[key + 1];
+                            keyframe.inTangent = CalculateTangent(before, keyframe);
+                            keyframe.outTangent = CalculateTangent(keyframe, next);
+                            curve.MoveKey(key, keyframe);
+                        }
+                        break;
+                    case CurveTypeValues.Smooth:
+                        foreach (var curve in controller.Curves)
+                        {
+                            var key = Array.FindIndex(curve.keys, k => k.time == time);
+                            if (key == -1) return;
+                            curve.SmoothTangents(key, 0f);
+                        };
+                        break;
+                    default:
+                        throw new NotSupportedException($"Curve type {val} is not supported");
+                }
             }
+        }
+
+        private static float CalculateTangent(Keyframe from, Keyframe to, float strength = 0.8f)
+        {
+            var tangent = CalculateLinearTangent(from, to);
+            if (tangent > 0)
+                return strength;
+            else if (tangent < 0)
+                return -strength;
+            else
+                return 0;
         }
 
         private static float CalculateLinearTangent(Keyframe from, Keyframe to)
