@@ -16,7 +16,6 @@ namespace AcidBubbles.VamTimeline
     public class MainScript : MVRScript
     {
         private const int MaxUndo = 20;
-        private const string AllAtoms = "(All Atoms)";
         private const string AllControllers = "(All Controllers)";
 
         private AtomAnimation _animation;
@@ -38,6 +37,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _blendDurationJSON;
+        // TODO: Use me!
         private readonly List<string> _undoList = new List<string>();
 
         #region Lifecycle
@@ -161,7 +161,9 @@ namespace AcidBubbles.VamTimeline
 
                 if (_animation.IsPlaying())
                 {
-                    RenderState();
+                    // Show state every few frames, since in practice we won't really need that information
+                    if (Time.frameCount % 10 == 0)
+                        RenderState();
                 }
                 else
                 {
@@ -351,14 +353,20 @@ namespace AcidBubbles.VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
-            _animation.ChangeAnimation(animationName);
-            if (_animationJSON.val != animationName) _animationJSON.val = animationName;
-            _speedJSON.valNoCallback = _animation.Speed;
-            _lengthJSON.valNoCallback = _animation.AnimationLength;
-            _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-            _selectedControllerJSON.valNoCallback = AllControllers;
-            RenderState();
-            ContextUpdated();
+            try
+            {
+                _selectedControllerJSON.val = AllControllers;
+                _animation.ChangeAnimation(animationName);
+                _speedJSON.valNoCallback = _animation.Speed;
+                _lengthJSON.valNoCallback = _animation.AnimationLength;
+                _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
+                RenderState();
+                ContextUpdated();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.ChangeAnimation: " + exc);
+            }
         }
 
         private void AddAnimation()

@@ -89,7 +89,7 @@ namespace AcidBubbles.VamTimeline.Tools
                 _atomsJSON.isStorable = false;
                 RegisterStringChooser(_atomsJSON);
 
-                _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), AllControllers, "Animation", (string v) => ChangeAnimation(v));
+                _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v));
                 _animationJSON.isStorable = false;
                 RegisterStringChooser(_animationJSON);
 
@@ -350,30 +350,30 @@ namespace AcidBubbles.VamTimeline.Tools
 
         public void VamTimelineAnimationUpdated(string uid)
         {
+            VamTimelineContextChanged(uid);
+
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
 
             _scrubberJSON.slider.interactable = true;
-            _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
-            if (_linkedAnimations.Where(la => la.Atom != _mainLinkedAnimation.Atom).All(la => la.Animation.val == _mainLinkedAnimation.Animation.val))
-                _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
-            else
-                _animationJSON.valNoCallback = "(Multiple animations selected)";
             _controllerJSON.choices = _mainLinkedAnimation.SelectedController.choices;
-            _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
         }
 
         public void VamTimelineContextChanged(string uid)
         {
+            if (_linkedAnimations.Count == 0) return;
+
+            var firstAnimationName = _linkedAnimations[0].Animation.val;
+            if (_linkedAnimations.Skip(1).All(la => la.Animation.val == firstAnimationName))
+                _animationJSON.valNoCallback = firstAnimationName;
+            else
+                _animationJSON.valNoCallback = "(Multiple animations selected)";
+
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
 
-            if (_linkedAnimations.Where(la => la.Atom != _mainLinkedAnimation.Atom).All(la => la.Animation.val == _mainLinkedAnimation.Animation.val))
-                _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
-            else
-                _animationJSON.valNoCallback = "(Multiple animations selected)";
             _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
             _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
             _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
