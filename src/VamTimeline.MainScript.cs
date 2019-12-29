@@ -34,6 +34,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableAction _previousFrameJSON;
         private Serializer _serializer;
         private JSONStorableStringChooser _selectedControllerJSON;
+        private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _blendDurationJSON;
@@ -62,7 +63,7 @@ namespace AcidBubbles.VamTimeline
                 animationPopup.popupPanelHeight = 800f;
                 animationPopup.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
 
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => _animation.Time = v, 0f, 5f - float.Epsilon, true);
+                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true);
                 _scrubberJSON.isStorable = false;
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
@@ -127,6 +128,11 @@ namespace AcidBubbles.VamTimeline
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
+                _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid));
+                _controllerJSON.isStorable = false;
+                var linkedAnimationPatternPopup = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
+                linkedAnimationPatternPopup.popupPanelHeight = 800f;
+
                 CreateButton("Add/Remove Controller", true).button.onClick.AddListener(() => AddSelectedController());
 
                 var undoButton = CreateButton("Undo", true);
@@ -149,6 +155,23 @@ namespace AcidBubbles.VamTimeline
             {
                 SuperController.LogError("VamTimeline.Init: " + exc);
             }
+        }
+
+        private void UpdateTime(float time)
+        {
+            _animation.Time = time;
+            if (_animation.Current.AnimationPattern != null)
+                _animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
+        }
+
+        private void LinkAnimationPattern(string uid)
+        {
+            var animationPattern = string.IsNullOrEmpty(uid) ? null : SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
+            _animation.Current.AnimationPattern = animationPattern;
+            if (animationPattern == null) return;
+            animationPattern.GetBoolJSONParam("autoPlay").val = false;
+            animationPattern.GetBoolJSONParam("pause").val = true;
+            animationPattern.ResetAnimation();
         }
 
         private void SmoothAllFrames()
@@ -239,6 +262,8 @@ namespace AcidBubbles.VamTimeline
                     var time = _animation.Time;
                     if (time != _scrubberJSON.val)
                         _scrubberJSON.valNoCallback = time;
+                    if (_animation.Current.AnimationPattern != null)
+                        _animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
                     // RenderState() // In practice, we don't see anything useful
                 }
                 else

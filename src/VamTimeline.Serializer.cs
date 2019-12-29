@@ -31,6 +31,15 @@ namespace AcidBubbles.VamTimeline
                 var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value);
                 clip.Speed = DeserializeFloat(clipJSON["Speed"], 1f);
                 clip.AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f);
+                var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
+                if (!string.IsNullOrEmpty(animationPatternUID))
+                {
+                    var animationPattern = SuperController.singleton.GetAtomByUid(animationPatternUID)?.GetComponentInChildren<AnimationPattern>();
+                    if (animationPattern == null)
+                        SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.AnimationName}' of atom '{atom.uid}' was not found in scene");
+                    else
+                        clip.AnimationPattern = animationPattern;
+                }
                 JSONArray controllersJSON = clipJSON["Controllers"].AsArray;
                 if (controllersJSON == null) throw new NullReferenceException("Saved state does not have controllers");
                 foreach (JSONClass controllerJSON in controllersJSON)
@@ -89,6 +98,8 @@ namespace AcidBubbles.VamTimeline
                 clipJSON.Add("AnimationName", clip.AnimationName);
                 clipJSON.Add("Speed", clip.Speed.ToString());
                 clipJSON.Add("AnimationLength", clip.AnimationLength.ToString());
+                if (clip.AnimationPattern != null)
+                    clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);
                 var controllersJSON = new JSONArray();
                 clipJSON.Add("Controllers", controllersJSON);
                 foreach (var controller in clip.Controllers)
