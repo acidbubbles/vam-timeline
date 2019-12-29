@@ -51,10 +51,12 @@ namespace AcidBubbles.VamTimeline
                 _saveJSON = new JSONStorableString("Save", "", (string v) => RestoreState(v));
                 RegisterString(_saveJSON);
 
+                // Left side
+
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val));
                 _animationJSON.isStorable = false;
                 RegisterStringChooser(_animationJSON);
-                var animationPopup = CreateScrollablePopup(_animationJSON, true);
+                var animationPopup = CreateScrollablePopup(_animationJSON, false);
                 animationPopup.popupPanelHeight = 800f;
                 animationPopup.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
 
@@ -63,11 +65,18 @@ namespace AcidBubbles.VamTimeline
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
-                CreateSlider(_lengthJSON, true);
+                _playJSON = new JSONStorableAction("Play", () => { _animation.Play(); ContextUpdated(); });
+                RegisterAction(_playJSON);
+                CreateButton("\u25B6 Play").button.onClick.AddListener(() => _playJSON.actionCallback());
 
-                _speedJSON = new JSONStorableFloat("Speed", 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
-                CreateSlider(_speedJSON, true);
+                // TODO: Should be a checkbox
+                _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _animation.PauseToggle());
+                RegisterAction(_pauseToggleJSON);
+                CreateButton("\u258C\u258C Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
+
+                _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); ContextUpdated(); });
+                RegisterAction(_stopJSON);
+                CreateButton("\u25A0 Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
 
                 _selectedControllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); RenderState(); ContextUpdated(); });
                 _selectedControllerJSON.isStorable = false;
@@ -83,18 +92,10 @@ namespace AcidBubbles.VamTimeline
                 RegisterAction(_previousFrameJSON);
                 CreateButton("\u2190 Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
-                _playJSON = new JSONStorableAction("Play", () => { _animation.Play(); ContextUpdated(); });
-                RegisterAction(_playJSON);
-                CreateButton("\u25B6 Play").button.onClick.AddListener(() => _playJSON.actionCallback());
-
-                // TODO: Should be a checkbox
-                _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _animation.PauseToggle());
-                RegisterAction(_pauseToggleJSON);
-                CreateButton("\u258C\u258C Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
-
-                _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); ContextUpdated(); });
-                RegisterAction(_stopJSON);
-                CreateButton("\u25A0 Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
+                JSONStorableStringChooser changeCurveJSON = null;
+                changeCurveJSON = new JSONStorableStringChooser("Change Curve", CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
+                var changeCurvePopup = CreatePopup(changeCurveJSON, false);
+                changeCurvePopup.popupPanelHeight = 800f;
 
                 _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
                 CreatePopup(_displayModeJSON);
@@ -104,32 +105,35 @@ namespace AcidBubbles.VamTimeline
                 RegisterString(_displayJSON);
                 CreateTextField(_displayJSON);
 
+                CreateButton("Delete Frame", false).button.onClick.AddListener(() => _animation.DeleteFrame());
+
+                // Right side
+
                 _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => { RenderState(); ContextUpdated(); });
                 RegisterBool(_lockedJSON);
                 var lockedToggle = CreateToggle(_lockedJSON, true);
                 lockedToggle.label = "Locked (performance mode)";
 
-                _controllerJSON = new JSONStorableStringChooser("Target controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Target controller");
+                CreateButton("Create New Animation", true).button.onClick.AddListener(() => AddAnimation());
+
+                _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
+                CreateSlider(_lengthJSON, true);
+
+                _speedJSON = new JSONStorableFloat("Animation Speed", 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
+                CreateSlider(_speedJSON, true);
+
+                _blendDurationJSON = new JSONStorableFloat("Blend Duration", 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
+                CreateSlider(_blendDurationJSON, true);
+
+                _controllerJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller");
                 _controllerJSON.isStorable = false;
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
-                CreateButton("Add", true).button.onClick.AddListener(() => AddSelectedController());
-                CreateButton("Remove", true).button.onClick.AddListener(() => RemoveSelectedController());
+                CreateButton("Add to animation", true).button.onClick.AddListener(() => AddSelectedController());
+                CreateButton("Remove from animation", true).button.onClick.AddListener(() => RemoveSelectedController());
 
-                CreateButton("Restore Backup").button.onClick.AddListener(() => { RestoreState(""); AnimationUpdated(); });
-
-                CreateButton("Delete Frame", true).button.onClick.AddListener(() => _animation.DeleteFrame());
-
-                JSONStorableStringChooser changeCurveJSON = null;
-                changeCurveJSON = new JSONStorableStringChooser("Change Curve", CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
-                var changeCurvePopup = CreatePopup(changeCurveJSON, true);
-                changeCurvePopup.popupPanelHeight = 800f;
-
-                CreateButton("New Animation", true).button.onClick.AddListener(() => AddAnimation());
-
-                _blendDurationJSON = new JSONStorableFloat("Blend Duration", 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
-                CreateSlider(_blendDurationJSON, true);
+                CreateButton("Restore Backup", true).button.onClick.AddListener(() => { RestoreState(""); AnimationUpdated(); });
 
                 // Try loading from backup
                 StartCoroutine(CreateAnimationIfNoneIsLoaded());
