@@ -86,11 +86,11 @@ namespace AcidBubbles.VamTimeline
                 var frameFilterPopup = CreateScrollablePopup(_selectedControllerJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
 
-                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.Time = _animation.GetNextFrame(); RenderState(); ContextUpdated(); });
+                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { UpdateTime(_animation.GetNextFrame()); RenderState(); ContextUpdated(); });
                 RegisterAction(_nextFrameJSON);
                 CreateButton("\u2192 Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { _animation.Time = _animation.GetPreviousFrame(); RenderState(); ContextUpdated(); });
+                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { UpdateTime(_animation.GetPreviousFrame()); RenderState(); ContextUpdated(); });
                 RegisterAction(_previousFrameJSON);
                 CreateButton("\u2190 Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
@@ -128,10 +128,11 @@ namespace AcidBubbles.VamTimeline
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
-                _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid));
+                _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid));
                 _controllerJSON.isStorable = false;
                 var linkedAnimationPatternPopup = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
                 linkedAnimationPatternPopup.popupPanelHeight = 800f;
+                linkedAnimationPatternPopup.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
 
                 CreateButton("Add/Remove Controller", true).button.onClick.AddListener(() => AddSelectedController());
 
@@ -198,7 +199,7 @@ namespace AcidBubbles.VamTimeline
                 }
                 _animation.RebuildAnimation();
                 // Sample animation now
-                _animation.Time = time;
+                UpdateTime(time);
             }
             catch (Exception exc)
             {
@@ -285,7 +286,7 @@ namespace AcidBubbles.VamTimeline
                         var time = _animation.Time;
                         _grabbedController.SetKeyToCurrentControllerTransform(time);
                         _animation.RebuildAnimation();
-                        _animation.Time = time;
+                        UpdateTime(time);
                         _grabbedController = null;
                         RenderState();
                     }
@@ -484,7 +485,10 @@ namespace AcidBubbles.VamTimeline
             clip.Speed = _animation.Speed;
             clip.AnimationLength = _animation.AnimationLength;
             foreach (var controller in _animation.Current.Controllers.Select(c => c.Controller))
-                clip.Add(controller);
+            {
+                var animController = clip.Add(controller);
+                animController.SetKeyToCurrentControllerTransform(0f);
+            }
 
             _animation.AddClip(clip);
             AnimationUpdated();
