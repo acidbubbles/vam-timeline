@@ -78,7 +78,6 @@ namespace AcidBubbles.VamTimeline
                 animState.time = value;
                 if (!animState.enabled)
                 {
-                    // TODO: Can we set this once?
                     animState.enabled = true;
                     Animation.Sample();
                     animState.enabled = false;
@@ -184,7 +183,7 @@ namespace AcidBubbles.VamTimeline
                 var state = Animation[clip.AnimationName];
                 state.speed = clip.Speed;
             }
-            // TODO: This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+            // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
             Animation.Play(Current.AnimationName);
             Animation.Stop(Current.AnimationName);
             Animation[Current.AnimationName].time = time;

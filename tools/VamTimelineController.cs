@@ -128,7 +128,7 @@ namespace AcidBubbles.VamTimeline.Tools
 
         private IEnumerator Restore(string v)
         {
-            // TODO: This is an ugly way to wait for the target atom restore
+            // This is an ugly way to wait for the target atom restore
             yield return new WaitForEndOfFrame();
 
             if (!string.IsNullOrEmpty(v))
@@ -329,7 +329,6 @@ namespace AcidBubbles.VamTimeline.Tools
             {
                 if (_linkedAnimations.Any(la => la.Atom.uid == uid)) return;
 
-                // TODO: This is not saved anywhere
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null) return;
                 var link = new LinkedAnimation(atom);

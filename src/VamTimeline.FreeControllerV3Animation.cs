@@ -97,19 +97,8 @@ namespace AcidBubbles.VamTimeline
         {
             if (time == 0f)
             {
-                // TODO: Here we should also set the tangents
-                SetKey(0f, localPosition, localRotation, (AnimationCurve c, ref Keyframe k) =>
-                {
-                    Keyframe last = c.keys.Last();
-                    k.inTangent = last.inTangent;
-                    k.outTangent = c.keys.Last().outTangent;
-                });
-                SetKey(_animationLength, localPosition, localRotation, (AnimationCurve c, ref Keyframe k) =>
-                {
-                    Keyframe first = c.keys.First();
-                    k.inTangent = first.inTangent;
-                    k.outTangent = c.keys.First().outTangent;
-                });
+                SetKey(0f, localPosition, localRotation);
+                SetKey(_animationLength, localPosition, localRotation);
             }
             else
             {
@@ -139,18 +128,18 @@ namespace AcidBubbles.VamTimeline
             UpdateCurves(clip);
         }
 
-        public void SetKey(float time, Vector3 position, Quaternion rotation, KeyframeModify fn = null)
+        public void SetKey(float time, Vector3 position, Quaternion rotation)
         {
-            AddKey(X, time, position.x, fn);
-            AddKey(Y, time, position.y, fn);
-            AddKey(Z, time, position.z, fn);
-            AddKey(RotX, time, rotation.x, fn);
-            AddKey(RotY, time, rotation.y, fn);
-            AddKey(RotZ, time, rotation.z, fn);
-            AddKey(RotW, time, rotation.w, fn);
+            AddKey(X, time, position.x);
+            AddKey(Y, time, position.y);
+            AddKey(Z, time, position.z);
+            AddKey(RotX, time, rotation.x);
+            AddKey(RotY, time, rotation.y);
+            AddKey(RotZ, time, rotation.z);
+            AddKey(RotW, time, rotation.w);
         }
 
-        private static void AddKey(AnimationCurve curve, float time, float value, KeyframeModify fn = null)
+        private static void AddKey(AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
             Keyframe keyframe;
@@ -160,12 +149,6 @@ namespace AcidBubbles.VamTimeline
                 if (key == -1) throw new InvalidOperationException($"Cannot AddKey at time {time}, but no keys exist at this position");
                 keyframe = curve.keys[key];
                 keyframe.value = value;
-                curve.MoveKey(key, keyframe);
-            }
-            if (fn != null)
-            {
-                keyframe = curve.keys[key];
-                fn(curve, ref keyframe);
                 curve.MoveKey(key, keyframe);
             }
         }

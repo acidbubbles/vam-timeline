@@ -17,7 +17,6 @@ namespace AcidBubbles.VamTimeline
         public readonly AnimationClip Clip;
         private float _animationLength = 5f;
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
-        // TODO: Replace this by a parameter so we can do the same from external tools
         private FreeControllerV3Animation _selected;
 
         public string AnimationName { get; }
@@ -26,10 +25,12 @@ namespace AcidBubbles.VamTimeline
         public AtomAnimationClip(string animationName)
         {
             AnimationName = animationName;
-            Clip = new AnimationClip();
-            // TODO: Make that an option in the UI
-            Clip.wrapMode = WrapMode.Loop;
-            Clip.legacy = true;
+            Clip = new AnimationClip
+            {
+                // TODO: Make that an option in the UI
+                wrapMode = WrapMode.Loop,
+                legacy = true
+            };
         }
 
         public FreeControllerV3Animation Add(FreeControllerV3 controller)

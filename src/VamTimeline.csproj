@@ -55,7 +55,6 @@
 
   <ItemGroup>
     <Compile Include="VamTimeline.CurveTypeValues.cs" />
-    <Compile Include="VamTimeline.KeyframeModify.cs" />
     <Compile Include="VamTimeline.Serializer.cs" />
     <Compile Include="VamTimeline.FreeControllerV3Snapshot.cs" />
     <Compile Include="VamTimeline.FreeControllerV3Animation.cs" />

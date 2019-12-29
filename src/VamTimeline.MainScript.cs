@@ -71,7 +71,6 @@ namespace AcidBubbles.VamTimeline
                 RegisterAction(_playJSON);
                 CreateButton("\u25B6 Play").button.onClick.AddListener(() => _playJSON.actionCallback());
 
-                // TODO: Should be a checkbox
                 _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _animation.PauseToggle());
                 RegisterAction(_pauseToggleJSON);
                 CreateButton("\u258C\u258C Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
@@ -257,7 +256,7 @@ namespace AcidBubbles.VamTimeline
                     }
                     else if (_grabbedController != null && grabbing == null)
                     {
-                        // TODO: This should be done by the controller (updating the animatino resets the time)
+                        // TODO: This should be done by the controller (updating the animation resets the time)
                         var time = _animation.Time;
                         _grabbedController.SetKeyToCurrentControllerTransform(time);
                         _animation.RebuildAnimation();
