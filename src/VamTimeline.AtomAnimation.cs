@@ -217,6 +217,8 @@ namespace AcidBubbles.VamTimeline
             Current = anim;
             if (!isPlaying)
             {
+                Play();
+                Stop();
                 Time = time;
             }
         }

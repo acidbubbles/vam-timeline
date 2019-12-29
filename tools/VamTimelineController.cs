@@ -34,6 +34,7 @@ namespace AcidBubbles.VamTimeline.Tools
             public JSONStorableFloat Scrubber { get { return Storable.GetFloatJSONParam("Time"); } }
             public JSONStorableStringChooser Animation { get { return Storable.GetStringChooserJSONParam("Animation"); } }
             public JSONStorableStringChooser SelectedController { get { return Storable.GetStringChooserJSONParam("Selected Controller"); } }
+            public JSONStorableString Display { get { return Storable.GetStringJSONParam("Display"); } }
 
             public void Play()
             {
@@ -71,6 +72,7 @@ namespace AcidBubbles.VamTimeline.Tools
         private List<Transform> _canvasComponents;
         private JSONStorableString _savedAtomsJSON;
         private JSONStorableStringChooser _controllerJSON;
+        private JSONStorableString _displayJSON;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         public override void Init()
@@ -96,6 +98,10 @@ namespace AcidBubbles.VamTimeline.Tools
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true);
                 _scrubberJSON.isStorable = false;
                 RegisterFloat(_scrubberJSON);
+
+                _displayJSON = new JSONStorableString("Display", "");
+                _displayJSON.isStorable = false;
+                RegisterString(_displayJSON);
 
                 _targetJSON = new JSONStorableStringChooser("Target", GetAtomsWithVamTimeline().ToList(), "", "Add", v => linkButton.button.interactable = !string.IsNullOrEmpty(v));
                 var targetPopup = CreateScrollablePopup(_targetJSON);
@@ -151,16 +157,19 @@ namespace AcidBubbles.VamTimeline.Tools
 
             try
             {
-                var x = 0.40f;
+                var x = 0f;
+                var y = -0.39f;
+                // const float baseWidth = 1160f;
                 _canvasComponents = new List<Transform>();
-                CreateUIPopupInCanvas(_animationJSON, x, 0.35f);
-                CreateUIPopupInCanvas(_atomsJSON, x, 0.43f);
-                CreateUIPopupInCanvas(_controllerJSON, x, 0.51f);
-                CreateUISliderInCanvas(_scrubberJSON, x, 0.30f);
-                CreateUIButtonInCanvas("Play", x, 0.75f).button.onClick.AddListener(() => Play());
-                CreateUIButtonInCanvas("Stop", x, 0.80f).button.onClick.AddListener(() => Stop());
-                CreateUIButtonInCanvas("Next Frame", x, 0.85f).button.onClick.AddListener(() => NextFrame());
-                CreateUIButtonInCanvas("Previous Frame", x, 0.90f).button.onClick.AddListener(() => PreviousFrame());
+                CreateUIPopupInCanvas(_animationJSON, x, y + 0.355f);
+                CreateUISliderInCanvas(_scrubberJSON, x, y + 0.14f);
+                CreateUIButtonInCanvas("\u25B6 Play", x - 0.105f, y + 0.60f, 810f, 100f).button.onClick.AddListener(() => Play());
+                CreateUIButtonInCanvas("\u25A0 Stop", x + 0.257f, y + 0.60f, 300f, 100f).button.onClick.AddListener(() => Stop());
+                CreateUIPopupInCanvas(_atomsJSON, x, y + 0.585f);
+                CreateUIPopupInCanvas(_controllerJSON, x, y + 0.655f);
+                CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
+                CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
+                CreateUITextfieldInCanvas(_displayJSON, x, y + 0.62f);
             }
             catch (Exception exc)
             {
@@ -214,7 +223,7 @@ namespace AcidBubbles.VamTimeline.Tools
             return ui;
         }
 
-        private UIDynamicButton CreateUIButtonInCanvas(string label, float x, float y)
+        private UIDynamicButton CreateUIButtonInCanvas(string label, float x, float y, float w = 0, float h = 0)
         {
             var canvas = _atom.GetComponentInChildren<Canvas>();
             if (canvas == null) throw new NullReferenceException("Could not find a canvas to attach to");
@@ -226,8 +235,33 @@ namespace AcidBubbles.VamTimeline.Tools
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicButton>();
-            ui.label = label;
             if (ui == null) throw new NullReferenceException("Could not find a UIDynamicButton component");
+            ui.label = label;
+            if (w > 0)
+                ui.button.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, w);
+            if (h > 0)
+                ui.button.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, h);
+
+            transform.Translate(Vector3.down * y, Space.Self);
+            transform.Translate(Vector3.right * x, Space.Self);
+
+            return ui;
+        }
+
+        private UIDynamicTextField CreateUITextfieldInCanvas(JSONStorableString jss, float x, float y)
+        {
+            var canvas = _atom.GetComponentInChildren<Canvas>();
+            if (canvas == null) throw new NullReferenceException("Could not find a canvas to attach to");
+
+            var transform = Instantiate(manager.configurableTextFieldPrefab.transform);
+            if (transform == null) throw new NullReferenceException("Could not instantiate configurableButtonPrefab");
+            _canvasComponents.Add(transform);
+            transform.SetParent(canvas.transform, false);
+            transform.gameObject.SetActive(true);
+
+            var ui = transform.GetComponent<UIDynamicTextField>();
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicButton component");
+            jss.dynamicText = ui;
 
             transform.Translate(Vector3.down * y, Space.Self);
             transform.Translate(Vector3.right * x, Space.Self);
@@ -336,6 +370,7 @@ namespace AcidBubbles.VamTimeline.Tools
             else
                 _animationJSON.valNoCallback = "";
             _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
+            _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
         }
 
         public void Update()

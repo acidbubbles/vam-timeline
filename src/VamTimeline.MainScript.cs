@@ -72,34 +72,36 @@ namespace AcidBubbles.VamTimeline
                 var frameFilterPopup = CreateScrollablePopup(_selectedControllerJSON);
                 frameFilterPopup.popupPanelHeight = 800f;
 
-                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.Time = _animation.GetNextFrame(); RenderState(); });
+                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { _animation.Time = _animation.GetNextFrame(); RenderState(); ContextUpdated(); });
                 RegisterAction(_nextFrameJSON);
-                CreateButton("Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
+                CreateButton("\u2192 Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { _animation.Time = _animation.GetPreviousFrame(); RenderState(); });
+                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { _animation.Time = _animation.GetPreviousFrame(); RenderState(); ContextUpdated(); });
                 RegisterAction(_previousFrameJSON);
-                CreateButton("Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
+                CreateButton("\u2190 Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
-                _playJSON = new JSONStorableAction("Play", () => _animation.Play());
+                _playJSON = new JSONStorableAction("Play", () => { _animation.Play(); ContextUpdated(); });
                 RegisterAction(_playJSON);
-                CreateButton("Play").button.onClick.AddListener(() => _playJSON.actionCallback());
+                CreateButton("\u25B6 Play").button.onClick.AddListener(() => _playJSON.actionCallback());
 
                 // TODO: Should be a checkbox
                 _pauseToggleJSON = new JSONStorableAction("Pause Toggle", () => _animation.PauseToggle());
                 RegisterAction(_pauseToggleJSON);
-                CreateButton("Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
+                CreateButton("\u258C\u258C Pause Toggle").button.onClick.AddListener(() => _pauseToggleJSON.actionCallback());
 
-                _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); });
+                _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); ContextUpdated(); });
                 RegisterAction(_stopJSON);
-                CreateButton("Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
+                CreateButton("\u25A0 Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
 
-                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => RenderState());
+                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
                 CreatePopup(_displayModeJSON);
 
                 _displayJSON = new JSONStorableString("Display", "");
+                _displayJSON.isStorable = false;
+                RegisterString(_displayJSON);
                 CreateTextField(_displayJSON);
 
-                _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => RenderState());
+                _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => { RenderState(); ContextUpdated(); });
                 RegisterBool(_lockedJSON);
                 var lockedToggle = CreateToggle(_lockedJSON, true);
                 lockedToggle.label = "Locked (performance mode)";
@@ -409,7 +411,6 @@ namespace AcidBubbles.VamTimeline
         {
             var time = _scrubberJSON.val;
             var display = new StringBuilder();
-            display.AppendLine($"Time: {time}s");
             foreach (var controller in _animation.GetAllOrSelectedControllers())
             {
                 display.AppendLine($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
