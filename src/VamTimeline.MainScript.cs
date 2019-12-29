@@ -37,8 +37,10 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _blendDurationJSON;
-        // TODO: Use me!
         private readonly List<string> _undoList = new List<string>();
+        private List<ClipboardEntry> _clipboard;
+        private bool _restoring = true;
+
 
         #region Lifecycle
 
@@ -97,15 +99,11 @@ namespace AcidBubbles.VamTimeline
                 var changeCurvePopup = CreatePopup(changeCurveJSON, false);
                 changeCurvePopup.popupPanelHeight = 800f;
 
-                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
-                CreatePopup(_displayModeJSON);
+                CreateButton("Smooth all frames", false).button.onClick.AddListener(() => SmoothAllFrames());
 
-                _displayJSON = new JSONStorableString("Display", "");
-                _displayJSON.isStorable = false;
-                RegisterString(_displayJSON);
-                CreateTextField(_displayJSON);
-
-                CreateButton("Delete Frame", false).button.onClick.AddListener(() => _animation.DeleteFrame());
+                CreateButton("Cut / Delete Frame", false).button.onClick.AddListener(() => Cut());
+                CreateButton("Copy Frame", false).button.onClick.AddListener(() => Copy());
+                CreateButton("Paste Frame", false).button.onClick.AddListener(() => Paste());
 
                 // Right side
 
@@ -114,7 +112,8 @@ namespace AcidBubbles.VamTimeline
                 var lockedToggle = CreateToggle(_lockedJSON, true);
                 lockedToggle.label = "Locked (performance mode)";
 
-                CreateButton("Create New Animation", true).button.onClick.AddListener(() => AddAnimation());
+                CreateButton("Insert New Animation Before", true).button.onClick.AddListener(() => AddAnimation(-1));
+                CreateButton("Add New Animation After", true).button.onClick.AddListener(() => AddAnimation(1));
 
                 _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
                 CreateSlider(_lengthJSON, true);
@@ -130,10 +129,20 @@ namespace AcidBubbles.VamTimeline
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
-                CreateButton("Add to animation", true).button.onClick.AddListener(() => AddSelectedController());
-                CreateButton("Remove from animation", true).button.onClick.AddListener(() => RemoveSelectedController());
+                CreateButton("Add/Remove controller", true).button.onClick.AddListener(() => AddSelectedController());
 
-                CreateButton("Restore Backup", true).button.onClick.AddListener(() => { RestoreState(""); AnimationUpdated(); });
+                var undoButton = CreateButton("Undo", true);
+                // TODO: Right now it doesn't work for some reason...
+                undoButton.button.interactable = false;
+                undoButton.button.onClick.AddListener(() => Undo());
+
+                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
+                CreatePopup(_displayModeJSON, true);
+
+                _displayJSON = new JSONStorableString("Display", "");
+                _displayJSON.isStorable = false;
+                RegisterString(_displayJSON);
+                CreateTextField(_displayJSON, true);
 
                 // Try loading from backup
                 StartCoroutine(CreateAnimationIfNoneIsLoaded());
@@ -142,6 +151,74 @@ namespace AcidBubbles.VamTimeline
             {
                 SuperController.LogError("VamTimeline.Init: " + exc);
             }
+        }
+
+        private void SmoothAllFrames()
+        {
+            _animation.SmoothAllFrames();
+        }
+
+        private void Paste()
+        {
+            try
+            {
+                if (_clipboard == null)
+                {
+                    SuperController.LogMessage("Clipboard is empty");
+                    return;
+                }
+                var time = _animation.Time;
+                foreach (var entry in _clipboard)
+                {
+                    var animController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == entry.Controller);
+                    if (animController == null)
+                        animController = _animation.Add(entry.Controller);
+                    animController.SetCurveSnapshot(time, entry.Snapshot);
+                }
+                _animation.RebuildAnimation();
+                // Sample animation now
+                _animation.Time = time;
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.Paste: " + exc);
+            }
+        }
+
+        private void Copy()
+        {
+            try
+            {
+                var clipboard = new List<ClipboardEntry>();
+                var time = _animation.Time;
+                foreach (var controller in _animation.Current.GetAllOrSelectedControllers())
+                {
+                    clipboard.Add(new ClipboardEntry
+                    {
+                        Controller = controller.Controller,
+                        Snapshot = controller.GetCurveSnapshot(time)
+                    });
+                }
+                _clipboard = clipboard;
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.Copy: " + exc);
+            }
+        }
+
+        private void Cut()
+        {
+            _animation.DeleteFrame();
+        }
+
+        private void Undo()
+        {
+            if (_undoList.Count == 0) return;
+            var pop = _undoList[_undoList.Count - 1];
+            _undoList.RemoveAt(_undoList.Count - 1);
+            RestoreState(pop);
+            _saveJSON.valNoCallback = pop;
         }
 
         private IEnumerator CreateAnimationIfNoneIsLoaded()
@@ -183,7 +260,7 @@ namespace AcidBubbles.VamTimeline
                     {
                         // TODO: This should be done by the controller (updating the animatino resets the time)
                         var time = _animation.Time;
-                        _grabbedController.SetKeyToCurrentPositionAndUpdate(time);
+                        _grabbedController.SetKeyToCurrentControllerTransform(time);
                         _animation.RebuildAnimation();
                         _animation.Time = time;
                         _grabbedController = null;
@@ -231,6 +308,8 @@ namespace AcidBubbles.VamTimeline
 
         public void RestoreState(string json)
         {
+            _restoring = true;
+
             try
             {
                 if (_animation != null)
@@ -241,7 +320,7 @@ namespace AcidBubbles.VamTimeline
 
                 if (!string.IsNullOrEmpty(json))
                 {
-                    _animation = _serializer.DeserializeAnimation(containingAtom, _saveJSON.val);
+                    _animation = _serializer.DeserializeAnimation(containingAtom, json);
                 }
 
                 if (_animation == null)
@@ -278,20 +357,31 @@ namespace AcidBubbles.VamTimeline
             {
                 SuperController.LogError("VamTimeline.RestoreState: " + exc);
             }
+
+            _restoring = false;
         }
 
         public void SaveState()
         {
             try
             {
+                if (_restoring) return;
+
                 // Never save an empty animation.
                 if (_animation.Clips.Count == 0) return;
                 if (_animation.Clips.Count == 1 && _animation.Clips[0].Controllers.Count == 0) return;
 
-                _undoList.Add(_saveJSON.val);
-                if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-
                 var serialized = _serializer.SerializeAnimation(_animation);
+
+                if (serialized == _undoList.LastOrDefault())
+                    return;
+
+                if (!string.IsNullOrEmpty(_saveJSON.val))
+                {
+                    _undoList.Add(_saveJSON.val);
+                    if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
+                }
+
                 _saveJSON.valNoCallback = serialized;
 
                 var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimelineBackup"));
@@ -323,30 +413,18 @@ namespace AcidBubbles.VamTimeline
                     SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
                     return;
                 }
-                controller.currentPositionState = FreeControllerV3.PositionState.On;
-                controller.currentRotationState = FreeControllerV3.RotationState.On;
-                var animController = _animation.Add(controller);
-                animController.SetKeyToCurrentPositionAndUpdate(0f);
-                _animation.Updated.Invoke();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("VamTimeline.AddSelectedController: " + exc);
-            }
-        }
-
-        private void RemoveSelectedController()
-        {
-            try
-            {
-                var uid = _controllerJSON.val;
-                var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
-                if (controller == null)
+                if (_animation.Current.Controllers.Any(c => c.Controller == controller))
                 {
-                    SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
-                    return;
+
+                    _animation.Remove(controller);
                 }
-                _animation.Remove(controller);
+                {
+                    controller.currentPositionState = FreeControllerV3.PositionState.On;
+                    controller.currentRotationState = FreeControllerV3.RotationState.On;
+                    var animController = _animation.Add(controller);
+                    animController.SetKeyToCurrentControllerTransform(0f);
+                }
+                _animation.Updated.Invoke();
             }
             catch (Exception exc)
             {
@@ -372,8 +450,9 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        private void AddAnimation()
+        private void AddAnimation(int index)
         {
+            // TODO: Deal with the index
             // TODO: Let the user name the animation
             var lastAnimationName = _animation.Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
@@ -470,7 +549,7 @@ namespace AcidBubbles.VamTimeline
         private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
         {
             display.AppendLine($"{name}");
-            foreach (var keyframe in curve.keys.Take(curve.keys.Length - 1))
+            foreach (var keyframe in curve.keys)
             {
                 display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
                 display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
@@ -525,6 +604,12 @@ namespace AcidBubbles.VamTimeline
             {
                 SuperController.LogError("VamTimeline.ContextUpdated: " + exc);
             }
+        }
+
+        private class ClipboardEntry
+        {
+            internal FreeControllerV3 Controller;
+            internal FreeControllerV3Snapshot Snapshot;
         }
 
         #endregion

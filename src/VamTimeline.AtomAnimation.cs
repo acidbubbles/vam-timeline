@@ -223,5 +223,11 @@ namespace AcidBubbles.VamTimeline
                 Time = time;
             }
         }
+
+        public void SmoothAllFrames()
+        {
+            Current.SmoothAllFrames();
+            RebuildAnimation();
+        }
     }
 }

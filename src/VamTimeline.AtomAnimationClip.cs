@@ -14,7 +14,6 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class AtomAnimationClip
     {
-
         public readonly AnimationClip Clip;
         private float _animationLength = 5f;
         public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
@@ -139,76 +138,16 @@ namespace AcidBubbles.VamTimeline
 
             foreach (var controller in GetAllOrSelectedControllers())
             {
-                switch (val)
-                {
-                    case null:
-                    case "":
-                        return;
-                    case CurveTypeValues.Flat:
-                        foreach (var curve in controller.Curves)
-                        {
-                            var key = Array.FindIndex(curve.keys, k => k.time == time);
-                            if (key == -1) return;
-                            var keyframe = curve.keys[key];
-                            keyframe.inTangent = 0f;
-                            keyframe.outTangent = 0f;
-                            curve.MoveKey(key, keyframe);
-                        }
-                        break;
-                    case CurveTypeValues.Linear:
-                        foreach (var curve in controller.Curves)
-                        {
-                            var key = Array.FindIndex(curve.keys, k => k.time == time);
-                            if (key == -1) return;
-                            var before = curve.keys[key - 1];
-                            var keyframe = curve.keys[key];
-                            var next = curve.keys[key + 1];
-                            keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                            keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                            curve.MoveKey(key, keyframe);
-                        }
-                        break;
-                    case CurveTypeValues.Bounce:
-                        foreach (var curve in controller.PositionCurves)
-                        {
-                            var key = Array.FindIndex(curve.keys, k => k.time == time);
-                            if (key == -1) return;
-                            var before = curve.keys[key - 1];
-                            var keyframe = curve.keys[key];
-                            var next = curve.keys[key + 1];
-                            keyframe.inTangent = CalculateTangent(before, keyframe);
-                            keyframe.outTangent = CalculateTangent(keyframe, next);
-                            curve.MoveKey(key, keyframe);
-                        }
-                        break;
-                    case CurveTypeValues.Smooth:
-                        foreach (var curve in controller.Curves)
-                        {
-                            var key = Array.FindIndex(curve.keys, k => k.time == time);
-                            if (key == -1) return;
-                            curve.SmoothTangents(key, 0f);
-                        };
-                        break;
-                    default:
-                        throw new NotSupportedException($"Curve type {val} is not supported");
-                }
+                controller.ChangeCurve(time, val);
             }
         }
 
-        private static float CalculateTangent(Keyframe from, Keyframe to, float strength = 0.8f)
+        public void SmoothAllFrames()
         {
-            var tangent = CalculateLinearTangent(from, to);
-            if (tangent > 0)
-                return strength;
-            else if (tangent < 0)
-                return -strength;
-            else
-                return 0;
-        }
-
-        private static float CalculateLinearTangent(Keyframe from, Keyframe to)
-        {
-            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
+            foreach (var controller in Controllers)
+            {
+                controller.SmoothAllFrames();
+            }
         }
     }
 }

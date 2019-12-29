@@ -88,18 +88,23 @@ namespace AcidBubbles.VamTimeline
             _animationLength = length;
         }
 
-        public void SetKeyToCurrentPositionAndUpdate(float time)
+        public void SetKeyToCurrentControllerTransform(float time)
+        {
+            SetKeyToTransform(time, Controller.transform.localPosition, Controller.transform.localRotation);
+        }
+
+        public void SetKeyToTransform(float time, Vector3 localPosition, Quaternion localRotation)
         {
             if (time == 0f)
             {
                 // TODO: Here we should also set the tangents
-                SetKey(0f, Controller.transform.localPosition, Controller.transform.localRotation, (AnimationCurve c, ref Keyframe k) =>
+                SetKey(0f, localPosition, localRotation, (AnimationCurve c, ref Keyframe k) =>
                 {
                     Keyframe last = c.keys.Last();
                     k.inTangent = last.inTangent;
                     k.outTangent = c.keys.Last().outTangent;
                 });
-                SetKey(_animationLength, Controller.transform.localPosition, Controller.transform.localRotation, (AnimationCurve c, ref Keyframe k) =>
+                SetKey(_animationLength, localPosition, localRotation, (AnimationCurve c, ref Keyframe k) =>
                 {
                     Keyframe first = c.keys.First();
                     k.inTangent = first.inTangent;
@@ -108,7 +113,7 @@ namespace AcidBubbles.VamTimeline
             }
             else
             {
-                SetKey(time, Controller.transform.localPosition, Controller.transform.localRotation);
+                SetKey(time, localPosition, localRotation);
             }
         }
 
@@ -118,17 +123,18 @@ namespace AcidBubbles.VamTimeline
             foreach (var curve in Curves)
             {
                 if (curve.keys.Length <= 2) continue;
-                curve.SmoothTangents(0, 0f);
-                curve.SmoothTangents(curve.keys.Length - 1, 0f);
-                var first = curve.keys[0];
-                var last = curve.keys[curve.keys.Length - 1];
-                var tangent = (first.inTangent + last.outTangent) / 2f;
-                first.inTangent = tangent;
-                first.outTangent = tangent;
-                last.inTangent = tangent;
-                last.outTangent = tangent;
-                curve.MoveKey(0, first);
-                curve.MoveKey(curve.keys.Length - 1, last);
+                var keyframe = curve.keys[0];
+                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
+                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
+                var tangent = inTangent + outTangent / 2f;
+                keyframe.inTangent = tangent;
+                keyframe.outTangent = tangent;
+                keyframe.inWeight = 0.33f;
+                keyframe.outWeight = 0.33f;
+                curve.MoveKey(0, keyframe);
+
+                keyframe.time = curve.keys[curve.keys.Length - 1].time;
+                curve.MoveKey(curve.keys.Length - 1, keyframe);
             }
             UpdateCurves(clip);
         }
@@ -162,6 +168,156 @@ namespace AcidBubbles.VamTimeline
                 fn(curve, ref keyframe);
                 curve.MoveKey(key, keyframe);
             }
+        }
+
+        public FreeControllerV3Snapshot GetCurveSnapshot(float time)
+        {
+            return new FreeControllerV3Snapshot
+            {
+                X = X.keys.First(k => k.time == time),
+                Y = Y.keys.First(k => k.time == time),
+                Z = Z.keys.First(k => k.time == time),
+                RotX = RotX.keys.First(k => k.time == time),
+                RotY = RotY.keys.First(k => k.time == time),
+                RotZ = RotZ.keys.First(k => k.time == time),
+                RotW = RotW.keys.First(k => k.time == time),
+            };
+        }
+
+        public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
+        {
+            SetKeySnapshot(time, X, snapshot.X);
+            SetKeySnapshot(time, Y, snapshot.Y);
+            SetKeySnapshot(time, Z, snapshot.Z);
+            SetKeySnapshot(time, RotX, snapshot.RotX);
+            SetKeySnapshot(time, RotY, snapshot.RotY);
+            SetKeySnapshot(time, RotZ, snapshot.RotZ);
+            SetKeySnapshot(time, RotW, snapshot.RotW);
+        }
+
+        private void SetKeySnapshot(float time, AnimationCurve curve, Keyframe keyframe)
+        {
+            var index = Array.FindIndex(curve.keys, k => k.time == time);
+            if (index == -1)
+                index = curve.AddKey(time, keyframe.value);
+            keyframe.time = time;
+            curve.MoveKey(index, keyframe);
+
+            if (time == 0f)
+            {
+                keyframe.time = curve.keys[curve.keys.Length - 1].time;
+                curve.MoveKey(curve.keys.Length - 1, keyframe);
+            }
+        }
+
+        public void ChangeCurve(float time, string val)
+        {
+            switch (val)
+            {
+                case null:
+                case "":
+                    return;
+                case CurveTypeValues.Flat:
+                    foreach (var curve in Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        var keyframe = curve.keys[key];
+                        keyframe.inTangent = 0f;
+                        keyframe.outTangent = 0f;
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                case CurveTypeValues.Linear:
+                    foreach (var curve in Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        var before = curve.keys[key - 1];
+                        var keyframe = curve.keys[key];
+                        var next = curve.keys[key + 1];
+                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
+                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                case CurveTypeValues.Bounce:
+                    foreach (var curve in PositionCurves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        var before = curve.keys[key - 1];
+                        var keyframe = curve.keys[key];
+                        var next = curve.keys[key + 1];
+                        keyframe.inTangent = CalculateTangent(before, keyframe);
+                        keyframe.outTangent = CalculateTangent(keyframe, next);
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                case CurveTypeValues.Smooth:
+                    foreach (var curve in Curves)
+                    {
+                        var key = Array.FindIndex(curve.keys, k => k.time == time);
+                        if (key == -1) return;
+                        curve.SmoothTangents(key, 0f);
+                    };
+                    break;
+                default:
+                    throw new NotSupportedException($"Curve type {val} is not supported");
+            }
+        }
+
+        public void SmoothAllFrames()
+        {
+            foreach (var curve in Curves)
+            {
+                if (curve.keys.Length == 2)
+                {
+                    curve.keys[0].inTangent = 0f;
+                    curve.keys[0].outTangent = 0f;
+                    curve.keys[1].inTangent = 0f;
+                    curve.keys[1].outTangent = 0f;
+                    continue;
+                }
+                // First and last frame will be recalculated in loop smoothing
+                for (int k = 1; k < curve.keys.Length - 1; k++)
+                {
+                    var keyframe = curve.keys[k];
+                    var inTangent = CalculateLinearTangent(curve.keys[k - 1], keyframe);
+                    var outTangent = CalculateLinearTangent(keyframe, curve.keys[k + 1]);
+                    var tangent = inTangent + outTangent / 2f;
+                    keyframe.inTangent = tangent;
+                    keyframe.outTangent = tangent;
+                    keyframe.inWeight = 0.33f;
+                    keyframe.outWeight = 0.33f;
+                    curve.MoveKey(k, keyframe);
+                }
+
+                var cloneFirstToLastKeyframe = curve.keys[0];
+                cloneFirstToLastKeyframe.time = curve.keys[curve.keys.Length - 1].time;
+                curve.MoveKey(curve.keys.Length - 1, cloneFirstToLastKeyframe);
+            }
+        }
+
+        private static float CalculateTangent(Keyframe from, Keyframe to, float strength = 0.8f)
+        {
+            var tangent = CalculateLinearTangent(from, to);
+            if (tangent > 0)
+                return strength;
+            else if (tangent < 0)
+                return -strength;
+            else
+                return 0;
+        }
+
+        private static float CalculateLinearTangent(Keyframe from, Keyframe to)
+        {
+            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
+        }
+
+        private static float CalculateLinearTangent(float fromValue, float toValue, float fromTime, float toTime)
+        {
+            return (float)((fromValue - (double)toValue) / (fromTime - (double)toTime));
         }
     }
 }
