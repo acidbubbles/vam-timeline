@@ -14,7 +14,9 @@ namespace AcidBubbles.VamTimeline
     /// </summary>
     public class MainScript : MVRScript
     {
-        private const int MaxUndo = 30;
+        private const int MaxUndo = 20;
+        private const string AllAtoms = "(All Atoms)";
+        private const string AllControllers = "(All Controllers)";
 
         private AtomAnimation _animation;
         private JSONStorableStringChooser _animationJSON;
@@ -66,7 +68,7 @@ namespace AcidBubbles.VamTimeline
                 _speedJSON = new JSONStorableFloat("Speed", 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
                 CreateSlider(_speedJSON, true);
 
-                _selectedControllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string>(), "", "Selected Controller", val => { _animation.SelectControllerByName(val); RenderState(); ContextUpdated(); });
+                _selectedControllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); RenderState(); ContextUpdated(); });
                 _selectedControllerJSON.isStorable = false;
                 RegisterStringChooser(_selectedControllerJSON);
                 var frameFilterPopup = CreateScrollablePopup(_selectedControllerJSON);
@@ -343,7 +345,7 @@ namespace AcidBubbles.VamTimeline
             _speedJSON.valNoCallback = _animation.Speed;
             _lengthJSON.valNoCallback = _animation.AnimationLength;
             _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-            _selectedControllerJSON.valNoCallback = "";
+            _selectedControllerJSON.valNoCallback = AllControllers;
             RenderState();
             ContextUpdated();
         }
@@ -469,7 +471,7 @@ namespace AcidBubbles.VamTimeline
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
                 _blendDurationJSON.valNoCallback = _animation.BlendDuration;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-                _selectedControllerJSON.choices = new List<string> { "" }.Concat(_animation.GetControllersName()).ToList();
+                _selectedControllerJSON.choices = new List<string> { AllControllers }.Concat(_animation.GetControllersName()).ToList();
 
                 // Save
                 SaveState();
