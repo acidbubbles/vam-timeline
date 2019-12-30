@@ -18,28 +18,34 @@ namespace AcidBubbles.VamTimeline
         private const int MaxUndo = 20;
         private const string AllControllers = "(All Controllers)";
 
-        private AtomAnimation _animation;
-        private JSONStorableStringChooser _animationJSON;
-        private JSONStorableFloat _scrubberJSON;
-        private JSONStorableBool _lockedJSON;
-        private JSONStorableAction _playJSON;
-        private JSONStorableAction _stopJSON;
-        private JSONStorableStringChooser _displayModeJSON;
-        private JSONStorableString _displayJSON;
-        private JSONStorableStringChooser _controllerJSON;
-        private JSONStorableString _saveJSON;
-        private FreeControllerV3Animation _grabbedController;
-        private JSONStorableAction _nextFrameJSON;
-        private JSONStorableAction _previousFrameJSON;
+        // State
         private Serializer _serializer;
-        private JSONStorableStringChooser _selectedControllerJSON;
-        private JSONStorableStringChooser _linkedAnimationPatternJSON;
-        private JSONStorableFloat _speedJSON;
-        private JSONStorableFloat _lengthJSON;
-        private JSONStorableFloat _blendDurationJSON;
+        private AtomAnimation _animation;
+        private FreeControllerV3Animation _grabbedController;
         private readonly List<string> _undoList = new List<string>();
         private List<ClipboardEntry> _clipboard;
         private bool _restoring = true;
+
+        // Save
+        private JSONStorableString _saveJSON;
+
+        // Controls
+        private JSONStorableStringChooser _animationJSON;
+        private JSONStorableFloat _scrubberJSON;
+        private JSONStorableAction _playJSON;
+        private JSONStorableAction _stopJSON;
+        private JSONStorableStringChooser _selectedControllerJSON;
+        private JSONStorableAction _nextFrameJSON;
+        private JSONStorableAction _previousFrameJSON;
+
+        private JSONStorableBool _lockedJSON;
+        private JSONStorableFloat _lengthJSON;
+        private JSONStorableFloat _speedJSON;
+        private JSONStorableFloat _blendDurationJSON;
+        private JSONStorableStringChooser _addControllerListJSON;
+        private JSONStorableStringChooser _linkedAnimationPatternJSON;
+        private JSONStorableStringChooser _displayModeJSON;
+        private JSONStorableString _displayJSON;
 
 
         #region Lifecycle
@@ -58,9 +64,9 @@ namespace AcidBubbles.VamTimeline
                 _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val));
                 _animationJSON.isStorable = false;
                 RegisterStringChooser(_animationJSON);
-                var animationPopup = CreateScrollablePopup(_animationJSON, false);
-                animationPopup.popupPanelHeight = 800f;
-                animationPopup.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
+                var animationUI = CreateScrollablePopup(_animationJSON, false);
+                animationUI.popupPanelHeight = 800f;
+                animationUI.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
 
                 _scrubberJSON = new JSONStorableFloat("Time", 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true);
                 _scrubberJSON.isStorable = false;
@@ -69,45 +75,56 @@ namespace AcidBubbles.VamTimeline
 
                 _playJSON = new JSONStorableAction("Play", () => { _animation.Play(); ContextUpdated(); });
                 RegisterAction(_playJSON);
-                CreateButton("\u25B6 Play").button.onClick.AddListener(() => _playJSON.actionCallback());
+                var playUI = CreateButton("\u25B6 Play");
+                playUI.button.onClick.AddListener(() => _playJSON.actionCallback());
 
                 _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); ContextUpdated(); });
                 RegisterAction(_stopJSON);
-                CreateButton("\u25A0 Stop").button.onClick.AddListener(() => _stopJSON.actionCallback());
+                var stopUI = CreateButton("\u25A0 Stop");
+                stopUI.button.onClick.AddListener(() => _stopJSON.actionCallback());
 
                 _selectedControllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); RenderState(); ContextUpdated(); });
                 _selectedControllerJSON.isStorable = false;
                 RegisterStringChooser(_selectedControllerJSON);
-                var frameFilterPopup = CreateScrollablePopup(_selectedControllerJSON);
-                frameFilterPopup.popupPanelHeight = 800f;
+                var selectedControllerUI = CreateScrollablePopup(_selectedControllerJSON);
+                selectedControllerUI.popupPanelHeight = 800f;
 
                 _nextFrameJSON = new JSONStorableAction("Next Frame", () => { UpdateTime(_animation.GetNextFrame()); RenderState(); ContextUpdated(); });
                 RegisterAction(_nextFrameJSON);
-                CreateButton("\u2192 Next Frame").button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
+                var nextFrameUI = CreateButton("\u2192 Next Frame");
+                nextFrameUI.button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
                 _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { UpdateTime(_animation.GetPreviousFrame()); RenderState(); ContextUpdated(); });
                 RegisterAction(_previousFrameJSON);
-                CreateButton("\u2190 Previous Frame").button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
+                var previousFrameUI = CreateButton("\u2190 Previous Frame");
+                previousFrameUI.button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
                 JSONStorableStringChooser changeCurveJSON = null;
                 changeCurveJSON = new JSONStorableStringChooser("Change Curve", CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
-                var changeCurvePopup = CreatePopup(changeCurveJSON, false);
-                changeCurvePopup.popupPanelHeight = 800f;
+                var changeCurveUI = CreatePopup(changeCurveJSON, false);
+                changeCurveUI.popupPanelHeight = 800f;
 
-                CreateButton("Smooth All Frames", false).button.onClick.AddListener(() => SmoothAllFrames());
+                var smoothAllFramesUI = CreateButton("Smooth All Frames", false);
+                smoothAllFramesUI.button.onClick.AddListener(() => SmoothAllFrames());
 
-                CreateButton("Cut / Delete Frame", false).button.onClick.AddListener(() => Cut());
-                CreateButton("Copy Frame", false).button.onClick.AddListener(() => Copy());
-                CreateButton("Paste Frame", false).button.onClick.AddListener(() => Paste());
+                var cutUI = CreateButton("Cut / Delete Frame", false);
+                cutUI.button.onClick.AddListener(() => Cut());
+
+                var copyUI = CreateButton("Copy Frame", false);
+                copyUI.button.onClick.AddListener(() => Copy());
+
+                var pasteUI = CreateButton("Paste Frame", false);
+                pasteUI.button.onClick.AddListener(() => Paste());
 
                 // Right side
 
                 _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => { RenderState(); ContextUpdated(); });
                 RegisterBool(_lockedJSON);
-                var lockedToggle = CreateToggle(_lockedJSON, true);
-                lockedToggle.label = "Locked (Performance Mode)";
+                var lockedUI = CreateToggle(_lockedJSON, true);
+                lockedUI.label = "Locked (Performance Mode)";
 
-                CreateButton("Add New Animation", true).button.onClick.AddListener(() => AddAnimation());
+                var addAnimationUI = CreateButton("Add New Animation", true);
+                addAnimationUI.button.onClick.AddListener(() => AddAnimation());
 
                 _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
                 CreateSlider(_lengthJSON, true);
@@ -118,23 +135,24 @@ namespace AcidBubbles.VamTimeline
                 _blendDurationJSON = new JSONStorableFloat("Blend Duration", 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
                 CreateSlider(_blendDurationJSON, true);
 
-                _controllerJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller");
-                _controllerJSON.isStorable = false;
-                var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
-                controllerPopup.popupPanelHeight = 800f;
+                _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller");
+                _addControllerListJSON.isStorable = false;
+                var addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
+                addControllerUI.popupPanelHeight = 800f;
 
-                CreateButton("Add/Remove Controller", true).button.onClick.AddListener(() => AddSelectedController());
+                var toggleControllerUI = CreateButton("Add/Remove Controller", true);
+                toggleControllerUI.button.onClick.AddListener(() => AddSelectedController());
 
                 _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid));
-                _controllerJSON.isStorable = false;
-                var linkedAnimationPatternPopup = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
-                linkedAnimationPatternPopup.popupPanelHeight = 800f;
-                linkedAnimationPatternPopup.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
+                _addControllerListJSON.isStorable = false;
+                var linkedAnimationPatternUI = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
+                linkedAnimationPatternUI.popupPanelHeight = 800f;
+                linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
 
-                var undoButton = CreateButton("Undo", true);
+                var undoUI = CreateButton("Undo", true);
                 // TODO: Right now it doesn't work for some reason...
-                undoButton.button.interactable = false;
-                undoButton.button.onClick.AddListener(() => Undo());
+                undoUI.button.interactable = false;
+                undoUI.button.onClick.AddListener(() => Undo());
 
                 _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
                 CreatePopup(_displayModeJSON, true);
@@ -283,7 +301,7 @@ namespace AcidBubbles.VamTimeline
                     if (_grabbedController == null && grabbing != null)
                     {
                         _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
-                        _controllerJSON.val = grabbing.name;
+                        _addControllerListJSON.val = grabbing.name;
                     }
                     else if (_grabbedController != null && grabbing == null)
                     {
@@ -435,7 +453,7 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
-                var uid = _controllerJSON.val;
+                var uid = _addControllerListJSON.val;
                 var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
@@ -565,10 +583,10 @@ namespace AcidBubbles.VamTimeline
             display.Append("Frames:");
             foreach (var f in frames.Distinct())
             {
-                if(f == time)
-                display.Append($"[{f:0.00}]");
+                if (f == time)
+                    display.Append($"[{f:0.00}]");
                 else
-                display.Append($" {f:0.00} ");
+                    display.Append($" {f:0.00} ");
             }
             display.AppendLine();
             display.AppendLine("Affects:");

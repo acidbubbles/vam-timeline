@@ -42,6 +42,9 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>../../../../../VaM_Data/Managed/UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>../../../../../VaM_Data/Managed/UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AnimationModule">
       <HintPath>../../../../../VaM_Data/Managed/UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
