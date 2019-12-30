@@ -1,0 +1,20 @@
+name: VamTimelinePackage
+
+on:
+  push:
+    tags: 
+      - v*
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+    - name: Zip the release package
+      id: zip
+      run: zip -r "VamTimeline.${VERSION}.zip" "./src" -x "*.csproj"
