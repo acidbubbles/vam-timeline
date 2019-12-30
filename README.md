@@ -4,7 +4,7 @@ An animation timeline with keyframe and controllable curves
 
 ## Installing
 
-Download the content of `src/*` into `(VaM Install Folder)/Custom/Scripts/Acidbubbles/vam-timeline`. The simplest way is to download the `.zip` file in the [Releases](https://github.com/acidbubbles/vam-timeline/releases) page directly in your VaM folder.
+Download `VamTimeline.zip` from [Releases](https://github.com/acidbubbles/vam-timeline/releases) and extract it into `(VaM Install Folder)/Custom/Scripts/Acidbubbles/VamTimeline`.
 
 ## Basic Setup
 
