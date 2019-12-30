@@ -12,7 +12,7 @@ namespace AcidBubbles.VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class Controller : MVRScript
+    public class ControllerPlugin : MVRScript
     {
         private class LinkedAnimation
         {
@@ -125,7 +125,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.Controller.Init: " + exc);
+                SuperController.LogError("VamTimeline.ControllerPlugin.Init: " + exc);
             }
         }
 
@@ -179,7 +179,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.Controller.OnEnable: " + exc);
+                SuperController.LogError("VamTimeline.ControllerPlugin.OnEnable: " + exc);
             }
         }
 
@@ -290,7 +290,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.Controller.OnDisable: " + exc);
+                SuperController.LogError("VamTimeline.ControllerPlugin.OnDisable: " + exc);
             }
         }
 
@@ -346,7 +346,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.Controller.LinkAtom: " + exc);
+                SuperController.LogError("VamTimeline.ControllerPlugin.LinkAtom: " + exc);
             }
         }
 
@@ -393,7 +393,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.Controller.Update: " + exc);
+                SuperController.LogError("VamTimeline.ControllerPlugin.Update: " + exc);
             }
         }
 

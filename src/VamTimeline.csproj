@@ -62,9 +62,9 @@
     <Compile Include="VamTimeline.Support.AtomAnimation.cs" />
     <Compile Include="VamTimeline.Support.AtomPlugin.cs" />
 
-    <Compile Include="VamTimeline.Backup.cs" />
+    <Compile Include="VamTimeline.BackupPlugin.cs" />
 
-    <Compile Include="VamTimeline.Controller.cs" />
+    <Compile Include="VamTimeline.ControllerPlugin.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

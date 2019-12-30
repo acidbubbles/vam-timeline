@@ -8,7 +8,7 @@ namespace AcidBubbles.VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class Backup : MVRScript
+    public class BackupPlugin : MVRScript
     {
         private JSONStorableString _backupJSON;
 
@@ -23,7 +23,7 @@ namespace AcidBubbles.VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("Backup Init: " + exc);
+                SuperController.LogError("VamTimeline.BackupPlugin.Init: " + exc);
             }
         }
     }

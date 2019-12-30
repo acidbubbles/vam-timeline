@@ -123,13 +123,13 @@ namespace AcidBubbles.VamTimeline
                 var controllerPopup = CreateScrollablePopup(_controllerJSON, true);
                 controllerPopup.popupPanelHeight = 800f;
 
+                CreateButton("Add/Remove Controller", true).button.onClick.AddListener(() => AddSelectedController());
+
                 _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid));
                 _controllerJSON.isStorable = false;
                 var linkedAnimationPatternPopup = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
                 linkedAnimationPatternPopup.popupPanelHeight = 800f;
                 linkedAnimationPatternPopup.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
-
-                CreateButton("Add/Remove Controller", true).button.onClick.AddListener(() => AddSelectedController());
 
                 var undoButton = CreateButton("Undo", true);
                 // TODO: Right now it doesn't work for some reason...
@@ -354,7 +354,7 @@ namespace AcidBubbles.VamTimeline
 
                 if (_animation == null)
                 {
-                    var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("Backup"));
+                    var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimeline.BackupPlugin"));
                     if (backupStorableID != null)
                     {
                         var backupStorable = containingAtom.GetStorableByID(backupStorableID);
@@ -508,9 +508,10 @@ namespace AcidBubbles.VamTimeline
         {
             public const string None = "None";
             public const string Default = "Default";
+            public const string ShowAllControllers = "ShowAllControllers";
             public const string Debug = "Debug";
 
-            public static readonly List<string> Values = new List<string> { None, Default, Debug };
+            public static readonly List<string> Values = new List<string> { None, Default, ShowAllControllers, Debug };
         }
 
         public void RenderState()
@@ -533,6 +534,9 @@ namespace AcidBubbles.VamTimeline
                 case RenderingModes.Default:
                     RenderStateDefault();
                     break;
+                case RenderingModes.ShowAllControllers:
+                    RenderStateShowAllControllers();
+                    break;
                 case RenderingModes.Debug:
                     RenderStateDebug();
                     break;
@@ -544,6 +548,38 @@ namespace AcidBubbles.VamTimeline
         public void RenderStateDefault()
         {
             var time = _scrubberJSON.val;
+            var frames = new List<float>();
+            var controllers = new List<string>();
+            foreach (var controller in _animation.GetAllOrSelectedControllers())
+            {
+                var keyTimes = controller.Curves.SelectMany(c => c.keys.Take(c.keys.Length - 1)).Select(k => k.time).Distinct();
+                foreach (var keyTime in keyTimes)
+                {
+                    frames.Add(keyTime);
+                    if (keyTime == time)
+                        controllers.Add($"{controller.Controller.containingAtom.name}:{controller.Controller.name}");
+                }
+            }
+            var display = new StringBuilder();
+            frames.Sort();
+            display.Append("Frames:");
+            foreach (var f in frames.Distinct())
+            {
+                if(f == time)
+                display.Append($"[{f:0.00}]");
+                else
+                display.Append($" {f:0.00} ");
+            }
+            display.AppendLine();
+            display.AppendLine("Affects:");
+            foreach (var c in controllers)
+                display.AppendLine(c);
+            _displayJSON.val = display.ToString();
+        }
+
+        public void RenderStateShowAllControllers()
+        {
+            var time = _scrubberJSON.val;
             var display = new StringBuilder();
             foreach (var controller in _animation.GetAllOrSelectedControllers())
             {
@@ -551,7 +587,7 @@ namespace AcidBubbles.VamTimeline
                 var keyTimes = controller.Curves.SelectMany(c => c.keys.Take(c.keys.Length - 1)).Select(k => k.time).Distinct();
                 foreach (var keyTime in keyTimes)
                 {
-                    display.Append($"{(keyTime == time ? "[" : " ")}{keyTime:0.00}{(keyTime == time ? "]" : " ")}");
+                    display.Append($"{(keyTime == time ? "[" : " ")}{keyTime:0.0000}{(keyTime == time ? "]" : " ")}");
                 }
                 display.AppendLine();
             }
