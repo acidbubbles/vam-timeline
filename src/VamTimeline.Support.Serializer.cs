@@ -22,15 +22,19 @@ namespace AcidBubbles.VamTimeline
             if (string.IsNullOrEmpty(val)) return null;
 
             var animationJSON = JSON.Parse(val);
-            var animation = new AtomAnimation(atom);
-            animation.BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f);
+            var animation = new AtomAnimation(atom)
+            {
+                BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f)
+            };
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value);
-                clip.Speed = DeserializeFloat(clipJSON["Speed"], 1f);
-                clip.AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f);
+                var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value)
+                {
+                    Speed = DeserializeFloat(clipJSON["Speed"], 1f),
+                    AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f)
+                };
                 var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
                 if (!string.IsNullOrEmpty(animationPatternUID))
                 {
@@ -88,31 +92,37 @@ namespace AcidBubbles.VamTimeline
 
         public string SerializeAnimation(AtomAnimation animation)
         {
-            var animationJSON = new JSONClass();
-            animationJSON.Add("BlendDuration", animation.BlendDuration.ToString());
+            var animationJSON = new JSONClass
+            {
+                { "BlendDuration", animation.BlendDuration.ToString() }
+            };
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);
             foreach (var clip in animation.Clips)
             {
-                var clipJSON = new JSONClass();
-                clipJSON.Add("AnimationName", clip.AnimationName);
-                clipJSON.Add("Speed", clip.Speed.ToString());
-                clipJSON.Add("AnimationLength", clip.AnimationLength.ToString());
+                var clipJSON = new JSONClass
+                {
+                    { "AnimationName", clip.AnimationName },
+                    { "Speed", clip.Speed.ToString() },
+                    { "AnimationLength", clip.AnimationLength.ToString() }
+                };
                 if (clip.AnimationPattern != null)
                     clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);
                 var controllersJSON = new JSONArray();
                 clipJSON.Add("Controllers", controllersJSON);
                 foreach (var controller in clip.Controllers)
                 {
-                    var controllerJSON = new JSONClass();
-                    controllerJSON.Add("Controller", controller.Controller.name);
-                    controllerJSON.Add("X", SerializeCurve(controller.X));
-                    controllerJSON.Add("Y", SerializeCurve(controller.Y));
-                    controllerJSON.Add("Z", SerializeCurve(controller.Z));
-                    controllerJSON.Add("RotX", SerializeCurve(controller.RotX));
-                    controllerJSON.Add("RotY", SerializeCurve(controller.RotY));
-                    controllerJSON.Add("RotZ", SerializeCurve(controller.RotZ));
-                    controllerJSON.Add("RotW", SerializeCurve(controller.RotW));
+                    var controllerJSON = new JSONClass
+                    {
+                        { "Controller", controller.Controller.name },
+                        { "X", SerializeCurve(controller.X) },
+                        { "Y", SerializeCurve(controller.Y) },
+                        { "Z", SerializeCurve(controller.Z) },
+                        { "RotX", SerializeCurve(controller.RotX) },
+                        { "RotY", SerializeCurve(controller.RotY) },
+                        { "RotZ", SerializeCurve(controller.RotZ) },
+                        { "RotW", SerializeCurve(controller.RotW) }
+                    };
                     controllersJSON.Add(controllerJSON);
                 }
                 clipsJSON.Add(clipJSON);
@@ -128,11 +138,13 @@ namespace AcidBubbles.VamTimeline
 
             foreach (var keyframe in curve.keys)
             {
-                var keyframeJSON = new JSONClass();
-                keyframeJSON.Add("time", keyframe.time.ToString());
-                keyframeJSON.Add("value", keyframe.value.ToString());
-                keyframeJSON.Add("inTangent", keyframe.inTangent.ToString());
-                keyframeJSON.Add("outTangent", keyframe.outTangent.ToString());
+                var keyframeJSON = new JSONClass
+                {
+                    { "time", keyframe.time.ToString() },
+                    { "value", keyframe.value.ToString() },
+                    { "inTangent", keyframe.inTangent.ToString() },
+                    { "outTangent", keyframe.outTangent.ToString() }
+                };
                 keyframesJSON.Add(keyframeJSON);
             }
 

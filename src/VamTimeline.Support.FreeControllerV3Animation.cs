@@ -41,8 +41,49 @@ namespace AcidBubbles.VamTimeline
             _animationLength = animationLength;
         }
 
-        private void UpdateCurves(AnimationClip clip)
+        #region Control
+
+        public void SetLength(float length)
         {
+            foreach (var curve in Curves)
+            {
+                if (length > _animationLength)
+                {
+                    for (var i = 0; i < curve.keys.Length - 1; i++)
+                    {
+                        if (curve.keys[i].time < length) continue;
+                        curve.RemoveKey(i);
+                    }
+                }
+
+                var last = curve.keys[curve.keys.Length - 1];
+                last.time = length;
+                curve.MoveKey(curve.keys.Length - 1, last);
+            }
+            _animationLength = length;
+        }
+
+
+        public void ReapplyCurvesToClip(AnimationClip clip)
+        {
+            // Smooth loop
+            foreach (var curve in Curves)
+            {
+                if (curve.keys.Length <= 2) continue;
+                var keyframe = curve.keys[0];
+                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
+                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
+                var tangent = inTangent + outTangent / 2f;
+                keyframe.inTangent = tangent;
+                keyframe.outTangent = tangent;
+                keyframe.inWeight = 0.33f;
+                keyframe.outWeight = 0.33f;
+                curve.MoveKey(0, keyframe);
+
+                keyframe.time = curve.keys[curve.keys.Length - 1].time;
+                curve.MoveKey(curve.keys.Length - 1, keyframe);
+            }
+
             var path = GetRelativePath();
             clip.SetCurve(path, typeof(Transform), "localPosition.x", X);
             clip.SetCurve(path, typeof(Transform), "localPosition.y", Y);
@@ -68,78 +109,40 @@ namespace AcidBubbles.VamTimeline
             return string.Join("/", parts.ToArray());
         }
 
-        public void SetLength(float length)
-        {
-            foreach (var curve in Curves)
-            {
-                if (length > _animationLength)
-                {
-                    for (var i = 0; i < curve.keys.Length - 1; i++)
-                    {
-                        if (curve.keys[i].time < length) continue;
-                        curve.RemoveKey(i);
-                    }
-                }
+        #endregion
 
-                var last = curve.keys[curve.keys.Length - 1];
-                last.time = length;
-                curve.MoveKey(curve.keys.Length - 1, last);
-            }
-            _animationLength = length;
+        #region Keyframes control
+
+        public void SetKeyframeToCurrentTransform(float time)
+        {
+            SetKeyframeToTransform(time, Controller.transform.localPosition, Controller.transform.localRotation);
         }
 
-        public void SetKeyToCurrentControllerTransform(float time)
-        {
-            SetKeyToTransform(time, Controller.transform.localPosition, Controller.transform.localRotation);
-        }
-
-        public void SetKeyToTransform(float time, Vector3 localPosition, Quaternion localRotation)
+        public void SetKeyframeToTransform(float time, Vector3 localPosition, Quaternion localRotation)
         {
             if (time == 0f)
             {
-                SetKey(0f, localPosition, localRotation);
-                SetKey(_animationLength, localPosition, localRotation);
+                SetKeyframe(0f, localPosition, localRotation);
+                SetKeyframe(_animationLength, localPosition, localRotation);
             }
             else
             {
-                SetKey(time, localPosition, localRotation);
+                SetKeyframe(time, localPosition, localRotation);
             }
         }
 
-        public void RebuildAnimation(AnimationClip clip)
+        public void SetKeyframe(float time, Vector3 position, Quaternion rotation)
         {
-            // Smooth loop
-            foreach (var curve in Curves)
-            {
-                if (curve.keys.Length <= 2) continue;
-                var keyframe = curve.keys[0];
-                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
-                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
-                var tangent = inTangent + outTangent / 2f;
-                keyframe.inTangent = tangent;
-                keyframe.outTangent = tangent;
-                keyframe.inWeight = 0.33f;
-                keyframe.outWeight = 0.33f;
-                curve.MoveKey(0, keyframe);
-
-                keyframe.time = curve.keys[curve.keys.Length - 1].time;
-                curve.MoveKey(curve.keys.Length - 1, keyframe);
-            }
-            UpdateCurves(clip);
+            SetKeyframe(X, time, position.x);
+            SetKeyframe(Y, time, position.y);
+            SetKeyframe(Z, time, position.z);
+            SetKeyframe(RotX, time, rotation.x);
+            SetKeyframe(RotY, time, rotation.y);
+            SetKeyframe(RotZ, time, rotation.z);
+            SetKeyframe(RotW, time, rotation.w);
         }
 
-        public void SetKey(float time, Vector3 position, Quaternion rotation)
-        {
-            AddKey(X, time, position.x);
-            AddKey(Y, time, position.y);
-            AddKey(Z, time, position.z);
-            AddKey(RotX, time, rotation.x);
-            AddKey(RotY, time, rotation.y);
-            AddKey(RotZ, time, rotation.z);
-            AddKey(RotW, time, rotation.w);
-        }
-
-        private static void AddKey(AnimationCurve curve, float time, float value)
+        private static void SetKeyframe(AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
             Keyframe keyframe;
@@ -153,49 +156,15 @@ namespace AcidBubbles.VamTimeline
             }
         }
 
-        public FreeControllerV3Snapshot GetCurveSnapshot(float time)
-        {
-            return new FreeControllerV3Snapshot
-            {
-                X = X.keys.First(k => k.time == time),
-                Y = Y.keys.First(k => k.time == time),
-                Z = Z.keys.First(k => k.time == time),
-                RotX = RotX.keys.First(k => k.time == time),
-                RotY = RotY.keys.First(k => k.time == time),
-                RotZ = RotZ.keys.First(k => k.time == time),
-                RotW = RotW.keys.First(k => k.time == time),
-            };
-        }
+        #endregion
 
-        public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
-        {
-            SetKeySnapshot(time, X, snapshot.X);
-            SetKeySnapshot(time, Y, snapshot.Y);
-            SetKeySnapshot(time, Z, snapshot.Z);
-            SetKeySnapshot(time, RotX, snapshot.RotX);
-            SetKeySnapshot(time, RotY, snapshot.RotY);
-            SetKeySnapshot(time, RotZ, snapshot.RotZ);
-            SetKeySnapshot(time, RotW, snapshot.RotW);
-        }
-
-        private void SetKeySnapshot(float time, AnimationCurve curve, Keyframe keyframe)
-        {
-            var index = Array.FindIndex(curve.keys, k => k.time == time);
-            if (index == -1)
-                index = curve.AddKey(time, keyframe.value);
-            keyframe.time = time;
-            curve.MoveKey(index, keyframe);
-
-            if (time == 0f)
-            {
-                keyframe.time = curve.keys[curve.keys.Length - 1].time;
-                curve.MoveKey(curve.keys.Length - 1, keyframe);
-            }
-        }
+        #region Curves
 
         public void ChangeCurve(float time, string val)
         {
             if (string.IsNullOrEmpty(val)) return;
+            if (time == 0f || time == _animationLength) return;
+
             foreach (var curve in Curves)
             {
                 var key = Array.FindIndex(curve.keys, k => k.time == time);
@@ -293,5 +262,51 @@ namespace AcidBubbles.VamTimeline
         {
             return (float)((fromValue - (double)toValue) / (fromTime - (double)toTime));
         }
+
+        #endregion
+
+        #region Snapshots
+
+        public FreeControllerV3Snapshot GetCurveSnapshot(float time)
+        {
+            return new FreeControllerV3Snapshot
+            {
+                X = X.keys.First(k => k.time == time),
+                Y = Y.keys.First(k => k.time == time),
+                Z = Z.keys.First(k => k.time == time),
+                RotX = RotX.keys.First(k => k.time == time),
+                RotY = RotY.keys.First(k => k.time == time),
+                RotZ = RotZ.keys.First(k => k.time == time),
+                RotW = RotW.keys.First(k => k.time == time),
+            };
+        }
+
+        public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
+        {
+            SetKeySnapshot(time, X, snapshot.X);
+            SetKeySnapshot(time, Y, snapshot.Y);
+            SetKeySnapshot(time, Z, snapshot.Z);
+            SetKeySnapshot(time, RotX, snapshot.RotX);
+            SetKeySnapshot(time, RotY, snapshot.RotY);
+            SetKeySnapshot(time, RotZ, snapshot.RotZ);
+            SetKeySnapshot(time, RotW, snapshot.RotW);
+        }
+
+        private void SetKeySnapshot(float time, AnimationCurve curve, Keyframe keyframe)
+        {
+            var index = Array.FindIndex(curve.keys, k => k.time == time);
+            if (index == -1)
+                index = curve.AddKey(time, keyframe.value);
+            keyframe.time = time;
+            curve.MoveKey(index, keyframe);
+
+            if (time == 0f)
+            {
+                keyframe.time = curve.keys[curve.keys.Length - 1].time;
+                curve.MoveKey(curve.keys.Length - 1, keyframe);
+            }
+        }
+
+        #endregion
     }
 }

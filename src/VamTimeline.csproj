@@ -57,6 +57,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="VamTimeline.Support.AtomPluginStorableNames.cs" />
+
     <Compile Include="VamTimeline.Support.CurveTypeValues.cs" />
     <Compile Include="VamTimeline.Support.Serializer.cs" />
     <Compile Include="VamTimeline.Support.FreeControllerV3Snapshot.cs" />
@@ -67,7 +69,9 @@
 
     <Compile Include="VamTimeline.BackupPlugin.cs" />
 
-    <Compile Include="VamTimeline.ControllerPlugin.cs" />
+    <Compile Include="VamTimeline.Support.SimpleSignUI.cs" />
+    <Compile Include="VamTimeline.Support.LinkedAnimation.cs" />
+    <Compile Include="VamTimeline.Support.ControllerPlugin.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

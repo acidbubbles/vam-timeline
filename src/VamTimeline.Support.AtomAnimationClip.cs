@@ -123,7 +123,7 @@ namespace AcidBubbles.VamTimeline
             Clip.ClearCurves();
             foreach (var controller in Controllers)
             {
-                controller.RebuildAnimation(Clip);
+                controller.ReapplyCurvesToClip(Clip);
             }
             Clip.EnsureQuaternionContinuity();
         }

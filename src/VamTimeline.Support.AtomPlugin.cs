@@ -56,51 +56,57 @@ namespace AcidBubbles.VamTimeline
             {
                 _serializer = new Serializer();
 
-                _saveJSON = new JSONStorableString("Save", "", (string v) => RestoreState(v));
+                _saveJSON = new JSONStorableString(AtomPluginStorableNames.Save, "", (string v) => RestoreState(v));
                 RegisterString(_saveJSON);
 
                 // Left side
 
-                _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val));
-                _animationJSON.isStorable = false;
+                _animationJSON = new JSONStorableStringChooser(AtomPluginStorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
+                {
+                    isStorable = false
+                };
                 RegisterStringChooser(_animationJSON);
                 var animationUI = CreateScrollablePopup(_animationJSON, false);
                 animationUI.popupPanelHeight = 800f;
                 animationUI.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.Clips.Select(c => c.AnimationName).ToList();
 
-                _scrubberJSON = new JSONStorableFloat("Time", 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true);
-                _scrubberJSON.isStorable = false;
+                _scrubberJSON = new JSONStorableFloat(AtomPluginStorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true)
+                {
+                    isStorable = false
+                };
                 RegisterFloat(_scrubberJSON);
                 CreateSlider(_scrubberJSON);
 
-                _playJSON = new JSONStorableAction("Play", () => { _animation.Play(); ContextUpdated(); });
+                _playJSON = new JSONStorableAction(AtomPluginStorableNames.Play, () => { _animation.Play(); ContextUpdated(); });
                 RegisterAction(_playJSON);
                 var playUI = CreateButton("\u25B6 Play");
                 playUI.button.onClick.AddListener(() => _playJSON.actionCallback());
 
-                _stopJSON = new JSONStorableAction("Stop", () => { _animation.Stop(); RenderState(); ContextUpdated(); });
+                _stopJSON = new JSONStorableAction(AtomPluginStorableNames.Stop, () => { _animation.Stop(); RenderState(); ContextUpdated(); });
                 RegisterAction(_stopJSON);
                 var stopUI = CreateButton("\u25A0 Stop");
                 stopUI.button.onClick.AddListener(() => _stopJSON.actionCallback());
 
-                _selectedControllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); RenderState(); ContextUpdated(); });
-                _selectedControllerJSON.isStorable = false;
+                _selectedControllerJSON = new JSONStorableStringChooser(AtomPluginStorableNames.SelectedController, new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); RenderState(); ContextUpdated(); })
+                {
+                    isStorable = false
+                };
                 RegisterStringChooser(_selectedControllerJSON);
                 var selectedControllerUI = CreateScrollablePopup(_selectedControllerJSON);
                 selectedControllerUI.popupPanelHeight = 800f;
 
-                _nextFrameJSON = new JSONStorableAction("Next Frame", () => { UpdateTime(_animation.GetNextFrame()); RenderState(); ContextUpdated(); });
+                _nextFrameJSON = new JSONStorableAction(AtomPluginStorableNames.NextFrame, () => { UpdateTime(_animation.GetNextFrame()); RenderState(); ContextUpdated(); });
                 RegisterAction(_nextFrameJSON);
                 var nextFrameUI = CreateButton("\u2192 Next Frame");
                 nextFrameUI.button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-                _previousFrameJSON = new JSONStorableAction("Previous Frame", () => { UpdateTime(_animation.GetPreviousFrame()); RenderState(); ContextUpdated(); });
+                _previousFrameJSON = new JSONStorableAction(AtomPluginStorableNames.PreviousFrame, () => { UpdateTime(_animation.GetPreviousFrame()); RenderState(); ContextUpdated(); });
                 RegisterAction(_previousFrameJSON);
                 var previousFrameUI = CreateButton("\u2190 Previous Frame");
                 previousFrameUI.button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
                 JSONStorableStringChooser changeCurveJSON = null;
-                changeCurveJSON = new JSONStorableStringChooser("Change Curve", CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
+                changeCurveJSON = new JSONStorableStringChooser(AtomPluginStorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) changeCurveJSON.val = ""; });
                 var changeCurveUI = CreatePopup(changeCurveJSON, false);
                 changeCurveUI.popupPanelHeight = 800f;
 
@@ -118,7 +124,7 @@ namespace AcidBubbles.VamTimeline
 
                 // Right side
 
-                _lockedJSON = new JSONStorableBool("Locked", false, (bool val) => { RenderState(); ContextUpdated(); });
+                _lockedJSON = new JSONStorableBool(AtomPluginStorableNames.Locked, false, (bool val) => { RenderState(); ContextUpdated(); });
                 RegisterBool(_lockedJSON);
                 var lockedUI = CreateToggle(_lockedJSON, true);
                 lockedUI.label = "Locked (Performance Mode)";
@@ -126,17 +132,19 @@ namespace AcidBubbles.VamTimeline
                 var addAnimationUI = CreateButton("Add New Animation", true);
                 addAnimationUI.button.onClick.AddListener(() => AddAnimation());
 
-                _lengthJSON = new JSONStorableFloat("Animation Length", 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
+                _lengthJSON = new JSONStorableFloat(AtomPluginStorableNames.AnimationLength, 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
                 CreateSlider(_lengthJSON, true);
 
-                _speedJSON = new JSONStorableFloat("Animation Speed", 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
+                _speedJSON = new JSONStorableFloat(AtomPluginStorableNames.AnimationSpeed, 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
                 CreateSlider(_speedJSON, true);
 
-                _blendDurationJSON = new JSONStorableFloat("Blend Duration", 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
+                _blendDurationJSON = new JSONStorableFloat(AtomPluginStorableNames.BlendDuration, 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
                 CreateSlider(_blendDurationJSON, true);
 
-                _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller");
-                _addControllerListJSON.isStorable = false;
+                _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller")
+                {
+                    isStorable = false
+                };
                 var addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
                 addControllerUI.popupPanelHeight = 800f;
 
@@ -154,11 +162,13 @@ namespace AcidBubbles.VamTimeline
                 undoUI.button.interactable = false;
                 undoUI.button.onClick.AddListener(() => Undo());
 
-                _displayModeJSON = new JSONStorableStringChooser("Display Mode", RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
+                _displayModeJSON = new JSONStorableStringChooser(AtomPluginStorableNames.DisplayMode, RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { RenderState(); ContextUpdated(); });
                 CreatePopup(_displayModeJSON, true);
 
-                _displayJSON = new JSONStorableString("Display", "");
-                _displayJSON.isStorable = false;
+                _displayJSON = new JSONStorableString(AtomPluginStorableNames.Display, "")
+                {
+                    isStorable = false
+                };
                 RegisterString(_displayJSON);
                 CreateTextField(_displayJSON, true);
 
@@ -307,7 +317,7 @@ namespace AcidBubbles.VamTimeline
                     {
                         // TODO: This should be done by the controller (updating the animation resets the time)
                         var time = _animation.Time;
-                        _grabbedController.SetKeyToCurrentControllerTransform(time);
+                        _grabbedController.SetKeyframeToCurrentTransform(time);
                         _animation.RebuildAnimation();
                         UpdateTime(time);
                         _grabbedController = null;
@@ -469,7 +479,7 @@ namespace AcidBubbles.VamTimeline
                     controller.currentPositionState = FreeControllerV3.PositionState.On;
                     controller.currentRotationState = FreeControllerV3.RotationState.On;
                     var animController = _animation.Add(controller);
-                    animController.SetKeyToCurrentControllerTransform(0f);
+                    animController.SetKeyframeToCurrentTransform(0f);
                 }
                 _animation.Updated.Invoke();
             }
@@ -503,14 +513,15 @@ namespace AcidBubbles.VamTimeline
             var lastAnimationName = _animation.Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
-            var clip = new AtomAnimationClip(animationName);
-
-            clip.Speed = _animation.Speed;
-            clip.AnimationLength = _animation.AnimationLength;
+            var clip = new AtomAnimationClip(animationName)
+            {
+                Speed = _animation.Speed,
+                AnimationLength = _animation.AnimationLength
+            };
             foreach (var controller in _animation.Current.Controllers.Select(c => c.Controller))
             {
                 var animController = clip.Add(controller);
-                animController.SetKeyToCurrentControllerTransform(0f);
+                animController.SetKeyframeToCurrentTransform(0f);
             }
 
             _animation.AddClip(clip);
