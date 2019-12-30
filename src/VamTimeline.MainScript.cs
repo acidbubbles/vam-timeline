@@ -177,6 +177,7 @@ namespace AcidBubbles.VamTimeline
             animationPattern.SetBoolParamValue("pause", false);
             animationPattern.SetBoolParamValue("loop", false);
             animationPattern.SetBoolParamValue("loopOnce", false);
+            animationPattern.SetFloatParamValue("speed", _animation.Speed);
             animationPattern.ResetAnimation();
             AnimationUpdated();
         }
