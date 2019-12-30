@@ -1,22 +1,10 @@
 # Vam Timeline TODOs
 
 - Undo / Redo
-- Auto-save
-- Move keyframes (all keyframes together)
-- Toggle Add/Remove controller instead of using two buttons
 - Choose whether to loop, ping pong, or play once
 - Trigger on animation complete / on keyframes
 - Autoplay on load
 - Animate morphs
-- Attach triggers to the animation (maybe sync with an animation pattern for scrubbing?)
 - Animate any property (physics, scale, etc.)
-- Define animation transitions using built-in unity animation blending
-- Copy/paste frame (all controllers in frame)
-- Delete keyframes
 - When locked, disable all controls
-- Speed should be at the clip level
-- Move the "current clip" inside the clip for faster access
-- Speed is not saved
 - Improve naming of animation (guid?)
-- Bring controllers when creating new animations
-- Make a UI that actually changes based on the selection (like tabs, one to configure animation, one to scrub, one to modify keyframes...)
