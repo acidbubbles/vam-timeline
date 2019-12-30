@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace AcidBubbles.VamTimeline.Tools
+namespace AcidBubbles.VamTimeline
 {
     /// <summary>
-    /// VaM Timeline Controller
+    /// VaM Timeline
     /// By Acidbubbles
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class VamTimelineController : MVRScript
+    public class Controller : MVRScript
     {
         private class LinkedAnimation
         {
@@ -21,13 +21,16 @@ namespace AcidBubbles.VamTimeline.Tools
             public LinkedAnimation(Atom atom)
             {
                 Atom = atom;
+                var storableId = Atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
+                if (storableId == null)
+                    throw new InvalidOperationException($"Atom {atom.uid} does not have AcidBubbles.VamTimeline.AtomPlugin configured.");
             }
 
             private JSONStorable Storable
             {
                 get
                 {
-                    var storableId = Atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.MainScript"));
+                    var storableId = Atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
                     return Atom.GetStorableByID(storableId);
                 }
             }
@@ -122,7 +125,7 @@ namespace AcidBubbles.VamTimeline.Tools
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Init: " + exc);
+                SuperController.LogError("VamTimeline.Controller.Init: " + exc);
             }
         }
 
@@ -176,7 +179,7 @@ namespace AcidBubbles.VamTimeline.Tools
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Enable: " + exc);
+                SuperController.LogError("VamTimeline.Controller.OnEnable: " + exc);
             }
         }
 
@@ -287,7 +290,7 @@ namespace AcidBubbles.VamTimeline.Tools
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Disable: " + exc);
+                SuperController.LogError("VamTimeline.Controller.OnDisable: " + exc);
             }
         }
 
@@ -314,7 +317,7 @@ namespace AcidBubbles.VamTimeline.Tools
                 // TODO: Handle this, it will allow for morph animations too!
                 if (atom.type == "AnimationPattern")
                     yield return atom.uid;
-                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.MainScript")))
+                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin")))
                 {
                     if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
 
@@ -343,7 +346,7 @@ namespace AcidBubbles.VamTimeline.Tools
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController LinkAtom: " + exc);
+                SuperController.LogError("VamTimeline.Controller.LinkAtom: " + exc);
             }
         }
 
@@ -390,7 +393,7 @@ namespace AcidBubbles.VamTimeline.Tools
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimelineController Update: " + exc);
+                SuperController.LogError("VamTimeline.Controller.Update: " + exc);
             }
         }
 

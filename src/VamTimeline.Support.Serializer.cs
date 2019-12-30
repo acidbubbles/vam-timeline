@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AcidBubbles.VamTimeline
 {
     /// <summary>
-    /// VaM Timeline Controller
+    /// VaM Timeline
     /// By Acidbubbles
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline

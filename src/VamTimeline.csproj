@@ -54,13 +54,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="VamTimeline.CurveTypeValues.cs" />
-    <Compile Include="VamTimeline.Serializer.cs" />
-    <Compile Include="VamTimeline.FreeControllerV3Snapshot.cs" />
-    <Compile Include="VamTimeline.FreeControllerV3Animation.cs" />
-    <Compile Include="VamTimeline.AtomAnimationClip.cs" />
-    <Compile Include="VamTimeline.AtomAnimation.cs" />
-    <Compile Include="VamTimeline.MainScript.cs" />
+    <Compile Include="VamTimeline.Support.CurveTypeValues.cs" />
+    <Compile Include="VamTimeline.Support.Serializer.cs" />
+    <Compile Include="VamTimeline.Support.FreeControllerV3Snapshot.cs" />
+    <Compile Include="VamTimeline.Support.FreeControllerV3Animation.cs" />
+    <Compile Include="VamTimeline.Support.AtomAnimationClip.cs" />
+    <Compile Include="VamTimeline.Support.AtomAnimation.cs" />
+    <Compile Include="VamTimeline.Support.AtomPlugin.cs" />
+
+    <Compile Include="VamTimeline.Backup.cs" />
+
+    <Compile Include="VamTimeline.Controller.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

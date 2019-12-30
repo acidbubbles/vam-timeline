@@ -12,7 +12,7 @@ This is the main script for animating atoms. You can then add `VamTimeline.cslis
 
 This allows creating a floating payback controller, and control multiple atoms together. Create a `Simple Sign` atom and add the script to it. Optional if you only want to animate one atom.
 
-### tools/VamTimelineBackup.cs
+### tools/Backup.cs
 
 This allows for reloading the main script without losing your data. Mosty useful for development. Add to atoms with VamTimeline.cslist. Unnecessary with normal use.
 
