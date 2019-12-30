@@ -2,6 +2,18 @@
 
 An animation timeline with keyframe and controllable curves
 
+## Features
+
+- Animate controllers by creating frames for each controller and loop them
+- Scrubbing, playback, and frame navigation
+- Curve control
+- Link to animation pattern
+- Multiple animations and animation blending
+- Cut, Copy, Paste
+- Custom frame display
+- External playback controller
+- Sync multiple atom animations
+
 ## Installing
 
 Download `VamTimeline.zip` from [Releases](https://github.com/acidbubbles/vam-timeline/releases) and extract it into `(VaM Install Folder)/Custom/Scripts/Acidbubbles/VamTimeline`.
