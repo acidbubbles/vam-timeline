@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AcidBubbles.VamTimeline
 {
@@ -30,7 +31,7 @@ namespace AcidBubbles.VamTimeline
         // Save
         private JSONStorableString _saveJSON;
 
-        // Controls
+        // Storables
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableAction _playJSON;
@@ -49,6 +50,8 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableStringChooser _displayModeJSON;
         private JSONStorableString _displayJSON;
 
+        // UI
+        private UIDynamicButton _toggleControllerUI;
 
         #region Initialization
 
@@ -105,7 +108,7 @@ namespace AcidBubbles.VamTimeline
             _previousFrameJSON = new JSONStorableAction(AtomPluginStorableNames.PreviousFrame, () => { UpdateTime(_animation.GetPreviousFrame()); ContextUpdated(); });
             RegisterAction(_previousFrameJSON);
 
-            _changeCurveJSON = new JSONStorableStringChooser(AtomPluginStorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", val => { _animation.ChangeCurve(val); if (!string.IsNullOrEmpty(val)) _changeCurveJSON.val = ""; });
+            _changeCurveJSON = new JSONStorableStringChooser(AtomPluginStorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
 
             // Right side
 
@@ -118,7 +121,7 @@ namespace AcidBubbles.VamTimeline
 
             _blendDurationJSON = new JSONStorableFloat(AtomPluginStorableNames.BlendDuration, 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
 
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller")
+            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UpdateToggleAnimatedControllerButton(name))
             {
                 isStorable = false
             };
@@ -198,8 +201,8 @@ namespace AcidBubbles.VamTimeline
             var addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
             addControllerUI.popupPanelHeight = 800f;
 
-            var toggleControllerUI = CreateButton("Add/Remove Controller", true);
-            toggleControllerUI.button.onClick.AddListener(() => ToggleAnimatedController());
+            _toggleControllerUI = CreateButton("Add/Remove Controller", true);
+            _toggleControllerUI.button.onClick.AddListener(() => ToggleAnimatedController());
 
             var linkedAnimationPatternUI = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
             linkedAnimationPatternUI.popupPanelHeight = 800f;
@@ -322,6 +325,18 @@ namespace AcidBubbles.VamTimeline
                 _animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
         }
 
+        private void ChangeCurve(string val)
+        {
+            if (string.IsNullOrEmpty(val)) return;
+            _changeCurveJSON.valNoCallback = "";
+            if (_animation.Time == 0)
+            {
+                SuperController.LogMessage("Cannot specify curve type on frame 0");
+                return;
+            }
+            _animation.ChangeCurve(val);
+        }
+
         private void SmoothAllFrames()
         {
             _animation.SmoothAllFrames();
@@ -418,6 +433,23 @@ namespace AcidBubbles.VamTimeline
             ChangeAnimation(animationName);
         }
 
+        private void UpdateToggleAnimatedControllerButton(string name)
+        {
+            var btnText = _toggleControllerUI.button.GetComponentInChildren<Text>();
+            if (string.IsNullOrEmpty(name))
+            {
+                btnText.text = "Add/Remove Controller";
+                _toggleControllerUI.button.interactable = false;
+                return;
+            }
+
+            _toggleControllerUI.button.interactable = true;
+            if (_animation.Current.Controllers.Any(c => c.Controller.name == name))
+                btnText.text = "Remove Controller";
+            else
+                btnText.text = "Add Controller";
+        }
+
         private void ToggleAnimatedController()
         {
             try
@@ -431,16 +463,16 @@ namespace AcidBubbles.VamTimeline
                 }
                 if (_animation.Current.Controllers.Any(c => c.Controller == controller))
                 {
-
                     _animation.Remove(controller);
                 }
+                else
                 {
                     controller.currentPositionState = FreeControllerV3.PositionState.On;
                     controller.currentRotationState = FreeControllerV3.RotationState.On;
                     var animController = _animation.Add(controller);
                     animController.SetKeyframeToCurrentTransform(0f);
                 }
-                _animation.Updated.Invoke();
+                AnimationUpdated();
             }
             catch (Exception exc)
             {
@@ -708,6 +740,8 @@ namespace AcidBubbles.VamTimeline
                 _selectedControllerJSON.choices = new List<string> { AllControllers }.Concat(_animation.GetControllersName()).ToList();
                 _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 
+                UpdateToggleAnimatedControllerButton(_addControllerListJSON.val);
+
                 // Save
                 SaveState();
 
@@ -729,8 +763,10 @@ namespace AcidBubbles.VamTimeline
         {
             try
             {
+                var time = _animation.Time;
+
                 // Update UI
-                _scrubberJSON.valNoCallback = _animation.Time;
+                _scrubberJSON.valNoCallback = time;
 
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
