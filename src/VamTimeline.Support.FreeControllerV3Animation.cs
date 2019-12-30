@@ -195,58 +195,49 @@ namespace AcidBubbles.VamTimeline
 
         public void ChangeCurve(float time, string val)
         {
-            switch (val)
+            if (string.IsNullOrEmpty(val)) return;
+            foreach (var curve in Curves)
             {
-                case null:
-                case "":
-                    return;
-                case CurveTypeValues.Flat:
-                    foreach (var curve in Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var keyframe = curve.keys[key];
+                var key = Array.FindIndex(curve.keys, k => k.time == time);
+                if (key == -1) return;
+                var keyframe = curve.keys[key];
+                var before = curve.keys[key - 1];
+                var next = curve.keys[key + 1];
+
+                switch (val)
+                {
+                    case null:
+                    case "":
+                        return;
+                    case CurveTypeValues.Flat:
                         keyframe.inTangent = 0f;
                         keyframe.outTangent = 0f;
                         curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Linear:
-                    foreach (var curve in Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var before = curve.keys[key - 1];
-                        var keyframe = curve.keys[key];
-                        var next = curve.keys[key + 1];
+                        break;
+                    case CurveTypeValues.Linear:
                         keyframe.inTangent = CalculateLinearTangent(before, keyframe);
                         keyframe.outTangent = CalculateLinearTangent(keyframe, next);
                         curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Bounce:
-                    foreach (var curve in PositionCurves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
-                        var before = curve.keys[key - 1];
-                        var keyframe = curve.keys[key];
-                        var next = curve.keys[key + 1];
+                        break;
+                    case CurveTypeValues.Bounce:
                         keyframe.inTangent = CalculateTangent(before, keyframe);
                         keyframe.outTangent = CalculateTangent(keyframe, next);
                         curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                case CurveTypeValues.Smooth:
-                    foreach (var curve in Curves)
-                    {
-                        var key = Array.FindIndex(curve.keys, k => k.time == time);
-                        if (key == -1) return;
+                        break;
+                    case CurveTypeValues.Smooth:
                         curve.SmoothTangents(key, 0f);
-                    };
-                    break;
-                default:
-                    throw new NotSupportedException($"Curve type {val} is not supported");
+                        break;
+                    case CurveTypeValues.LinearFlat:
+                        keyframe.inTangent = CalculateTangent(before, keyframe);
+                        keyframe.outTangent = 0f;
+                        break;
+                    case CurveTypeValues.FlatLinear:
+                        keyframe.inTangent = 0f;
+                        keyframe.outTangent = CalculateTangent(keyframe, next);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Curve type {val} is not supported");
+                }
             }
         }
 
