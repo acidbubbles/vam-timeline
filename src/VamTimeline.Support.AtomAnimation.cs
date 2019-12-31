@@ -44,9 +44,11 @@ namespace AcidBubbles.VamTimeline
             set
             {
                 Current.Speed = value;
+                var animState = Animation[Current.AnimationName];
+                if (animState == null) return;
+                animState.speed = value;
                 if (Current.AnimationPattern != null)
                     Current.AnimationPattern.SetFloatParamValue("speed", value);
-                RebuildAnimation();
             }
         }
 
