@@ -26,7 +26,7 @@ namespace AcidBubbles.VamTimeline
         private FreeControllerV3Animation _grabbedController;
         private readonly List<string> _undoList = new List<string>();
         private List<ClipboardEntry> _clipboard;
-        private bool _restoring = true;
+        private bool _restoring;
 
         // Save
         private JSONStorableString _saveJSON;
@@ -217,7 +217,7 @@ namespace AcidBubbles.VamTimeline
         {
             if (_animation != null) yield break;
             yield return new WaitForEndOfFrame();
-            RestoreState("");
+            RestoreState(_saveJSON.val);
         }
 
         #endregion
@@ -509,6 +509,7 @@ namespace AcidBubbles.VamTimeline
 
         public void RestoreState(string json)
         {
+            if (_restoring) return;
             _restoring = true;
 
             try
@@ -533,6 +534,7 @@ namespace AcidBubbles.VamTimeline
                         var backupJSON = backupStorable.GetStringJSONParam("Backup");
                         if (!string.IsNullOrEmpty(backupJSON.val))
                         {
+                            SuperController.LogMessage("No save found but a backup was detected. Loading backup.");
                             _animation = _serializer.DeserializeAnimation(containingAtom, backupJSON.val);
                         }
                     }
