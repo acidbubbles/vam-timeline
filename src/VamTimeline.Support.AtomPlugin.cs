@@ -745,13 +745,13 @@ namespace AcidBubbles.VamTimeline
                 // Save
                 SaveState();
 
+                // Render
+                RenderState();
+
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
                     controller.BroadcastMessage("VamTimelineAnimationUpdated", containingAtom.uid);
-
-                // Render
-                RenderState();
             }
             catch (Exception exc)
             {
@@ -768,13 +768,13 @@ namespace AcidBubbles.VamTimeline
                 // Update UI
                 _scrubberJSON.valNoCallback = time;
 
+                // Render
+                RenderState();
+
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
                     controller.BroadcastMessage("VamTimelineContextChanged", containingAtom.uid);
-
-                // Render
-                RenderState();
             }
             catch (Exception exc)
             {

@@ -21,6 +21,8 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableStringChooser _atomsJSON;
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
+        private JSONStorableAction _playJSON;
+        private JSONStorableAction _stopJSON;
         private JSONStorableStringChooser _targetJSON;
         private LinkedAnimation _mainLinkedAnimation;
         private JSONStorableString _savedAtomsJSON;
@@ -73,6 +75,12 @@ namespace AcidBubbles.VamTimeline
                 isStorable = false
             };
             RegisterStringChooser(_animationJSON);
+
+            _playJSON = new JSONStorableAction("Play", () => Play());
+            RegisterAction(_playJSON);
+
+            _stopJSON = new JSONStorableAction("Stop", () => Stop());
+            RegisterAction(_stopJSON);
 
             _controllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string>(), AllControllers, "Selected Controller", (string v) => SelectControllerFilter(v))
             {
