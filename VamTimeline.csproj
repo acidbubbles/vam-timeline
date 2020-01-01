@@ -61,17 +61,18 @@
 
     <Compile Include="src/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/VamTimeline.Serializer.cs" />
+    <Compile Include="src/VamTimeline.AnimationCurveExtensions.cs" />
     <Compile Include="src/VamTimeline.FreeControllerV3Snapshot.cs" />
     <Compile Include="src/VamTimeline.FreeControllerV3Animation.cs" />
     <Compile Include="src/VamTimeline.AtomAnimationClip.cs" />
     <Compile Include="src/VamTimeline.AtomAnimation.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
-    <Compile Include="VamTimeline.Backup.cslist" />
+    <Compile Include="src/VamTimeline.BackupPlugin.cs" />
 
     <Compile Include="src/VamTimeline.SimpleSignUI.cs" />
     <Compile Include="src/VamTimeline.LinkedAnimation.cs" />
-    <Compile Include="VamTimeline.Controller.cslist" />
+    <Compile Include="src/VamTimeline.ControllerPlugin.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

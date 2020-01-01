@@ -1,4 +1,4 @@
-src\VamTimeline.SimpleSignUI.cs
-src\VamTimeline.StorableNames.cs
-src\VamTimeline.LinkedAnimation.cs
-src\VamTimeline.ControllerPlugin.cs
+src/VamTimeline.SimpleSignUI.cs
+src/VamTimeline.StorableNames.cs
+src/VamTimeline.LinkedAnimation.cs
+src/VamTimeline.ControllerPlugin.cs

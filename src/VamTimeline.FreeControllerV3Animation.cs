@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
 {
+
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
@@ -47,18 +47,7 @@ namespace VamTimeline
         {
             foreach (var curve in Curves)
             {
-                if (length > _animationLength)
-                {
-                    for (var i = 0; i < curve.keys.Length - 1; i++)
-                    {
-                        if (curve.keys[i].time < length) continue;
-                        curve.RemoveKey(i);
-                    }
-                }
-
-                var last = curve.keys[curve.keys.Length - 1];
-                last.time = length;
-                curve.MoveKey(curve.keys.Length - 1, last);
+                curve.SetLength(length);
             }
             _animationLength = length;
         }
@@ -69,19 +58,7 @@ namespace VamTimeline
             // Smooth loop
             foreach (var curve in Curves)
             {
-                if (curve.keys.Length <= 2) continue;
-                var keyframe = curve.keys[0];
-                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
-                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
-                var tangent = inTangent + outTangent / 2f;
-                keyframe.inTangent = tangent;
-                keyframe.outTangent = tangent;
-                keyframe.inWeight = 0.33f;
-                keyframe.outWeight = 0.33f;
-                curve.MoveKey(0, keyframe);
-
-                keyframe.time = curve.keys[curve.keys.Length - 1].time;
-                curve.MoveKey(curve.keys.Length - 1, keyframe);
+                curve.SmoothLoop();
             }
 
             var path = GetRelativePath();
@@ -133,27 +110,13 @@ namespace VamTimeline
 
         public void SetKeyframe(float time, Vector3 position, Quaternion rotation)
         {
-            SetKeyframe(X, time, position.x);
-            SetKeyframe(Y, time, position.y);
-            SetKeyframe(Z, time, position.z);
-            SetKeyframe(RotX, time, rotation.x);
-            SetKeyframe(RotY, time, rotation.y);
-            SetKeyframe(RotZ, time, rotation.z);
-            SetKeyframe(RotW, time, rotation.w);
-        }
-
-        private static void SetKeyframe(AnimationCurve curve, float time, float value)
-        {
-            var key = curve.AddKey(time, value);
-            Keyframe keyframe;
-            if (key == -1)
-            {
-                key = Array.FindIndex(curve.keys, k => k.time == time);
-                if (key == -1) throw new InvalidOperationException($"Cannot AddKey at time {time}, but no keys exist at this position");
-                keyframe = curve.keys[key];
-                keyframe.value = value;
-                curve.MoveKey(key, keyframe);
-            }
+            X.SetKeyframe(time, position.x);
+            Y.SetKeyframe(time, position.y);
+            Z.SetKeyframe(time, position.z);
+            RotX.SetKeyframe(time, rotation.x);
+            RotY.SetKeyframe(time, rotation.y);
+            RotZ.SetKeyframe(time, rotation.z);
+            RotW.SetKeyframe(time, rotation.w);
         }
 
         #endregion
@@ -167,46 +130,7 @@ namespace VamTimeline
 
             foreach (var curve in Curves)
             {
-                var key = Array.FindIndex(curve.keys, k => k.time == time);
-                if (key == -1) return;
-                var keyframe = curve.keys[key];
-                var before = curve.keys[key - 1];
-                var next = curve.keys[key + 1];
-
-                switch (val)
-                {
-                    case null:
-                    case "":
-                        return;
-                    case CurveTypeValues.Flat:
-                        keyframe.inTangent = 0f;
-                        keyframe.outTangent = 0f;
-                        curve.MoveKey(key, keyframe);
-                        break;
-                    case CurveTypeValues.Linear:
-                        keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                        keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                        curve.MoveKey(key, keyframe);
-                        break;
-                    case CurveTypeValues.Bounce:
-                        keyframe.inTangent = CalculateTangent(before, keyframe);
-                        keyframe.outTangent = CalculateTangent(keyframe, next);
-                        curve.MoveKey(key, keyframe);
-                        break;
-                    case CurveTypeValues.Smooth:
-                        curve.SmoothTangents(key, 0f);
-                        break;
-                    case CurveTypeValues.LinearFlat:
-                        keyframe.inTangent = CalculateTangent(before, keyframe);
-                        keyframe.outTangent = 0f;
-                        break;
-                    case CurveTypeValues.FlatLinear:
-                        keyframe.inTangent = 0f;
-                        keyframe.outTangent = CalculateTangent(keyframe, next);
-                        break;
-                    default:
-                        throw new NotSupportedException($"Curve type {val} is not supported");
-                }
+                curve.ChangeCurve(time, val);
             }
         }
 
@@ -214,53 +138,8 @@ namespace VamTimeline
         {
             foreach (var curve in Curves)
             {
-                if (curve.keys.Length == 2)
-                {
-                    curve.keys[0].inTangent = 0f;
-                    curve.keys[0].outTangent = 0f;
-                    curve.keys[1].inTangent = 0f;
-                    curve.keys[1].outTangent = 0f;
-                    continue;
-                }
-                // First and last frame will be recalculated in loop smoothing
-                for (int k = 1; k < curve.keys.Length - 1; k++)
-                {
-                    var keyframe = curve.keys[k];
-                    var inTangent = CalculateLinearTangent(curve.keys[k - 1], keyframe);
-                    var outTangent = CalculateLinearTangent(keyframe, curve.keys[k + 1]);
-                    var tangent = inTangent + outTangent / 2f;
-                    keyframe.inTangent = tangent;
-                    keyframe.outTangent = tangent;
-                    keyframe.inWeight = 0.33f;
-                    keyframe.outWeight = 0.33f;
-                    curve.MoveKey(k, keyframe);
-                }
-
-                var cloneFirstToLastKeyframe = curve.keys[0];
-                cloneFirstToLastKeyframe.time = curve.keys[curve.keys.Length - 1].time;
-                curve.MoveKey(curve.keys.Length - 1, cloneFirstToLastKeyframe);
+                curve.SmoothAllFrames();
             }
-        }
-
-        private static float CalculateTangent(Keyframe from, Keyframe to, float strength = 0.8f)
-        {
-            var tangent = CalculateLinearTangent(from, to);
-            if (tangent > 0)
-                return strength;
-            else if (tangent < 0)
-                return -strength;
-            else
-                return 0;
-        }
-
-        private static float CalculateLinearTangent(Keyframe from, Keyframe to)
-        {
-            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
-        }
-
-        private static float CalculateLinearTangent(float fromValue, float toValue, float fromTime, float toTime)
-        {
-            return (float)((fromValue - (double)toValue) / (fromTime - (double)toTime));
         }
 
         #endregion
@@ -283,28 +162,13 @@ namespace VamTimeline
 
         public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
         {
-            SetKeySnapshot(time, X, snapshot.X);
-            SetKeySnapshot(time, Y, snapshot.Y);
-            SetKeySnapshot(time, Z, snapshot.Z);
-            SetKeySnapshot(time, RotX, snapshot.RotX);
-            SetKeySnapshot(time, RotY, snapshot.RotY);
-            SetKeySnapshot(time, RotZ, snapshot.RotZ);
-            SetKeySnapshot(time, RotW, snapshot.RotW);
-        }
-
-        private void SetKeySnapshot(float time, AnimationCurve curve, Keyframe keyframe)
-        {
-            var index = Array.FindIndex(curve.keys, k => k.time == time);
-            if (index == -1)
-                index = curve.AddKey(time, keyframe.value);
-            keyframe.time = time;
-            curve.MoveKey(index, keyframe);
-
-            if (time == 0f)
-            {
-                keyframe.time = curve.keys[curve.keys.Length - 1].time;
-                curve.MoveKey(curve.keys.Length - 1, keyframe);
-            }
+            X.SetKeySnapshot(time, snapshot.X);
+            Y.SetKeySnapshot(time, snapshot.Y);
+            Z.SetKeySnapshot(time, snapshot.Z);
+            RotX.SetKeySnapshot(time, snapshot.RotX);
+            RotY.SetKeySnapshot(time, snapshot.RotY);
+            RotZ.SetKeySnapshot(time, snapshot.RotZ);
+            RotW.SetKeySnapshot(time, snapshot.RotW);
         }
 
         #endregion

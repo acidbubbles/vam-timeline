@@ -355,6 +355,7 @@ namespace VamTimeline
         private void Cut()
         {
             Copy();
+            if (_animation.Time == 0f) return;
             _animation.DeleteFrame();
         }
 
