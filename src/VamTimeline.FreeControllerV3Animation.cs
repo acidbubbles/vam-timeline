@@ -4,6 +4,18 @@ using UnityEngine;
 
 namespace VamTimeline
 {
+    public interface IAnimation
+    {
+        void ChangeCurve(float time, string curveType);
+        FreeControllerV3Snapshot GetCurveSnapshot(float time);
+        void ReapplyCurvesToClip(AnimationClip clip);
+        void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot);
+        void SetKeyframe(float time, Vector3 position, Quaternion rotation);
+        void SetKeyframeToCurrentTransform(float time);
+        void SetKeyframeToTransform(float time, Vector3 localPosition, Quaternion localRotation);
+        void SetLength(float length);
+        void SmoothAllFrames();
+    }
 
     /// <summary>
     /// VaM Timeline
@@ -11,7 +23,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FreeControllerV3Animation
+    public class FreeControllerV3Animation : IAnimation
     {
         private float _animationLength;
         public FreeControllerV3 Controller;
@@ -123,14 +135,14 @@ namespace VamTimeline
 
         #region Curves
 
-        public void ChangeCurve(float time, string val)
+        public void ChangeCurve(float time, string curveType)
         {
-            if (string.IsNullOrEmpty(val)) return;
+            if (string.IsNullOrEmpty(curveType)) return;
             if (time == 0f || time == _animationLength) return;
 
             foreach (var curve in Curves)
             {
-                curve.ChangeCurve(time, val);
+                curve.ChangeCurve(time, curveType);
             }
         }
 

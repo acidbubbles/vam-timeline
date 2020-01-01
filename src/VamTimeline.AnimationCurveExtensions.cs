@@ -51,7 +51,7 @@ namespace VamTimeline
         #endregion
         #region Curves
 
-        public static void ChangeCurve(this AnimationCurve curve, float time, string val)
+        public static void ChangeCurve(this AnimationCurve curve, float time, string curveType)
         {
             var key = Array.FindIndex(curve.keys, k => k.time == time);
             if (key == -1) return;
@@ -59,7 +59,7 @@ namespace VamTimeline
             var before = curve.keys[key - 1];
             var next = curve.keys[key + 1];
 
-            switch (val)
+            switch (curveType)
             {
                 case null:
                 case "":
@@ -91,7 +91,7 @@ namespace VamTimeline
                     keyframe.outTangent = CalculateTangent(keyframe, next);
                     break;
                 default:
-                    throw new NotSupportedException($"Curve type {val} is not supported");
+                    throw new NotSupportedException($"Curve type {curveType} is not supported");
             }
         }
 
