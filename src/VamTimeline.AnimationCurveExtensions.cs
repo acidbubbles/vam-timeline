@@ -126,13 +126,23 @@ namespace VamTimeline
 
         public static void SmoothLoop(this AnimationCurve curve)
         {
-            if (curve.keys.Length <= 2) return;
             var keyframe = curve.keys[0];
-            var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
-            var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
-            var tangent = inTangent + outTangent / 2f;
-            keyframe.inTangent = tangent;
-            keyframe.outTangent = tangent;
+
+            if (curve.keys.Length <= 2)
+            {
+                keyframe.inTangent = 0f;
+                keyframe.outTangent = 0f;
+            }
+            else
+            {
+
+                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
+                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
+                var tangent = inTangent + outTangent / 2f;
+                keyframe.inTangent = tangent;
+                keyframe.outTangent = tangent;
+            }
+
             keyframe.inWeight = 0.33f;
             keyframe.outWeight = 0.33f;
             curve.MoveKey(0, keyframe);
