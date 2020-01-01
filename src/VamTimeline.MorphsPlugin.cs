@@ -43,9 +43,19 @@ namespace VamTimeline
 
                 if (morph.animatable)
                 {
-                    SuperController.LogMessage(morph.displayName);
+                    var morphJSON = new JSONStorableFloat($"Morph:{morphDisplayName}", morph.jsonFloat.defaultVal, (float val) => UpdateMorph(morph, val), morph.jsonFloat.min, morph.jsonFloat.max, morph.jsonFloat.constrained, true);
+                    CreateSlider(morphJSON, true);
                 }
             }
+        }
+
+        private void UpdateMorph(DAZMorph morph, float val)
+        {
+            morph.jsonFloat.val = val;
+        }
+
+        public void Update()
+        {
         }
     }
 }
