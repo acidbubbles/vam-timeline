@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     public class FreeControllerV3Snapshot
     {

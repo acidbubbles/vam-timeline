@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     public static class CurveTypeValues
     {

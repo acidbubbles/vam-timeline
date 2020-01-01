@@ -3,7 +3,7 @@ using System.Linq;
 using SimpleJSON;
 using UnityEngine;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     /// <summary>
     /// VaM Timeline

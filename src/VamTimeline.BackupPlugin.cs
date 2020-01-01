@@ -1,6 +1,6 @@
 using System;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     /// <summary>
     /// VaM Timeline

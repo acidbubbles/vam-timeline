@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     /// <summary>
     /// VaM Timeline

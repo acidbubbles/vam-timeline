@@ -26,7 +26,7 @@ It is expected that you have some basic knowledge of [how Virt-A-Mate works](htt
 
 ![VamTimeline Atom Plugin](screenshots/vam-timeline-atom.png)
 
-1. Add the `VamTimeline.AtomPlugin.cslist` plugin on atoms you want to animate, and open the plugin settings (`Open Custom UI` in the Atom's `Plugin` section).
+1. Add the `VamTimeline.AtomAnimation.cslist` plugin on atoms you want to animate, and open the plugin settings (`Open Custom UI` in the Atom's `Plugin` section).
 2. On the right side, select a controller you want to animate in the `Animate Controller` drop down, and select `Add / Remove Controller` to attach it. This will turn on the "position" and "rotation" controls for that controller.
 3. To add a frame, move the `Time` slider to where you want to create a keyframe, and move the atom. This will create a new keyframe.
 4. Check the `Display` text field; you can see all the keyframes you have created there, and visualize which one you have selected.
@@ -61,7 +61,7 @@ Only controller positions can be controled using VamTimeline. To allow controlli
 
 This allows creating a floating payback controller, and control multiple atoms together. Create a `Simple Sign` atom and add the script to it. This is optional, you only need this if you want to animate more than one atom, or if you want the floating playback controls.
 
-Add the `VamTimeline.ControllerPlugin.cs` plugin on a `Simple Sign` atom.
+Add the `VamTimeline.Controller.cslist` plugin on a `Simple Sign` atom.
 
 In the plugin settings, select the animations you want to control and select `Link`.
 
@@ -73,7 +73,7 @@ Note that all specified atoms must contain the same animations, and animations m
 
 The paths to the VaM dll files are relative, so clone into `(VaM Install Folder)/Custom/Scripts/Dev/vam-timeline` for example.
 
-When reloading a Virt-A-Mate script after it was modified externally, you will lose your data. For complex animations, it can be a frustrating workflow. Add the `VamTimeline.BackupPlugin.cs` script on all atoms that have the `VamTimeline.AtomPlugin.cslist`.
+When reloading a Virt-A-Mate script after it was modified externally, you will lose your data. For complex animations, it can be a frustrating workflow. Add the `VamTimeline.Backup.cslist` script on all atoms that have the `VamTimeline.AtomAnimation.cslist`.
 
 This allows for reloading the main script without losing your data. Mosty useful for development. Add to atoms with VamTimeline.cslist. Unnecessary with normal use.
 

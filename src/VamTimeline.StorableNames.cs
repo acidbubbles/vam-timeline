@@ -1,11 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     /// <summary>
     /// VaM Timeline
@@ -13,7 +6,7 @@ namespace AcidBubbles.VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public static class AtomPluginStorableNames
+    public static class StorableNames
     {
         public const string Save = "Save";
         public const string Animation = "Animation";

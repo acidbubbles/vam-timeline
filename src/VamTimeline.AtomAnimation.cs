@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     /// <summary>
     /// VaM Timeline

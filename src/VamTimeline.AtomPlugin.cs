@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AcidBubbles.VamTimeline
+namespace VamTimeline
 {
     /// <summary>
     /// VaM Timeline
@@ -74,56 +74,56 @@ namespace AcidBubbles.VamTimeline
 
         private void InitStorables()
         {
-            _saveJSON = new JSONStorableString(AtomPluginStorableNames.Save, "", (string v) => RestoreState(v));
+            _saveJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
             RegisterString(_saveJSON);
 
             // Left side
 
-            _animationJSON = new JSONStorableStringChooser(AtomPluginStorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
+            _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
             {
                 isStorable = false
             };
             RegisterStringChooser(_animationJSON);
 
-            _scrubberJSON = new JSONStorableFloat(AtomPluginStorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true)
+            _scrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true)
             {
                 isStorable = false
             };
             RegisterFloat(_scrubberJSON);
 
-            _playJSON = new JSONStorableAction(AtomPluginStorableNames.Play, () => { _animation.Play(); ContextUpdated(); });
+            _playJSON = new JSONStorableAction(StorableNames.Play, () => { _animation.Play(); ContextUpdated(); });
             RegisterAction(_playJSON);
 
-            _playIfNotPlayingJSON = new JSONStorableAction(AtomPluginStorableNames.PlayIfNotPlaying, () => { if (!_animation.IsPlaying()) { _animation.Play(); ContextUpdated(); } });
+            _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => { if (!_animation.IsPlaying()) { _animation.Play(); ContextUpdated(); } });
             RegisterAction(_playIfNotPlayingJSON);
 
-            _stopJSON = new JSONStorableAction(AtomPluginStorableNames.Stop, () => { _animation.Stop(); ContextUpdated(); });
+            _stopJSON = new JSONStorableAction(StorableNames.Stop, () => { _animation.Stop(); ContextUpdated(); });
             RegisterAction(_stopJSON);
 
-            _selectedControllerJSON = new JSONStorableStringChooser(AtomPluginStorableNames.SelectedController, new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); ContextUpdated(); })
+            _selectedControllerJSON = new JSONStorableStringChooser(StorableNames.SelectedController, new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); ContextUpdated(); })
             {
                 isStorable = false
             };
             RegisterStringChooser(_selectedControllerJSON);
 
-            _nextFrameJSON = new JSONStorableAction(AtomPluginStorableNames.NextFrame, () => { UpdateTime(_animation.GetNextFrame()); ContextUpdated(); });
+            _nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(_animation.GetNextFrame()); ContextUpdated(); });
             RegisterAction(_nextFrameJSON);
 
-            _previousFrameJSON = new JSONStorableAction(AtomPluginStorableNames.PreviousFrame, () => { UpdateTime(_animation.GetPreviousFrame()); ContextUpdated(); });
+            _previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(_animation.GetPreviousFrame()); ContextUpdated(); });
             RegisterAction(_previousFrameJSON);
 
-            _changeCurveJSON = new JSONStorableStringChooser(AtomPluginStorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
+            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
 
             // Right side
 
-            _lockedJSON = new JSONStorableBool(AtomPluginStorableNames.Locked, false, (bool val) => { ContextUpdated(); });
+            _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => { ContextUpdated(); });
             RegisterBool(_lockedJSON);
 
-            _lengthJSON = new JSONStorableFloat(AtomPluginStorableNames.AnimationLength, 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
+            _lengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
 
-            _speedJSON = new JSONStorableFloat(AtomPluginStorableNames.AnimationSpeed, 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
+            _speedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
 
-            _blendDurationJSON = new JSONStorableFloat(AtomPluginStorableNames.BlendDuration, 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
+            _blendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
 
             _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UpdateToggleAnimatedControllerButton(name))
             {
@@ -135,8 +135,8 @@ namespace AcidBubbles.VamTimeline
                 isStorable = false
             };
 
-            _displayModeJSON = new JSONStorableStringChooser(AtomPluginStorableNames.DisplayMode, RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { ContextUpdated(); });
-            _displayJSON = new JSONStorableString(AtomPluginStorableNames.Display, "")
+            _displayModeJSON = new JSONStorableStringChooser(StorableNames.DisplayMode, RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { ContextUpdated(); });
+            _displayJSON = new JSONStorableString(StorableNames.Display, "")
             {
                 isStorable = false
             };
