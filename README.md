@@ -24,6 +24,8 @@ It is expected that you have some basic knowledge of [how Virt-A-Mate works](htt
 
 ### Animating an atom
 
+![VamTimeline Atom Plugin](screenshots/vam-timeline-atom.png)
+
 1. Add the `VamTimeline.AtomPlugin.cslist` plugin on atoms you want to animate, and open the plugin settings (`Open Custom UI` in the Atom's `Plugin` section).
 2. On the right side, select a controller you want to animate in the `Animate Controller` drop down, and select `Add / Remove Controller` to attach it. This will turn on the "position" and "rotation" controls for that controller.
 3. To add a frame, move the `Time` slider to where you want to create a keyframe, and move the atom. This will create a new keyframe.
@@ -54,6 +56,8 @@ To smooth everything, use `Smooth all curves`.
 Only controller positions can be controled using VamTimeline. To allow controlling other things, it relies on adding an `AnimationPattern` of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
 
 ### Adding an external playback controller
+
+![VamTimeline Controller Plugin](screenshots/vam-timeline-controller.png)
 
 This allows creating a floating payback controller, and control multiple atoms together. Create a `Simple Sign` atom and add the script to it. This is optional, you only need this if you want to animate more than one atom, or if you want the floating playback controls.
 
