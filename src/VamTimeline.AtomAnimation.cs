@@ -20,6 +20,7 @@ namespace VamTimeline
         public AtomAnimationClip Current;
         public UnityEvent Updated = new UnityEvent();
         private float _blendDuration = 1f;
+        private AnimationState _animState;
 
         public float AnimationLength
         {
@@ -44,9 +45,8 @@ namespace VamTimeline
             set
             {
                 Current.Speed = value;
-                var animState = Animation[Current.AnimationName];
-                if (animState == null) return;
-                animState.speed = value;
+                if (_animState == null) return;
+                _animState.speed = value;
                 if (Current.AnimationPattern != null)
                     Current.AnimationPattern.SetFloatParamValue("speed", value);
             }
@@ -70,21 +70,19 @@ namespace VamTimeline
             get
             {
                 if (Current == null) return 0f;
-                var animState = Animation[Current.AnimationName];
-                if (animState == null) return 0f;
-                return animState.time % animState.length;
+                if (_animState == null) return 0f;
+                return _animState.time % _animState.length;
             }
             set
             {
                 if (Current == null) throw new InvalidOperationException("Cannot set time without a current animation");
-                var animState = Animation[Current.AnimationName];
-                if (animState == null) throw new InvalidOperationException("Cannot set time without a current animation state");
-                animState.time = value;
-                if (!animState.enabled)
+                if (_animState == null) throw new InvalidOperationException("Cannot set time without a current animation state");
+                _animState.time = value;
+                if (!_animState.enabled)
                 {
-                    animState.enabled = true;
+                    _animState.enabled = true;
                     Animation.Sample();
-                    animState.enabled = false;
+                    _animState.enabled = false;
                 }
             }
         }
@@ -126,9 +124,8 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
-            AnimationState animState = Animation[Current.AnimationName];
-            if (animState == null) return;
-            animState.time = 0;
+            if (_animState == null) return;
+            _animState.time = 0;
             Animation.Play(Current.AnimationName);
             if (Current.AnimationPattern)
             {
@@ -139,7 +136,7 @@ namespace VamTimeline
 
         public void Stop()
         {
-            if (Current == null || Animation[Current.AnimationName] == null) return;
+            if (Current == null || _animState == null) return;
             Animation.Stop();
             Time = 0;
             foreach (var clip in Clips)
@@ -191,13 +188,14 @@ namespace VamTimeline
             {
                 clip.RebuildAnimation();
                 Animation.AddClip(clip.Clip, clip.AnimationName);
-                var state = Animation[clip.AnimationName];
-                state.speed = clip.Speed;
+                var animState = Animation[clip.AnimationName];
+                animState.speed = clip.Speed;
             }
             // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
             Animation.Play(Current.AnimationName);
             Animation.Stop(Current.AnimationName);
-            Animation[Current.AnimationName].time = time;
+            _animState = Animation[Current.AnimationName];
+            _animState.time = time;
             Updated.Invoke();
         }
 
