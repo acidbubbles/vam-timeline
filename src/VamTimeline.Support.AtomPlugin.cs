@@ -35,6 +35,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableAction _playJSON;
+        private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
         private JSONStorableStringChooser _selectedControllerJSON;
         private JSONStorableAction _nextFrameJSON;
@@ -92,6 +93,9 @@ namespace AcidBubbles.VamTimeline
 
             _playJSON = new JSONStorableAction(AtomPluginStorableNames.Play, () => { _animation.Play(); ContextUpdated(); });
             RegisterAction(_playJSON);
+
+            _playIfNotPlayingJSON = new JSONStorableAction(AtomPluginStorableNames.PlayIfNotPlaying, () => { if (!_animation.IsPlaying()) { _animation.Play(); ContextUpdated(); } });
+            RegisterAction(_playIfNotPlayingJSON);
 
             _stopJSON = new JSONStorableAction(AtomPluginStorableNames.Stop, () => { _animation.Stop(); ContextUpdated(); });
             RegisterAction(_stopJSON);
@@ -342,15 +346,16 @@ namespace AcidBubbles.VamTimeline
             _animation.SmoothAllFrames();
         }
 
-        private void Cut()
-        {
-            _animation.DeleteFrame();
-        }
-
         private class ClipboardEntry
         {
             public FreeControllerV3 Controller;
             public FreeControllerV3Snapshot Snapshot;
+        }
+
+        private void Cut()
+        {
+            Copy();
+            _animation.DeleteFrame();
         }
 
         private void Copy()

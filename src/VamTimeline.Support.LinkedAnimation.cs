@@ -35,22 +35,27 @@ namespace AcidBubbles.VamTimeline
 
         public void Play()
         {
-            Storable.CallAction("Play");
+            Storable.CallAction(AtomPluginStorableNames.Play);
+        }
+
+        public void PlayIfNotPlaying()
+        {
+            Storable.CallAction(AtomPluginStorableNames.PlayIfNotPlaying);
         }
 
         public void Stop()
         {
-            Storable.CallAction("Stop");
+            Storable.CallAction(AtomPluginStorableNames.Stop);
         }
 
         public void NextFrame()
         {
-            Storable.CallAction("Next Frame");
+            Storable.CallAction(AtomPluginStorableNames.NextFrame);
         }
 
         public void PreviousFrame()
         {
-            Storable.CallAction("Previous Frame");
+            Storable.CallAction(AtomPluginStorableNames.PreviousFrame);
         }
 
         public void ChangeAnimation(string name)

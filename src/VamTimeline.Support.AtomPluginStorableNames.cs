@@ -19,6 +19,7 @@ namespace AcidBubbles.VamTimeline
         public const string Animation = "Animation";
         public const string Time = "Time";
         public const string Play = "Play";
+        public const string PlayIfNotPlaying = "Play If Not Playing";
         public const string Stop = "Stop";
         public const string SelectedController = "Selected Controller";
         public const string NextFrame = "Next Frame";

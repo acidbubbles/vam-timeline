@@ -22,6 +22,7 @@ namespace AcidBubbles.VamTimeline
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableAction _playJSON;
+        private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
         private JSONStorableStringChooser _targetJSON;
         private LinkedAnimation _mainLinkedAnimation;
@@ -78,6 +79,9 @@ namespace AcidBubbles.VamTimeline
 
             _playJSON = new JSONStorableAction("Play", () => Play());
             RegisterAction(_playJSON);
+
+            _playIfNotPlayingJSON = new JSONStorableAction("Play If Not Playing", () => PlayIfNotPlaying());
+            RegisterAction(_playIfNotPlayingJSON);
 
             _stopJSON = new JSONStorableAction("Stop", () => Stop());
             RegisterAction(_stopJSON);
@@ -311,6 +315,14 @@ namespace AcidBubbles.VamTimeline
             foreach (var animation in _linkedAnimations)
             {
                 animation.Play();
+            }
+        }
+
+        private void PlayIfNotPlaying()
+        {
+            foreach (var animation in _linkedAnimations)
+            {
+                animation.PlayIfNotPlaying();
             }
         }
 
