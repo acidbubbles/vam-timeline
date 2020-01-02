@@ -57,21 +57,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="src/VamTimeline.StorableNames.cs" />
+    <Compile Include="src/Common/VamTimeline.StorableNames.cs" />
+    <Compile Include="src/Common/VamTimeline.CurveTypeValues.cs" />
+    <Compile Include="src/Common/VamTimeline.AnimationCurveExtensions.cs" />
 
-    <Compile Include="src/VamTimeline.CurveTypeValues.cs" />
-    <Compile Include="src/VamTimeline.Serializer.cs" />
-    <Compile Include="src/VamTimeline.AnimationCurveExtensions.cs" />
-    <Compile Include="src/VamTimeline.FreeControllerV3Snapshot.cs" />
-    <Compile Include="src/VamTimeline.FreeControllerV3Animation.cs" />
-    <Compile Include="src/VamTimeline.AtomAnimationClip.cs" />
-    <Compile Include="src/VamTimeline.AtomAnimation.cs" />
+    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3Snapshot.cs" />
+    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3Animation.cs" />
+    <Compile Include="src/Atoms/VamTimeline.AtomAnimationClip.cs" />
+    <Compile Include="src/Atoms/VamTimeline.AtomAnimation.cs" />
+    <Compile Include="src/Atoms/VamTimeline.AtomAnimationSerializer.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
     <Compile Include="src/VamTimeline.BackupPlugin.cs" />
 
-    <Compile Include="src/VamTimeline.SimpleSignUI.cs" />
-    <Compile Include="src/VamTimeline.LinkedAnimation.cs" />
+    <Compile Include="src/Controller/VamTimeline.SimpleSignUI.cs" />
+    <Compile Include="src/Controller/VamTimeline.LinkedAnimation.cs" />
     <Compile Include="src/VamTimeline.ControllerPlugin.cs" />
   </ItemGroup>
 

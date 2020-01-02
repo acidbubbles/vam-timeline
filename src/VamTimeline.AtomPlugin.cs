@@ -21,7 +21,7 @@ namespace VamTimeline
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // State
-        private Serializer _serializer;
+        private AtomAnimationSerializer _serializer;
         private AtomAnimation _animation;
         private FreeControllerV3Animation _grabbedController;
         private readonly List<string> _undoList = new List<string>();
@@ -60,7 +60,7 @@ namespace VamTimeline
         {
             try
             {
-                _serializer = new Serializer();
+                _serializer = new AtomAnimationSerializer();
                 InitStorables();
                 InitCustomUI();
                 // Try loading from backup

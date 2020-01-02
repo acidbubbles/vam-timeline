@@ -1,9 +1,9 @@
-src/VamTimeline.CurveTypeValues.cs
-src/VamTimeline.Serializer.cs
-src/VamTimeline.AnimationCurveExtensions.cs
-src/VamTimeline.FreeControllerV3Snapshot.cs
-src/VamTimeline.FreeControllerV3Animation.cs
-src/VamTimeline.AtomAnimationClip.cs
-src/VamTimeline.AtomAnimation.cs
-src/VamTimeline.StorableNames.cs
+src/Common/VamTimeline.CurveTypeValues.cs
+src/Common/VamTimeline.AnimationCurveExtensions.cs
+src/Common/VamTimeline.StorableNames.cs
+src/Atoms/VamTimeline.FreeControllerV3Snapshot.cs
+src/Atoms/VamTimeline.FreeControllerV3Animation.cs
+src/Atoms/VamTimeline.AtomAnimationClip.cs
+src/Atoms/VamTimeline.AtomAnimation.cs
+src/Atoms/VamTimeline.AtomAnimationSerializer.cs
 src/VamTimeline.AtomPlugin.cs

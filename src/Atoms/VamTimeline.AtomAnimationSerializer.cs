@@ -11,9 +11,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class Serializer
+    public class AtomAnimationSerializer
     {
-        public Serializer()
+        public AtomAnimationSerializer()
         {
         }
 
