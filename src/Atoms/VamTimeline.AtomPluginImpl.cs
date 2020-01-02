@@ -14,22 +14,16 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomPluginImpl : PluginImplBase
+    public class AtomPluginImpl : PluginImplBase<AtomAnimation>
     {
-        private const int MaxUndo = 20;
+        // private const int MaxUndo = 20;
         private const string AllControllers = "(All Controllers)";
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // State
-        private AtomAnimationSerializer _serializer;
-        private AtomAnimation _animation;
         private FreeControllerV3Animation _grabbedController;
         private readonly List<string> _undoList = new List<string>();
         private List<ClipboardEntry> _clipboard;
-        private bool _restoring;
-
-        // Save
-        private JSONStorableString _saveJSON;
 
         // Storables
         private JSONStorableStringChooser _animationJSON;
@@ -63,7 +57,8 @@ namespace VamTimeline
 
         public void Init()
         {
-            _serializer = new AtomAnimationSerializer();
+            RegisterSerializer(new AtomAnimationSerializer(_plugin.ContainingAtom));
+            InitCommonStorables();
             InitStorables();
             InitCustomUI();
             // Try loading from backup
@@ -72,9 +67,6 @@ namespace VamTimeline
 
         private void InitStorables()
         {
-            _saveJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
-            _plugin.RegisterString(_saveJSON);
-
             // Left side
 
             _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
@@ -114,14 +106,14 @@ namespace VamTimeline
 
             // Right side
 
-            _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => { ContextUpdated(); });
+            _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => ContextUpdated());
             _plugin.RegisterBool(_lockedJSON);
 
-            _lengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, 5f, v => { if (v <= 0) return; _animation.AnimationLength = v; }, 0.5f, 120f, false, true);
+            _lengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, 5f, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
-            _speedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => { if (v < 0) return; _animation.Speed = v; }, 0.001f, 5f, false);
+            _speedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
 
-            _blendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => _animation.BlendDuration = v, 0.001f, 5f, false);
+            _blendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
 
             _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", _plugin.ContainingAtom.freeControllers.Select(fc => fc.name).ToList(), _plugin.ContainingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UpdateToggleAnimatedControllerButton(name))
             {
@@ -215,13 +207,6 @@ namespace VamTimeline
             _plugin.CreateTextField(_displayJSON, true);
         }
 
-        private IEnumerator CreateAnimationIfNoneIsLoaded()
-        {
-            if (_animation != null) yield break;
-            yield return new WaitForEndOfFrame();
-            RestoreState(_saveJSON.val);
-        }
-
         #endregion
 
         #region Lifecycle
@@ -260,7 +245,7 @@ namespace VamTimeline
                         _animation.RebuildAnimation();
                         UpdateTime(time);
                         _grabbedController = null;
-                        RenderState();
+                        AnimationUpdated();
                     }
                 }
             }
@@ -311,8 +296,7 @@ namespace VamTimeline
                 _speedJSON.valNoCallback = _animation.Speed;
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-                RenderState();
-                ContextUpdated();
+                AnimationUpdated();
             }
             catch (Exception exc)
             {
@@ -325,18 +309,40 @@ namespace VamTimeline
             _animation.Time = time;
             if (_animation.Current.AnimationPattern != null)
                 _animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
+            ContextUpdated();
         }
 
-        private void ChangeCurve(string val)
+        private void UpdateAnimationLength(float v)
         {
-            if (string.IsNullOrEmpty(val)) return;
+            if (v <= 0) return;
+            _animation.AnimationLength = v;
+            AnimationUpdated();
+        }
+
+        private void UpdateAnimationSpeed(float v)
+        {
+            if (v < 0) return;
+            _animation.Speed = v;
+            AnimationUpdated();
+        }
+
+        private void UpdateBlendDuration(float v)
+        {
+            if (v < 0) return;
+            _animation.BlendDuration = v;
+            AnimationUpdated();
+        }
+
+        private void ChangeCurve(string curveType)
+        {
+            if (string.IsNullOrEmpty(curveType)) return;
             _changeCurveJSON.valNoCallback = "";
             if (_animation.Time == 0)
             {
                 SuperController.LogMessage("Cannot specify curve type on frame 0");
                 return;
             }
-            _animation.ChangeCurve(val);
+            _animation.ChangeCurve(curveType);
         }
 
         private void SmoothAllFrames()
@@ -412,7 +418,8 @@ namespace VamTimeline
             var pop = _undoList[_undoList.Count - 1];
             _undoList.RemoveAt(_undoList.Count - 1);
             RestoreState(pop);
-            _saveJSON.valNoCallback = pop;
+            // TODO: Fix undo
+            // _saveJSON.valNoCallback = pop;
         }
 
         private void AddAnimation()
@@ -505,104 +512,6 @@ namespace VamTimeline
             animationPattern.SetFloatParamValue("speed", _animation.Speed);
             animationPattern.ResetAnimation();
             AnimationUpdated();
-        }
-
-        #endregion
-
-        #region Load / Save
-
-        public void RestoreState(string json)
-        {
-            if (_restoring) return;
-            _restoring = true;
-
-            try
-            {
-                if (_animation != null)
-                {
-                    _animation.Updated.RemoveAllListeners();
-                    _animation = null;
-                }
-
-                if (!string.IsNullOrEmpty(json))
-                {
-                    _animation = _serializer.DeserializeAnimation(_plugin.ContainingAtom, json);
-                }
-
-                if (_animation == null)
-                {
-                    var backupStorableID = _plugin.ContainingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimeline.BackupPlugin"));
-                    if (backupStorableID != null)
-                    {
-                        var backupStorable = _plugin.ContainingAtom.GetStorableByID(backupStorableID);
-                        var backupJSON = backupStorable.GetStringJSONParam("Backup");
-                        if (!string.IsNullOrEmpty(backupJSON.val))
-                        {
-                            SuperController.LogMessage("No save found but a backup was detected. Loading backup.");
-                            _animation = _serializer.DeserializeAnimation(_plugin.ContainingAtom, backupJSON.val);
-                        }
-                    }
-                }
-
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("VamTimeline.AtomPlugin.RestoreState: " + exc);
-            }
-
-            try
-            {
-                if (_animation == null)
-                    _animation = new AtomAnimation(_plugin.ContainingAtom);
-
-                _animation.Initialize();
-                _animation.Updated.AddListener(() => AnimationUpdated());
-                AnimationUpdated();
-                ContextUpdated();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("VamTimeline.AtomPlugin.RestoreState: " + exc);
-            }
-
-            _restoring = false;
-        }
-
-        public void SaveState()
-        {
-            try
-            {
-                if (_restoring) return;
-
-                // Never save an empty animation.
-                if (_animation.Clips.Count == 0) return;
-                if (_animation.Clips.Count == 1 && _animation.Clips[0].Controllers.Count == 0) return;
-
-                var serialized = _serializer.SerializeAnimation(_animation);
-
-                if (serialized == _undoList.LastOrDefault())
-                    return;
-
-                if (!string.IsNullOrEmpty(_saveJSON.val))
-                {
-                    _undoList.Add(_saveJSON.val);
-                    if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-                }
-
-                _saveJSON.valNoCallback = serialized;
-
-                var backupStorableID = _plugin.ContainingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("Backup"));
-                if (backupStorableID != null)
-                {
-                    var backupStorable = _plugin.ContainingAtom.GetStorableByID(backupStorableID);
-                    var backupJSON = backupStorable.GetStringJSONParam("Backup");
-                    backupJSON.val = serialized;
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("VamTimeline.AtomPlugin.SaveState: " + exc);
-            }
         }
 
         #endregion
@@ -731,7 +640,7 @@ namespace VamTimeline
 
         #region Updates
 
-        private void AnimationUpdated()
+        protected override void AnimationUpdated()
         {
             try
             {
@@ -765,7 +674,7 @@ namespace VamTimeline
             }
         }
 
-        private void ContextUpdated()
+        protected override void ContextUpdated()
         {
             try
             {

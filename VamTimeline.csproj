@@ -60,6 +60,7 @@
     <Compile Include="src/Common/VamTimeline.StorableNames.cs" />
     <Compile Include="src/Common/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationCurveExtensions.cs" />
+    <Compile Include="src/Common/VamTimeline.IAnimation.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationSerializerBase.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationPlugin.cs" />
     <Compile Include="src/Common/VamTimeline.PluginImplBase.cs" />

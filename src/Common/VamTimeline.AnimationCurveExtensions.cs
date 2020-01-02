@@ -99,12 +99,17 @@ namespace VamTimeline
         {
             if (curve.keys.Length == 2)
             {
-                curve.keys[0].inTangent = 0f;
-                curve.keys[0].outTangent = 0f;
-                curve.keys[1].inTangent = 0f;
-                curve.keys[1].outTangent = 0f;
+                var first = curve.keys[0];
+                first.inTangent = 0f;
+                first.outTangent = 0f;
+                curve.MoveKey(0, first);
+                var last = curve.keys[1];
+                last.inTangent = 0f;
+                last.outTangent = 0f;
+                curve.MoveKey(1, last);
                 return;
             }
+
             // First and last frame will be recalculated in loop smoothing
             for (int k = 1; k < curve.keys.Length - 1; k++)
             {

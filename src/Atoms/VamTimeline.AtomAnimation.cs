@@ -12,14 +12,12 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimation
+    public class AtomAnimation : IAnimation
     {
         private readonly Atom _atom;
         public readonly Animation Animation;
         public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
         public AtomAnimationClip Current;
-        public UnityEvent Updated = new UnityEvent();
-        private float _blendDuration = 1f;
         private AnimationState _animState;
 
         public float AnimationLength
@@ -52,18 +50,7 @@ namespace VamTimeline
             }
         }
 
-        public float BlendDuration
-        {
-            get
-            {
-                return _blendDuration;
-            }
-            set
-            {
-                _blendDuration = value;
-                Updated.Invoke();
-            }
-        }
+        public float BlendDuration { get; set; } = 1f;
 
         public float Time
         {
@@ -75,8 +62,8 @@ namespace VamTimeline
             }
             set
             {
-                if (Current == null) throw new InvalidOperationException("Cannot set time without a current animation");
-                if (_animState == null) throw new InvalidOperationException("Cannot set time without a current animation state");
+                if (Current == null) return;
+                if (_animState == null) return;
                 _animState.time = value;
                 if (!_animState.enabled)
                 {
@@ -89,6 +76,8 @@ namespace VamTimeline
 
         public AtomAnimation(Atom atom)
         {
+            if (atom == null) throw new ArgumentNullException(nameof(atom));
+
             _atom = atom;
             Animation = _atom.gameObject.GetComponent<Animation>() ?? _atom.gameObject.AddComponent<Animation>();
             if (Animation == null) throw new NullReferenceException("Could not create an Animation");
@@ -100,6 +89,13 @@ namespace VamTimeline
                 Clips.Add(new AtomAnimationClip("Anim1"));
             if (Current == null)
                 Current = Clips.First();
+        }
+
+        public bool IsEmpty()
+        {
+            if (Clips.Count == 0) return true;
+            if (Clips.Count == 1 && Clips[0].Controllers.Count == 0) return true;
+            return false;
         }
 
         public void AddClip(AtomAnimationClip clip)
@@ -196,7 +192,6 @@ namespace VamTimeline
             Animation.Stop(Current.AnimationName);
             _animState = Animation[Current.AnimationName];
             _animState.time = time;
-            Updated.Invoke();
         }
 
         public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
@@ -204,10 +199,10 @@ namespace VamTimeline
             return Current.GetAllOrSelectedControllers();
         }
 
-        public void ChangeCurve(string val)
+        public void ChangeCurve(string curveType)
         {
             var time = Time;
-            Current.ChangeCurve(time, val);
+            Current.ChangeCurve(time, curveType);
             RebuildAnimation();
         }
 

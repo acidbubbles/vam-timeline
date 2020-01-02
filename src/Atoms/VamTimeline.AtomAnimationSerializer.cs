@@ -11,18 +11,24 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationSerializer : AnimationSerializerBase
+    public class AtomAnimationSerializer : AnimationSerializerBase, IAnimationSerializer<AtomAnimation>
     {
-        public AtomAnimationSerializer()
+        public AtomAnimationSerializer(Atom atom)
+        : base(atom)
         {
         }
 
-        public AtomAnimation DeserializeAnimation(Atom atom, string val)
+        public AtomAnimation CreateDefaultAnimation()
+        {
+            return new AtomAnimation(_atom);
+        }
+
+        public AtomAnimation DeserializeAnimation(string val)
         {
             if (string.IsNullOrEmpty(val)) return null;
 
             var animationJSON = JSON.Parse(val);
-            var animation = new AtomAnimation(atom)
+            var animation = new AtomAnimation(_atom)
             {
                 BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f)
             };
@@ -40,7 +46,7 @@ namespace VamTimeline
                 {
                     var animationPattern = SuperController.singleton.GetAtomByUid(animationPatternUID)?.GetComponentInChildren<AnimationPattern>();
                     if (animationPattern == null)
-                        SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.AnimationName}' of atom '{atom.uid}' was not found in scene");
+                        SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.AnimationName}' of atom '{_atom.uid}' was not found in scene");
                     else
                         clip.AnimationPattern = animationPattern;
                 }
@@ -49,8 +55,8 @@ namespace VamTimeline
                 foreach (JSONClass controllerJSON in controllersJSON)
                 {
                     var controllerName = controllerJSON["Controller"].Value;
-                    var controller = atom.freeControllers.Single(fc => fc.name == controllerName);
-                    if (atom == null) throw new NullReferenceException($"Atom '{atom.uid}' does not have a controller '{controllerName}'");
+                    var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
+                    if (_atom == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a controller '{controllerName}'");
                     var fcAnimation = clip.Add(controller);
                     DeserializeCurve(fcAnimation.X, controllerJSON["X"]);
                     DeserializeCurve(fcAnimation.X, controllerJSON["X"]);

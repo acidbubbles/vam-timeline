@@ -38,6 +38,7 @@ namespace VamTimeline
         {
             if (Controllers.Any(c => c.Controller == controller)) return null;
             FreeControllerV3Animation controllerState = new FreeControllerV3Animation(controller, AnimationLength);
+            controllerState.SetKeyframeToCurrentTransform(0f);
             Controllers.Add(controllerState);
             return controllerState;
         }
@@ -134,13 +135,13 @@ namespace VamTimeline
             return Controllers;
         }
 
-        public void ChangeCurve(float time, string val)
+        public void ChangeCurve(float time, string curveType)
         {
             if (time == 0 || time == AnimationLength) return;
 
             foreach (var controller in GetAllOrSelectedControllers())
             {
-                controller.ChangeCurve(time, val);
+                controller.ChangeCurve(time, curveType);
             }
         }
 

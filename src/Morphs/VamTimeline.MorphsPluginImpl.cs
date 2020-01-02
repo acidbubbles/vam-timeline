@@ -8,7 +8,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsPluginImpl : PluginImplBase
+    public class MorphsPluginImpl : PluginImplBase<MorphsAnimation>
     {
         public MorphsPluginImpl(IAnimationPlugin plugin)
             : base(plugin)
@@ -41,7 +41,6 @@ namespace VamTimeline
 
                 if (morph.animatable)
                 {
-                    SuperController.LogMessage(morph.displayName);
                     var morphJSON = new JSONStorableFloat($"Morph:{morphDisplayName}", morph.jsonFloat.defaultVal, (float val) => UpdateMorph(morph, val), morph.jsonFloat.min, morph.jsonFloat.max, morph.jsonFloat.constrained, true);
                     _plugin.CreateSlider(morphJSON, true);
                 }
@@ -67,6 +66,16 @@ namespace VamTimeline
         private void UpdateMorph(DAZMorph morph, float val)
         {
             morph.jsonFloat.val = val;
+        }
+
+        protected override void ContextUpdated()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void AnimationUpdated()
+        {
+            throw new NotImplementedException();
         }
     }
 }
