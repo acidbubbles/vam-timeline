@@ -16,9 +16,9 @@ namespace VamTimeline
     {
         public readonly AnimationClip Clip;
         private float _animationLength = 5f;
-        public readonly List<FreeControllerV3Animation> Controllers = new List<FreeControllerV3Animation>();
+        public readonly List<FreeControllerV3AnimationTarget> Controllers = new List<FreeControllerV3AnimationTarget>();
         public AnimationPattern AnimationPattern;
-        private FreeControllerV3Animation _selected;
+        private FreeControllerV3AnimationTarget _selected;
 
         public string AnimationName { get; }
         public float Speed { get; set; } = 1f;
@@ -34,10 +34,10 @@ namespace VamTimeline
             };
         }
 
-        public FreeControllerV3Animation Add(FreeControllerV3 controller)
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
         {
             if (Controllers.Any(c => c.Controller == controller)) return null;
-            FreeControllerV3Animation controllerState = new FreeControllerV3Animation(controller, AnimationLength);
+            FreeControllerV3AnimationTarget controllerState = new FreeControllerV3AnimationTarget(controller, AnimationLength);
             controllerState.SetKeyframeToCurrentTransform(0f);
             Controllers.Add(controllerState);
             return controllerState;
@@ -129,7 +129,7 @@ namespace VamTimeline
             Clip.EnsureQuaternionContinuity();
         }
 
-        public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
+        public IEnumerable<FreeControllerV3AnimationTarget> GetAllOrSelectedControllers()
         {
             if (_selected != null) return new[] { _selected };
             return Controllers;

@@ -103,7 +103,7 @@ namespace VamTimeline
             Animation.AddClip(clip.Clip, clip.AnimationName);
         }
 
-        public FreeControllerV3Animation Add(FreeControllerV3 controller)
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
         {
             var added = Current.Add(controller);
             RebuildAnimation();
@@ -144,14 +144,19 @@ namespace VamTimeline
             }
         }
 
-        public void SelectTargetByName(string val)
+        public void SelectTargetByName(string name)
         {
-            Current.SelectControllerByName(val);
+            Current.SelectControllerByName(name);
         }
 
-        public List<string> GetTargetsNames()
+        public IEnumerable<string> GetTargetsNames()
         {
             return Current.GetControllersName();
+        }
+
+        public IEnumerable<string> GetAnimationNames()
+        {
+            return Clips.Select(c => c.AnimationName);
         }
 
         public bool IsPlaying()
@@ -193,9 +198,9 @@ namespace VamTimeline
             _animState.time = time;
         }
 
-        public IEnumerable<FreeControllerV3Animation> GetAllOrSelectedControllers()
+        public IEnumerable<IAnimationTarget> GetAllOrSelectedControllers()
         {
-            return Current.GetAllOrSelectedControllers();
+            return Current.GetAllOrSelectedControllers().Cast<IAnimationTarget>();
         }
 
         public void ChangeCurve(string curveType)
@@ -203,6 +208,28 @@ namespace VamTimeline
             var time = Time;
             Current.ChangeCurve(time, curveType);
             RebuildAnimation();
+        }
+
+        public string AddAnimation()
+        {
+            // TODO: Let the user name the animation
+            var lastAnimationName = Clips.Last().AnimationName;
+            var lastAnimationIndex = lastAnimationName.Substring(4);
+            var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
+            var clip = new AtomAnimationClip(animationName)
+            {
+                Speed = Speed,
+                AnimationLength = AnimationLength
+            };
+            foreach (var controller in Current.Controllers.Select(c => c.Controller))
+            {
+                var animController = clip.Add(controller);
+                animController.SetKeyframeToCurrentTransform(0f);
+            }
+
+            AddClip(clip);
+
+            return animationName;
         }
 
         public void ChangeAnimation(string animationName)
@@ -239,6 +266,34 @@ namespace VamTimeline
         public void SmoothAllFrames()
         {
             Current.SmoothAllFrames();
+            RebuildAnimation();
+        }
+
+        public IClipboardEntry Copy()
+        {
+            var entries = new List<FreeControllerV3ClipboardEntry>();
+            var time = Time;
+            foreach (var controller in Current.GetAllOrSelectedControllers())
+            {
+                entries.Add(new FreeControllerV3ClipboardEntry
+                {
+                    Controller = controller.Controller,
+                    Snapshot = controller.GetCurveSnapshot(time)
+                });
+            }
+            return new AtomClipboardEntry { Entries = entries };
+        }
+
+        public void Paste(IClipboardEntry clipboard)
+        {
+            float time = Time;
+            foreach (var entry in ((AtomClipboardEntry)clipboard).Entries)
+            {
+                var animController = Current.Controllers.FirstOrDefault(c => c.Controller == entry.Controller);
+                if (animController == null)
+                    animController = Add(entry.Controller);
+                animController.SetCurveSnapshot(time, entry.Snapshot);
+            }
             RebuildAnimation();
         }
     }

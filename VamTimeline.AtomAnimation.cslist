@@ -1,12 +1,13 @@
 src/Common/VamTimeline.CurveTypeValues.cs
 src/Common/VamTimeline.AnimationCurveExtensions.cs
+src/Common/VamTimeline.IClipboardEntry.cs
 src/Common/VamTimeline.StorableNames.cs
 src/Common/VamTimeline.IAnimation.cs
 src/Common/VamTimeline.AnimationSerializerBase.cs
 src/Common/VamTimeline.IAnimationPlugin.cs
 src/Common/VamTimeline.PluginImplBase.cs
-src/Atoms/VamTimeline.FreeControllerV3Snapshot.cs
-src/Atoms/VamTimeline.FreeControllerV3Animation.cs
+src/Atoms/VamTimeline.FreeControllerV3ClipboardEntry.cs
+src/Atoms/VamTimeline.FreeControllerV3AnimationTarget.cs
 src/Atoms/VamTimeline.AtomAnimationClip.cs
 src/Atoms/VamTimeline.AtomAnimation.cs
 src/Atoms/VamTimeline.AtomAnimationSerializer.cs

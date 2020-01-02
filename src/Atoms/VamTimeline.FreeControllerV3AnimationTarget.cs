@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace VamTimeline
 {
     public interface IAnimationTarget
     {
+        string Name { get; }
+
         void ChangeCurve(float time, string curveType);
         FreeControllerV3Snapshot GetCurveSnapshot(float time);
         void ReapplyCurvesToClip(AnimationClip clip);
@@ -15,6 +18,8 @@ namespace VamTimeline
         void SetKeyframeToTransform(float time, Vector3 localPosition, Quaternion localRotation);
         void SetLength(float length);
         void SmoothAllFrames();
+        void RenderDebugInfo(StringBuilder display, float time);
+        IEnumerable<float> GetAllKeyframesTime();
     }
 
     /// <summary>
@@ -23,7 +28,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FreeControllerV3Animation : IAnimationTarget
+    public class FreeControllerV3AnimationTarget : IAnimationTarget
     {
         private float _animationLength;
         public FreeControllerV3 Controller;
@@ -36,7 +41,9 @@ namespace VamTimeline
         public AnimationCurve RotW = new AnimationCurve();
         public List<AnimationCurve> Curves;
 
-        public FreeControllerV3Animation(FreeControllerV3 controller, float animationLength)
+        public string Name => Controller.name;
+
+        public FreeControllerV3AnimationTarget(FreeControllerV3 controller, float animationLength)
         {
             Curves = new List<AnimationCurve> {
                 X, Y, Z, RotX, RotY, RotZ, RotW
@@ -173,6 +180,38 @@ namespace VamTimeline
             RotY.SetKeySnapshot(time, snapshot.RotY);
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
             RotW.SetKeySnapshot(time, snapshot.RotW);
+        }
+
+        #endregion
+
+        #region  Rendering
+
+        public void RenderDebugInfo(StringBuilder display, float time)
+        {
+            display.AppendLine($"{Controller.containingAtom.name}:{Controller.name}");
+            RenderStateController(time, display, "X", X);
+            RenderStateController(time, display, "Y", Y);
+            RenderStateController(time, display, "Z", Z);
+            RenderStateController(time, display, "RotX", RotX);
+            RenderStateController(time, display, "RotY", RotY);
+            RenderStateController(time, display, "RotZ", RotZ);
+            RenderStateController(time, display, "RotW", RotW);
+        }
+
+        private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
+        {
+            display.AppendLine($"{name}");
+            foreach (var keyframe in curve.keys)
+            {
+                display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
+                display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
+                display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
+            }
+        }
+
+        public IEnumerable<float> GetAllKeyframesTime()
+        {
+            return Curves.SelectMany(c => c.keys.Take(c.keys.Length - 1)).Select(k => k.time).Distinct();
         }
 
         #endregion

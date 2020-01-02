@@ -60,13 +60,14 @@
     <Compile Include="src/Common/VamTimeline.StorableNames.cs" />
     <Compile Include="src/Common/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationCurveExtensions.cs" />
+    <Compile Include="src/Common/VamTimeline.IClipboardEntry.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimation.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationSerializerBase.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationPlugin.cs" />
     <Compile Include="src/Common/VamTimeline.PluginImplBase.cs" />
 
-    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3Snapshot.cs" />
-    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3Animation.cs" />
+    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3ClipboardEntry.cs" />
+    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3AnimationTarget.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimationClip.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimation.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimationSerializer.cs" />
