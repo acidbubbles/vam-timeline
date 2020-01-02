@@ -10,16 +10,23 @@ namespace VamTimeline
     /// </summary>
     public class BackupPlugin : MVRScript
     {
-        private JSONStorableString _backupJSON;
-
         public override void Init()
         {
             try
             {
-                _backupJSON = new JSONStorableString("Backup", "");
-                RegisterString(_backupJSON);
-                var textfield = CreateTextField(_backupJSON);
-                textfield.height = 1200;
+                {
+                    var backupJSON = new JSONStorableString(StorableNames.AtomAnimationBackup, "");
+                    RegisterString(backupJSON);
+                    var textfield = CreateTextField(backupJSON);
+                    textfield.height = 1200;
+                }
+
+                {
+                    var backupJSON = new JSONStorableString(StorableNames.MorphsAnimationBackup, "");
+                    RegisterString(backupJSON);
+                    var textfield = CreateTextField(backupJSON);
+                    textfield.height = 1200;
+                }
             }
             catch (Exception exc)
             {

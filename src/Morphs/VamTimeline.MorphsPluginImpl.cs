@@ -10,6 +10,9 @@ namespace VamTimeline
     /// </summary>
     public class MorphsPluginImpl : PluginImplBase<MorphsAnimation>
     {
+        // Backup
+        protected override string BackupStorableName => StorableNames.MorphsAnimationBackup;
+
         public MorphsPluginImpl(IAnimationPlugin plugin)
             : base(plugin)
         {

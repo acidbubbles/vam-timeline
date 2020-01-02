@@ -30,7 +30,7 @@ namespace VamTimeline
 
         public JSONStorableFloat Scrubber { get { return Storable.GetFloatJSONParam(StorableNames.Time); } }
         public JSONStorableStringChooser Animation { get { return Storable.GetStringChooserJSONParam(StorableNames.Animation); } }
-        public JSONStorableStringChooser SelectedController { get { return Storable.GetStringChooserJSONParam(StorableNames.SelectedController); } }
+        public JSONStorableStringChooser SelectedController { get { return Storable.GetStringChooserJSONParam(StorableNames.FilterAnimationTarget); } }
         public JSONStorableString Display { get { return Storable.GetStringJSONParam(StorableNames.Display); } }
 
         public void Play()

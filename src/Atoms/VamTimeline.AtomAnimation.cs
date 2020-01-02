@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -145,12 +144,12 @@ namespace VamTimeline
             }
         }
 
-        public void SelectControllerByName(string val)
+        public void SelectTargetByName(string val)
         {
             Current.SelectControllerByName(val);
         }
 
-        public List<string> GetControllersName()
+        public List<string> GetTargetsNames()
         {
             return Current.GetControllersName();
         }

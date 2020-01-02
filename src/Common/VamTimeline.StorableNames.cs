@@ -8,13 +8,14 @@ namespace VamTimeline
     /// </summary>
     public static class StorableNames
     {
+        // Animation
         public const string Save = "Save";
         public const string Animation = "Animation";
         public const string Time = "Time";
         public const string Play = "Play";
         public const string PlayIfNotPlaying = "Play If Not Playing";
         public const string Stop = "Stop";
-        public const string SelectedController = "Selected Controller";
+        public const string FilterAnimationTarget = "Filter Target";
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";
         public const string ChangeCurve = "Change Curve";
@@ -24,5 +25,9 @@ namespace VamTimeline
         public const string BlendDuration = "Blend Duration";
         public const string DisplayMode = "Display Mode";
         public const string Display = "Display";
+
+        // Backup
+        public const string AtomAnimationBackup = "AtomAnimationBackup";
+        public const string MorphsAnimationBackup = "MorphsAnimationBackup";
     }
 }

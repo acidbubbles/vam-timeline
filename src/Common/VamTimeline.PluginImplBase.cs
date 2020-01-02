@@ -23,6 +23,9 @@ namespace VamTimeline
         // Save
         private JSONStorableString _saveJSON;
 
+        // Backup
+        protected abstract string BackupStorableName { get; }
+
         protected PluginImplBase(IAnimationPlugin plugin)
         {
             _plugin = plugin;
@@ -74,7 +77,7 @@ namespace VamTimeline
                     if (backupStorableID != null)
                     {
                         var backupStorable = _plugin.ContainingAtom.GetStorableByID(backupStorableID);
-                        var backupJSON = backupStorable.GetStringJSONParam("Backup");
+                        var backupJSON = backupStorable.GetStringJSONParam(BackupStorableName);
                         if (!string.IsNullOrEmpty(backupJSON.val))
                         {
                             SuperController.LogMessage("No save found but a backup was detected. Loading backup.");
@@ -131,7 +134,7 @@ namespace VamTimeline
                 if (backupStorableID != null)
                 {
                     var backupStorable = _plugin.ContainingAtom.GetStorableByID(backupStorableID);
-                    var backupJSON = backupStorable.GetStringJSONParam("Backup");
+                    var backupJSON = backupStorable.GetStringJSONParam(BackupStorableName);
                     backupJSON.val = serialized;
                 }
             }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +16,7 @@ namespace VamTimeline
     public class AtomPluginImpl : PluginImplBase<AtomAnimation>
     {
         // private const int MaxUndo = 20;
-        private const string AllControllers = "(All Controllers)";
+        private const string AllTargets = "(All)";
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // State
@@ -31,7 +30,7 @@ namespace VamTimeline
         private JSONStorableAction _playJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
-        private JSONStorableStringChooser _selectedControllerJSON;
+        private JSONStorableStringChooser _filterAnimationTargetJSON;
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
         private JSONStorableStringChooser _changeCurveJSON;
@@ -47,6 +46,9 @@ namespace VamTimeline
 
         // UI
         private UIDynamicButton _toggleControllerUI;
+
+        // Backup
+        protected override string BackupStorableName => StorableNames.AtomAnimationBackup;
 
         public AtomPluginImpl(IAnimationPlugin plugin)
             : base(plugin)
@@ -90,11 +92,11 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction(StorableNames.Stop, () => { _animation.Stop(); ContextUpdated(); });
             _plugin.RegisterAction(_stopJSON);
 
-            _selectedControllerJSON = new JSONStorableStringChooser(StorableNames.SelectedController, new List<string> { AllControllers }, AllControllers, "Selected Controller", val => { _animation.SelectControllerByName(val == AllControllers ? "" : val); ContextUpdated(); })
+            _filterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { _animation.SelectTargetByName(val == AllTargets ? "" : val); ContextUpdated(); })
             {
                 isStorable = false
             };
-            _plugin.RegisterStringChooser(_selectedControllerJSON);
+            _plugin.RegisterStringChooser(_filterAnimationTargetJSON);
 
             _nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(_animation.GetNextFrame()); ContextUpdated(); });
             _plugin.RegisterAction(_nextFrameJSON);
@@ -149,7 +151,7 @@ namespace VamTimeline
             var stopUI = _plugin.CreateButton("\u25A0 Stop");
             stopUI.button.onClick.AddListener(() => _stopJSON.actionCallback());
 
-            var selectedControllerUI = _plugin.CreateScrollablePopup(_selectedControllerJSON);
+            var selectedControllerUI = _plugin.CreateScrollablePopup(_filterAnimationTargetJSON);
             selectedControllerUI.popupPanelHeight = 800f;
 
             var nextFrameUI = _plugin.CreateButton("\u2192 Next Frame");
@@ -291,7 +293,7 @@ namespace VamTimeline
         {
             try
             {
-                _selectedControllerJSON.val = AllControllers;
+                _filterAnimationTargetJSON.val = AllTargets;
                 _animation.ChangeAnimation(animationName);
                 _speedJSON.valNoCallback = _animation.Speed;
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
@@ -652,7 +654,7 @@ namespace VamTimeline
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
                 _blendDurationJSON.valNoCallback = _animation.BlendDuration;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-                _selectedControllerJSON.choices = new List<string> { AllControllers }.Concat(_animation.GetControllersName()).ToList();
+                _filterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(_animation.GetTargetsNames()).ToList();
                 _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 
                 UpdateToggleAnimatedControllerButton(_addControllerListJSON.val);

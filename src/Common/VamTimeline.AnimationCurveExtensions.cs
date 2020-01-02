@@ -102,10 +102,14 @@ namespace VamTimeline
                 var first = curve.keys[0];
                 first.inTangent = 0f;
                 first.outTangent = 0f;
+                first.inWeight = 0.33f;
+                first.outWeight = 0.33f;
                 curve.MoveKey(0, first);
                 var last = curve.keys[1];
                 last.inTangent = 0f;
                 last.outTangent = 0f;
+                last.inWeight = 0.33f;
+                last.outWeight = 0.33f;
                 curve.MoveKey(1, last);
                 return;
             }
@@ -132,6 +136,7 @@ namespace VamTimeline
         public static void SmoothLoop(this AnimationCurve curve)
         {
             if (curve.keys.Length == 0) return;
+            // TODO: Loop doesn't work now for some reason
 
             var keyframe = curve.keys[0];
 

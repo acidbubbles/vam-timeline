@@ -15,7 +15,7 @@ namespace VamTimeline
     public class ControllerPlugin : MVRScript
     {
         private const string AllAtoms = "(All Atoms)";
-        private const string AllControllers = "(All Controllers)";
+        private const string AllTargets = "(All)";
         private Atom _atom;
         private SimpleSignUI _ui;
         private JSONStorableStringChooser _atomsJSON;
@@ -86,7 +86,7 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction("Stop", () => Stop());
             RegisterAction(_stopJSON);
 
-            _controllerJSON = new JSONStorableStringChooser("Selected Controller", new List<string>(), AllControllers, "Selected Controller", (string v) => SelectControllerFilter(v))
+            _controllerJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string>(), AllTargets, StorableNames.FilterAnimationTarget, (string v) => SelectControllerFilter(v))
             {
                 isStorable = false
             };
@@ -105,7 +105,7 @@ namespace VamTimeline
             RegisterString(_displayJSON);
 
             var atoms = GetAtomsWithVamTimeline().ToList();
-            _targetJSON = new JSONStorableStringChooser("Target", atoms, atoms.FirstOrDefault() ?? "", "Add", v => _linkButton.button.interactable = !string.IsNullOrEmpty(v));
+            _targetJSON = new JSONStorableStringChooser("Atom To Link", atoms, atoms.FirstOrDefault() ?? "", "Add", v => _linkButton.button.interactable = !string.IsNullOrEmpty(v));
 
             _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => StartCoroutine(RestoreAtomsLink(v)));
             RegisterString(_savedAtomsJSON);
@@ -359,7 +359,7 @@ namespace VamTimeline
         private void SelectControllerFilter(string v)
         {
             if (_mainLinkedAnimation == null) return;
-            if (string.IsNullOrEmpty(v) || v == AllControllers)
+            if (string.IsNullOrEmpty(v) || v == AllTargets)
             {
                 _mainLinkedAnimation.SelectedController.val = null;
                 return;
