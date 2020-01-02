@@ -126,6 +126,8 @@ namespace VamTimeline
 
         public static void SmoothLoop(this AnimationCurve curve)
         {
+            if (curve.keys.Length == 0) return;
+
             var keyframe = curve.keys[0];
 
             if (curve.keys.Length <= 2)

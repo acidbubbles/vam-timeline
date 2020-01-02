@@ -8,19 +8,22 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsPlugin : MVRScript
+    public class MorphsPlugin : MVRScript, IAnimationPlugin
     {
+        private readonly MorphsPluginImpl _impl;
+
+        public Atom ContainingAtom => containingAtom;
+
+        public MorphsPlugin()
+        {
+            _impl = new MorphsPluginImpl(this);
+        }
+
         public override void Init()
         {
             try
             {
-                if (containingAtom.type != "Person")
-                {
-                    SuperController.LogError("VamTimeline.MorphsAnimation can only be applied on a Person atom.");
-                    return;
-                }
-
-                InitMorphsList();
+                _impl.Init();
             }
             catch (Exception exc)
             {
@@ -28,34 +31,52 @@ namespace VamTimeline
             }
         }
 
-        private void InitMorphsList()
+        public void Update()
         {
-            var geometry = containingAtom.GetStorableByID("geometry");
-            if (geometry == null) throw new NullReferenceException("geometry");
-            var character = geometry as DAZCharacterSelector;
-            if (character == null) throw new NullReferenceException("character");
-            var morphControl = character.morphsControlUI;
-            if (morphControl == null) throw new NullReferenceException("morphControl");
-            foreach (var morphDisplayName in morphControl.GetMorphDisplayNames())
+            try
             {
-                var morph = morphControl.GetMorphByDisplayName(morphDisplayName);
-                if (morph == null) continue;
-
-                if (morph.animatable)
-                {
-                    var morphJSON = new JSONStorableFloat($"Morph:{morphDisplayName}", morph.jsonFloat.defaultVal, (float val) => UpdateMorph(morph, val), morph.jsonFloat.min, morph.jsonFloat.max, morph.jsonFloat.constrained, true);
-                    CreateSlider(morphJSON, true);
-                }
+                _impl.Update();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.MorphsPlugin.Update: " + exc);
             }
         }
 
-        private void UpdateMorph(DAZMorph morph, float val)
+        public void OnEnable()
         {
-            morph.jsonFloat.val = val;
+            try
+            {
+                _impl.OnEnable();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.MorphsPlugin.OnEnable: " + exc);
+            }
         }
 
-        public void Update()
+        public void OnDisable()
         {
+            try
+            {
+                _impl.OnDisable();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.MorphsPlugin.OnDisable: " + exc);
+            }
+        }
+
+        public void OnDestroy()
+        {
+            try
+            {
+                _impl.OnDestroy();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.MorphsPlugin.OnDestroy: " + exc);
+            }
         }
     }
 }
