@@ -9,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip>, IAnimation
+    public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip>, IAnimation<JSONStorableFloatAnimationClip>
     {
         private float _time;
 
@@ -22,7 +22,7 @@ namespace VamTimeline
             set
             {
                 _time = value;
-                foreach (var morph in Current.Morphs)
+                foreach (var morph in Current.Storables)
                 {
                     morph.Storable.val = morph.Value.Evaluate(_time);
                 }
@@ -68,10 +68,6 @@ namespace VamTimeline
         public void Paste(IClipboardEntry clipboard)
         {
             throw new NotImplementedException();
-        }
-
-        public override void RebuildAnimation()
-        {
         }
     }
 }

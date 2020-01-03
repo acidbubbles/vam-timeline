@@ -13,6 +13,7 @@ namespace VamTimeline
     {
         string AnimationName { get; }
         float AnimationLength { get; set; }
+        float Speed { get; set; }
 
         bool IsEmpty();
         float GetNextFrame(float time);

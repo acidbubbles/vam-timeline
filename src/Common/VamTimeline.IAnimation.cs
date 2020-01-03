@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace VamTimeline
 {
@@ -10,14 +9,17 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAnimation
+    public interface IAnimation<TClip>
     {
         float Time { get; set; }
         float AnimationLength { get; set; }
         float Speed { get; set; }
         float BlendDuration { get; set; }
+        List<TClip> Clips { get; }
 
         void Initialize();
+        void AddClip(TClip clip);
+        void RebuildAnimation();
 
         void Play();
         bool IsPlaying();

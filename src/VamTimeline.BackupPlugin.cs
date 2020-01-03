@@ -17,14 +17,14 @@ namespace VamTimeline
                 {
                     var backupJSON = new JSONStorableString(StorableNames.AtomAnimationBackup, "");
                     RegisterString(backupJSON);
-                    var textfield = CreateTextField(backupJSON);
+                    var textfield = CreateTextField(backupJSON, false);
                     textfield.height = 1200;
                 }
 
                 {
                     var backupJSON = new JSONStorableString(StorableNames.MorphsAnimationBackup, "");
                     RegisterString(backupJSON);
-                    var textfield = CreateTextField(backupJSON);
+                    var textfield = CreateTextField(backupJSON, true);
                     textfield.height = 1200;
                 }
             }

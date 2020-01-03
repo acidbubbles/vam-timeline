@@ -1,16 +1,18 @@
-using System;
 using System.Linq;
 
 namespace VamTimeline
 {
+
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsPluginImpl : PluginImplBase<JSONStorableFloatAnimation>
+    public class MorphsPluginImpl : PluginImplBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip>
     {
+        private MorphsList _morphsList;
+
         // Backup
         protected override string BackupStorableName => StorableNames.MorphsAnimationBackup;
 
@@ -28,6 +30,8 @@ namespace VamTimeline
                 SuperController.LogError("VamTimeline.MorphsAnimation can only be applied on a Person atom.");
                 return;
             }
+
+            _morphsList = new MorphsList(_plugin.ContainingAtom);
 
             RegisterSerializer(new MorphsAnimationSerializer(_plugin.ContainingAtom));
             InitStorables();
@@ -62,22 +66,11 @@ namespace VamTimeline
 
         private void InitMorphsListUI()
         {
-            var geometry = _plugin.ContainingAtom.GetStorableByID("geometry");
-            if (geometry == null) throw new NullReferenceException("geometry");
-            var character = geometry as DAZCharacterSelector;
-            if (character == null) throw new NullReferenceException("character");
-            var morphControl = character.morphsControlUI;
-            if (morphControl == null) throw new NullReferenceException("morphControl");
-            foreach (var morphDisplayName in morphControl.GetMorphDisplayNames())
+            _morphsList.Refresh();
+            foreach (var morphJSONRef in _morphsList.GetAnimatableMorphs())
             {
-                var morph = morphControl.GetMorphByDisplayName(morphDisplayName);
-                if (morph == null) continue;
-
-                if (morph.animatable)
-                {
-                    var morphJSON = new JSONStorableFloat($"Morph:{morphDisplayName}", morph.jsonFloat.defaultVal, (float val) => UpdateMorph(morph, val), morph.jsonFloat.min, morph.jsonFloat.max, morph.jsonFloat.constrained, true);
-                    _plugin.CreateSlider(morphJSON, true);
-                }
+                var morphJSON = new JSONStorableFloat($"Morph:{morphJSONRef.name}", morphJSONRef.defaultVal, (float val) => UpdateMorph(morphJSONRef, val), morphJSONRef.min, morphJSONRef.max, morphJSONRef.constrained, true);
+                _plugin.CreateSlider(morphJSON, true);
             }
         }
 
@@ -105,19 +98,19 @@ namespace VamTimeline
 
         #region Callbacks
 
-        private void UpdateMorph(DAZMorph morph, float val)
+        private void UpdateMorph(JSONStorableFloat morphJSONRef, float val)
         {
-            morph.jsonFloat.val = val;
+            morphJSONRef.val = val;
             // TODO: This should be done by the controller (updating the animation resets the time)
             var time = _animation.Time;
-            var target = _animation.Current.Morphs.FirstOrDefault(m => m.Name == morph.jsonFloat.name);
+            var target = _animation.Current.Storables.FirstOrDefault(m => m.Name == morphJSONRef.name);
             if (target == null)
             {
 
                 // TODO: This is temporary for testing
-                target = new JSONStorableFloatAnimationTarget(morph.jsonFloat, _animation.AnimationLength);
+                target = new JSONStorableFloatAnimationTarget(morphJSONRef, _animation.AnimationLength);
                 target.SetKeyframe(0, val);
-                _animation.Current.Morphs.Add(target);
+                _animation.Current.Storables.Add(target);
             }
             target.SetKeyframe(time, val);
             _animation.RebuildAnimation();

@@ -11,8 +11,8 @@ namespace VamTimeline
     /// </summary>
     public abstract class AnimationBase<TClip> where TClip : class, IAnimationClip
     {
-        public readonly List<TClip> Clips = new List<TClip>();
-        public TClip Current;
+        public List<TClip> Clips { get; } = new List<TClip>();
+        public TClip Current { get; set; }
 
         public abstract float Time { get; set; }
 
@@ -34,9 +34,14 @@ namespace VamTimeline
         public void Initialize()
         {
             if (Clips.Count == 0)
-                Clips.Add(CreateClip("Anim1"));
+                AddClip(CreateClip("Anim1"));
             if (Current == null)
                 Current = Clips.First();
+        }
+
+        public void AddClip(TClip clip)
+        {
+            Clips.Add(clip);
         }
 
         public bool IsEmpty()
@@ -83,6 +88,6 @@ namespace VamTimeline
         }
 
         protected abstract TClip CreateClip(string animatioName);
-        public abstract void RebuildAnimation();
+        public virtual void RebuildAnimation() { }
     }
 }

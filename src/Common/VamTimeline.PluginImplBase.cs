@@ -14,14 +14,17 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public abstract class PluginImplBase<TAnimation> where TAnimation : class, IAnimation
+    public abstract class PluginImplBase<TAnimation, TAnimationClip>
+        where TAnimation : class, IAnimation<TAnimationClip>
+        where TAnimationClip : class, IAnimationClip
     {
+        // private const int MaxUndo = 20;
         private const string AllTargets = "(All)";
 
         protected readonly IAnimationPlugin _plugin;
 
         // State
-        private IAnimationSerializer<TAnimation> _serializer;
+        private IAnimationSerializer<TAnimation, TAnimationClip> _serializer;
         protected TAnimation _animation;
         private bool _restoring;
         private readonly List<string> _undoList = new List<string>();
@@ -58,7 +61,7 @@ namespace VamTimeline
 
         #region Initialization
 
-        public void RegisterSerializer(IAnimationSerializer<TAnimation> serializer)
+        public void RegisterSerializer(IAnimationSerializer<TAnimation, TAnimationClip> serializer)
         {
             _serializer = serializer;
         }

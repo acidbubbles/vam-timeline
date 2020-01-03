@@ -12,7 +12,7 @@ src/Common/VamTimeline.PluginImplBase.cs
 src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationTarget.cs
 src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationClip.cs
 src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimation.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationSerializer.cs
+src/Morphs/VamTimeline.MorphsList.cs
 src/Morphs/VamTimeline.MorphsAnimationSerializer.cs
 src/Morphs/VamTimeline.MorphsPluginImpl.cs
 src/VamTimeline.MorphsPlugin.cs
