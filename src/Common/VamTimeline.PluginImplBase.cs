@@ -196,6 +196,38 @@ namespace VamTimeline
 
         #endregion
 
+        #region Lifecycle
+
+        public void Update()
+        {
+            try
+            {
+                if (_lockedJSON == null || _lockedJSON.val || _animation == null) return;
+
+                if (_animation.IsPlaying())
+                {
+                    var time = _animation.Time;
+                    if (time != _scrubberJSON.val)
+                        _scrubberJSON.valNoCallback = time;
+                    UpdatePlaying();
+                    // RenderState() // In practice, we don't see anything useful
+                }
+                else
+                {
+                    UpdateNotPlaying();
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AtomPlugin.Update: " + exc);
+            }
+        }
+
+        protected abstract void UpdatePlaying();
+        protected abstract void UpdateNotPlaying();
+
+        #endregion
+
         #region Load / Save
 
         public void RestoreState(string json)
@@ -543,6 +575,8 @@ namespace VamTimeline
                 // Update UI
                 _scrubberJSON.valNoCallback = time;
 
+                ContextUpdatedCustom();
+
                 // Render
                 RenderState();
 
@@ -556,6 +590,8 @@ namespace VamTimeline
                 SuperController.LogError("VamTimeline.AtomPlugin.ContextUpdated: " + exc);
             }
         }
+
+        protected abstract void ContextUpdatedCustom();
 
         #endregion
     }

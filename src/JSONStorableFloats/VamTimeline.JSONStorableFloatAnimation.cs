@@ -12,6 +12,7 @@ namespace VamTimeline
     public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip>, IAnimation<JSONStorableFloatAnimationClip>
     {
         private float _time;
+        private bool _isPlaying;
 
         public override float Time
         {
@@ -22,12 +23,18 @@ namespace VamTimeline
             set
             {
                 _time = value;
-                foreach (var morph in Current.Storables)
-                {
-                    morph.Storable.val = morph.Value.Evaluate(_time);
-                }
+                SampleAnimation();
             }
         }
+
+        private void SampleAnimation()
+        {
+            foreach (var morph in Current.Storables)
+            {
+                morph.Storable.val = morph.Value.Evaluate(_time);
+            }
+        }
+
         public float Speed { get; set; }
 
         public string AddAnimation()
@@ -42,17 +49,20 @@ namespace VamTimeline
 
         public void Play()
         {
-            throw new NotImplementedException();
+            _time = 0;
+            _isPlaying = true;
         }
 
         public bool IsPlaying()
         {
-            throw new NotImplementedException();
+            return _isPlaying;
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            _time = 0;
+            _isPlaying = false;
+            SampleAnimation();
         }
 
         protected override JSONStorableFloatAnimationClip CreateClip(string animatioName)
@@ -68,6 +78,15 @@ namespace VamTimeline
         public void Paste(IClipboardEntry clipboard)
         {
             throw new NotImplementedException();
+        }
+
+        public void Update()
+        {
+            if (_isPlaying)
+            {
+                _time = (_time + UnityEngine.Time.deltaTime) % AnimationLength;
+                SampleAnimation();
+            }
         }
     }
 }

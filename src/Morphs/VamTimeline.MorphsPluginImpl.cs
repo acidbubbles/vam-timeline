@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -11,7 +12,14 @@ namespace VamTimeline
     /// </summary>
     public class MorphsPluginImpl : PluginImplBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip>
     {
+        private class MorphJSONRef
+        {
+            public JSONStorableFloat Original;
+            public JSONStorableFloat Local;
+        }
+
         private MorphsList _morphsList;
+        private List<MorphJSONRef> _morphJSONRefs;
 
         // Backup
         protected override string BackupStorableName => StorableNames.MorphsAnimationBackup;
@@ -67,10 +75,16 @@ namespace VamTimeline
         private void InitMorphsListUI()
         {
             _morphsList.Refresh();
+            _morphJSONRefs = new List<MorphJSONRef>();
             foreach (var morphJSONRef in _morphsList.GetAnimatableMorphs())
             {
                 var morphJSON = new JSONStorableFloat($"Morph:{morphJSONRef.name}", morphJSONRef.defaultVal, (float val) => UpdateMorph(morphJSONRef, val), morphJSONRef.min, morphJSONRef.max, morphJSONRef.constrained, true);
                 _plugin.CreateSlider(morphJSON, true);
+                _morphJSONRefs.Add(new MorphJSONRef
+                {
+                    Original = morphJSONRef,
+                    Local = morphJSON,
+                });
             }
         }
 
@@ -78,7 +92,15 @@ namespace VamTimeline
 
         #region Lifecycle
 
-        public void Update()
+        protected override void UpdatePlaying()
+        {
+            _animation.Update();
+
+            if (!_lockedJSON.val)
+                ContextUpdatedCustom();
+        }
+
+        protected override void UpdateNotPlaying()
         {
         }
 
@@ -124,6 +146,12 @@ namespace VamTimeline
 
         protected override void AnimationUpdatedCustom()
         {
+        }
+
+        protected override void ContextUpdatedCustom()
+        {
+            foreach (var morphJSONRef in _morphJSONRefs)
+                morphJSONRef.Local.valNoCallback = morphJSONRef.Original.val;
         }
 
         #endregion

@@ -101,47 +101,32 @@ namespace VamTimeline
 
         #region Lifecycle
 
-        public void Update()
+        protected override void UpdatePlaying()
         {
-            try
+        }
+
+        protected override void UpdateNotPlaying()
+        {
+            var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
+            if (grabbing != null && grabbing.containingAtom != _plugin.ContainingAtom)
+                grabbing = null;
+            else if (Input.GetMouseButton(0) && grabbing == null)
+                grabbing = _plugin.ContainingAtom.freeControllers.FirstOrDefault(c => GrabbingControllers.Contains(c.linkToRB?.gameObject.name));
+
+            if (_grabbedController == null && grabbing != null)
             {
-                if (_lockedJSON == null || _lockedJSON.val || _animation == null || _animation.Current == null) return;
-
-                if (_animation.IsPlaying())
-                {
-                    var time = _animation.Time;
-                    if (time != _scrubberJSON.val)
-                        _scrubberJSON.valNoCallback = time;
-                    // RenderState() // In practice, we don't see anything useful
-                }
-                else
-                {
-                    var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
-                    if (grabbing != null && grabbing.containingAtom != _plugin.ContainingAtom)
-                        grabbing = null;
-                    else if (Input.GetMouseButton(0) && grabbing == null)
-                        grabbing = _plugin.ContainingAtom.freeControllers.FirstOrDefault(c => GrabbingControllers.Contains(c.linkToRB?.gameObject.name));
-
-                    if (_grabbedController == null && grabbing != null)
-                    {
-                        _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
-                        _addControllerListJSON.val = grabbing.name;
-                    }
-                    else if (_grabbedController != null && grabbing == null)
-                    {
-                        // TODO: This should be done by the controller (updating the animation resets the time)
-                        var time = _animation.Time;
-                        _grabbedController.SetKeyframeToCurrentTransform(time);
-                        _animation.RebuildAnimation();
-                        UpdateTime(time);
-                        _grabbedController = null;
-                        AnimationUpdated();
-                    }
-                }
+                _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
+                _addControllerListJSON.val = grabbing.name;
             }
-            catch (Exception exc)
+            else if (_grabbedController != null && grabbing == null)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Update: " + exc);
+                // TODO: This should be done by the controller (updating the animation resets the time)
+                var time = _animation.Time;
+                _grabbedController.SetKeyframeToCurrentTransform(time);
+                _animation.RebuildAnimation();
+                UpdateTime(time);
+                _grabbedController = null;
+                AnimationUpdated();
             }
         }
 
