@@ -58,6 +58,14 @@ namespace VamTimeline
             return Clips.Select(c => c.AnimationName);
         }
 
+        protected string GetNewAnimationName()
+        {
+            var lastAnimationName = Clips.Last().AnimationName;
+            var lastAnimationIndex = lastAnimationName.Substring(4);
+            var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
+            return animationName;
+        }
+
         public void SelectTargetByName(string name)
         {
             Current.SelectTargetByName(name);

@@ -329,6 +329,7 @@ namespace VamTimeline
             {
                 _filterAnimationTargetJSON.val = AllTargets;
                 _animation.ChangeAnimation(animationName);
+                _animationJSON.valNoCallback = animationName;
                 _speedJSON.valNoCallback = _animation.Speed;
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;

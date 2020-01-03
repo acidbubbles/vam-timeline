@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -38,12 +39,33 @@ namespace VamTimeline
 
         public string AddAnimation()
         {
-            throw new NotImplementedException();
+            string animationName = GetNewAnimationName();
+            var clip = CreateClip(animationName);
+            CopyCurrentValues(clip);
+            AddClip(clip);
+            return animationName;
+        }
+
+        private void CopyCurrentValues(JSONStorableFloatAnimationClip clip)
+        {
+            clip.Speed = Speed;
+            clip.AnimationLength = AnimationLength;
+            foreach (var storable in Current.Targets.Select(c => c.Storable))
+            {
+                var animController = clip.Add(storable);
+                animController.SetKeyframe(0f, storable.val);
+            }
         }
 
         public void ChangeAnimation(string animationName)
         {
-            throw new NotImplementedException();
+            Current.SelectTargetByName("");
+            Current = Clips.FirstOrDefault(c => c.AnimationName == animationName);
+            if (!_isPlaying)
+            {
+                Time = 0f;
+                SampleAnimation();
+            }
         }
 
         public void Play()

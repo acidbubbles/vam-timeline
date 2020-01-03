@@ -143,10 +143,15 @@ namespace VamTimeline
 
         public string AddAnimation()
         {
-            var lastAnimationName = Clips.Last().AnimationName;
-            var lastAnimationIndex = lastAnimationName.Substring(4);
-            var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
+            string animationName = GetNewAnimationName();
             var clip = CreateClip(animationName);
+            CopyCurrentValues(clip);
+            AddClip(clip);
+            return animationName;
+        }
+
+        private void CopyCurrentValues(AtomAnimationClip clip)
+        {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
             foreach (var controller in Current.Targets.Select(c => c.Controller))
@@ -154,9 +159,6 @@ namespace VamTimeline
                 var animController = clip.Add(controller);
                 animController.SetKeyframeToCurrentTransform(0f);
             }
-            AddClip(clip);
-
-            return animationName;
         }
 
         public void ChangeAnimation(string animationName)
