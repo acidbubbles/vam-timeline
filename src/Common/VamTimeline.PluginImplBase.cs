@@ -248,7 +248,6 @@ namespace VamTimeline
 
                 if (_animation == null)
                 {
-                    // TODO: Name the backup to avoid conflict between atom and morph animations
                     var backupStorableID = _plugin.ContainingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimeline.BackupPlugin"));
                     if (backupStorableID != null)
                     {

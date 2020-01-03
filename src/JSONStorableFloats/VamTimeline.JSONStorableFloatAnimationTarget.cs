@@ -41,22 +41,15 @@ namespace VamTimeline
         {
             if (time == 0f)
             {
-                SetFlatKeyframe(0, value);
-                SetFlatKeyframe(_animationLength, value);
+                Value.SetKeyframe(0, value);
+                Value.SetKeyframe(_animationLength, value);
             }
             else
             {
-                SetFlatKeyframe(time, value);
+                Value.SetKeyframe(time, value);
             }
-        }
 
-        private void SetFlatKeyframe(float time, float value)
-        {
-            var key = Value.SetKeyframe(time, value);
-            var keyframe = Value.keys[key];
-            keyframe.inTangent = 0f;
-            keyframe.outTangent = 0f;
-            Value.MoveKey(key, keyframe);
+            Value.FlatAllFrames();
         }
 
         public void ReapplyCurvesToClip(AnimationClip clip)

@@ -11,7 +11,6 @@ namespace VamTimeline
     /// </summary>
     public static class AnimationCurveExtensions
     {
-
         #region Control
 
         public static void SetLength(this AnimationCurve curve, float length)
@@ -50,6 +49,7 @@ namespace VamTimeline
         }
 
         #endregion
+
         #region Curves
 
         public static void ChangeCurve(this AnimationCurve curve, float time, string curveType)
@@ -134,6 +134,19 @@ namespace VamTimeline
             curve.MoveKey(curve.keys.Length - 1, cloneFirstToLastKeyframe);
         }
 
+        public static void FlatAllFrames(this AnimationCurve curve)
+        {
+            for (int k = 1; k < curve.keys.Length; k++)
+            {
+                var keyframe = curve.keys[k];
+                keyframe.inTangent = 0f;
+                keyframe.outTangent = 0f;
+                keyframe.inWeight = 0.33f;
+                keyframe.outWeight = 0.33f;
+                curve.MoveKey(k, keyframe);
+            }
+        }
+
         public static void SmoothLoop(this AnimationCurve curve)
         {
             if (curve.keys.Length == 0) return;
@@ -188,7 +201,6 @@ namespace VamTimeline
         #endregion
 
         #region Snapshots
-
 
         public static void SetKeySnapshot(this AnimationCurve curve, float time, Keyframe keyframe)
         {

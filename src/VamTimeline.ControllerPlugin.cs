@@ -116,9 +116,6 @@ namespace VamTimeline
             var atoms = SuperController.singleton.GetAtoms();
             foreach (var atom in atoms)
             {
-                // TODO: Handle this, it will allow for morph animations too!
-                if (atom.type == "AnimationPattern")
-                    yield return atom.uid;
                 if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.Atom")))
                 {
                     if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;

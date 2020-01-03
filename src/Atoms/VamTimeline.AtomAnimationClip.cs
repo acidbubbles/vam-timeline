@@ -20,7 +20,6 @@ namespace VamTimeline
         {
             Clip = new AnimationClip
             {
-                // TODO: Make that an option in the UI
                 wrapMode = WrapMode.Loop,
                 legacy = true
             };

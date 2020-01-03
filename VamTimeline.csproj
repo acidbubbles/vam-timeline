@@ -72,7 +72,7 @@
 
     <Compile Include="src/VamTimeline.BackupPlugin.cs" />
 
-    <Compile Include="src/Atoms/VamTimeline.FreeControllerV3ClipboardEntry.cs" />
+    <Compile Include="src/Atoms/VamTimeline.AtomClipboardEntry.cs" />
     <Compile Include="src/Atoms/VamTimeline.FreeControllerV3AnimationTarget.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimationClip.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimation.cs" />

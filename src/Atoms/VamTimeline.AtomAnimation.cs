@@ -143,7 +143,6 @@ namespace VamTimeline
 
         public string AddAnimation()
         {
-            // TODO: Let the user name the animation
             var lastAnimationName = Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
