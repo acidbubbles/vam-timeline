@@ -110,6 +110,9 @@ namespace VamTimeline
 
         public void OnDisable()
         {
+            if (_animation == null) return;
+
+            _animation.Stop();
         }
 
         public void OnDestroy()

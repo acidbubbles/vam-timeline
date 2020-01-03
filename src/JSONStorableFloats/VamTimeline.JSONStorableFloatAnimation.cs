@@ -11,6 +11,10 @@ namespace VamTimeline
     /// </summary>
     public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>, IAnimation<JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
     {
+        private JSONStorableFloatAnimationClip _blendingAnimation;
+        private float _blendingTimeLeft;
+        private float _blendingDuration;
+
         private float _time;
         private bool _isPlaying;
 
@@ -31,7 +35,24 @@ namespace VamTimeline
         {
             foreach (var morph in Current.Targets)
             {
-                morph.Storable.val = morph.Value.Evaluate(_time);
+                var val = morph.Value.Evaluate(_time);
+                if (_blendingAnimation != null)
+                {
+                    var blendingTarget = _blendingAnimation.Targets.FirstOrDefault(t => t.Storable == morph.Storable);
+                    if (blendingTarget != null)
+                    {
+                        var weight = _blendingTimeLeft / _blendingDuration;
+                        morph.Storable.val = (blendingTarget.Value.Evaluate(_time) * (weight)) + (val * (1 - weight));
+                    }
+                    else
+                    {
+                        morph.Storable.val = val;
+                    }
+                }
+                else
+                {
+                    morph.Storable.val = val;
+                }
             }
         }
 
@@ -59,6 +80,11 @@ namespace VamTimeline
 
         public void ChangeAnimation(string animationName)
         {
+            if (_isPlaying)
+            {
+                _blendingAnimation = Current;
+                _blendingTimeLeft = _blendingDuration = BlendDuration;
+            }
             Current.SelectTargetByName("");
             Current = Clips.FirstOrDefault(c => c.AnimationName == animationName);
             if (!_isPlaying)
@@ -83,6 +109,9 @@ namespace VamTimeline
         {
             _time = 0;
             _isPlaying = false;
+            _blendingTimeLeft = 0;
+            _blendingDuration = 0;
+            _blendingAnimation = null;
             SampleAnimation();
         }
 
@@ -106,6 +135,18 @@ namespace VamTimeline
             if (_isPlaying)
             {
                 _time = (_time + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
+
+                if (_blendingAnimation != null)
+                {
+                    _blendingTimeLeft -= UnityEngine.Time.deltaTime;
+                    if (_blendingTimeLeft <= 0)
+                    {
+                        _blendingTimeLeft = 0;
+                        _blendingDuration = 0;
+                        _blendingAnimation = null;
+                    }
+                }
+
                 SampleAnimation();
             }
         }
