@@ -9,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsPluginImpl : PluginImplBase<MorphsAnimation>
+    public class MorphsPluginImpl : PluginImplBase<JSONStorableFloatAnimation>
     {
         // Backup
         protected override string BackupStorableName => StorableNames.MorphsAnimationBackup;

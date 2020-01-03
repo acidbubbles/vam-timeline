@@ -9,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsAnimation : AnimationBase<MorphsAnimationClip>, IAnimation
+    public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip>, IAnimation
     {
         private float _time;
 
@@ -55,9 +55,9 @@ namespace VamTimeline
             throw new NotImplementedException();
         }
 
-        protected override MorphsAnimationClip CreateClip(string animatioName)
+        protected override JSONStorableFloatAnimationClip CreateClip(string animatioName)
         {
-            return new MorphsAnimationClip(animatioName);
+            return new JSONStorableFloatAnimationClip(animatioName);
         }
 
         public IClipboardEntry Copy()

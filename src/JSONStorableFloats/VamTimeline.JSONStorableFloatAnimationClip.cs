@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsAnimationClip : IAnimationClip
+    public class JSONStorableFloatAnimationClip : IAnimationClip
     {
         private float _animationLength = 5f;
         public readonly List<JSONStorableFloatAnimationTarget> Morphs = new List<JSONStorableFloatAnimationTarget>();
@@ -36,7 +36,7 @@ namespace VamTimeline
             }
         }
 
-        public MorphsAnimationClip(string animatioName)
+        public JSONStorableFloatAnimationClip(string animatioName)
         {
             AnimationName = animatioName;
         }
