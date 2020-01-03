@@ -35,7 +35,7 @@ namespace VamTimeline
             }
         }
 
-        public float Speed { get; set; }
+        public float Speed { get; set; } = 1f;
 
         public string AddAnimation()
         {
@@ -84,7 +84,7 @@ namespace VamTimeline
         {
             if (_isPlaying)
             {
-                _time = (_time + UnityEngine.Time.deltaTime) % AnimationLength;
+                _time = (_time + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
                 SampleAnimation();
             }
         }
