@@ -79,9 +79,10 @@
     <Compile Include="src/Atoms/VamTimeline.AtomPluginImpl.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
-    <Compile Include="src/Morphs/VamTimeline.MorphsAnimationSerializer.cs" />
+    <Compile Include="src/Morphs/VamTimeline.JSONStorableFloatAnimationTarget.cs" />
     <Compile Include="src/Morphs/VamTimeline.MorphsAnimationClip.cs" />
     <Compile Include="src/Morphs/VamTimeline.MorphsAnimation.cs" />
+    <Compile Include="src/Morphs/VamTimeline.MorphsAnimationSerializer.cs" />
     <Compile Include="src/Morphs/VamTimeline.MorphsPluginImpl.cs" />
     <Compile Include="src/VamTimeline.MorphsPlugin.cs" />
 

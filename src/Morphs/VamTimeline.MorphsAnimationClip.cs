@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -12,12 +13,30 @@ namespace VamTimeline
     /// </summary>
     public class MorphsAnimationClip : IAnimationClip
     {
-        private List<JSONStorableFloat> _morphs = new List<JSONStorableFloat>();
-        private JSONStorableFloat _selected;
+        public readonly AnimationClip Clip;
+        private float _animationLength = 5f;
+        public readonly List<JSONStorableFloatAnimationTarget> Morphs = new List<JSONStorableFloatAnimationTarget>();
+        private JSONStorableFloatAnimationTarget _selected;
 
         public string AnimationName { get; }
 
-        public float AnimationLength { get; set; }
+        public float AnimationLength
+        {
+            get
+            {
+                return _animationLength;
+            }
+            set
+            {
+                if (value == _animationLength)
+                    return;
+                _animationLength = value;
+                foreach (var morph in Morphs)
+                {
+                    morph.SetLength(value);
+                }
+            }
+        }
 
         public MorphsAnimationClip(string animatioName)
         {
@@ -26,23 +45,23 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return _morphs.Count == 0;
+            return Morphs.Count == 0;
         }
 
         public void SelectTargetByName(string name)
         {
-            _selected = _morphs.FirstOrDefault(m => m.name == name);
+            _selected = Morphs.FirstOrDefault(m => m.Name == name);
         }
 
         public IEnumerable<string> GetTargetsNames()
         {
-            return _morphs.Select(m => m.name);
+            return Morphs.Select(m => m.Name);
         }
 
-        public IEnumerable<JSONStorableFloat> GetAllOrSelectedMorphs()
+        public IEnumerable<JSONStorableFloatAnimationTarget> GetAllOrSelectedMorphs()
         {
             if (_selected != null) return new[] { _selected };
-            return _morphs;
+            return Morphs;
         }
 
         public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
