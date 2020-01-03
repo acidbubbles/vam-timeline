@@ -1,17 +1,29 @@
-using System;
 using System.Linq;
 
 namespace VamTimeline
 {
     public class LinkedAnimation
     {
-        public Atom Atom;
+        public static LinkedAnimation TryCreate(Atom atom, string pluginSuffix)
+        {
+            if (GetStorableId(atom, pluginSuffix) == null)
+                return null;
 
-        public LinkedAnimation(Atom atom)
+            return new LinkedAnimation(atom, pluginSuffix);
+        }
+
+        private static string GetStorableId(Atom atom, string pluginSuffix)
+        {
+            return atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith(pluginSuffix));
+        }
+
+        public Atom Atom;
+        private readonly string _pluginSuffix;
+
+        public LinkedAnimation(Atom atom, string pluginSuffix)
         {
             Atom = atom;
-            if (GetStorableId() == null)
-                throw new InvalidOperationException($"Atom {atom.uid} does not have VamTimeline.AtomPlugin configured.");
+            _pluginSuffix = pluginSuffix;
         }
 
         private JSONStorable Storable
@@ -25,7 +37,7 @@ namespace VamTimeline
 
         private string GetStorableId()
         {
-            return Atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
+            return GetStorableId(Atom, _pluginSuffix);
         }
 
         public JSONStorableFloat Scrubber { get { return Storable.GetFloatJSONParam(StorableNames.Time); } }

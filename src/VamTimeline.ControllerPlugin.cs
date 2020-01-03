@@ -148,6 +148,9 @@ namespace VamTimeline
             _linkButton = CreateButton("Link");
             _linkButton.button.interactable = _atomsJSON.choices.Count > 0;
             _linkButton.button.onClick.AddListener(() => LinkAtom(_targetJSON.val));
+
+            var resyncButton = CreateButton("Re-Sync Atom Plugins");
+            resyncButton.button.onClick.AddListener(() => RestoreAtomsLink(_savedAtomsJSON.val));
         }
 
         #endregion
@@ -213,7 +216,6 @@ namespace VamTimeline
             }
         }
 
-
         private void LinkAtom(string uid)
         {
             try
@@ -222,20 +224,27 @@ namespace VamTimeline
 
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null) return;
-                var link = new LinkedAnimation(atom);
-                _linkedAnimations.Add(link);
-                _atomsJSON.choices = _linkedAnimations.Select(la => la.Atom.uid).ToList();
-                if (_mainLinkedAnimation == null)
-                    SelectCurrentAtom(atom.uid);
-                // TODO: If an atom contains ';' it won't work
-                _savedAtomsJSON.val = string.Join(";", _atomsJSON.choices.ToArray());
-                _targetJSON.choices = GetAtomsWithVamTimeline().ToList();
-                _targetJSON.val = _targetJSON.choices.FirstOrDefault() ?? "";
+                LinkAnimationPlugin(atom, "VamTimeline.AtomPlugin");
+                LinkAnimationPlugin(atom, "VamTimeline.MorphsPlugin");
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimeline.ControllerPlugin.LinkAtom: " + exc);
             }
+        }
+
+        private void LinkAnimationPlugin(Atom atom, string pluginName)
+        {
+            var link = LinkedAnimation.TryCreate(atom, pluginName);
+            if (link == null) return;
+            _linkedAnimations.Add(link);
+            _atomsJSON.choices = _linkedAnimations.Select(la => la.Atom.uid).ToList();
+            if (_mainLinkedAnimation == null)
+                SelectCurrentAtom(atom.uid);
+            // TODO: If an atom contains ';' it won't work
+            _savedAtomsJSON.val = string.Join(";", _atomsJSON.choices.ToArray());
+            _targetJSON.choices = GetAtomsWithVamTimeline().ToList();
+            _targetJSON.val = _targetJSON.choices.FirstOrDefault() ?? "";
         }
 
         public void VamTimelineAnimationUpdated(string uid)
