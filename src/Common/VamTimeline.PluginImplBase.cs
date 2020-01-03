@@ -118,64 +118,70 @@ namespace VamTimeline
             _plugin.RegisterString(_displayJSON);
         }
 
-        protected void InitCommonCustomUI()
+        protected void InitPlaybackUI(bool rightSide)
         {
-            // Left side
-
-            var animationUI = _plugin.CreateScrollablePopup(_animationJSON, false);
+            var animationUI = _plugin.CreateScrollablePopup(_animationJSON, rightSide);
             animationUI.popupPanelHeight = 800f;
             animationUI.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.GetAnimationNames().ToList();
 
             _plugin.CreateSlider(_scrubberJSON);
 
-            var playUI = _plugin.CreateButton("\u25B6 Play");
+            var playUI = _plugin.CreateButton("\u25B6 Play", rightSide);
             playUI.button.onClick.AddListener(() => _playJSON.actionCallback());
 
-            var stopUI = _plugin.CreateButton("\u25A0 Stop");
+            var stopUI = _plugin.CreateButton("\u25A0 Stop", rightSide);
             stopUI.button.onClick.AddListener(() => _stopJSON.actionCallback());
-
-            var selectedControllerUI = _plugin.CreateScrollablePopup(_filterAnimationTargetJSON);
+        }
+        protected void InitFrameNavUI(bool rightSide)
+        {
+            var selectedControllerUI = _plugin.CreateScrollablePopup(_filterAnimationTargetJSON, rightSide);
             selectedControllerUI.popupPanelHeight = 800f;
 
-            var nextFrameUI = _plugin.CreateButton("\u2192 Next Frame");
+            var nextFrameUI = _plugin.CreateButton("\u2192 Next Frame", rightSide);
             nextFrameUI.button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-            var previousFrameUI = _plugin.CreateButton("\u2190 Previous Frame");
+            var previousFrameUI = _plugin.CreateButton("\u2190 Previous Frame", rightSide);
             previousFrameUI.button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
-            // TODO: Insert curve actions here
+        }
 
-            var cutUI = _plugin.CreateButton("Cut / Delete Frame", false);
+        protected void InitClipboardUI(bool rightSide)
+        {
+            var cutUI = _plugin.CreateButton("Cut / Delete Frame", rightSide);
             cutUI.button.onClick.AddListener(() => Cut());
 
-            var copyUI = _plugin.CreateButton("Copy Frame", false);
+            var copyUI = _plugin.CreateButton("Copy Frame", rightSide);
             copyUI.button.onClick.AddListener(() => Copy());
 
-            var pasteUI = _plugin.CreateButton("Paste Frame", false);
+            var pasteUI = _plugin.CreateButton("Paste Frame", rightSide);
             pasteUI.button.onClick.AddListener(() => Paste());
 
-            var undoUI = _plugin.CreateButton("Undo", false);
+            var undoUI = _plugin.CreateButton("Undo", rightSide);
             // TODO: Right now it doesn't work for some reason...
             undoUI.button.interactable = false;
             undoUI.button.onClick.AddListener(() => Undo());
+        }
 
-            // Right side
-
-            var lockedUI = _plugin.CreateToggle(_lockedJSON, true);
+        protected void InitAnimationSettingsUI(bool rightSide)
+        {
+            var lockedUI = _plugin.CreateToggle(_lockedJSON, rightSide);
             lockedUI.label = "Locked (Performance Mode)";
 
-            var addAnimationUI = _plugin.CreateButton("Add New Animation", true);
+            var addAnimationUI = _plugin.CreateButton("Add New Animation", rightSide);
             addAnimationUI.button.onClick.AddListener(() => AddAnimation());
 
-            _plugin.CreateSlider(_lengthJSON, true);
+            _plugin.CreateSlider(_lengthJSON, rightSide);
 
-            _plugin.CreateSlider(_speedJSON, true);
+            _plugin.CreateSlider(_speedJSON, rightSide);
 
-            _plugin.CreateSlider(_blendDurationJSON, true);
+            _plugin.CreateSlider(_blendDurationJSON, rightSide);
+        }
 
-            _plugin.CreatePopup(_displayModeJSON, true);
+        protected void InitDisplayUI(bool rightSide)
+        {
+            _plugin.CreatePopup(_displayModeJSON, rightSide);
 
-            _plugin.CreateTextField(_displayJSON, true);
+            _plugin.CreateTextField(_displayJSON, rightSide);
         }
 
         protected IEnumerator CreateAnimationIfNoneIsLoaded()

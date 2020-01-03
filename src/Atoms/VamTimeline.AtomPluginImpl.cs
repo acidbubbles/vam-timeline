@@ -43,9 +43,7 @@ namespace VamTimeline
         public void Init()
         {
             RegisterSerializer(new AtomAnimationSerializer(_plugin.ContainingAtom));
-            InitCommonStorables();
             InitStorables();
-            InitCommonCustomUI();
             InitCustomUI();
             // Try loading from backup
             _plugin.StartCoroutine(CreateAnimationIfNoneIsLoaded());
@@ -53,6 +51,8 @@ namespace VamTimeline
 
         private void InitStorables()
         {
+            InitCommonStorables();
+
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
 
             _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", _plugin.ContainingAtom.freeControllers.Select(fc => fc.name).ToList(), _plugin.ContainingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UpdateToggleAnimatedControllerButton(name))
@@ -70,13 +70,21 @@ namespace VamTimeline
         {
             // Left side
 
+            InitPlaybackUI(false);
+
+            InitFrameNavUI(false);
+
             var changeCurveUI = _plugin.CreatePopup(_changeCurveJSON, false);
             changeCurveUI.popupPanelHeight = 800f;
 
             var smoothAllFramesUI = _plugin.CreateButton("Smooth All Frames", false);
             smoothAllFramesUI.button.onClick.AddListener(() => SmoothAllFrames());
 
+            InitClipboardUI(false);
+
             // Right side
+
+            InitAnimationSettingsUI(true);
 
             var addControllerUI = _plugin.CreateScrollablePopup(_addControllerListJSON, true);
             addControllerUI.popupPanelHeight = 800f;
@@ -87,6 +95,8 @@ namespace VamTimeline
             var linkedAnimationPatternUI = _plugin.CreateScrollablePopup(_linkedAnimationPatternJSON, true);
             linkedAnimationPatternUI.popupPanelHeight = 800f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
+
+            InitDisplayUI(true);
         }
 
         #endregion
