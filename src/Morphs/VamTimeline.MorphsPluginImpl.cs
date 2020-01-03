@@ -18,6 +18,8 @@ namespace VamTimeline
         {
         }
 
+        #region Initialization
+
         public void Init()
         {
             if (_plugin.ContainingAtom.type != "Person")
@@ -26,10 +28,38 @@ namespace VamTimeline
                 return;
             }
 
-            InitMorphsList();
+            RegisterSerializer(new MorphsAnimationSerializer(_plugin.ContainingAtom));
+            InitStorables();
+            InitCustomUI();
+            // Try loading from backup
+            _plugin.StartCoroutine(CreateAnimationIfNoneIsLoaded());
         }
 
-        private void InitMorphsList()
+        private void InitStorables()
+        {
+            InitCommonStorables();
+        }
+
+        private void InitCustomUI()
+        {
+            // Left side
+
+            InitPlaybackUI(false);
+
+            InitFrameNavUI(false);
+
+            InitClipboardUI(false);
+
+            InitAnimationSettingsUI(false);
+
+            // Right side
+
+            InitDisplayUI(true);
+
+            InitMorphsListUI();
+        }
+
+        private void InitMorphsListUI()
         {
             var geometry = _plugin.ContainingAtom.GetStorableByID("geometry");
             if (geometry == null) throw new NullReferenceException("geometry");
@@ -50,6 +80,10 @@ namespace VamTimeline
             }
         }
 
+        #endregion
+
+        #region Lifecycle
+
         public void Update()
         {
         }
@@ -66,14 +100,24 @@ namespace VamTimeline
         {
         }
 
+        #endregion
+
+        #region Callbacks
+
         private void UpdateMorph(DAZMorph morph, float val)
         {
             morph.jsonFloat.val = val;
+            // TODO: Register keyframe
         }
+
+        #endregion
+
+        #region Updates
 
         protected override void AnimationUpdatedCustom()
         {
-            throw new NotImplementedException();
         }
+
+        #endregion
     }
 }

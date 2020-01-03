@@ -62,7 +62,9 @@
     <Compile Include="src/Common/VamTimeline.AnimationCurveExtensions.cs" />
     <Compile Include="src/Common/VamTimeline.IClipboardEntry.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationTarget.cs" />
+    <Compile Include="src/Common/VamTimeline.IAnimationClip.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimation.cs" />
+    <Compile Include="src/Common/VamTimeline.AnimationBase.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationSerializerBase.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationPlugin.cs" />
     <Compile Include="src/Common/VamTimeline.PluginImplBase.cs" />
@@ -78,6 +80,7 @@
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
     <Compile Include="src/Morphs/VamTimeline.MorphsAnimationSerializer.cs" />
+    <Compile Include="src/Morphs/VamTimeline.MorphsAnimationClip.cs" />
     <Compile Include="src/Morphs/VamTimeline.MorphsAnimation.cs" />
     <Compile Include="src/Morphs/VamTimeline.MorphsPluginImpl.cs" />
     <Compile Include="src/VamTimeline.MorphsPlugin.cs" />

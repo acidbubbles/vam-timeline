@@ -11,26 +11,11 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimation : IAnimation
+    public class AtomAnimation : AnimationBase<AtomAnimationClip>, IAnimation
     {
         private readonly Atom _atom;
         public readonly Animation Animation;
-        public readonly List<AtomAnimationClip> Clips = new List<AtomAnimationClip>();
-        public AtomAnimationClip Current;
         private AnimationState _animState;
-
-        public float AnimationLength
-        {
-            get
-            {
-                return Current.AnimationLength;
-            }
-            set
-            {
-                Current.AnimationLength = value;
-                RebuildAnimation();
-            }
-        }
 
         public float Speed
         {
@@ -49,9 +34,7 @@ namespace VamTimeline
             }
         }
 
-        public float BlendDuration { get; set; } = 1f;
-
-        public float Time
+        public override float Time
         {
             get
             {
@@ -82,19 +65,9 @@ namespace VamTimeline
             if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
-        public void Initialize()
+        protected override AtomAnimationClip CreateClip(string animatioName)
         {
-            if (Clips.Count == 0)
-                Clips.Add(new AtomAnimationClip("Anim1"));
-            if (Current == null)
-                Current = Clips.First();
-        }
-
-        public bool IsEmpty()
-        {
-            if (Clips.Count == 0) return true;
-            if (Clips.Count == 1 && Clips[0].Controllers.Count == 0) return true;
-            return false;
+            return new AtomAnimationClip("Anim1");
         }
 
         public void AddClip(AtomAnimationClip clip)
@@ -144,43 +117,12 @@ namespace VamTimeline
             }
         }
 
-        public void SelectTargetByName(string name)
-        {
-            Current.SelectControllerByName(name);
-        }
-
-        public IEnumerable<string> GetTargetsNames()
-        {
-            return Current.GetControllersName();
-        }
-
-        public IEnumerable<string> GetAnimationNames()
-        {
-            return Clips.Select(c => c.AnimationName);
-        }
-
         public bool IsPlaying()
         {
             return Animation.IsPlaying(Current.AnimationName);
         }
 
-        public float GetNextFrame()
-        {
-            return Current.GetNextFrame(Time);
-        }
-
-        public float GetPreviousFrame()
-        {
-            return Current.GetPreviousFrame(Time);
-        }
-
-        public void DeleteFrame()
-        {
-            Current.DeleteFrame(Time);
-            RebuildAnimation();
-        }
-
-        public void RebuildAnimation()
+        public override void RebuildAnimation()
         {
             if (Current == null) throw new NullReferenceException("No current animation set");
             var time = Time;
@@ -198,11 +140,6 @@ namespace VamTimeline
             _animState.time = time;
         }
 
-        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
-        {
-            return Current.GetAllOrSelectedControllers().Cast<IAnimationTarget>();
-        }
-
         public void ChangeCurve(string curveType)
         {
             var time = Time;
@@ -216,17 +153,14 @@ namespace VamTimeline
             var lastAnimationName = Clips.Last().AnimationName;
             var lastAnimationIndex = lastAnimationName.Substring(4);
             var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
-            var clip = new AtomAnimationClip(animationName)
-            {
-                Speed = Speed,
-                AnimationLength = AnimationLength
-            };
+            var clip = CreateClip(animationName);
+            clip.Speed = Speed;
+            clip.AnimationLength = AnimationLength;
             foreach (var controller in Current.Controllers.Select(c => c.Controller))
             {
                 var animController = clip.Add(controller);
                 animController.SetKeyframeToCurrentTransform(0f);
             }
-
             AddClip(clip);
 
             return animationName;
@@ -248,7 +182,7 @@ namespace VamTimeline
                     Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
                 }
             }
-            Current.SelectControllerByName("");
+            Current.SelectTargetByName("");
             Current = anim;
             if (!isPlaying)
             {

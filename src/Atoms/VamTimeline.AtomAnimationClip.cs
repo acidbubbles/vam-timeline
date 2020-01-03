@@ -12,7 +12,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationClip
+    public class AtomAnimationClip : IAnimationClip
     {
         public readonly AnimationClip Clip;
         private float _animationLength = 5f;
@@ -21,34 +21,8 @@ namespace VamTimeline
         private FreeControllerV3AnimationTarget _selected;
 
         public string AnimationName { get; }
+
         public float Speed { get; set; } = 1f;
-
-        public AtomAnimationClip(string animationName)
-        {
-            AnimationName = animationName;
-            Clip = new AnimationClip
-            {
-                // TODO: Make that an option in the UI
-                wrapMode = WrapMode.Loop,
-                legacy = true
-            };
-        }
-
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
-        {
-            if (Controllers.Any(c => c.Controller == controller)) return null;
-            FreeControllerV3AnimationTarget controllerState = new FreeControllerV3AnimationTarget(controller, AnimationLength);
-            controllerState.SetKeyframeToCurrentTransform(0f);
-            Controllers.Add(controllerState);
-            return controllerState;
-        }
-
-        public void Remove(FreeControllerV3 controller)
-        {
-            var existing = Controllers.FirstOrDefault(c => c.Controller == controller);
-            if (existing == null) return;
-            Controllers.Remove(existing);
-        }
 
         public float AnimationLength
         {
@@ -68,14 +42,46 @@ namespace VamTimeline
             }
         }
 
-        public void SelectControllerByName(string val)
+        public AtomAnimationClip(string animationName)
+        {
+            AnimationName = animationName;
+            Clip = new AnimationClip
+            {
+                // TODO: Make that an option in the UI
+                wrapMode = WrapMode.Loop,
+                legacy = true
+            };
+        }
+
+        public bool IsEmpty()
+        {
+            return Controllers.Count == 0;
+        }
+
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
+        {
+            if (Controllers.Any(c => c.Controller == controller)) return null;
+            FreeControllerV3AnimationTarget controllerState = new FreeControllerV3AnimationTarget(controller, AnimationLength);
+            controllerState.SetKeyframeToCurrentTransform(0f);
+            Controllers.Add(controllerState);
+            return controllerState;
+        }
+
+        public void Remove(FreeControllerV3 controller)
+        {
+            var existing = Controllers.FirstOrDefault(c => c.Controller == controller);
+            if (existing == null) return;
+            Controllers.Remove(existing);
+        }
+
+        public void SelectTargetByName(string val)
         {
             _selected = string.IsNullOrEmpty(val)
                 ? null
                 : Controllers.FirstOrDefault(c => c.Controller.name == val);
         }
 
-        public List<string> GetControllersName()
+        public IEnumerable<string> GetTargetsNames()
         {
             return Controllers.Select(c => c.Controller.name).ToList();
         }
@@ -133,6 +139,11 @@ namespace VamTimeline
         {
             if (_selected != null) return new[] { _selected };
             return Controllers;
+        }
+
+        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
+        {
+            return GetAllOrSelectedControllers().Cast<IAnimationTarget>();
         }
 
         public void ChangeCurve(float time, string curveType)

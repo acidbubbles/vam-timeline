@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
+
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
@@ -16,7 +18,7 @@ namespace VamTimeline
         float BlendDuration { get; set; }
 
         void Initialize();
-        
+
         void Play();
         bool IsPlaying();
         void Stop();

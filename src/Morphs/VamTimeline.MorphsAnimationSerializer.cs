@@ -15,7 +15,7 @@ namespace VamTimeline
 
         public MorphsAnimation CreateDefaultAnimation()
         {
-            throw new System.NotImplementedException();
+            return new MorphsAnimation();
         }
 
         public MorphsAnimation DeserializeAnimation(string val)
