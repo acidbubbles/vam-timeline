@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsPluginImpl : PluginImplBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip>
+    public class MorphsPluginImpl : PluginImplBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
     {
         private class MorphJSONRef
         {
@@ -125,14 +125,14 @@ namespace VamTimeline
             morphJSONRef.val = val;
             // TODO: This should be done by the controller (updating the animation resets the time)
             var time = _animation.Time;
-            var target = _animation.Current.Storables.FirstOrDefault(m => m.Name == morphJSONRef.name);
+            var target = _animation.Current.Targets.FirstOrDefault(m => m.Name == morphJSONRef.name);
             if (target == null)
             {
 
                 // TODO: This is temporary for testing
                 target = new JSONStorableFloatAnimationTarget(morphJSONRef, _animation.AnimationLength);
                 target.SetKeyframe(0, val);
-                _animation.Current.Storables.Add(target);
+                _animation.Current.Targets.Add(target);
             }
             target.SetKeyframe(time, val);
             _animation.RebuildAnimation();

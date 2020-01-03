@@ -11,7 +11,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimation : AnimationBase<AtomAnimationClip>, IAnimation<AtomAnimationClip>
+    public class AtomAnimation : AnimationBase<AtomAnimationClip, FreeControllerV3AnimationTarget>, IAnimation<AtomAnimationClip, FreeControllerV3AnimationTarget>
     {
         private readonly Atom _atom;
         public readonly Animation Animation;
@@ -150,7 +150,7 @@ namespace VamTimeline
             var clip = CreateClip(animationName);
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
-            foreach (var controller in Current.Controllers.Select(c => c.Controller))
+            foreach (var controller in Current.Targets.Select(c => c.Controller))
             {
                 var animController = clip.Add(controller);
                 animController.SetKeyframeToCurrentTransform(0f);
@@ -201,7 +201,7 @@ namespace VamTimeline
         {
             var entries = new List<FreeControllerV3ClipboardEntry>();
             var time = Time;
-            foreach (var controller in Current.GetAllOrSelectedControllers())
+            foreach (var controller in Current.GetAllOrSelectedTargets())
             {
                 entries.Add(new FreeControllerV3ClipboardEntry
                 {
@@ -217,7 +217,7 @@ namespace VamTimeline
             float time = Time;
             foreach (var entry in ((AtomClipboardEntry)clipboard).Entries)
             {
-                var animController = Current.Controllers.FirstOrDefault(c => c.Controller == entry.Controller);
+                var animController = Current.Targets.FirstOrDefault(c => c.Controller == entry.Controller);
                 if (animController == null)
                     animController = Add(entry.Controller);
                 animController.SetCurveSnapshot(time, entry.Snapshot);

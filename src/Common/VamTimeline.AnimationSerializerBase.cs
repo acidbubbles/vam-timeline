@@ -10,9 +10,10 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAnimationSerializer<TAnimation, TAnimationClip>
-        where TAnimationClip : class, IAnimationClip
-        where TAnimation : class, IAnimation<TAnimationClip>
+    public interface IAnimationSerializer<TAnimation, TAnimationClip, TAnimationTarget>
+        where TAnimation : class, IAnimation<TAnimationClip, TAnimationTarget>
+        where TAnimationClip : class, IAnimationClip<TAnimationTarget>
+        where TAnimationTarget : class, IAnimationTarget
     {
         TAnimation CreateDefaultAnimation();
         TAnimation DeserializeAnimation(string val);
@@ -25,9 +26,10 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public abstract class AnimationSerializerBase<TAnimation, TAnimationClip> : IAnimationSerializer<TAnimation, TAnimationClip>
-        where TAnimationClip : class, IAnimationClip
-        where TAnimation : class, IAnimation<TAnimationClip>
+    public abstract class AnimationSerializerBase<TAnimation, TAnimationClip, TAnimationTarget> : IAnimationSerializer<TAnimation, TAnimationClip, TAnimationTarget>
+        where TAnimation : class, IAnimation<TAnimationClip, TAnimationTarget>
+        where TAnimationClip : class, IAnimationClip<TAnimationTarget>
+        where TAnimationTarget : class, IAnimationTarget
     {
         protected AnimationSerializerBase()
         {

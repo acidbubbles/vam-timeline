@@ -9,7 +9,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public abstract class AnimationBase<TClip> where TClip : class, IAnimationClip
+    public abstract class AnimationBase<TClip, TTarget>
+        where TClip : class, IAnimationClip<TTarget>
+        where TTarget : class, IAnimationTarget
     {
         public List<TClip> Clips { get; } = new List<TClip>();
         public TClip Current { get; set; }
@@ -66,7 +68,7 @@ namespace VamTimeline
             return Current.GetTargetsNames();
         }
 
-        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
+        public IEnumerable<TTarget> GetAllOrSelectedTargets()
         {
             return Current.GetAllOrSelectedTargets();
         }

@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsAnimationSerializer : AnimationSerializerBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip>
+    public class MorphsAnimationSerializer : AnimationSerializerBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
     {
         private readonly Atom _atom;
 
@@ -51,7 +51,7 @@ namespace VamTimeline
         {
             var morphsJSON = new JSONArray();
             clipJSON.Add("Morphs", morphsJSON);
-            foreach (var morph in clip.Storables)
+            foreach (var morph in clip.Targets)
             {
                 var morphJSON = new JSONClass
                     {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,6 +48,10 @@ namespace VamTimeline
             _animationLength = length;
         }
 
+        public IEnumerable<AnimationCurve> GetCurves()
+        {
+            return Curves;
+        }
 
         public void ReapplyCurvesToClip(AnimationClip clip)
         {

@@ -9,7 +9,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAnimation<TClip>
+    public interface IAnimation<TClip, TTarget>
+        where TClip : class, IAnimationClip<TTarget>
+        where TTarget : class, IAnimationTarget
     {
         float Time { get; set; }
         float AnimationLength { get; set; }
@@ -37,7 +39,7 @@ namespace VamTimeline
 
         IEnumerable<string> GetTargetsNames();
         void SelectTargetByName(string name);
-        IEnumerable<IAnimationTarget> GetAllOrSelectedTargets();
+        IEnumerable<TTarget> GetAllOrSelectedTargets();
 
         IClipboardEntry Copy();
         void Paste(IClipboardEntry clipboard);

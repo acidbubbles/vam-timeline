@@ -12,7 +12,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomPluginImpl : PluginImplBase<AtomAnimation, AtomAnimationClip>
+    public class AtomPluginImpl : PluginImplBase<AtomAnimation, AtomAnimationClip, FreeControllerV3AnimationTarget>
     {
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
@@ -115,7 +115,7 @@ namespace VamTimeline
 
             if (_grabbedController == null && grabbing != null)
             {
-                _grabbedController = _animation.Current.Controllers.FirstOrDefault(c => c.Controller == grabbing);
+                _grabbedController = _animation.Current.Targets.FirstOrDefault(c => c.Controller == grabbing);
                 _addControllerListJSON.val = grabbing.name;
             }
             else if (_grabbedController != null && grabbing == null)
@@ -197,7 +197,7 @@ namespace VamTimeline
             }
 
             _toggleControllerUI.button.interactable = true;
-            if (_animation.Current.Controllers.Any(c => c.Controller.name == name))
+            if (_animation.Current.Targets.Any(c => c.Controller.name == name))
                 btnText.text = "Remove Controller";
             else
                 btnText.text = "Add Controller";
@@ -214,7 +214,7 @@ namespace VamTimeline
                     SuperController.LogError($"Controller {uid} in atom {_plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
-                if (_animation.Current.Controllers.Any(c => c.Controller == controller))
+                if (_animation.Current.Targets.Any(c => c.Controller == controller))
                 {
                     _animation.Remove(controller);
                 }
@@ -265,6 +265,10 @@ namespace VamTimeline
             _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 
             UpdateToggleAnimatedControllerButton(_addControllerListJSON.val);
+        }
+
+        protected override void ContextUpdatedCustom()
+        {
         }
 
         #endregion

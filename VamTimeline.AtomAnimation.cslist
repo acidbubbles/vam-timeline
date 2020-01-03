@@ -4,6 +4,7 @@ src/Common/VamTimeline.IClipboardEntry.cs
 src/Common/VamTimeline.StorableNames.cs
 src/Common/VamTimeline.IAnimationTarget.cs
 src/Common/VamTimeline.IAnimationClip.cs
+src/Common/VamTimeline.AnimationClipBase.cs
 src/Common/VamTimeline.IAnimation.cs
 src/Common/VamTimeline.AnimationBase.cs
 src/Common/VamTimeline.AnimationSerializerBase.cs

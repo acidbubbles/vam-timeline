@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using SimpleJSON;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -11,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationSerializer : AnimationSerializerBase<AtomAnimation, AtomAnimationClip>
+    public class AtomAnimationSerializer : AnimationSerializerBase<AtomAnimation, AtomAnimationClip, FreeControllerV3AnimationTarget>
     {
         private readonly Atom _atom;
 
@@ -68,7 +67,7 @@ namespace VamTimeline
 
             var controllersJSON = new JSONArray();
             clipJSON.Add("Controllers", controllersJSON);
-            foreach (var controller in clip.Controllers)
+            foreach (var controller in clip.Targets)
             {
                 var controllerJSON = new JSONClass
                     {

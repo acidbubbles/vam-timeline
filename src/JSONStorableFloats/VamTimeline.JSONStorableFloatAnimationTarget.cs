@@ -32,6 +32,11 @@ namespace VamTimeline
             _animationLength = length;
         }
 
+        public IEnumerable<AnimationCurve> GetCurves()
+        {
+            return new[] { Value };
+        }
+
         public void SetKeyframe(float time, float value)
         {
             if (time == 0f)

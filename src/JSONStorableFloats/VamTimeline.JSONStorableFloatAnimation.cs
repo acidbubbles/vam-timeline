@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -9,7 +8,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip>, IAnimation<JSONStorableFloatAnimationClip>
+    public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>, IAnimation<JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
     {
         private float _time;
         private bool _isPlaying;
@@ -29,7 +28,7 @@ namespace VamTimeline
 
         private void SampleAnimation()
         {
-            foreach (var morph in Current.Storables)
+            foreach (var morph in Current.Targets)
             {
                 morph.Storable.val = morph.Value.Evaluate(_time);
             }
