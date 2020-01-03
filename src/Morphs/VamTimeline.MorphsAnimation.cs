@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace VamTimeline
 {
@@ -11,9 +10,8 @@ namespace VamTimeline
     /// </summary>
     public class MorphsAnimation : AnimationBase<MorphsAnimationClip>, IAnimation
     {
-        public override float Time {get;set;}
+        public override float Time { get; set; }
         public float Speed { get; set; }
-
 
         public string AddAnimation()
         {
@@ -57,7 +55,11 @@ namespace VamTimeline
 
         public override void RebuildAnimation()
         {
-            throw new NotImplementedException();
+            if (Current == null) throw new NullReferenceException("No current animation set");
+            foreach (var clip in Clips)
+            {
+                clip.RebuildAnimation();
+            }
         }
     }
 }

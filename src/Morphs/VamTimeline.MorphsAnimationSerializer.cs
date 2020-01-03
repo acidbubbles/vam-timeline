@@ -25,7 +25,8 @@ namespace VamTimeline
 
         public string SerializeAnimation(MorphsAnimation animation)
         {
-            throw new System.NotImplementedException();
+            // TODO: Implement
+            return "";
         }
     }
 }

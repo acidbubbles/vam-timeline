@@ -396,10 +396,10 @@ namespace VamTimeline
         {
             public const string None = "None";
             public const string Default = "Default";
-            public const string ShowAllControllers = "ShowAllControllers";
+            public const string ShowAllTargets = "Show All Targets";
             public const string Debug = "Debug";
 
-            public static readonly List<string> Values = new List<string> { None, Default, ShowAllControllers, Debug };
+            public static readonly List<string> Values = new List<string> { None, Default, ShowAllTargets, Debug };
         }
 
         public void RenderState()
@@ -420,8 +420,8 @@ namespace VamTimeline
                 case RenderingModes.Default:
                     RenderStateDefault();
                     break;
-                case RenderingModes.ShowAllControllers:
-                    RenderStateShowAllControllers();
+                case RenderingModes.ShowAllTargets:
+                    RenderStateShowAllTargets();
                     break;
                 case RenderingModes.Debug:
                     RenderStateDebug();
@@ -435,15 +435,15 @@ namespace VamTimeline
         {
             var time = _scrubberJSON.val;
             var frames = new List<float>();
-            var controllers = new List<string>();
-            foreach (var controller in _animation.GetAllOrSelectedTargets())
+            var targets = new List<string>();
+            foreach (var target in _animation.GetAllOrSelectedTargets())
             {
-                var keyTimes = controller.GetAllKeyframesTime();
+                var keyTimes = target.GetAllKeyframesTime();
                 foreach (var keyTime in keyTimes)
                 {
                     frames.Add(keyTime);
                     if (keyTime == time)
-                        controllers.Add(controller.Name);
+                        targets.Add(target.Name);
                 }
             }
             var display = new StringBuilder();
@@ -458,12 +458,12 @@ namespace VamTimeline
             }
             display.AppendLine();
             display.AppendLine("Affects:");
-            foreach (var c in controllers)
+            foreach (var c in targets)
                 display.AppendLine(c);
             _displayJSON.val = display.ToString();
         }
 
-        public void RenderStateShowAllControllers()
+        public void RenderStateShowAllTargets()
         {
             var time = _scrubberJSON.val;
             var display = new StringBuilder();

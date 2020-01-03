@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -107,7 +108,21 @@ namespace VamTimeline
         private void UpdateMorph(DAZMorph morph, float val)
         {
             morph.jsonFloat.val = val;
-            // TODO: Register keyframe
+            // TODO: This should be done by the controller (updating the animation resets the time)
+            var time = _animation.Time;
+            var target = _animation.Current.Morphs.FirstOrDefault(m => m.Name == morph.jsonFloat.name);
+            if (target == null)
+            {
+
+                // TODO: This is temporary for testing
+                target = new JSONStorableFloatAnimationTarget(morph.jsonFloat, _animation.AnimationLength);
+                target.SetKeyframe(0, val);
+                _animation.Current.Morphs.Add(target);
+            }
+            target.SetKeyframe(time, val);
+            _animation.RebuildAnimation();
+            UpdateTime(time);
+            AnimationUpdated();
         }
 
         #endregion

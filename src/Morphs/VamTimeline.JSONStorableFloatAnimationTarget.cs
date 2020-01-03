@@ -32,6 +32,25 @@ namespace VamTimeline
             _animationLength = length;
         }
 
+        public void SetKeyframe(float time, float value)
+        {
+            // TODO: Make all flat
+            if (time == 0f)
+            {
+                Value.SetKeyframe(0, value);
+                Value.SetKeyframe(_animationLength, value);
+            }
+            else
+            {
+                Value.SetKeyframe(time, value);
+            }
+        }
+
+        public void ReapplyCurvesToClip(AnimationClip clip)
+        {
+            clip.SetCurve("", typeof(JSONStorableFloat), "val", Value);
+        }
+
         public IEnumerable<float> GetAllKeyframesTime()
         {
             return Value.keys.Take(Value.keys.Length - 1).Select(k => k.time);

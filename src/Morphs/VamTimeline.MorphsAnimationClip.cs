@@ -41,6 +41,12 @@ namespace VamTimeline
         public MorphsAnimationClip(string animatioName)
         {
             AnimationName = animatioName;
+            Clip = new AnimationClip
+            {
+                // TODO: Make that an option in the UI
+                wrapMode = WrapMode.Loop,
+                legacy = true
+            };
         }
 
         public bool IsEmpty()
@@ -82,6 +88,15 @@ namespace VamTimeline
         public void DeleteFrame(float time)
         {
             throw new NotImplementedException();
+        }
+
+        public void RebuildAnimation()
+        {
+            Clip.ClearCurves();
+            foreach (var morph in Morphs)
+            {
+                morph.ReapplyCurvesToClip(Clip);
+            }
         }
     }
 }
