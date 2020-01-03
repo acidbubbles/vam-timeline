@@ -34,7 +34,7 @@ namespace VamTimeline
 
         #region Keyframes control
 
-        public static void SetKeyframe(this AnimationCurve curve, float time, float value)
+        public static int SetKeyframe(this AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
             Keyframe keyframe;
@@ -46,6 +46,7 @@ namespace VamTimeline
                 keyframe.value = value;
                 curve.MoveKey(key, keyframe);
             }
+            return key;
         }
 
         #endregion

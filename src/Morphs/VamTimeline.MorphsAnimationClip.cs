@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -13,7 +12,6 @@ namespace VamTimeline
     /// </summary>
     public class MorphsAnimationClip : IAnimationClip
     {
-        public readonly AnimationClip Clip;
         private float _animationLength = 5f;
         public readonly List<JSONStorableFloatAnimationTarget> Morphs = new List<JSONStorableFloatAnimationTarget>();
         private JSONStorableFloatAnimationTarget _selected;
@@ -41,12 +39,6 @@ namespace VamTimeline
         public MorphsAnimationClip(string animatioName)
         {
             AnimationName = animatioName;
-            Clip = new AnimationClip
-            {
-                // TODO: Make that an option in the UI
-                wrapMode = WrapMode.Loop,
-                legacy = true
-            };
         }
 
         public bool IsEmpty()
@@ -88,15 +80,6 @@ namespace VamTimeline
         public void DeleteFrame(float time)
         {
             throw new NotImplementedException();
-        }
-
-        public void RebuildAnimation()
-        {
-            Clip.ClearCurves();
-            foreach (var morph in Morphs)
-            {
-                morph.ReapplyCurvesToClip(Clip);
-            }
         }
     }
 }

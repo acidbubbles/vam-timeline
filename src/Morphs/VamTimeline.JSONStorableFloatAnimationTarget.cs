@@ -15,14 +15,14 @@ namespace VamTimeline
     public class JSONStorableFloatAnimationTarget : IAnimationTarget
     {
         private float _animationLength;
-        private readonly JSONStorableFloat _jsf;
+        public readonly JSONStorableFloat Storable;
         public AnimationCurve Value = new AnimationCurve();
 
-        public string Name => _jsf.name;
+        public string Name => Storable.name;
 
         public JSONStorableFloatAnimationTarget(JSONStorableFloat jsf, float animationLength)
         {
-            _jsf = jsf;
+            Storable = jsf;
             _animationLength = animationLength;
         }
 
@@ -34,16 +34,24 @@ namespace VamTimeline
 
         public void SetKeyframe(float time, float value)
         {
-            // TODO: Make all flat
             if (time == 0f)
             {
-                Value.SetKeyframe(0, value);
-                Value.SetKeyframe(_animationLength, value);
+                SetFlatKeyframe(0, value);
+                SetFlatKeyframe(_animationLength, value);
             }
             else
             {
-                Value.SetKeyframe(time, value);
+                SetFlatKeyframe(time, value);
             }
+        }
+
+        private void SetFlatKeyframe(float time, float value)
+        {
+            var key = Value.SetKeyframe(time, value);
+            var keyframe = Value.keys[key];
+            keyframe.inTangent = 0f;
+            keyframe.outTangent = 0f;
+            Value.MoveKey(key, keyframe);
         }
 
         public void ReapplyCurvesToClip(AnimationClip clip)
@@ -58,7 +66,13 @@ namespace VamTimeline
 
         public void RenderDebugInfo(StringBuilder display, float time)
         {
-            throw new NotImplementedException();
+            display.AppendLine($"{Storable.name}");
+            foreach (var keyframe in Value.keys)
+            {
+                display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
+                display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
+                display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
+            }
         }
     }
 }

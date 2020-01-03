@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -10,7 +11,23 @@ namespace VamTimeline
     /// </summary>
     public class MorphsAnimation : AnimationBase<MorphsAnimationClip>, IAnimation
     {
-        public override float Time { get; set; }
+        private float _time;
+
+        public override float Time
+        {
+            get
+            {
+                return _time;
+            }
+            set
+            {
+                _time = value;
+                foreach (var morph in Current.Morphs)
+                {
+                    morph.Storable.val = morph.Value.Evaluate(_time);
+                }
+            }
+        }
         public float Speed { get; set; }
 
         public string AddAnimation()
@@ -55,11 +72,6 @@ namespace VamTimeline
 
         public override void RebuildAnimation()
         {
-            if (Current == null) throw new NullReferenceException("No current animation set");
-            foreach (var clip in Clips)
-            {
-                clip.RebuildAnimation();
-            }
         }
     }
 }
