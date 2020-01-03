@@ -1,6 +1,7 @@
 src/Common/VamTimeline.CurveTypeValues.cs
 src/Common/VamTimeline.AnimationCurveExtensions.cs
 src/Common/VamTimeline.IClipboardEntry.cs
+src/Common/VamTimeline.IAnimationTarget.cs
 src/Common/VamTimeline.StorableNames.cs
 src/Common/VamTimeline.IAnimation.cs
 src/Common/VamTimeline.AnimationSerializerBase.cs

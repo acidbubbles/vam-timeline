@@ -430,7 +430,7 @@ namespace VamTimeline
             var time = _scrubberJSON.val;
             var frames = new List<float>();
             var controllers = new List<string>();
-            foreach (var controller in _animation.GetAllOrSelectedControllers())
+            foreach (var controller in _animation.GetAllOrSelectedTargets())
             {
                 var keyTimes = controller.GetAllKeyframesTime();
                 foreach (var keyTime in keyTimes)
@@ -461,7 +461,7 @@ namespace VamTimeline
         {
             var time = _scrubberJSON.val;
             var display = new StringBuilder();
-            foreach (var controller in _animation.GetAllOrSelectedControllers())
+            foreach (var controller in _animation.GetAllOrSelectedTargets())
             {
                 display.AppendLine(controller.Name);
                 var keyTimes = controller.GetAllKeyframesTime();
@@ -479,7 +479,7 @@ namespace VamTimeline
             var time = _scrubberJSON.val;
             var display = new StringBuilder();
             display.AppendLine($"Time: {time}s");
-            foreach (var controller in _animation.GetAllOrSelectedControllers())
+            foreach (var controller in _animation.GetAllOrSelectedTargets())
             {
                 controller.RenderDebugInfo(display, time);
             }

@@ -71,12 +71,7 @@ namespace VamTimeline
             morph.jsonFloat.val = val;
         }
 
-        protected override void ContextUpdated()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void AnimationUpdated()
+        protected override void AnimationUpdatedCustom()
         {
             throw new NotImplementedException();
         }

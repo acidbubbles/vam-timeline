@@ -198,7 +198,7 @@ namespace VamTimeline
             _animState.time = time;
         }
 
-        public IEnumerable<IAnimationTarget> GetAllOrSelectedControllers()
+        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
         {
             return Current.GetAllOrSelectedControllers().Cast<IAnimationTarget>();
         }

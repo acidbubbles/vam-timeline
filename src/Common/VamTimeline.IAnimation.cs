@@ -15,20 +15,26 @@ namespace VamTimeline
         float Speed { get; set; }
         float BlendDuration { get; set; }
 
+        void Initialize();
+        
         void Play();
         bool IsPlaying();
         void Stop();
+
         float GetNextFrame();
         float GetPreviousFrame();
+        void DeleteFrame();
+
         bool IsEmpty();
-        void Initialize();
+
+        IEnumerable<string> GetAnimationNames();
         string AddAnimation();
         void ChangeAnimation(string animationName);
-        void DeleteFrame();
+
         IEnumerable<string> GetTargetsNames();
         void SelectTargetByName(string name);
-        IEnumerable<string> GetAnimationNames();
-        IEnumerable<IAnimationTarget> GetAllOrSelectedControllers();
+        IEnumerable<IAnimationTarget> GetAllOrSelectedTargets();
+
         IClipboardEntry Copy();
         void Paste(IClipboardEntry clipboard);
     }

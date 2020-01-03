@@ -5,22 +5,6 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public interface IAnimationTarget
-    {
-        string Name { get; }
-
-        void ChangeCurve(float time, string curveType);
-        FreeControllerV3Snapshot GetCurveSnapshot(float time);
-        void ReapplyCurvesToClip(AnimationClip clip);
-        void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot);
-        void SetKeyframe(float time, Vector3 position, Quaternion rotation);
-        void SetKeyframeToCurrentTransform(float time);
-        void SetKeyframeToTransform(float time, Vector3 localPosition, Quaternion localRotation);
-        void SetLength(float length);
-        void SmoothAllFrames();
-        void RenderDebugInfo(StringBuilder display, float time);
-        IEnumerable<float> GetAllKeyframesTime();
-    }
 
     /// <summary>
     /// VaM Timeline

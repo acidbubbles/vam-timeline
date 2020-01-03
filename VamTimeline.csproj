@@ -61,10 +61,13 @@
     <Compile Include="src/Common/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationCurveExtensions.cs" />
     <Compile Include="src/Common/VamTimeline.IClipboardEntry.cs" />
+    <Compile Include="src/Common/VamTimeline.IAnimationTarget.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimation.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationSerializerBase.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationPlugin.cs" />
     <Compile Include="src/Common/VamTimeline.PluginImplBase.cs" />
+
+    <Compile Include="src/VamTimeline.BackupPlugin.cs" />
 
     <Compile Include="src/Atoms/VamTimeline.FreeControllerV3ClipboardEntry.cs" />
     <Compile Include="src/Atoms/VamTimeline.FreeControllerV3AnimationTarget.cs" />
@@ -74,7 +77,10 @@
     <Compile Include="src/Atoms/VamTimeline.AtomPluginImpl.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
-    <Compile Include="src/VamTimeline.BackupPlugin.cs" />
+    <Compile Include="src/Morphs/VamTimeline.MorphsAnimationSerializer.cs" />
+    <Compile Include="src/Morphs/VamTimeline.MorphsAnimation.cs" />
+    <Compile Include="src/Morphs/VamTimeline.MorphsPluginImpl.cs" />
+    <Compile Include="src/VamTimeline.MorphsPlugin.cs" />
 
     <Compile Include="src/Controller/VamTimeline.SimpleSignUI.cs" />
     <Compile Include="src/Controller/VamTimeline.LinkedAnimation.cs" />
