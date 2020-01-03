@@ -14,7 +14,7 @@ namespace VamTimeline
     /// </summary>
     public class ControllerPlugin : MVRScript
     {
-        private const string AllAtoms = "(All Atoms)";
+        private const string AllAtoms = "(All)";
         private const string AllTargets = "(All)";
         private Atom _atom;
         private SimpleSignUI _ui;
@@ -24,7 +24,7 @@ namespace VamTimeline
         private JSONStorableAction _playJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
-        private JSONStorableStringChooser _targetJSON;
+        private JSONStorableStringChooser _atomsToLink;
         private LinkedAnimation _mainLinkedAnimation;
         private JSONStorableString _savedAtomsJSON;
         private JSONStorableStringChooser _controllerJSON;
@@ -105,7 +105,7 @@ namespace VamTimeline
             RegisterString(_displayJSON);
 
             var atoms = GetAtomsWithVamTimeline().ToList();
-            _targetJSON = new JSONStorableStringChooser("Atom To Link", atoms, atoms.FirstOrDefault() ?? "", "Add", v => _linkButton.button.interactable = !string.IsNullOrEmpty(v));
+            _atomsToLink = new JSONStorableStringChooser("Atom To Link", atoms, atoms.FirstOrDefault() ?? "", "Add");
 
             _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => StartCoroutine(RestoreAtomsLink(v)));
             RegisterString(_savedAtomsJSON);
@@ -116,7 +116,7 @@ namespace VamTimeline
             var atoms = SuperController.singleton.GetAtoms();
             foreach (var atom in atoms)
             {
-                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.Atom")))
+                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin") || id.EndsWith("VamTimeline.MorphsPlugin")))
                 {
                     if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
 
@@ -141,13 +141,13 @@ namespace VamTimeline
 
         private void InitCustomUI()
         {
-            var targetPopup = CreateScrollablePopup(_targetJSON);
+            var targetPopup = CreateScrollablePopup(_atomsToLink);
             targetPopup.popupPanelHeight = 800f;
-            targetPopup.popup.onOpenPopupHandlers += () => _targetJSON.choices = GetAtomsWithVamTimeline().ToList();
+            targetPopup.popup.onOpenPopupHandlers += () => _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
 
             _linkButton = CreateButton("Link");
-            _linkButton.button.interactable = _atomsJSON.choices.Count > 0;
-            _linkButton.button.onClick.AddListener(() => LinkAtom(_targetJSON.val));
+            _linkButton.button.interactable = _atomsToLink.choices.Count > 0;
+            _linkButton.button.onClick.AddListener(() => LinkAtom(_atomsToLink.val));
 
             var resyncButton = CreateButton("Re-Sync Atom Plugins");
             resyncButton.button.onClick.AddListener(() => RestoreAtomsLink(_savedAtomsJSON.val));
@@ -224,8 +224,8 @@ namespace VamTimeline
 
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null) return;
-                LinkAnimationPlugin(atom, "VamTimeline.AtomPlugin");
-                LinkAnimationPlugin(atom, "VamTimeline.MorphsPlugin");
+                LinkAnimationPlugin(atom, "VamTimeline.AtomPlugin", "Controllers");
+                LinkAnimationPlugin(atom, "VamTimeline.MorphsPlugin", "Morphs");
             }
             catch (Exception exc)
             {
@@ -233,19 +233,21 @@ namespace VamTimeline
             }
         }
 
-        private void LinkAnimationPlugin(Atom atom, string pluginName)
+        private void LinkAnimationPlugin(Atom atom, string pluginNameSuffix, string labelSuffix)
         {
-            var link = LinkedAnimation.TryCreate(atom, pluginName);
+            var link = LinkedAnimation.TryCreate(atom, pluginNameSuffix, labelSuffix);
             if (link == null) return;
             _linkedAnimations.Add(link);
-            _atomsJSON.choices = _linkedAnimations.Select(la => la.Atom.uid).ToList();
+            _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
             if (_mainLinkedAnimation == null)
-                SelectCurrentAtom(atom.uid);
+                SelectCurrentAtom(link.Label);
             // TODO: If an atom contains ';' it won't work
-            _savedAtomsJSON.val = string.Join(";", _atomsJSON.choices.ToArray());
-            _targetJSON.choices = GetAtomsWithVamTimeline().ToList();
-            _targetJSON.val = _targetJSON.choices.FirstOrDefault() ?? "";
+            _savedAtomsJSON.val = string.Join(";", _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
+            _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
+            _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
         }
+
+        // TODO: If Morphs and Controllers are out of sync, this will be to. We should dispatch uid/Controllers
 
         public void VamTimelineAnimationUpdated(string uid)
         {
@@ -294,14 +296,14 @@ namespace VamTimeline
             }
         }
 
-        private void SelectCurrentAtom(string uid)
+        private void SelectCurrentAtom(string label)
         {
-            if (string.IsNullOrEmpty(uid) || uid == AllAtoms)
+            if (string.IsNullOrEmpty(label) || label == AllAtoms)
             {
                 _mainLinkedAnimation = null;
                 return;
             }
-            _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
+            _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
             if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Atom.uid;
             VamTimelineAnimationUpdated(_mainLinkedAnimation.Atom.uid);

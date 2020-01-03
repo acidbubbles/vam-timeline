@@ -4,12 +4,12 @@ namespace VamTimeline
 {
     public class LinkedAnimation
     {
-        public static LinkedAnimation TryCreate(Atom atom, string pluginSuffix)
+        public static LinkedAnimation TryCreate(Atom atom, string pluginSuffix, string labelSuffix)
         {
             if (GetStorableId(atom, pluginSuffix) == null)
                 return null;
 
-            return new LinkedAnimation(atom, pluginSuffix);
+            return new LinkedAnimation(atom, pluginSuffix, labelSuffix);
         }
 
         private static string GetStorableId(Atom atom, string pluginSuffix)
@@ -20,10 +20,13 @@ namespace VamTimeline
         public Atom Atom;
         private readonly string _pluginSuffix;
 
-        public LinkedAnimation(Atom atom, string pluginSuffix)
+        public string Label { get; }
+
+        public LinkedAnimation(Atom atom, string pluginSuffix, string labelSuffix)
         {
             Atom = atom;
             _pluginSuffix = pluginSuffix;
+            Label = atom.uid + "/" + labelSuffix;
         }
 
         private JSONStorable Storable
