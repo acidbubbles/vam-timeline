@@ -5,3 +5,4 @@
 - Animate any property (physics, scale, etc.) using JSONStorableFloatAnimation
 - When locked, disable all controls
 - Locked in controller
+- Make EnsureQuaternionContinuity an option

@@ -39,6 +39,7 @@ namespace VamTimeline
     public interface IMVRScript : IJSONStorable
     {
         UIDynamicSlider CreateSlider(JSONStorableFloat jsf, bool rightSide = false);
+        void RemoveSlider(UIDynamicSlider slider);
         UIDynamicButton CreateButton(string label, bool rightSide = false);
         UIDynamicToggle CreateToggle(JSONStorableBool jsb, bool rightSide = false);
         UIDynamicTextField CreateTextField(JSONStorableString jss, bool rightSide = false);

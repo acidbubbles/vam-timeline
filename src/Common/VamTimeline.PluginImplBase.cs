@@ -287,6 +287,7 @@ namespace VamTimeline
                     _animation = _serializer.CreateDefaultAnimation();
 
                 _animation.Initialize();
+                StateRestored();
                 AnimationUpdated();
                 ContextUpdated();
             }
@@ -297,6 +298,8 @@ namespace VamTimeline
 
             _restoring = false;
         }
+
+        protected abstract void StateRestored();
 
         public void SaveState()
         {

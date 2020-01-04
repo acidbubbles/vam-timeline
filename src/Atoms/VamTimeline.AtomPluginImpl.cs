@@ -260,6 +260,10 @@ namespace VamTimeline
 
         #region Updates
 
+        protected override void StateRestored()
+        {
+        }
+
         protected override void AnimationUpdatedCustom()
         {
             _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
