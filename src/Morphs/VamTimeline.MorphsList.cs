@@ -16,7 +16,7 @@ namespace VamTimeline
 
         public MorphsList(Atom atom)
         {
-            this._atom = atom;
+            _atom = atom;
         }
 
         public void Refresh()

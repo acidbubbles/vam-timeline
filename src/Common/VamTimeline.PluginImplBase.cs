@@ -269,7 +269,7 @@ namespace VamTimeline
                     {
                         var backupStorable = _plugin.ContainingAtom.GetStorableByID(backupStorableID);
                         var backupJSON = backupStorable.GetStringJSONParam(BackupStorableName);
-                        if (!string.IsNullOrEmpty(backupJSON.val))
+                        if (backupJSON != null && !string.IsNullOrEmpty(backupJSON.val))
                         {
                             SuperController.LogMessage("No save found but a backup was detected. Loading backup.");
                             _animation = _serializer.DeserializeAnimation(backupJSON.val);
@@ -329,7 +329,8 @@ namespace VamTimeline
                 {
                     var backupStorable = _plugin.ContainingAtom.GetStorableByID(backupStorableID);
                     var backupJSON = backupStorable.GetStringJSONParam(BackupStorableName);
-                    backupJSON.val = serialized;
+                    if (backupJSON != null)
+                        backupJSON.val = serialized;
                 }
             }
             catch (Exception exc)

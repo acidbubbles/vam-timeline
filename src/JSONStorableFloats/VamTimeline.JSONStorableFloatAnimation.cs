@@ -39,20 +39,20 @@ namespace VamTimeline
                 var val = morph.Value.Evaluate(_time);
                 if (_blendingAnimation != null)
                 {
-                    var blendingTarget = _blendingAnimation.Targets.FirstOrDefault(t => t.Storable == morph.Storable);
+                    var blendingTarget = _blendingAnimation.Targets.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
                     if (blendingTarget != null)
                     {
                         var weight = _blendingTimeLeft / _blendingDuration;
-                        morph.Storable.val = (blendingTarget.Value.Evaluate(_time) * (weight)) + (val * (1 - weight));
+                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(_time) * (weight)) + (val * (1 - weight));
                     }
                     else
                     {
-                        morph.Storable.val = val;
+                        morph.FloatParam.val = val;
                     }
                 }
                 else
                 {
-                    morph.Storable.val = val;
+                    morph.FloatParam.val = val;
                 }
             }
         }
@@ -72,10 +72,10 @@ namespace VamTimeline
         {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
-            foreach (var storable in Current.Targets.Select(c => c.Storable))
+            foreach (var target in Current.Targets)
             {
-                var animController = clip.Add(storable);
-                animController.SetKeyframe(0f, storable.val);
+                var animController = clip.Add(target.Storable, target.FloatParam);
+                animController.SetKeyframe(0f, target.FloatParam.val);
             }
         }
 
@@ -131,6 +131,7 @@ namespace VamTimeline
                 entries.Add(new JSONStorableFloatValClipboardEntry
                 {
                     Storable = target.Storable,
+                    FloatParam = target.FloatParam,
                     Snapshot = target.Value.keys.FirstOrDefault(k => k.time == time)
                 });
             }
@@ -142,9 +143,9 @@ namespace VamTimeline
             float time = Time;
             foreach (var entry in ((JSONStorableFloatClipboardEntry)clipboard).Entries)
             {
-                var animController = Current.Targets.FirstOrDefault(c => c.Storable == entry.Storable);
+                var animController = Current.Targets.FirstOrDefault(c => c.FloatParam == entry.FloatParam);
                 if (animController == null)
-                    animController = Current.Add(entry.Storable);
+                    animController = Current.Add(entry.Storable, entry.FloatParam);
                 animController.SetKeyframe(time, entry.Snapshot.value);
             }
             RebuildAnimation();

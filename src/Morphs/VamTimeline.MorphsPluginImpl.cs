@@ -115,7 +115,7 @@ namespace VamTimeline
                     SuperController.LogError($"Morph {target.Name} of atom {_plugin.ContainingAtom.uid} does not exist anymore or it is not animatable anymore.");
                     continue;
                 }
-                var morphJSON = new JSONStorableFloat($"Morph:{morphJSONRef.name}", morphJSONRef.defaultVal, (float val) => UpdateMorph(morphJSONRef, val), morphJSONRef.min, morphJSONRef.max, morphJSONRef.constrained, true);
+                var morphJSON = new JSONStorableFloat($"Morph:{morphJSONRef.name}", morphJSONRef.defaultVal, (float val) => UpdateMorph(target, morphJSONRef, val), morphJSONRef.min, morphJSONRef.max, morphJSONRef.constrained, true);
                 var slider = _plugin.CreateSlider(morphJSON, true);
                 _morphJSONRefs.Add(new MorphJSONRef
                 {
@@ -172,7 +172,7 @@ namespace VamTimeline
             }
 
             _toggleMorphUI.button.interactable = true;
-            if (_animation.Current.Targets.Any(c => c.Storable.name == name))
+            if (_animation.Current.Targets.Any(c => c.FloatParam.name == name))
                 btnText.text = "Remove Morph";
             else
                 btnText.text = "Add Morph";
@@ -189,13 +189,13 @@ namespace VamTimeline
                     SuperController.LogError($"Morph {morphName} in atom {_plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
-                if (_animation.Current.Targets.Any(c => c.Storable == morphJSONRef))
+                if (_animation.Current.Targets.Any(c => c.FloatParam == morphJSONRef))
                 {
-                    _animation.Current.Targets.Remove(_animation.Current.Targets.First(c => c.Storable == morphJSONRef));
+                    _animation.Current.Targets.Remove(_animation.Current.Targets.First(c => c.FloatParam == morphJSONRef));
                 }
                 else
                 {
-                    var target = new JSONStorableFloatAnimationTarget(morphJSONRef, _animation.AnimationLength);
+                    var target = new JSONStorableFloatAnimationTarget(null, morphJSONRef, _animation.AnimationLength);
                     target.SetKeyframe(0, morphJSONRef.val);
                     _animation.Current.Targets.Add(target);
                 }
@@ -208,16 +208,10 @@ namespace VamTimeline
             }
         }
 
-        private void UpdateMorph(JSONStorableFloat morphJSONRef, float val)
+        private void UpdateMorph(JSONStorableFloatAnimationTarget target, JSONStorableFloat morphJSONRef, float val)
         {
             morphJSONRef.val = val;
             // TODO: This should be done by the controller (updating the animation resets the time)
-            var target = _animation.Current.Targets.FirstOrDefault(m => m.Name == morphJSONRef.name);
-            if (target == null)
-            {
-                SuperController.LogError($"Morph {morphJSONRef.name} was not registed");
-                return;
-            }
             var time = _animation.Time;
             target.SetKeyframe(time, val);
             _animation.RebuildAnimation();

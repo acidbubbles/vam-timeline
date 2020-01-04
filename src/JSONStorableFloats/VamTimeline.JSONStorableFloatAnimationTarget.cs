@@ -15,14 +15,16 @@ namespace VamTimeline
     public class JSONStorableFloatAnimationTarget : IAnimationTarget
     {
         private float _animationLength;
-        public readonly JSONStorableFloat Storable;
+        public readonly JSONStorable Storable;
+        public readonly JSONStorableFloat FloatParam;
         public AnimationCurve Value = new AnimationCurve();
 
-        public string Name => Storable.name;
+        public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
 
-        public JSONStorableFloatAnimationTarget(JSONStorableFloat jsf, float animationLength)
+        public JSONStorableFloatAnimationTarget(JSONStorable storable, JSONStorableFloat jsf, float animationLength)
         {
-            Storable = jsf;
+            Storable = storable;
+            FloatParam = jsf;
             _animationLength = animationLength;
         }
 
@@ -64,7 +66,7 @@ namespace VamTimeline
 
         public void RenderDebugInfo(StringBuilder display, float time)
         {
-            display.AppendLine($"{Storable.name}");
+            display.AppendLine($"{FloatParam.name}");
             foreach (var keyframe in Value.keys)
             {
                 display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");

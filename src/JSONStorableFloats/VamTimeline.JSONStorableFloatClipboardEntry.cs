@@ -22,7 +22,8 @@ namespace VamTimeline
     /// </summary>
     public class JSONStorableFloatValClipboardEntry
     {
-        public JSONStorableFloat Storable;
+        public JSONStorable Storable;
+        public JSONStorableFloat FloatParam;
         public Keyframe Snapshot;
     }
 }

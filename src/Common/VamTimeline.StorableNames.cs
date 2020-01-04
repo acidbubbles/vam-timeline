@@ -29,5 +29,6 @@ namespace VamTimeline
         // Backup
         public const string AtomAnimationBackup = "AtomAnimationBackup";
         public const string MorphsAnimationBackup = "MorphsAnimationBackup";
+        public const string JSONStorableFloatsAnimationBackup = "JSONStorableFloatsAnimationBackup";
     }
 }

@@ -84,6 +84,9 @@
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationTarget.cs" />
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationClip.cs" />
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimation.cs" />
+    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationSerializer.cs" />
+    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatPluginImpl.cs" />
+    <Compile Include="src/VamTimeline.JSONStorableFloatsPlugin.cs" />
 
     <Compile Include="src/Morphs/VamTimeline.MorphsList.cs" />
     <Compile Include="src/Morphs/VamTimeline.MorphsAnimationSerializer.cs" />

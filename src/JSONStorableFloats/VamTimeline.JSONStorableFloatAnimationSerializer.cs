@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using SimpleJSON;
 
 namespace VamTimeline
@@ -10,11 +9,11 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class MorphsAnimationSerializer : AnimationSerializerBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
+    public class JSONStorableFloatsAnimationSerializer : AnimationSerializerBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
     {
         private readonly Atom _atom;
 
-        public MorphsAnimationSerializer(Atom atom)
+        public JSONStorableFloatsAnimationSerializer(Atom atom)
         {
             _atom = atom;
         }
@@ -31,18 +30,16 @@ namespace VamTimeline
 
         protected override void DeserializeClip(JSONStorableFloatAnimationClip clip, JSONClass clipJSON)
         {
-            var morphsList = new MorphsList(_atom);
-            morphsList.Refresh();
-            var allMorphs = morphsList.GetAnimatableMorphs().ToList();
-
-            JSONArray morphsJSON = clipJSON["Morphs"].AsArray;
+            JSONArray morphsJSON = clipJSON["Params"].AsArray;
             if (morphsJSON == null) throw new NullReferenceException("Saved state does not have morphs");
             foreach (JSONClass morphJSON in morphsJSON)
             {
-                var morphName = morphJSON["Morph"].Value;
-                var morph = allMorphs.Single(fc => fc.name == morphName);
-                if (morph == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a morph '{morphName}'");
-                var target = clip.Add(null, morph);
+                var storableId = morphJSON["Storable"].Value;
+                var floatParamName = morphJSON["FloatParam"].Value;
+                JSONStorable storable = _atom.containingAtom.GetStorableByID(storableId);
+                var jsf = storable?.GetFloatJSONParam(floatParamName);
+                if (jsf == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
+                var target = clip.Add(storable, jsf);
                 DeserializeCurve(target.Value, morphJSON["Value"]);
             }
         }
@@ -50,12 +47,13 @@ namespace VamTimeline
         protected override void SerializeClip(JSONStorableFloatAnimationClip clip, JSONClass clipJSON)
         {
             var morphsJSON = new JSONArray();
-            clipJSON.Add("Morphs", morphsJSON);
+            clipJSON.Add("Params", morphsJSON);
             foreach (var morph in clip.Targets)
             {
                 var morphJSON = new JSONClass
                     {
-                        { "Morph", morph.FloatParam.name },
+                        { "Storable", morph.Storable.name },
+                        { "FloatParam", morph.FloatParam.name },
                         { "Value", SerializeCurve(morph.Value) },
                     };
                 morphsJSON.Add(morphJSON);

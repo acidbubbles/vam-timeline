@@ -15,10 +15,10 @@ namespace VamTimeline
         {
         }
 
-        public JSONStorableFloatAnimationTarget Add(JSONStorableFloat jsf)
+        public JSONStorableFloatAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
             if (Targets.Any(s => s.Name == jsf.name)) return null;
-            var target = new JSONStorableFloatAnimationTarget(jsf, AnimationLength);
+            var target = new JSONStorableFloatAnimationTarget(storable, jsf, AnimationLength);
             Add(target);
             return target;
         }
