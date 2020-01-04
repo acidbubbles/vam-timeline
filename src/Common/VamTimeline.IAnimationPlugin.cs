@@ -22,7 +22,6 @@ namespace VamTimeline
     /// </summary>
     public interface IJSONStorable : IMonoBehavior
     {
-        Atom ContainingAtom { get; }
         void RegisterBool(JSONStorableBool param);
         void RegisterString(JSONStorableString param);
         void RegisterFloat(JSONStorableFloat param);

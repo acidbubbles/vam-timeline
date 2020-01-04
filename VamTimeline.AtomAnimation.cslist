@@ -9,11 +9,9 @@ src/Common/VamTimeline.IAnimation.cs
 src/Common/VamTimeline.AnimationBase.cs
 src/Common/VamTimeline.AnimationSerializerBase.cs
 src/Common/VamTimeline.IAnimationPlugin.cs
-src/Common/VamTimeline.PluginImplBase.cs
 src/Atoms/VamTimeline.AtomClipboardEntry.cs
 src/Atoms/VamTimeline.FreeControllerV3AnimationTarget.cs
 src/Atoms/VamTimeline.AtomAnimationClip.cs
 src/Atoms/VamTimeline.AtomAnimation.cs
 src/Atoms/VamTimeline.AtomAnimationSerializer.cs
-src/Atoms/VamTimeline.AtomPluginImpl.cs
 src/VamTimeline.AtomPlugin.cs
