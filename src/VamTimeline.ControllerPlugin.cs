@@ -14,7 +14,6 @@ namespace VamTimeline
     /// </summary>
     public class ControllerPlugin : MVRScript
     {
-        private const string AllAtoms = "(All)";
         private const string AllTargets = "(All)";
         private Atom _atom;
         private SimpleSignUI _ui;
@@ -27,7 +26,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _atomsToLink;
         private LinkedAnimation _mainLinkedAnimation;
         private JSONStorableString _savedAtomsJSON;
-        private JSONStorableStringChooser _controllerJSON;
+        private JSONStorableStringChooser _targetJSON;
         private JSONStorableString _displayJSON;
         private UIDynamicButton _linkButton;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
@@ -65,7 +64,7 @@ namespace VamTimeline
 
         private void InitStorables()
         {
-            _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string>(), AllAtoms, "Atoms", (string v) => SelectCurrentAtom(v))
+            _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string> { "" }, "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
                 isStorable = false
             };
@@ -86,11 +85,11 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction("Stop", () => Stop());
             RegisterAction(_stopJSON);
 
-            _controllerJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string>(), AllTargets, StorableNames.FilterAnimationTarget, (string v) => SelectControllerFilter(v))
+            _targetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string>(), AllTargets, StorableNames.FilterAnimationTarget, (string v) => SelectTargetFilter(v))
             {
                 isStorable = false
             };
-            RegisterStringChooser(_controllerJSON);
+            RegisterStringChooser(_targetJSON);
 
             _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true)
             {
@@ -116,7 +115,7 @@ namespace VamTimeline
             var atoms = SuperController.singleton.GetAtoms();
             foreach (var atom in atoms)
             {
-                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin") || id.EndsWith("VamTimeline.JSONStorableFloatPlugin")))
+                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin") || id.EndsWith("VamTimeline.FloatParamsPlugin")))
                 {
                     if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
 
@@ -141,9 +140,9 @@ namespace VamTimeline
 
         private void InitCustomUI()
         {
-            var targetPopup = CreateScrollablePopup(_atomsToLink);
-            targetPopup.popupPanelHeight = 800f;
-            targetPopup.popup.onOpenPopupHandlers += () => _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
+            var atomsToLinkUI = CreateScrollablePopup(_atomsToLink);
+            atomsToLinkUI.popupPanelHeight = 800f;
+            atomsToLinkUI.popup.onOpenPopupHandlers += () => _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
 
             _linkButton = CreateButton("Link");
             _linkButton.button.interactable = _atomsToLink.choices.Count > 0;
@@ -172,7 +171,7 @@ namespace VamTimeline
                 _ui.CreateUIButtonInCanvas("\u25B6 Play", x - 0.105f, y + 0.60f, 810f, 100f).button.onClick.AddListener(() => Play());
                 _ui.CreateUIButtonInCanvas("\u25A0 Stop", x + 0.257f, y + 0.60f, 300f, 100f).button.onClick.AddListener(() => Stop());
                 _ui.CreateUIPopupInCanvas(_atomsJSON, x, y + 0.585f);
-                _ui.CreateUIPopupInCanvas(_controllerJSON, x, y + 0.655f);
+                _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
                 _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
                 _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
                 _ui.CreateUITextfieldInCanvas(_displayJSON, x, y + 0.62f);
@@ -225,7 +224,7 @@ namespace VamTimeline
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null) return;
                 LinkAnimationPlugin(atom, "VamTimeline.AtomPlugin", "Controllers");
-                LinkAnimationPlugin(atom, "VamTimeline.JSONStorableFloatPlugin", "Params");
+                LinkAnimationPlugin(atom, "VamTimeline.FloatParamsPlugin", "Params");
             }
             catch (Exception exc)
             {
@@ -257,7 +256,7 @@ namespace VamTimeline
             _scrubberJSON.slider.interactable = true;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
-            _controllerJSON.choices = _mainLinkedAnimation.SelectedController.choices;
+            _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
         }
 
         public void VamTimelineContextChanged(string uid)
@@ -274,7 +273,8 @@ namespace VamTimeline
                 return;
 
             _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
-            _controllerJSON.valNoCallback = _mainLinkedAnimation.SelectedController.val;
+            var target = _mainLinkedAnimation.FilterAnimationTarget.val;
+            _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? AllTargets : target;
             _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
         }
 
@@ -285,7 +285,7 @@ namespace VamTimeline
                 if (_mainLinkedAnimation == null) return;
 
                 var scrubber = _mainLinkedAnimation.Scrubber;
-                if (scrubber.val != _scrubberJSON.val)
+                if (scrubber != null && scrubber.val != _scrubberJSON.val)
                     _scrubberJSON.valNoCallback = scrubber.val;
             }
             catch (Exception exc)
@@ -296,14 +296,14 @@ namespace VamTimeline
 
         private void SelectCurrentAtom(string label)
         {
-            if (string.IsNullOrEmpty(label) || label == AllAtoms)
+            if (string.IsNullOrEmpty(label))
             {
                 _mainLinkedAnimation = null;
                 return;
             }
             _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
             if (_mainLinkedAnimation == null) return;
-            _atomsJSON.valNoCallback = _mainLinkedAnimation.Atom.uid;
+            _atomsJSON.valNoCallback = _mainLinkedAnimation.Label;
             VamTimelineAnimationUpdated(_mainLinkedAnimation.Atom.uid);
             VamTimelineContextChanged(_mainLinkedAnimation.Atom.uid);
         }
@@ -362,15 +362,15 @@ namespace VamTimeline
             }
         }
 
-        private void SelectControllerFilter(string v)
+        private void SelectTargetFilter(string v)
         {
             if (_mainLinkedAnimation == null) return;
             if (string.IsNullOrEmpty(v) || v == AllTargets)
             {
-                _mainLinkedAnimation.SelectedController.val = null;
+                _mainLinkedAnimation.FilterAnimationTarget.val = null;
                 return;
             }
-            _mainLinkedAnimation.SelectedController.val = v;
+            _mainLinkedAnimation.FilterAnimationTarget.val = v;
         }
     }
 }

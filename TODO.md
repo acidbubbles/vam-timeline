@@ -2,7 +2,7 @@
 
 - Undo / Redo
 - Autoplay on load
-- Animate any property (physics, scale, etc.) using JSONStorableFloatAnimation
+- Animate any property (physics, scale, etc.) using FloatParamAnimation
 - When locked, disable all controls
 - Locked in controller
 - Make EnsureQuaternionContinuity an option

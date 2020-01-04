@@ -12,7 +12,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatAnimationTarget : IAnimationTarget
+    public class FloatParamAnimationTarget : IAnimationTarget
     {
         private float _animationLength;
         public readonly JSONStorable Storable;
@@ -21,7 +21,7 @@ namespace VamTimeline
 
         public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
 
-        public JSONStorableFloatAnimationTarget(JSONStorable storable, JSONStorableFloat jsf, float animationLength)
+        public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat jsf, float animationLength)
         {
             Storable = storable;
             FloatParam = jsf;

@@ -10,9 +10,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatAnimation : AnimationBase<JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>, IAnimation<JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
+    public class FloatParamAnimation : AnimationBase<FloatParamAnimationClip, FloatParamAnimationTarget>, IAnimation<FloatParamAnimationClip, FloatParamAnimationTarget>
     {
-        private JSONStorableFloatAnimationClip _blendingAnimation;
+        private FloatParamAnimationClip _blendingAnimation;
         private float _blendingTimeLeft;
         private float _blendingDuration;
 
@@ -68,7 +68,7 @@ namespace VamTimeline
             return animationName;
         }
 
-        private void CopyCurrentValues(JSONStorableFloatAnimationClip clip)
+        private void CopyCurrentValues(FloatParamAnimationClip clip)
         {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
@@ -116,32 +116,32 @@ namespace VamTimeline
             SampleAnimation();
         }
 
-        protected override JSONStorableFloatAnimationClip CreateClip(string animatioName)
+        protected override FloatParamAnimationClip CreateClip(string animatioName)
         {
-            return new JSONStorableFloatAnimationClip(animatioName);
+            return new FloatParamAnimationClip(animatioName);
         }
 
         public IClipboardEntry Copy()
         {
-            var entries = new List<JSONStorableFloatValClipboardEntry>();
+            var entries = new List<FloatParamValClipboardEntry>();
             var time = Time;
             foreach (var target in Current.GetAllOrSelectedTargets())
             {
                 if (!target.Value.keys.Any(k => k.time == time)) continue;
-                entries.Add(new JSONStorableFloatValClipboardEntry
+                entries.Add(new FloatParamValClipboardEntry
                 {
                     Storable = target.Storable,
                     FloatParam = target.FloatParam,
                     Snapshot = target.Value.keys.FirstOrDefault(k => k.time == time)
                 });
             }
-            return new JSONStorableFloatClipboardEntry { Entries = entries };
+            return new FloatParamClipboardEntry { Entries = entries };
         }
 
         public void Paste(IClipboardEntry clipboard)
         {
             float time = Time;
-            foreach (var entry in ((JSONStorableFloatClipboardEntry)clipboard).Entries)
+            foreach (var entry in ((FloatParamClipboardEntry)clipboard).Entries)
             {
                 var animController = Current.Targets.FirstOrDefault(c => c.FloatParam == entry.FloatParam);
                 if (animController == null)

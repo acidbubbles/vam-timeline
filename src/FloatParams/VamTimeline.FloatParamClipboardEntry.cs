@@ -9,9 +9,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatClipboardEntry : IClipboardEntry
+    public class FloatParamClipboardEntry : IClipboardEntry
     {
-        public List<JSONStorableFloatValClipboardEntry> Entries;
+        public List<FloatParamValClipboardEntry> Entries;
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatValClipboardEntry
+    public class FloatParamValClipboardEntry
     {
         public JSONStorable Storable;
         public JSONStorableFloat FloatParam;

@@ -10,10 +10,10 @@ src/Common/VamTimeline.AnimationBase.cs
 src/Common/VamTimeline.AnimationSerializerBase.cs
 src/Common/VamTimeline.IAnimationPlugin.cs
 src/Common/VamTimeline.PluginImplBase.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatClipboardEntry.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationTarget.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationClip.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimation.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationSerializer.cs
-src/JSONStorableFloats/VamTimeline.JSONStorableFloatPluginImpl.cs
-src/VamTimeline.JSONStorableFloatsPlugin.cs
+src/FloatParams/VamTimeline.FloatParamClipboardEntry.cs
+src/FloatParams/VamTimeline.FloatParamAnimationTarget.cs
+src/FloatParams/VamTimeline.FloatParamAnimationClip.cs
+src/FloatParams/VamTimeline.FloatParamAnimation.cs
+src/FloatParams/VamTimeline.FloatParamAnimationSerializer.cs
+src/FloatParams/VamTimeline.FloatParamPluginImpl.cs
+src/VamTimeline.FloatParamsPlugin.cs

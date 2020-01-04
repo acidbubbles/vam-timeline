@@ -80,13 +80,13 @@
     <Compile Include="src/Atoms/VamTimeline.AtomPluginImpl.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
-    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatClipboardEntry.cs" />
-    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationTarget.cs" />
-    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationClip.cs" />
-    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimation.cs" />
-    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationSerializer.cs" />
-    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatPluginImpl.cs" />
-    <Compile Include="src/VamTimeline.JSONStorableFloatsPlugin.cs" />
+    <Compile Include="src/FloatParams/VamTimeline.FloatParamClipboardEntry.cs" />
+    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimationTarget.cs" />
+    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimationClip.cs" />
+    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimation.cs" />
+    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimationSerializer.cs" />
+    <Compile Include="src/FloatParams/VamTimeline.FloatParamPluginImpl.cs" />
+    <Compile Include="src/VamTimeline.FloatParamsPlugin.cs" />
 
     <Compile Include="src/Controller/VamTimeline.SimpleSignUI.cs" />
     <Compile Include="src/Controller/VamTimeline.LinkedAnimation.cs" />

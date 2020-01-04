@@ -9,26 +9,26 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatsAnimationSerializer : AnimationSerializerBase<JSONStorableFloatAnimation, JSONStorableFloatAnimationClip, JSONStorableFloatAnimationTarget>
+    public class FloatParamsAnimationSerializer : AnimationSerializerBase<FloatParamAnimation, FloatParamAnimationClip, FloatParamAnimationTarget>
     {
         private readonly Atom _atom;
 
-        public JSONStorableFloatsAnimationSerializer(Atom atom)
+        public FloatParamsAnimationSerializer(Atom atom)
         {
             _atom = atom;
         }
 
-        public override JSONStorableFloatAnimation CreateDefaultAnimation()
+        public override FloatParamAnimation CreateDefaultAnimation()
         {
-            return new JSONStorableFloatAnimation();
+            return new FloatParamAnimation();
         }
 
-        protected override JSONStorableFloatAnimationClip CreateDefaultAnimationClip(string animationName)
+        protected override FloatParamAnimationClip CreateDefaultAnimationClip(string animationName)
         {
-            return new JSONStorableFloatAnimationClip(animationName);
+            return new FloatParamAnimationClip(animationName);
         }
 
-        protected override void DeserializeClip(JSONStorableFloatAnimationClip clip, JSONClass clipJSON)
+        protected override void DeserializeClip(FloatParamAnimationClip clip, JSONClass clipJSON)
         {
             JSONArray paramsJSON = clipJSON["Params"].AsArray;
             if (paramsJSON == null) throw new NullReferenceException("Saved state does not have params");
@@ -44,7 +44,7 @@ namespace VamTimeline
             }
         }
 
-        protected override void SerializeClip(JSONStorableFloatAnimationClip clip, JSONClass clipJSON)
+        protected override void SerializeClip(FloatParamAnimationClip clip, JSONClass clipJSON)
         {
             var paramsJSON = new JSONArray();
             clipJSON.Add("Params", paramsJSON);

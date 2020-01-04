@@ -8,15 +8,15 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class JSONStorableFloatsPlugin : MVRScript, IAnimationPlugin
+    public class FloatParamsPlugin : MVRScript, IAnimationPlugin
     {
-        private readonly JSONStorableFloatsPluginImpl _impl;
+        private readonly FloatParamsPluginImpl _impl;
 
         public Atom ContainingAtom => containingAtom;
 
-        public JSONStorableFloatsPlugin()
+        public FloatParamsPlugin()
         {
-            _impl = new JSONStorableFloatsPluginImpl(this);
+            _impl = new FloatParamsPluginImpl(this);
         }
 
         public override void Init()
@@ -27,7 +27,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.JSONStorableFloatsPlugin.Init: " + exc);
+                SuperController.LogError("VamTimeline.FloatParamsPlugin.Init: " + exc);
             }
         }
 
@@ -39,7 +39,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.JSONStorableFloatsPlugin.Update: " + exc);
+                SuperController.LogError("VamTimeline.FloatParamsPlugin.Update: " + exc);
             }
         }
 
@@ -51,7 +51,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.JSONStorableFloatsPlugin.OnEnable: " + exc);
+                SuperController.LogError("VamTimeline.FloatParamsPlugin.OnEnable: " + exc);
             }
         }
 
@@ -63,7 +63,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.JSONStorableFloatsPlugin.OnDisable: " + exc);
+                SuperController.LogError("VamTimeline.FloatParamsPlugin.OnDisable: " + exc);
             }
         }
 
@@ -75,7 +75,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.JSONStorableFloatsPlugin.OnDestroy: " + exc);
+                SuperController.LogError("VamTimeline.FloatParamsPlugin.OnDestroy: " + exc);
             }
         }
     }
