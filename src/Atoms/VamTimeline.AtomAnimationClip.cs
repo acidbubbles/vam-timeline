@@ -49,6 +49,7 @@ namespace VamTimeline
             {
                 controller.ReapplyCurvesToClip(Clip);
             }
+            // NOTE: This allows smoother rotation but cause weird looping issues in some cases. Better with than without though.
             Clip.EnsureQuaternionContinuity();
         }
 

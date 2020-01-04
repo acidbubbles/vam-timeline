@@ -56,10 +56,7 @@ namespace VamTimeline
         public void ReapplyCurvesToClip(AnimationClip clip)
         {
             // Smooth loop
-            foreach (var curve in Curves)
-            {
-                curve.SmoothLoop();
-            }
+            SmoothLoop();
 
             var path = GetRelativePath();
             clip.SetCurve(path, typeof(Transform), "localPosition.x", X);
@@ -69,6 +66,14 @@ namespace VamTimeline
             clip.SetCurve(path, typeof(Transform), "localRotation.y", RotY);
             clip.SetCurve(path, typeof(Transform), "localRotation.z", RotZ);
             clip.SetCurve(path, typeof(Transform), "localRotation.w", RotW);
+        }
+
+        private void SmoothLoop()
+        {
+            foreach (var curve in Curves)
+            {
+                curve.SmoothLoop();
+            }
         }
 
         private string GetRelativePath()
@@ -148,6 +153,7 @@ namespace VamTimeline
 
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
+            if (!X.keys.Any(k => k.time == time)) return null;
             return new FreeControllerV3Snapshot
             {
                 X = X.keys.First(k => k.time == time),

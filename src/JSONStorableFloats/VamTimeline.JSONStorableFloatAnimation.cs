@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -122,12 +123,31 @@ namespace VamTimeline
 
         public IClipboardEntry Copy()
         {
-            throw new NotImplementedException();
+            var entries = new List<JSONStorableFloatValClipboardEntry>();
+            var time = Time;
+            foreach (var target in Current.GetAllOrSelectedTargets())
+            {
+                if (!target.Value.keys.Any(k => k.time == time)) continue;
+                entries.Add(new JSONStorableFloatValClipboardEntry
+                {
+                    Storable = target.Storable,
+                    Snapshot = target.Value.keys.FirstOrDefault(k => k.time == time)
+                });
+            }
+            return new JSONStorableFloatClipboardEntry { Entries = entries };
         }
 
         public void Paste(IClipboardEntry clipboard)
         {
-            throw new NotImplementedException();
+            float time = Time;
+            foreach (var entry in ((JSONStorableFloatClipboardEntry)clipboard).Entries)
+            {
+                var animController = Current.Targets.FirstOrDefault(c => c.Storable == entry.Storable);
+                if (animController == null)
+                    animController = Current.Add(entry.Storable);
+                animController.SetKeyframe(time, entry.Snapshot.value);
+            }
+            RebuildAnimation();
         }
 
         public void Update()

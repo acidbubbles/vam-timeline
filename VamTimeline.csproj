@@ -80,6 +80,7 @@
     <Compile Include="src/Atoms/VamTimeline.AtomPluginImpl.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
 
+    <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatClipboardEntry.cs" />
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationTarget.cs" />
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationClip.cs" />
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimation.cs" />

@@ -150,7 +150,6 @@ namespace VamTimeline
         public static void SmoothLoop(this AnimationCurve curve)
         {
             if (curve.keys.Length == 0) return;
-            // TODO: Loop doesn't work now for some reason
 
             var keyframe = curve.keys[0];
 
@@ -162,8 +161,8 @@ namespace VamTimeline
             else
             {
 
-                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
-                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
+                var inTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
+                var outTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
                 var tangent = inTangent + outTangent / 2f;
                 keyframe.inTangent = tangent;
                 keyframe.outTangent = tangent;

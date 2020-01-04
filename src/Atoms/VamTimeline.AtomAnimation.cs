@@ -67,7 +67,7 @@ namespace VamTimeline
 
         protected override AtomAnimationClip CreateClip(string animatioName)
         {
-            return new AtomAnimationClip("Anim1");
+            return new AtomAnimationClip(animatioName);
         }
 
         public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
@@ -204,10 +204,12 @@ namespace VamTimeline
             var time = Time;
             foreach (var controller in Current.GetAllOrSelectedTargets())
             {
+                var snapshot = controller.GetCurveSnapshot(time);
+                if(snapshot == null) continue;
                 entries.Add(new FreeControllerV3ClipboardEntry
                 {
                     Controller = controller.Controller,
-                    Snapshot = controller.GetCurveSnapshot(time)
+                    Snapshot = snapshot
                 });
             }
             return new AtomClipboardEntry { Entries = entries };

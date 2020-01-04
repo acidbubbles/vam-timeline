@@ -19,8 +19,9 @@ namespace VamTimeline
         where TAnimationClip : class, IAnimationClip<TAnimationTarget>
         where TAnimationTarget : class, IAnimationTarget
     {
-        // private const int MaxUndo = 20;
+        private const int MaxUndo = 20;
         private const string AllTargets = "(All)";
+        private bool _saveEnabled;
 
         protected readonly IAnimationPlugin _plugin;
 
@@ -51,6 +52,9 @@ namespace VamTimeline
         private JSONStorableFloat _blendDurationJSON;
         private JSONStorableStringChooser _displayModeJSON;
         private JSONStorableString _displayJSON;
+
+        // UI
+        private UIDynamicButton _undoUI;
 
         // Backup
         protected abstract string BackupStorableName { get; }
@@ -160,10 +164,9 @@ namespace VamTimeline
             var pasteUI = _plugin.CreateButton("Paste Frame", rightSide);
             pasteUI.button.onClick.AddListener(() => Paste());
 
-            var undoUI = _plugin.CreateButton("Undo", rightSide);
-            // TODO: Right now it doesn't work for some reason...
-            undoUI.button.interactable = false;
-            undoUI.button.onClick.AddListener(() => Undo());
+            _undoUI = _plugin.CreateButton("Undo", rightSide);
+            _undoUI.button.interactable = false;
+            _undoUI.button.onClick.AddListener(() => Undo());
         }
 
         protected void InitAnimationSettingsUI(bool rightSide)
@@ -190,9 +193,20 @@ namespace VamTimeline
 
         protected IEnumerator CreateAnimationIfNoneIsLoaded()
         {
-            if (_animation != null) yield break;
+            if (_animation != null)
+            {
+                _saveEnabled = true;
+                yield break;
+            }
             yield return new WaitForEndOfFrame();
-            RestoreState(_saveJSON.val);
+            try
+            {
+                RestoreState(_saveJSON.val);
+            }
+            finally
+            {
+                _saveEnabled = true;
+            }
         }
 
         #endregion
@@ -293,15 +307,15 @@ namespace VamTimeline
 
                 var serialized = _serializer.SerializeAnimation(_animation);
 
-                // if (serialized == _undoList.LastOrDefault())
-                //     return;
+                if (serialized == _undoList.LastOrDefault())
+                    return;
 
-                // TODO: Bring back undoes
-                // if (!string.IsNullOrEmpty(_saveJSON.val))
-                // {
-                //     _undoList.Add(_saveJSON.val);
-                //     if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-                // }
+                if (!string.IsNullOrEmpty(_saveJSON.val))
+                {
+                    _undoList.Add(_saveJSON.val);
+                    if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
+                    _undoUI.button.interactable = true;
+                }
 
                 _saveJSON.valNoCallback = serialized;
 
@@ -410,18 +424,44 @@ namespace VamTimeline
         private void Undo()
         {
             if (_undoList.Count == 0) return;
+            var animationName = _animationJSON.val;
             var pop = _undoList[_undoList.Count - 1];
             _undoList.RemoveAt(_undoList.Count - 1);
-            RestoreState(pop);
-            // TODO: Fix undo
-            // _saveJSON.valNoCallback = pop;
+            if (_undoList.Count == 0) _undoUI.button.interactable = false;
+            if (string.IsNullOrEmpty(pop)) return;
+            var time = _animation.Time;
+            _saveEnabled = false;
+            try
+            {
+                RestoreState(pop);
+                _saveJSON.valNoCallback = pop;
+                if (_animation.Clips.Any(c => c.AnimationName == animationName))
+                    _animationJSON.val = animationName;
+                else
+                    _animationJSON.valNoCallback = _animation.Clips.First().AnimationName;
+                AnimationUpdated();
+                UpdateTime(time);
+            }
+            finally
+            {
+                _saveEnabled = true;
+            }
         }
 
         private void AddAnimation()
         {
-            var animationName = _animation.AddAnimation();
-            AnimationUpdated();
-            ChangeAnimation(animationName);
+            _saveEnabled = false;
+            try
+            {
+                var animationName = _animation.AddAnimation();
+                AnimationUpdated();
+                ChangeAnimation(animationName);
+            }
+            finally
+            {
+                _saveEnabled = true;
+            }
+            SaveState();
         }
 
         #endregion
@@ -549,7 +589,8 @@ namespace VamTimeline
                 AnimationUpdatedCustom();
 
                 // Save
-                SaveState();
+                if (_saveEnabled)
+                    SaveState();
 
                 // Render
                 RenderState();

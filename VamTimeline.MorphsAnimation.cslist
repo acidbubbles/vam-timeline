@@ -10,6 +10,7 @@ src/Common/VamTimeline.AnimationBase.cs
 src/Common/VamTimeline.AnimationSerializerBase.cs
 src/Common/VamTimeline.IAnimationPlugin.cs
 src/Common/VamTimeline.PluginImplBase.cs
+src/JSONStorableFloats/VamTimeline.JSONStorableFloatClipboardEntry.cs
 src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationTarget.cs
 src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimationClip.cs
 src/JSONStorableFloats/VamTimeline.JSONStorableFloatAnimation.cs
