@@ -36,9 +36,8 @@ namespace VamTimeline
         private JSONStorableString _saveJSON;
 
         // Storables
-        // TODO: Make protected variables private once extraction is complete
         private JSONStorableStringChooser _animationJSON;
-        protected JSONStorableFloat _scrubberJSON;
+        private JSONStorableFloat _scrubberJSON;
         private JSONStorableAction _playJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
@@ -46,7 +45,7 @@ namespace VamTimeline
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
 
-        protected JSONStorableBool _lockedJSON;
+        private JSONStorableBool _lockedJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _blendDurationJSON;
@@ -58,6 +57,9 @@ namespace VamTimeline
 
         // Backup
         protected abstract string BackupStorableName { get; }
+
+        // Access
+        public bool IsLocked => _lockedJSON.val;
 
         protected PluginImplBase(IAnimationPlugin plugin)
         {

@@ -110,6 +110,11 @@ namespace VamTimeline
             foreach (var target in _animation.Current.Targets)
             {
                 var morphJSONRef = morphJSONRefs.FirstOrDefault(m => m.name == target.Name);
+                if (morphJSONRef == null)
+                {
+                    SuperController.LogError($"Morph {target.Name} of atom {_plugin.ContainingAtom.uid} does not exist anymore or it is not animatable anymore.");
+                    continue;
+                }
                 var morphJSON = new JSONStorableFloat($"Morph:{morphJSONRef.name}", morphJSONRef.defaultVal, (float val) => UpdateMorph(morphJSONRef, val), morphJSONRef.min, morphJSONRef.max, morphJSONRef.constrained, true);
                 var slider = _plugin.CreateSlider(morphJSON, true);
                 _morphJSONRefs.Add(new MorphJSONRef
@@ -129,7 +134,7 @@ namespace VamTimeline
         {
             _animation.Update();
 
-            if (!_lockedJSON.val)
+            if (!IsLocked)
                 ContextUpdatedCustom();
         }
 
