@@ -51,9 +51,13 @@ Otherwise, you can use the `Change Curve` drop down when a frame is selected to 
 
 To smooth everything, use `Smooth all curves`.
 
-### Controlling morphs and triggering events
+### Triggering events
 
-Only controller positions can be controled using VamTimeline. To allow controlling other things, it relies on adding an `AnimationPattern` of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
+To use events, upi cam ise an `AnimationPattern` of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
+
+### Controlling morphs and other float parameters
+
+Add the `VamTimeline.FloatParamAnimation.cslist` plugin on atoms you want to animate, and open the plugin settings (`Open Custom UI` in the Atom's `Plugin` section). It works in a similar way to the atom plugin, except you can add any float parameter. For morphs, make sure you enable the Animatable parameter in the morphs panel, and you'll find them under geometry.
 
 ### Adding an external playback controller
 
