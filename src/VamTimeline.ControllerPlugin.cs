@@ -116,7 +116,7 @@ namespace VamTimeline
             var atoms = SuperController.singleton.GetAtoms();
             foreach (var atom in atoms)
             {
-                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin") || id.EndsWith("VamTimeline.MorphsPlugin")))
+                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin") || id.EndsWith("VamTimeline.JSONStorableFloatPlugin")))
                 {
                     if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
 
@@ -225,7 +225,7 @@ namespace VamTimeline
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null) return;
                 LinkAnimationPlugin(atom, "VamTimeline.AtomPlugin", "Controllers");
-                LinkAnimationPlugin(atom, "VamTimeline.MorphsPlugin", "Morphs");
+                LinkAnimationPlugin(atom, "VamTimeline.JSONStorableFloatPlugin", "Params");
             }
             catch (Exception exc)
             {
@@ -246,8 +246,6 @@ namespace VamTimeline
             _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
             _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
         }
-
-        // TODO: If Morphs and Controllers are out of sync, this will be to. We should dispatch uid/Controllers
 
         public void VamTimelineAnimationUpdated(string uid)
         {

@@ -22,13 +22,6 @@ namespace VamTimeline
                 }
 
                 {
-                    var backupJSON = new JSONStorableString(StorableNames.MorphsAnimationBackup, "");
-                    RegisterString(backupJSON);
-                    var textfield = CreateTextField(backupJSON, true);
-                    textfield.height = 1200;
-                }
-
-                {
                     var backupJSON = new JSONStorableString(StorableNames.JSONStorableFloatsAnimationBackup, "");
                     RegisterString(backupJSON);
                     var textfield = CreateTextField(backupJSON, true);

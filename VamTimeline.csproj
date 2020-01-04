@@ -88,11 +88,6 @@
     <Compile Include="src/JSONStorableFloats/VamTimeline.JSONStorableFloatPluginImpl.cs" />
     <Compile Include="src/VamTimeline.JSONStorableFloatsPlugin.cs" />
 
-    <Compile Include="src/Morphs/VamTimeline.MorphsList.cs" />
-    <Compile Include="src/Morphs/VamTimeline.MorphsAnimationSerializer.cs" />
-    <Compile Include="src/Morphs/VamTimeline.MorphsPluginImpl.cs" />
-    <Compile Include="src/VamTimeline.MorphsPlugin.cs" />
-
     <Compile Include="src/Controller/VamTimeline.SimpleSignUI.cs" />
     <Compile Include="src/Controller/VamTimeline.LinkedAnimation.cs" />
     <Compile Include="src/VamTimeline.ControllerPlugin.cs" />

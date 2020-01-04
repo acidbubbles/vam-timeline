@@ -30,33 +30,33 @@ namespace VamTimeline
 
         protected override void DeserializeClip(JSONStorableFloatAnimationClip clip, JSONClass clipJSON)
         {
-            JSONArray morphsJSON = clipJSON["Params"].AsArray;
-            if (morphsJSON == null) throw new NullReferenceException("Saved state does not have morphs");
-            foreach (JSONClass morphJSON in morphsJSON)
+            JSONArray paramsJSON = clipJSON["Params"].AsArray;
+            if (paramsJSON == null) throw new NullReferenceException("Saved state does not have params");
+            foreach (JSONClass paramJSON in paramsJSON)
             {
-                var storableId = morphJSON["Storable"].Value;
-                var floatParamName = morphJSON["FloatParam"].Value;
+                var storableId = paramJSON["Storable"].Value;
+                var floatParamName = paramJSON["FloatParam"].Value;
                 JSONStorable storable = _atom.containingAtom.GetStorableByID(storableId);
                 var jsf = storable?.GetFloatJSONParam(floatParamName);
                 if (jsf == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
                 var target = clip.Add(storable, jsf);
-                DeserializeCurve(target.Value, morphJSON["Value"]);
+                DeserializeCurve(target.Value, paramJSON["Value"]);
             }
         }
 
         protected override void SerializeClip(JSONStorableFloatAnimationClip clip, JSONClass clipJSON)
         {
-            var morphsJSON = new JSONArray();
-            clipJSON.Add("Params", morphsJSON);
-            foreach (var morph in clip.Targets)
+            var paramsJSON = new JSONArray();
+            clipJSON.Add("Params", paramsJSON);
+            foreach (var target in clip.Targets)
             {
-                var morphJSON = new JSONClass
+                var paramJSON = new JSONClass
                     {
-                        { "Storable", morph.Storable.name },
-                        { "FloatParam", morph.FloatParam.name },
-                        { "Value", SerializeCurve(morph.Value) },
+                        { "Storable", target.Storable.name },
+                        { "FloatParam", target.FloatParam.name },
+                        { "Value", SerializeCurve(target.Value) },
                     };
-                morphsJSON.Add(morphJSON);
+                paramsJSON.Add(paramJSON);
             }
         }
     }
