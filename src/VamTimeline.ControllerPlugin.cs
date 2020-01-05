@@ -103,19 +103,19 @@ namespace VamTimeline
             };
             RegisterString(_displayJSON);
 
-            var atoms = GetAtomsWithVamTimeline().ToList();
+            var atoms = GetAtomsWithVamTimelinePlugin().ToList();
             _atomsToLink = new JSONStorableStringChooser("Atom To Link", atoms, atoms.FirstOrDefault() ?? "", "Add");
 
             _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => StartCoroutine(RestoreAtomsLink(v)));
             RegisterString(_savedAtomsJSON);
         }
 
-        private IEnumerable<string> GetAtomsWithVamTimeline()
+        private IEnumerable<string> GetAtomsWithVamTimelinePlugin()
         {
             var atoms = SuperController.singleton.GetAtoms();
             foreach (var atom in atoms)
             {
-                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin") || id.EndsWith("VamTimeline.FloatParamsPlugin")))
+                if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin")))
                 {
                     if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
 
@@ -142,7 +142,7 @@ namespace VamTimeline
         {
             var atomsToLinkUI = CreateScrollablePopup(_atomsToLink);
             atomsToLinkUI.popupPanelHeight = 800f;
-            atomsToLinkUI.popup.onOpenPopupHandlers += () => _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
+            atomsToLinkUI.popup.onOpenPopupHandlers += () => _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
 
             _linkButton = CreateButton("Link");
             _linkButton.button.interactable = _atomsToLink.choices.Count > 0;
@@ -223,8 +223,7 @@ namespace VamTimeline
 
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null) return;
-                LinkAnimationPlugin(atom, "VamTimeline.AtomPlugin", "Controllers");
-                LinkAnimationPlugin(atom, "VamTimeline.FloatParamsPlugin", "Params");
+                LinkAnimationPlugin(atom);
             }
             catch (Exception exc)
             {
@@ -232,9 +231,9 @@ namespace VamTimeline
             }
         }
 
-        private void LinkAnimationPlugin(Atom atom, string pluginNameSuffix, string labelSuffix)
+        private void LinkAnimationPlugin(Atom atom)
         {
-            var link = LinkedAnimation.TryCreate(atom, pluginNameSuffix, labelSuffix);
+            var link = LinkedAnimation.TryCreate(atom);
             if (link == null) return;
             _linkedAnimations.Add(link);
             _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
@@ -242,7 +241,7 @@ namespace VamTimeline
                 SelectCurrentAtom(link.Label);
             // TODO: If an atom contains ';' it won't work
             _savedAtomsJSON.val = string.Join(";", _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
-            _atomsToLink.choices = GetAtomsWithVamTimeline().ToList();
+            _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
             _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
         }
 
