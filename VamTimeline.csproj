@@ -65,10 +65,8 @@
     <Compile Include="src/Atoms/Common/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.AnimationCurveExtensions.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.IAnimationTarget.cs" />
-    <Compile Include="src/Atoms/Common/VamTimeline.IAnimationClip.cs" />
-    <Compile Include="src/Atoms/Common/VamTimeline.AnimationClipBase.cs" />
     <Compile Include="src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationTarget.cs" />
-    <Compile Include="src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationClip.cs" />
+    <Compile Include="src/Atoms/VamTimeline.AtomAnimationClip.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomClipboardEntry.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimation.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimationSerializer.cs" />

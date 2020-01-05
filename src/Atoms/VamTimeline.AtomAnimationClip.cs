@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -11,12 +12,69 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AnimationClipBase<TTarget>
-        where TTarget : class, IAnimationTarget
+    public class AtomAnimationClip
     {
+        public readonly AnimationClip Clip;
+        public AnimationPattern AnimationPattern;
+
+        public AtomAnimationClip(string animationName)
+        {
+            AnimationName = animationName;
+            Clip = new AnimationClip
+            {
+                wrapMode = WrapMode.Loop,
+                legacy = true
+            };
+        }
+
+        public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
+        {
+            if (Targets.Any(c => c.Controller == controller)) return null;
+            FreeControllerAnimationTarget controllerState = new FreeControllerAnimationTarget(controller, AnimationLength);
+            controllerState.SetKeyframeToCurrentTransform(0f);
+            Targets.Add(controllerState);
+            return controllerState;
+        }
+
+        public void Remove(FreeControllerV3 controller)
+        {
+            var existing = Targets.FirstOrDefault(c => c.Controller == controller);
+            if (existing == null) return;
+            Targets.Remove(existing);
+        }
+
+        public void RebuildAnimation()
+        {
+            Clip.ClearCurves();
+            foreach (var controller in Targets)
+            {
+                controller.ReapplyCurvesToClip(Clip);
+            }
+            // NOTE: This allows smoother rotation but cause weird looping issues in some cases. Better with than without though.
+            Clip.EnsureQuaternionContinuity();
+        }
+
+        public void ChangeCurve(float time, string curveType)
+        {
+            if (time == 0 || time == AnimationLength) return;
+
+            foreach (var controller in GetAllOrSelectedTargets())
+            {
+                controller.ChangeCurve(time, curveType);
+            }
+        }
+
+        public void SmoothAllFrames()
+        {
+            foreach (var controller in Targets)
+            {
+                controller.SmoothAllFrames();
+            }
+        }
+
         private float _animationLength = 5f;
-        public readonly List<TTarget> Targets = new List<TTarget>();
-        private TTarget _selected;
+        public readonly List<FreeControllerAnimationTarget> Targets = new List<FreeControllerAnimationTarget>();
+        private FreeControllerAnimationTarget _selected;
 
         public string AnimationName { get; }
 
@@ -38,11 +96,6 @@ namespace VamTimeline
                     target.SetLength(value);
                 }
             }
-        }
-
-        public AnimationClipBase(string animationName)
-        {
-            AnimationName = animationName;
         }
 
         public bool IsEmpty()
@@ -101,7 +154,7 @@ namespace VamTimeline
             }
         }
 
-        public IEnumerable<TTarget> GetAllOrSelectedTargets()
+        public IEnumerable<FreeControllerAnimationTarget> GetAllOrSelectedTargets()
         {
             if (_selected != null) return new[] { _selected };
             return Targets;

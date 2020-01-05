@@ -13,8 +13,8 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
-        public List<FreeControllerAnimationClip> Clips { get; } = new List<FreeControllerAnimationClip>();
-        public FreeControllerAnimationClip Current { get; set; }
+        public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
+        public AtomAnimationClip Current { get; set; }
 
         public float AnimationLength
         {
@@ -39,7 +39,7 @@ namespace VamTimeline
                 Current = Clips.First();
         }
 
-        public void AddClip(FreeControllerAnimationClip clip)
+        public void AddClip(AtomAnimationClip clip)
         {
             Clips.Add(clip);
         }
@@ -147,9 +147,9 @@ namespace VamTimeline
             if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
-        protected FreeControllerAnimationClip CreateClip(string animatioName)
+        protected AtomAnimationClip CreateClip(string animatioName)
         {
-            return new FreeControllerAnimationClip(animatioName);
+            return new AtomAnimationClip(animatioName);
         }
 
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
@@ -232,7 +232,7 @@ namespace VamTimeline
             return animationName;
         }
 
-        private void CopyCurrentValues(FreeControllerAnimationClip clip)
+        private void CopyCurrentValues(AtomAnimationClip clip)
         {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;

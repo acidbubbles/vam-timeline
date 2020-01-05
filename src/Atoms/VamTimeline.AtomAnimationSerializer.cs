@@ -31,9 +31,11 @@ namespace VamTimeline
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                var clip = CreateDefaultAnimationClip(clipJSON["AnimationName"].Value);
-                clip.Speed = DeserializeFloat(clipJSON["Speed"], 1f);
-                clip.AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f);
+                var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value)
+                {
+                    Speed = DeserializeFloat(clipJSON["Speed"], 1f),
+                    AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f)
+                };
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
             }
@@ -112,12 +114,7 @@ namespace VamTimeline
             return new AtomAnimation(_atom);
         }
 
-        protected FreeControllerAnimationClip CreateDefaultAnimationClip(string animationName)
-        {
-            return new FreeControllerAnimationClip(animationName);
-        }
-
-        protected void DeserializeClip(FreeControllerAnimationClip clip, JSONClass clipJSON)
+        protected void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
             var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
             if (!string.IsNullOrEmpty(animationPatternUID))
@@ -148,7 +145,7 @@ namespace VamTimeline
             }
         }
 
-        protected void SerializeClip(FreeControllerAnimationClip clip, JSONClass clipJSON)
+        protected void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
             if (clip.AnimationPattern != null)
                 clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);
