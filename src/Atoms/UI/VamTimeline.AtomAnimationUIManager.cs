@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VamTimeline
@@ -14,15 +15,40 @@ namespace VamTimeline
     {
         protected IAtomPlugin _plugin;
         private AtomAnimationBaseUI _current;
+        private JSONStorableStringChooser _screens;
+        private UIDynamicPopup _screenUI;
 
         public AtomAnimationUIManager(IAtomPlugin plugin)
         {
             _plugin = plugin;
         }
 
+        public void Init()
+        {
+            _screens = new JSONStorableStringChooser(
+                "Screen",
+                new List<string>{
+                AtomAnimationSettingsUI.ScreenName,
+                AtomAnimationLockedUI.ScreenName
+                },
+                AtomAnimationLockedUI.ScreenName,
+                "Tab",
+                (string screen) =>
+                {
+                    _plugin.LockedJSON.val = screen == AtomAnimationLockedUI.ScreenName;
+                    RefreshCurrentUI();
+                }
+            );
+            _screenUI = _plugin.CreatePopup(_screens);
+        }
+
         public void AnimationUpdated()
         {
             if (_plugin.Animation == null) return;
+            if (_plugin.LockedJSON.val && _screens.val != AtomAnimationLockedUI.ScreenName)
+                _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
+            if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
+                _screens.valNoCallback = AtomAnimationSettingsUI.ScreenName;
             RefreshCurrentUI(() => _current.AnimationUpdated());
         }
 
@@ -42,23 +68,33 @@ namespace VamTimeline
         private IEnumerator RefreshCurrentUIDefered(Action fn)
         {
             yield return new WaitForEndOfFrame();
-            Type type;
-            if (_plugin.LockedJSON.val)
-                type = typeof(AtomAnimationLockedUI);
-            else
-                type = typeof(AtomAnimationSettingsUI);
-
-            if (_current == null || _current.GetType() != type)
+            if (_current == null || _current.Name != _screens.val)
             {
-                // TODO: Only recreate if necessary!
                 if (_current != null)
                     _current.Remove();
 
-                _current = _plugin.LockedJSON.val ? new AtomAnimationLockedUI(_plugin) as AtomAnimationBaseUI : new AtomAnimationSettingsUI(_plugin);
+                switch (_screens.val)
+                {
+                    case AtomAnimationLockedUI.ScreenName:
+                        _current = new AtomAnimationLockedUI(_plugin);
+                        break;
+                    case AtomAnimationSettingsUI.ScreenName:
+                        _current = new AtomAnimationSettingsUI(_plugin);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown screen {_screens.val}");
+                }
                 _current.Init();
-            }
+                _current.AnimationUpdated();
 
-            fn?.Invoke();
+                // Hack to avoid having the drop down shown underneath new controls
+                _screenUI.popup.Toggle();
+                _screenUI.popup.Toggle();
+            }
+            else
+            {
+                fn?.Invoke();
+            }
         }
 
         public void UpdatePlaying()

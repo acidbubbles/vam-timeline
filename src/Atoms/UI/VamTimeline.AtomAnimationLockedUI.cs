@@ -11,6 +11,9 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationLockedUI : AtomAnimationBaseUI
     {
+        public const string ScreenName = "Locked (Performance)";
+        public override string Name => ScreenName;
+
         public AtomAnimationLockedUI(IAtomPlugin plugin)
             : base(plugin)
         {

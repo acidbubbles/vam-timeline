@@ -11,6 +11,8 @@ namespace VamTimeline
     /// </summary>
     public abstract class AtomAnimationBaseUI
     {
+        public abstract string Name { get; }
+
         private UIDynamicButton _undoUI;
         protected List<UIDynamic> _components = new List<UIDynamic>();
         protected List<JSONStorableParam> _linkedStorables = new List<JSONStorableParam>();

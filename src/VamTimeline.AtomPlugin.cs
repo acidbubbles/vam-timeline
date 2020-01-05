@@ -75,6 +75,7 @@ namespace VamTimeline
                 _serializer = new AtomAnimationSerializer(containingAtom);
                 _ui = new AtomAnimationUIManager(this);
                 InitStorables();
+                _ui.Init();
                 // Try loading from backup
                 StartCoroutine(CreateAnimationIfNoneIsLoaded());
             }

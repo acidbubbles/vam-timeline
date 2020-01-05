@@ -13,6 +13,9 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationSettingsUI : AtomAnimationBaseUI
     {
+        public const string ScreenName = "Animation Settings";
+        public override string Name => ScreenName;
+
         private class FloatParamJSONRef
         {
             public JSONStorable Storable;
