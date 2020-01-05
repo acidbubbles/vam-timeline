@@ -60,6 +60,12 @@ namespace VamTimeline
 
             fn?.Invoke();
         }
+
+        public void UpdatePlaying()
+        {
+            if (_current == null) return;
+            _current.UpdatePlaying();
+        }
     }
 }
 

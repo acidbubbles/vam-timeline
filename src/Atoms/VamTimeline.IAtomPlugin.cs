@@ -62,6 +62,7 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomPlugin : IMVRScript
     {
+        Atom ContainingAtom { get; }
         AtomAnimation Animation { get; }
 
         JSONStorableStringChooser AnimationJSON { get; }

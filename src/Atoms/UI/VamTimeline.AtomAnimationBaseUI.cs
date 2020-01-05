@@ -25,6 +25,10 @@ namespace VamTimeline
         {
         }
 
+        public virtual void UpdatePlaying()
+        {
+        }
+
         public virtual void AnimationUpdated()
         {
             UIUpdated();
@@ -104,7 +108,7 @@ namespace VamTimeline
             _linkedStorables.Add(Plugin.DisplayJSON);
         }
 
-        public void Remove()
+        public virtual void Remove()
         {
             foreach (var component in _linkedStorables)
             {
