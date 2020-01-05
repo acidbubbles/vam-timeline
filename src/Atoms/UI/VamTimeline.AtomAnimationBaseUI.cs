@@ -42,10 +42,6 @@ namespace VamTimeline
 
         protected void InitPlaybackUI(bool rightSide)
         {
-            var animationUI = Plugin.CreateScrollablePopup(Plugin.AnimationJSON, rightSide);
-            animationUI.popupPanelHeight = 800f;
-            _linkedStorables.Add(Plugin.AnimationJSON);
-
             Plugin.CreateSlider(Plugin.ScrubberJSON);
             _linkedStorables.Add(Plugin.ScrubberJSON);
 
@@ -56,6 +52,13 @@ namespace VamTimeline
             var stopUI = Plugin.CreateButton("\u25A0 Stop", rightSide);
             stopUI.button.onClick.AddListener(() => Plugin.StopJSON.actionCallback());
             _components.Add(stopUI);
+        }
+
+        protected void InitAnimationSelectorUI(bool rightSide)
+        {
+            var animationUI = Plugin.CreateScrollablePopup(Plugin.AnimationJSON, rightSide);
+            animationUI.popupPanelHeight = 800f;
+            _linkedStorables.Add(Plugin.AnimationJSON);
         }
 
         protected void InitFrameNavUI(bool rightSide)
@@ -94,19 +97,13 @@ namespace VamTimeline
             _components.Add(_undoUI);
         }
 
-        protected void InitLockedUI(bool rightSide)
-        {
-            var lockedUI = Plugin.CreateToggle(Plugin.LockedJSON, rightSide);
-            lockedUI.label = "Locked (Performance Mode)";
-            _linkedStorables.Add(Plugin.LockedJSON);
-        }
-
-        protected void InitDisplayUI(bool rightSide)
+        protected void InitDisplayUI(bool rightSide, float height = 300f)
         {
             var displayModeUI = Plugin.CreatePopup(Plugin.DisplayModeJSON, rightSide);
             _linkedStorables.Add(Plugin.DisplayModeJSON);
 
             var displayUI = Plugin.CreateTextField(Plugin.DisplayJSON, rightSide);
+            displayUI.height = height;
             _linkedStorables.Add(Plugin.DisplayJSON);
         }
 

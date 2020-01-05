@@ -25,13 +25,11 @@ namespace VamTimeline
 
             // Left side
 
+                        InitAnimationSelectorUI(false);
+
             InitPlaybackUI(false);
 
             InitFrameNavUI(false);
-
-            // Right side
-
-            InitLockedUI(true);
         }
     }
 }

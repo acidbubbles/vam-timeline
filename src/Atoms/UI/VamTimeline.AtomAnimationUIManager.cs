@@ -29,9 +29,10 @@ namespace VamTimeline
                 "Screen",
                 new List<string>{
                 AtomAnimationSettingsUI.ScreenName,
+                AtomAnimationEditorUI.ScreenName,
                 AtomAnimationLockedUI.ScreenName
                 },
-                AtomAnimationLockedUI.ScreenName,
+                GetDefaultScreen(),
                 "Tab",
                 (string screen) =>
                 {
@@ -39,7 +40,17 @@ namespace VamTimeline
                     RefreshCurrentUI();
                 }
             );
-            _screenUI = _plugin.CreatePopup(_screens);
+            _screenUI = _plugin.CreateScrollablePopup(_screens);
+        }
+
+        public string GetDefaultScreen()
+        {
+            if (_plugin.Animation == null || _plugin.LockedJSON.val)
+                return AtomAnimationLockedUI.ScreenName;
+            else if (_plugin.Animation.IsEmpty())
+                return AtomAnimationSettingsUI.ScreenName;
+            else
+                return AtomAnimationEditorUI.ScreenName;
         }
 
         public void AnimationUpdated()
@@ -48,7 +59,7 @@ namespace VamTimeline
             if (_plugin.LockedJSON.val && _screens.val != AtomAnimationLockedUI.ScreenName)
                 _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
             if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
-                _screens.valNoCallback = AtomAnimationSettingsUI.ScreenName;
+                _screens.valNoCallback = GetDefaultScreen();
             RefreshCurrentUI(() => _current.AnimationUpdated());
         }
 
@@ -81,11 +92,22 @@ namespace VamTimeline
                     case AtomAnimationSettingsUI.ScreenName:
                         _current = new AtomAnimationSettingsUI(_plugin);
                         break;
+                    case AtomAnimationEditorUI.ScreenName:
+                        _current = new AtomAnimationEditorUI(_plugin);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unknown screen {_screens.val}");
                 }
-                _current.Init();
-                _current.AnimationUpdated();
+
+                try
+                {
+                    _current.Init();
+                    _current.AnimationUpdated();
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError("VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDefered: " + exc.ToString());
+                }
 
                 // Hack to avoid having the drop down shown underneath new controls
                 _screenUI.popup.Toggle();
