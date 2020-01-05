@@ -660,6 +660,8 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
 
+                _ui.ContextUpdated();
+
                 // Render
                 RenderState();
 

@@ -63,6 +63,11 @@ namespace VamTimeline
             RefreshCurrentUI(() => _current.AnimationUpdated());
         }
 
+        public void ContextUpdated()
+        {
+            RefreshCurrentUI(() => _current.ContextUpdated());
+        }
+
         public void UIUpdated()
         {
             if (_plugin.Animation == null) return;

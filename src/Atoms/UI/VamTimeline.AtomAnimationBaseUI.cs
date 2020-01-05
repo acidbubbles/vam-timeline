@@ -36,6 +36,10 @@ namespace VamTimeline
             UIUpdated();
         }
 
+        public virtual void ContextUpdated()
+        {
+        }
+
         public virtual void UIUpdated()
         {
         }

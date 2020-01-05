@@ -41,10 +41,10 @@ namespace VamTimeline
             InitAnimationSelectorUI(false);
 
             InitPlaybackUI(false);
-            
+
             InitFrameNavUI(false);
 
-                        var changeCurveUI = Plugin.CreatePopup(Plugin.ChangeCurveJSON, false);
+            var changeCurveUI = Plugin.CreatePopup(Plugin.ChangeCurveJSON, false);
             changeCurveUI.popupPanelHeight = 800f;
             _linkedStorables.Add(Plugin.ChangeCurveJSON);
 
@@ -55,9 +55,16 @@ namespace VamTimeline
             // Right side
 
             InitDisplayUI(true);
+
+            RefreshFloatParamsListUI();
         }
 
         public override void UpdatePlaying()
+        {
+            UpdateFloatParamSliders();
+        }
+
+        private void UpdateFloatParamSliders()
         {
             if (_jsfJSONRefs != null)
             {
@@ -66,10 +73,36 @@ namespace VamTimeline
             }
         }
 
+        public override void ContextUpdated()
+        {
+            UpdateFloatParamSliders();
+        }
+
         public override void Remove()
         {
             RemoveJsonRefs();
             base.Remove();
+        }
+
+        private void RefreshFloatParamsListUI()
+        {
+            RemoveJsonRefs();
+            if (Plugin.Animation == null) return;
+            // TODO: This is expensive, though rarely occuring
+            _jsfJSONRefs = new List<FloatParamJSONRef>();
+            foreach (var target in Plugin.Animation.Current.TargetFloatParams)
+            {
+                var jsfJSONRef = target.FloatParam;
+                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{jsfJSONRef.name}", jsfJSONRef.defaultVal, (float val) => UpdateFloatParam(target, jsfJSONRef, val), jsfJSONRef.min, jsfJSONRef.max, jsfJSONRef.constrained, true);
+                var slider = Plugin.CreateSlider(jsfJSONProxy, true);
+                _jsfJSONRefs.Add(new FloatParamJSONRef
+                {
+                    Storable = target.Storable,
+                    SourceFloatParam = jsfJSONRef,
+                    Proxy = jsfJSONProxy,
+                    Slider = slider
+                });
+            }
         }
 
         private void RemoveJsonRefs()
@@ -80,6 +113,18 @@ namespace VamTimeline
                 // TODO: Take care of keeping track of those separately
                 Plugin.RemoveSlider(jsfJSONRef.Proxy);
             }
+        }
+
+        private void UpdateFloatParam(FloatParamAnimationTarget target, JSONStorableFloat sourceFloatParam, float val)
+        {
+            sourceFloatParam.val = val;
+            // TODO: This should be done by the controller (updating the animation resets the time)
+            var time = Plugin.Animation.Time;
+            target.SetKeyframe(time, val);
+            Plugin.Animation.RebuildAnimation();
+            // TODO: Test if this works (was using Plugin.UpdateTime)
+            Plugin.ScrubberJSON.val = time;
+            Plugin.AnimationUpdated();
         }
     }
 }

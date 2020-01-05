@@ -30,6 +30,5 @@ namespace VamTimeline
 
         // Backup
         public const string AtomAnimationBackup = "AtomAnimationBackup";
-        public const string FloatParamsAnimationBackup = "FloatParamsAnimationBackup";
     }
 }

@@ -24,7 +24,6 @@ namespace VamTimeline
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
 
-
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
             : base(plugin)
         {
