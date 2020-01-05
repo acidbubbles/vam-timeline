@@ -39,11 +39,19 @@ namespace VamTimeline
     {
         UIDynamicSlider CreateSlider(JSONStorableFloat jsf, bool rightSide = false);
         void RemoveSlider(UIDynamicSlider slider);
+        void RemoveSlider(JSONStorableFloat slider);
         UIDynamicButton CreateButton(string label, bool rightSide = false);
+        void RemoveButton(UIDynamicButton button);
         UIDynamicToggle CreateToggle(JSONStorableBool jsb, bool rightSide = false);
+        void RemoveToggle(UIDynamicToggle toggle);
+        void RemoveToggle(JSONStorableBool toggle);
         UIDynamicTextField CreateTextField(JSONStorableString jss, bool rightSide = false);
+        void RemoveTextField(UIDynamicTextField textfield);
+        void RemoveTextField(JSONStorableString textfield);
         UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool rightSide = false);
         UIDynamicPopup CreateScrollablePopup(JSONStorableStringChooser jsc, bool rightSide = false);
+        void RemovePopup(UIDynamicPopup popup);
+        void RemovePopup(JSONStorableStringChooser popup);
     }
 
     /// <summary>
@@ -54,31 +62,31 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomPlugin : IMVRScript
     {
-        AtomAnimation _animation { get; }
+        AtomAnimation Animation { get; }
 
-        JSONStorableStringChooser _animationJSON { get; }
-        JSONStorableAction _addAnimationJSON { get; }
-        JSONStorableFloat _scrubberJSON { get; }
-        JSONStorableAction _playJSON { get; }
-        JSONStorableAction _playIfNotPlayingJSON { get; }
-        JSONStorableAction _stopJSON { get; }
-        JSONStorableStringChooser _filterAnimationTargetJSON { get; }
-        JSONStorableAction _nextFrameJSON { get; }
-        JSONStorableAction _previousFrameJSON { get; }
-        JSONStorableAction _smoothAllFramesJSON { get; }
-        JSONStorableAction _cutJSON { get; }
-        JSONStorableAction _copyJSON { get; }
-        JSONStorableAction _pasteJSON { get; }
-        JSONStorableAction _undoJSON { get; }
-        JSONStorableBool _lockedJSON { get; }
-        JSONStorableFloat _lengthJSON { get; }
-        JSONStorableFloat _speedJSON { get; }
-        JSONStorableFloat _blendDurationJSON { get; }
-        JSONStorableStringChooser _displayModeJSON { get; }
-        JSONStorableString _displayJSON { get; }
-        JSONStorableStringChooser _changeCurveJSON { get; }
-        JSONStorableStringChooser _addControllerListJSON { get; }
-        JSONStorableAction _toggleControllerJSON { get; }
-        JSONStorableStringChooser _linkedAnimationPatternJSON { get; }
+        JSONStorableStringChooser AnimationJSON { get; }
+        JSONStorableAction AddAnimationJSON { get; }
+        JSONStorableFloat ScrubberJSON { get; }
+        JSONStorableAction PlayJSON { get; }
+        JSONStorableAction PlayIfNotPlayingJSON { get; }
+        JSONStorableAction StopJSON { get; }
+        JSONStorableStringChooser FilterAnimationTargetJSON { get; }
+        JSONStorableAction NextFrameJSON { get; }
+        JSONStorableAction PreviousFrameJSON { get; }
+        JSONStorableAction SmoothAllFramesJSON { get; }
+        JSONStorableAction CutJSON { get; }
+        JSONStorableAction CopyJSON { get; }
+        JSONStorableAction PasteJSON { get; }
+        JSONStorableAction UndoJSON { get; }
+        JSONStorableBool LockedJSON { get; }
+        JSONStorableFloat LengthJSON { get; }
+        JSONStorableFloat SpeedJSON { get; }
+        JSONStorableFloat BlendDurationJSON { get; }
+        JSONStorableStringChooser DisplayModeJSON { get; }
+        JSONStorableString DisplayJSON { get; }
+        JSONStorableStringChooser ChangeCurveJSON { get; }
+        JSONStorableStringChooser AddControllerListJSON { get; }
+        JSONStorableAction ToggleControllerJSON { get; }
+        JSONStorableStringChooser LinkedAnimationPatternJSON { get; }
     }
 }

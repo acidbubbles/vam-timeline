@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -18,22 +20,45 @@ namespace VamTimeline
             _plugin = plugin;
         }
 
-        public void InitCustomUI()
-        {
-            _current = new AtomAnimationSettingsUI(_plugin);
-            _current.Init();
-        }
-
         public void AnimationUpdated()
         {
-            if (_current == null) return;
-            _current.AnimationUpdated();
+            if (_plugin.Animation == null) return;
+            RefreshCurrentUI(() => _current.AnimationUpdated());
         }
 
         public void UIUpdated()
         {
-            if (_current == null) return;
-            _current.UIUpdated();
+            if (_plugin.Animation == null) return;
+            RefreshCurrentUI(() => _current.UIUpdated());
+        }
+
+        public void RefreshCurrentUI(Action fn = null)
+        {
+            if (_plugin.Animation == null) return;
+
+            _plugin.StartCoroutine(RefreshCurrentUIDefered(fn));
+        }
+
+        private IEnumerator RefreshCurrentUIDefered(Action fn)
+        {
+            yield return new WaitForEndOfFrame();
+            Type type;
+            if (_plugin.LockedJSON.val)
+                type = typeof(AtomAnimationLockedUI);
+            else
+                type = typeof(AtomAnimationSettingsUI);
+
+            if (_current == null || _current.GetType() != type)
+            {
+                // TODO: Only recreate if necessary!
+                if (_current != null)
+                    _current.Remove();
+
+                _current = _plugin.LockedJSON.val ? new AtomAnimationLockedUI(_plugin) as AtomAnimationBaseUI : new AtomAnimationSettingsUI(_plugin);
+                _current.Init();
+            }
+
+            fn?.Invoke();
         }
     }
 }
