@@ -46,7 +46,8 @@ namespace VamTimeline
 
         protected void InitPlaybackUI(bool rightSide)
         {
-            Plugin.CreateSlider(Plugin.ScrubberJSON);
+            var scrubberUI = Plugin.CreateSlider(Plugin.ScrubberJSON);
+            scrubberUI.valueFormat = "F3";
             _linkedStorables.Add(Plugin.ScrubberJSON);
 
             var playUI = Plugin.CreateButton("\u25B6 Play", rightSide);
@@ -96,7 +97,6 @@ namespace VamTimeline
             _components.Add(pasteUI);
 
             _undoUI = Plugin.CreateButton("Undo", rightSide);
-            _undoUI.button.interactable = false;
             _undoUI.button.onClick.AddListener(() => Plugin.UndoJSON.actionCallback());
             _components.Add(_undoUI);
         }

@@ -124,8 +124,6 @@ namespace VamTimeline
             var time = Plugin.Animation.Time;
             target.SetKeyframe(time, val);
             Plugin.Animation.RebuildAnimation();
-            // TODO: Test if this works (was using Plugin.UpdateTime)
-            Plugin.ScrubberJSON.val = time;
             Plugin.AnimationModified();
         }
     }

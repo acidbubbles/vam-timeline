@@ -16,6 +16,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
+        private const float AnimationEndOffset = 0.1f;
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // Storables
@@ -193,7 +194,7 @@ namespace VamTimeline
             AddAnimationJSON = new JSONStorableAction(StorableNames.AddAnimation, () => AddAnimation());
             RegisterAction(AddAnimationJSON);
 
-            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true)
+            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - AnimationEndOffset, true)
             {
                 isStorable = false
             };
@@ -334,7 +335,6 @@ namespace VamTimeline
                 {
                     _undoList.Add(_saveJSON.val);
                     if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-                    // _undoUI.button.interactable = true;
                 }
 
                 _saveJSON.valNoCallback = serialized;
@@ -367,7 +367,7 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = animationName;
                 SpeedJSON.valNoCallback = Animation.Speed;
                 LengthJSON.valNoCallback = Animation.AnimationLength;
-                ScrubberJSON.max = Animation.AnimationLength - float.Epsilon;
+                ScrubberJSON.max = Animation.AnimationLength - AnimationEndOffset;
                 AnimationModified();
             }
             catch (Exception exc)
@@ -452,8 +452,7 @@ namespace VamTimeline
             var animationName = AnimationJSON.val;
             var pop = _undoList[_undoList.Count - 1];
             _undoList.RemoveAt(_undoList.Count - 1);
-            // TODO: Removed while extracting UI
-            // if (_undoList.Count == 0) _undoUI.button.interactable = false;
+            if (_undoList.Count == 0) return;
             if (string.IsNullOrEmpty(pop)) return;
             var time = Animation.Time;
             _saveEnabled = false;
@@ -579,7 +578,7 @@ namespace VamTimeline
                 SpeedJSON.valNoCallback = Animation.Speed;
                 LengthJSON.valNoCallback = Animation.AnimationLength;
                 BlendDurationJSON.valNoCallback = Animation.BlendDuration;
-                ScrubberJSON.max = Animation.AnimationLength - float.Epsilon;
+                ScrubberJSON.max = Animation.AnimationLength - AnimationEndOffset;
                 FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
 
                 // Save

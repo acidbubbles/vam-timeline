@@ -16,6 +16,8 @@ namespace VamTimeline
         private readonly Atom _atom;
         private readonly Animation _animation;
         private AnimationState _animState;
+        private bool _isPlaying;
+        private float _fallbackTime;
         private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
         private float _blendingDuration;
@@ -26,12 +28,13 @@ namespace VamTimeline
         {
             get
             {
-                if (Current == null) return 0f;
-                if (_animState == null) return 0f;
+                if (Current == null) return _fallbackTime % AnimationLength;
+                if (_animState == null) return _fallbackTime % AnimationLength;
                 return _animState.time % _animState.length;
             }
             set
             {
+                _fallbackTime = value;
                 if (Current == null) return;
                 if (_animState == null) return;
                 _animState.time = value;
@@ -140,9 +143,13 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
-            if (_animState == null) return;
-            _animState.time = 0;
-            _animation.Play(Current.AnimationName);
+            _isPlaying = true;
+            _fallbackTime = 0;
+            if (_animState != null)
+            {
+                _animState.time = 0;
+                _animation.Play(Current.AnimationName);
+            }
             if (Current.AnimationPattern)
             {
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
@@ -178,9 +185,10 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (IsPlaying())
+            SuperController.singleton.ClearMessages();
+            if (_isPlaying)
             {
-                // _time = (_time + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
+                _fallbackTime = (_fallbackTime + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
 
                 if (_blendingClip != null)
                 {
@@ -199,7 +207,8 @@ namespace VamTimeline
 
         public void Stop()
         {
-            if (Current == null || _animState == null) return;
+            if (Current == null) return;
+            _isPlaying = false;
             _animation.Stop();
             Time = 0;
             foreach (var clip in Clips)
@@ -218,7 +227,7 @@ namespace VamTimeline
 
         public bool IsPlaying()
         {
-            return _animation.IsPlaying(Current.AnimationName);
+            return _isPlaying;
         }
 
         public void RebuildAnimation()
@@ -232,11 +241,23 @@ namespace VamTimeline
                 var animState = _animation[clip.AnimationName];
                 animState.speed = clip.Speed;
             }
-            // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
-            _animation.Play(Current.AnimationName);
-            _animation.Stop(Current.AnimationName);
-            _animState = _animation[Current.AnimationName];
-            _animState.time = time;
+            if (HasAnimatableControllers())
+            {
+                _animState = null;
+            }
+            else
+            {
+                // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
+                _animation.Play(Current.AnimationName);
+                _animation.Stop(Current.AnimationName);
+                _animState = _animation[Current.AnimationName];
+                _animState.time = time;
+            }
+        }
+
+        private bool HasAnimatableControllers()
+        {
+            return Current.TargetControllers.Count == 0;
         }
 
         public void ChangeCurve(string curveType)
@@ -276,11 +297,13 @@ namespace VamTimeline
             var anim = Clips.FirstOrDefault(c => c.AnimationName == animationName);
             if (anim == null) return;
             var time = Time;
-            var isPlaying = IsPlaying();
-            if (isPlaying)
+            if (_isPlaying)
             {
-                _animation.Blend(Current.AnimationName, 0f, BlendDuration);
-                _animation.Blend(animationName, 1f, BlendDuration);
+                if (HasAnimatableControllers())
+                {
+                    _animation.Blend(Current.AnimationName, 0f, BlendDuration);
+                    _animation.Blend(animationName, 1f, BlendDuration);
+                }
                 if (Current.AnimationPattern != null)
                 {
                     // Let the loop finish during the transition
@@ -291,14 +314,18 @@ namespace VamTimeline
             }
             Current.SelectTargetByName("");
             Current = anim;
-            if (!isPlaying)
+            if (!_isPlaying)
             {
-                Play();
-                Stop();
-                Time = 0f;
+                if (HasAnimatableControllers())
+                {
+                    Play();
+                    Stop();
+                    Time = 0f;
+                }
+                _fallbackTime = 0f;
                 SampleAnimation();
             }
-            if (isPlaying && Current.AnimationPattern != null)
+            if (_isPlaying && Current.AnimationPattern != null)
             {
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
