@@ -72,7 +72,9 @@ namespace VamTimeline
             {
                 _serializer = new AtomAnimationSerializer(containingAtom);
                 InitStorables();
+                InitFloatParamsStorables();
                 InitCustomUI();
+                InitFloatParamsCustomUI();
                 // Try loading from backup
                 StartCoroutine(CreateAnimationIfNoneIsLoaded());
             }
@@ -113,7 +115,10 @@ namespace VamTimeline
 
         protected void UpdatePlaying()
         {
+            _animation.Update();
 
+            if (!_lockedJSON.val)
+                ContextUpdatedCustom();
         }
 
         protected void UpdateNotPlaying()
@@ -374,10 +379,6 @@ namespace VamTimeline
             }
 
             _restoring = false;
-        }
-
-        private void StateRestored()
-        {
         }
 
         public void SaveState()
@@ -806,10 +807,6 @@ namespace VamTimeline
             }
         }
 
-        private void ContextUpdatedCustom()
-        {
-        }
-
         #endregion
 
         // Shared
@@ -863,6 +860,200 @@ namespace VamTimeline
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
 
             InitDisplayUI(true);
+        }
+
+        #endregion
+
+        private class FloatParamJSONRef
+        {
+            public JSONStorable Storable;
+            public JSONStorableFloat SourceFloatParam;
+            public JSONStorableFloat Proxy;
+            public UIDynamicSlider Slider;
+        }
+
+        private List<FloatParamJSONRef> _jsfJSONRefs;
+
+        // Storables
+        private JSONStorableStringChooser _addStorableListJSON;
+        private JSONStorableStringChooser _addParamListJSON;
+
+        // UI
+        private UIDynamicButton _toggleFloatParamUI;
+
+        #region Initialization
+
+        private void InitFloatParamsStorables()
+        {
+            InitCommonStorables();
+
+            var storables = GetInterestingStorableIDs().ToList();
+            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) => RefreshStorableFloatsList())
+            {
+                isStorable = false
+            };
+
+            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string>(), "", "Animate Param", (string name) => UpdateToggleAnimatedFloatParamButton(name))
+            {
+                isStorable = false
+            };
+
+            RefreshStorableFloatsList();
+        }
+
+        private IEnumerable<string> GetInterestingStorableIDs()
+        {
+            foreach (var storableId in containingAtom.GetStorableIDs())
+            {
+                var storable = containingAtom.GetStorableByID(storableId);
+                if (storable.GetFloatParamNames().Count > 0)
+                    yield return storableId;
+            }
+        }
+
+        private void RefreshStorableFloatsList()
+        {
+            if (string.IsNullOrEmpty(_addStorableListJSON.val))
+            {
+                _addParamListJSON.choices = new List<string>();
+                _addParamListJSON.val = "";
+                return;
+            }
+            var values = containingAtom.GetStorableByID(_addStorableListJSON.val)?.GetFloatParamNames() ?? new List<string>();
+            _addParamListJSON.choices = values;
+            if (!values.Contains(_addParamListJSON.val))
+                _addParamListJSON.val = values.FirstOrDefault();
+        }
+
+        private void InitFloatParamsCustomUI()
+        {
+            var addFloatParamListUI = CreateScrollablePopup(_addStorableListJSON, true);
+            addFloatParamListUI.popupPanelHeight = 800f;
+            addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetInterestingStorableIDs().ToList();
+
+            var addParamListUI = CreateScrollablePopup(_addParamListJSON, true);
+            addParamListUI.popupPanelHeight = 700f;
+            addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList();
+
+            _toggleFloatParamUI = CreateButton("Add/Remove Param", true);
+            _toggleFloatParamUI.button.onClick.AddListener(() => ToggleAnimatedFloatParam());
+
+            RefreshFloatParamsListUI();
+        }
+
+        private void RefreshFloatParamsListUI()
+        {
+            if (_jsfJSONRefs != null)
+            {
+                foreach (var jsfJSONRef in _jsfJSONRefs)
+                {
+                    RemoveSlider(jsfJSONRef.Slider);
+                }
+            }
+            if (_animation == null) return;
+            // TODO: This is expensive, though rarely occuring
+            _jsfJSONRefs = new List<FloatParamJSONRef>();
+            foreach (var target in _animation.Current.TargetFloatParams)
+            {
+                var jsfJSONRef = target.FloatParam;
+                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{jsfJSONRef.name}", jsfJSONRef.defaultVal, (float val) => UpdateFloatParam(target, jsfJSONRef, val), jsfJSONRef.min, jsfJSONRef.max, jsfJSONRef.constrained, true);
+                var slider = CreateSlider(jsfJSONProxy, true);
+                _jsfJSONRefs.Add(new FloatParamJSONRef
+                {
+                    Storable = target.Storable,
+                    SourceFloatParam = jsfJSONRef,
+                    Proxy = jsfJSONProxy,
+                    Slider = slider
+                });
+            }
+        }
+
+        #endregion
+
+        #region Callbacks
+
+        private void UpdateToggleAnimatedFloatParamButton(string name)
+        {
+            if (_toggleFloatParamUI == null) return;
+
+            var btnText = _toggleFloatParamUI.button.GetComponentInChildren<Text>();
+            if (_animation == null || string.IsNullOrEmpty(name))
+            {
+                btnText.text = "Add/Remove Param";
+                _toggleFloatParamUI.button.interactable = false;
+                return;
+            }
+
+            _toggleFloatParamUI.button.interactable = true;
+            if (_animation.Current.TargetFloatParams.Any(c => c.FloatParam.name == name))
+                btnText.text = "Remove Param";
+            else
+                btnText.text = "Add Param";
+        }
+
+        private void ToggleAnimatedFloatParam()
+        {
+            try
+            {
+                var storable = containingAtom.GetStorableByID(_addStorableListJSON.val);
+                if (storable == null)
+                {
+                    SuperController.LogError($"Storable {_addStorableListJSON.val} in atom {containingAtom.uid} does not exist");
+                    return;
+                }
+                var sourceFloatParam = storable.GetFloatJSONParam(_addParamListJSON.val);
+                if (sourceFloatParam == null)
+                {
+                    SuperController.LogError($"Param {_addParamListJSON.val} in atom {containingAtom.uid} does not exist");
+                    return;
+                }
+                if (_animation.Current.TargetFloatParams.Any(c => c.FloatParam == sourceFloatParam))
+                {
+                    _animation.Current.TargetFloatParams.Remove(_animation.Current.TargetFloatParams.First(c => c.FloatParam == sourceFloatParam));
+                }
+                else
+                {
+                    var target = new FloatParamAnimationTarget(storable, sourceFloatParam, _animation.AnimationLength);
+                    target.SetKeyframe(0, sourceFloatParam.val);
+                    _animation.Current.TargetFloatParams.Add(target);
+                }
+                RefreshFloatParamsListUI();
+                AnimationUpdated();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.FloatParamsPlugin.ToggleAnimatedFloatParam: " + exc);
+            }
+        }
+
+        private void UpdateFloatParam(FloatParamAnimationTarget target, JSONStorableFloat sourceFloatParam, float val)
+        {
+            sourceFloatParam.val = val;
+            // TODO: This should be done by the controller (updating the animation resets the time)
+            var time = _animation.Time;
+            target.SetKeyframe(time, val);
+            _animation.RebuildAnimation();
+            UpdateTime(time);
+            AnimationUpdated();
+        }
+
+        #endregion
+
+        #region Updates
+
+        protected void StateRestored()
+        {
+            UpdateToggleAnimatedFloatParamButton(_addParamListJSON.val);
+            RefreshFloatParamsListUI();
+        }
+
+        protected void ContextUpdatedCustom()
+        {
+            if (_jsfJSONRefs != null)
+            {
+                foreach (var jsfJSONRef in _jsfJSONRefs)
+                    jsfJSONRef.Proxy.valNoCallback = jsfJSONRef.SourceFloatParam.val;
+            }
         }
 
         #endregion

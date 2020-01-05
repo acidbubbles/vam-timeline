@@ -13,6 +13,9 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
+        private AtomAnimationClip _blendingAnimation;
+        private float _blendingTimeLeft;
+        private float _blendingDuration;
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
 
@@ -135,6 +138,7 @@ namespace VamTimeline
                     Animation.Sample();
                     _animState.enabled = false;
                 }
+                SampleAnimation();
             }
         }
 
@@ -186,6 +190,10 @@ namespace VamTimeline
                     clip.AnimationPattern.ResetAnimation();
                 }
             }
+            _blendingTimeLeft = 0;
+            _blendingDuration = 0;
+            _blendingAnimation = null;
+            SampleAnimation();
         }
 
         public bool IsPlaying()
@@ -236,6 +244,11 @@ namespace VamTimeline
                 var animController = clip.Add(controller);
                 animController.SetKeyframeToCurrentTransform(0f);
             }
+            foreach (var target in Current.TargetFloatParams)
+            {
+                var animController = clip.Add(target.Storable, target.FloatParam);
+                animController.SetKeyframe(0f, target.FloatParam.val);
+            }
         }
 
         public void ChangeAnimation(string animationName)
@@ -253,6 +266,8 @@ namespace VamTimeline
                     // Let the loop finish during the transition
                     Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
                 }
+                _blendingAnimation = Current;
+                _blendingTimeLeft = _blendingDuration = BlendDuration;
             }
             Current.SelectTargetByName("");
             Current = anim;
@@ -260,7 +275,8 @@ namespace VamTimeline
             {
                 Play();
                 Stop();
-                Time = time;
+                Time = 0f;
+                SampleAnimation();
             }
             if (isPlaying && Current.AnimationPattern != null)
             {
@@ -277,19 +293,35 @@ namespace VamTimeline
 
         public AtomClipboardEntry Copy()
         {
-            var controllers = new List<FreeControllerV3ClipboardEntry>();
             var time = Time;
+
+            var controllers = new List<FreeControllerV3ClipboardEntry>();
             foreach (var controller in Current.GetAllOrSelectedTargetsOfType<FreeControllerAnimationTarget>())
             {
                 var snapshot = controller.GetCurveSnapshot(time);
-                if(snapshot == null) continue;
+                if (snapshot == null) continue;
                 controllers.Add(new FreeControllerV3ClipboardEntry
                 {
                     Controller = controller.Controller,
                     Snapshot = snapshot
                 });
             }
-            return new AtomClipboardEntry { Controllers = controllers };
+            var floatParams = new List<FloatParamValClipboardEntry>();
+            foreach (var target in Current.GetAllOrSelectedTargetsOfType<FloatParamAnimationTarget>())
+            {
+                if (!target.Value.keys.Any(k => k.time == time)) continue;
+                floatParams.Add(new FloatParamValClipboardEntry
+                {
+                    Storable = target.Storable,
+                    FloatParam = target.FloatParam,
+                    Snapshot = target.Value.keys.FirstOrDefault(k => k.time == time)
+                });
+            }
+            return new AtomClipboardEntry
+            {
+                Controllers = controllers,
+                FloatParams = floatParams
+            };
         }
 
         public void Paste(AtomClipboardEntry clipboard)
@@ -302,7 +334,61 @@ namespace VamTimeline
                     animController = Add(entry.Controller);
                 animController.SetCurveSnapshot(time, entry.Snapshot);
             }
+            foreach (var entry in clipboard.FloatParams)
+            {
+                var animController = Current.TargetFloatParams.FirstOrDefault(c => c.FloatParam == entry.FloatParam);
+                if (animController == null)
+                    animController = Current.Add(entry.Storable, entry.FloatParam);
+                animController.SetKeyframe(time, entry.Snapshot.value);
+            }
             RebuildAnimation();
+        }
+
+        private void SampleAnimation()
+        {
+            var time = Time;
+            foreach (var morph in Current.TargetFloatParams)
+            {
+                var val = morph.Value.Evaluate(time);
+                if (_blendingAnimation != null)
+                {
+                    var blendingTarget = _blendingAnimation.TargetFloatParams.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
+                    if (blendingTarget != null)
+                    {
+                        var weight = _blendingTimeLeft / _blendingDuration;
+                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(time) * (weight)) + (val * (1 - weight));
+                    }
+                    else
+                    {
+                        morph.FloatParam.val = val;
+                    }
+                }
+                else
+                {
+                    morph.FloatParam.val = val;
+                }
+            }
+        }
+
+        public void Update()
+        {
+            if (IsPlaying())
+            {
+                // _time = (_time + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
+
+                if (_blendingAnimation != null)
+                {
+                    _blendingTimeLeft -= UnityEngine.Time.deltaTime;
+                    if (_blendingTimeLeft <= 0)
+                    {
+                        _blendingTimeLeft = 0;
+                        _blendingDuration = 0;
+                        _blendingAnimation = null;
+                    }
+                }
+
+                SampleAnimation();
+            }
         }
     }
 }

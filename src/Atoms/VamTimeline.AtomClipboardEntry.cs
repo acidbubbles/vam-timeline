@@ -12,6 +12,20 @@ namespace VamTimeline
     public class AtomClipboardEntry
     {
         public List<FreeControllerV3ClipboardEntry> Controllers;
+        public List<FloatParamValClipboardEntry> FloatParams;
+    }
+
+    /// <summary>
+    /// VaM Timeline
+    /// By Acidbubbles
+    /// Animation timeline with keyframes
+    /// Source: https://github.com/acidbubbles/vam-timeline
+    /// </summary>
+    public class FloatParamValClipboardEntry
+    {
+        public JSONStorable Storable;
+        public JSONStorableFloat FloatParam;
+        public Keyframe Snapshot;
     }
 
     /// <summary>

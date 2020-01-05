@@ -4,6 +4,7 @@ src/Atoms/Common/VamTimeline.CurveTypeValues.cs
 src/Atoms/Common/VamTimeline.AnimationCurveExtensions.cs
 src/Atoms/Common/VamTimeline.IAnimationTarget.cs
 src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationTarget.cs
+src/Atoms/FloatParams/VamTimeline.FloatParamAnimationTarget.cs
 src/Atoms/VamTimeline.AtomAnimationClip.cs
 src/Atoms/VamTimeline.AtomClipboardEntry.cs
 src/Atoms/VamTimeline.AtomAnimation.cs

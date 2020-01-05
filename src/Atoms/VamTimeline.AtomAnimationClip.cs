@@ -73,6 +73,7 @@ namespace VamTimeline
         }
 
         private float _animationLength = 5f;
+        public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
         public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
         private FreeControllerAnimationTarget _selected;
 
@@ -165,6 +166,18 @@ namespace VamTimeline
         {
             if (_selected != null) return new T[] { _selected as T };
             return TargetControllers.OfType<T>();
+        }
+                public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
+        {
+            if (TargetFloatParams.Any(s => s.Name == jsf.name)) return null;
+            var target = new FloatParamAnimationTarget(storable, jsf, AnimationLength);
+            Add(target);
+            return target;
+        }
+
+        public void Add(FloatParamAnimationTarget target)
+        {
+            TargetFloatParams.Add(target);
         }
     }
 }

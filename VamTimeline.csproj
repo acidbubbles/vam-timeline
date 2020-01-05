@@ -66,19 +66,12 @@
     <Compile Include="src/Atoms/Common/VamTimeline.AnimationCurveExtensions.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.IAnimationTarget.cs" />
     <Compile Include="src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationTarget.cs" />
+    <Compile Include="src/Atoms/FloatParams/VamTimeline.FloatParamAnimationTarget.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimationClip.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomClipboardEntry.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimation.cs" />
     <Compile Include="src/Atoms/VamTimeline.AtomAnimationSerializer.cs" />
     <Compile Include="src/VamTimeline.AtomPlugin.cs" />
-
-    <!-- <Compile Include="src/FloatParams/VamTimeline.FloatParamClipboardEntry.cs" />
-    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimationTarget.cs" />
-    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimationClip.cs" />
-    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimation.cs" />
-    <Compile Include="src/FloatParams/VamTimeline.FloatParamAnimationSerializer.cs" />
-    <Compile Include="src/FloatParams/VamTimeline.FloatParamPluginImpl.cs" />
-    <Compile Include="src/VamTimeline.FloatParamsPlugin.cs" /> -->
 
     <Compile Include="src/Controller/VamTimeline.SimpleSignUI.cs" />
     <Compile Include="src/Controller/VamTimeline.LinkedAnimation.cs" />
