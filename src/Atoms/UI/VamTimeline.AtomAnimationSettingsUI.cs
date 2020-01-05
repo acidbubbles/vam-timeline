@@ -23,6 +23,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _addParamListJSON;
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
+        private readonly List<JSONStorableBool> _controllerToggles = new List<JSONStorableBool>();
 
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
             : base(plugin)
@@ -37,11 +38,9 @@ namespace VamTimeline
 
             InitAnimationSelectorUI(false);
 
+            InitAnimationSettingsUI(false);
+
             // Right side
-
-            InitDisplayUI(false, 800f);
-
-            InitAnimationSettingsUI(true);
 
             _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", Plugin.ContainingAtom.freeControllers.Select(fc => fc.name).ToList(), Plugin.ContainingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UIUpdated())
             {
@@ -69,6 +68,42 @@ namespace VamTimeline
             _linkedStorables.Add(_linkedAnimationPatternJSON);
 
             InitFloatParamsCustomUI();
+
+            GenerateControllerToggles();
+        }
+
+        private void GenerateControllerToggles()
+        {
+            if (string.Join(",", Plugin.Animation.Current.TargetControllers.Select(tc => tc.Name).ToArray()) == string.Join(",", _controllerToggles.Select(ct => ct.name).ToArray()))
+                return;
+
+            RemoveControllerToggles();
+            foreach (var controller in Plugin.Animation.Current.TargetControllers)
+            {
+                var jsb = new JSONStorableBool(controller.Name, true, (bool val) =>
+                {
+                    _addControllerListJSON.val = controller.Name;
+                    _toggleControllerJSON.actionCallback();
+                });
+                var jsbUI = Plugin.CreateToggle(jsb, true);
+                _controllerToggles.Add(jsb);
+            }
+        }
+
+        private void RemoveControllerToggles()
+        {
+            if (_controllerToggles == null) return;
+            foreach (var controllerToggle in _controllerToggles)
+            {
+                // TODO: Take care of keeping track of those separately
+                Plugin.RemoveToggle(controllerToggle);
+            }
+        }
+
+        public override void Remove()
+        {
+            RemoveControllerToggles();
+            base.Remove();
         }
 
         private void InitFloatParamsCustomUI()
@@ -235,6 +270,8 @@ namespace VamTimeline
         public override void AnimationModified()
         {
             base.AnimationModified();
+            GenerateControllerToggles();
+
             _linkedAnimationPatternJSON.valNoCallback = Plugin.Animation.Current.AnimationPattern?.containingAtom.uid ?? "";
         }
 
@@ -254,11 +291,6 @@ namespace VamTimeline
                 btnText.text = "Remove Controller";
             else
                 btnText.text = "Add Controller";
-        }
-
-        public override void Remove()
-        {
-            base.Remove();
         }
     }
 }

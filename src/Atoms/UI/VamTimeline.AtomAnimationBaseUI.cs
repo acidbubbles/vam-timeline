@@ -105,6 +105,7 @@ namespace VamTimeline
         {
             var displayUI = Plugin.CreateTextField(Plugin.DisplayJSON, rightSide);
             displayUI.height = height;
+            _components.Add(displayUI);
             _linkedStorables.Add(Plugin.DisplayJSON);
         }
 
