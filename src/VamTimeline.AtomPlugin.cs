@@ -34,8 +34,6 @@ namespace VamTimeline
         private const string AllTargets = "(All)";
         private bool _saveEnabled;
 
-        protected readonly IAtomPlugin _plugin;
-
         // State
         private AtomAnimationSerializer _serializer;
         protected AtomAnimation _animation;
@@ -76,7 +74,7 @@ namespace VamTimeline
                 InitStorables();
                 InitCustomUI();
                 // Try loading from backup
-                _plugin.StartCoroutine(CreateAnimationIfNoneIsLoaded());
+                StartCoroutine(CreateAnimationIfNoneIsLoaded());
             }
             catch (Exception exc)
             {
@@ -128,7 +126,7 @@ namespace VamTimeline
 
             if (_grabbedController == null && grabbing != null)
             {
-                _grabbedController = _animation.Current.Targets.FirstOrDefault(c => c.Controller == grabbing);
+                _grabbedController = _animation.Current.TargetControllers.FirstOrDefault(c => c.Controller == grabbing);
                 _addControllerListJSON.val = grabbing.name;
             }
             else if (_grabbedController != null && grabbing == null)
@@ -184,43 +182,43 @@ namespace VamTimeline
         public void InitCommonStorables()
         {
             _saveJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
-            _plugin.RegisterString(_saveJSON);
+            RegisterString(_saveJSON);
 
             _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
             {
                 isStorable = false
             };
-            _plugin.RegisterStringChooser(_animationJSON);
+            RegisterStringChooser(_animationJSON);
 
             _scrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true)
             {
                 isStorable = false
             };
-            _plugin.RegisterFloat(_scrubberJSON);
+            RegisterFloat(_scrubberJSON);
 
             _playJSON = new JSONStorableAction(StorableNames.Play, () => { _animation.Play(); ContextUpdated(); });
-            _plugin.RegisterAction(_playJSON);
+            RegisterAction(_playJSON);
 
             _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => { if (!_animation.IsPlaying()) { _animation.Play(); ContextUpdated(); } });
-            _plugin.RegisterAction(_playIfNotPlayingJSON);
+            RegisterAction(_playIfNotPlayingJSON);
 
             _stopJSON = new JSONStorableAction(StorableNames.Stop, () => { _animation.Stop(); ContextUpdated(); });
-            _plugin.RegisterAction(_stopJSON);
+            RegisterAction(_stopJSON);
 
             _filterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { _animation.SelectTargetByName(val == AllTargets ? "" : val); ContextUpdated(); })
             {
                 isStorable = false
             };
-            _plugin.RegisterStringChooser(_filterAnimationTargetJSON);
+            RegisterStringChooser(_filterAnimationTargetJSON);
 
             _nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(_animation.GetNextFrame()); ContextUpdated(); });
-            _plugin.RegisterAction(_nextFrameJSON);
+            RegisterAction(_nextFrameJSON);
 
             _previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(_animation.GetPreviousFrame()); ContextUpdated(); });
-            _plugin.RegisterAction(_previousFrameJSON);
+            RegisterAction(_previousFrameJSON);
 
             _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => ContextUpdated());
-            _plugin.RegisterBool(_lockedJSON);
+            RegisterBool(_lockedJSON);
 
             _lengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, 5f, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
@@ -233,73 +231,73 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            _plugin.RegisterString(_displayJSON);
+            RegisterString(_displayJSON);
         }
 
         protected void InitPlaybackUI(bool rightSide)
         {
-            var animationUI = _plugin.CreateScrollablePopup(_animationJSON, rightSide);
+            var animationUI = CreateScrollablePopup(_animationJSON, rightSide);
             animationUI.popupPanelHeight = 800f;
             animationUI.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.GetAnimationNames().ToList();
 
-            _plugin.CreateSlider(_scrubberJSON);
+            CreateSlider(_scrubberJSON);
 
-            var playUI = _plugin.CreateButton("\u25B6 Play", rightSide);
+            var playUI = CreateButton("\u25B6 Play", rightSide);
             playUI.button.onClick.AddListener(() => _playJSON.actionCallback());
 
-            var stopUI = _plugin.CreateButton("\u25A0 Stop", rightSide);
+            var stopUI = CreateButton("\u25A0 Stop", rightSide);
             stopUI.button.onClick.AddListener(() => _stopJSON.actionCallback());
         }
 
         protected void InitFrameNavUI(bool rightSide)
         {
-            var selectedControllerUI = _plugin.CreateScrollablePopup(_filterAnimationTargetJSON, rightSide);
+            var selectedControllerUI = CreateScrollablePopup(_filterAnimationTargetJSON, rightSide);
             selectedControllerUI.popupPanelHeight = 800f;
 
-            var nextFrameUI = _plugin.CreateButton("\u2192 Next Frame", rightSide);
+            var nextFrameUI = CreateButton("\u2192 Next Frame", rightSide);
             nextFrameUI.button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
 
-            var previousFrameUI = _plugin.CreateButton("\u2190 Previous Frame", rightSide);
+            var previousFrameUI = CreateButton("\u2190 Previous Frame", rightSide);
             previousFrameUI.button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
 
         }
 
         protected void InitClipboardUI(bool rightSide)
         {
-            var cutUI = _plugin.CreateButton("Cut / Delete Frame", rightSide);
+            var cutUI = CreateButton("Cut / Delete Frame", rightSide);
             cutUI.button.onClick.AddListener(() => Cut());
 
-            var copyUI = _plugin.CreateButton("Copy Frame", rightSide);
+            var copyUI = CreateButton("Copy Frame", rightSide);
             copyUI.button.onClick.AddListener(() => Copy());
 
-            var pasteUI = _plugin.CreateButton("Paste Frame", rightSide);
+            var pasteUI = CreateButton("Paste Frame", rightSide);
             pasteUI.button.onClick.AddListener(() => Paste());
 
-            _undoUI = _plugin.CreateButton("Undo", rightSide);
+            _undoUI = CreateButton("Undo", rightSide);
             _undoUI.button.interactable = false;
             _undoUI.button.onClick.AddListener(() => Undo());
         }
 
         protected void InitAnimationSettingsUI(bool rightSide)
         {
-            var lockedUI = _plugin.CreateToggle(_lockedJSON, rightSide);
+            var lockedUI = CreateToggle(_lockedJSON, rightSide);
             lockedUI.label = "Locked (Performance Mode)";
 
-            var addAnimationUI = _plugin.CreateButton("Add New Animation", rightSide);
+            var addAnimationUI = CreateButton("Add New Animation", rightSide);
             addAnimationUI.button.onClick.AddListener(() => AddAnimation());
 
-            _plugin.CreateSlider(_lengthJSON, rightSide);
+            CreateSlider(_lengthJSON, rightSide);
 
-            _plugin.CreateSlider(_speedJSON, rightSide);
+            CreateSlider(_speedJSON, rightSide);
 
-            _plugin.CreateSlider(_blendDurationJSON, rightSide);
+            CreateSlider(_blendDurationJSON, rightSide);
         }
 
         protected void InitDisplayUI(bool rightSide)
         {
-            _plugin.CreatePopup(_displayModeJSON, rightSide);
+            CreatePopup(_displayModeJSON, rightSide);
 
-            _plugin.CreateTextField(_displayJSON, rightSide);
+            CreateTextField(_displayJSON, rightSide);
         }
 
         protected IEnumerator CreateAnimationIfNoneIsLoaded()
@@ -579,7 +577,7 @@ namespace VamTimeline
             }
 
             _toggleControllerUI.button.interactable = true;
-            if (_animation.Current.Targets.Any(c => c.Controller.name == name))
+            if (_animation.Current.TargetControllers.Any(c => c.Controller.name == name))
                 btnText.text = "Remove Controller";
             else
                 btnText.text = "Add Controller";
@@ -596,7 +594,7 @@ namespace VamTimeline
                     SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
                     return;
                 }
-                if (_animation.Current.Targets.Any(c => c.Controller == controller))
+                if (_animation.Current.TargetControllers.Any(c => c.Controller == controller))
                 {
                     _animation.Remove(controller);
                 }
@@ -842,10 +840,10 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
-            var changeCurveUI = _plugin.CreatePopup(_changeCurveJSON, false);
+            var changeCurveUI = CreatePopup(_changeCurveJSON, false);
             changeCurveUI.popupPanelHeight = 800f;
 
-            var smoothAllFramesUI = _plugin.CreateButton("Smooth All Frames", false);
+            var smoothAllFramesUI = CreateButton("Smooth All Frames", false);
             smoothAllFramesUI.button.onClick.AddListener(() => SmoothAllFrames());
 
             InitClipboardUI(false);
@@ -854,13 +852,13 @@ namespace VamTimeline
 
             InitAnimationSettingsUI(true);
 
-            var addControllerUI = _plugin.CreateScrollablePopup(_addControllerListJSON, true);
+            var addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
             addControllerUI.popupPanelHeight = 800f;
 
-            _toggleControllerUI = _plugin.CreateButton("Add/Remove Controller", true);
+            _toggleControllerUI = CreateButton("Add/Remove Controller", true);
             _toggleControllerUI.button.onClick.AddListener(() => ToggleAnimatedController());
 
-            var linkedAnimationPatternUI = _plugin.CreateScrollablePopup(_linkedAnimationPatternJSON, true);
+            var linkedAnimationPatternUI = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
             linkedAnimationPatternUI.popupPanelHeight = 800f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
 

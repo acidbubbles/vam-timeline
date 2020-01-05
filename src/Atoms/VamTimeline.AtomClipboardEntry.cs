@@ -11,7 +11,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomClipboardEntry
     {
-        public List<FreeControllerV3ClipboardEntry> Entries;
+        public List<FreeControllerV3ClipboardEntry> Controllers;
     }
 
     /// <summary>

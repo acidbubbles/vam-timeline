@@ -152,7 +152,7 @@ namespace VamTimeline
 
             var controllersJSON = new JSONArray();
             clipJSON.Add("Controllers", controllersJSON);
-            foreach (var controller in clip.Targets)
+            foreach (var controller in clip.TargetControllers)
             {
                 var controllerJSON = new JSONClass
                     {

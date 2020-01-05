@@ -1,2 +1,2 @@
-src/Common/VamTimeline.StorableNames.cs
+src/VamTimeline.StorableNames.cs
 src/VamTimeline.BackupPlugin.cs

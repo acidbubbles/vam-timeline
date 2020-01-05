@@ -34,7 +34,7 @@ namespace VamTimeline
         public void Initialize()
         {
             if (Clips.Count == 0)
-                AddClip(CreateClip("Anim1"));
+                AddClip(new AtomAnimationClip("Anim1"));
             if (Current == null)
                 Current = Clips.First();
         }
@@ -147,11 +147,6 @@ namespace VamTimeline
             if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
-        protected AtomAnimationClip CreateClip(string animatioName)
-        {
-            return new AtomAnimationClip(animatioName);
-        }
-
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             var added = Current.Add(controller);
@@ -226,7 +221,7 @@ namespace VamTimeline
         public string AddAnimation()
         {
             string animationName = GetNewAnimationName();
-            var clip = CreateClip(animationName);
+            var clip = new AtomAnimationClip(animationName);
             CopyCurrentValues(clip);
             AddClip(clip);
             return animationName;
@@ -236,7 +231,7 @@ namespace VamTimeline
         {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
-            foreach (var controller in Current.Targets.Select(c => c.Controller))
+            foreach (var controller in Current.TargetControllers.Select(c => c.Controller))
             {
                 var animController = clip.Add(controller);
                 animController.SetKeyframeToCurrentTransform(0f);
@@ -282,27 +277,27 @@ namespace VamTimeline
 
         public AtomClipboardEntry Copy()
         {
-            var entries = new List<FreeControllerV3ClipboardEntry>();
+            var controllers = new List<FreeControllerV3ClipboardEntry>();
             var time = Time;
-            foreach (var controller in Current.GetAllOrSelectedTargets())
+            foreach (var controller in Current.GetAllOrSelectedTargetsOfType<FreeControllerAnimationTarget>())
             {
                 var snapshot = controller.GetCurveSnapshot(time);
                 if(snapshot == null) continue;
-                entries.Add(new FreeControllerV3ClipboardEntry
+                controllers.Add(new FreeControllerV3ClipboardEntry
                 {
                     Controller = controller.Controller,
                     Snapshot = snapshot
                 });
             }
-            return new AtomClipboardEntry { Entries = entries };
+            return new AtomClipboardEntry { Controllers = controllers };
         }
 
         public void Paste(AtomClipboardEntry clipboard)
         {
             float time = Time;
-            foreach (var entry in clipboard.Entries)
+            foreach (var entry in clipboard.Controllers)
             {
-                var animController = Current.Targets.FirstOrDefault(c => c.Controller == entry.Controller);
+                var animController = Current.TargetControllers.FirstOrDefault(c => c.Controller == entry.Controller);
                 if (animController == null)
                     animController = Add(entry.Controller);
                 animController.SetCurveSnapshot(time, entry.Snapshot);

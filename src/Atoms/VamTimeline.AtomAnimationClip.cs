@@ -29,24 +29,24 @@ namespace VamTimeline
 
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
-            if (Targets.Any(c => c.Controller == controller)) return null;
+            if (TargetControllers.Any(c => c.Controller == controller)) return null;
             FreeControllerAnimationTarget controllerState = new FreeControllerAnimationTarget(controller, AnimationLength);
             controllerState.SetKeyframeToCurrentTransform(0f);
-            Targets.Add(controllerState);
+            TargetControllers.Add(controllerState);
             return controllerState;
         }
 
         public void Remove(FreeControllerV3 controller)
         {
-            var existing = Targets.FirstOrDefault(c => c.Controller == controller);
+            var existing = TargetControllers.FirstOrDefault(c => c.Controller == controller);
             if (existing == null) return;
-            Targets.Remove(existing);
+            TargetControllers.Remove(existing);
         }
 
         public void RebuildAnimation()
         {
             Clip.ClearCurves();
-            foreach (var controller in Targets)
+            foreach (var controller in TargetControllers)
             {
                 controller.ReapplyCurvesToClip(Clip);
             }
@@ -58,7 +58,7 @@ namespace VamTimeline
         {
             if (time == 0 || time == AnimationLength) return;
 
-            foreach (var controller in GetAllOrSelectedTargets())
+            foreach (var controller in GetAllOrSelectedTargetsOfType<FreeControllerAnimationTarget>())
             {
                 controller.ChangeCurve(time, curveType);
             }
@@ -66,14 +66,14 @@ namespace VamTimeline
 
         public void SmoothAllFrames()
         {
-            foreach (var controller in Targets)
+            foreach (var controller in TargetControllers)
             {
                 controller.SmoothAllFrames();
             }
         }
 
         private float _animationLength = 5f;
-        public readonly List<FreeControllerAnimationTarget> Targets = new List<FreeControllerAnimationTarget>();
+        public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
         private FreeControllerAnimationTarget _selected;
 
         public string AnimationName { get; }
@@ -91,7 +91,7 @@ namespace VamTimeline
                 if (value == _animationLength)
                     return;
                 _animationLength = value;
-                foreach (var target in Targets)
+                foreach (var target in TargetControllers)
                 {
                     target.SetLength(value);
                 }
@@ -100,19 +100,19 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return Targets.Count == 0;
+            return TargetControllers.Count == 0;
         }
 
         public void SelectTargetByName(string val)
         {
             _selected = string.IsNullOrEmpty(val)
                 ? null
-                : Targets.FirstOrDefault(c => c.Name == val);
+                : TargetControllers.FirstOrDefault(c => c.Name == val);
         }
 
         public IEnumerable<string> GetTargetsNames()
         {
-            return Targets.Select(c => c.Name).ToList();
+            return TargetControllers.Select(c => c.Name).ToList();
         }
 
         public float GetNextFrame(float time)
@@ -154,10 +154,17 @@ namespace VamTimeline
             }
         }
 
-        public IEnumerable<FreeControllerAnimationTarget> GetAllOrSelectedTargets()
+        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
         {
-            if (_selected != null) return new[] { _selected };
-            return Targets;
+            if (_selected != null) return new IAnimationTarget[] { _selected };
+            return TargetControllers.Cast<IAnimationTarget>();
+        }
+
+        public IEnumerable<T> GetAllOrSelectedTargetsOfType<T>()
+            where T : class, IAnimationTarget
+        {
+            if (_selected != null) return new T[] { _selected as T };
+            return TargetControllers.OfType<T>();
         }
     }
 }
