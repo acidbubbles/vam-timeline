@@ -119,7 +119,7 @@ namespace VamTimeline
             animationPattern.SetBoolParamValue("loopOnce", false);
             animationPattern.SetFloatParamValue("speed", Plugin.Animation.Speed);
             animationPattern.ResetAnimation();
-            Plugin.AnimationUpdated();
+            Plugin.AnimationModified();
         }
 
         private void ToggleAnimatedController()
@@ -144,7 +144,7 @@ namespace VamTimeline
                     var animController = Plugin.Animation.Add(controller);
                     animController.SetKeyframeToCurrentTransform(0f);
                 }
-                Plugin.AnimationUpdated();
+                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
@@ -178,7 +178,7 @@ namespace VamTimeline
                     target.SetKeyframe(0, sourceFloatParam.val);
                     Plugin.Animation.Current.TargetFloatParams.Add(target);
                 }
-                Plugin.AnimationUpdated();
+                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
@@ -235,7 +235,7 @@ namespace VamTimeline
             Plugin.Animation.RebuildAnimation();
             // TODO: Test if this works (was using Plugin.UpdateTime)
             Plugin.ScrubberJSON.val = time;
-            Plugin.AnimationUpdated();
+            Plugin.AnimationModified();
         }
 
         public override void UIUpdated()
@@ -244,9 +244,9 @@ namespace VamTimeline
             UpdateToggleAnimatedControllerButton(_addControllerListJSON.val);
         }
 
-        public override void AnimationUpdated()
+        public override void AnimationModified()
         {
-            base.AnimationUpdated();
+            base.AnimationModified();
             _linkedAnimationPatternJSON.valNoCallback = Plugin.Animation.Current.AnimationPattern?.containingAtom.uid ?? "";
         }
 

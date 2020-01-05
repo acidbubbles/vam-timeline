@@ -211,7 +211,7 @@ namespace VamTimeline
                 if (_mainLinkedAnimation == null) return;
                 foreach (var link in _linkedAnimations)
                     link.Scrubber.val = v;
-                VamTimelineContextChanged(_mainLinkedAnimation.Atom.uid);
+                VamTimelineAnimationFrameUpdated(_mainLinkedAnimation.Atom.uid);
             }
         }
 
@@ -245,9 +245,9 @@ namespace VamTimeline
             _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
         }
 
-        public void VamTimelineAnimationUpdated(string uid)
+        public void VamTimelineAnimationModified(string uid)
         {
-            VamTimelineContextChanged(uid);
+            VamTimelineAnimationFrameUpdated(uid);
 
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
@@ -258,7 +258,7 @@ namespace VamTimeline
             _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
         }
 
-        public void VamTimelineContextChanged(string uid)
+        public void VamTimelineAnimationFrameUpdated(string uid)
         {
             if (_linkedAnimations.Count == 0) return;
 
@@ -303,8 +303,8 @@ namespace VamTimeline
             _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
             if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Label;
-            VamTimelineAnimationUpdated(_mainLinkedAnimation.Atom.uid);
-            VamTimelineContextChanged(_mainLinkedAnimation.Atom.uid);
+            VamTimelineAnimationModified(_mainLinkedAnimation.Atom.uid);
+            VamTimelineAnimationFrameUpdated(_mainLinkedAnimation.Atom.uid);
         }
 
         private void ChangeAnimation(string name)

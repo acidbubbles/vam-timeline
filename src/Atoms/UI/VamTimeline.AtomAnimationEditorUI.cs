@@ -73,7 +73,7 @@ namespace VamTimeline
             }
         }
 
-        public override void ContextUpdated()
+        public override void AnimationFrameUpdated()
         {
             UpdateFloatParamSliders();
         }
@@ -124,7 +124,7 @@ namespace VamTimeline
             Plugin.Animation.RebuildAnimation();
             // TODO: Test if this works (was using Plugin.UpdateTime)
             Plugin.ScrubberJSON.val = time;
-            Plugin.AnimationUpdated();
+            Plugin.AnimationModified();
         }
     }
 }

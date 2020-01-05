@@ -55,7 +55,6 @@ namespace VamTimeline
         public JSONStorableFloat LengthJSON { get; private set; }
         public JSONStorableFloat SpeedJSON { get; private set; }
         public JSONStorableFloat BlendDurationJSON { get; private set; }
-        public JSONStorableStringChooser DisplayModeJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableStringChooser ChangeCurveJSON { get; private set; }
 
@@ -138,7 +137,7 @@ namespace VamTimeline
                 Animation.RebuildAnimation();
                 UpdateTime(time);
                 _grabbedController = null;
-                AnimationUpdated();
+                AnimationModified();
             }
         }
 
@@ -200,25 +199,25 @@ namespace VamTimeline
             };
             RegisterFloat(ScrubberJSON);
 
-            PlayJSON = new JSONStorableAction(StorableNames.Play, () => { Animation.Play(); ContextUpdated(); });
+            PlayJSON = new JSONStorableAction(StorableNames.Play, () => { Animation.Play(); AnimationFrameUpdated(); });
             RegisterAction(PlayJSON);
 
-            PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => { if (!Animation.IsPlaying()) { Animation.Play(); ContextUpdated(); } });
+            PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => { if (!Animation.IsPlaying()) { Animation.Play(); AnimationFrameUpdated(); } });
             RegisterAction(PlayIfNotPlayingJSON);
 
-            StopJSON = new JSONStorableAction(StorableNames.Stop, () => { Animation.Stop(); ContextUpdated(); });
+            StopJSON = new JSONStorableAction(StorableNames.Stop, () => { Animation.Stop(); AnimationFrameUpdated(); });
             RegisterAction(StopJSON);
 
-            FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == AllTargets ? "" : val); ContextUpdated(); })
+            FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == AllTargets ? "" : val); AnimationFrameUpdated(); })
             {
                 isStorable = false
             };
             RegisterStringChooser(FilterAnimationTargetJSON);
 
-            NextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(Animation.Current.GetNextFrame(Animation.Time)); ContextUpdated(); });
+            NextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(Animation.Current.GetNextFrame(Animation.Time)); AnimationFrameUpdated(); });
             RegisterAction(NextFrameJSON);
 
-            PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(Animation.Current.GetPreviousFrame(Animation.Time)); ContextUpdated(); });
+            PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(Animation.Current.GetPreviousFrame(Animation.Time)); AnimationFrameUpdated(); });
             RegisterAction(PreviousFrameJSON);
 
             SmoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
@@ -228,7 +227,7 @@ namespace VamTimeline
             PasteJSON = new JSONStorableAction("Paste", () => Paste());
             UndoJSON = new JSONStorableAction("Undo", () => Undo());
 
-            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationUpdated());
+            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationModified());
             RegisterBool(LockedJSON);
 
             LengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, 5f, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
@@ -237,7 +236,6 @@ namespace VamTimeline
 
             BlendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
 
-            DisplayModeJSON = new JSONStorableStringChooser(StorableNames.DisplayMode, RenderingModes.Values, RenderingModes.Default, "Display Mode", (string val) => { ContextUpdated(); });
             DisplayJSON = new JSONStorableString(StorableNames.Display, "")
             {
                 isStorable = false
@@ -309,8 +307,8 @@ namespace VamTimeline
                     Animation = _serializer.CreateDefaultAnimation();
 
                 Animation.Initialize();
-                AnimationUpdated();
-                ContextUpdated();
+                AnimationModified();
+                AnimationFrameUpdated();
             }
             catch (Exception exc)
             {
@@ -370,7 +368,7 @@ namespace VamTimeline
                 SpeedJSON.valNoCallback = Animation.Speed;
                 LengthJSON.valNoCallback = Animation.AnimationLength;
                 ScrubberJSON.max = Animation.AnimationLength - float.Epsilon;
-                AnimationUpdated();
+                AnimationModified();
             }
             catch (Exception exc)
             {
@@ -383,28 +381,28 @@ namespace VamTimeline
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
                 Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
-            ContextUpdated();
+            AnimationFrameUpdated();
         }
 
         private void UpdateAnimationLength(float v)
         {
             if (v <= 0) return;
             Animation.AnimationLength = v;
-            AnimationUpdated();
+            AnimationModified();
         }
 
         private void UpdateAnimationSpeed(float v)
         {
             if (v < 0) return;
             Animation.Speed = v;
-            AnimationUpdated();
+            AnimationModified();
         }
 
         private void UpdateBlendDuration(float v)
         {
             if (v < 0) return;
             Animation.BlendDuration = v;
-            AnimationUpdated();
+            AnimationModified();
         }
 
         private void Cut()
@@ -465,7 +463,7 @@ namespace VamTimeline
                     AnimationJSON.val = animationName;
                 else
                     AnimationJSON.valNoCallback = Animation.Clips.First().AnimationName;
-                AnimationUpdated();
+                AnimationModified();
                 UpdateTime(time);
             }
             finally
@@ -480,7 +478,7 @@ namespace VamTimeline
             try
             {
                 var animationName = Animation.AddAnimation();
-                AnimationUpdated();
+                AnimationModified();
                 ChangeAnimation(animationName);
             }
             finally
@@ -529,29 +527,6 @@ namespace VamTimeline
                 return;
             }
 
-            var time = Animation.Time;
-
-            switch (DisplayModeJSON.val)
-            {
-                case RenderingModes.None:
-                    DisplayJSON.val = "";
-                    break;
-                case RenderingModes.Default:
-                    RenderStateDefault();
-                    break;
-                case RenderingModes.ShowAllTargets:
-                    RenderStateShowAllTargets();
-                    break;
-                case RenderingModes.Debug:
-                    RenderStateDebug();
-                    break;
-                default:
-                    throw new NotSupportedException($"Unknown rendering mode {DisplayModeJSON.val}");
-            }
-        }
-
-        public void RenderStateDefault()
-        {
             var time = ScrubberJSON.val;
             var frames = new List<float>();
             var targets = new List<string>();
@@ -582,41 +557,11 @@ namespace VamTimeline
             DisplayJSON.val = display.ToString();
         }
 
-        public void RenderStateShowAllTargets()
-        {
-            var time = ScrubberJSON.val;
-            var display = new StringBuilder();
-            foreach (var controller in Animation.Current.GetAllOrSelectedTargets())
-            {
-                display.AppendLine(controller.Name);
-                var keyTimes = controller.GetAllKeyframesTime();
-                foreach (var keyTime in keyTimes)
-                {
-                    display.Append($"{(keyTime == time ? "[" : " ")}{keyTime:0.0000}{(keyTime == time ? "]" : " ")}");
-                }
-                display.AppendLine();
-            }
-            DisplayJSON.val = display.ToString();
-        }
-
-        public void RenderStateDebug()
-        {
-            // Instead make a debug screen
-            var time = ScrubberJSON.val;
-            var display = new StringBuilder();
-            display.AppendLine($"Time: {time}s");
-            foreach (var controller in Animation.Current.GetAllOrSelectedTargets())
-            {
-                controller.RenderDebugInfo(display, time);
-            }
-            DisplayJSON.val = display.ToString();
-        }
-
         #endregion
 
         #region Updates
 
-        public void AnimationUpdated()
+        public void AnimationModified()
         {
             try
             {
@@ -638,20 +583,20 @@ namespace VamTimeline
                 RenderState();
 
                 // UI
-                _ui.AnimationUpdated();
+                _ui.AnimationModified();
 
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
-                    controller.BroadcastMessage("VamTimelineAnimationUpdated", containingAtom.uid);
+                    controller.BroadcastMessage("VamTimelineAnimationModified", containingAtom.uid);
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.AnimationUpdated: " + exc);
+                SuperController.LogError("VamTimeline.AtomPlugin.AnimationModified: " + exc);
             }
         }
 
-        protected void ContextUpdated()
+        protected void AnimationFrameUpdated()
         {
             try
             {
@@ -660,7 +605,7 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
 
-                _ui.ContextUpdated();
+                _ui.AnimationFrameUpdated();
 
                 // Render
                 RenderState();
@@ -668,11 +613,11 @@ namespace VamTimeline
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
-                    controller.BroadcastMessage("VamTimelineContextChanged", containingAtom.uid);
+                    controller.BroadcastMessage("VamTimelineAnimationFrameUpdated", containingAtom.uid);
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.ContextUpdated: " + exc);
+                SuperController.LogError("VamTimeline.AtomPlugin.AnimationFrameUpdated: " + exc);
             }
         }
 

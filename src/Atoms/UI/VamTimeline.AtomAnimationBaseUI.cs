@@ -31,12 +31,12 @@ namespace VamTimeline
         {
         }
 
-        public virtual void AnimationUpdated()
+        public virtual void AnimationModified()
         {
             UIUpdated();
         }
 
-        public virtual void ContextUpdated()
+        public virtual void AnimationFrameUpdated()
         {
         }
 
@@ -103,9 +103,6 @@ namespace VamTimeline
 
         protected void InitDisplayUI(bool rightSide, float height = 300f)
         {
-            var displayModeUI = Plugin.CreatePopup(Plugin.DisplayModeJSON, rightSide);
-            _linkedStorables.Add(Plugin.DisplayModeJSON);
-
             var displayUI = Plugin.CreateTextField(Plugin.DisplayJSON, rightSide);
             displayUI.height = height;
             _linkedStorables.Add(Plugin.DisplayJSON);

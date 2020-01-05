@@ -25,7 +25,6 @@ namespace VamTimeline
         public const string AnimationLength = "Animation Length";
         public const string AnimationSpeed = "Animation Speed";
         public const string BlendDuration = "Blend Duration";
-        public const string DisplayMode = "Display Mode";
         public const string Display = "Display";
 
         // Backup

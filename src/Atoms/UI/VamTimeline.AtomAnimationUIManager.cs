@@ -53,19 +53,19 @@ namespace VamTimeline
                 return AtomAnimationEditorUI.ScreenName;
         }
 
-        public void AnimationUpdated()
+        public void AnimationModified()
         {
             if (_plugin.Animation == null) return;
             if (_plugin.LockedJSON.val && _screens.val != AtomAnimationLockedUI.ScreenName)
                 _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
             if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
                 _screens.valNoCallback = GetDefaultScreen();
-            RefreshCurrentUI(() => _current.AnimationUpdated());
+            RefreshCurrentUI(() => _current.AnimationModified());
         }
 
-        public void ContextUpdated()
+        public void AnimationFrameUpdated()
         {
-            RefreshCurrentUI(() => _current.ContextUpdated());
+            RefreshCurrentUI(() => _current.AnimationFrameUpdated());
         }
 
         public void UIUpdated()
@@ -107,7 +107,7 @@ namespace VamTimeline
                 try
                 {
                     _current.Init();
-                    _current.AnimationUpdated();
+                    _current.AnimationModified();
                 }
                 catch (Exception exc)
                 {
