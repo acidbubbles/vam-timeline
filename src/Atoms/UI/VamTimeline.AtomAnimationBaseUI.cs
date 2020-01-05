@@ -109,6 +109,13 @@ namespace VamTimeline
             _linkedStorables.Add(Plugin.DisplayJSON);
         }
 
+        protected void CreateSpacer(bool rightSide)
+        {
+            var spacerUI = Plugin.CreateSpacer(rightSide);
+            spacerUI.height = 30f;
+            _components.Add(spacerUI);
+        }
+
         public virtual void Remove()
         {
             foreach (var component in _linkedStorables)
@@ -139,7 +146,7 @@ namespace VamTimeline
                 else if (component is UIDynamicToggle)
                     Plugin.RemoveToggle((UIDynamicToggle)component);
                 else
-                    SuperController.LogError($"Cannot remove component {component}");
+                    Plugin.RemoveSpacer(component);
             }
             _components.Clear();
         }
