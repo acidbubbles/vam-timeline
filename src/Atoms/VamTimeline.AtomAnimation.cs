@@ -13,11 +13,54 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
-        private AtomAnimationClip _blendingAnimation;
+        private readonly Atom _atom;
+        private readonly Animation _animation;
+        private AnimationState _animState;
+        private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
         private float _blendingDuration;
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
+
+        public float Time
+        {
+            get
+            {
+                if (Current == null) return 0f;
+                if (_animState == null) return 0f;
+                return _animState.time % _animState.length;
+            }
+            set
+            {
+                if (Current == null) return;
+                if (_animState == null) return;
+                _animState.time = value;
+                if (!_animState.enabled)
+                {
+                    _animState.enabled = true;
+                    _animation.Sample();
+                    _animState.enabled = false;
+                }
+                SampleAnimation();
+            }
+        }
+
+        public float Speed
+        {
+            get
+            {
+                return Current.Speed;
+            }
+
+            set
+            {
+                Current.Speed = value;
+                if (_animState == null) return;
+                _animState.speed = value;
+                if (Current.AnimationPattern != null)
+                    Current.AnimationPattern.SetFloatParamValue("speed", value);
+            }
+        }
 
         public float AnimationLength
         {
@@ -33,6 +76,14 @@ namespace VamTimeline
         }
 
         public float BlendDuration { get; set; } = 1f;
+
+        public AtomAnimation(Atom atom)
+        {
+            if (atom == null) throw new ArgumentNullException(nameof(atom));
+            _atom = atom;
+            _animation = _atom.gameObject.GetComponent<Animation>() ?? _atom.gameObject.AddComponent<Animation>();
+            if (_animation == null) throw new NullReferenceException($"Could not create an Animation component on {_atom.uid}");
+        }
 
         public void Initialize()
         {
@@ -67,88 +118,10 @@ namespace VamTimeline
             return animationName;
         }
 
-        public void SelectTargetByName(string name)
-        {
-            Current.SelectTargetByName(name);
-        }
-
-        public IEnumerable<string> GetTargetsNames()
-        {
-            return Current.GetTargetsNames();
-        }
-
-        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
-        {
-            return Current.GetAllOrSelectedTargets();
-        }
-
-        public float GetNextFrame()
-        {
-            return Current.GetNextFrame(Time);
-        }
-
-        public float GetPreviousFrame()
-        {
-            return Current.GetPreviousFrame(Time);
-        }
-
         public void DeleteFrame()
         {
             Current.DeleteFrame(Time);
             RebuildAnimation();
-        }
-
-        private readonly Atom _atom;
-        public readonly Animation Animation;
-        private AnimationState _animState;
-
-        public float Speed
-        {
-            get
-            {
-                return Current.Speed;
-            }
-
-            set
-            {
-                Current.Speed = value;
-                if (_animState == null) return;
-                _animState.speed = value;
-                if (Current.AnimationPattern != null)
-                    Current.AnimationPattern.SetFloatParamValue("speed", value);
-            }
-        }
-
-        public float Time
-        {
-            get
-            {
-                if (Current == null) return 0f;
-                if (_animState == null) return 0f;
-                return _animState.time % _animState.length;
-            }
-            set
-            {
-                if (Current == null) return;
-                if (_animState == null) return;
-                _animState.time = value;
-                if (!_animState.enabled)
-                {
-                    _animState.enabled = true;
-                    Animation.Sample();
-                    _animState.enabled = false;
-                }
-                SampleAnimation();
-            }
-        }
-
-        public AtomAnimation(Atom atom)
-        {
-            if (atom == null) throw new ArgumentNullException(nameof(atom));
-
-            _atom = atom;
-            Animation = _atom.gameObject.GetComponent<Animation>() ?? _atom.gameObject.AddComponent<Animation>();
-            if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
@@ -169,7 +142,7 @@ namespace VamTimeline
             if (Current == null) return;
             if (_animState == null) return;
             _animState.time = 0;
-            Animation.Play(Current.AnimationName);
+            _animation.Play(Current.AnimationName);
             if (Current.AnimationPattern)
             {
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
@@ -177,10 +150,57 @@ namespace VamTimeline
             }
         }
 
+        private void SampleAnimation()
+        {
+            var time = Time;
+            foreach (var morph in Current.TargetFloatParams)
+            {
+                var val = morph.Value.Evaluate(time);
+                if (_blendingClip != null)
+                {
+                    var blendingTarget = _blendingClip.TargetFloatParams.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
+                    if (blendingTarget != null)
+                    {
+                        var weight = _blendingTimeLeft / _blendingDuration;
+                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(time) * (weight)) + (val * (1 - weight));
+                    }
+                    else
+                    {
+                        morph.FloatParam.val = val;
+                    }
+                }
+                else
+                {
+                    morph.FloatParam.val = val;
+                }
+            }
+        }
+
+        public void Update()
+        {
+            if (IsPlaying())
+            {
+                // _time = (_time + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
+
+                if (_blendingClip != null)
+                {
+                    _blendingTimeLeft -= UnityEngine.Time.deltaTime;
+                    if (_blendingTimeLeft <= 0)
+                    {
+                        _blendingTimeLeft = 0;
+                        _blendingDuration = 0;
+                        _blendingClip = null;
+                    }
+                }
+
+                SampleAnimation();
+            }
+        }
+
         public void Stop()
         {
             if (Current == null || _animState == null) return;
-            Animation.Stop();
+            _animation.Stop();
             Time = 0;
             foreach (var clip in Clips)
             {
@@ -192,13 +212,13 @@ namespace VamTimeline
             }
             _blendingTimeLeft = 0;
             _blendingDuration = 0;
-            _blendingAnimation = null;
+            _blendingClip = null;
             SampleAnimation();
         }
 
         public bool IsPlaying()
         {
-            return Animation.IsPlaying(Current.AnimationName);
+            return _animation.IsPlaying(Current.AnimationName);
         }
 
         public void RebuildAnimation()
@@ -208,14 +228,14 @@ namespace VamTimeline
             foreach (var clip in Clips)
             {
                 clip.RebuildAnimation();
-                Animation.AddClip(clip.Clip, clip.AnimationName);
-                var animState = Animation[clip.AnimationName];
+                _animation.AddClip(clip.Clip, clip.AnimationName);
+                var animState = _animation[clip.AnimationName];
                 animState.speed = clip.Speed;
             }
             // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
-            Animation.Play(Current.AnimationName);
-            Animation.Stop(Current.AnimationName);
-            _animState = Animation[Current.AnimationName];
+            _animation.Play(Current.AnimationName);
+            _animation.Stop(Current.AnimationName);
+            _animState = _animation[Current.AnimationName];
             _animState.time = time;
         }
 
@@ -259,14 +279,14 @@ namespace VamTimeline
             var isPlaying = IsPlaying();
             if (isPlaying)
             {
-                Animation.Blend(Current.AnimationName, 0f, BlendDuration);
-                Animation.Blend(animationName, 1f, BlendDuration);
+                _animation.Blend(Current.AnimationName, 0f, BlendDuration);
+                _animation.Blend(animationName, 1f, BlendDuration);
                 if (Current.AnimationPattern != null)
                 {
                     // Let the loop finish during the transition
                     Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
                 }
-                _blendingAnimation = Current;
+                _blendingClip = Current;
                 _blendingTimeLeft = _blendingDuration = BlendDuration;
             }
             Current.SelectTargetByName("");
@@ -342,53 +362,6 @@ namespace VamTimeline
                 animController.SetKeyframe(time, entry.Snapshot.value);
             }
             RebuildAnimation();
-        }
-
-        private void SampleAnimation()
-        {
-            var time = Time;
-            foreach (var morph in Current.TargetFloatParams)
-            {
-                var val = morph.Value.Evaluate(time);
-                if (_blendingAnimation != null)
-                {
-                    var blendingTarget = _blendingAnimation.TargetFloatParams.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
-                    if (blendingTarget != null)
-                    {
-                        var weight = _blendingTimeLeft / _blendingDuration;
-                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(time) * (weight)) + (val * (1 - weight));
-                    }
-                    else
-                    {
-                        morph.FloatParam.val = val;
-                    }
-                }
-                else
-                {
-                    morph.FloatParam.val = val;
-                }
-            }
-        }
-
-        public void Update()
-        {
-            if (IsPlaying())
-            {
-                // _time = (_time + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
-
-                if (_blendingAnimation != null)
-                {
-                    _blendingTimeLeft -= UnityEngine.Time.deltaTime;
-                    if (_blendingTimeLeft <= 0)
-                    {
-                        _blendingTimeLeft = 0;
-                        _blendingDuration = 0;
-                        _blendingAnimation = null;
-                    }
-                }
-
-                SampleAnimation();
-            }
         }
     }
 }

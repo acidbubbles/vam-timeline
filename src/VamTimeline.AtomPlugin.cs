@@ -210,16 +210,16 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction(StorableNames.Stop, () => { _animation.Stop(); ContextUpdated(); });
             RegisterAction(_stopJSON);
 
-            _filterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { _animation.SelectTargetByName(val == AllTargets ? "" : val); ContextUpdated(); })
+            _filterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { _animation.Current.SelectTargetByName(val == AllTargets ? "" : val); ContextUpdated(); })
             {
                 isStorable = false
             };
             RegisterStringChooser(_filterAnimationTargetJSON);
 
-            _nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(_animation.GetNextFrame()); ContextUpdated(); });
+            _nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(_animation.Current.GetNextFrame(_animation.Time)); ContextUpdated(); });
             RegisterAction(_nextFrameJSON);
 
-            _previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(_animation.GetPreviousFrame()); ContextUpdated(); });
+            _previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(_animation.Current.GetPreviousFrame(_animation.Time)); ContextUpdated(); });
             RegisterAction(_previousFrameJSON);
 
             _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => ContextUpdated());
@@ -685,7 +685,7 @@ namespace VamTimeline
             var time = _scrubberJSON.val;
             var frames = new List<float>();
             var targets = new List<string>();
-            foreach (var target in _animation.GetAllOrSelectedTargets())
+            foreach (var target in _animation.Current.GetAllOrSelectedTargets())
             {
                 var keyTimes = target.GetAllKeyframesTime();
                 foreach (var keyTime in keyTimes)
@@ -716,7 +716,7 @@ namespace VamTimeline
         {
             var time = _scrubberJSON.val;
             var display = new StringBuilder();
-            foreach (var controller in _animation.GetAllOrSelectedTargets())
+            foreach (var controller in _animation.Current.GetAllOrSelectedTargets())
             {
                 display.AppendLine(controller.Name);
                 var keyTimes = controller.GetAllKeyframesTime();
@@ -735,7 +735,7 @@ namespace VamTimeline
             var time = _scrubberJSON.val;
             var display = new StringBuilder();
             display.AppendLine($"Time: {time}s");
-            foreach (var controller in _animation.GetAllOrSelectedTargets())
+            foreach (var controller in _animation.Current.GetAllOrSelectedTargets())
             {
                 controller.RenderDebugInfo(display, time);
             }
@@ -758,7 +758,7 @@ namespace VamTimeline
                 _lengthJSON.valNoCallback = _animation.AnimationLength;
                 _blendDurationJSON.valNoCallback = _animation.BlendDuration;
                 _scrubberJSON.max = _animation.AnimationLength - float.Epsilon;
-                _filterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(_animation.GetTargetsNames()).ToList();
+                _filterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(_animation.Current.GetTargetsNames()).ToList();
 
                 _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 

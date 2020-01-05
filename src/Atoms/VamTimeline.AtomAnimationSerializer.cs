@@ -144,12 +144,12 @@ namespace VamTimeline
                 DeserializeCurve(target.RotW, controllerJSON["RotW"]);
             }
 
-            JSONArray paramsJSON = clipJSON["Params"].AsArray;
+            JSONArray paramsJSON = clipJSON["FloatParams"].AsArray;
             if (paramsJSON == null) throw new NullReferenceException("Saved state does not have params");
             foreach (JSONClass paramJSON in paramsJSON)
             {
                 var storableId = paramJSON["Storable"].Value;
-                var floatParamName = paramJSON["FloatParam"].Value;
+                var floatParamName = paramJSON["Name"].Value;
                 JSONStorable storable = _atom.containingAtom.GetStorableByID(storableId);
                 var jsf = storable?.GetFloatJSONParam(floatParamName);
                 if (jsf == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
@@ -182,13 +182,13 @@ namespace VamTimeline
             }
 
             var paramsJSON = new JSONArray();
-            clipJSON.Add("Params", paramsJSON);
+            clipJSON.Add("FloatParams", paramsJSON);
             foreach (var target in clip.TargetFloatParams)
             {
                 var paramJSON = new JSONClass
                     {
                         { "Storable", target.Storable.name },
-                        { "FloatParam", target.FloatParam.name },
+                        { "Name", target.FloatParam.name },
                         { "Value", SerializeCurve(target.Value) },
                     };
                 paramsJSON.Add(paramJSON);

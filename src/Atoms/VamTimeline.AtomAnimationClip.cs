@@ -14,8 +14,32 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationClip
     {
-        public readonly AnimationClip Clip;
-        public AnimationPattern AnimationPattern;
+        private float _animationLength = 5f;
+        private IAnimationTarget _selected;
+        public AnimationClip Clip { get; }
+        public AnimationPattern AnimationPattern { get; set; }
+        public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
+        public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
+        public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams);
+        public string AnimationName { get; }
+        public float Speed { get; set; } = 1f;
+        public float AnimationLength
+        {
+            get
+            {
+                return _animationLength;
+            }
+            set
+            {
+                if (value == _animationLength)
+                    return;
+                _animationLength = value;
+                foreach (var target in AllTargets)
+                {
+                    target.SetLength(value);
+                }
+            }
+        }
 
         public AtomAnimationClip(string animationName)
         {
@@ -27,6 +51,23 @@ namespace VamTimeline
             };
         }
 
+        public bool IsEmpty()
+        {
+            return AllTargets.Count() == 0;
+        }
+
+        public void SelectTargetByName(string val)
+        {
+            _selected = string.IsNullOrEmpty(val)
+                ? null
+                : AllTargets.FirstOrDefault(c => c.Name == val);
+        }
+
+        public IEnumerable<string> GetTargetsNames()
+        {
+            return AllTargets.Select(c => c.Name).ToList();
+        }
+
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             if (TargetControllers.Any(c => c.Controller == controller)) return null;
@@ -34,6 +75,19 @@ namespace VamTimeline
             controllerState.SetKeyframeToCurrentTransform(0f);
             TargetControllers.Add(controllerState);
             return controllerState;
+        }
+        
+        public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
+        {
+            if (TargetFloatParams.Any(s => s.Name == jsf.name)) return null;
+            var target = new FloatParamAnimationTarget(storable, jsf, AnimationLength);
+            Add(target);
+            return target;
+        }
+
+        public void Add(FloatParamAnimationTarget target)
+        {
+            TargetFloatParams.Add(target);
         }
 
         public void Remove(FreeControllerV3 controller)
@@ -70,50 +124,6 @@ namespace VamTimeline
             {
                 controller.SmoothAllFrames();
             }
-        }
-
-        private float _animationLength = 5f;
-        public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
-        public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
-        private FreeControllerAnimationTarget _selected;
-
-        public string AnimationName { get; }
-
-        public float Speed { get; set; } = 1f;
-
-        public float AnimationLength
-        {
-            get
-            {
-                return _animationLength;
-            }
-            set
-            {
-                if (value == _animationLength)
-                    return;
-                _animationLength = value;
-                foreach (var target in TargetControllers)
-                {
-                    target.SetLength(value);
-                }
-            }
-        }
-
-        public bool IsEmpty()
-        {
-            return TargetControllers.Count == 0;
-        }
-
-        public void SelectTargetByName(string val)
-        {
-            _selected = string.IsNullOrEmpty(val)
-                ? null
-                : TargetControllers.FirstOrDefault(c => c.Name == val);
-        }
-
-        public IEnumerable<string> GetTargetsNames()
-        {
-            return TargetControllers.Select(c => c.Name).ToList();
         }
 
         public float GetNextFrame(float time)
@@ -158,26 +168,14 @@ namespace VamTimeline
         public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
         {
             if (_selected != null) return new IAnimationTarget[] { _selected };
-            return TargetControllers.Cast<IAnimationTarget>();
+            return AllTargets.Cast<IAnimationTarget>();
         }
 
         public IEnumerable<T> GetAllOrSelectedTargetsOfType<T>()
             where T : class, IAnimationTarget
         {
             if (_selected != null) return new T[] { _selected as T };
-            return TargetControllers.OfType<T>();
-        }
-                public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
-        {
-            if (TargetFloatParams.Any(s => s.Name == jsf.name)) return null;
-            var target = new FloatParamAnimationTarget(storable, jsf, AnimationLength);
-            Add(target);
-            return target;
-        }
-
-        public void Add(FloatParamAnimationTarget target)
-        {
-            TargetFloatParams.Add(target);
+            return AllTargets.OfType<T>();
         }
     }
 }
