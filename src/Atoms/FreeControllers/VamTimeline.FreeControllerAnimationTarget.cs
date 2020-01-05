@@ -13,7 +13,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FreeControllerV3AnimationTarget : IAnimationTarget
+    public class FreeControllerAnimationTarget : IAnimationTarget
     {
         private float _animationLength;
         public FreeControllerV3 Controller;
@@ -28,7 +28,7 @@ namespace VamTimeline
 
         public string Name => Controller.name;
 
-        public FreeControllerV3AnimationTarget(FreeControllerV3 controller, float animationLength)
+        public FreeControllerAnimationTarget(FreeControllerV3 controller, float animationLength)
         {
             Curves = new List<AnimationCurve> {
                 X, Y, Z, RotX, RotY, RotZ, RotW

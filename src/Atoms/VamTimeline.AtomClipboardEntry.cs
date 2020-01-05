@@ -9,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomClipboardEntry : IClipboardEntry
+    public class AtomClipboardEntry
     {
         public List<FreeControllerV3ClipboardEntry> Entries;
     }

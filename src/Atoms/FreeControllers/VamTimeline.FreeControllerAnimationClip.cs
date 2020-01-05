@@ -11,12 +11,12 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationClip : AnimationClipBase<FreeControllerV3AnimationTarget>, IAnimationClip<FreeControllerV3AnimationTarget>
+    public class FreeControllerAnimationClip : AnimationClipBase<FreeControllerAnimationTarget>, IAnimationClip<FreeControllerAnimationTarget>
     {
         public readonly AnimationClip Clip;
         public AnimationPattern AnimationPattern;
 
-        public AtomAnimationClip(string animationName)
+        public FreeControllerAnimationClip(string animationName)
             : base(animationName)
         {
             Clip = new AnimationClip
@@ -26,10 +26,10 @@ namespace VamTimeline
             };
         }
 
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
+        public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             if (Targets.Any(c => c.Controller == controller)) return null;
-            FreeControllerV3AnimationTarget controllerState = new FreeControllerV3AnimationTarget(controller, AnimationLength);
+            FreeControllerAnimationTarget controllerState = new FreeControllerAnimationTarget(controller, AnimationLength);
             controllerState.SetKeyframeToCurrentTransform(0f);
             Targets.Add(controllerState);
             return controllerState;

@@ -13,8 +13,8 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
-        public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
-        public AtomAnimationClip Current { get; set; }
+        public List<FreeControllerAnimationClip> Clips { get; } = new List<FreeControllerAnimationClip>();
+        public FreeControllerAnimationClip Current { get; set; }
 
         public float AnimationLength
         {
@@ -39,7 +39,7 @@ namespace VamTimeline
                 Current = Clips.First();
         }
 
-        public void AddClip(AtomAnimationClip clip)
+        public void AddClip(FreeControllerAnimationClip clip)
         {
             Clips.Add(clip);
         }
@@ -147,12 +147,12 @@ namespace VamTimeline
             if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
-        protected AtomAnimationClip CreateClip(string animatioName)
+        protected FreeControllerAnimationClip CreateClip(string animatioName)
         {
-            return new AtomAnimationClip(animatioName);
+            return new FreeControllerAnimationClip(animatioName);
         }
 
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3 controller)
+        public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             var added = Current.Add(controller);
             RebuildAnimation();
@@ -232,7 +232,7 @@ namespace VamTimeline
             return animationName;
         }
 
-        private void CopyCurrentValues(AtomAnimationClip clip)
+        private void CopyCurrentValues(FreeControllerAnimationClip clip)
         {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
@@ -280,7 +280,7 @@ namespace VamTimeline
             RebuildAnimation();
         }
 
-        public IClipboardEntry Copy()
+        public AtomClipboardEntry Copy()
         {
             var entries = new List<FreeControllerV3ClipboardEntry>();
             var time = Time;
@@ -297,10 +297,10 @@ namespace VamTimeline
             return new AtomClipboardEntry { Entries = entries };
         }
 
-        public void Paste(IClipboardEntry clipboard)
+        public void Paste(AtomClipboardEntry clipboard)
         {
             float time = Time;
-            foreach (var entry in ((AtomClipboardEntry)clipboard).Entries)
+            foreach (var entry in clipboard.Entries)
             {
                 var animController = Current.Targets.FirstOrDefault(c => c.Controller == entry.Controller);
                 if (animController == null)

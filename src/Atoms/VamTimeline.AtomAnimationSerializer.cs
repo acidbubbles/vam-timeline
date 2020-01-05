@@ -112,12 +112,12 @@ namespace VamTimeline
             return new AtomAnimation(_atom);
         }
 
-        protected AtomAnimationClip CreateDefaultAnimationClip(string animationName)
+        protected FreeControllerAnimationClip CreateDefaultAnimationClip(string animationName)
         {
-            return new AtomAnimationClip(animationName);
+            return new FreeControllerAnimationClip(animationName);
         }
 
-        protected void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
+        protected void DeserializeClip(FreeControllerAnimationClip clip, JSONClass clipJSON)
         {
             var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
             if (!string.IsNullOrEmpty(animationPatternUID))
@@ -148,7 +148,7 @@ namespace VamTimeline
             }
         }
 
-        protected void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
+        protected void SerializeClip(FreeControllerAnimationClip clip, JSONClass clipJSON)
         {
             if (clip.AnimationPattern != null)
                 clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);

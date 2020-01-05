@@ -14,12 +14,12 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomPlugin : MVRScript, IAnimationPlugin
+    public class AtomPlugin : MVRScript, IAtomPlugin
     {
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // State
-        private FreeControllerV3AnimationTarget _grabbedController;
+        private FreeControllerAnimationTarget _grabbedController;
 
         // Storables
         private JSONStorableStringChooser _changeCurveJSON;
@@ -34,14 +34,14 @@ namespace VamTimeline
         private const string AllTargets = "(All)";
         private bool _saveEnabled;
 
-        protected readonly IAnimationPlugin _plugin;
+        protected readonly IAtomPlugin _plugin;
 
         // State
         private AtomAnimationSerializer _serializer;
         protected AtomAnimation _animation;
         private bool _restoring;
         private readonly List<string> _undoList = new List<string>();
-        private IClipboardEntry _clipboard;
+        private AtomClipboardEntry _clipboard;
 
         // Save
         private JSONStorableString _saveJSON;
