@@ -410,6 +410,7 @@ namespace VamTimeline
             Copy();
             if (Animation.Time == 0f) return;
             Animation.DeleteFrame();
+            AnimationModified();
         }
 
         private void Copy()
@@ -437,6 +438,7 @@ namespace VamTimeline
                 Animation.Paste(_clipboard);
                 // Sample animation now
                 UpdateTime(time);
+                AnimationModified();
             }
             catch (Exception exc)
             {
@@ -509,16 +511,6 @@ namespace VamTimeline
 
         #region State Rendering
 
-        public class RenderingModes
-        {
-            public const string None = "None";
-            public const string Default = "Default";
-            public const string ShowAllTargets = "Show All Targets";
-            public const string Debug = "Debug";
-
-            public static readonly List<string> Values = new List<string> { None, Default, ShowAllTargets, Debug };
-        }
-
         public void RenderState()
         {
             if (LockedJSON.val)
@@ -540,15 +532,30 @@ namespace VamTimeline
                         targets.Add(target.Name);
                 }
             }
-            var display = new StringBuilder();
-            frames.Sort();
-            display.Append("Frames:");
-            foreach (var f in frames.Distinct())
+
+            if (targets.Count == 0)
             {
-                if (f == time)
-                    display.Append($"[{f:0.00}]");
-                else
-                    display.Append($" {f:0.00} ");
+                DisplayJSON.val = $"No controller has been registered{(Animation.Current.AllTargets.Any() ? " at this frame." : ". Go to Animation Settings and add one.")}";
+                return;
+            }
+
+
+            var display = new StringBuilder();
+            if (frames.Count == 1)
+            {
+                display.AppendLine("No frame have been recorded yet.");
+            }
+            else
+            {
+                frames.Sort();
+                display.Append("Frames:");
+                foreach (var f in frames.Distinct())
+                {
+                    if (f == time)
+                        display.Append($"[{f:0.00}]");
+                    else
+                        display.Append($" {f:0.00} ");
+                }
             }
             display.AppendLine();
             display.AppendLine("Affects:");

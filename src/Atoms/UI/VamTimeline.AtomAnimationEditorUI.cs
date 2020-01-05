@@ -52,6 +52,8 @@ namespace VamTimeline
             smoothAllFramesUI.button.onClick.AddListener(() => Plugin.SmoothAllFramesJSON.actionCallback());
             _components.Add(smoothAllFramesUI);
 
+            InitClipboardUI(false);
+
             // Right side
 
             InitDisplayUI(true);

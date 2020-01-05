@@ -8,3 +8,4 @@
 - Make EnsureQuaternionContinuity an option
 - Hotkeys
 - Allow automatic keyframe of current pose
+- If no controllers are recorded, the scrubbing won't work for float params

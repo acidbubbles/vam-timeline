@@ -226,18 +226,6 @@ namespace VamTimeline
                 _addParamListJSON.val = values.FirstOrDefault();
         }
 
-        private void UpdateFloatParam(FloatParamAnimationTarget target, JSONStorableFloat sourceFloatParam, float val)
-        {
-            sourceFloatParam.val = val;
-            // TODO: This should be done by the controller (updating the animation resets the time)
-            var time = Plugin.Animation.Time;
-            target.SetKeyframe(time, val);
-            Plugin.Animation.RebuildAnimation();
-            // TODO: Test if this works (was using Plugin.UpdateTime)
-            Plugin.ScrubberJSON.val = time;
-            Plugin.AnimationModified();
-        }
-
         public override void UIUpdated()
         {
             base.UIUpdated();
