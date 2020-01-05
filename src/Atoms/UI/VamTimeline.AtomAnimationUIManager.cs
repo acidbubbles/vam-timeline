@@ -29,7 +29,8 @@ namespace VamTimeline
                 "Screen",
                 new List<string>{
                 AtomAnimationSettingsUI.ScreenName,
-                AtomAnimationEditorUI.ScreenName,
+                AtomAnimationControllersUI.ScreenName,
+                AtomAnimationFloatParamsUI.ScreenName,
                 AtomAnimationLockedUI.ScreenName
                 },
                 GetDefaultScreen(),
@@ -50,7 +51,7 @@ namespace VamTimeline
             else if (_plugin.Animation.IsEmpty())
                 return AtomAnimationSettingsUI.ScreenName;
             else
-                return AtomAnimationEditorUI.ScreenName;
+                return AtomAnimationControllersUI.ScreenName;
         }
 
         public void AnimationModified()
@@ -97,8 +98,11 @@ namespace VamTimeline
                     case AtomAnimationSettingsUI.ScreenName:
                         _current = new AtomAnimationSettingsUI(_plugin);
                         break;
-                    case AtomAnimationEditorUI.ScreenName:
-                        _current = new AtomAnimationEditorUI(_plugin);
+                    case AtomAnimationControllersUI.ScreenName:
+                        _current = new AtomAnimationControllersUI(_plugin);
+                        break;
+                    case AtomAnimationFloatParamsUI.ScreenName:
+                        _current = new AtomAnimationFloatParamsUI(_plugin);
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown screen {_screens.val}");

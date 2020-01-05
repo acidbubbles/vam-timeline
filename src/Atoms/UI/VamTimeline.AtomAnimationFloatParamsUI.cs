@@ -9,9 +9,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationEditorUI : AtomAnimationBaseUI
+    public class AtomAnimationFloatParamsUI : AtomAnimationBaseUI
     {
-        public const string ScreenName = "Animation Editor";
+        public const string ScreenName = "Params";
         public override string Name => ScreenName;
 
         private class FloatParamJSONRef
@@ -25,7 +25,7 @@ namespace VamTimeline
         private List<FloatParamJSONRef> _jsfJSONRefs;
 
 
-        public AtomAnimationEditorUI(IAtomPlugin plugin)
+        public AtomAnimationFloatParamsUI(IAtomPlugin plugin)
             : base(plugin)
         {
 
@@ -42,14 +42,6 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
-            var changeCurveUI = Plugin.CreatePopup(Plugin.ChangeCurveJSON, false);
-            changeCurveUI.popupPanelHeight = 800f;
-            _linkedStorables.Add(Plugin.ChangeCurveJSON);
-
-            var smoothAllFramesUI = Plugin.CreateButton("Smooth All Frames", false);
-            smoothAllFramesUI.button.onClick.AddListener(() => Plugin.SmoothAllFramesJSON.actionCallback());
-            _components.Add(smoothAllFramesUI);
-
             InitClipboardUI(false);
 
             // Right side
@@ -59,6 +51,7 @@ namespace VamTimeline
 
         public override void UpdatePlaying()
         {
+            base.UpdatePlaying();
             UpdateFloatParamSliders();
         }
 
@@ -80,6 +73,7 @@ namespace VamTimeline
         public override void AnimationFrameUpdated()
         {
             UpdateFloatParamSliders();
+            base.AnimationFrameUpdated();
         }
 
         public override void Remove()
@@ -94,10 +88,14 @@ namespace VamTimeline
             if (Plugin.Animation == null) return;
             // TODO: This is expensive, though rarely occuring
             _jsfJSONRefs = new List<FloatParamJSONRef>();
+            SuperController.LogMessage("Regenerate");
             foreach (var target in Plugin.Animation.Current.TargetFloatParams)
             {
                 var jsfJSONRef = target.FloatParam;
-                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{jsfJSONRef.name}", jsfJSONRef.defaultVal, (float val) => UpdateFloatParam(target, jsfJSONRef, val), jsfJSONRef.min, jsfJSONRef.max, jsfJSONRef.constrained, true);
+                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{jsfJSONRef.name}", jsfJSONRef.defaultVal, (float val) => UpdateFloatParam(target, jsfJSONRef, val), jsfJSONRef.min, jsfJSONRef.max, jsfJSONRef.constrained, true)
+                {
+                    valNoCallback = jsfJSONRef.val
+                };
                 var slider = Plugin.CreateSlider(jsfJSONProxy, true);
                 _jsfJSONRefs.Add(new FloatParamJSONRef
                 {

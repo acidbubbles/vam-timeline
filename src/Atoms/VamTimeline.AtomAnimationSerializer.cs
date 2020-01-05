@@ -127,42 +127,44 @@ namespace VamTimeline
             }
 
             JSONArray controllersJSON = clipJSON["Controllers"].AsArray;
-            if (controllersJSON == null) throw new NullReferenceException("Saved state does not have controllers");
-            foreach (JSONClass controllerJSON in controllersJSON)
+            if (controllersJSON != null)
             {
-                var controllerName = controllerJSON["Controller"].Value;
-                var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
-                if (controller == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a controller '{controllerName}'");
-                var target = clip.Add(controller);
-                if (target == null)
+                foreach (JSONClass controllerJSON in controllersJSON)
                 {
-                    SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' has multiple instances of controller '{controllerName}'");
-                    continue;
+                    var controllerName = controllerJSON["Controller"].Value;
+                    var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
+                    if (controller == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a controller '{controllerName}'");
+                    var target = clip.Add(controller);
+                    if (target == null)
+                    {
+                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' has multiple instances of controller '{controllerName}'");
+                        continue;
+                    }
+                    DeserializeCurve(target.X, controllerJSON["X"]);
+                    DeserializeCurve(target.X, controllerJSON["X"]);
+                    DeserializeCurve(target.Y, controllerJSON["Y"]);
+                    DeserializeCurve(target.Z, controllerJSON["Z"]);
+                    DeserializeCurve(target.RotX, controllerJSON["RotX"]);
+                    DeserializeCurve(target.RotY, controllerJSON["RotY"]);
+                    DeserializeCurve(target.RotZ, controllerJSON["RotZ"]);
+                    DeserializeCurve(target.RotW, controllerJSON["RotW"]);
                 }
-                DeserializeCurve(target.X, controllerJSON["X"]);
-                DeserializeCurve(target.X, controllerJSON["X"]);
-                DeserializeCurve(target.Y, controllerJSON["Y"]);
-                DeserializeCurve(target.Z, controllerJSON["Z"]);
-                DeserializeCurve(target.RotX, controllerJSON["RotX"]);
-                DeserializeCurve(target.RotY, controllerJSON["RotY"]);
-                DeserializeCurve(target.RotZ, controllerJSON["RotZ"]);
-                DeserializeCurve(target.RotW, controllerJSON["RotW"]);
             }
 
             JSONArray paramsJSON = clipJSON["FloatParams"].AsArray;
-            if (paramsJSON == null) throw new NullReferenceException("Saved state does not have params");
-            foreach (JSONClass paramJSON in paramsJSON)
+            if (paramsJSON != null)
             {
-                var storableId = paramJSON["Storable"].Value;
-                var floatParamName = paramJSON["Name"].Value;
-                JSONStorable storable = _atom.containingAtom.GetStorableByID(storableId);
-                var jsf = storable?.GetFloatJSONParam(floatParamName);
-                if (jsf == null)
+                foreach (JSONClass paramJSON in paramsJSON)
                 {
-                    SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
-                }
-                else
-                {
+                    var storableId = paramJSON["Storable"].Value;
+                    var floatParamName = paramJSON["Name"].Value;
+                    JSONStorable storable = _atom.containingAtom.GetStorableByID(storableId);
+                    var jsf = storable?.GetFloatJSONParam(floatParamName);
+                    if (jsf == null)
+                    {
+                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
+                        continue;
+                    }
                     var target = clip.Add(storable, jsf);
                     if (target == null)
                     {
