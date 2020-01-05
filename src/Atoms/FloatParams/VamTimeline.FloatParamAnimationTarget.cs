@@ -53,11 +53,6 @@ namespace VamTimeline
             Value.FlatAllFrames();
         }
 
-        public void ReapplyCurvesToClip(AnimationClip clip)
-        {
-            clip.SetCurve("", typeof(JSONStorableFloat), "val", Value);
-        }
-
         public IEnumerable<float> GetAllKeyframesTime()
         {
             return Value.keys.Take(Value.keys.Length - 1).Select(k => k.time);

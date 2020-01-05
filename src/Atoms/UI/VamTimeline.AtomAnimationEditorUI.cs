@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -54,13 +55,17 @@ namespace VamTimeline
             // Right side
 
             InitDisplayUI(true);
-
-            RefreshFloatParamsListUI();
         }
 
         public override void UpdatePlaying()
         {
             UpdateFloatParamSliders();
+        }
+
+        public override void AnimationModified()
+        {
+            base.AnimationModified();
+            RefreshFloatParamsListUI();
         }
 
         private void UpdateFloatParamSliders()
@@ -121,7 +126,8 @@ namespace VamTimeline
             var time = Plugin.Animation.Time;
             target.SetKeyframe(time, val);
             Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
+            // TODO: Breaks sliders
+            // Plugin.AnimationModified();
         }
     }
 }

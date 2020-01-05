@@ -129,7 +129,7 @@ namespace VamTimeline
                 else if (component is JSONStorableBool)
                     Plugin.RemoveToggle((JSONStorableBool)component);
                 else
-                    SuperController.LogError($"Cannot remove component {component}");
+                    SuperController.LogError($"VamTimeline: Cannot remove component {component}");
             }
             _linkedStorables.Clear();
 

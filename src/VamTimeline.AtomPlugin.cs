@@ -16,7 +16,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
-        private const float AnimationEndOffset = 0.1f;
+        private const float AnimationEndOffset = 0.001f;
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // Storables
@@ -290,7 +290,7 @@ namespace VamTimeline
                         var backupJSON = backupStorable.GetStringJSONParam(StorableNames.AtomAnimationBackup);
                         if (backupJSON != null && !string.IsNullOrEmpty(backupJSON.val))
                         {
-                            SuperController.LogMessage("No save found but a backup was detected. Loading backup.");
+                            SuperController.LogMessage("VamTimeline: No save found but a backup was detected. Loading backup.");
                             Animation = _serializer.DeserializeAnimation(backupJSON.val);
                         }
                     }
@@ -360,19 +360,20 @@ namespace VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
+            _saveEnabled = false;
             try
             {
                 FilterAnimationTargetJSON.val = AllTargets;
                 Animation.ChangeAnimation(animationName);
-                AnimationJSON.valNoCallback = animationName;
-                SpeedJSON.valNoCallback = Animation.Speed;
-                LengthJSON.valNoCallback = Animation.AnimationLength;
-                ScrubberJSON.max = Animation.AnimationLength - AnimationEndOffset;
                 AnimationModified();
             }
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimeline.AtomPlugin.ChangeAnimation: " + exc);
+            }
+            finally
+            {
+                _saveEnabled = true;
             }
         }
 
@@ -431,7 +432,7 @@ namespace VamTimeline
             {
                 if (_clipboard == null)
                 {
-                    SuperController.LogMessage("Clipboard is empty");
+                    SuperController.LogMessage("VamTimeline: Clipboard is empty");
                     return;
                 }
                 var time = Animation.Time;
@@ -495,7 +496,7 @@ namespace VamTimeline
             ChangeCurveJSON.valNoCallback = "";
             if (Animation.Time == 0)
             {
-                SuperController.LogMessage("Cannot specify curve type on frame 0");
+                SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");
                 return;
             }
             Animation.ChangeCurve(curveType);
@@ -515,6 +516,12 @@ namespace VamTimeline
             if (LockedJSON.val)
             {
                 DisplayJSON.val = "Locked";
+                return;
+            }
+
+            if (Animation.IsPlaying())
+            {
+                DisplayJSON.val = "Playing...";
                 return;
             }
 
@@ -572,13 +579,14 @@ namespace VamTimeline
             try
             {
                 // Update UI
+                ScrubberJSON.max = Animation.AnimationLength - AnimationEndOffset;
                 ScrubberJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
+                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 LengthJSON.valNoCallback = Animation.AnimationLength;
                 SpeedJSON.valNoCallback = Animation.Speed;
                 LengthJSON.valNoCallback = Animation.AnimationLength;
                 BlendDurationJSON.valNoCallback = Animation.BlendDuration;
-                ScrubberJSON.max = Animation.AnimationLength - AnimationEndOffset;
                 FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
 
                 // Save

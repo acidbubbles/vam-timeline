@@ -71,15 +71,15 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             if (TargetControllers.Any(c => c.Controller == controller)) return null;
-            FreeControllerAnimationTarget controllerState = new FreeControllerAnimationTarget(controller, AnimationLength);
-            controllerState.SetKeyframeToCurrentTransform(0f);
-            TargetControllers.Add(controllerState);
-            return controllerState;
+            FreeControllerAnimationTarget target = new FreeControllerAnimationTarget(controller, AnimationLength);
+            target.SetKeyframeToCurrentTransform(0f);
+            TargetControllers.Add(target);
+            return target;
         }
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
-            if (TargetFloatParams.Any(s => s.Name == jsf.name)) return null;
+            if (TargetFloatParams.Any(s => s.Storable.name == storable.name && s.Name == jsf.name)) return null;
             var target = new FloatParamAnimationTarget(storable, jsf, AnimationLength);
             Add(target);
             return target;
@@ -87,6 +87,7 @@ namespace VamTimeline
 
         public void Add(FloatParamAnimationTarget target)
         {
+            if (target == null) throw new NullReferenceException(nameof(target));
             TargetFloatParams.Add(target);
         }
 
@@ -100,9 +101,13 @@ namespace VamTimeline
         public void RebuildAnimation()
         {
             Clip.ClearCurves();
-            foreach (var controller in TargetControllers)
+            foreach (var target in TargetControllers)
             {
-                controller.ReapplyCurvesToClip(Clip);
+                target.ReapplyCurvesToClip(Clip);
+            }
+            foreach (var target in TargetFloatParams)
+            {
+                target.Value.FlatAllFrames();
             }
             // NOTE: This allows smoother rotation but cause weird looping issues in some cases. Better with than without though.
             Clip.EnsureQuaternionContinuity();
@@ -112,7 +117,7 @@ namespace VamTimeline
         {
             if (time == 0 || time == AnimationLength) return;
 
-            foreach (var controller in GetAllOrSelectedTargetsOfType<FreeControllerAnimationTarget>())
+            foreach (var controller in GetAllOrSelectedControllerTargets())
             {
                 controller.ChangeCurve(time, curveType);
             }
@@ -171,11 +176,16 @@ namespace VamTimeline
             return AllTargets.Cast<IAnimationTarget>();
         }
 
-        public IEnumerable<T> GetAllOrSelectedTargetsOfType<T>()
-            where T : class, IAnimationTarget
+        public IEnumerable<FreeControllerAnimationTarget> GetAllOrSelectedControllerTargets()
         {
-            if (_selected != null) return new T[] { _selected as T };
-            return AllTargets.OfType<T>();
+            if (_selected as FreeControllerAnimationTarget != null) return new[] { (FreeControllerAnimationTarget)_selected };
+            return TargetControllers;
+        }
+
+        public IEnumerable<FloatParamAnimationTarget> GetAllOrSelectedFloatParamTargets()
+        {
+            if (_selected as FloatParamAnimationTarget != null) return new[] { (FloatParamAnimationTarget)_selected };
+            return TargetFloatParams;
         }
     }
 }

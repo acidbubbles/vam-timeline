@@ -30,7 +30,7 @@ namespace VamTimeline
             {
                 if (Current == null) return _fallbackTime % AnimationLength;
                 if (_animState == null) return _fallbackTime % AnimationLength;
-                return _animState.time % _animState.length;
+                return _animState.time % AnimationLength;
             }
             set
             {
@@ -185,7 +185,6 @@ namespace VamTimeline
 
         public void Update()
         {
-            SuperController.singleton.ClearMessages();
             if (_isPlaying)
             {
                 _fallbackTime = (_fallbackTime + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
@@ -243,21 +242,21 @@ namespace VamTimeline
             }
             if (HasAnimatableControllers())
             {
-                _animState = null;
-            }
-            else
-            {
                 // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
                 _animation.Play(Current.AnimationName);
                 _animation.Stop(Current.AnimationName);
                 _animState = _animation[Current.AnimationName];
                 _animState.time = time;
             }
+            else
+            {
+                _animState = null;
+            }
         }
 
         private bool HasAnimatableControllers()
         {
-            return Current.TargetControllers.Count == 0;
+            return Current.TargetControllers.Count > 0;
         }
 
         public void ChangeCurve(string curveType)
@@ -295,7 +294,7 @@ namespace VamTimeline
         public void ChangeAnimation(string animationName)
         {
             var anim = Clips.FirstOrDefault(c => c.AnimationName == animationName);
-            if (anim == null) return;
+            if (anim == null) throw new NullReferenceException($"Could not find animation {animationName}");
             var time = Time;
             if (_isPlaying)
             {
@@ -312,7 +311,6 @@ namespace VamTimeline
                 _blendingClip = Current;
                 _blendingTimeLeft = _blendingDuration = BlendDuration;
             }
-            Current.SelectTargetByName("");
             Current = anim;
             if (!_isPlaying)
             {
@@ -343,7 +341,7 @@ namespace VamTimeline
             var time = Time;
 
             var controllers = new List<FreeControllerV3ClipboardEntry>();
-            foreach (var controller in Current.GetAllOrSelectedTargetsOfType<FreeControllerAnimationTarget>())
+            foreach (var controller in Current.GetAllOrSelectedControllerTargets())
             {
                 var snapshot = controller.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -354,14 +352,14 @@ namespace VamTimeline
                 });
             }
             var floatParams = new List<FloatParamValClipboardEntry>();
-            foreach (var target in Current.GetAllOrSelectedTargetsOfType<FloatParamAnimationTarget>())
+            foreach (var target in Current.GetAllOrSelectedFloatParamTargets())
             {
                 if (!target.Value.keys.Any(k => k.time == time)) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
                     Storable = target.Storable,
                     FloatParam = target.FloatParam,
-                    Snapshot = target.Value.keys.FirstOrDefault(k => k.time == time)
+                    Snapshot = target.Value.keys.First(k => k.time == time)
                 });
             }
             return new AtomClipboardEntry

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -18,11 +17,14 @@ namespace VamTimeline
 
         private JSONStorableStringChooser _addControllerListJSON;
         private JSONStorableAction _toggleControllerJSON;
+        private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _addStorableListJSON;
         private JSONStorableStringChooser _addParamListJSON;
+        private UIDynamicPopup _addFloatParamListUI;
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
+        private UIDynamicPopup _addParamListUI;
         private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
@@ -49,8 +51,8 @@ namespace VamTimeline
 
             _toggleControllerJSON = new JSONStorableAction("Toggle Controller", () => AddAnimatedController());
 
-            var addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
-            addControllerUI.popupPanelHeight = 800f;
+            _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
+            _addControllerUI.popupPanelHeight = 800f;
             _linkedStorables.Add(_addControllerListJSON);
 
             _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
@@ -108,6 +110,13 @@ namespace VamTimeline
                 var jsbUI = Plugin.CreateToggle(jsb, true);
                 _removeToggles.Add(jsb);
             }
+            // Ensures shows on top
+            _addControllerListJSON.popup.Toggle();
+            _addControllerListJSON.popup.Toggle();
+            _addStorableListJSON.popup.Toggle();
+            _addStorableListJSON.popup.Toggle();
+            _addParamListJSON.popup.Toggle();
+            _addParamListJSON.popup.Toggle();
         }
 
         private void ClearRemoveToggles()
@@ -139,14 +148,14 @@ namespace VamTimeline
                 isStorable = false
             };
 
-            var addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
-            addFloatParamListUI.popupPanelHeight = 800f;
-            addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetInterestingStorableIDs().ToList();
+            _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
+            _addFloatParamListUI.popupPanelHeight = 800f;
+            _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetInterestingStorableIDs().ToList();
             _linkedStorables.Add(_addStorableListJSON);
 
-            var addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
-            addParamListUI.popupPanelHeight = 700f;
-            addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList();
+            _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
+            _addParamListUI.popupPanelHeight = 700f;
+            _addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList();
             _linkedStorables.Add(_addParamListJSON);
 
             _toggleFloatParamUI = Plugin.CreateButton("Add Param", true);
@@ -164,7 +173,7 @@ namespace VamTimeline
             var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
             if (animationPattern == null)
             {
-                SuperController.LogError($"Could not find Animation Pattern '{uid}'");
+                SuperController.LogError($"VamTimeline: Could not find Animation Pattern '{uid}'");
                 return;
             }
             Plugin.Animation.Current.AnimationPattern = animationPattern;
@@ -185,7 +194,7 @@ namespace VamTimeline
                 var controller = Plugin.ContainingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
-                    SuperController.LogError($"Controller {uid} in atom {Plugin.ContainingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {Plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
                 if (Plugin.Animation.Current.TargetControllers.Any(c => c.Controller == controller))
@@ -210,13 +219,13 @@ namespace VamTimeline
                 var storable = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val);
                 if (storable == null)
                 {
-                    SuperController.LogError($"Storable {_addStorableListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Storable {_addStorableListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
                 var sourceFloatParam = storable.GetFloatJSONParam(_addParamListJSON.val);
                 if (sourceFloatParam == null)
                 {
-                    SuperController.LogError($"Param {_addParamListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Param {_addParamListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
                 if (Plugin.Animation.Current.TargetFloatParams.Any(c => c.FloatParam == sourceFloatParam))
