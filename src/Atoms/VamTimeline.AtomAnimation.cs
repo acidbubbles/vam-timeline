@@ -11,8 +11,90 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimation : AnimationBase<AtomAnimationClip, FreeControllerV3AnimationTarget>, IAnimation<AtomAnimationClip, FreeControllerV3AnimationTarget>
+    public class AtomAnimation
     {
+        public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
+        public AtomAnimationClip Current { get; set; }
+
+        public float AnimationLength
+        {
+            get
+            {
+                return Current.AnimationLength;
+            }
+            set
+            {
+                Current.AnimationLength = value;
+                RebuildAnimation();
+            }
+        }
+
+        public float BlendDuration { get; set; } = 1f;
+
+        public void Initialize()
+        {
+            if (Clips.Count == 0)
+                AddClip(CreateClip("Anim1"));
+            if (Current == null)
+                Current = Clips.First();
+        }
+
+        public void AddClip(AtomAnimationClip clip)
+        {
+            Clips.Add(clip);
+        }
+
+        public bool IsEmpty()
+        {
+            if (Clips.Count == 0) return true;
+            if (Clips.Count == 1 && Clips[0].IsEmpty()) return true;
+            return false;
+        }
+
+        public IEnumerable<string> GetAnimationNames()
+        {
+            return Clips.Select(c => c.AnimationName);
+        }
+
+        protected string GetNewAnimationName()
+        {
+            var lastAnimationName = Clips.Last().AnimationName;
+            var lastAnimationIndex = lastAnimationName.Substring(4);
+            var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
+            return animationName;
+        }
+
+        public void SelectTargetByName(string name)
+        {
+            Current.SelectTargetByName(name);
+        }
+
+        public IEnumerable<string> GetTargetsNames()
+        {
+            return Current.GetTargetsNames();
+        }
+
+        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
+        {
+            return Current.GetAllOrSelectedTargets();
+        }
+
+        public float GetNextFrame()
+        {
+            return Current.GetNextFrame(Time);
+        }
+
+        public float GetPreviousFrame()
+        {
+            return Current.GetPreviousFrame(Time);
+        }
+
+        public void DeleteFrame()
+        {
+            Current.DeleteFrame(Time);
+            RebuildAnimation();
+        }
+
         private readonly Atom _atom;
         public readonly Animation Animation;
         private AnimationState _animState;
@@ -34,7 +116,7 @@ namespace VamTimeline
             }
         }
 
-        public override float Time
+        public float Time
         {
             get
             {
@@ -65,7 +147,7 @@ namespace VamTimeline
             if (Animation == null) throw new NullReferenceException("Could not create an Animation");
         }
 
-        protected override AtomAnimationClip CreateClip(string animatioName)
+        protected AtomAnimationClip CreateClip(string animatioName)
         {
             return new AtomAnimationClip(animatioName);
         }
@@ -116,7 +198,7 @@ namespace VamTimeline
             return Animation.IsPlaying(Current.AnimationName);
         }
 
-        public override void RebuildAnimation()
+        public void RebuildAnimation()
         {
             if (Current == null) throw new NullReferenceException("No current animation set");
             var time = Time;

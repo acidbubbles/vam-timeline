@@ -64,9 +64,6 @@
     <Compile Include="src/Common/VamTimeline.IAnimationTarget.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationClip.cs" />
     <Compile Include="src/Common/VamTimeline.AnimationClipBase.cs" />
-    <Compile Include="src/Common/VamTimeline.IAnimation.cs" />
-    <Compile Include="src/Common/VamTimeline.AnimationBase.cs" />
-    <Compile Include="src/Common/VamTimeline.AnimationSerializerBase.cs" />
     <Compile Include="src/Common/VamTimeline.IAnimationPlugin.cs" />
 
     <Compile Include="src/VamTimeline.BackupPlugin.cs" />
