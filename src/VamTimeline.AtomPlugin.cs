@@ -59,10 +59,6 @@ namespace VamTimeline
         public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableStringChooser ChangeCurveJSON { get; private set; }
 
-        public JSONStorableStringChooser AddControllerListJSON { get; private set; }
-        public JSONStorableAction ToggleControllerJSON { get; private set; }
-        public JSONStorableStringChooser LinkedAnimationPatternJSON { get; private set; }
-
         // UI
         private AtomAnimationUIManager _ui;
 
@@ -133,7 +129,6 @@ namespace VamTimeline
             if (_grabbedController == null && grabbing != null)
             {
                 _grabbedController = Animation.Current.TargetControllers.FirstOrDefault(c => c.Controller == grabbing);
-                AddControllerListJSON.val = grabbing.name;
             }
             else if (_grabbedController != null && grabbing == null)
             {
@@ -512,59 +507,6 @@ namespace VamTimeline
             Animation.SmoothAllFrames();
         }
 
-        private void ToggleAnimatedController()
-        {
-            try
-            {
-                var uid = AddControllerListJSON.val;
-                var controller = containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
-                if (controller == null)
-                {
-                    SuperController.LogError($"Controller {uid} in atom {containingAtom.uid} does not exist");
-                    return;
-                }
-                if (Animation.Current.TargetControllers.Any(c => c.Controller == controller))
-                {
-                    Animation.Remove(controller);
-                }
-                else
-                {
-                    controller.currentPositionState = FreeControllerV3.PositionState.On;
-                    controller.currentRotationState = FreeControllerV3.RotationState.On;
-                    var animController = Animation.Add(controller);
-                    animController.SetKeyframeToCurrentTransform(0f);
-                }
-                AnimationUpdated();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError("VamTimeline.AtomPlugin.AddSelectedController: " + exc);
-            }
-        }
-
-        private void LinkAnimationPattern(string uid)
-        {
-            if (string.IsNullOrEmpty(uid))
-            {
-                Animation.Current.AnimationPattern = null;
-                return;
-            }
-            var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
-            if (animationPattern == null)
-            {
-                SuperController.LogError($"Could not find Animation Pattern '{uid}'");
-                return;
-            }
-            Animation.Current.AnimationPattern = animationPattern;
-            animationPattern.SetBoolParamValue("autoPlay", false);
-            animationPattern.SetBoolParamValue("pause", false);
-            animationPattern.SetBoolParamValue("loop", false);
-            animationPattern.SetBoolParamValue("loopOnce", false);
-            animationPattern.SetFloatParamValue("speed", Animation.Speed);
-            animationPattern.ResetAnimation();
-            AnimationUpdated();
-        }
-
         #endregion
 
         #region State Rendering
@@ -674,7 +616,7 @@ namespace VamTimeline
 
         #region Updates
 
-        protected void AnimationUpdated()
+        public void AnimationUpdated()
         {
             try
             {
@@ -687,8 +629,6 @@ namespace VamTimeline
                 BlendDurationJSON.valNoCallback = Animation.BlendDuration;
                 ScrubberJSON.max = Animation.AnimationLength - float.Epsilon;
                 FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
-
-                LinkedAnimationPatternJSON.valNoCallback = Animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 
                 // Save
                 if (_saveEnabled)
@@ -744,18 +684,6 @@ namespace VamTimeline
             InitCommonStorables();
 
             ChangeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
-
-            AddControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => _ui.UIUpdated())
-            {
-                isStorable = false
-            };
-
-            ToggleControllerJSON = new JSONStorableAction("Toggle Controller", () => ToggleAnimatedController());
-
-            LinkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid))
-            {
-                isStorable = false
-            };
         }
 
         #endregion

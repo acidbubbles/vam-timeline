@@ -86,8 +86,7 @@ namespace VamTimeline
         JSONStorableStringChooser DisplayModeJSON { get; }
         JSONStorableString DisplayJSON { get; }
         JSONStorableStringChooser ChangeCurveJSON { get; }
-        JSONStorableStringChooser AddControllerListJSON { get; }
-        JSONStorableAction ToggleControllerJSON { get; }
-        JSONStorableStringChooser LinkedAnimationPatternJSON { get; }
+
+        void AnimationUpdated();
     }
 }
