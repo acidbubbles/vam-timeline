@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
+
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
@@ -18,51 +19,67 @@ namespace VamTimeline
     {
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
-        // State
-        private FreeControllerAnimationTarget _grabbedController;
-
         // Storables
-        private JSONStorableStringChooser _changeCurveJSON;
-
-        private JSONStorableStringChooser _addControllerListJSON;
-        private JSONStorableStringChooser _linkedAnimationPatternJSON;
-
-        // UI
-        private UIDynamicButton _toggleControllerUI;
 
         private const int MaxUndo = 20;
         private const string AllTargets = "(All)";
         private bool _saveEnabled;
 
         // State
+        public AtomAnimation _animation { get; private set; }
         private AtomAnimationSerializer _serializer;
-        protected AtomAnimation _animation;
         private bool _restoring;
         private readonly List<string> _undoList = new List<string>();
         private AtomClipboardEntry _clipboard;
+        private FreeControllerAnimationTarget _grabbedController;
 
         // Save
         private JSONStorableString _saveJSON;
 
         // Storables
-        private JSONStorableStringChooser _animationJSON;
-        private JSONStorableFloat _scrubberJSON;
-        private JSONStorableAction _playJSON;
-        private JSONStorableAction _playIfNotPlayingJSON;
-        private JSONStorableAction _stopJSON;
-        private JSONStorableStringChooser _filterAnimationTargetJSON;
-        private JSONStorableAction _nextFrameJSON;
-        private JSONStorableAction _previousFrameJSON;
+        public JSONStorableStringChooser _animationJSON { get; private set; }
+        public JSONStorableAction _addAnimationJSON { get; private set; }
+        public JSONStorableFloat _scrubberJSON { get; private set; }
+        public JSONStorableAction _playJSON { get; private set; }
+        public JSONStorableAction _playIfNotPlayingJSON { get; private set; }
+        public JSONStorableAction _stopJSON { get; private set; }
+        public JSONStorableStringChooser _filterAnimationTargetJSON { get; private set; }
+        public JSONStorableAction _nextFrameJSON { get; private set; }
+        public JSONStorableAction _previousFrameJSON { get; private set; }
+        public JSONStorableAction _smoothAllFramesJSON { get; private set; }
+        public JSONStorableAction _cutJSON { get; private set; }
+        public JSONStorableAction _copyJSON { get; private set; }
+        public JSONStorableAction _pasteJSON { get; private set; }
+        public JSONStorableAction _undoJSON { get; private set; }
+        public JSONStorableBool _lockedJSON { get; private set; }
+        public JSONStorableFloat _lengthJSON { get; private set; }
+        public JSONStorableFloat _speedJSON { get; private set; }
+        public JSONStorableFloat _blendDurationJSON { get; private set; }
+        public JSONStorableStringChooser _displayModeJSON { get; private set; }
+        public JSONStorableString _displayJSON { get; private set; }
+        public JSONStorableStringChooser _changeCurveJSON { get; private set; }
 
-        private JSONStorableBool _lockedJSON;
-        private JSONStorableFloat _lengthJSON;
-        private JSONStorableFloat _speedJSON;
-        private JSONStorableFloat _blendDurationJSON;
-        private JSONStorableStringChooser _displayModeJSON;
-        private JSONStorableString _displayJSON;
+        public JSONStorableStringChooser _addControllerListJSON { get; private set; }
+        public JSONStorableAction _toggleControllerJSON { get; private set; }
+        public JSONStorableStringChooser _linkedAnimationPatternJSON { get; private set; }
+
+        private class FloatParamJSONRef
+        {
+            public JSONStorable Storable;
+            public JSONStorableFloat SourceFloatParam;
+            public JSONStorableFloat Proxy;
+            public UIDynamicSlider Slider;
+        }
+
+        private List<FloatParamJSONRef> _jsfJSONRefs;
+
+        // Storables
+        private JSONStorableStringChooser _addStorableListJSON;
+        private JSONStorableStringChooser _addParamListJSON;
 
         // UI
-        private UIDynamicButton _undoUI;
+        private UIDynamicButton _toggleFloatParamUI;
+        private AtomAnimationUIManager _ui;
 
         #region Init
 
@@ -71,9 +88,10 @@ namespace VamTimeline
             try
             {
                 _serializer = new AtomAnimationSerializer(containingAtom);
+                _ui = new AtomAnimationUIManager(this);
                 InitStorables();
                 InitFloatParamsStorables();
-                InitCustomUI();
+                _ui.InitCustomUI();
                 InitFloatParamsCustomUI();
                 // Try loading from backup
                 StartCoroutine(CreateAnimationIfNoneIsLoaded());
@@ -195,6 +213,9 @@ namespace VamTimeline
             };
             RegisterStringChooser(_animationJSON);
 
+            _addAnimationJSON = new JSONStorableAction(StorableNames.AddAnimation, () => AddAnimation());
+            RegisterAction(_addAnimationJSON);
+
             _scrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - float.Epsilon, true)
             {
                 isStorable = false
@@ -222,6 +243,13 @@ namespace VamTimeline
             _previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(_animation.Current.GetPreviousFrame(_animation.Time)); ContextUpdated(); });
             RegisterAction(_previousFrameJSON);
 
+            _smoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
+
+            _cutJSON = new JSONStorableAction("Cut", () => Cut());
+            _copyJSON = new JSONStorableAction("Copy", () => Copy());
+            _pasteJSON = new JSONStorableAction("Paste", () => Paste());
+            _undoJSON = new JSONStorableAction("Undo", () => Undo());
+
             _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => ContextUpdated());
             RegisterBool(_lockedJSON);
 
@@ -237,72 +265,6 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterString(_displayJSON);
-        }
-
-        protected void InitPlaybackUI(bool rightSide)
-        {
-            var animationUI = CreateScrollablePopup(_animationJSON, rightSide);
-            animationUI.popupPanelHeight = 800f;
-            animationUI.popup.onOpenPopupHandlers += () => _animationJSON.choices = _animation.GetAnimationNames().ToList();
-
-            CreateSlider(_scrubberJSON);
-
-            var playUI = CreateButton("\u25B6 Play", rightSide);
-            playUI.button.onClick.AddListener(() => _playJSON.actionCallback());
-
-            var stopUI = CreateButton("\u25A0 Stop", rightSide);
-            stopUI.button.onClick.AddListener(() => _stopJSON.actionCallback());
-        }
-
-        protected void InitFrameNavUI(bool rightSide)
-        {
-            var selectedControllerUI = CreateScrollablePopup(_filterAnimationTargetJSON, rightSide);
-            selectedControllerUI.popupPanelHeight = 800f;
-
-            var nextFrameUI = CreateButton("\u2192 Next Frame", rightSide);
-            nextFrameUI.button.onClick.AddListener(() => _nextFrameJSON.actionCallback());
-
-            var previousFrameUI = CreateButton("\u2190 Previous Frame", rightSide);
-            previousFrameUI.button.onClick.AddListener(() => _previousFrameJSON.actionCallback());
-
-        }
-
-        protected void InitClipboardUI(bool rightSide)
-        {
-            var cutUI = CreateButton("Cut / Delete Frame", rightSide);
-            cutUI.button.onClick.AddListener(() => Cut());
-
-            var copyUI = CreateButton("Copy Frame", rightSide);
-            copyUI.button.onClick.AddListener(() => Copy());
-
-            var pasteUI = CreateButton("Paste Frame", rightSide);
-            pasteUI.button.onClick.AddListener(() => Paste());
-
-            _undoUI = CreateButton("Undo", rightSide);
-            _undoUI.button.interactable = false;
-            _undoUI.button.onClick.AddListener(() => Undo());
-        }
-
-        protected void InitAnimationSettingsUI(bool rightSide)
-        {
-            var lockedUI = CreateToggle(_lockedJSON, rightSide);
-            lockedUI.label = "Locked (Performance Mode)";
-
-            var addAnimationUI = CreateButton("Add New Animation", rightSide);
-            addAnimationUI.button.onClick.AddListener(() => AddAnimation());
-
-            CreateSlider(_lengthJSON, rightSide);
-
-            CreateSlider(_speedJSON, rightSide);
-
-            CreateSlider(_blendDurationJSON, rightSide);
-        }
-
-        protected void InitDisplayUI(bool rightSide)
-        {
-            CreatePopup(_displayModeJSON, rightSide);
-
-            CreateTextField(_displayJSON, rightSide);
         }
 
         protected IEnumerator CreateAnimationIfNoneIsLoaded()
@@ -397,7 +359,7 @@ namespace VamTimeline
                 {
                     _undoList.Add(_saveJSON.val);
                     if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-                    _undoUI.button.interactable = true;
+                    // _undoUI.button.interactable = true;
                 }
 
                 _saveJSON.valNoCallback = serialized;
@@ -513,7 +475,8 @@ namespace VamTimeline
             var animationName = _animationJSON.val;
             var pop = _undoList[_undoList.Count - 1];
             _undoList.RemoveAt(_undoList.Count - 1);
-            if (_undoList.Count == 0) _undoUI.button.interactable = false;
+            // TODO: Removed while extracting UI
+            // if (_undoList.Count == 0) _undoUI.button.interactable = false;
             if (string.IsNullOrEmpty(pop)) return;
             var time = _animation.Time;
             _saveEnabled = false;
@@ -565,23 +528,6 @@ namespace VamTimeline
         private void SmoothAllFrames()
         {
             _animation.SmoothAllFrames();
-        }
-
-        private void UpdateToggleAnimatedControllerButton(string name)
-        {
-            var btnText = _toggleControllerUI.button.GetComponentInChildren<Text>();
-            if (string.IsNullOrEmpty(name))
-            {
-                btnText.text = "Add/Remove Controller";
-                _toggleControllerUI.button.interactable = false;
-                return;
-            }
-
-            _toggleControllerUI.button.interactable = true;
-            if (_animation.Current.TargetControllers.Any(c => c.Controller.name == name))
-                btnText.text = "Remove Controller";
-            else
-                btnText.text = "Add Controller";
         }
 
         private void ToggleAnimatedController()
@@ -762,7 +708,7 @@ namespace VamTimeline
 
                 _linkedAnimationPatternJSON.valNoCallback = _animation.Current.AnimationPattern?.containingAtom.uid ?? "";
 
-                UpdateToggleAnimatedControllerButton(_addControllerListJSON.val);
+                _ui.AnimationUpdated();
 
                 // Save
                 if (_saveEnabled)
@@ -818,10 +764,12 @@ namespace VamTimeline
 
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
 
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UpdateToggleAnimatedControllerButton(name))
+            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", containingAtom.freeControllers.Select(fc => fc.name).ToList(), containingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => _ui.UIUpdated())
             {
                 isStorable = false
             };
+
+            _toggleControllerJSON = new JSONStorableAction("Toggle Controller", () => ToggleAnimatedController());
 
             _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid))
             {
@@ -829,57 +777,9 @@ namespace VamTimeline
             };
         }
 
-        private void InitCustomUI()
-        {
-            // Left side
-
-            InitPlaybackUI(false);
-
-            InitFrameNavUI(false);
-
-            var changeCurveUI = CreatePopup(_changeCurveJSON, false);
-            changeCurveUI.popupPanelHeight = 800f;
-
-            var smoothAllFramesUI = CreateButton("Smooth All Frames", false);
-            smoothAllFramesUI.button.onClick.AddListener(() => SmoothAllFrames());
-
-            InitClipboardUI(false);
-
-            // Right side
-
-            InitAnimationSettingsUI(true);
-
-            var addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
-            addControllerUI.popupPanelHeight = 800f;
-
-            _toggleControllerUI = CreateButton("Add/Remove Controller", true);
-            _toggleControllerUI.button.onClick.AddListener(() => ToggleAnimatedController());
-
-            var linkedAnimationPatternUI = CreateScrollablePopup(_linkedAnimationPatternJSON, true);
-            linkedAnimationPatternUI.popupPanelHeight = 800f;
-            linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
-
-            InitDisplayUI(true);
-        }
 
         #endregion
 
-        private class FloatParamJSONRef
-        {
-            public JSONStorable Storable;
-            public JSONStorableFloat SourceFloatParam;
-            public JSONStorableFloat Proxy;
-            public UIDynamicSlider Slider;
-        }
-
-        private List<FloatParamJSONRef> _jsfJSONRefs;
-
-        // Storables
-        private JSONStorableStringChooser _addStorableListJSON;
-        private JSONStorableStringChooser _addParamListJSON;
-
-        // UI
-        private UIDynamicButton _toggleFloatParamUI;
 
         #region Initialization
 
@@ -893,7 +793,7 @@ namespace VamTimeline
                 isStorable = false
             };
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string>(), "", "Animate Param", (string name) => UpdateToggleAnimatedFloatParamButton(name))
+            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string>(), "", "Animate Param", (string name) => _ui.UIUpdated())
             {
                 isStorable = false
             };

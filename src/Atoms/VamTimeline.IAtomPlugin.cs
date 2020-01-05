@@ -54,5 +54,31 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomPlugin : IMVRScript
     {
+        AtomAnimation _animation { get; }
+
+        JSONStorableStringChooser _animationJSON { get; }
+        JSONStorableAction _addAnimationJSON { get; }
+        JSONStorableFloat _scrubberJSON { get; }
+        JSONStorableAction _playJSON { get; }
+        JSONStorableAction _playIfNotPlayingJSON { get; }
+        JSONStorableAction _stopJSON { get; }
+        JSONStorableStringChooser _filterAnimationTargetJSON { get; }
+        JSONStorableAction _nextFrameJSON { get; }
+        JSONStorableAction _previousFrameJSON { get; }
+        JSONStorableAction _smoothAllFramesJSON { get; }
+        JSONStorableAction _cutJSON { get; }
+        JSONStorableAction _copyJSON { get; }
+        JSONStorableAction _pasteJSON { get; }
+        JSONStorableAction _undoJSON { get; }
+        JSONStorableBool _lockedJSON { get; }
+        JSONStorableFloat _lengthJSON { get; }
+        JSONStorableFloat _speedJSON { get; }
+        JSONStorableFloat _blendDurationJSON { get; }
+        JSONStorableStringChooser _displayModeJSON { get; }
+        JSONStorableString _displayJSON { get; }
+        JSONStorableStringChooser _changeCurveJSON { get; }
+        JSONStorableStringChooser _addControllerListJSON { get; }
+        JSONStorableAction _toggleControllerJSON { get; }
+        JSONStorableStringChooser _linkedAnimationPatternJSON { get; }
     }
 }

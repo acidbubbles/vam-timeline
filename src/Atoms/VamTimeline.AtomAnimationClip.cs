@@ -20,7 +20,7 @@ namespace VamTimeline
         public AnimationPattern AnimationPattern { get; set; }
         public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
         public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
-        public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams);
+        public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());
         public string AnimationName { get; }
         public float Speed { get; set; } = 1f;
         public float AnimationLength
@@ -76,7 +76,7 @@ namespace VamTimeline
             TargetControllers.Add(controllerState);
             return controllerState;
         }
-        
+
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
             if (TargetFloatParams.Any(s => s.Name == jsf.name)) return null;

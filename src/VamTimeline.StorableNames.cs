@@ -11,6 +11,7 @@ namespace VamTimeline
         // Animation
         public const string Save = "Save";
         public const string Animation = "Animation";
+        public const string AddAnimation = "Add Animation";
         public const string Time = "Time";
         public const string Play = "Play";
         public const string PlayIfNotPlaying = "Play If Not Playing";
@@ -18,6 +19,7 @@ namespace VamTimeline
         public const string FilterAnimationTarget = "Filter Target";
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";
+        public const string SmoothAllFrames = "Smooth All Frames";
         public const string ChangeCurve = "Change Curve";
         public const string Locked = "Locked";
         public const string AnimationLength = "Animation Length";

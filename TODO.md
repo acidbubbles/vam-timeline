@@ -6,3 +6,5 @@
 - When locked, disable all controls
 - Locked in controller
 - Make EnsureQuaternionContinuity an option
+- Hotkeys
+- Allow automatic keyframe of current pose
