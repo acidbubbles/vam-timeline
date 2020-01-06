@@ -101,7 +101,7 @@ namespace VamTimeline
                     UpdatePlaying();
                     // RenderState() // In practice, we don't see anything useful
                 }
-                else if (LockedJSON != null && LockedJSON.val)
+                else if (LockedJSON != null && !LockedJSON.val)
                 {
                     UpdateNotPlaying();
                 }

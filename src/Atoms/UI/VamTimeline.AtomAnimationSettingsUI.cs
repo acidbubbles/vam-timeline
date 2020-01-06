@@ -53,7 +53,7 @@ namespace VamTimeline
             _toggleControllerJSON = new JSONStorableAction("Toggle Controller", () => AddAnimatedController());
 
             _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
-            _addControllerUI.popupPanelHeight = 800f;
+            _addControllerUI.popupPanelHeight = 900f;
             _linkedStorables.Add(_addControllerListJSON);
 
             _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
@@ -147,8 +147,8 @@ namespace VamTimeline
 
         private void InitFloatParamsCustomUI()
         {
-            var storables = GetInterestingStorableIDs().ToList();
-            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) => RefreshStorableFloatsList())
+            var storables = GetStorablesWithFloatParams().ToList();
+            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) => RefreshStorableFloatsList(true))
             {
                 isStorable = false
             };
@@ -159,13 +159,13 @@ namespace VamTimeline
             };
 
             _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
-            _addFloatParamListUI.popupPanelHeight = 800f;
-            _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetInterestingStorableIDs().ToList();
+            _addFloatParamListUI.popupPanelHeight = 700f;
+            _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
             _linkedStorables.Add(_addStorableListJSON);
 
             _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
-            _addParamListUI.popupPanelHeight = 700f;
-            _addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList();
+            _addParamListUI.popupPanelHeight = 600f;
+            _addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList(false);
             _linkedStorables.Add(_addParamListJSON);
 
             _toggleFloatParamUI = Plugin.CreateButton("Add Param", true);
@@ -306,28 +306,29 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private IEnumerable<string> GetInterestingStorableIDs()
+        private IEnumerable<string> GetStorablesWithFloatParams()
         {
             foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs())
             {
                 var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
-                if (storable.GetFloatParamNames().Count > 0)
+                if ((storable?.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
             }
         }
 
-        private void RefreshStorableFloatsList()
+        private void RefreshStorableFloatsList(bool autoSelect)
         {
             if (string.IsNullOrEmpty(_addStorableListJSON.val))
             {
                 _addParamListJSON.choices = new List<string>();
-                _addParamListJSON.val = "";
+                if (autoSelect)
+                    _addParamListJSON.valNoCallback = "";
                 return;
             }
             var values = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val)?.GetFloatParamNames() ?? new List<string>();
             _addParamListJSON.choices = values;
-            if (!values.Contains(_addParamListJSON.val))
-                _addParamListJSON.val = values.FirstOrDefault();
+            if (autoSelect && !values.Contains(_addParamListJSON.val))
+                _addParamListJSON.valNoCallback = values.FirstOrDefault();
         }
 
         public override void UIUpdated()
