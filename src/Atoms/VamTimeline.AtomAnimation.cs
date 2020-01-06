@@ -36,15 +36,16 @@ namespace VamTimeline
             {
                 _fallbackTime = value;
                 if (Current == null) return;
+                SampleParamsAnimation();
                 if (_animState == null) return;
                 _animState.time = value;
                 if (!_animState.enabled)
                 {
                     _animState.enabled = true;
                     _animation.Sample();
+                    SuperController.LogMessage(_animState.time.ToString());
                     _animState.enabled = false;
                 }
-                SampleAnimation();
             }
         }
 
@@ -157,7 +158,7 @@ namespace VamTimeline
             }
         }
 
-        private void SampleAnimation()
+        private void SampleParamsAnimation()
         {
             var time = Time;
             foreach (var morph in Current.TargetFloatParams)
@@ -200,7 +201,7 @@ namespace VamTimeline
                     }
                 }
 
-                SampleAnimation();
+                SampleParamsAnimation();
             }
         }
 
@@ -221,7 +222,7 @@ namespace VamTimeline
             _blendingTimeLeft = 0;
             _blendingDuration = 0;
             _blendingClip = null;
-            SampleAnimation();
+            SampleParamsAnimation();
         }
 
         public bool IsPlaying()
@@ -321,13 +322,14 @@ namespace VamTimeline
                     Time = 0f;
                 }
                 _fallbackTime = 0f;
-                SampleAnimation();
+                SampleParamsAnimation();
             }
             if (_isPlaying && Current.AnimationPattern != null)
             {
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
             }
+            _animState = _animation[Current.AnimationName];
         }
 
         public void SmoothAllFrames()
