@@ -35,7 +35,7 @@ namespace VamTimeline
                 {
                     Speed = DeserializeFloat(clipJSON["Speed"], 1f),
                     AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f),
-                    EnsureQuaternionContinuity = bool.Parse(clipJSON["EnsureQuaternionContinuity"] ?? "True")
+                    EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true)
                 };
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
@@ -65,6 +65,13 @@ namespace VamTimeline
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
             return float.Parse(node.Value);
+        }
+
+        protected bool DeserializeBool(JSONNode node, bool defaultVal)
+        {
+            if (node == null || string.IsNullOrEmpty(node.Value))
+                return defaultVal;
+            return bool.Parse(node.Value);
         }
 
         public string SerializeAnimation(AtomAnimation animation)
