@@ -87,10 +87,10 @@ namespace VamTimeline
 
         public void Update()
         {
+            if (Animation == null) return;
+
             try
             {
-                if (LockedJSON == null || LockedJSON.val || Animation == null) return;
-
                 if (Animation.IsPlaying())
                 {
                     var time = Animation.Time;
@@ -101,7 +101,7 @@ namespace VamTimeline
                     UpdatePlaying();
                     // RenderState() // In practice, we don't see anything useful
                 }
-                else
+                else if (LockedJSON != null && LockedJSON.val)
                 {
                     UpdateNotPlaying();
                 }
