@@ -82,6 +82,10 @@ Note that all specified atoms must contain the same animations, and animations m
 
 When the Controller Plugin has been added, you can use the left/right keyboard arrows to move between keyframes, up/down to move between filter targets, and spacebar to play/stop the animation.
 
+### Interacting with scenes
+
+Playing, stopping and otherwise interacting with this plugin is possible using storables. For example, you can play a specific animation when a mouth colliders triggers, or when an animation patterns reaches a certain point. This can create some intricate relationships between animations and interactivity.
+
 ### Screenshots
 
 The settings screen allow configuring the animation.
