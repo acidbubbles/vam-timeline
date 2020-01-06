@@ -30,7 +30,9 @@ It is expected that you have some basic knowledge of [how Virt-A-Mate works](htt
 4. To add a keyframe, move the `Time` slider to where you want to create a keyframe, and move the controller you have included before. This will create a new keyframe. You can also check the controller's toggle. Unchecking the toggle will delete that keyframe for that controller. Try navigating using the `Next Frame` and `Previous Frame` buttons, and try your animation using the `Play` button.
 5. There is a text box on the top right; this shows all frames, and for the current frame (the current frame is shown using square brackets), the list of affected controllers. This is not as good as an actual curve, but you can at least visualize your timeline.
 
-See below for screenshots.
+See below for screenshots, or check out this video walkthrough:
+
+[![VamTimeline Video Walkthrough](https://img.youtube.com/vi/WgMns-oJWdo/0.jpg)](https://www.youtube.com/watch?v=WgMns-oJWdo)
 
 ### Controller filtering
 
