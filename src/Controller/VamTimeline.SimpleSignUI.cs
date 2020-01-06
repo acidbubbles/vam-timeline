@@ -114,6 +114,28 @@ namespace VamTimeline
             return ui;
         }
 
+        public UIDynamicToggle CreateUIToggleInCanvas(JSONStorableBool jsb, float x, float y)
+        {
+            var canvas = _atom.GetComponentInChildren<Canvas>();
+            if (canvas == null) throw new NullReferenceException("Could not find a canvas to attach to");
+
+            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableTogglePrefab.transform);
+            if (transform == null) throw new NullReferenceException("Could not instantiate configurableTogglePrefab");
+            _components.Add(transform);
+            transform.SetParent(canvas.transform, false);
+            transform.gameObject.SetActive(true);
+
+            var ui = transform.GetComponent<UIDynamicToggle>();
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicPopup component");
+            ui.label = jsb.name;
+            jsb.toggle = ui.toggle;
+
+            transform.Translate(Vector3.down * y, Space.Self);
+            transform.Translate(Vector3.right * x, Space.Self);
+
+            return ui;
+        }
+
         public void Dispose()
         {
             foreach (var component in _components)

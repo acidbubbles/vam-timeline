@@ -19,6 +19,7 @@ namespace VamTimeline
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableBool _hideJSON;
+        private JSONStorableBool _lockedJSON;
         private JSONStorableStringChooser _atomsJSON;
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
@@ -72,6 +73,12 @@ namespace VamTimeline
 
             _hideJSON = new JSONStorableBool("Hide", false, (bool val) => Hide(val));
             RegisterBool(_hideJSON);
+
+            _lockedJSON = new JSONStorableBool("Locked (Performance)", false, (bool val) => Lock(val))
+            {
+                isStorable = false
+            };
+            RegisterBool(_lockedJSON);
 
             _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string> { "" }, "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
@@ -190,9 +197,10 @@ namespace VamTimeline
             try
             {
                 var x = 0f;
-                var y = -0.39f;
+                var y = -0.37f;
                 // const float baseWidth = 1160f;
                 _ui = new SimpleSignUI(_atom, this);
+                _ui.CreateUIToggleInCanvas(_lockedJSON, x, y + 0.1f);
                 _ui.CreateUIPopupInCanvas(_animationJSON, x, y + 0.355f);
                 _ui.CreateUISliderInCanvas(_scrubberJSON, x, y + 0.14f);
                 _ui.CreateUIButtonInCanvas("\u25B6 Play", x - 0.105f, y + 0.60f, 810f, 100f).button.onClick.AddListener(() => Play());
@@ -283,6 +291,7 @@ namespace VamTimeline
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
+            _lockedJSON.val = _mainLinkedAnimation.Locked.val;
         }
 
         public void VamTimelineAnimationFrameUpdated(string uid)
@@ -329,6 +338,14 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError("VamTimeline.ControllerPlugin.Update: " + exc);
+            }
+        }
+
+        private void Lock(bool val)
+        {
+            foreach (var animation in _linkedAnimations)
+            {
+                animation.Locked.val = val;
             }
         }
 
