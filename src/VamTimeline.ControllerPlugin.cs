@@ -268,6 +268,18 @@ namespace VamTimeline
             else
                 _animationJSON.valNoCallback = "(Multiple animations selected)";
 
+            var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
+            if (updated != null)
+            {
+                var time = updated.Scrubber.val;
+                foreach (var other in _linkedAnimations.Where(la => la != updated))
+                {
+                    var scrubber = other.Scrubber;
+                    if (scrubber.val != time)
+                        scrubber.val = time;
+                }
+            }
+
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
 
