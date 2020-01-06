@@ -31,6 +31,7 @@ namespace VamTimeline
                 AtomAnimationSettingsUI.ScreenName,
                 AtomAnimationControllersUI.ScreenName,
                 AtomAnimationFloatParamsUI.ScreenName,
+                AtomAnimationAdvancedUI.ScreenName,
                 AtomAnimationLockedUI.ScreenName
                 },
                 GetDefaultScreen(),
@@ -103,6 +104,9 @@ namespace VamTimeline
                         break;
                     case AtomAnimationFloatParamsUI.ScreenName:
                         _current = new AtomAnimationFloatParamsUI(_plugin);
+                        break;
+                    case AtomAnimationAdvancedUI.ScreenName:
+                        _current = new AtomAnimationAdvancedUI(_plugin);
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown screen {_screens.val}");

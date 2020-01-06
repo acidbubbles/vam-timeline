@@ -10,6 +10,7 @@ src/Atoms/UI/VamTimeline.AtomAnimationLockedUI.cs
 src/Atoms/UI/VamTimeline.AtomAnimationSettingsUI.cs
 src/Atoms/UI/VamTimeline.AtomAnimationControllersUI.cs
 src/Atoms/UI/VamTimeline.AtomAnimationFloatParamsUI.cs
+src/Atoms/UI/VamTimeline.AtomAnimationAdvancedUI.cs
 src/Atoms/UI/VamTimeline.AtomAnimationUIManager.cs
 src/Atoms/VamTimeline.AtomAnimationClip.cs
 src/Atoms/VamTimeline.AtomClipboardEntry.cs

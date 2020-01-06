@@ -44,7 +44,7 @@ namespace VamTimeline
 
             // Right side
 
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", Plugin.ContainingAtom.freeControllers.Select(fc => fc.name).ToList(), Plugin.ContainingAtom.freeControllers.Select(fc => fc.name).FirstOrDefault(), "Animate controller", (string name) => UIUpdated())
+            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", GetEligibleFreeControllers().ToList(), GetEligibleFreeControllers().FirstOrDefault(), "Animate controller", (string name) => UIUpdated())
             {
                 isStorable = false
             };
@@ -78,6 +78,15 @@ namespace VamTimeline
             CreateSpacer(true);
 
             GenerateRemoveToggles();
+        }
+
+        private IEnumerable<string> GetEligibleFreeControllers()
+        {
+            foreach (var fc in Plugin.ContainingAtom.freeControllers)
+            {
+                if (!fc.name.EndsWith("Control")) continue;
+                yield return fc.name;
+            }
         }
 
         private void GenerateRemoveToggles()
