@@ -14,7 +14,9 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationClip
     {
-        private float _animationLength = 5f;
+        public const float DefaultAnimationLength = 2f;
+
+        private float _animationLength = DefaultAnimationLength;
         private IAnimationTarget _selected;
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }

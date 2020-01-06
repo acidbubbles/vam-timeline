@@ -194,7 +194,7 @@ namespace VamTimeline
             AddAnimationJSON = new JSONStorableAction(StorableNames.AddAnimation, () => AddAnimation());
             RegisterAction(AddAnimationJSON);
 
-            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, 5f - AnimationEndOffset, true)
+            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, AtomAnimationClip.DefaultAnimationLength - AnimationEndOffset, true)
             {
                 isStorable = false
             };
@@ -231,7 +231,7 @@ namespace VamTimeline
             LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationModified());
             RegisterBool(LockedJSON);
 
-            LengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, 5f, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
+            LengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
             SpeedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
 

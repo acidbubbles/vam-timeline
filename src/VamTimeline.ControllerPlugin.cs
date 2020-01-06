@@ -107,7 +107,7 @@ namespace VamTimeline
             };
             RegisterStringChooser(_targetJSON);
 
-            _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 5f, true)
+            _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, AtomAnimationClip.DefaultAnimationLength - 0.01f, true)
             {
                 isStorable = false
             };

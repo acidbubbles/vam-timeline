@@ -34,7 +34,7 @@ namespace VamTimeline
                 var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value)
                 {
                     Speed = DeserializeFloat(clipJSON["Speed"], 1f),
-                    AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], 1f),
+                    AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true)
                 };
                 DeserializeClip(clip, clipJSON);
