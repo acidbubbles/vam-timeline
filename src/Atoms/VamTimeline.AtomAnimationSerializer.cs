@@ -143,12 +143,8 @@ namespace VamTimeline
                     var controllerName = controllerJSON["Controller"].Value;
                     var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
                     if (controller == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a controller '{controllerName}'");
-                    var target = clip.Add(controller);
-                    if (target == null)
-                    {
-                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' has multiple instances of controller '{controllerName}'");
-                        continue;
-                    }
+                    var target = new FreeControllerAnimationTarget(controller, clip.AnimationLength);
+                    clip.TargetControllers.Add(target);
                     DeserializeCurve(target.X, controllerJSON["X"]);
                     DeserializeCurve(target.X, controllerJSON["X"]);
                     DeserializeCurve(target.Y, controllerJSON["Y"]);
@@ -174,12 +170,8 @@ namespace VamTimeline
                         SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
                         continue;
                     }
-                    var target = clip.Add(storable, jsf);
-                    if (target == null)
-                    {
-                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' has multiple instances of param '{storableId}/{floatParamName}'");
-                        continue;
-                    }
+                    var target = new FloatParamAnimationTarget(storable, jsf, clip.AnimationLength);
+                    clip.TargetFloatParams.Add(target);
                     DeserializeCurve(target.Value, paramJSON["Value"]);
                 }
             }
