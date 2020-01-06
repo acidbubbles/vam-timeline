@@ -68,7 +68,7 @@ namespace VamTimeline
 
         private void InitStorables()
         {
-            _autoPlayJSON = new JSONStorableBool("Auto Play", true);
+            _autoPlayJSON = new JSONStorableBool("Auto Play", false);
             RegisterBool(_autoPlayJSON);
 
             _hideJSON = new JSONStorableBool("Hide", false, (bool val) => Hide(val));
