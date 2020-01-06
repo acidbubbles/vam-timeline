@@ -15,17 +15,14 @@ namespace VamTimeline
         public const string ScreenName = "Params";
         public override string Name => ScreenName;
 
-        private class FloatParamJSONRef
+        private class TargetRef
         {
-            public JSONStorable Storable;
-            public JSONStorableFloat SourceFloatParam;
-            public JSONStorableFloat Proxy;
-            public UIDynamicSlider Slider;
+            public JSONStorableFloat FloatParamProxyJSON;
             internal JSONStorableBool KeyframeJSON;
             internal FloatParamAnimationTarget Target;
         }
 
-        private List<FloatParamJSONRef> _jsfJSONRefs;
+        private List<TargetRef> _targets;
 
 
         public AtomAnimationFloatParamsUI(IAtomPlugin plugin)
@@ -55,64 +52,56 @@ namespace VamTimeline
         public override void UpdatePlaying()
         {
             base.UpdatePlaying();
-            UpdateFloatParamSliders();
+            UpdateValues();
+        }
+
+        public override void AnimationFrameUpdated()
+        {
+            UpdateValues();
+            base.AnimationFrameUpdated();
         }
 
         public override void AnimationModified()
         {
             base.AnimationModified();
-            RefreshFloatParamsListUI();
+            RefreshTargetsList();
         }
 
-        private void UpdateFloatParamSliders()
+        private void UpdateValues()
         {
-            if (_jsfJSONRefs != null)
+            if (_targets != null)
             {
                 var time = Plugin.Animation.Time;
-                foreach (var jsfJSONRef in _jsfJSONRefs)
+                foreach (var jsfJSONRef in _targets)
                 {
-                    jsfJSONRef.Proxy.valNoCallback = jsfJSONRef.SourceFloatParam.val;
+                    jsfJSONRef.FloatParamProxyJSON.valNoCallback = jsfJSONRef.Target.FloatParam.val;
                     jsfJSONRef.KeyframeJSON.valNoCallback = jsfJSONRef.Target.Value.keys.Any(k => k.time == time);
                 }
             }
         }
 
-        public override void AnimationFrameUpdated()
+        private void RefreshTargetsList()
         {
-            UpdateFloatParamSliders();
-            base.AnimationFrameUpdated();
-        }
-
-        public override void Remove()
-        {
-            RemoveJsonRefs();
-            base.Remove();
-        }
-
-        private void RefreshFloatParamsListUI()
-        {
-            RemoveJsonRefs();
             if (Plugin.Animation == null) return;
+            if (_targets != null && Enumerable.SequenceEqual(Plugin.Animation.Current.TargetFloatParams, _targets.Select(t => t.Target)))
+                return;
+            RemoveTargets();
             var time = Plugin.Animation.Time;
-            // TODO: This is expensive, though rarely occuring
-            _jsfJSONRefs = new List<FloatParamJSONRef>();
+            _targets = new List<TargetRef>();
             foreach (var target in Plugin.Animation.Current.TargetFloatParams)
             {
                 var jsfJSONRef = target.FloatParam;
                 var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{jsfJSONRef.name} Keyframe", target.Value.keys.Any(k => k.time == time), (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
-                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{jsfJSONRef.name}", jsfJSONRef.defaultVal, (float val) => UpdateFloatParam(target, jsfJSONRef, val), jsfJSONRef.min, jsfJSONRef.max, jsfJSONRef.constrained, true)
+                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{jsfJSONRef.name}", jsfJSONRef.defaultVal, (float val) => SetFloatParamValue(target, val), jsfJSONRef.min, jsfJSONRef.max, jsfJSONRef.constrained, true)
                 {
                     valNoCallback = jsfJSONRef.val
                 };
                 var slider = Plugin.CreateSlider(jsfJSONProxy, true);
-                _jsfJSONRefs.Add(new FloatParamJSONRef
+                _targets.Add(new TargetRef
                 {
                     Target = target,
-                    Storable = target.Storable,
-                    SourceFloatParam = jsfJSONRef,
-                    Proxy = jsfJSONProxy,
-                    Slider = slider,
+                    FloatParamProxyJSON = jsfJSONProxy,
                     KeyframeJSON = keyframeJSON
                 });
             }
@@ -122,6 +111,11 @@ namespace VamTimeline
         {
             // TODO: This should be done by the controller (updating the animation resets the time)
             var time = Plugin.Animation.Time;
+            if (time == 0f)
+            {
+                _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
+                return;
+            }
             if (val)
             {
                 target.SetKeyframe(time, target.FloatParam.val);
@@ -136,28 +130,34 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private void RemoveJsonRefs()
+        private void SetFloatParamValue(FloatParamAnimationTarget target, float val)
         {
-            if (_jsfJSONRefs == null) return;
-            foreach (var jsfJSONRef in _jsfJSONRefs)
-            {
-                // TODO: Take care of keeping track of those separately
-                Plugin.RemoveToggle(jsfJSONRef.KeyframeJSON);
-                Plugin.RemoveSlider(jsfJSONRef.Proxy);
-            }
-        }
-
-        private void UpdateFloatParam(FloatParamAnimationTarget target, JSONStorableFloat sourceFloatParam, float val)
-        {
-            sourceFloatParam.val = val;
+            target.FloatParam.val = val;
             // TODO: This should be done by the controller (updating the animation resets the time)
             var time = Plugin.Animation.Time;
             target.SetKeyframe(time, val);
             Plugin.Animation.RebuildAnimation();
-            var jsfJSONRef = _jsfJSONRefs.FirstOrDefault(j => j.SourceFloatParam == sourceFloatParam);
+            var jsfJSONRef = _targets.FirstOrDefault(j => j.Target == target);
             jsfJSONRef.KeyframeJSON.valNoCallback = true;
             // TODO: Breaks sliders
             // Plugin.AnimationModified();
+        }
+
+        public override void Remove()
+        {
+            RemoveTargets();
+            base.Remove();
+        }
+
+        private void RemoveTargets()
+        {
+            if (_targets == null) return;
+            foreach (var jsfJSONRef in _targets)
+            {
+                // TODO: Take care of keeping track of those separately
+                Plugin.RemoveToggle(jsfJSONRef.KeyframeJSON);
+                Plugin.RemoveSlider(jsfJSONRef.FloatParamProxyJSON);
+            }
         }
     }
 }
