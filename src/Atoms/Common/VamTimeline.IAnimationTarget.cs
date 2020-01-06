@@ -12,5 +12,6 @@ namespace VamTimeline
         IEnumerable<AnimationCurve> GetCurves();
         void RenderDebugInfo(StringBuilder display, float time);
         IEnumerable<float> GetAllKeyframesTime();
+        void DeleteFrame(float time);
     }
 }

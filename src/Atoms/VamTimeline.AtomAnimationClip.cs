@@ -162,11 +162,7 @@ namespace VamTimeline
         {
             foreach (var target in GetAllOrSelectedTargets())
             {
-                foreach (var curve in target.GetCurves())
-                {
-                    var key = Array.FindIndex(curve.keys, k => k.time == time);
-                    if (key != -1) curve.RemoveKey(key);
-                }
+                target.DeleteFrame(time);
             }
         }
 

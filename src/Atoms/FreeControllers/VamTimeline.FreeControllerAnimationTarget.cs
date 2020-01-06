@@ -124,6 +124,15 @@ namespace VamTimeline
             RotW.SetKeyframe(time, rotation.w);
         }
 
+        public void DeleteFrame(float time)
+        {
+            foreach (var curve in GetCurves())
+            {
+                var key = Array.FindIndex(curve.keys, k => k.time == time);
+                if (key != -1) curve.RemoveKey(key);
+            }
+        }
+
         #endregion
 
         #region Curves

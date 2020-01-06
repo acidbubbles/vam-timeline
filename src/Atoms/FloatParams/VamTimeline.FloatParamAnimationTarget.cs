@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -51,6 +52,12 @@ namespace VamTimeline
             }
 
             Value.FlatAllFrames();
+        }
+
+        public void DeleteFrame(float time)
+        {
+            var key = Array.FindIndex(Value.keys, k => k.time == time);
+            if (key != -1) Value.RemoveKey(key);
         }
 
         public IEnumerable<float> GetAllKeyframesTime()
