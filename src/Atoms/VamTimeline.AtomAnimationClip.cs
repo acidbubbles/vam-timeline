@@ -21,6 +21,7 @@ namespace VamTimeline
         public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
         public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
         public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());
+        public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; }
         public float Speed { get; set; } = 1f;
         public float AnimationLength
@@ -109,8 +110,8 @@ namespace VamTimeline
             {
                 target.Value.FlatAllFrames();
             }
-            // NOTE: This allows smoother rotation but cause weird looping issues in some cases. Better with than without though.
-            Clip.EnsureQuaternionContinuity();
+            if (EnsureQuaternionContinuity)
+                Clip.EnsureQuaternionContinuity();
         }
 
         public void ChangeCurve(float time, string curveType)

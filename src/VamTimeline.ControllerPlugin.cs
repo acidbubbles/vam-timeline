@@ -17,6 +17,8 @@ namespace VamTimeline
         private const string AllTargets = "(All)";
         private Atom _atom;
         private SimpleSignUI _ui;
+        private JSONStorableBool _autoPlayJSON;
+        private JSONStorableBool _hideJSON;
         private JSONStorableStringChooser _atomsJSON;
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _scrubberJSON;
@@ -40,7 +42,8 @@ namespace VamTimeline
                 _atom = GetAtom();
                 InitStorables();
                 InitCustomUI();
-                OnEnable();
+                if (!_hideJSON.val)
+                    OnEnable();
             }
             catch (Exception exc)
             {
@@ -64,6 +67,12 @@ namespace VamTimeline
 
         private void InitStorables()
         {
+            _autoPlayJSON = new JSONStorableBool("Auto Play", true);
+            RegisterBool(_autoPlayJSON);
+
+            _hideJSON = new JSONStorableBool("Hide", false, (bool val) => Hide(val));
+            RegisterBool(_hideJSON);
+
             _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string> { "" }, "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
                 isStorable = false
@@ -110,6 +119,14 @@ namespace VamTimeline
             RegisterString(_savedAtomsJSON);
         }
 
+        private void Hide(bool val)
+        {
+            if (val)
+                OnDisable();
+            else
+                OnEnable();
+        }
+
         private IEnumerable<string> GetAtomsWithVamTimelinePlugin()
         {
             var atoms = SuperController.singleton.GetAtoms();
@@ -136,6 +153,12 @@ namespace VamTimeline
                     LinkAtom(atomUid);
                 }
             }
+
+            if (_hideJSON.val)
+                OnDisable();
+
+            if (_autoPlayJSON.val)
+                Play();
         }
 
         private void InitCustomUI()
@@ -150,6 +173,10 @@ namespace VamTimeline
 
             var resyncButton = CreateButton("Re-Sync Atom Plugins");
             resyncButton.button.onClick.AddListener(() => RestoreAtomsLink(_savedAtomsJSON.val));
+
+            CreateToggle(_autoPlayJSON, true);
+
+            CreateToggle(_hideJSON, true);
         }
 
         #endregion
@@ -158,7 +185,7 @@ namespace VamTimeline
 
         public void OnEnable()
         {
-            if (_atom == null) return;
+            if (_atom == null || _ui != null) return;
 
             try
             {

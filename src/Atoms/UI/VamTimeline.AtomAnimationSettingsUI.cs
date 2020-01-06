@@ -15,6 +15,7 @@ namespace VamTimeline
         public const string ScreenName = "Animation Settings";
         public override string Name => ScreenName;
 
+        private JSONStorableBool _ensureQuaternionContinuity;
         private JSONStorableStringChooser _addControllerListJSON;
         private JSONStorableAction _toggleControllerJSON;
         private UIDynamicPopup _addControllerUI;
@@ -293,6 +294,16 @@ namespace VamTimeline
 
             Plugin.CreateSlider(Plugin.BlendDurationJSON, rightSide);
             _linkedStorables.Add(Plugin.BlendDurationJSON);
+
+            _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
+            Plugin.CreateToggle(_ensureQuaternionContinuity);
+            _linkedStorables.Add(_ensureQuaternionContinuity);
+        }
+
+        private void SetEnsureQuaternionContinuity(bool val)
+        {
+            Plugin.Animation.Current.EnsureQuaternionContinuity = val;
+            Plugin.AnimationModified();
         }
 
         private IEnumerable<string> GetInterestingStorableIDs()
