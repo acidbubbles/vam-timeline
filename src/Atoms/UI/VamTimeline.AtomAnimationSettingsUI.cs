@@ -308,7 +308,7 @@ namespace VamTimeline
 
         private IEnumerable<string> GetStorablesWithFloatParams()
         {
-            foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs())
+            foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs().OrderBy(s => s))
             {
                 var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
                 if ((storable?.GetFloatParamNames()?.Count ?? 0) > 0)

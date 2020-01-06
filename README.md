@@ -22,42 +22,45 @@ Download `VamTimeline.zip` from [Releases](https://github.com/acidbubbles/vam-ti
 
 It is expected that you have some basic knowledge of [how Virt-A-Mate works](https://www.reddit.com/r/VirtAMate/wiki/index) before getting started. Basic knowledge of keyframe based animation is also useful. In a nutshell, you specify some positions at certain times, and all positions in between will be interpolated using curves (linear, smooth, etc.).
 
-### Animating an atom
-
-![VamTimeline Atom Plugin](screenshots/vam-timeline-atom.png)
+### Your first animation
 
 1. Add the `VamTimeline.AtomAnimation.cslist` plugin on atoms you want to animate, and open the plugin settings (`Open Custom UI` in the Atom's `Plugin` section).
-2. On the right side, select a controller you want to animate in the `Animate Controller` drop down, and select `Add / Remove Controller` to attach it. This will turn on the "position" and "rotation" controls for that controller.
-3. To add a frame, move the `Time` slider to where you want to create a keyframe, and move the atom. This will create a new keyframe.
-4. Check the `Display` text field; you can see all the keyframes you have created there, and visualize which one you have selected.
-5. Move from a frame to another using the `Next Frame` and `Previous Frame` buttons.
-6. Play your animation using the `Play` button, and stop it using the `Stop` button (was this instruction really useful?)
+2. In Animation Settings screen, select a controller you want to animate in the `Animate Controller` drop down, and select `Add Controller` to include it. This will turn on the "position" and "rotation" controls for that controller if that's not already done.
+3. You can now select the `Controllers` tab by using the top-left drop-down. Your controller is checked, that means there is a keyframe at this time in the timeline.
+4. To add a keyframe, move the `Time` slider to where you want to create a keyframe, and move the controller you have included before. This will create a new keyframe. You can also check the controller's toggle. Unchecking the toggle will delete that keyframe for that controller. Try navigating using the `Next Frame` and `Previous Frame` buttons, and try your animation using the `Play` button.
+5. There is a text box on the top right; this shows all frames, and for the current frame (the current frame is shown using square brackets), the list of affected controllers. This is not as good as an actual curve, but you can at least visualize your timeline.
+
+See below for screenshots.
 
 ### Controller filtering
 
-To allow moving between the frames of a specific controller, or to make the `Change Curve`, `Cut`, `Copy` and `Paste` features only affect a single frame of a single controller, you can use the `Selected Controller` drop down. Note that this will still allow you to move and create frames for other controllers.
+To allow moving between the frames of a specific controller instead of stopping at every frame of every controller, you canuse the `Filter Target` drop down. This will also make the `Change Curve`, `Cut`, `Copy` and `Paste` features only affect a single frame of a single controller, instead of all affected controller of that frame. Note that this will still allow you to move and create frames for other controllers.
+
+### Curve options
+
+You can choose what kind of tangent to apply on keyframes. This will change what the curve looks like. A flat curve will slow down to zero, and re-accelerate. A smooth curve will try to keep momentum between keyframes, and a linear curve will move in a straight line. The bounce curve accelerates, and bounces back at the same speed.
+
+Keep in mind that the first and last frames will always be smooth to ensure correct looping. You cannot change this option.
+
+By default, new keyframes will automatically select a smooth curve, but deleting a keyframe will not reset that curve. This can result in weird movements; you can use the `Smooth` curve type on those frames to reset them, or use `Smooth All Frames` to reset every keyframe to a smooth version.
 
 ### Multiple animations
 
-You can add animations with `Add New Animation`. This will port over the _current_ displayed frame, as well as all controllers. Note that if you later add more controllers, they will not be assigned to all animations. This means that when you switch between animations, controllers not in the second animation will simply stay where they currently are.
+You can add animations with `Add New Animation` button in the `Animatin Settings` tab. This will port over all controller positions from the _currently_ displayed keyframe, as well as the length of the current animation. Note that if you later add more controllers, they will not be assigned to all animations. This means that when you switch between animations, controllers that were not added in the second animation will simply stay where they currently are.
 
 You can switch between animations using the `Animation` drop down. When the animation is playing, it will smoothly blend between animations during the value specified in `Blend Duration`.
 
-### Controlling curves
+### Animating morphs and other parameters
 
-By default, the first frame will always synchronize the last frame and smooth the curve. You therefore cannot make the first/last frame linear.
+You can animate morphs and any other `float param`, such as light intensity, skin specular, etc. You can add them like controllers in the `Animation Settings` tab. Then, in the `Params` tab,  you can use the toggle to create keyframes, or use the sliders to change values and create keyframes at the current time.
 
-Otherwise, you can use the `Change Curve` drop down when a frame is selected to change the curve style for that frame.
+### Performance
 
-To smooth everything, use `Smooth all curves`.
+To gain a little bit of performance, you can use the `Locked` screen. It will reduce processing a little bit, and prevent moving controllers by accident.
 
 ### Triggering events
 
-To use events, upi cam ise an `AnimationPattern` of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
-
-### Controlling morphs and other float parameters
-
-Add the `VamTimeline.FloatParamAnimation.cslist` plugin on atoms you want to animate, and open the plugin settings (`Open Custom UI` in the Atom's `Plugin` section). It works in a similar way to the atom plugin, except you can add any float parameter. For morphs, make sure you enable the Animatable parameter in the morphs panel, and you'll find them under geometry.
+To use events, you can use an `AnimationPattern` of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
 
 ### Adding an external playback controller
 
@@ -72,6 +75,24 @@ In the plugin settings, select the animations you want to control and select `Li
 You can now control the animations in the floating panel; you can also select which atom and animation to play.
 
 Note that all specified atoms must contain the same animations, and animations must have the same length.
+
+### Keyboard shortcuts
+
+When the Controller Plugin has been added, you can use the left/right keyboard arrows to move between keyframes, up/down to move between filter targets, and spacebar to play/stop the animation.
+
+### Screenshots
+
+The settings screen allow configuring the animation.
+
+![VamTimeline Settings Tab](screenshots/atom-settings-ui.png)
+
+The controllers screen provides tooling to help manage controller keyframes.
+
+![VamTimeline Controllers Tab](screenshots/atom-controllers-ui.png)
+
+The Params screen allows provides tooling to animate morphs and other params.
+
+![VamTimeline Params Tab](screenshots/atom-params-ui.png)
 
 ## Development
 
