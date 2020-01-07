@@ -25,7 +25,15 @@ namespace VamTimeline
             var helpJSON = new JSONStorableString("Page", "");
             var pagesJSON = new JSONStorableStringChooser(
                 "Pages", new List<string>{
-                "Basic setup"
+                "Basic setup",
+                "Multiple animations",
+                "Morphs and params",
+                "Performance",
+                "Triggering events",
+                "External controller",
+                "Keyboard shortcuts",
+                "Interacting with scenes",
+                "About"
             },
             "",
             "Pages",
@@ -65,7 +73,7 @@ You can animate morphs and any other float param, such as light intensity, skin 
 
                     case "Performance":
                         helpJSON.val = @"
-o gain a little bit of performance, you can use the Locked screen. It will reduce processing a little bit, and prevent moving controllers by accident.
+To gain a little bit of performance, you can use the Locked screen. It will reduce processing a little bit, and prevent moving controllers by accident.
 ".Trim();
                         break;
 
