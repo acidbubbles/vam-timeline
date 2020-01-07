@@ -43,7 +43,6 @@ namespace VamTimeline
                 {
                     _animState.enabled = true;
                     _animation.Sample();
-                    SuperController.LogMessage(_animState.time.ToString());
                     _animState.enabled = false;
                 }
             }
