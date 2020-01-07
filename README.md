@@ -86,6 +86,10 @@ When the Controller Plugin has been added, you can use the left/right keyboard a
 
 Playing, stopping and otherwise interacting with this plugin is possible using storables. For example, you can play a specific animation when a mouth colliders triggers, or when an animation patterns reaches a certain point. This can create some intricate relationships between animations and interactivity.
 
+### Publishing without the plugin
+
+You can select record all controllers using VaM's built in animation motion capture; after you'll be able to delete the plugin completely and the animation will be stored in the scene itself (baked in). You won't be able to restore the animation this way however.
+
 ### Screenshots
 
 The settings screen allow configuring the animation.
