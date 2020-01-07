@@ -88,7 +88,7 @@ Playing, stopping and otherwise interacting with this plugin is possible using s
 
 ### Publishing without the plugin
 
-You can select record all controllers using VaM's built in animation motion capture; after you'll be able to delete the plugin completely and the animation will be stored in the scene itself (baked in). You won't be able to restore the animation this way however.
+You can select record all controllers using VaM's built in animation motion capture; after you'll be able to delete the plugin completely and the animation will be stored in the scene itself (baked in). This will only work with controllers, not with float params. You won't be able to restore the animation this way however.
 
 ### Screenshots
 
