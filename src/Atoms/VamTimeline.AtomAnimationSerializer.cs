@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
 using UnityEngine;
@@ -157,14 +159,32 @@ namespace VamTimeline
             }
 
             JSONArray paramsJSON = clipJSON["FloatParams"].AsArray;
+            var morphs = GetMorphs();
             if (paramsJSON != null)
             {
                 foreach (JSONClass paramJSON in paramsJSON)
                 {
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
-                    JSONStorable storable = _atom.containingAtom.GetStorableByID(storableId);
-                    var jsf = storable?.GetFloatJSONParam(floatParamName);
+                    if (storableId == "geometry")
+                    {
+                        // This allows loading an animation even though the animatable option was checked off (e.g. loading a pose)
+                        var morph = morphs.FirstOrDefault(m => m.jsonFloat.name == floatParamName);
+                        if (morph == null)
+                        {
+                            SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a morph (geometry) '{floatParamName}'");
+                            continue;
+                        }
+                        if (!morph.animatable)
+                            morph.animatable = true;
+                    }
+                    var storable = _atom.containingAtom.GetStorableByID(storableId);
+                    if (storable == null)
+                    {
+                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a storable '{storableId}'");
+                        continue;
+                    }
+                    var jsf = storable.GetFloatJSONParam(floatParamName);
                     if (jsf == null)
                     {
                         SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
@@ -174,6 +194,22 @@ namespace VamTimeline
                     clip.TargetFloatParams.Add(target);
                     DeserializeCurve(target.Value, paramJSON["Value"]);
                 }
+            }
+        }
+
+        private IEnumerable<DAZMorph> GetMorphs()
+        {
+            var geometry = _atom.GetStorableByID("geometry");
+            if (geometry == null) yield break;
+            var character = geometry as DAZCharacterSelector;
+            if (character == null) yield break;
+            var morphControl = character.morphsControlUI;
+            if (morphControl == null) yield break;
+            foreach (var morphDisplayName in morphControl.GetMorphDisplayNames())
+            {
+                var morph = morphControl.GetMorphByDisplayName(morphDisplayName);
+                if (morph == null) continue;
+                yield return morph;
             }
         }
 
