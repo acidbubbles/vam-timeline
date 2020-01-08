@@ -31,24 +31,42 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
-            var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Current Pose", true);
-            keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose());
+            var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Current Pose (All)", true);
+            keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
             _components.Add(keyframeCurrentPoseUI);
+
+            var keyframeCurrentPoseTrackedUI = Plugin.CreateButton("Keyframe Current Pose (Tracked)", true);
+            keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
+            _components.Add(keyframeCurrentPoseUI);
+
+            // TODO: Keyframe all animatable morphs
         }
 
-        private void KeyframeCurrentPose()
+        private void KeyframeCurrentPose(bool all)
         {
-            var time = Plugin.Animation.Time;
-            foreach (var fc in Plugin.ContainingAtom.freeControllers)
+            try
             {
-                if (!fc.name.EndsWith("Control")) continue;
-                if (fc.currentPositionState != FreeControllerV3.PositionState.On) continue;
-                if (fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
+                var time = Plugin.Animation.Time;
+                foreach (var fc in Plugin.ContainingAtom.freeControllers)
+                {
+                    if (!fc.name.EndsWith("Control")) continue;
+                    if (fc.currentPositionState != FreeControllerV3.PositionState.On) continue;
+                    if (fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
 
-                var target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(tc => tc.Controller == fc);
-                if (target == null)
-                    target = Plugin.Animation.Add(fc);
-                target.SetKeyframeToCurrentTransform(time);
+                    var target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(tc => tc.Controller == fc);
+                    if (target == null)
+                    {
+                        if (!all) continue;
+                        target = Plugin.Animation.Add(fc);
+                    }
+                    target.SetKeyframeToCurrentTransform(time);
+                }
+                Plugin.Animation.RebuildAnimation();
+                Plugin.AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AtomAnimationAdvancedUI: " + exc.ToString());
             }
         }
     }
