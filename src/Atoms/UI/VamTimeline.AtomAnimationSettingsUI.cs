@@ -85,6 +85,7 @@ namespace VamTimeline
         {
             foreach (var fc in Plugin.ContainingAtom.freeControllers)
             {
+                if (fc.name == "control") yield return fc.name;
                 if (!fc.name.EndsWith("Control")) continue;
                 yield return fc.name;
             }
