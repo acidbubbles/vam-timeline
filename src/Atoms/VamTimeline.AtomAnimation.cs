@@ -210,7 +210,15 @@ namespace VamTimeline
         {
             if (Current.NextAnimationName == null) return;
             // TODO: BlendDuration should be per clip, not per animation. Deserialize legacy.
-            _nextAnimationTime = time + Current.AnimationLength - BlendDuration;
+            if (Current.Loop)
+            {
+                if (Current.NextAnimationTime > 0)
+                    _nextAnimationTime = time + Current.NextAnimationTime;
+                else
+                    _nextAnimationTime = 0;
+            }
+            else
+                _nextAnimationTime = time + Current.AnimationLength - BlendDuration;
             if (_nextAnimationTime < time) _nextAnimationTime = 0;
             if (_nextAnimationTime > time)
                 _nextAnimation = Current.NextAnimationName;

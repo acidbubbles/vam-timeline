@@ -70,6 +70,8 @@ namespace VamTimeline
             }
         }
 
+        public float NextAnimationTime { get; set; }
+
         public AtomAnimationClip(string animationName)
         {
             AnimationName = animationName;
