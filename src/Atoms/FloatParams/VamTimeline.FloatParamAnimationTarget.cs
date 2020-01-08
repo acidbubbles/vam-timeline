@@ -30,7 +30,7 @@ namespace VamTimeline
 
         public void SetLength(float length)
         {
-            Value.SetLength(length);
+            Value.StretchLength(length);
             _animationLength = length;
         }
 

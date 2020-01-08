@@ -402,7 +402,7 @@ namespace VamTimeline
 
         private void UpdateAnimationLength(float v)
         {
-            if (v <= 0) return;
+            if (v <= 0.1f) v = 0.1f;
             Animation.AnimationLength = v;
             AnimationModified();
         }

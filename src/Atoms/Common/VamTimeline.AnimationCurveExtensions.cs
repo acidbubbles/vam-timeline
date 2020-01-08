@@ -13,7 +13,48 @@ namespace VamTimeline
     {
         #region Control
 
-        public static void SetLength(this AnimationCurve curve, float length)
+        public static void StretchLength(this AnimationCurve curve, float length)
+        {
+            int lastKey = curve.keys.Length - 1;
+            var curveLength = curve.keys[lastKey].time;
+            if (length == curveLength) return;
+            var ratio = length / curveLength;
+            if (Math.Abs(ratio) < float.Epsilon) return;
+            int from;
+            int to;
+            int direction;
+            if (ratio < 1f)
+            {
+                from = 0;
+                to = lastKey + 1;
+                direction = 1;
+            }
+            else
+            {
+                from = lastKey;
+                to = -1;
+                direction = -1;
+            }
+            for (var key = from; key != to; key += direction)
+            {
+                var keyframe = curve.keys[key];
+                keyframe.time *= ratio;
+                curve.MoveKey(key, keyframe);
+            }
+
+            // Sanity check
+            if (curve.keys[lastKey].time > length + float.Epsilon)
+            {
+                SuperController.LogError($"VamTimeline: Problem while resizing animation. Expected length {length} but was {curve.keys[lastKey].time}");
+            }
+
+            // Ensure exact match
+            var lastframe = curve.keys[lastKey];
+            lastframe.time = length;
+            curve.MoveKey(lastKey, lastframe);
+        }
+
+        public static void CropLength(this AnimationCurve curve, float length)
         {
             if (length > curve.keys[curve.keys.Length - 1].time)
             {

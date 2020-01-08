@@ -43,7 +43,7 @@ namespace VamTimeline
         {
             foreach (var curve in Curves)
             {
-                curve.SetLength(length);
+                curve.StretchLength(length);
             }
             _animationLength = length;
         }
