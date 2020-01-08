@@ -21,13 +21,17 @@ namespace VamTimeline
             _atom = atom;
         }
 
+        #region Deserialize
+
         public AtomAnimation DeserializeAnimation(string val)
         {
             if (string.IsNullOrEmpty(val)) return null;
 
             var animationJSON = JSON.Parse(val);
-            var animation = CreateDefaultAnimation();
-            animation.BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f);
+            var animation = new AtomAnimation(_atom)
+            {
+                BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f)
+            };
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
@@ -37,7 +41,8 @@ namespace VamTimeline
                     Speed = DeserializeFloat(clipJSON["Speed"], 1f),
                     AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength),
                     Loop = DeserializeBool(clipJSON["Loop"], true),
-                    EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true)
+                    EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
+                    NextAnimationName = clipJSON["NextAnimationName"]?.Value
                 };
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
@@ -47,86 +52,7 @@ namespace VamTimeline
             return animation;
         }
 
-        protected void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON)
-        {
-            foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
-            {
-                var keyframe = new Keyframe
-                {
-                    time = DeserializeFloat(keyframeJSON["time"]),
-                    value = DeserializeFloat(keyframeJSON["value"]),
-                    inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
-                    outTangent = DeserializeFloat(keyframeJSON["outTangent"])
-                };
-                curve.AddKey(keyframe);
-            }
-        }
-
-        protected float DeserializeFloat(JSONNode node, float defaultVal = 0)
-        {
-            if (node == null || string.IsNullOrEmpty(node.Value))
-                return defaultVal;
-            return float.Parse(node.Value);
-        }
-
-        protected bool DeserializeBool(JSONNode node, bool defaultVal)
-        {
-            if (node == null || string.IsNullOrEmpty(node.Value))
-                return defaultVal;
-            return bool.Parse(node.Value);
-        }
-
-        public string SerializeAnimation(AtomAnimation animation)
-        {
-            var animationJSON = new JSONClass
-            {
-                { "BlendDuration", animation.BlendDuration.ToString() }
-            };
-            var clipsJSON = new JSONArray();
-            animationJSON.Add("Clips", clipsJSON);
-            foreach (var clip in animation.Clips)
-            {
-                var clipJSON = new JSONClass
-                {
-                    { "AnimationName", clip.AnimationName },
-                    { "Speed", clip.Speed.ToString() },
-                    { "AnimationLength", clip.AnimationLength.ToString() },
-                    { "Loop", clip.Loop.ToString() },
-                    { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity.ToString() }
-                };
-                SerializeClip(clip, clipJSON);
-                clipsJSON.Add(clipJSON);
-            }
-            return animationJSON.ToString();
-        }
-
-        protected JSONNode SerializeCurve(AnimationCurve curve)
-        {
-            var curveJSON = new JSONClass();
-            var keyframesJSON = new JSONArray();
-            curveJSON.Add("keys", keyframesJSON);
-
-            foreach (var keyframe in curve.keys)
-            {
-                var keyframeJSON = new JSONClass
-                {
-                    { "time", keyframe.time.ToString() },
-                    { "value", keyframe.value.ToString() },
-                    { "inTangent", keyframe.inTangent.ToString() },
-                    { "outTangent", keyframe.outTangent.ToString() }
-                };
-                keyframesJSON.Add(keyframeJSON);
-            }
-
-            return curveJSON;
-        }
-
-        public AtomAnimation CreateDefaultAnimation()
-        {
-            return new AtomAnimation(_atom);
-        }
-
-        protected void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
+        private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
             var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
             if (!string.IsNullOrEmpty(animationPatternUID))
@@ -214,7 +140,67 @@ namespace VamTimeline
             }
         }
 
-        protected void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
+        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON)
+        {
+            foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
+            {
+                var keyframe = new Keyframe
+                {
+                    time = DeserializeFloat(keyframeJSON["time"]),
+                    value = DeserializeFloat(keyframeJSON["value"]),
+                    inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
+                    outTangent = DeserializeFloat(keyframeJSON["outTangent"])
+                };
+                curve.AddKey(keyframe);
+            }
+        }
+
+        protected float DeserializeFloat(JSONNode node, float defaultVal = 0)
+        {
+            if (node == null || string.IsNullOrEmpty(node.Value))
+                return defaultVal;
+            return float.Parse(node.Value);
+        }
+
+        protected bool DeserializeBool(JSONNode node, bool defaultVal)
+        {
+            if (node == null || string.IsNullOrEmpty(node.Value))
+                return defaultVal;
+            return bool.Parse(node.Value);
+        }
+
+        #endregion
+
+        #region Serialize
+
+        public string SerializeAnimation(AtomAnimation animation)
+        {
+            var animationJSON = new JSONClass
+            {
+                { "BlendDuration", animation.BlendDuration.ToString() }
+            };
+            var clipsJSON = new JSONArray();
+            animationJSON.Add("Clips", clipsJSON);
+            foreach (var clip in animation.Clips)
+            {
+                var clipJSON = new JSONClass
+                {
+                    { "AnimationName", clip.AnimationName },
+                    { "Speed", clip.Speed.ToString() },
+                    { "AnimationLength", clip.AnimationLength.ToString() },
+                    { "Loop", clip.Loop.ToString() },
+                    { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity.ToString() }
+                };
+                if (clip.NextAnimationName != null)
+                    clipJSON["NextAnimationName"] = clip.NextAnimationName;
+
+                SerializeClip(clip, clipJSON);
+                clipsJSON.Add(clipJSON);
+            }
+            return animationJSON.ToString();
+        }
+
+        private void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
             if (clip.AnimationPattern != null)
                 clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);
@@ -250,5 +236,28 @@ namespace VamTimeline
                 paramsJSON.Add(paramJSON);
             }
         }
+
+        protected JSONNode SerializeCurve(AnimationCurve curve)
+        {
+            var curveJSON = new JSONClass();
+            var keyframesJSON = new JSONArray();
+            curveJSON.Add("keys", keyframesJSON);
+
+            foreach (var keyframe in curve.keys)
+            {
+                var keyframeJSON = new JSONClass
+                {
+                    { "time", keyframe.time.ToString() },
+                    { "value", keyframe.value.ToString() },
+                    { "inTangent", keyframe.inTangent.ToString() },
+                    { "outTangent", keyframe.outTangent.ToString() }
+                };
+                keyframesJSON.Add(keyframeJSON);
+            }
+
+            return curveJSON;
+        }
+
+        #endregion
     }
 }

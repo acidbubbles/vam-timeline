@@ -52,9 +52,6 @@ namespace VamTimeline
         public JSONStorableAction PasteJSON { get; private set; }
         public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
-        public JSONStorableFloat LengthJSON { get; private set; }
-        public JSONStorableFloat SpeedJSON { get; private set; }
-        public JSONStorableFloat BlendDurationJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableStringChooser ChangeCurveJSON { get; private set; }
 
@@ -246,12 +243,6 @@ namespace VamTimeline
             LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationModified());
             RegisterBool(LockedJSON);
 
-            LengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
-
-            SpeedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
-
-            BlendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
-
             DisplayJSON = new JSONStorableString(StorableNames.Display, "")
             {
                 isStorable = false
@@ -320,7 +311,7 @@ namespace VamTimeline
             try
             {
                 if (Animation == null)
-                    Animation = _serializer.CreateDefaultAnimation();
+                    Animation = new AtomAnimation(containingAtom);
 
                 Animation.Initialize();
                 AnimationModified();
@@ -398,27 +389,6 @@ namespace VamTimeline
             if (Animation.Current.AnimationPattern != null)
                 Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
             AnimationFrameUpdated();
-        }
-
-        private void UpdateAnimationLength(float v)
-        {
-            if (v <= 0.1f) v = 0.1f;
-            Animation.AnimationLength = v;
-            AnimationModified();
-        }
-
-        private void UpdateAnimationSpeed(float v)
-        {
-            if (v < 0) return;
-            Animation.Speed = v;
-            AnimationModified();
-        }
-
-        private void UpdateBlendDuration(float v)
-        {
-            if (v < 0) return;
-            Animation.BlendDuration = v;
-            AnimationModified();
         }
 
         private void Cut()
@@ -599,10 +569,6 @@ namespace VamTimeline
                 ScrubberJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                LengthJSON.valNoCallback = Animation.AnimationLength;
-                SpeedJSON.valNoCallback = Animation.Speed;
-                LengthJSON.valNoCallback = Animation.AnimationLength;
-                BlendDurationJSON.valNoCallback = Animation.BlendDuration;
                 FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
 
                 // Save

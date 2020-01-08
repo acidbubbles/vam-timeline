@@ -15,6 +15,9 @@ namespace VamTimeline
         public const string ScreenName = "Animation Settings";
         public override string Name => ScreenName;
 
+        private JSONStorableFloat _lengthJSON;
+        private JSONStorableFloat _speedJSON;
+        private JSONStorableFloat _blendDurationJSON;
         private JSONStorableBool _ensureQuaternionContinuity;
         private JSONStorableBool _loop;
         private JSONStorableStringChooser _addControllerListJSON;
@@ -27,6 +30,7 @@ namespace VamTimeline
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
+        private JSONStorableStringChooser _nextAnimationJSON;
         private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
@@ -47,6 +51,8 @@ namespace VamTimeline
 
             InitAnimationSettingsUI(false);
 
+            InitSequenceUI();
+
             // Right side
 
             InitControllersUI();
@@ -64,20 +70,24 @@ namespace VamTimeline
             GenerateRemoveToggles();
         }
 
-        protected void InitAnimationSettingsUI(bool rightSide)
+        private void InitAnimationSettingsUI(bool rightSide)
         {
             var addAnimationUI = Plugin.CreateButton("Add New Animation", rightSide);
             addAnimationUI.button.onClick.AddListener(() => Plugin.AddAnimationJSON.actionCallback());
             _components.Add(addAnimationUI);
 
-            Plugin.CreateSlider(Plugin.LengthJSON, rightSide);
-            _linkedStorables.Add(Plugin.LengthJSON);
+            _lengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
-            Plugin.CreateSlider(Plugin.SpeedJSON, rightSide);
-            _linkedStorables.Add(Plugin.SpeedJSON);
+            Plugin.CreateSlider(_lengthJSON, rightSide);
+            _linkedStorables.Add(_lengthJSON);
 
-            Plugin.CreateSlider(Plugin.BlendDurationJSON, rightSide);
-            _linkedStorables.Add(Plugin.BlendDurationJSON);
+            _speedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
+            Plugin.CreateSlider(_speedJSON, rightSide);
+            _linkedStorables.Add(_speedJSON);
+
+            _blendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
+            Plugin.CreateSlider(_blendDurationJSON, rightSide);
+            _linkedStorables.Add(_blendDurationJSON);
 
             _loop = new JSONStorableBool("Loop", Plugin.Animation?.Current?.Loop ?? true, (bool val) => ChangeLoop(val));
             var loopingUI = Plugin.CreateToggle(_loop);
@@ -86,6 +96,18 @@ namespace VamTimeline
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
             Plugin.CreateToggle(_ensureQuaternionContinuity);
             _linkedStorables.Add(_ensureQuaternionContinuity);
+        }
+
+        private void InitSequenceUI()
+        {
+            _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
+            var nextAnimationUI = Plugin.CreateScrollablePopup(_nextAnimationJSON);
+            _linkedStorables.Add(_nextAnimationJSON);
+        }
+
+        private List<string> GetEligibleNextAnimations()
+        {
+            return new[] { "" }.Concat(Plugin.Animation.GetAnimationNames().Where(n => n != Plugin.Animation.Current.AnimationName)).ToList();
         }
 
         private void InitControllersUI()
@@ -232,11 +254,43 @@ namespace VamTimeline
 
         #region Callbacks
 
+        private void UpdateAnimationLength(float v)
+        {
+            if (v <= 0.1f) v = 0.1f;
+            Plugin.Animation.AnimationLength = v;
+            Plugin.AnimationModified();
+        }
+
+        private void UpdateAnimationSpeed(float v)
+        {
+            if (v < 0) return;
+            Plugin.Animation.Speed = v;
+            Plugin.AnimationModified();
+        }
+
+        private void UpdateBlendDuration(float v)
+        {
+            if (v < 0) return;
+            Plugin.Animation.BlendDuration = v;
+            Plugin.AnimationModified();
+        }
+
         private void ChangeLoop(bool val)
         {
             Plugin.Animation.Current.Loop = val;
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
+        }
+
+        private void SetEnsureQuaternionContinuity(bool val)
+        {
+            Plugin.Animation.Current.EnsureQuaternionContinuity = val;
+            Plugin.AnimationModified();
+        }
+
+        private void ChangeNextAnimation(string val)
+        {
+            Plugin.Animation.Current.NextAnimationName = val;
         }
 
         private void LinkAnimationPattern(string uid)
@@ -343,12 +397,6 @@ namespace VamTimeline
             }
         }
 
-        private void SetEnsureQuaternionContinuity(bool val)
-        {
-            Plugin.Animation.Current.EnsureQuaternionContinuity = val;
-            Plugin.AnimationModified();
-        }
-
         #endregion
 
         #region Events
@@ -363,8 +411,15 @@ namespace VamTimeline
             base.AnimationModified();
             GenerateRemoveToggles();
 
-            _linkedAnimationPatternJSON.valNoCallback = Plugin.Animation.Current.AnimationPattern?.containingAtom.uid ?? "";
-            _loop.valNoCallback = Plugin.Animation.Current.Loop;
+            var animation = Plugin.Animation;
+            _lengthJSON.valNoCallback = animation.AnimationLength;
+            _speedJSON.valNoCallback = animation.Speed;
+            _blendDurationJSON.valNoCallback = animation.BlendDuration;
+            _loop.valNoCallback = animation.Current.Loop;
+            _ensureQuaternionContinuity.valNoCallback = animation.Current.EnsureQuaternionContinuity;
+            _nextAnimationJSON.valNoCallback = animation.Current.NextAnimationName;
+            _nextAnimationJSON.choices = GetEligibleNextAnimations();
+            _linkedAnimationPatternJSON.valNoCallback = animation.Current.AnimationPattern?.containingAtom.uid ?? "";
         }
 
         public override void Remove()

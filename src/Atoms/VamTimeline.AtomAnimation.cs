@@ -18,9 +18,13 @@ namespace VamTimeline
         private AnimationState _animState;
         private bool _isPlaying;
         private float _fallbackTime;
+        private string _playedAnimation;
         private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
         private float _blendingDuration;
+        private string _nextAnimation;
+        private float _nextAnimationTime;
+
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
 
@@ -186,6 +190,7 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
+            _playedAnimation = Current.AnimationName;
             _isPlaying = true;
             _fallbackTime = 0;
             if (_animState != null)
@@ -198,6 +203,17 @@ namespace VamTimeline
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
             }
+            DetermineNextAnimation();
+        }
+
+        private void DetermineNextAnimation()
+        {
+            if (Current.NextAnimationName == null) return;
+            // TODO: BlendDuration should be per clip, not per animation. Deserialize legacy.
+            _nextAnimationTime = Current.AnimationLength - BlendDuration;
+            if (_nextAnimationTime < 0) _nextAnimationTime = 0;
+            if (_nextAnimationTime > 0)
+                _nextAnimation = Current.NextAnimationName;
         }
 
         private void SampleParamsAnimation()
@@ -247,6 +263,16 @@ namespace VamTimeline
 
                 SampleParamsAnimation();
             }
+
+            if (_nextAnimationTime > 0 && _fallbackTime >= _nextAnimationTime)
+            {
+                // TODO: Keep only the name or make a ChangeAnimation overload
+                var nextAnimation = _nextAnimation;
+                _nextAnimation = null;
+                _nextAnimationTime = 0;
+                ChangeAnimation(nextAnimation);
+                DetermineNextAnimation();
+            }
         }
 
         public void Stop()
@@ -264,7 +290,14 @@ namespace VamTimeline
             _blendingTimeLeft = 0;
             _blendingDuration = 0;
             _blendingClip = null;
+            _nextAnimation = null;
+            _nextAnimationTime = 0;
             SampleParamsAnimation();
+            if (_playedAnimation != null)
+            {
+                ChangeAnimation(_playedAnimation);
+                _playedAnimation = null;
+            }
         }
 
         public bool IsPlaying()
@@ -372,7 +405,7 @@ namespace VamTimeline
         public void ChangeAnimation(string animationName)
         {
             var clip = Clips.FirstOrDefault(c => c.AnimationName == animationName);
-            if (clip == null) throw new NullReferenceException($"Could not find animation {animationName}");
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'");
             var time = Time;
             if (_isPlaying)
             {

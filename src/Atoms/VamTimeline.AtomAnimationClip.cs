@@ -19,6 +19,7 @@ namespace VamTimeline
         private float _animationLength = DefaultAnimationLength;
         private IAnimationTarget _selected;
         private bool _loop = true;
+        private string _nextAnimationName;
 
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }
@@ -55,6 +56,17 @@ namespace VamTimeline
             {
                 _loop = value;
                 Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
+            }
+        }
+        public string NextAnimationName
+        {
+            get
+            {
+                return _nextAnimationName;
+            }
+            set
+            {
+                _nextAnimationName = value == "" ? null : value;
             }
         }
 

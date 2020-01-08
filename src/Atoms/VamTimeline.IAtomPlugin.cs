@@ -82,9 +82,6 @@ namespace VamTimeline
         JSONStorableAction PasteJSON { get; }
         JSONStorableAction UndoJSON { get; }
         JSONStorableBool LockedJSON { get; }
-        JSONStorableFloat LengthJSON { get; }
-        JSONStorableFloat SpeedJSON { get; }
-        JSONStorableFloat BlendDurationJSON { get; }
         JSONStorableString DisplayJSON { get; }
         JSONStorableStringChooser ChangeCurveJSON { get; }
 
