@@ -495,7 +495,6 @@ namespace VamTimeline
             try
             {
                 var animationName = Animation.AddAnimation();
-                AnimationModified();
                 ChangeAnimation(animationName);
             }
             finally
@@ -515,11 +514,13 @@ namespace VamTimeline
                 return;
             }
             Animation.ChangeCurve(curveType);
+            AnimationModified();
         }
 
         private void SmoothAllFrames()
         {
             Animation.SmoothAllFrames();
+            AnimationModified();
         }
 
         #endregion

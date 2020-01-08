@@ -161,9 +161,9 @@ namespace VamTimeline
             else
             {
 
-                var inTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
-                var outTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
-                var tangent = inTangent + outTangent / 2f;
+                var inTangent = CalculateLinearTangent(curve.keys[curve.keys.Length - 2].value, keyframe.value, curve.keys[curve.keys.Length - 2].time, curve.keys[curve.keys.Length - 1].time);
+                var outTangent = CalculateLinearTangent(keyframe, curve.keys[1]);
+                var tangent = (inTangent + outTangent) / 2f;
                 keyframe.inTangent = tangent;
                 keyframe.outTangent = tangent;
             }
