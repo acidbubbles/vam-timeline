@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 
 namespace VamTimeline
 {
@@ -13,6 +14,9 @@ namespace VamTimeline
         public const string ScreenName = "Help";
         public override string Name => ScreenName;
 
+        private JSONStorableString _helpJSON;
+        private JSONStorableStringChooser _pagesJSON;
+
         public AtomAnimationHelpUI(IAtomPlugin plugin)
             : base(plugin)
         {
@@ -22,8 +26,8 @@ namespace VamTimeline
         {
             base.Init();
 
-            var helpJSON = new JSONStorableString("Page", "");
-            var pagesJSON = new JSONStorableStringChooser(
+            _helpJSON = new JSONStorableString("Page", "");
+            _pagesJSON = new JSONStorableStringChooser(
                 "Pages", new List<string>{
                 "Basic setup",
                 "Multiple animations",
@@ -33,7 +37,8 @@ namespace VamTimeline
                 "External controller",
                 "Keyboard shortcuts",
                 "Interacting with scenes",
-                "About"
+                "About",
+                "Debug",
             },
             "",
             "Pages",
@@ -42,7 +47,7 @@ namespace VamTimeline
                 switch (val)
                 {
                     case "Basic setup":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 It is expected that you have some basic knowledge of how Virt-A-Mate works before getting started. Basic knowledge of keyframe based animation is also useful. In a nutshell, you specify some positions at certain times, and all positions in between will be interpolated using curves (linear, smooth, etc.).
 
 You can find out more on the project site: https://github.com/acidbubbles/vam-timeline
@@ -58,7 +63,7 @@ Building your first animation:
                         break;
 
                     case "Multiple animations":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 You can add animations with Add New Animation button in the Animatin Settings tab. This will port over all controller positions from the currently displayed keyframe, as well as the length of the current animation. Note that if you later add more controllers, they will not be assigned to all animations. This means that when you switch between animations, controllers that were not added in the second animation will simply stay where they currently are.
 
 You can switch between animations using the Animation drop down. When the animation is playing, it will smoothly blend between animations during the value specified in Blend Duration.
@@ -66,25 +71,25 @@ You can switch between animations using the Animation drop down. When the animat
                         break;
 
                     case "Morphs and params":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 You can animate morphs and any other float param, such as light intensity, skin specular, etc. You can add them like controllers in the Animation Settings tab. Then, in the Params tab, you can use the toggle to create keyframes, or use the sliders to change values and create keyframes at the current time.
 ".Trim();
                         break;
 
                     case "Performance":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 To gain a little bit of performance, you can use the Locked screen. It will reduce processing a little bit, and prevent moving controllers by accident.
 ".Trim();
                         break;
 
                     case "Triggering events":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 To use events, you can use an AnimationPattern of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
 ".Trim();
                         break;
 
                     case "External controller":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 This allows creating a floating payback controller, and control multiple atoms together. Create a Simple Sign atom and add the script to it. This is optional, you only need this if you want to animate more than one atom, or if you want the floating playback controls.
 
 Add the VamTimeline.Controller.cslist plugin on a Simple Sign atom.
@@ -98,19 +103,19 @@ Note that all specified atoms must contain the same animations, and animations m
                         break;
 
                     case "Keyboard shortcuts":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 When the Controller Plugin has been added, you can use the left/right keyboard arrows to move between keyframes, up/down to move between filter targets, and spacebar to play/stop the animation.
 ".Trim();
                         break;
 
                     case "Interacting with scenes":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 Playing, stopping and otherwise interacting with this plugin is possible using storables. For example, you can play a specific animation when a mouth colliders triggers, or when an animation patterns reaches a certain point. This can create some intricate relationships between animations and interactivity.
 ".Trim();
                         break;
 
                     case "About":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 Plugin developed by Acid Bubbles in January 2020.
 
 Built because I miss Source Filmmaker!
@@ -119,25 +124,56 @@ Please report any issues or suggestions to https://github.com/acidbubbles/vam-ti
 ".Trim();
                         break;
 
+                    case "Debug":
+                        _helpJSON.val = GetDebugInfo();
+                        break;
+
                     case "__Template":
-                        helpJSON.val = @"
+                        _helpJSON.val = @"
 ".Trim();
                         break;
 
                     default:
-                        helpJSON.val = "Page Not Found";
+                        _helpJSON.val = "Page Not Found";
                         break;
                 }
             });
 
-            Plugin.CreateScrollablePopup(pagesJSON);
-            _linkedStorables.Add(pagesJSON);
+            var pagesUI = Plugin.CreateScrollablePopup(_pagesJSON);
+            pagesUI.popupPanelHeight = 800;
+            _linkedStorables.Add(_pagesJSON);
 
-            var helpUI = Plugin.CreateTextField(helpJSON, true);
+            var helpUI = Plugin.CreateTextField(_helpJSON, true);
             helpUI.height = 1200;
-            _linkedStorables.Add(helpJSON);
+            _linkedStorables.Add(_helpJSON);
 
-            pagesJSON.val = "Basic setup";
+            _pagesJSON.val = "Basic setup";
+        }
+
+        private string GetDebugInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Animation Time: {Plugin.Animation.Time}");
+            sb.AppendLine($"Animation Name: {Plugin.Animation.Current.AnimationName}");
+            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())
+            {
+                sb.AppendLine($"=== Target: {target.Name} ===");
+                foreach (var time in target.GetAllKeyframesTime())
+                {
+                    sb.AppendLine($"--- Keyframe: {time} ---");
+                    target.RenderDebugInfo(sb, time);
+                }
+            }
+            return sb.ToString();
+        }
+
+        public override void AnimationModified()
+        {
+            base.AnimationModified();
+            if (_pagesJSON.val == "Debug")
+            {
+                _helpJSON.val = GetDebugInfo();
+            }
         }
     }
 }

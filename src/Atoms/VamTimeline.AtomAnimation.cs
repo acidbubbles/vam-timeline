@@ -28,22 +28,28 @@ namespace VamTimeline
         {
             get
             {
-                if (Current == null) return _fallbackTime % AnimationLength;
-                if (_animState == null) return _fallbackTime % AnimationLength;
-                return _animState.time % AnimationLength;
+                var time = _animState != null && _animState.enabled ? _animState.time : _fallbackTime;
+                if (Current.Loop) return time % AnimationLength;
+                return time;
             }
             set
             {
                 _fallbackTime = value;
                 if (Current == null) return;
                 SampleParamsAnimation();
-                if (_animState == null) return;
-                _animState.time = value;
-                if (!_animState.enabled)
+                if (_animState != null)
                 {
-                    _animState.enabled = true;
-                    _animation.Sample();
-                    _animState.enabled = false;
+                    if (!_isPlaying)
+                    {
+                        _animState.enabled = true;
+                        _animState.weight = 1f;
+                    }
+                    _animState.time = value;
+                    if (!_isPlaying)
+                    {
+                        _animation.Sample();
+                        _animState.enabled = false;
+                    }
                 }
             }
         }
@@ -130,8 +136,45 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             var added = Current.Add(controller);
-            RebuildAnimation();
+            if (added != null)
+            {
+                added.SetKeyframeToCurrentTransform(0f);
+                added.SetKeyframeToCurrentTransform(Current.AnimationLength);
+                RebuildAnimation();
+            }
             return added;
+        }
+
+        public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
+        {
+            var added = Current.Add(storable, jsf);
+            if (added != null)
+            {
+                added.SetKeyframe(0f, jsf.val);
+                added.SetKeyframe(Current.AnimationLength, jsf.val);
+                RebuildAnimation();
+            }
+            return added;
+        }
+
+        public void SetKeyframe(FloatParamAnimationTarget target, float time, float val)
+        {
+            if (time > Current.AnimationLength)
+                time = Current.AnimationLength;
+            if (Current.Loop && time == Current.AnimationLength)
+                time = 0f;
+            target.SetKeyframe(time, val);
+            RebuildAnimation();
+        }
+
+        public void SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
+        {
+            if (time > Current.AnimationLength)
+                time = Current.AnimationLength;
+            if (Current.Loop && time == Current.AnimationLength)
+                time = 0f;
+            target.SetKeyframeToCurrentTransform(time);
+            RebuildAnimation();
         }
 
         public void Remove(FreeControllerV3 controller)
@@ -187,7 +230,9 @@ namespace VamTimeline
         {
             if (_isPlaying)
             {
-                _fallbackTime = (_fallbackTime + UnityEngine.Time.deltaTime * Speed) % AnimationLength;
+                _fallbackTime = _animState != null && _animState.enabled
+                    ? _animState.time
+                    : (_fallbackTime + UnityEngine.Time.deltaTime * Speed);
 
                 if (_blendingClip != null)
                 {
@@ -209,13 +254,11 @@ namespace VamTimeline
             if (Current == null) return;
             _isPlaying = false;
             _animation.Stop();
-            Time = 0;
             foreach (var clip in Clips)
             {
                 if (clip.AnimationPattern)
                 {
                     clip.AnimationPattern.SetBoolParamValue("loopOnce", true);
-                    clip.AnimationPattern.ResetAnimation();
                 }
             }
             _blendingTimeLeft = 0;
@@ -235,11 +278,14 @@ namespace VamTimeline
             var time = Time;
             foreach (var clip in Clips)
             {
-                clip.RebuildAnimation();
+                RebuildClipCurve(clip);
                 _animation.AddClip(clip.Clip, clip.AnimationName);
                 var animState = _animation[clip.AnimationName];
-                animState.wrapMode = clip.Loop ? WrapMode.Loop : WrapMode.Once;
-                animState.speed = clip.Speed;
+                if (animState != null)
+                {
+                    animState.wrapMode = clip.Loop ? WrapMode.Loop : WrapMode.Once;
+                    animState.speed = clip.Speed;
+                }
             }
             if (HasAnimatableControllers())
             {
@@ -247,11 +293,38 @@ namespace VamTimeline
                 _animation.Play(Current.AnimationName);
                 _animation.Stop(Current.AnimationName);
                 _animState = _animation[Current.AnimationName];
-                _animState.time = time;
+                if (_animState != null)
+                    _animState.time = time;
             }
             else
             {
                 _animState = null;
+            }
+        }
+
+        private void RebuildClipCurve(AtomAnimationClip clip)
+        {
+            clip.Clip.ClearCurves();
+            foreach (var target in clip.TargetControllers)
+            {
+                if (clip.Loop)
+                {
+                    // TODO: Extract this since we may need to smooth between two animations too
+                    target.SetCurveSnapshot(AnimationLength, target.GetCurveSnapshot(0f));
+                    target.SmoothLoop();
+                }
+                target.ReapplyCurvesToClip(clip.Clip);
+            }
+            if (clip.EnsureQuaternionContinuity)
+                clip.Clip.EnsureQuaternionContinuity();
+
+            foreach (var target in clip.TargetFloatParams)
+            {
+                if (clip.Loop)
+                {
+                    target.SetKeyframe(AnimationLength, target.Value.keys[0].value);
+                }
+                target.Value.FlatAllFrames();
             }
         }
 
@@ -271,24 +344,26 @@ namespace VamTimeline
         {
             string animationName = GetNewAnimationName();
             var clip = new AtomAnimationClip(animationName);
-            CopyCurrentValues(clip);
+            CopyCurrentClipStateTo(clip);
             AddClip(clip);
             return animationName;
         }
 
-        private void CopyCurrentValues(AtomAnimationClip clip)
+        private void CopyCurrentClipStateTo(AtomAnimationClip clip)
         {
             clip.Speed = Speed;
             clip.AnimationLength = AnimationLength;
-            foreach (var controller in Current.TargetControllers.Select(c => c.Controller))
+            foreach (var origTarget in Current.TargetControllers)
             {
-                var animController = clip.Add(controller);
-                animController.SetKeyframeToCurrentTransform(0f);
+                var newTarget = clip.Add(origTarget.Controller);
+                newTarget.SetKeyframeToCurrentTransform(0f);
+                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
             }
-            foreach (var target in Current.TargetFloatParams)
+            foreach (var origTarget in Current.TargetFloatParams)
             {
-                var animController = clip.Add(target.Storable, target.FloatParam);
-                animController.SetKeyframe(0f, target.FloatParam.val);
+                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
+                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
+                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
             }
         }
 
@@ -374,12 +449,16 @@ namespace VamTimeline
         public void Paste(AtomClipboardEntry clipboard)
         {
             float time = Time;
+            if (Current.Loop && time == AnimationLength)
+                time = 0f;
             foreach (var entry in clipboard.Controllers)
             {
                 var animController = Current.TargetControllers.FirstOrDefault(c => c.Controller == entry.Controller);
                 if (animController == null)
                     animController = Add(entry.Controller);
                 animController.SetCurveSnapshot(time, entry.Snapshot);
+                if (time == 0f && Current.Loop)
+                    animController.SetCurveSnapshot(AnimationLength, entry.Snapshot);
             }
             foreach (var entry in clipboard.FloatParams)
             {
@@ -387,6 +466,8 @@ namespace VamTimeline
                 if (animController == null)
                     animController = Current.Add(entry.Storable, entry.FloatParam);
                 animController.SetKeyframe(time, entry.Snapshot.value);
+                if (time == 0f && Current.Loop)
+                    animController.SetKeyframe(AnimationLength, entry.Snapshot.value);
             }
             RebuildAnimation();
         }

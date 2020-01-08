@@ -63,7 +63,7 @@ namespace VamTimeline
             AnimationName = animationName;
             Clip = new AnimationClip
             {
-                wrapMode = WrapMode.Loop
+                legacy = true
             };
         }
 
@@ -87,8 +87,7 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             if (TargetControllers.Any(c => c.Controller == controller)) return null;
-            FreeControllerAnimationTarget target = new FreeControllerAnimationTarget(controller, AnimationLength);
-            target.SetKeyframeToCurrentTransform(0f);
+            var target = new FreeControllerAnimationTarget(controller, AnimationLength);
             TargetControllers.Add(target);
             return target;
         }
@@ -116,17 +115,6 @@ namespace VamTimeline
 
         public void RebuildAnimation()
         {
-            Clip.ClearCurves();
-            foreach (var target in TargetControllers)
-            {
-                target.ReapplyCurvesToClip(Clip);
-            }
-            foreach (var target in TargetFloatParams)
-            {
-                target.Value.FlatAllFrames();
-            }
-            if (EnsureQuaternionContinuity)
-                Clip.EnsureQuaternionContinuity();
         }
 
         public void ChangeCurve(float time, string curveType)
@@ -149,13 +137,15 @@ namespace VamTimeline
 
         public float GetNextFrame(float time)
         {
+            if (time == AnimationLength)
+                return 0f;
             var nextTime = AnimationLength;
             foreach (var controller in GetAllOrSelectedTargets())
             {
                 var targetNextTime = controller.GetCurves().First().keys.FirstOrDefault(k => k.time > time).time;
                 if (targetNextTime != 0 && targetNextTime < nextTime) nextTime = targetNextTime;
             }
-            if (nextTime == AnimationLength)
+            if (nextTime == AnimationLength && Loop)
                 return 0f;
             else
                 return nextTime;
@@ -164,7 +154,7 @@ namespace VamTimeline
         public float GetPreviousFrame(float time)
         {
             if (time == 0f)
-                return GetAllOrSelectedTargets().SelectMany(c => c.GetCurves()).SelectMany(c => c.keys).Select(c => c.time).Where(t => t != AnimationLength).Max();
+                return GetAllOrSelectedTargets().SelectMany(c => c.GetCurves()).SelectMany(c => c.keys).Select(c => c.time).Where(t => !Loop || t != AnimationLength).Max();
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedTargets())
             {

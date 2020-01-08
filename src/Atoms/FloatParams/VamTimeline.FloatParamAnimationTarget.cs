@@ -41,17 +41,7 @@ namespace VamTimeline
 
         public void SetKeyframe(float time, float value)
         {
-            if (time == 0f)
-            {
-                Value.SetKeyframe(0, value);
-                Value.SetKeyframe(_animationLength, value);
-            }
-            else
-            {
-                Value.SetKeyframe(time, value);
-            }
-
-            Value.FlatAllFrames();
+            Value.SetKeyframe(time, value);
         }
 
         public void DeleteFrame(float time)
@@ -62,12 +52,11 @@ namespace VamTimeline
 
         public IEnumerable<float> GetAllKeyframesTime()
         {
-            return Value.keys.Take(Value.keys.Length - 1).Select(k => k.time);
+            return Value.keys.Select(k => k.time);
         }
 
         public void RenderDebugInfo(StringBuilder display, float time)
         {
-            display.AppendLine($"{FloatParam.name}");
             foreach (var keyframe in Value.keys)
             {
                 display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");

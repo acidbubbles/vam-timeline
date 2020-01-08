@@ -37,7 +37,7 @@ namespace VamTimeline
 
             var keyframeCurrentPoseTrackedUI = Plugin.CreateButton("Keyframe Current Pose (Tracked)", true);
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
-            _components.Add(keyframeCurrentPoseUI);
+            _components.Add(keyframeCurrentPoseTrackedUI);
 
             // TODO: Keyframe all animatable morphs
         }
@@ -59,7 +59,7 @@ namespace VamTimeline
                         if (!all) continue;
                         target = Plugin.Animation.Add(fc);
                     }
-                    target.SetKeyframeToCurrentTransform(time);
+                    Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
                 }
                 Plugin.Animation.RebuildAnimation();
                 Plugin.AnimationModified();

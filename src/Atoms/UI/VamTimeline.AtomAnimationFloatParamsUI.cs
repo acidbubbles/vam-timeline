@@ -118,7 +118,7 @@ namespace VamTimeline
             }
             if (val)
             {
-                target.SetKeyframe(time, target.FloatParam.val);
+                Plugin.Animation.SetKeyframe(target, time, target.FloatParam.val);
             }
             else
             {
@@ -133,7 +133,7 @@ namespace VamTimeline
             target.FloatParam.val = val;
             // TODO: This should be done by the controller (updating the animation resets the time)
             var time = Plugin.Animation.Time;
-            target.SetKeyframe(time, val);
+            Plugin.Animation.SetKeyframe(target, time, val);
             Plugin.Animation.RebuildAnimation();
             var targetRef = _targets.FirstOrDefault(j => j.Target == target);
             targetRef.KeyframeJSON.valNoCallback = true;

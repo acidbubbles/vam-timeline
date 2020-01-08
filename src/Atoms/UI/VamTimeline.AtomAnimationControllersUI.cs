@@ -121,7 +121,7 @@ namespace VamTimeline
             }
             if (val)
             {
-                target.SetKeyframeToCurrentTransform(time);
+                Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
             }
             else
             {

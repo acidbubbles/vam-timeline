@@ -218,8 +218,7 @@ namespace VamTimeline
 
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
-                var animController = Plugin.Animation.Add(controller);
-                animController.SetKeyframeToCurrentTransform(0f);
+                var target = Plugin.Animation.Add(controller);
                 Plugin.AnimationModified();
             }
             catch (Exception exc)
@@ -249,9 +248,7 @@ namespace VamTimeline
                     return;
                 }
 
-                var target = new FloatParamAnimationTarget(storable, sourceFloatParam, Plugin.Animation.AnimationLength);
-                target.SetKeyframe(0, sourceFloatParam.val);
-                Plugin.Animation.Current.TargetFloatParams.Add(target);
+                Plugin.Animation.Add(storable, sourceFloatParam);
                 Plugin.AnimationModified();
             }
             catch (Exception exc)

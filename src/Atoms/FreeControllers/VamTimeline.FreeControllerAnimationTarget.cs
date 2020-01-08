@@ -55,9 +55,6 @@ namespace VamTimeline
 
         public void ReapplyCurvesToClip(AnimationClip clip)
         {
-            // Smooth loop
-            SmoothLoop();
-
             var path = GetRelativePath();
             clip.SetCurve(path, typeof(Transform), "localPosition.x", X);
             clip.SetCurve(path, typeof(Transform), "localPosition.y", Y);
@@ -68,7 +65,7 @@ namespace VamTimeline
             clip.SetCurve(path, typeof(Transform), "localRotation.w", RotW);
         }
 
-        private void SmoothLoop()
+        public void SmoothLoop()
         {
             foreach (var curve in Curves)
             {
@@ -97,31 +94,18 @@ namespace VamTimeline
 
         public void SetKeyframeToCurrentTransform(float time)
         {
-            SetKeyframeToTransform(time, Controller.transform.localPosition, Controller.transform.localRotation);
+            SetKeyframe(time, Controller.transform.localPosition, Controller.transform.localRotation);
         }
 
-        public void SetKeyframeToTransform(float time, Vector3 localPosition, Quaternion localRotation)
+        public void SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
-            if (time == 0f)
-            {
-                SetKeyframe(0f, localPosition, localRotation);
-                SetKeyframe(_animationLength, localPosition, localRotation);
-            }
-            else
-            {
-                SetKeyframe(time, localPosition, localRotation);
-            }
-        }
-
-        public void SetKeyframe(float time, Vector3 position, Quaternion rotation)
-        {
-            X.SetKeyframe(time, position.x);
-            Y.SetKeyframe(time, position.y);
-            Z.SetKeyframe(time, position.z);
-            RotX.SetKeyframe(time, rotation.x);
-            RotY.SetKeyframe(time, rotation.y);
-            RotZ.SetKeyframe(time, rotation.z);
-            RotW.SetKeyframe(time, rotation.w);
+            X.SetKeyframe(time, localPosition.x);
+            Y.SetKeyframe(time, localPosition.y);
+            Z.SetKeyframe(time, localPosition.z);
+            RotX.SetKeyframe(time, locationRotation.x);
+            RotY.SetKeyframe(time, locationRotation.y);
+            RotZ.SetKeyframe(time, locationRotation.z);
+            RotW.SetKeyframe(time, locationRotation.w);
         }
 
         public void DeleteFrame(float time)
@@ -131,6 +115,11 @@ namespace VamTimeline
                 var key = Array.FindIndex(curve.keys, k => k.time == time);
                 if (key != -1) curve.RemoveKey(key);
             }
+        }
+
+        public IEnumerable<float> GetAllKeyframesTime()
+        {
+            return Curves.SelectMany(c => c.keys).Select(k => k.time).Distinct();
         }
 
         #endregion
@@ -192,14 +181,15 @@ namespace VamTimeline
 
         public void RenderDebugInfo(StringBuilder display, float time)
         {
-            display.AppendLine($"{Controller.containingAtom.name}:{Controller.name}");
             RenderStateController(time, display, "X", X);
+            /*
             RenderStateController(time, display, "Y", Y);
             RenderStateController(time, display, "Z", Z);
             RenderStateController(time, display, "RotX", RotX);
             RenderStateController(time, display, "RotY", RotY);
             RenderStateController(time, display, "RotZ", RotZ);
             RenderStateController(time, display, "RotW", RotW);
+            */
         }
 
         private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
@@ -211,11 +201,6 @@ namespace VamTimeline
                 display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
                 display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
             }
-        }
-
-        public IEnumerable<float> GetAllKeyframesTime()
-        {
-            return Curves.SelectMany(c => c.keys.Take(c.keys.Length - 1)).Select(k => k.time).Distinct();
         }
 
         #endregion

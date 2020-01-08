@@ -16,7 +16,6 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
-        private const float AnimationEndOffset = 0.001f;
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // Storables
@@ -112,13 +111,18 @@ namespace VamTimeline
             }
         }
 
-        protected void UpdatePlaying()
+        private void UpdatePlaying()
         {
             Animation.Update();
             _ui.UpdatePlaying();
+            if (!Animation.Current.Loop && Animation.Time >= Animation.AnimationLength)
+            {
+                Animation.Stop();
+                AnimationFrameUpdated();
+            }
         }
 
-        protected void UpdateNotPlaying()
+        private void UpdateNotPlaying()
         {
             var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
             if (grabbing != null && grabbing.containingAtom != containingAtom)
@@ -133,10 +137,7 @@ namespace VamTimeline
             else if (_grabbedController != null && grabbing == null)
             {
                 // TODO: This should be done by the controller (updating the animation resets the time)
-                var time = Animation.Time;
-                _grabbedController.SetKeyframeToCurrentTransform(time);
-                Animation.RebuildAnimation();
-                UpdateTime(time);
+                Animation.SetKeyframeToCurrentTransform(_grabbedController, Animation.Time);
                 _grabbedController = null;
                 AnimationModified();
             }
@@ -194,7 +195,7 @@ namespace VamTimeline
             AddAnimationJSON = new JSONStorableAction(StorableNames.AddAnimation, () => AddAnimation());
             RegisterAction(AddAnimationJSON);
 
-            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, AtomAnimationClip.DefaultAnimationLength - AnimationEndOffset, true)
+            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
@@ -203,10 +204,24 @@ namespace VamTimeline
             PlayJSON = new JSONStorableAction(StorableNames.Play, () => { Animation.Play(); AnimationFrameUpdated(); });
             RegisterAction(PlayJSON);
 
-            PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => { if (!Animation.IsPlaying()) { Animation.Play(); AnimationFrameUpdated(); } });
+            PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
+            {
+                if (!Animation.IsPlaying())
+                {
+                    Animation.Play();
+                    AnimationFrameUpdated();
+                }
+            });
             RegisterAction(PlayIfNotPlayingJSON);
 
-            StopJSON = new JSONStorableAction(StorableNames.Stop, () => { Animation.Stop(); AnimationFrameUpdated(); });
+            StopJSON = new JSONStorableAction(StorableNames.Stop, () =>
+            {
+                if (Animation.IsPlaying())
+                    Animation.Stop();
+                else
+                    Animation.Time = 0f;
+                AnimationFrameUpdated();
+            });
             RegisterAction(StopJSON);
 
             FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == AllTargets ? "" : val); AnimationFrameUpdated(); })
@@ -244,7 +259,7 @@ namespace VamTimeline
             RegisterString(DisplayJSON);
         }
 
-        protected IEnumerator CreateAnimationIfNoneIsLoaded()
+        private IEnumerator CreateAnimationIfNoneIsLoaded()
         {
             if (Animation != null)
             {
@@ -377,7 +392,7 @@ namespace VamTimeline
             }
         }
 
-        protected void UpdateTime(float time)
+        private void UpdateTime(float time)
         {
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
@@ -579,7 +594,7 @@ namespace VamTimeline
             try
             {
                 // Update UI
-                ScrubberJSON.max = Animation.AnimationLength - AnimationEndOffset;
+                ScrubberJSON.max = Animation.AnimationLength;
                 ScrubberJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
@@ -610,7 +625,7 @@ namespace VamTimeline
             }
         }
 
-        protected void AnimationFrameUpdated()
+        private void AnimationFrameUpdated()
         {
             try
             {
