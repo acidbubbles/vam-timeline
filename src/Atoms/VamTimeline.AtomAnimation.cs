@@ -238,6 +238,7 @@ namespace VamTimeline
                 clip.RebuildAnimation();
                 _animation.AddClip(clip.Clip, clip.AnimationName);
                 var animState = _animation[clip.AnimationName];
+                animState.wrapMode = clip.Loop ? WrapMode.Loop : WrapMode.Once;
                 animState.speed = clip.Speed;
             }
             if (HasAnimatableControllers())

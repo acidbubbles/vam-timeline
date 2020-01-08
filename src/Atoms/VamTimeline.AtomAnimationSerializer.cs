@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
@@ -37,6 +36,7 @@ namespace VamTimeline
                 {
                     Speed = DeserializeFloat(clipJSON["Speed"], 1f),
                     AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength),
+                    Loop = DeserializeBool(clipJSON["Loop"], true),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true)
                 };
                 DeserializeClip(clip, clipJSON);
@@ -91,6 +91,7 @@ namespace VamTimeline
                     { "AnimationName", clip.AnimationName },
                     { "Speed", clip.Speed.ToString() },
                     { "AnimationLength", clip.AnimationLength.ToString() },
+                    { "Loop", clip.Loop.ToString() },
                     { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity.ToString() }
                 };
                 SerializeClip(clip, clipJSON);

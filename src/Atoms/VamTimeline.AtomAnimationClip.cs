@@ -18,6 +18,8 @@ namespace VamTimeline
 
         private float _animationLength = DefaultAnimationLength;
         private IAnimationTarget _selected;
+        private bool _loop = true;
+
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }
         public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
@@ -43,14 +45,25 @@ namespace VamTimeline
                 }
             }
         }
+        public bool Loop
+        {
+            get
+            {
+                return _loop;
+            }
+            set
+            {
+                _loop = value;
+                Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
+            }
+        }
 
         public AtomAnimationClip(string animationName)
         {
             AnimationName = animationName;
             Clip = new AnimationClip
             {
-                wrapMode = WrapMode.Loop,
-                legacy = true
+                wrapMode = WrapMode.Loop
             };
         }
 

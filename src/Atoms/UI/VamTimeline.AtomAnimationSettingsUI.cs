@@ -16,6 +16,7 @@ namespace VamTimeline
         public override string Name => ScreenName;
 
         private JSONStorableBool _ensureQuaternionContinuity;
+        private JSONStorableBool _loop;
         private JSONStorableStringChooser _addControllerListJSON;
         private JSONStorableAction _toggleControllerJSON;
         private UIDynamicPopup _addControllerUI;
@@ -79,6 +80,13 @@ namespace VamTimeline
             CreateSpacer(true);
 
             GenerateRemoveToggles();
+        }
+
+        private void ChangeLoop(bool val)
+        {
+            Plugin.Animation.Current.Loop = val;
+            Plugin.Animation.RebuildAnimation();
+            Plugin.AnimationModified();
         }
 
         private IEnumerable<string> GetEligibleFreeControllers()
@@ -293,6 +301,10 @@ namespace VamTimeline
             Plugin.CreateSlider(Plugin.BlendDurationJSON, rightSide);
             _linkedStorables.Add(Plugin.BlendDurationJSON);
 
+            _loop = new JSONStorableBool("Loop", Plugin.Animation?.Current?.Loop ?? true, (bool val) => ChangeLoop(val));
+            var loopingUI = Plugin.CreateToggle(_loop);
+            _linkedStorables.Add(_loop);
+
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
             Plugin.CreateToggle(_ensureQuaternionContinuity);
             _linkedStorables.Add(_ensureQuaternionContinuity);
@@ -340,6 +352,7 @@ namespace VamTimeline
             GenerateRemoveToggles();
 
             _linkedAnimationPatternJSON.valNoCallback = Plugin.Animation.Current.AnimationPattern?.containingAtom.uid ?? "";
+            _loop.valNoCallback = Plugin.Animation.Current.Loop;
         }
     }
 }
