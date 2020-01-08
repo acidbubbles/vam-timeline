@@ -294,7 +294,9 @@ namespace VamTimeline
                 _animation.Stop(Current.AnimationName);
                 _animState = _animation[Current.AnimationName];
                 if (_animState != null)
+                {
                     _animState.time = time;
+                }
             }
             else
             {
@@ -310,7 +312,7 @@ namespace VamTimeline
                 if (clip.Loop)
                 {
                     // TODO: Extract this since we may need to smooth between two animations too
-                    target.SetCurveSnapshot(AnimationLength, target.GetCurveSnapshot(0f));
+                    target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));
                     target.SmoothLoop();
                 }
                 target.ReapplyCurvesToClip(clip.Clip);
@@ -322,7 +324,7 @@ namespace VamTimeline
             {
                 if (clip.Loop)
                 {
-                    target.SetKeyframe(AnimationLength, target.Value.keys[0].value);
+                    target.SetKeyframe(clip.AnimationLength, target.Value.keys[0].value);
                 }
                 target.Value.FlatAllFrames();
             }
@@ -369,8 +371,8 @@ namespace VamTimeline
 
         public void ChangeAnimation(string animationName)
         {
-            var anim = Clips.FirstOrDefault(c => c.AnimationName == animationName);
-            if (anim == null) throw new NullReferenceException($"Could not find animation {animationName}");
+            var clip = Clips.FirstOrDefault(c => c.AnimationName == animationName);
+            if (clip == null) throw new NullReferenceException($"Could not find animation {animationName}");
             var time = Time;
             if (_isPlaying)
             {
@@ -387,7 +389,7 @@ namespace VamTimeline
                 _blendingClip = Current;
                 _blendingTimeLeft = _blendingDuration = BlendDuration;
             }
-            Current = anim;
+            Current = clip;
             if (!_isPlaying)
             {
                 if (HasAnimatableControllers())
@@ -405,6 +407,8 @@ namespace VamTimeline
                 Current.AnimationPattern.ResetAndPlay();
             }
             _animState = _animation[Current.AnimationName];
+            if (_isPlaying)
+                _animState.enabled = true;
         }
 
         public void SmoothAllFrames()
@@ -449,7 +453,7 @@ namespace VamTimeline
         public void Paste(AtomClipboardEntry clipboard)
         {
             float time = Time;
-            if (Current.Loop && time == AnimationLength)
+            if (Current.Loop && time >= AnimationLength)
                 time = 0f;
             foreach (var entry in clipboard.Controllers)
             {
