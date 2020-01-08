@@ -21,7 +21,7 @@ namespace VamTimeline
         }
 
         private List<TargetRef> _targets;
-
+        private JSONStorableStringChooser _changeCurveJSON;
 
         public AtomAnimationControllersUI(IAtomPlugin plugin)
             : base(plugin)
@@ -51,9 +51,10 @@ namespace VamTimeline
 
         private void InitCurvesUI()
         {
-            var changeCurveUI = Plugin.CreatePopup(Plugin.ChangeCurveJSON, false);
+            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
+            var changeCurveUI = Plugin.CreatePopup(_changeCurveJSON, false);
             changeCurveUI.popupPanelHeight = 800f;
-            _linkedStorables.Add(Plugin.ChangeCurveJSON);
+            _linkedStorables.Add(_changeCurveJSON);
 
             var smoothAllFramesUI = Plugin.CreateButton("Smooth All Frames", false);
             smoothAllFramesUI.button.onClick.AddListener(() => Plugin.SmoothAllFramesJSON.actionCallback());
@@ -76,6 +77,19 @@ namespace VamTimeline
         {
             base.AnimationModified();
             RefreshTargetsList();
+        }
+
+        private void ChangeCurve(string curveType)
+        {
+            if (string.IsNullOrEmpty(curveType)) return;
+            _changeCurveJSON.valNoCallback = "";
+            if (Plugin.Animation.Time == 0)
+            {
+                SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");
+                return;
+            }
+            Plugin.Animation.ChangeCurve(curveType);
+            AnimationModified();
         }
 
         private void UpdateValues()

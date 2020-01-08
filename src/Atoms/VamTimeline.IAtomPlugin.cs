@@ -83,7 +83,6 @@ namespace VamTimeline
         JSONStorableAction UndoJSON { get; }
         JSONStorableBool LockedJSON { get; }
         JSONStorableString DisplayJSON { get; }
-        JSONStorableStringChooser ChangeCurveJSON { get; }
 
         void AnimationModified();
     }

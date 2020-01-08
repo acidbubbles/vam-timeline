@@ -17,7 +17,7 @@ namespace VamTimeline
         private readonly Animation _animation;
         private AnimationState _animState;
         private bool _isPlaying;
-        private float _fallbackTime;
+        private float _playTime;
         private string _playedAnimation;
         private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
@@ -32,13 +32,13 @@ namespace VamTimeline
         {
             get
             {
-                var time = _animState != null && _animState.enabled ? _animState.time : _fallbackTime;
+                var time = _animState != null && _animState.enabled ? _animState.time : _playTime;
                 if (Current.Loop) return time % AnimationLength;
                 return time;
             }
             set
             {
-                _fallbackTime = value;
+                _playTime = value;
                 if (Current == null) return;
                 SampleParamsAnimation();
                 if (_animState != null)
@@ -192,7 +192,7 @@ namespace VamTimeline
             if (Current == null) return;
             _playedAnimation = Current.AnimationName;
             _isPlaying = true;
-            _fallbackTime = 0;
+            _playTime = 0;
             if (_animState != null)
             {
                 _animState.time = 0;
@@ -203,16 +203,16 @@ namespace VamTimeline
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
             }
-            DetermineNextAnimation();
+            DetermineNextAnimation(0f);
         }
 
-        private void DetermineNextAnimation()
+        private void DetermineNextAnimation(float time)
         {
             if (Current.NextAnimationName == null) return;
             // TODO: BlendDuration should be per clip, not per animation. Deserialize legacy.
-            _nextAnimationTime = Current.AnimationLength - BlendDuration;
-            if (_nextAnimationTime < 0) _nextAnimationTime = 0;
-            if (_nextAnimationTime > 0)
+            _nextAnimationTime = time + Current.AnimationLength - BlendDuration;
+            if (_nextAnimationTime < time) _nextAnimationTime = 0;
+            if (_nextAnimationTime > time)
                 _nextAnimation = Current.NextAnimationName;
         }
 
@@ -246,9 +246,7 @@ namespace VamTimeline
         {
             if (_isPlaying)
             {
-                _fallbackTime = _animState != null && _animState.enabled
-                    ? _animState.time
-                    : (_fallbackTime + UnityEngine.Time.deltaTime * Speed);
+                _playTime += UnityEngine.Time.deltaTime * Speed;
 
                 if (_blendingClip != null)
                 {
@@ -264,14 +262,14 @@ namespace VamTimeline
                 SampleParamsAnimation();
             }
 
-            if (_nextAnimationTime > 0 && _fallbackTime >= _nextAnimationTime)
+            if (_nextAnimationTime > 0 && _playTime >= _nextAnimationTime)
             {
                 // TODO: Keep only the name or make a ChangeAnimation overload
                 var nextAnimation = _nextAnimation;
                 _nextAnimation = null;
                 _nextAnimationTime = 0;
                 ChangeAnimation(nextAnimation);
-                DetermineNextAnimation();
+                DetermineNextAnimation(_playTime);
             }
         }
 
@@ -411,6 +409,8 @@ namespace VamTimeline
             {
                 if (HasAnimatableControllers())
                 {
+                    var targetAnim = _animation[animationName];
+                    targetAnim.time = 0f;
                     _animation.Blend(Current.AnimationName, 0f, BlendDuration);
                     _animation.Blend(animationName, 1f, BlendDuration);
                 }

@@ -76,17 +76,19 @@ namespace VamTimeline
             addAnimationUI.button.onClick.AddListener(() => Plugin.AddAnimationJSON.actionCallback());
             _components.Add(addAnimationUI);
 
-            _lengthJSON = new JSONStorableFloat(StorableNames.AnimationLength, AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
+            _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
             Plugin.CreateSlider(_lengthJSON, rightSide);
             _linkedStorables.Add(_lengthJSON);
 
-            _speedJSON = new JSONStorableFloat(StorableNames.AnimationSpeed, 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
-            Plugin.CreateSlider(_speedJSON, rightSide);
+            _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
+            var speedUI = Plugin.CreateSlider(_speedJSON, rightSide);
+            speedUI.valueFormat = "F3";
             _linkedStorables.Add(_speedJSON);
 
-            _blendDurationJSON = new JSONStorableFloat(StorableNames.BlendDuration, 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
-            Plugin.CreateSlider(_blendDurationJSON, rightSide);
+            _blendDurationJSON = new JSONStorableFloat("BlendDuration", 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
+            var blendDurationUI = Plugin.CreateSlider(_blendDurationJSON, rightSide);
+            blendDurationUI.valueFormat = "F3";
             _linkedStorables.Add(_blendDurationJSON);
 
             _loop = new JSONStorableBool("Loop", Plugin.Animation?.Current?.Loop ?? true, (bool val) => ChangeLoop(val));
@@ -263,14 +265,16 @@ namespace VamTimeline
 
         private void UpdateAnimationSpeed(float v)
         {
-            if (v < 0) return;
+            if (v < 0)
+                _speedJSON.valNoCallback = v = 0f;
             Plugin.Animation.Speed = v;
             Plugin.AnimationModified();
         }
 
         private void UpdateBlendDuration(float v)
         {
-            if (v < 0) return;
+            if (v < 0)
+                _blendDurationJSON.valNoCallback = v = 0f;
             Plugin.Animation.BlendDuration = v;
             Plugin.AnimationModified();
         }
@@ -291,6 +295,7 @@ namespace VamTimeline
         private void ChangeNextAnimation(string val)
         {
             Plugin.Animation.Current.NextAnimationName = val;
+            Plugin.AnimationModified();
         }
 
         private void LinkAnimationPattern(string uid)

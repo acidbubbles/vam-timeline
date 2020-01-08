@@ -53,7 +53,6 @@ namespace VamTimeline
         public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
-        public JSONStorableStringChooser ChangeCurveJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -66,7 +65,7 @@ namespace VamTimeline
             {
                 _serializer = new AtomAnimationSerializer(containingAtom);
                 _ui = new AtomAnimationUIManager(this);
-                InitStorables();
+                InitSharedStorables();
                 _ui.Init();
                 // Try loading from backup
                 StartCoroutine(CreateAnimationIfNoneIsLoaded());
@@ -178,7 +177,7 @@ namespace VamTimeline
 
         #region Initialization
 
-        public void InitCommonStorables()
+        public void InitSharedStorables()
         {
             _saveJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
             RegisterString(_saveJSON);
@@ -474,19 +473,6 @@ namespace VamTimeline
             SaveState();
         }
 
-        private void ChangeCurve(string curveType)
-        {
-            if (string.IsNullOrEmpty(curveType)) return;
-            ChangeCurveJSON.valNoCallback = "";
-            if (Animation.Time == 0)
-            {
-                SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");
-                return;
-            }
-            Animation.ChangeCurve(curveType);
-            AnimationModified();
-        }
-
         private void SmoothAllFrames()
         {
             Animation.SmoothAllFrames();
@@ -615,18 +601,6 @@ namespace VamTimeline
             {
                 SuperController.LogError("VamTimeline.AtomPlugin.AnimationFrameUpdated: " + exc);
             }
-        }
-
-        #endregion
-
-        // Shared
-        #region Initialization
-
-        private void InitStorables()
-        {
-            InitCommonStorables();
-
-            ChangeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
         }
 
         #endregion
