@@ -389,26 +389,20 @@ namespace VamTimeline
                 _blendingClip = Current;
                 _blendingTimeLeft = _blendingDuration = BlendDuration;
             }
+
             Current = clip;
-            if (!_isPlaying)
-            {
-                if (HasAnimatableControllers())
-                {
-                    Play();
-                    Stop();
-                    Time = 0f;
-                }
-                _fallbackTime = 0f;
-                SampleParamsAnimation();
-            }
+            _animState = _animation[Current.AnimationName];
+
+            if (_isPlaying)
+                _animState.enabled = true;
+            else
+                Time = 0f;
+
             if (_isPlaying && Current.AnimationPattern != null)
             {
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
             }
-            _animState = _animation[Current.AnimationName];
-            if (_isPlaying)
-                _animState.enabled = true;
         }
 
         public void SmoothAllFrames()
