@@ -358,7 +358,7 @@ namespace VamTimeline
                 if (backupStorableID != null)
                 {
                     var backupStorable = containingAtom.GetStorableByID(backupStorableID);
-                    var backupJSON = backupStorable.GetStringJSONParam(StorableNames.AtomAnimationBackup);
+                    var backupJSON = backupStorable.GetStringJSONParam(StorableNames.PushAtomAnimationBackup);
                     if (backupJSON != null)
                         backupJSON.val = serialized;
                 }
