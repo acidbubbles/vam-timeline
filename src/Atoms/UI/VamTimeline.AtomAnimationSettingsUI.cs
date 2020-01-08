@@ -93,11 +93,8 @@ namespace VamTimeline
 
         private void GenerateRemoveToggles()
         {
-            // TODO: Do not regenerate if not necessary
-            // if (string.Join(",", Plugin.Animation.Current.TargetControllers.Select(tc => tc.Name).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).ToArray()))
-            //     return;
-            // if (string.Join(",", Plugin.Animation.Current.TargetFloatParams.Select(tc => tc.Name).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).ToArray()))
-            //     return;
+            if (string.Join(",", Plugin.Animation.Current.AllTargets.Select(tc => tc.Name).OrderBy(n => n).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).OrderBy(n => n).ToArray()))
+                return;
 
             ClearRemoveToggles();
             foreach (var target in Plugin.Animation.Current.TargetControllers)
