@@ -389,6 +389,10 @@ namespace VamTimeline
 
         private void UpdateTime(float time)
         {
+            time = (float)(Math.Round(time * 1000f) / 1000f);
+            if (Animation.Current.Loop && time >= Animation.Current.AnimationLength)
+                time = Animation.Current.AnimationLength - AtomAnimation.PaddingBeforeLoopFrame;
+
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
                 Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);

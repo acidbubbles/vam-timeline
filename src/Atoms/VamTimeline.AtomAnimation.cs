@@ -13,6 +13,8 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
+        public const float PaddingBeforeLoopFrame = 0.001f;
+
         private readonly Atom _atom;
         private readonly Animation _animation;
         private AnimationState _animState;
@@ -164,8 +166,6 @@ namespace VamTimeline
         {
             if (time > Current.AnimationLength)
                 time = Current.AnimationLength;
-            if (Current.Loop && time == Current.AnimationLength)
-                time = 0f;
             target.SetKeyframe(time, val);
             RebuildAnimation();
         }
@@ -174,8 +174,6 @@ namespace VamTimeline
         {
             if (time > Current.AnimationLength)
                 time = Current.AnimationLength;
-            if (Current.Loop && time == Current.AnimationLength)
-                time = 0f;
             target.SetKeyframeToCurrentTransform(time);
             RebuildAnimation();
         }
