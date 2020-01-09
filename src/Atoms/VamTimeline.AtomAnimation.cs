@@ -88,8 +88,6 @@ namespace VamTimeline
             }
         }
 
-        public float BlendDuration { get; set; } = 1f;
-
         public AtomAnimation(Atom atom)
         {
             if (atom == null) throw new ArgumentNullException(nameof(atom));
@@ -208,20 +206,17 @@ namespace VamTimeline
 
         private void DetermineNextAnimation(float time)
         {
+            _nextAnimation = null;
+            _nextAnimationTime = 0;
+
             if (Current.NextAnimationName == null) return;
-            // TODO: BlendDuration should be per clip, not per animation. Deserialize legacy.
-            if (Current.Loop)
-            {
-                if (Current.NextAnimationTime > 0)
-                    _nextAnimationTime = time + Current.NextAnimationTime;
-                else
-                    _nextAnimationTime = 0;
-            }
+
+            if (Current.NextAnimationTime > 0)
+                _nextAnimationTime = time + Current.NextAnimationTime;
             else
-                _nextAnimationTime = time + Current.AnimationLength - BlendDuration;
-            if (_nextAnimationTime < time) _nextAnimationTime = 0;
-            if (_nextAnimationTime > time)
-                _nextAnimation = Current.NextAnimationName;
+                return;
+
+            _nextAnimation = Current.NextAnimationName;
         }
 
         private void SampleParamsAnimation()
@@ -274,10 +269,11 @@ namespace VamTimeline
             {
                 // TODO: Keep only the name or make a ChangeAnimation overload
                 var nextAnimation = _nextAnimation;
-                _nextAnimation = null;
-                _nextAnimationTime = 0;
-                ChangeAnimation(nextAnimation);
-                DetermineNextAnimation(_playTime);
+                if (nextAnimation != null)
+                {
+                    ChangeAnimation(nextAnimation);
+                    DetermineNextAnimation(_playTime);
+                }
             }
         }
 
@@ -419,16 +415,23 @@ namespace VamTimeline
                 {
                     var targetAnim = _animation[animationName];
                     targetAnim.time = 0f;
-                    _animation.Blend(Current.AnimationName, 0f, BlendDuration);
-                    _animation.Blend(animationName, 1f, BlendDuration);
+                    _animation.Blend(Current.AnimationName, 0f, Current.BlendDuration);
+                    _animation.Blend(animationName, 1f, Current.BlendDuration);
                 }
                 if (Current.AnimationPattern != null)
                 {
                     // Let the loop finish during the transition
                     Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
                 }
+                if (_blendingClip != null)
+                {
+                    // TODO: Fade multiple blending clips
+                    // For morphs that won't be continued, immediately apply the last value
+                    foreach (var morph in Current.TargetFloatParams.Where(t => !clip.TargetFloatParams.Any(ct => t.FloatParam == ct.FloatParam)))
+                        morph.FloatParam.val = morph.Value.Evaluate(morph.Value.keys[morph.Value.keys.Length - 1].time);
+                }
                 _blendingClip = Current;
-                _blendingTimeLeft = _blendingDuration = BlendDuration;
+                _blendingTimeLeft = _blendingDuration = Current.BlendDuration;
             }
 
             Current = clip;

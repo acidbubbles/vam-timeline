@@ -80,15 +80,16 @@ namespace VamTimeline
 
             _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
-            Plugin.CreateSlider(_lengthJSON, rightSide);
+            var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
+            lengthUI.valueFormat = "F3";
             _linkedStorables.Add(_lengthJSON);
 
-            _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0.001f, 5f, false);
+            _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false);
             var speedUI = Plugin.CreateSlider(_speedJSON, rightSide);
             speedUI.valueFormat = "F3";
             _linkedStorables.Add(_speedJSON);
 
-            _blendDurationJSON = new JSONStorableFloat("BlendDuration", 1f, v => UpdateBlendDuration(v), 0.001f, 5f, false);
+            _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
             var blendDurationUI = Plugin.CreateSlider(_blendDurationJSON, rightSide);
             blendDurationUI.valueFormat = "F3";
             _linkedStorables.Add(_blendDurationJSON);
@@ -108,7 +109,10 @@ namespace VamTimeline
             var nextAnimationUI = Plugin.CreateScrollablePopup(_nextAnimationJSON);
             _linkedStorables.Add(_nextAnimationJSON);
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", Plugin.Animation.Current.NextAnimationTime, (float val) => SetNextAnimationPreview(val), 0f, 60f, false);
+            _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 1f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
+            {
+                valNoCallback = Plugin.Animation.Current.NextAnimationTime
+            };
             var nextAnimationTimeUI = Plugin.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
             _linkedStorables.Add(_nextAnimationTimeJSON);
@@ -121,37 +125,31 @@ namespace VamTimeline
             UpdateNextAnimationPreview();
         }
 
-        private void SetNextAnimationPreview(float nextTime)
+        private void UpdateForcedNextAnimationTime()
         {
+            if (Plugin.Animation.Current.Loop) return;
             if (Plugin.Animation.Current.NextAnimationName == null)
             {
+                Plugin.Animation.Current.NextAnimationTime = 0;
                 _nextAnimationTimeJSON.valNoCallback = 0;
-                return;
             }
-            if (!Plugin.Animation.Current.Loop)
-            {
-                _nextAnimationTimeJSON.valNoCallback = 0;
-                return;
-            }
-            if (nextTime < 0)
-                _nextAnimationTimeJSON.valNoCallback = nextTime = 0;
-
-            Plugin.Animation.Current.NextAnimationTime = nextTime;
-
-            UpdateNextAnimationPreview();
+            Plugin.Animation.Current.NextAnimationTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration) * Plugin.Animation.Current.Speed;
+            _nextAnimationTimeJSON.valNoCallback = Plugin.Animation.Current.NextAnimationTime;
         }
 
         private void UpdateNextAnimationPreview()
         {
-            if (Plugin.Animation.Current.NextAnimationName == null)
+            var current = Plugin.Animation.Current;
+
+            if (current.NextAnimationName == null)
             {
                 _nextAnimationPreviewJSON.val = "No next animation configured";
                 return;
             }
 
-            if (!Plugin.Animation.Current.Loop)
+            if (!current.Loop)
             {
-                _nextAnimationPreviewJSON.val = $"Will loop once and blend at {Math.Round(Plugin.Animation.AnimationLength - Plugin.Animation.BlendDuration, 2)}s";
+                _nextAnimationPreviewJSON.val = $"Will loop once and blend at {Math.Round(current.AnimationLength - current.BlendDuration, 2)}s";
                 return;
             }
 
@@ -161,7 +159,7 @@ namespace VamTimeline
             }
             else
             {
-                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round(Plugin.Animation.Current.NextAnimationTime + Plugin.Animation.BlendDuration / Plugin.Animation.AnimationLength, 2)} times including blending";
+                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round(current.NextAnimationTime + current.BlendDuration / current.AnimationLength, 2)} times including blending";
             }
         }
 
@@ -318,6 +316,7 @@ namespace VamTimeline
         {
             if (v <= 0.1f) v = 0.1f;
             Plugin.Animation.AnimationLength = v;
+            UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
         }
 
@@ -326,6 +325,7 @@ namespace VamTimeline
             if (v < 0)
                 _speedJSON.valNoCallback = v = 0f;
             Plugin.Animation.Speed = v;
+            UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
         }
 
@@ -333,7 +333,10 @@ namespace VamTimeline
         {
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
-            Plugin.Animation.BlendDuration = v;
+            if (!Plugin.Animation.Current.Loop && v > Plugin.Animation.Current.AnimationLength)
+                _blendDurationJSON.valNoCallback = v = Plugin.Animation.Current.AnimationLength;
+            Plugin.Animation.Current.BlendDuration = v;
+            UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
         }
 
@@ -353,6 +356,27 @@ namespace VamTimeline
         private void ChangeNextAnimation(string val)
         {
             Plugin.Animation.Current.NextAnimationName = val;
+            Plugin.AnimationModified();
+        }
+
+        private void SetNextAnimationTime(float nextTime)
+        {
+            if (Plugin.Animation.Current.NextAnimationName == null)
+            {
+                _nextAnimationTimeJSON.valNoCallback = nextTime;
+                Plugin.Animation.Current.NextAnimationTime = nextTime;
+                return;
+            }
+            else if (!Plugin.Animation.Current.Loop)
+            {
+                nextTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration;
+            }
+
+            if (nextTime < 0f)
+                nextTime = 0f;
+
+            _nextAnimationTimeJSON.valNoCallback = nextTime;
+            Plugin.Animation.Current.NextAnimationTime = nextTime;
             Plugin.AnimationModified();
         }
 
@@ -474,16 +498,16 @@ namespace VamTimeline
             base.AnimationModified();
             GenerateRemoveToggles();
 
-            var animation = Plugin.Animation;
-            _lengthJSON.valNoCallback = animation.AnimationLength;
-            _speedJSON.valNoCallback = animation.Speed;
-            _blendDurationJSON.valNoCallback = animation.BlendDuration;
-            _loop.valNoCallback = animation.Current.Loop;
-            _ensureQuaternionContinuity.valNoCallback = animation.Current.EnsureQuaternionContinuity;
-            _nextAnimationJSON.valNoCallback = animation.Current.NextAnimationName;
+            var current = Plugin.Animation.Current;
+            _lengthJSON.valNoCallback = current.AnimationLength;
+            _speedJSON.valNoCallback = current.Speed;
+            _blendDurationJSON.valNoCallback = current.BlendDuration;
+            _loop.valNoCallback = current.Loop;
+            _ensureQuaternionContinuity.valNoCallback = current.EnsureQuaternionContinuity;
+            _nextAnimationJSON.valNoCallback = current.NextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
-            _nextAnimationTimeJSON.valNoCallback = animation.Current.NextAnimationTime;
-            _linkedAnimationPatternJSON.valNoCallback = animation.Current.AnimationPattern?.containingAtom.uid ?? "";
+            _nextAnimationTimeJSON.valNoCallback = current.NextAnimationTime;
+            _linkedAnimationPatternJSON.valNoCallback = current.AnimationPattern?.containingAtom.uid ?? "";
             UpdateNextAnimationPreview();
         }
 

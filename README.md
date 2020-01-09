@@ -52,6 +52,10 @@ You can add animations with `Add New Animation` button in the `Animatin Settings
 
 You can switch between animations using the `Animation` drop down. When the animation is playing, it will smoothly blend between animations during the value specified in `Blend Duration`.
 
+Animation switching can be automated using the `Next Animation` setting.
+
+Note that if you try to blend sequential animations in a way that overlap (e.g. Anim1 transitions to Anim2 in 1s, Anim2 has a length of 1s, and Anim2 transitions to Anim3 in .5s, this means that Anim2's transition to Anim3 will start before the transition from Anim1 to Anim2 has completed), you will get animation jumps.
+
 ### Animating morphs and other parameters
 
 You can animate morphs and any other `float param`, such as light intensity, skin specular, etc. You can add them like controllers in the `Animation Settings` tab. Then, in the `Params` tab,  you can use the toggle to create keyframes, or use the sliders to change values and create keyframes at the current time.

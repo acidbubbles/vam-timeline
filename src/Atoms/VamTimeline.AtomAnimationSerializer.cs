@@ -28,10 +28,9 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(val)) return null;
 
             var animationJSON = JSON.Parse(val);
-            var animation = new AtomAnimation(_atom)
-            {
-                BlendDuration = DeserializeFloat(animationJSON["BlendDuration"], 1f)
-            };
+            var animation = new AtomAnimation(_atom);
+            // Legacy
+            var defaultBlendDuration = DeserializeFloat(animationJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration);
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
@@ -40,6 +39,7 @@ namespace VamTimeline
                 {
                     Speed = DeserializeFloat(clipJSON["Speed"], 1f),
                     AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength),
+                    BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], defaultBlendDuration),
                     Loop = DeserializeBool(clipJSON["Loop"], true),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
@@ -176,10 +176,7 @@ namespace VamTimeline
 
         public string SerializeAnimation(AtomAnimation animation)
         {
-            var animationJSON = new JSONClass
-            {
-                { "BlendDuration", animation.BlendDuration.ToString() }
-            };
+            var animationJSON = new JSONClass();
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);
             foreach (var clip in animation.Clips)
@@ -189,6 +186,7 @@ namespace VamTimeline
                     { "AnimationName", clip.AnimationName },
                     { "Speed", clip.Speed.ToString() },
                     { "AnimationLength", clip.AnimationLength.ToString() },
+                    { "BlendDuration", clip.BlendDuration.ToString() },
                     { "Loop", clip.Loop.ToString() },
                     { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity.ToString() }
                 };

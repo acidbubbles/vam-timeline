@@ -15,6 +15,7 @@ namespace VamTimeline
     public class AtomAnimationClip
     {
         public const float DefaultAnimationLength = 2f;
+        public const float DefaultBlendDuration = 0.75f;
 
         private float _animationLength = DefaultAnimationLength;
         private IAnimationTarget _selected;
@@ -58,6 +59,7 @@ namespace VamTimeline
                 Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
             }
         }
+        public float BlendDuration { get; set; } = DefaultBlendDuration;
         public string NextAnimationName
         {
             get
