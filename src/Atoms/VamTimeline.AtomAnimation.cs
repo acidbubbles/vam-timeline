@@ -27,6 +27,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
+        public string PlayedAnimation => _playedAnimation;
 
         public float Time
         {
@@ -272,7 +273,6 @@ namespace VamTimeline
                 if (nextAnimation != null)
                 {
                     ChangeAnimation(nextAnimation);
-                    DetermineNextAnimation(_playTime);
                 }
             }
         }
@@ -438,7 +438,10 @@ namespace VamTimeline
             _animState = _animation[Current.AnimationName];
 
             if (_isPlaying)
+            {
                 _animState.enabled = true;
+                DetermineNextAnimation(_playTime);
+            }
             else
                 Time = 0f;
 

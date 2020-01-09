@@ -365,12 +365,17 @@ namespace VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
+            SuperController.LogMessage("Changing to " + animationName);
             _saveEnabled = false;
             try
             {
                 FilterAnimationTargetJSON.val = AllTargets;
-                Animation.ChangeAnimation(animationName);
-                AnimationModified();
+                if (!Animation.IsPlaying() || Animation.Current.AnimationName != animationName)
+                    Animation.ChangeAnimation(animationName);
+                if (Animation.IsPlaying())
+                    AnimationJSON.valNoCallback = Animation.PlayedAnimation;
+                else
+                    AnimationModified();
             }
             catch (Exception exc)
             {
