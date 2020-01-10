@@ -72,7 +72,9 @@ namespace VamTimeline
         JSONStorableFloat ScrubberJSON { get; }
         JSONStorableAction PlayJSON { get; }
         JSONStorableAction PlayIfNotPlayingJSON { get; }
+        JSONStorableBool IsPlayingJSON { get; }
         JSONStorableAction StopJSON { get; }
+        JSONStorableAction StopIfPlayingJSON { get; }
         JSONStorableStringChooser FilterAnimationTargetJSON { get; }
         JSONStorableAction NextFrameJSON { get; }
         JSONStorableAction PreviousFrameJSON { get; }

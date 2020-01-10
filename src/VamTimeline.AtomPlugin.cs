@@ -41,8 +41,10 @@ namespace VamTimeline
         public JSONStorableAction AddAnimationJSON { get; private set; }
         public JSONStorableFloat ScrubberJSON { get; private set; }
         public JSONStorableAction PlayJSON { get; private set; }
+        public JSONStorableBool IsPlayingJSON { get; private set; }
         public JSONStorableAction PlayIfNotPlayingJSON { get; private set; }
         public JSONStorableAction StopJSON { get; private set; }
+        public JSONStorableAction StopIfPlayingJSON { get; private set; }
         public JSONStorableStringChooser FilterAnimationTargetJSON { get; private set; }
         public JSONStorableAction NextFrameJSON { get; private set; }
         public JSONStorableAction PreviousFrameJSON { get; private set; }
@@ -197,28 +199,56 @@ namespace VamTimeline
             };
             RegisterFloat(ScrubberJSON);
 
-            PlayJSON = new JSONStorableAction(StorableNames.Play, () => { Animation.Play(); AnimationFrameUpdated(); });
+            PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
+            {
+                Animation.Play();
+                IsPlayingJSON.valNoCallback = true;
+                AnimationFrameUpdated();
+            });
             RegisterAction(PlayJSON);
 
             PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (!Animation.IsPlaying())
-                {
-                    Animation.Play();
-                    AnimationFrameUpdated();
-                }
+                if (Animation.IsPlaying()) return;
+                Animation.Play();
+                IsPlayingJSON.valNoCallback = true;
             });
             RegisterAction(PlayIfNotPlayingJSON);
+
+            IsPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, (bool val) =>
+            {
+                if (val)
+                    PlayIfNotPlayingJSON.actionCallback();
+                else
+                    StopJSON.actionCallback();
+            })
+            {
+                isStorable = false
+            };
+            RegisterBool(IsPlayingJSON);
 
             StopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
                 if (Animation.IsPlaying())
+                {
                     Animation.Stop();
+                    IsPlayingJSON.valNoCallback = false;
+                }
                 else
+                {
                     Animation.Time = 0f;
+                }
                 AnimationFrameUpdated();
             });
             RegisterAction(StopJSON);
+
+            StopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
+            {
+                if (!Animation.IsPlaying()) return;
+                Animation.Stop();
+                IsPlayingJSON.valNoCallback = false;
+            });
+            RegisterAction(StopIfPlayingJSON);
 
             FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == AllTargets ? "" : val); AnimationFrameUpdated(); })
             {
@@ -365,7 +395,6 @@ namespace VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
-            SuperController.LogMessage("Changing to " + animationName);
             _saveEnabled = false;
             try
             {

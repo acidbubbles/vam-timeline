@@ -46,6 +46,7 @@ namespace VamTimeline
         public JSONStorableStringChooser Animation { get { return Storable?.GetStringChooserJSONParam(StorableNames.Animation); } }
         public JSONStorableStringChooser FilterAnimationTarget { get { return Storable?.GetStringChooserJSONParam(StorableNames.FilterAnimationTarget); } }
         public JSONStorableString Display { get { return Storable?.GetStringJSONParam(StorableNames.Display); } }
+        public JSONStorableBool IsPlaying { get { return Storable?.GetBoolJSONParam(StorableNames.IsPlaying); } }
 
         public void Play()
         {
@@ -60,6 +61,11 @@ namespace VamTimeline
         public void Stop()
         {
             Storable.CallAction(StorableNames.Stop);
+        }
+
+        public void StopIfPlaying()
+        {
+            Storable.CallAction(StorableNames.StopIfPlaying);
         }
 
         public void NextFrame()

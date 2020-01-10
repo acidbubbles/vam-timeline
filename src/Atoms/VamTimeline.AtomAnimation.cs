@@ -20,7 +20,6 @@ namespace VamTimeline
         private AnimationState _animState;
         private bool _isPlaying;
         private float _playTime;
-        private string _playedAnimation;
         private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
         private float _blendingDuration;
@@ -29,7 +28,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
-        public string PlayedAnimation => _playedAnimation;
+        public string PlayedAnimation { get; private set; }
 
         public float Time
         {
@@ -187,7 +186,7 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
-            _playedAnimation = Current.AnimationName;
+            PlayedAnimation = Current.AnimationName;
             _isPlaying = true;
             _playTime = 0;
             if (_animState != null)
@@ -293,10 +292,10 @@ namespace VamTimeline
             _nextAnimation = null;
             _nextAnimationTime = 0;
             SampleParamsAnimation();
-            if (_playedAnimation != null)
+            if (PlayedAnimation != null && PlayedAnimation != Current.AnimationName)
             {
-                ChangeAnimation(_playedAnimation);
-                _playedAnimation = null;
+                ChangeAnimation(PlayedAnimation);
+                PlayedAnimation = null;
             }
         }
 

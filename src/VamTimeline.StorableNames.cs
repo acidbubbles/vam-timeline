@@ -15,7 +15,9 @@ namespace VamTimeline
         public const string Time = "Time";
         public const string Play = "Play";
         public const string PlayIfNotPlaying = "Play If Not Playing";
+        public const string IsPlaying = "IsPlaying";
         public const string Stop = "Stop";
+        public const string StopIfPlaying = "StopIfPlaying";
         public const string FilterAnimationTarget = "Filter Target";
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";

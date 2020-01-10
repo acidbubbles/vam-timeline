@@ -40,6 +40,8 @@ namespace VamTimeline
             _components.Add(keyframeCurrentPoseTrackedUI);
 
             // TODO: Keyframe all animatable morphs
+
+            // TODO: Copy all controllers and morphs
         }
 
         private void KeyframeCurrentPose(bool all)

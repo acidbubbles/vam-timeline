@@ -313,8 +313,19 @@ namespace VamTimeline
                 if (updated != null)
                 {
                     var time = updated.Scrubber.val;
+                    var isPlaying = updated.IsPlaying.val;
+                    var animationName = updated.Animation.val;
+
                     foreach (var other in _linkedAnimations.Where(la => la != updated))
                     {
+                        if (other.Animation.val != animationName)
+                            other.ChangeAnimation(animationName);
+
+                        if (isPlaying)
+                            other.PlayIfNotPlaying();
+                        else
+                            other.StopIfPlaying();
+
                         var scrubber = other.Scrubber;
                         if (scrubber.val != time)
                             scrubber.val = time;
@@ -405,56 +416,38 @@ namespace VamTimeline
 
         private void ChangeAnimation(string name)
         {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.ChangeAnimation(name);
-            }
+            if (_mainLinkedAnimation == null) return;
+            _mainLinkedAnimation.ChangeAnimation(name);
         }
 
         private void Play()
         {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.Play();
-            }
+            if (_mainLinkedAnimation == null) return;
+            _mainLinkedAnimation.Play();
         }
 
         private void PlayIfNotPlaying()
         {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.PlayIfNotPlaying();
-            }
+            if (_mainLinkedAnimation == null) return;
+            _mainLinkedAnimation.PlayIfNotPlaying();
         }
 
         private void Stop()
         {
-            foreach (var animation in _linkedAnimations)
-            {
-                animation.Stop();
-            }
+            if (_mainLinkedAnimation == null) return;
+            _mainLinkedAnimation.Stop();
         }
 
         private void NextFrame()
         {
             if (_mainLinkedAnimation == null) return;
             _mainLinkedAnimation.NextFrame();
-            var time = _mainLinkedAnimation.Scrubber.val;
-            foreach (var animation in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
-            {
-                animation.Scrubber.val = time;
-            }
         }
 
         private void PreviousFrame()
         {
             if (_mainLinkedAnimation == null) return;
             _mainLinkedAnimation.PreviousFrame();
-            var time = _mainLinkedAnimation.Scrubber.val;
-            foreach (var animation in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
-            {
-                animation.Scrubber.val = time;
-            }
         }
 
         private void SelectTargetFilter(string v)

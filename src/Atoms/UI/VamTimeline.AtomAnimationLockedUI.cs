@@ -1,6 +1,3 @@
-using System.Linq;
-using UnityEngine.UI;
-
 namespace VamTimeline
 {
     /// <summary>
