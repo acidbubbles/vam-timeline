@@ -12,9 +12,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Install apt packages
+      id: apt
+      run: sudo apt-get install dos2unix
+    - name: Package the cslist files
+      id: cslistpack
+      run: bash cslist-pack.sh
     - name: Zip the release package
       id: zip
-      run: zip -r "VamTimeline.zip" src *.cslist
+      run: 7z a "VamTimeline.zip" ./output/*
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
