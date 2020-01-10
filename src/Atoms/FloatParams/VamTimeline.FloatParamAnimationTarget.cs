@@ -14,24 +14,21 @@ namespace VamTimeline
     /// </summary>
     public class FloatParamAnimationTarget : IAnimationTarget
     {
-        private float _animationLength;
-        public readonly JSONStorable Storable;
-        public readonly JSONStorableFloat FloatParam;
-        public AnimationCurve Value = new AnimationCurve();
+        public JSONStorable Storable { get; }
+        public JSONStorableFloat FloatParam{get;}
+        public AnimationCurve Value { get; } = new AnimationCurve();
 
         public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
 
-        public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat jsf, float animationLength)
+        public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat jsf)
         {
             Storable = storable;
             FloatParam = jsf;
-            _animationLength = animationLength;
         }
 
         public void SetLength(float length)
         {
             Value.StretchLength(length);
-            _animationLength = length;
         }
 
         public IEnumerable<AnimationCurve> GetCurves()

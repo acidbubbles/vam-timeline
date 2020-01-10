@@ -4,13 +4,30 @@ root = true
 indent_style = space
 indent_size = 4
 insert_final_newline = true
+trim_trailing_whitespace = true
 
-dotnet_naming_rule.private_members_with_underscore.symbols  = private_fields
-dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
-dotnet_naming_rule.private_members_with_underscore.severity = suggestion
+# Styles
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
+
+# Const
+
+dotnet_naming_symbols.constant_fields.applicable_kinds           = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = public, internal, protected_internal, protected, private_protected, private
+dotnet_naming_symbols.constant_fields.required_modifiers         = const
+
+dotnet_naming_rule.const_pascal_case.symbols                     = constant_fields
+dotnet_naming_rule.const_pascal_case.capitalization              = pascal_case
+dotnet_naming_rule.const_pascal_case.severity                    = suggestion
+
+# Private
 
 dotnet_naming_symbols.private_fields.applicable_kinds           = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 
-dotnet_naming_style.prefix_underscore.capitalization = camel_case
-dotnet_naming_style.prefix_underscore.required_prefix = _
+dotnet_naming_rule.private_members_with_underscore.symbols      = private_fields
+dotnet_naming_rule.private_members_with_underscore.style        = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.severity     = suggestion

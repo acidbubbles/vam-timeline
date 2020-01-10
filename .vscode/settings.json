@@ -2,6 +2,7 @@
     "files.exclude": {
         "bin": true,
         "obj": true,
+        "output": true
     },
     "omnisharp.enableRoslynAnalyzers": true,
     "omnisharp.enableEditorConfigSupport": true

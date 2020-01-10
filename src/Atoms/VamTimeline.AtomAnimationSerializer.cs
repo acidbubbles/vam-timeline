@@ -118,7 +118,7 @@ namespace VamTimeline
                         SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
                         continue;
                     }
-                    var target = new FloatParamAnimationTarget(storable, jsf, clip.AnimationLength);
+                    var target = new FloatParamAnimationTarget(storable, jsf);
                     clip.TargetFloatParams.Add(target);
                     DeserializeCurve(target.Value, paramJSON["Value"]);
                 }

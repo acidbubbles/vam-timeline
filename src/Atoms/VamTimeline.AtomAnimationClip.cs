@@ -111,7 +111,7 @@ namespace VamTimeline
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
             if (TargetFloatParams.Any(s => s.Storable.name == storable.name && s.Name == jsf.name)) return null;
-            var target = new FloatParamAnimationTarget(storable, jsf, AnimationLength);
+            var target = new FloatParamAnimationTarget(storable, jsf);
             Add(target);
             return target;
         }
