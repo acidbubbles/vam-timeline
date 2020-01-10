@@ -39,15 +39,6 @@ namespace VamTimeline
 
         #region Control
 
-        public void SetLength(float length)
-        {
-            foreach (var curve in Curves)
-            {
-                curve.StretchLength(length);
-            }
-            _animationLength = length;
-        }
-
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return Curves;

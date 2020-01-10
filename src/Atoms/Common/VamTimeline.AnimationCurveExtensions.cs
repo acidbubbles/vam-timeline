@@ -54,7 +54,7 @@ namespace VamTimeline
             curve.MoveKey(lastKey, lastframe);
         }
 
-        public static void CropLength(this AnimationCurve curve, float length)
+        public static void CropOrExtendLength(this AnimationCurve curve, float length)
         {
             if (length > curve.keys[curve.keys.Length - 1].time)
             {

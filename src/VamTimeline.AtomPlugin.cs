@@ -113,7 +113,7 @@ namespace VamTimeline
         {
             Animation.Update();
             _ui.UpdatePlaying();
-            if (!Animation.Current.Loop && Animation.Time >= Animation.AnimationLength)
+            if (!Animation.Current.Loop && Animation.Time >= Animation.Current.AnimationLength)
             {
                 Animation.Stop();
                 AnimationFrameUpdated();
@@ -589,7 +589,7 @@ namespace VamTimeline
             try
             {
                 // Update UI
-                ScrubberJSON.max = Animation.AnimationLength;
+                ScrubberJSON.max = Animation.Current.AnimationLength;
                 ScrubberJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;

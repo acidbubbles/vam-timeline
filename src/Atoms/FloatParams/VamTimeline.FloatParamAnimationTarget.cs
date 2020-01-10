@@ -26,11 +26,6 @@ namespace VamTimeline
             FloatParam = jsf;
         }
 
-        public void SetLength(float length)
-        {
-            Value.StretchLength(length);
-        }
-
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return new[] { Value };

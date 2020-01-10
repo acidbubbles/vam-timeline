@@ -36,15 +36,9 @@ namespace VamTimeline
             {
                 return _animationLength;
             }
-            set
+            private set
             {
-                if (value == _animationLength)
-                    return;
                 _animationLength = value;
-                foreach (var target in AllTargets)
-                {
-                    target.SetLength(value);
-                }
             }
         }
         public bool Loop
@@ -204,6 +198,30 @@ namespace VamTimeline
         {
             if (_selected as FloatParamAnimationTarget != null) return new[] { (FloatParamAnimationTarget)_selected };
             return TargetFloatParams;
+        }
+
+        public void StretchLength(float value)
+        {
+            if (value == _animationLength)
+                return;
+            _animationLength = value;
+            foreach (var target in AllTargets)
+            {
+                foreach (var curve in target.GetCurves())
+                    curve.StretchLength(value);
+            }
+        }
+
+        public void CropOrExtendLength(float animationLength)
+        {
+            if (animationLength == _animationLength)
+                return;
+            _animationLength = animationLength;
+            foreach (var target in AllTargets)
+            {
+                foreach (var curve in target.GetCurves())
+                    curve.CropOrExtendLength(animationLength);
+            }
         }
     }
 }

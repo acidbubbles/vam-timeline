@@ -15,6 +15,11 @@ namespace VamTimeline
         public const string ScreenName = "Animation Settings";
         public override string Name => ScreenName;
 
+        public const string ChangeLengthModeLocked = "Locked";
+        public const string ChangeLengthModeCropExtend = "Crop or Extend";
+        public const string ChangeLengthModeStretch = "Stretch";
+
+        private JSONStorableStringChooser _lengthModeJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _blendDurationJSON;
@@ -77,6 +82,14 @@ namespace VamTimeline
             var addAnimationUI = Plugin.CreateButton("Add New Animation", rightSide);
             addAnimationUI.button.onClick.AddListener(() => Plugin.AddAnimationJSON.actionCallback());
             _components.Add(addAnimationUI);
+
+            _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
+                ChangeLengthModeLocked,
+                ChangeLengthModeCropExtend,
+                ChangeLengthModeStretch
+             }, ChangeLengthModeLocked, "Change Length Mode");
+            Plugin.CreateScrollablePopup(_lengthModeJSON);
+            _linkedStorables.Add(_lengthModeJSON);
 
             _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
@@ -314,8 +327,26 @@ namespace VamTimeline
 
         private void UpdateAnimationLength(float v)
         {
-            if (v <= 0.1f) v = 0.1f;
-            Plugin.Animation.AnimationLength = v;
+            if (v <= 0.1f)
+            {
+                v = 0.1f;
+                _lengthJSON.valNoCallback = v;
+            }
+            switch (_lengthModeJSON.val)
+            {
+                case ChangeLengthModeLocked:
+                    {
+                        _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                        return;
+                    }
+                case ChangeLengthModeStretch:
+                    Plugin.Animation.Current.StretchLength(v);
+                    break;
+                case ChangeLengthModeCropExtend:
+                    Plugin.Animation.Current.CropOrExtendLength(v);
+                    break;
+            }
+            Plugin.Animation.RebuildAnimation();
             UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
         }

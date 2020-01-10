@@ -35,7 +35,7 @@ namespace VamTimeline
             get
             {
                 var time = _animState != null && _animState.enabled ? _animState.time : _playTime;
-                if (Current.Loop) return time % AnimationLength;
+                if (Current.Loop) return time % Current.AnimationLength;
                 return time;
             }
             set
@@ -74,19 +74,6 @@ namespace VamTimeline
                 _animState.speed = value;
                 if (Current.AnimationPattern != null)
                     Current.AnimationPattern.SetFloatParamValue("speed", value);
-            }
-        }
-
-        public float AnimationLength
-        {
-            get
-            {
-                return Current.AnimationLength;
-            }
-            set
-            {
-                Current.AnimationLength = value;
-                RebuildAnimation();
             }
         }
 
@@ -385,8 +372,8 @@ namespace VamTimeline
 
         private void CopyCurrentClipStateTo(AtomAnimationClip clip)
         {
-            clip.Speed = Speed;
-            clip.AnimationLength = AnimationLength;
+            clip.Speed = Current.Speed;
+            clip.CropOrExtendLength(Current.AnimationLength);
             foreach (var origTarget in Current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
@@ -491,7 +478,7 @@ namespace VamTimeline
         public void Paste(AtomClipboardEntry clipboard)
         {
             float time = Time;
-            if (Current.Loop && time >= AnimationLength)
+            if (Current.Loop && time >= Current.AnimationLength)
                 time = 0f;
             foreach (var entry in clipboard.Controllers)
             {
@@ -500,7 +487,7 @@ namespace VamTimeline
                     animController = Add(entry.Controller);
                 animController.SetCurveSnapshot(time, entry.Snapshot);
                 if (time == 0f && Current.Loop)
-                    animController.SetCurveSnapshot(AnimationLength, entry.Snapshot);
+                    animController.SetCurveSnapshot(Current.AnimationLength, entry.Snapshot);
             }
             foreach (var entry in clipboard.FloatParams)
             {
@@ -509,7 +496,7 @@ namespace VamTimeline
                     animController = Current.Add(entry.Storable, entry.FloatParam);
                 animController.SetKeyframe(time, entry.Snapshot.value);
                 if (time == 0f && Current.Loop)
-                    animController.SetKeyframe(AnimationLength, entry.Snapshot.value);
+                    animController.SetKeyframe(Current.AnimationLength, entry.Snapshot.value);
             }
             RebuildAnimation();
         }

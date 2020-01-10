@@ -38,13 +38,13 @@ namespace VamTimeline
                 var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value)
                 {
                     Speed = DeserializeFloat(clipJSON["Speed"], 1f),
-                    AnimationLength = DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength),
                     BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], defaultBlendDuration),
                     Loop = DeserializeBool(clipJSON["Loop"], true),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     NextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0)
                 };
+                clip.CropOrExtendLength(DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength));
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
             }
