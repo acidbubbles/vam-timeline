@@ -256,10 +256,10 @@ namespace VamTimeline
             };
             RegisterStringChooser(FilterAnimationTargetJSON);
 
-            NextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => { UpdateTime(Animation.Current.GetNextFrame(Animation.Time)); AnimationFrameUpdated(); });
+            NextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => NextFrame());
             RegisterAction(NextFrameJSON);
 
-            PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => { UpdateTime(Animation.Current.GetPreviousFrame(Animation.Time)); AnimationFrameUpdated(); });
+            PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
             RegisterAction(PreviousFrameJSON);
 
             SmoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
@@ -425,6 +425,21 @@ namespace VamTimeline
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
                 Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
+            AnimationFrameUpdated();
+        }
+
+        private void NextFrame()
+        {
+            var originalTime = Animation.Time;
+            var time = Animation.Current.GetNextFrame(Animation.Time);
+            UpdateTime(time);
+            AnimationFrameUpdated();
+        }
+
+        private void PreviousFrame()
+        {
+            var time = Animation.Current.GetPreviousFrame(Animation.Time);
+            UpdateTime(time);
             AnimationFrameUpdated();
         }
 

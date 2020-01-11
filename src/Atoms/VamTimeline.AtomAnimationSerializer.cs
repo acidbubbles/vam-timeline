@@ -147,7 +147,7 @@ namespace VamTimeline
             {
                 var keyframe = new Keyframe
                 {
-                    time = DeserializeFloat(keyframeJSON["time"]),
+                    time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f),
                     value = DeserializeFloat(keyframeJSON["value"]),
                     inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
                     outTangent = DeserializeFloat(keyframeJSON["outTangent"])
