@@ -112,10 +112,12 @@ namespace VamTimeline
 
         protected string GetNewAnimationName()
         {
-            var lastAnimationName = Clips.Last().AnimationName;
-            var lastAnimationIndex = lastAnimationName.Substring(4);
-            var animationName = "Anim" + (int.Parse(lastAnimationIndex) + 1);
-            return animationName;
+            for (var i = Clips.Count + 1; i < 999; i++)
+            {
+                var animationName = "Anim " + i;
+                if (!Clips.Any(c => c.AnimationName == animationName)) return animationName;
+            }
+            return Guid.NewGuid().ToString();
         }
 
         public void DeleteFrame()
