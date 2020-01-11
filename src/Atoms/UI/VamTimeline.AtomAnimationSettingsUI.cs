@@ -19,12 +19,16 @@ namespace VamTimeline
         public const string ChangeLengthModeCropExtend = "Crop or Extend";
         public const string ChangeLengthModeStretch = "Stretch";
 
+        private JSONStorableString _animationNameJSON;
         private JSONStorableStringChooser _lengthModeJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableFloat _speedJSON;
         private JSONStorableFloat _blendDurationJSON;
         private JSONStorableBool _ensureQuaternionContinuity;
         private JSONStorableBool _loop;
+        private JSONStorableStringChooser _nextAnimationJSON;
+        private JSONStorableFloat _nextAnimationTimeJSON;
+        private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableStringChooser _addControllerListJSON;
         private JSONStorableAction _toggleControllerJSON;
         private UIDynamicPopup _addControllerUI;
@@ -35,9 +39,6 @@ namespace VamTimeline
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
-        private JSONStorableStringChooser _nextAnimationJSON;
-        private JSONStorableFloat _nextAnimationTimeJSON;
-        private JSONStorableString _nextAnimationPreviewJSON;
         private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
@@ -82,6 +83,10 @@ namespace VamTimeline
             var addAnimationUI = Plugin.CreateButton("Add New Animation", rightSide);
             addAnimationUI.button.onClick.AddListener(() => Plugin.AddAnimationJSON.actionCallback());
             _components.Add(addAnimationUI);
+
+            _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
+            Plugin.CreateTextInput(_animationNameJSON);
+            _linkedStorables.Add(_animationNameJSON);
 
             _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
                 ChangeLengthModeLocked,
@@ -325,6 +330,23 @@ namespace VamTimeline
 
         #region Callbacks
 
+        private void UpdateAnimationName(string val)
+        {
+            if(string.IsNullOrEmpty(val))
+            {
+                _animationNameJSON.valNoCallback = Plugin.Animation.Current.AnimationName;
+                return;
+            }
+            if(Plugin.Animation.Clips.Any(c => c.AnimationName == val))
+            {
+                _animationNameJSON.valNoCallback = Plugin.Animation.Current.AnimationName;
+                return;
+            }
+            Plugin.Animation.Current.AnimationName = val;
+            Plugin.Animation.RebuildAnimation();
+            Plugin.AnimationModified();
+        }
+
         private void UpdateAnimationLength(float v)
         {
             if (v <= 0.1f)
@@ -530,6 +552,7 @@ namespace VamTimeline
             GenerateRemoveToggles();
 
             var current = Plugin.Animation.Current;
+            _animationNameJSON.valNoCallback = current.AnimationName;
             _lengthJSON.valNoCallback = current.AnimationLength;
             _speedJSON.valNoCallback = current.Speed;
             _blendDurationJSON.valNoCallback = current.BlendDuration;

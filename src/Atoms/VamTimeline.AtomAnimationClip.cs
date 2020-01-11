@@ -28,7 +28,7 @@ namespace VamTimeline
         public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
         public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());
         public bool EnsureQuaternionContinuity { get; set; } = true;
-        public string AnimationName { get; }
+        public string AnimationName { get; set; }
         public float Speed { get; set; } = 1f;
         public float AnimationLength
         {
