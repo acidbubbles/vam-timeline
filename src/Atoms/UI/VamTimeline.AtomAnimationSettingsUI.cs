@@ -80,9 +80,13 @@ namespace VamTimeline
 
         private void InitAnimationSettingsUI(bool rightSide)
         {
-            var addAnimationUI = Plugin.CreateButton("Add New Animation", rightSide);
-            addAnimationUI.button.onClick.AddListener(() => Plugin.AddAnimationJSON.actionCallback());
-            _components.Add(addAnimationUI);
+            var addAnimationFromCurrentFrameUI = Plugin.CreateButton("Create Animation From Current Frame", rightSide);
+            addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
+            _components.Add(addAnimationFromCurrentFrameUI);
+
+            var addAnimationAsCopyUI = Plugin.CreateButton("Create Copy Of Current Animation", rightSide);
+            addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
+            _components.Add(addAnimationAsCopyUI);
 
             _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
             Plugin.CreateTextInput(_animationNameJSON);
@@ -119,6 +123,52 @@ namespace VamTimeline
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
             Plugin.CreateToggle(_ensureQuaternionContinuity);
             _linkedStorables.Add(_ensureQuaternionContinuity);
+        }
+
+        private void AddAnimationAsCopy()
+        {
+            var current = Plugin.Animation.Current;
+            var clip = Plugin.Animation.AddAnimation();
+            clip.Speed = current.Speed;
+            clip.CropOrExtendLength(current.AnimationLength);
+            foreach (var origTarget in current.TargetControllers)
+            {
+                var newTarget = clip.Add(origTarget.Controller);
+                for(var i = 0; i < origTarget.Curves.Count; i++)
+                {
+                    newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
+                }
+            }
+            foreach (var origTarget in current.TargetFloatParams)
+            {
+                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
+                newTarget.Value.keys = origTarget.Value.keys.ToArray();
+            }
+            Plugin.Animation.RebuildAnimation();
+            Plugin.Animation.ChangeAnimation(clip.AnimationName);
+            Plugin.AnimationModified();
+        }
+
+        private void AddAnimationFromCurrentFrame()
+        {
+            var current = Plugin.Animation.Current;
+            var clip = Plugin.Animation.AddAnimation();
+            clip.Speed = current.Speed;
+            clip.CropOrExtendLength(current.AnimationLength);
+            foreach (var origTarget in current.TargetControllers)
+            {
+                var newTarget = clip.Add(origTarget.Controller);
+                newTarget.SetKeyframeToCurrentTransform(0f);
+                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
+            }
+            foreach (var origTarget in current.TargetFloatParams)
+            {
+                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
+                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
+                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
+            }
+            Plugin.Animation.ChangeAnimation(clip.AnimationName);
+            Plugin.AnimationModified();
         }
 
         private void InitSequenceUI()
@@ -332,12 +382,12 @@ namespace VamTimeline
 
         private void UpdateAnimationName(string val)
         {
-            if(string.IsNullOrEmpty(val))
+            if (string.IsNullOrEmpty(val))
             {
                 _animationNameJSON.valNoCallback = Plugin.Animation.Current.AnimationName;
                 return;
             }
-            if(Plugin.Animation.Clips.Any(c => c.AnimationName == val))
+            if (Plugin.Animation.Clips.Any(c => c.AnimationName == val))
             {
                 _animationNameJSON.valNoCallback = Plugin.Animation.Current.AnimationName;
                 return;

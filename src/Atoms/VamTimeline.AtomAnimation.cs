@@ -363,31 +363,12 @@ namespace VamTimeline
             RebuildAnimation();
         }
 
-        public string AddAnimation()
+        public AtomAnimationClip AddAnimation()
         {
             string animationName = GetNewAnimationName();
             var clip = new AtomAnimationClip(animationName);
-            CopyCurrentClipStateTo(clip);
             AddClip(clip);
-            return animationName;
-        }
-
-        private void CopyCurrentClipStateTo(AtomAnimationClip clip)
-        {
-            clip.Speed = Current.Speed;
-            clip.CropOrExtendLength(Current.AnimationLength);
-            foreach (var origTarget in Current.TargetControllers)
-            {
-                var newTarget = clip.Add(origTarget.Controller);
-                newTarget.SetKeyframeToCurrentTransform(0f);
-                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
-            }
-            foreach (var origTarget in Current.TargetFloatParams)
-            {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
-                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
-            }
+            return clip;
         }
 
         public void ChangeAnimation(string animationName)

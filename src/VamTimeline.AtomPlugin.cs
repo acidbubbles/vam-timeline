@@ -39,7 +39,6 @@ namespace VamTimeline
 
         // Storables
         public JSONStorableStringChooser AnimationJSON { get; private set; }
-        public JSONStorableAction AddAnimationJSON { get; private set; }
         public JSONStorableFloat ScrubberJSON { get; private set; }
         public JSONStorableAction PlayJSON { get; private set; }
         public JSONStorableBool IsPlayingJSON { get; private set; }
@@ -190,9 +189,6 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStringChooser(AnimationJSON);
-
-            AddAnimationJSON = new JSONStorableAction(StorableNames.AddAnimation, () => AddAnimation());
-            RegisterAction(AddAnimationJSON);
 
             ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
@@ -510,21 +506,6 @@ namespace VamTimeline
             {
                 _saveEnabled = true;
             }
-        }
-
-        private void AddAnimation()
-        {
-            _saveEnabled = false;
-            try
-            {
-                var animationName = Animation.AddAnimation();
-                ChangeAnimation(animationName);
-            }
-            finally
-            {
-                _saveEnabled = true;
-            }
-            SaveState();
         }
 
         private void SmoothAllFrames()

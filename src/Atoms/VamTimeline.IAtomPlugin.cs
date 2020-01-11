@@ -68,7 +68,6 @@ namespace VamTimeline
         AtomAnimation Animation { get; }
 
         JSONStorableStringChooser AnimationJSON { get; }
-        JSONStorableAction AddAnimationJSON { get; }
         JSONStorableFloat ScrubberJSON { get; }
         JSONStorableAction PlayJSON { get; }
         JSONStorableAction PlayIfNotPlayingJSON { get; }
