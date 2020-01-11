@@ -41,7 +41,9 @@ namespace VamTimeline
 
             // TODO: Keyframe all animatable morphs
 
-            // TODO: Copy all controllers and morphs
+            // TODO: Copy all missing controllers and morphs on every animation
+
+            // TODO: Import / Export animation(s) to another atom and create an atom just to store and share animations
         }
 
         private void KeyframeCurrentPose(bool all)
