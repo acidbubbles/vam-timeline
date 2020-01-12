@@ -108,6 +108,10 @@ The Params screen allows provides tooling to animate morphs and other params.
 
 ![VamTimeline Params Tab](screenshots/atom-params-ui.png)
 
+### Known issues
+
+- Some morphs conflict with each other. For example, the `Right Hand Grasp` controls the thumb, so the `Right Thumb Grasp` morphs will be ignored when the former is animated.
+
 ## Development
 
 The paths to the VaM dll files are relative, so clone into `(VaM Install Folder)/Custom/Scripts/Dev/vam-timeline` for example.

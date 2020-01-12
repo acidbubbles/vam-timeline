@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -39,6 +41,10 @@ namespace VamTimeline
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
             _components.Add(keyframeCurrentPoseTrackedUI);
 
+            var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
+            bakeUI.button.onClick.AddListener(() => Bake());
+            _components.Add(bakeUI);
+
             // TODO: Keyframe all animatable morphs
 
             // TODO: Copy all missing controllers and morphs on every animation
@@ -72,6 +78,30 @@ namespace VamTimeline
             {
                 SuperController.LogError("VamTimeline.AtomAnimationAdvancedUI: " + exc.ToString());
             }
+        }
+
+        private void Bake()
+        {
+            var controllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(c => c.Controller).Distinct().ToList();
+            foreach (var mac in Plugin.ContainingAtom.motionAnimationControls)
+            {
+                if (!controllers.Contains(mac.controller)) continue;
+                mac.armedForRecord = true;
+            }
+
+            Plugin.Animation.Play();
+            SuperController.singleton.motionAnimationMaster.StartRecord();
+
+            Plugin.StartCoroutine(StopWhenPlaybackIsComplete());
+        }
+
+        private IEnumerator StopWhenPlaybackIsComplete()
+        {
+            var waitFor = Plugin.Animation.Clips.Sum(c => c.NextAnimationTime == 0 ? c.AnimationLength : c.NextAnimationTime);
+            yield return new WaitForSeconds(waitFor);
+
+            SuperController.singleton.motionAnimationMaster.StopRecord();
+            Plugin.Animation.Stop();
         }
     }
 }
