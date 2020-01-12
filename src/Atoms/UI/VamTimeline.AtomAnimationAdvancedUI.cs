@@ -35,11 +35,11 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
-            var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Current Pose (All)", true);
+            var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
             _components.Add(keyframeCurrentPoseUI);
 
-            var keyframeCurrentPoseTrackedUI = Plugin.CreateButton("Keyframe Current Pose (Tracked)", true);
+            var keyframeCurrentPoseTrackedUI = Plugin.CreateButton("Keyframe Pose (Animated)", true);
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
             _components.Add(keyframeCurrentPoseTrackedUI);
 
