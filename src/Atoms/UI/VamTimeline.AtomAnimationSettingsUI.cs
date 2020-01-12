@@ -80,6 +80,10 @@ namespace VamTimeline
 
         private void InitAnimationSettingsUI(bool rightSide)
         {
+            var snapUI = Plugin.CreateSlider(Plugin.SnapJSON);
+            snapUI.valueFormat = "F3";
+            _linkedStorables.Add(Plugin.SnapJSON);
+
             var addAnimationFromCurrentFrameUI = Plugin.CreateButton("Create Animation From Current Frame", rightSide);
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
             _components.Add(addAnimationFromCurrentFrameUI);
@@ -103,7 +107,7 @@ namespace VamTimeline
             _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
 
             var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
-            lengthUI.valueFormat = "F3";
+            lengthUI.valueFormat = "F2";
             _linkedStorables.Add(_lengthJSON);
 
             _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false);
@@ -399,12 +403,19 @@ namespace VamTimeline
 
         private void UpdateAnimationLength(float v)
         {
+            v = (float)(Math.Round(v * 100f) / 100f);
             if (v <= 0.1f)
-            {
                 v = 0.1f;
-                _lengthJSON.valNoCallback = v;
+            var snapDelta = v % Plugin.SnapJSON.val;
+            if (snapDelta != 0f)
+            {
+                v -= snapDelta;
+                if (snapDelta < Plugin.SnapJSON.val / 2f) ;
+                v += Plugin.SnapJSON.val;
             }
-            v = (float)(Math.Round(v * 1000f) / 1000f);
+            if (v != _lengthJSON.val)
+                _lengthJSON.valNoCallback = v;
+
             switch (_lengthModeJSON.val)
             {
                 case ChangeLengthModeLocked:

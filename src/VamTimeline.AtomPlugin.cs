@@ -45,6 +45,7 @@ namespace VamTimeline
         public JSONStorableStringChooser FilterAnimationTargetJSON { get; private set; }
         public JSONStorableAction NextFrameJSON { get; private set; }
         public JSONStorableAction PreviousFrameJSON { get; private set; }
+        public JSONStorableFloat SnapJSON { get; private set; }
         public JSONStorableAction SmoothAllFramesJSON { get; private set; }
         public JSONStorableAction CutJSON { get; private set; }
         public JSONStorableAction CopyJSON { get; private set; }
@@ -260,6 +261,17 @@ namespace VamTimeline
             PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
             RegisterAction(PreviousFrameJSON);
 
+            SnapJSON = new JSONStorableFloat(StorableNames.Snap, 0.1f, (float val) =>
+            {
+                var rounded = (float)(Math.Round(val * 1000f) / 1000f);
+                if (val != rounded)
+                    SnapJSON.valNoCallback = rounded;
+            }, 0.001f, 1f, true)
+            {
+                isStorable = true
+            };
+            RegisterFloat(SnapJSON);
+
             SmoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
 
             CutJSON = new JSONStorableAction("Cut", () => Cut());
@@ -418,8 +430,17 @@ namespace VamTimeline
         private void UpdateTime(float time)
         {
             time = (float)(Math.Round(time * 1000f) / 1000f);
+
+            var snapDelta = time % SnapJSON.val;
+            if (snapDelta != 0f)
+            {
+                time -= snapDelta;
+                if (snapDelta < SnapJSON.val / 2f) ;
+                time += SnapJSON.val;
+            }
+
             if (Animation.Current.Loop && time >= Animation.Current.AnimationLength)
-                time = Animation.Current.AnimationLength - AtomAnimation.PaddingBeforeLoopFrame;
+                time = Animation.Current.AnimationLength - SnapJSON.val;
 
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)

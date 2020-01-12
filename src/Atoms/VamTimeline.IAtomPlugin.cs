@@ -77,6 +77,7 @@ namespace VamTimeline
         JSONStorableStringChooser FilterAnimationTargetJSON { get; }
         JSONStorableAction NextFrameJSON { get; }
         JSONStorableAction PreviousFrameJSON { get; }
+        JSONStorableFloat SnapJSON { get; }
         JSONStorableAction SmoothAllFramesJSON { get; }
         JSONStorableAction CutJSON { get; }
         JSONStorableAction CopyJSON { get; }

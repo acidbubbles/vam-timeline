@@ -20,6 +20,7 @@ namespace VamTimeline
         public const string FilterAnimationTarget = "Filter Target";
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";
+        public const string Snap = "Snap";
         public const string SmoothAllFrames = "Smooth All Frames";
         public const string ChangeCurve = "Change Curve";
         public const string Locked = "Locked";
