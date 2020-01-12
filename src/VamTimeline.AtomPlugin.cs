@@ -266,7 +266,8 @@ namespace VamTimeline
                 var rounded = (float)(Math.Round(val * 1000f) / 1000f);
                 if (val != rounded)
                     SnapJSON.valNoCallback = rounded;
-                UpdateTime(Animation.Time);
+                if (Animation != null && Animation.Time % rounded != 0)
+                    UpdateTime(Animation.Time);
             }, 0.001f, 1f, true)
             {
                 isStorable = true
