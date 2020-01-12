@@ -179,7 +179,10 @@ namespace VamTimeline
 
         public void InitSharedStorables()
         {
-            StorageJSON = new JSONStorableString(StorableNames.Save, "", (string v) => Load(v));
+            StorageJSON = new JSONStorableString(StorableNames.Save, "", (string v) => Load(v))
+            {
+                storeType = JSONStorableParam.StoreType.Physical
+            };
             RegisterString(StorageJSON);
 
             AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
