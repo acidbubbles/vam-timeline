@@ -86,6 +86,7 @@ namespace VamTimeline
         JSONStorableString DisplayJSON { get; }
         JSONStorableString StorageJSON { get; }
 
+        void Load(string json);
         void AnimationModified();
 
         UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false);

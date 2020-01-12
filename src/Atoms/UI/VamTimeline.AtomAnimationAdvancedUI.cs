@@ -55,11 +55,20 @@ namespace VamTimeline
             exportUI.button.onClick.AddListener(() => Export());
             _components.Add(exportUI);
 
+            var resyncUI = Plugin.CreateButton("Re-attach (Reload)", true);
+            exportUI.button.onClick.AddListener(() => Reload());
+            _components.Add(exportUI);
+
             // TODO: Keyframe all animatable morphs
 
             // TODO: Copy all missing controllers and morphs on every animation
 
             // TODO: Import / Export animation(s) to another atom and create an atom just to store and share animations
+        }
+
+        private void Reload()
+        {
+            Plugin.Load(Plugin.StorageJSON.val);
         }
 
         private void Export()

@@ -179,7 +179,7 @@ namespace VamTimeline
 
         public void InitSharedStorables()
         {
-            StorageJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
+            StorageJSON = new JSONStorableString(StorableNames.Save, "", (string v) => Load(v));
             RegisterString(StorageJSON);
 
             AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
@@ -284,7 +284,7 @@ namespace VamTimeline
             yield return new WaitForEndOfFrame();
             try
             {
-                RestoreState(StorageJSON.val);
+                Load(StorageJSON.val);
             }
             finally
             {
@@ -296,7 +296,7 @@ namespace VamTimeline
 
         #region Load / Save
 
-        public void RestoreState(string json)
+        public void Load(string json)
         {
             if (_restoring) return;
             _restoring = true;
@@ -350,7 +350,7 @@ namespace VamTimeline
             _restoring = false;
         }
 
-        public void SaveState()
+        public void Save()
         {
             try
             {
@@ -492,7 +492,7 @@ namespace VamTimeline
             _saveEnabled = false;
             try
             {
-                RestoreState(pop);
+                Load(pop);
                 StorageJSON.valNoCallback = pop;
                 if (Animation.Clips.Any(c => c.AnimationName == animationName))
                     AnimationJSON.val = animationName;
@@ -593,7 +593,7 @@ namespace VamTimeline
 
                 // Save
                 if (_saveEnabled)
-                    SaveState();
+                    Save();
 
                 // Render
                 RenderState();
