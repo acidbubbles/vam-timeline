@@ -14,6 +14,8 @@ namespace VamTimeline
     public class AtomAnimationAdvancedUI : AtomAnimationBaseUI
     {
         public const string ScreenName = "Advanced";
+        private JSONStorableStringChooser _exportToJSON;
+
         public override string Name => ScreenName;
 
         public AtomAnimationAdvancedUI(IAtomPlugin plugin)
@@ -45,11 +47,30 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
 
+            _exportToJSON = new JSONStorableStringChooser("Export To", SuperController.singleton.GetAtoms().Where(a => a != Plugin.ContainingAtom && a.type == Plugin.ContainingAtom.type && a.GetStorableIDs().Any(s => s.EndsWith("VamTimeline.AtomPlugin"))).Select(a => a.uid).ToList(), "", "Export To");
+            var exportToUI = Plugin.CreateScrollablePopup(_exportToJSON, true);
+            _linkedStorables.Add(_exportToJSON);
+
+            var exportUI = Plugin.CreateButton("Export (All)", true);
+            exportUI.button.onClick.AddListener(() => Export());
+            _components.Add(exportUI);
+
             // TODO: Keyframe all animatable morphs
 
             // TODO: Copy all missing controllers and morphs on every animation
 
             // TODO: Import / Export animation(s) to another atom and create an atom just to store and share animations
+        }
+
+        private void Export()
+        {
+            if (string.IsNullOrEmpty(_exportToJSON.val)) return;
+            var atom = SuperController.singleton.GetAtomByUid(_exportToJSON.val);
+            var storableId = atom.GetStorableIDs().First(s => s.EndsWith("VamTimeline.AtomPlugin"));
+            var storable = atom.GetStorableByID(storableId);
+            var storageJSON = storable.GetStringJSONParam("Save");
+            SuperController.LogMessage(Plugin.StorageJSON.val);
+            storageJSON.val = Plugin.StorageJSON.val;
         }
 
         private void KeyframeCurrentPose(bool all)

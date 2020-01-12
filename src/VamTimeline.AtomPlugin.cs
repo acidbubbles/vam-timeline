@@ -34,9 +34,6 @@ namespace VamTimeline
         private AtomClipboardEntry _clipboard;
         private FreeControllerAnimationTarget _grabbedController;
 
-        // Save
-        private JSONStorableString _saveJSON;
-
         // Storables
         public JSONStorableStringChooser AnimationJSON { get; private set; }
         public JSONStorableFloat ScrubberJSON { get; private set; }
@@ -55,6 +52,7 @@ namespace VamTimeline
         public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
+        public JSONStorableString StorageJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -181,8 +179,8 @@ namespace VamTimeline
 
         public void InitSharedStorables()
         {
-            _saveJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
-            RegisterString(_saveJSON);
+            StorageJSON = new JSONStorableString(StorableNames.Save, "", (string v) => RestoreState(v));
+            RegisterString(StorageJSON);
 
             AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
             {
@@ -286,7 +284,7 @@ namespace VamTimeline
             yield return new WaitForEndOfFrame();
             try
             {
-                RestoreState(_saveJSON.val);
+                RestoreState(StorageJSON.val);
             }
             finally
             {
@@ -323,6 +321,7 @@ namespace VamTimeline
                         if (backupJSON != null && !string.IsNullOrEmpty(backupJSON.val))
                         {
                             SuperController.LogMessage("VamTimeline: No save found but a backup was detected. Loading backup.");
+                            StorageJSON.valNoCallback = backupJSON.val;
                             Animation = _serializer.DeserializeAnimation(backupJSON.val);
                         }
                     }
@@ -363,13 +362,13 @@ namespace VamTimeline
                 if (serialized == _undoList.LastOrDefault())
                     return;
 
-                if (!string.IsNullOrEmpty(_saveJSON.val))
+                if (!string.IsNullOrEmpty(StorageJSON.val))
                 {
-                    _undoList.Add(_saveJSON.val);
+                    _undoList.Add(StorageJSON.val);
                     if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
                 }
 
-                _saveJSON.valNoCallback = serialized;
+                StorageJSON.valNoCallback = serialized;
 
                 var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimeline.BackupPlugin"));
                 if (backupStorableID != null)
@@ -494,7 +493,7 @@ namespace VamTimeline
             try
             {
                 RestoreState(pop);
-                _saveJSON.valNoCallback = pop;
+                StorageJSON.valNoCallback = pop;
                 if (Animation.Clips.Any(c => c.AnimationName == animationName))
                     AnimationJSON.val = animationName;
                 else

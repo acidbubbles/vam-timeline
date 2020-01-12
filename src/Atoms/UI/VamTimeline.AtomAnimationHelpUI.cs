@@ -153,6 +153,7 @@ Please report any issues or suggestions to https://github.com/acidbubbles/vam-ti
         private string GetDebugInfo()
         {
             var sb = new StringBuilder();
+            sb.AppendLine($"Storage JSON: {Plugin.StorageJSON.val.Length}");
             sb.AppendLine($"Animation Time: {Plugin.Animation.Time}");
             sb.AppendLine($"Animation Name: {Plugin.Animation.Current.AnimationName}");
             foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())

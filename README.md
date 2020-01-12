@@ -90,9 +90,15 @@ When the Controller Plugin has been added, you can use the left/right keyboard a
 
 Playing, stopping and otherwise interacting with this plugin is possible using storables. For example, you can play a specific animation when a mouth colliders triggers, or when an animation patterns reaches a certain point. This can create some intricate relationships between animations and interactivity.
 
+### Sharing animations between atoms
+
+You can use the Export function to use the animation on another atom. The receiving atom must already have the timeline plugin, and be of the same type. This will overwrite all animations.
+
+Note that unless you have animated the `control` controller, the receiving atom will keep it's position, and the animation will be relative to it.
+
 ### Publishing without the plugin
 
-You can select record all controllers using VaM's built in animation motion capture; after you'll be able to delete the plugin completely and the animation will be stored in the scene itself (baked in). This will only work with controllers, not with float params. You won't be able to restore the animation this way however.
+You can bake the animation into the scene. Note that if you already have recorded elements, baking will not make the original animation longer. Also, only controllers will be baked, morphs are not yet supported.
 
 ### Screenshots
 
