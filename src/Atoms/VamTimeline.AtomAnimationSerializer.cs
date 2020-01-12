@@ -72,7 +72,11 @@ namespace VamTimeline
                 {
                     var controllerName = controllerJSON["Controller"].Value;
                     var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
-                    if (controller == null) throw new NullReferenceException($"Atom '{_atom.uid}' does not have a controller '{controllerName}'");
+                    if (controller == null)
+                    {
+                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a controller '{controllerName}'");
+                        continue;
+                    }
                     var target = new FreeControllerAnimationTarget(controller, clip.AnimationLength);
                     clip.TargetControllers.Add(target);
                     DeserializeCurve(target.X, controllerJSON["X"]);
@@ -143,11 +147,14 @@ namespace VamTimeline
 
         private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON)
         {
+            var last = -1f;
             foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
             {
+                var time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f);
+                if (time == last) continue;
                 var keyframe = new Keyframe
                 {
-                    time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f),
+                    time = time,
                     value = DeserializeFloat(keyframeJSON["value"]),
                     inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
                     outTangent = DeserializeFloat(keyframeJSON["outTangent"])
