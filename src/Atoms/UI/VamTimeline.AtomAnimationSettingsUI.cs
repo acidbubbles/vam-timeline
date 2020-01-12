@@ -134,7 +134,7 @@ namespace VamTimeline
             foreach (var origTarget in current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
-                for(var i = 0; i < origTarget.Curves.Count; i++)
+                for (var i = 0; i < origTarget.Curves.Count; i++)
                 {
                     newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
                 }
@@ -404,6 +404,7 @@ namespace VamTimeline
                 v = 0.1f;
                 _lengthJSON.valNoCallback = v;
             }
+            v = (float)(Math.Round(v * 1000f) / 1000f);
             switch (_lengthModeJSON.val)
             {
                 case ChangeLengthModeLocked:
@@ -436,6 +437,7 @@ namespace VamTimeline
         {
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
+            v = (float)(Math.Round(v * 1000f) / 1000f);
             if (!Plugin.Animation.Current.Loop && v > Plugin.Animation.Current.AnimationLength)
                 _blendDurationJSON.valNoCallback = v = Plugin.Animation.Current.AnimationLength;
             Plugin.Animation.Current.BlendDuration = v;
@@ -466,17 +468,21 @@ namespace VamTimeline
         {
             if (Plugin.Animation.Current.NextAnimationName == null)
             {
-                _nextAnimationTimeJSON.valNoCallback = nextTime;
-                Plugin.Animation.Current.NextAnimationTime = nextTime;
+                _nextAnimationTimeJSON.valNoCallback = 0f;
+                Plugin.Animation.Current.NextAnimationTime = 0f;
                 return;
             }
             else if (!Plugin.Animation.Current.Loop)
             {
                 nextTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration;
+                Plugin.Animation.Current.NextAnimationTime = nextTime;
+                return;
             }
 
             if (nextTime < 0f)
                 nextTime = 0f;
+
+            nextTime = (float)(Math.Round(nextTime * 1000f) / 1000f);
 
             _nextAnimationTimeJSON.valNoCallback = nextTime;
             Plugin.Animation.Current.NextAnimationTime = nextTime;

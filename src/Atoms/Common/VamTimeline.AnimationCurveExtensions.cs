@@ -38,7 +38,10 @@ namespace VamTimeline
             for (var key = from; key != to; key += direction)
             {
                 var keyframe = curve.keys[key];
-                keyframe.time *= ratio;
+                var time = keyframe.time *= ratio;
+                time = (float)(Math.Round(time * 1000f) / 1000f);
+                keyframe.time = time;
+
                 curve.MoveKey(key, keyframe);
             }
 
