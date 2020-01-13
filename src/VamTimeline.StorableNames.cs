@@ -11,7 +11,8 @@ namespace VamTimeline
         // Animation
         public const string Save = "Save";
         public const string Animation = "Animation";
-        public const string Time = "Time";
+        public const string Scrubber = "Scrubber";
+        public const string Time = "Set Time";
         public const string Play = "Play";
         public const string PlayIfNotPlaying = "Play If Not Playing";
         public const string IsPlaying = "IsPlaying";

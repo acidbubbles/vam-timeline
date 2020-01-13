@@ -42,7 +42,8 @@ namespace VamTimeline
         }
 
         public JSONStorableBool Locked { get { return Storable?.GetBoolJSONParam(StorableNames.Locked); } }
-        public JSONStorableFloat Scrubber { get { return Storable?.GetFloatJSONParam(StorableNames.Time); } }
+        public JSONStorableFloat Scrubber { get { return Storable?.GetFloatJSONParam(StorableNames.Scrubber); } }
+        public JSONStorableFloat Time { get { return Storable?.GetFloatJSONParam(StorableNames.Time); } }
         public JSONStorableStringChooser Animation { get { return Storable?.GetStringChooserJSONParam(StorableNames.Animation); } }
         public JSONStorableStringChooser FilterAnimationTarget { get { return Storable?.GetStringChooserJSONParam(StorableNames.FilterAnimationTarget); } }
         public JSONStorableString Display { get { return Storable?.GetStringJSONParam(StorableNames.Display); } }

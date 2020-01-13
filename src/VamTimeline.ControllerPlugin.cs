@@ -245,8 +245,10 @@ namespace VamTimeline
         {
             {
                 if (_mainLinkedAnimation == null) return;
-                foreach (var link in _linkedAnimations)
-                    link.Scrubber.val = v;
+                var scrubber = _mainLinkedAnimation.Scrubber;
+                scrubber.val = v;
+                foreach (var link in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
+                    link.Time.val = scrubber.val;
                 VamTimelineAnimationFrameUpdated(_mainLinkedAnimation.Atom.uid);
             }
         }
@@ -312,7 +314,7 @@ namespace VamTimeline
                 var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
                 if (updated != null)
                 {
-                    var time = updated.Scrubber.val;
+                    var time = updated.Time.val;
                     var isPlaying = updated.IsPlaying.val;
                     var animationName = updated.Animation.val;
 
@@ -326,9 +328,9 @@ namespace VamTimeline
                         else
                             other.StopIfPlaying();
 
-                        var scrubber = other.Scrubber;
-                        if (scrubber.val != time)
-                            scrubber.val = time;
+                        var setTime = other.Time;
+                        if (setTime.val != time)
+                            setTime.val = time;
                     }
                 }
 

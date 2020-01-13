@@ -37,6 +37,7 @@ namespace VamTimeline
         // Storables
         public JSONStorableStringChooser AnimationJSON { get; private set; }
         public JSONStorableFloat ScrubberJSON { get; private set; }
+        public JSONStorableFloat TimeJSON { get; private set; }
         public JSONStorableAction PlayJSON { get; private set; }
         public JSONStorableBool IsPlayingJSON { get; private set; }
         public JSONStorableAction PlayIfNotPlayingJSON { get; private set; }
@@ -91,9 +92,8 @@ namespace VamTimeline
                 {
                     var time = Animation.Time;
                     if (time != ScrubberJSON.val)
-                    {
                         ScrubberJSON.valNoCallback = time;
-                    }
+                    // Note: We don't update SetTime in real time, it's not necessary
                     UpdatePlaying();
                     // RenderState() // In practice, we don't see anything useful
                 }
@@ -192,11 +192,17 @@ namespace VamTimeline
             };
             RegisterStringChooser(AnimationJSON);
 
-            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v, true), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            ScrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => UpdateTime(v, true), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
             RegisterFloat(ScrubberJSON);
+
+            TimeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v, false), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            {
+                isStorable = false
+            };
+            RegisterFloat(TimeJSON);
 
             PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
@@ -561,7 +567,7 @@ namespace VamTimeline
                 return;
             }
 
-            var time = ScrubberJSON.val;
+            var time = Animation.Time;
             var frames = new List<float>();
             var targets = new List<string>();
             foreach (var target in Animation.Current.GetAllOrSelectedTargets())
@@ -617,6 +623,8 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.max = Animation.Current.AnimationLength;
                 ScrubberJSON.valNoCallback = Animation.Time;
+                TimeJSON.max = Animation.Current.AnimationLength;
+                TimeJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
@@ -650,6 +658,7 @@ namespace VamTimeline
 
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
+                TimeJSON.valNoCallback = time;
 
                 _ui.AnimationFrameUpdated();
 
