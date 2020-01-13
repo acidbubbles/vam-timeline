@@ -386,17 +386,23 @@ namespace VamTimeline
 
         private void UpdateAnimationName(string val)
         {
+            var previousAnimationName = Plugin.Animation.Current.AnimationName;
             if (string.IsNullOrEmpty(val))
             {
-                _animationNameJSON.valNoCallback = Plugin.Animation.Current.AnimationName;
+                _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
             if (Plugin.Animation.Clips.Any(c => c.AnimationName == val))
             {
-                _animationNameJSON.valNoCallback = Plugin.Animation.Current.AnimationName;
+                _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
             Plugin.Animation.Current.AnimationName = val;
+            foreach (var clip in Plugin.Animation.Clips)
+            {
+                if (clip.NextAnimationName == previousAnimationName)
+                    clip.NextAnimationName = val;
+            }
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
