@@ -261,7 +261,7 @@ namespace VamTimeline
             PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
             RegisterAction(PreviousFrameJSON);
 
-            SnapJSON = new JSONStorableFloat(StorableNames.Snap, 0.1f, (float val) =>
+            SnapJSON = new JSONStorableFloat(StorableNames.Snap, 0.01f, (float val) =>
             {
                 var rounded = (float)(Math.Round(val * 1000f) / 1000f);
                 if (val != rounded)
