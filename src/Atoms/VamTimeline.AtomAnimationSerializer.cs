@@ -21,7 +21,7 @@ namespace VamTimeline
             _atom = atom;
         }
 
-        #region Deserialize
+        #region Deserialize JSON
 
         public AtomAnimation DeserializeAnimation(string val)
         {
@@ -147,19 +147,39 @@ namespace VamTimeline
 
         private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON)
         {
-            var last = -1f;
-            foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
+            if(curveJSON is JSONClass)
             {
-                var time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f);
-                if (time == last) continue;
-                var keyframe = new Keyframe
+                // Legacy
+                var last = -1f;
+                foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
                 {
-                    time = time,
-                    value = DeserializeFloat(keyframeJSON["value"]),
-                    inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
-                    outTangent = DeserializeFloat(keyframeJSON["outTangent"])
-                };
-                curve.AddKey(keyframe);
+                    var time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f);
+                    if (time == last) continue;
+                    var keyframe = new Keyframe
+                    {
+                        time = time,
+                        value = DeserializeFloat(keyframeJSON["value"]),
+                        inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
+                        outTangent = DeserializeFloat(keyframeJSON["outTangent"])
+                    };
+                    curve.AddKey(keyframe);
+                }
+                return;
+            }
+
+            foreach(var keyframe in curveJSON.Value.Split(';'))
+            {
+                var parts = keyframe.Split(',');
+                    var time = (float)(Math.Round(float.Parse(parts[0], CultureInfo.InvariantCulture)) * 1000f) / 1000f);
+                    if (time == last) continue;
+                    var keyframe = new Keyframe
+                    {
+                        time = time,
+                        value = DeserializeFloat(parts[1], CultureInfo.InvariantCulture),
+                        inTangent = DeserializeFloat(parts[2], CultureInfo.InvariantCulture),
+                        outTangent = DeserializeFloat(parts[3], CultureInfo.InvariantCulture)
+                    };
+                    curve.AddKey(keyframe);
             }
         }
 
@@ -167,19 +187,21 @@ namespace VamTimeline
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
-            return float.Parse(node.Value);
+            return float.Parse(node.Value, CultureInfo.InvariantCulture);
         }
 
         protected bool DeserializeBool(JSONNode node, bool defaultVal)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
+            if(node.Value == "0") return false;
+            if(node.Value == "1") return true;
             return bool.Parse(node.Value);
         }
 
         #endregion
 
-        #region Serialize
+        #region Serialize JSON
 
         public string SerializeAnimation(AtomAnimation animation)
         {
@@ -191,16 +213,17 @@ namespace VamTimeline
                 var clipJSON = new JSONClass
                 {
                     { "AnimationName", clip.AnimationName },
-                    { "Speed", clip.Speed.ToString() },
-                    { "AnimationLength", clip.AnimationLength.ToString() },
-                    { "BlendDuration", clip.BlendDuration.ToString() },
-                    { "Loop", clip.Loop.ToString() },
-                    { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity.ToString() }
+                    // TODO: Speed should be an animation setting, not a clip setting
+                    { "Speed", clip.Speed.ToString(CultureInfo.InvariantCulture) },
+                    { "AnimationLength", clip.AnimationLength.ToString(CultureInfo.InvariantCulture) },
+                    { "BlendDuration", clip.BlendDuration.ToString(CultureInfo.InvariantCulture) },
+                    { "Loop", clip.Loop ? "1" : "0" },
+                    { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity ? "1" : "0" }
                 };
                 if (clip.NextAnimationName != null)
                     clipJSON["NextAnimationName"] = clip.NextAnimationName;
                 if (clip.NextAnimationTime != 0)
-                    clipJSON["NextAnimationTime"] = clip.NextAnimationTime.ToString();
+                    clipJSON["NextAnimationTime"] = clip.NextAnimationTime.ToString(CultureInfo.InvariantCulture);
 
                 SerializeClip(clip, clipJSON);
                 clipsJSON.Add(clipJSON);
@@ -247,23 +270,22 @@ namespace VamTimeline
 
         protected JSONNode SerializeCurve(AnimationCurve curve)
         {
-            var curveJSON = new JSONClass();
-            var keyframesJSON = new JSONArray();
-            curveJSON.Add("keys", keyframesJSON);
+            // TODO: Use US locale to avoid commas in floats
+            // TODO: Serialize as: time,value,type,inTangent,outTangent;...
+            // e.g.: 0,12.345,1,-0.18,0.18;
+            var sb = new StringBuilder();
 
             foreach (var keyframe in curve.keys)
             {
-                var keyframeJSON = new JSONClass
-                {
-                    { "time", keyframe.time.ToString() },
-                    { "value", keyframe.value.ToString() },
-                    { "inTangent", keyframe.inTangent.ToString() },
-                    { "outTangent", keyframe.outTangent.ToString() }
-                };
-                keyframesJSON.Add(keyframeJSON);
+                sb.Append(keyframe.time.ToString(CultureInfo.InvariantCulture));
+                sb.Append(keyframe.value.ToString(CultureInfo.InvariantCulture));
+                sb.Append('0');
+                sb.Append(keyframe.inTangent.ToString(CultureInfo.InvariantCulture));
+                sb.Append(keyframe.outTangent.ToString(CultureInfo.InvariantCulture));
+                sb.Append(';');
             }
 
-            return curveJSON;
+            return sb.ToString();
         }
 
         #endregion
