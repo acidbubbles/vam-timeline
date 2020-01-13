@@ -57,7 +57,7 @@ namespace VamTimeline
 
             var resyncUI = Plugin.CreateButton("Re-attach (Reload)", true);
             exportUI.button.onClick.AddListener(() => Reload());
-            _components.Add(exportUI);
+            _components.Add(resyncUI);
 
             // TODO: Keyframe all animatable morphs
 
