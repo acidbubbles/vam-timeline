@@ -192,7 +192,7 @@ namespace VamTimeline
             };
             RegisterStringChooser(AnimationJSON);
 
-            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            ScrubberJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v, true), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
@@ -267,7 +267,7 @@ namespace VamTimeline
                 if (val != rounded)
                     SnapJSON.valNoCallback = rounded;
                 if (Animation != null && Animation.Time % rounded != 0)
-                    UpdateTime(Animation.Time);
+                    UpdateTime(Animation.Time, true);
             }, 0.001f, 1f, true)
             {
                 isStorable = true
@@ -429,16 +429,20 @@ namespace VamTimeline
             }
         }
 
-        private void UpdateTime(float time)
+        private void UpdateTime(float time, bool snap)
         {
             time = (float)(Math.Round(time * 1000f) / 1000f);
 
-            var snapDelta = time % SnapJSON.val;
-            if (snapDelta != 0f)
+            if (snap)
             {
-                time -= snapDelta;
-                if (snapDelta < SnapJSON.val / 2f)
-                    time += SnapJSON.val;
+                var snapDelta = time % SnapJSON.val;
+                if (snapDelta != 0f)
+                {
+                    time -= snapDelta;
+                    if (snapDelta > SnapJSON.val / 2f)
+                        time += SnapJSON.val;
+
+                }
             }
 
             if (Animation.Current.Loop && time >= Animation.Current.AnimationLength)
@@ -454,14 +458,14 @@ namespace VamTimeline
         {
             var originalTime = Animation.Time;
             var time = Animation.Current.GetNextFrame(Animation.Time);
-            UpdateTime(time);
+            UpdateTime(time, false);
             AnimationFrameUpdated();
         }
 
         private void PreviousFrame()
         {
             var time = Animation.Current.GetPreviousFrame(Animation.Time);
-            UpdateTime(time);
+            UpdateTime(time, false);
             AnimationFrameUpdated();
         }
 
@@ -497,7 +501,7 @@ namespace VamTimeline
                 var time = Animation.Time;
                 Animation.Paste(_clipboard);
                 // Sample animation now
-                UpdateTime(time);
+                UpdateTime(time, false);
                 AnimationModified();
             }
             catch (Exception exc)
@@ -525,7 +529,7 @@ namespace VamTimeline
                 else
                     AnimationJSON.valNoCallback = Animation.Clips.First().AnimationName;
                 AnimationModified();
-                UpdateTime(time);
+                UpdateTime(time, false);
             }
             finally
             {
