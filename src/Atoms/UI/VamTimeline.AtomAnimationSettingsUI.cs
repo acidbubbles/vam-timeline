@@ -179,6 +179,7 @@ namespace VamTimeline
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
             var nextAnimationUI = Plugin.CreateScrollablePopup(_nextAnimationJSON);
+            nextAnimationUI.popupPanelHeight = 260f;
             _linkedStorables.Add(_nextAnimationJSON);
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 1f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
