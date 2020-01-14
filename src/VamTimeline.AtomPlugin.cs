@@ -187,7 +187,7 @@ namespace VamTimeline
             };
             RegisterString(StorageJSON);
 
-            AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "Anim1", "Animation", val => ChangeAnimation(val))
+            AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
             {
                 isStorable = false
             };
@@ -415,6 +415,8 @@ namespace VamTimeline
 
         private void ChangeAnimation(string animationName)
         {
+            if (string.IsNullOrEmpty(animationName)) return;
+
             _saveEnabled = false;
             try
             {
