@@ -87,6 +87,7 @@ namespace VamTimeline
         private IEnumerator RefreshCurrentUIDefered(Action fn)
         {
             yield return new WaitForEndOfFrame();
+            if (_plugin ==  null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
             if (_current == null || _current.Name != _screens.val)
             {
                 if (_current != null)

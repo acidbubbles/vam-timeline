@@ -305,18 +305,13 @@ namespace VamTimeline
             {
                 if (_linkedAnimations.Count == 0) return;
 
-                var firstAnimationName = _linkedAnimations[0].Animation.val;
-                if (_linkedAnimations.Skip(1).All(la => la.Animation.val == firstAnimationName))
-                    _animationJSON.valNoCallback = firstAnimationName;
-                else
-                    _animationJSON.valNoCallback = "(Multiple animations selected)";
-
                 var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
                 if (updated != null)
                 {
                     var time = updated.Time.val;
                     var isPlaying = updated.IsPlaying.val;
                     var animationName = updated.Animation.val;
+                    _animationJSON.valNoCallback = animationName;
 
                     foreach (var other in _linkedAnimations.Where(la => la != updated))
                     {
@@ -331,6 +326,14 @@ namespace VamTimeline
                         var setTime = other.Time;
                         if (setTime.val != time)
                             setTime.val = time;
+                    }
+
+                    if (!isPlaying)
+                    {
+                        if (_linkedAnimations.Where(la => la != updated).All(la => la.Animation.val == animationName))
+                            _animationJSON.valNoCallback = animationName;
+                        else
+                            _animationJSON.valNoCallback = $"(Multiple animations: {string.Join(", ", _linkedAnimations.Select(la => la.Animation.val).ToArray())})";
                     }
                 }
 
