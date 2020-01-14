@@ -232,7 +232,7 @@ namespace VamTimeline
             }
             else
             {
-                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round(current.NextAnimationTime + current.BlendDuration / current.AnimationLength, 2)} times including blending";
+                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.NextAnimationTime + current.BlendDuration) / current.AnimationLength, 2)} times including blending";
             }
         }
 
