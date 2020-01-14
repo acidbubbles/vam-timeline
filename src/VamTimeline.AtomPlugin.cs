@@ -23,6 +23,7 @@ namespace VamTimeline
 
         private const int MaxUndo = 20;
         private const string AllTargets = "(All)";
+        private const string PlayingAnimationName = "(Playing...)";
         private bool _saveEnabled;
 
         // State
@@ -418,12 +419,24 @@ namespace VamTimeline
             try
             {
                 FilterAnimationTargetJSON.val = AllTargets;
-                if (!Animation.IsPlaying() || Animation.Current.AnimationName != animationName)
-                    Animation.ChangeAnimation(animationName);
                 if (Animation.IsPlaying())
-                    AnimationJSON.valNoCallback = Animation.PlayedAnimation;
+                {
+                    if (Animation.Current.AnimationName != animationName)
+                    {
+                        SuperController.LogMessage($"Changing from {Animation.Current.AnimationName} to {animationName}");
+                        Animation.ChangeAnimation(animationName);
+                        AnimationModified();
+                    }
+                    else
+                    {
+                        AnimationJSON.valNoCallback = PlayingAnimationName;
+                    }
+                }
                 else
+                {
+                    Animation.ChangeAnimation(animationName);
                     AnimationModified();
+                }
             }
             catch (Exception exc)
             {
@@ -626,7 +639,7 @@ namespace VamTimeline
                 TimeJSON.max = Animation.Current.AnimationLength;
                 TimeJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
-                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+                AnimationJSON.valNoCallback = Animation.IsPlaying() ? PlayingAnimationName : Animation.Current.AnimationName;
                 FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
 
                 // Save
@@ -659,6 +672,7 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
                 TimeJSON.valNoCallback = time;
+                AnimationJSON.valNoCallback = Animation.IsPlaying() ? PlayingAnimationName : Animation.Current.AnimationName;
 
                 _ui.AnimationFrameUpdated();
 
