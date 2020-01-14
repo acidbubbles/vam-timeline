@@ -633,6 +633,8 @@ namespace VamTimeline
 
         public void AnimationModified()
         {
+            if (Animation == null || Animation.Current == null) return;
+
             try
             {
                 // Update UI
@@ -667,6 +669,8 @@ namespace VamTimeline
 
         private void AnimationFrameUpdated()
         {
+            if (Animation == null || Animation.Current == null) return;
+
             try
             {
                 var time = Animation.Time;
