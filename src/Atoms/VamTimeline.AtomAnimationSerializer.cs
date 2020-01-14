@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using SimpleJSON;
 using UnityEngine;
 
@@ -147,14 +149,16 @@ namespace VamTimeline
 
         private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON)
         {
-            if(curveJSON is JSONClass)
+            var last = -1f;
+
+            if (curveJSON is JSONClass)
             {
                 // Legacy
-                var last = -1f;
                 foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
                 {
                     var time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f);
                     if (time == last) continue;
+                    last = time;
                     var keyframe = new Keyframe
                     {
                         time = time,
@@ -166,36 +170,46 @@ namespace VamTimeline
                 }
                 return;
             }
-
-            foreach(var keyframe in curveJSON.Value.Split(';'))
+            else
             {
-                var parts = keyframe.Split(',');
-                    var time = (float)(Math.Round(float.Parse(parts[0], CultureInfo.InvariantCulture)) * 1000f) / 1000f);
-                    if (time == last) continue;
-                    var keyframe = new Keyframe
+                foreach (var keyframe in curveJSON.Value.Split(';').Where(x => x != ""))
+                {
+                    var parts = keyframe.Split(',');
+                    try
                     {
-                        time = time,
-                        value = DeserializeFloat(parts[1], CultureInfo.InvariantCulture),
-                        inTangent = DeserializeFloat(parts[2], CultureInfo.InvariantCulture),
-                        outTangent = DeserializeFloat(parts[3], CultureInfo.InvariantCulture)
-                    };
-                    curve.AddKey(keyframe);
+                        var time = (float)(Math.Round(float.Parse(parts[0], CultureInfo.InvariantCulture) * 1000f) / 1000f);
+                        if (time == last) continue;
+                        last = time;
+                        curve.AddKey(new Keyframe
+                        {
+                            time = time,
+                            value = DeserializeFloat(parts[1]),
+                            // TODO: Load curve type
+                            inTangent = DeserializeFloat(parts[3]),
+                            outTangent = DeserializeFloat(parts[4])
+                        });
+                    }
+                    catch (IndexOutOfRangeException exc)
+                    {
+                        throw new InvalidOperationException($"Failed to ready curve: {keyframe}", exc);
+                    }
+                }
             }
         }
 
-        protected float DeserializeFloat(JSONNode node, float defaultVal = 0)
+        private float DeserializeFloat(JSONNode node, float defaultVal = 0)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
             return float.Parse(node.Value, CultureInfo.InvariantCulture);
         }
 
-        protected bool DeserializeBool(JSONNode node, bool defaultVal)
+        private bool DeserializeBool(JSONNode node, bool defaultVal)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
-            if(node.Value == "0") return false;
-            if(node.Value == "1") return true;
+            if (node.Value == "0") return false;
+            if (node.Value == "1") return true;
             return bool.Parse(node.Value);
         }
 
@@ -268,7 +282,7 @@ namespace VamTimeline
             }
         }
 
-        protected JSONNode SerializeCurve(AnimationCurve curve)
+        private JSONNode SerializeCurve(AnimationCurve curve)
         {
             // TODO: Use US locale to avoid commas in floats
             // TODO: Serialize as: time,value,type,inTangent,outTangent;...
@@ -278,9 +292,13 @@ namespace VamTimeline
             foreach (var keyframe in curve.keys)
             {
                 sb.Append(keyframe.time.ToString(CultureInfo.InvariantCulture));
+                sb.Append(',');
                 sb.Append(keyframe.value.ToString(CultureInfo.InvariantCulture));
+                sb.Append(',');
                 sb.Append('0');
+                sb.Append(',');
                 sb.Append(keyframe.inTangent.ToString(CultureInfo.InvariantCulture));
+                sb.Append(',');
                 sb.Append(keyframe.outTangent.ToString(CultureInfo.InvariantCulture));
                 sb.Append(';');
             }
