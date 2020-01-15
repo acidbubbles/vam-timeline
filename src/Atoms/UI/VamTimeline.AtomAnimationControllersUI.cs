@@ -92,18 +92,18 @@ namespace VamTimeline
                 _curveTypeJSON.valNoCallback = "(Loop)";
                 return;
             }
-            var curveTypes = Plugin.Animation.Current.TargetControllers
+            var curveTypes = Plugin.Animation.Current.GetAllOrSelectedControllerTargets()
                 .Select(c => c.Settings.ContainsKey(time) ? c.Settings[time] : null)
                 .Where(s => s != null)
                 .Select(s => s.CurveType)
                 .Distinct()
-                .ToList();
-            if (curveTypes.Count == 0)
+                .ToArray();
+            if (curveTypes.Length == 0)
                 _curveTypeJSON.valNoCallback = "(No Keyframe)";
-            else if (curveTypes.Count == 1)
+            else if (curveTypes.Length == 1)
                 _curveTypeJSON.valNoCallback = curveTypes[0].ToString();
             else
-                _curveTypeJSON.valNoCallback = "(Multiple Types)";
+                _curveTypeJSON.valNoCallback = "(" + string.Join("/", curveTypes) + ")";
         }
 
         private void UpdateValues()

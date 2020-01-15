@@ -514,9 +514,11 @@ namespace VamTimeline
             try
             {
                 if (Animation.IsPlaying()) return;
-                Copy();
-                if (Animation.Time == 0f) return;
-                Animation.DeleteFrame();
+                _clipboard = Animation.Current.Copy(Animation.Time);
+                var time = Animation.Time;
+                if (time == 0f || time == Animation.Current.AnimationLength) return;
+                Animation.Current.DeleteFrame(time);
+                Animation.RebuildAnimation();
                 AnimationModified();
             }
             catch (Exception exc)
@@ -531,7 +533,7 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying()) return;
 
-                _clipboard = Animation.Copy();
+                _clipboard = Animation.Current.Copy(Animation.Time);
             }
             catch (Exception exc)
             {
@@ -551,7 +553,8 @@ namespace VamTimeline
                     return;
                 }
                 var time = Animation.Time;
-                Animation.Paste(_clipboard);
+                Animation.Current.Paste(Animation.Time, _clipboard);
+                Animation.RebuildAnimation();
                 // Sample animation now
                 UpdateTime(time, false);
                 AnimationModified();
@@ -642,9 +645,9 @@ namespace VamTimeline
                 foreach (var f in frames.Distinct())
                 {
                     if (f == time)
-                        display.Append($"[{f:0.00}]");
+                        display.Append($"[{f}]");
                     else
-                        display.Append($" {f:0.00} ");
+                        display.Append($" {f} ");
                 }
             }
             display.AppendLine();

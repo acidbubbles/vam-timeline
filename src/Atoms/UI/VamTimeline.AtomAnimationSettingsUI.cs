@@ -330,7 +330,7 @@ namespace VamTimeline
                 return;
             }
             var values = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val)?.GetFloatParamNames() ?? new List<string>();
-            _addParamListJSON.choices = values;
+            _addParamListJSON.choices = values.OrderBy(v => v).ToList();
             if (autoSelect && !values.Contains(_addParamListJSON.val))
                 _addParamListJSON.valNoCallback = values.FirstOrDefault();
         }
@@ -408,20 +408,21 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private void UpdateAnimationLength(float v)
+        private void UpdateAnimationLength(float time)
         {
-            v = (float)(Math.Round(v * 100f) / 100f);
-            if (v <= 0.1f)
-                v = 0.1f;
-            var snapDelta = v % Plugin.SnapJSON.val;
+            time = (float)(Math.Round(time * 100f) / 100f);
+            if (time <= 0.1f)
+                time = 0.1f;
+            var snapDelta = time % Plugin.SnapJSON.val;
             if (snapDelta != 0f)
             {
-                v -= snapDelta;
-                if (snapDelta < Plugin.SnapJSON.val / 2f)
-                    v += Plugin.SnapJSON.val;
+                time -= snapDelta;
+                if (snapDelta > Plugin.SnapJSON.val / 2f)
+                    time += Plugin.SnapJSON.val;
+
             }
-            if (v != _lengthJSON.val)
-                _lengthJSON.valNoCallback = v;
+            if (time != _lengthJSON.val)
+                _lengthJSON.valNoCallback = time;
 
             switch (_lengthModeJSON.val)
             {
@@ -431,10 +432,10 @@ namespace VamTimeline
                         return;
                     }
                 case ChangeLengthModeStretch:
-                    Plugin.Animation.Current.StretchLength(v);
+                    Plugin.Animation.Current.StretchLength(time);
                     break;
                 case ChangeLengthModeCropExtend:
-                    Plugin.Animation.Current.CropOrExtendLength(v);
+                    Plugin.Animation.Current.CropOrExtendLength(time);
                     break;
             }
             Plugin.Animation.RebuildAnimation();

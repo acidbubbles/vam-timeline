@@ -15,7 +15,7 @@ namespace VamTimeline
     public class FreeControllerAnimationTarget : IAnimationTarget
     {
         public FreeControllerV3 Controller;
-        public SortedList<float, KeyframeSettings> Settings = new SortedList<float, KeyframeSettings>();
+        public SortedDictionary<float, KeyframeSettings> Settings = new SortedDictionary<float, KeyframeSettings>();
         public AnimationCurve X = new AnimationCurve();
         public AnimationCurve Y = new AnimationCurve();
         public AnimationCurve Z = new AnimationCurve();
@@ -114,9 +114,8 @@ namespace VamTimeline
             RotY.SetKeyframe(time, locationRotation.y);
             RotZ.SetKeyframe(time, locationRotation.z);
             RotW.SetKeyframe(time, locationRotation.w);
-            var setting = Settings.FirstOrDefault(s => s.Key == time);
-            if (setting.Value != null)
-                setting.Value.CurveType = CurveTypeValues.Smooth;
+            if (!Settings.ContainsKey(time))
+                Settings[time] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
         }
 
         public void DeleteFrame(float time)

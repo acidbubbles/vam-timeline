@@ -149,7 +149,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, SortedList<float, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON is JSONClass)
                 DeserializeCurveLegacy(curve, curveJSON);
@@ -157,7 +157,7 @@ namespace VamTimeline
                 DeserializeCurveFromString(curve, curveJSON, keyframeSettings);
         }
 
-        private void DeserializeCurveFromString(AnimationCurve curve, JSONNode curveJSON, SortedList<float, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromString(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
         {
             var last = -1f;
             foreach (var keyframe in curveJSON.Value.Split(';').Where(x => x != ""))
@@ -292,7 +292,7 @@ namespace VamTimeline
             }
         }
 
-        private JSONNode SerializeCurve(AnimationCurve curve, SortedList<float, KeyframeSettings> settings = null)
+        private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<float, KeyframeSettings> settings = null)
         {
             // TODO: Use US locale to avoid commas in floats
             // TODO: Serialize as: time,value,type,inTangent,outTangent;...

@@ -111,10 +111,6 @@ namespace VamTimeline
             TargetControllers.Remove(existing);
         }
 
-        public void RebuildAnimation()
-        {
-        }
-
         public void ChangeCurve(float time, string curveType)
         {
             if (time == 0 || time == AnimationLength) return;
@@ -198,6 +194,7 @@ namespace VamTimeline
                 foreach (var curve in target.GetCurves())
                     curve.StretchLength(value);
             }
+            UpdateKeyframeSettings();
         }
 
         public void CropOrExtendLength(float animationLength)
@@ -205,10 +202,80 @@ namespace VamTimeline
             if (animationLength == AnimationLength)
                 return;
             AnimationLength = animationLength;
+            SuperController.LogMessage($"Before Frames (keys): {string.Join(", ", TargetControllers[0].X.keys.Select(k => k.time.ToString()).ToArray())}");
+            SuperController.LogMessage($"Before Settings: {string.Join(", ", TargetControllers[0].Settings.Keys.Select(k => k.ToString()).ToArray())}");
             foreach (var target in AllTargets)
             {
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLength(animationLength);
+            }
+            UpdateKeyframeSettings();
+            SuperController.LogMessage($"After Frames (keys): {string.Join(", ", TargetControllers[0].X.keys.Select(k => k.time.ToString()).ToArray())}");
+            SuperController.LogMessage($"After Settings: {string.Join(", ", TargetControllers[0].Settings.Keys.Select(k => k.ToString()).ToArray())}");
+        }
+
+        private void UpdateKeyframeSettings()
+        {
+            foreach (var target in TargetControllers)
+            {
+                var settings = target.Settings.Values.ToList();
+                target.Settings.Clear();
+                for (var i = 0; i < target.X.keys.Length; i++)
+                {
+                    if (i >= settings.Count) break;
+                    target.Settings.Add(target.X.keys[i].time, settings[i]);
+                }
+            }
+        }
+
+        public AtomClipboardEntry Copy(float time)
+        {
+            var controllers = new List<FreeControllerV3ClipboardEntry>();
+            foreach (var target in GetAllOrSelectedControllerTargets())
+            {
+                var snapshot = target.GetCurveSnapshot(time);
+                if (snapshot == null) continue;
+                controllers.Add(new FreeControllerV3ClipboardEntry
+                {
+                    Controller = target.Controller,
+                    Snapshot = snapshot
+                });
+            }
+            var floatParams = new List<FloatParamValClipboardEntry>();
+            foreach (var target in GetAllOrSelectedFloatParamTargets())
+            {
+                if (!target.Value.keys.Any(k => k.time == time)) continue;
+                floatParams.Add(new FloatParamValClipboardEntry
+                {
+                    Storable = target.Storable,
+                    FloatParam = target.FloatParam,
+                    Snapshot = target.Value.keys.First(k => k.time == time)
+                });
+            }
+            return new AtomClipboardEntry
+            {
+                Controllers = controllers,
+                FloatParams = floatParams
+            };
+        }
+
+        public void Paste(float time, AtomClipboardEntry clipboard)
+        {
+            if (Loop && time >= AnimationLength)
+                time = 0f;
+            foreach (var entry in clipboard.Controllers)
+            {
+                var target = TargetControllers.FirstOrDefault(c => c.Controller == entry.Controller);
+                if (target == null)
+                    target = Add(entry.Controller);
+                target.SetCurveSnapshot(time, entry.Snapshot);
+            }
+            foreach (var entry in clipboard.FloatParams)
+            {
+                var target = TargetFloatParams.FirstOrDefault(c => c.FloatParam == entry.FloatParam);
+                if (target == null)
+                    target = Add(entry.Storable, entry.FloatParam);
+                target.SetKeyframe(time, entry.Snapshot.value);
             }
         }
     }
