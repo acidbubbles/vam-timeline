@@ -104,16 +104,15 @@ namespace VamTimeline
             Plugin.CreateScrollablePopup(_lengthModeJSON);
             _linkedStorables.Add(_lengthModeJSON);
 
-            _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
-
-            var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
-            lengthUI.valueFormat = "F2";
-            _linkedStorables.Add(_lengthJSON);
-
             _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false);
             var speedUI = Plugin.CreateSlider(_speedJSON, rightSide);
             speedUI.valueFormat = "F3";
             _linkedStorables.Add(_speedJSON);
+
+            _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
+            var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
+            lengthUI.valueFormat = "F2";
+            _linkedStorables.Add(_lengthJSON);
 
             _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
             var blendDurationUI = Plugin.CreateSlider(_blendDurationJSON, rightSide);
@@ -133,7 +132,6 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
-            clip.Speed = current.Speed;
             clip.CropOrExtendLength(current.AnimationLength);
             foreach (var origTarget in current.TargetControllers)
             {
@@ -157,7 +155,6 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
-            clip.Speed = current.Speed;
             clip.CropOrExtendLength(current.AnimationLength);
             foreach (var origTarget in current.TargetControllers)
             {
@@ -206,7 +203,7 @@ namespace VamTimeline
                 Plugin.Animation.Current.NextAnimationTime = 0;
                 _nextAnimationTimeJSON.valNoCallback = 0;
             }
-            Plugin.Animation.Current.NextAnimationTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration) * Plugin.Animation.Current.Speed;
+            Plugin.Animation.Current.NextAnimationTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration);
             _nextAnimationTimeJSON.valNoCallback = Plugin.Animation.Current.NextAnimationTime;
         }
 
@@ -626,10 +623,10 @@ namespace VamTimeline
             base.AnimationModified();
             GenerateRemoveToggles();
 
+            _speedJSON.valNoCallback = Plugin.Animation.Speed;
             var current = Plugin.Animation.Current;
             _animationNameJSON.valNoCallback = current.AnimationName;
             _lengthJSON.valNoCallback = current.AnimationLength;
-            _speedJSON.valNoCallback = current.Speed;
             _blendDurationJSON.valNoCallback = current.BlendDuration;
             _loop.valNoCallback = current.Loop;
             _ensureQuaternionContinuity.valNoCallback = current.EnsureQuaternionContinuity;

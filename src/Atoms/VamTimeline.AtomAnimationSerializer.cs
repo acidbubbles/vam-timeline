@@ -27,7 +27,10 @@ namespace VamTimeline
 
         public AtomAnimation DeserializeAnimation(JSONClass animationJSON)
         {
-            var animation = new AtomAnimation(_atom);
+            var animation = new AtomAnimation(_atom)
+            {
+                Speed = DeserializeFloat(animationJSON["Speed"], 1f)
+            };
             // Legacy
             var defaultBlendDuration = DeserializeFloat(animationJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration);
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
@@ -36,7 +39,6 @@ namespace VamTimeline
             {
                 var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value)
                 {
-                    Speed = DeserializeFloat(clipJSON["Speed"], 1f),
                     BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], defaultBlendDuration),
                     Loop = DeserializeBool(clipJSON["Loop"], true),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
@@ -229,7 +231,10 @@ namespace VamTimeline
 
         public JSONClass SerializeAnimation(AtomAnimation animation)
         {
-            var animationJSON = new JSONClass();
+            var animationJSON = new JSONClass
+            {
+                { "Speed", animation.Speed.ToString(CultureInfo.InvariantCulture) }
+            };
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);
             foreach (var clip in animation.Clips)
@@ -238,7 +243,6 @@ namespace VamTimeline
                 {
                     { "AnimationName", clip.AnimationName },
                     // TODO: Speed should be an animation setting, not a clip setting
-                    { "Speed", clip.Speed.ToString(CultureInfo.InvariantCulture) },
                     { "AnimationLength", clip.AnimationLength.ToString(CultureInfo.InvariantCulture) },
                     { "BlendDuration", clip.BlendDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.Loop ? "1" : "0" },

@@ -25,6 +25,7 @@ namespace VamTimeline
         private float _blendingDuration;
         private string _nextAnimation;
         private float _nextAnimationTime;
+        private float _speed;
 
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
@@ -64,16 +65,20 @@ namespace VamTimeline
         {
             get
             {
-                return Current.Speed;
+                return _speed;
             }
 
             set
             {
-                Current.Speed = value;
-                if (_animState == null) return;
-                _animState.speed = value;
-                if (Current.AnimationPattern != null)
-                    Current.AnimationPattern.SetFloatParamValue("speed", value);
+                _speed = value;
+                foreach (var clip in Clips)
+                {
+                    var animState = _animation[clip.AnimationName];
+                    if (animState != null)
+                        animState.speed = _speed;
+                    if (clip.AnimationPattern != null)
+                        clip.AnimationPattern.SetFloatParamValue("speed", value);
+                }
             }
         }
 
@@ -305,7 +310,7 @@ namespace VamTimeline
                 if (animState != null)
                 {
                     animState.wrapMode = clip.Loop ? WrapMode.Loop : WrapMode.Once;
-                    animState.speed = clip.Speed;
+                    animState.speed = _speed;
                 }
             }
             if (HasAnimatableControllers())

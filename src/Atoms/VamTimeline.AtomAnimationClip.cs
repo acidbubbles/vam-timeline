@@ -27,7 +27,6 @@ namespace VamTimeline
         public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());
         public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; set; }
-        public float Speed { get; set; } = 1f;
         public float AnimationLength { get; private set; } = DefaultAnimationLength;
         public bool Loop
         {
@@ -202,16 +201,12 @@ namespace VamTimeline
             if (animationLength == AnimationLength)
                 return;
             AnimationLength = animationLength;
-            SuperController.LogMessage($"Before Frames (keys): {string.Join(", ", TargetControllers[0].X.keys.Select(k => k.time.ToString()).ToArray())}");
-            SuperController.LogMessage($"Before Settings: {string.Join(", ", TargetControllers[0].Settings.Keys.Select(k => k.ToString()).ToArray())}");
             foreach (var target in AllTargets)
             {
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLength(animationLength);
             }
             UpdateKeyframeSettings();
-            SuperController.LogMessage($"After Frames (keys): {string.Join(", ", TargetControllers[0].X.keys.Select(k => k.time.ToString()).ToArray())}");
-            SuperController.LogMessage($"After Settings: {string.Join(", ", TargetControllers[0].Settings.Keys.Select(k => k.ToString()).ToArray())}");
         }
 
         private void UpdateKeyframeSettings()
