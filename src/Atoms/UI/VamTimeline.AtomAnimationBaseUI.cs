@@ -69,7 +69,7 @@ namespace VamTimeline
         protected void InitFrameNavUI(bool rightSide)
         {
             var selectedControllerUI = Plugin.CreateScrollablePopup(Plugin.FilterAnimationTargetJSON, rightSide);
-            selectedControllerUI.popupPanelHeight = 800f;
+            selectedControllerUI.popupPanelHeight = 600f;
             _linkedStorables.Add(Plugin.FilterAnimationTargetJSON);
 
             var nextFrameUI = Plugin.CreateButton("\u2192 Next Frame", rightSide);

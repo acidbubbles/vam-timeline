@@ -336,6 +336,7 @@ namespace VamTimeline
                     target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));
                     target.SmoothLoop();
                 }
+                target.ReapplyCurveTypes();
                 target.ReapplyCurvesToClip(clip.Clip);
             }
             if (clip.EnsureQuaternionContinuity)

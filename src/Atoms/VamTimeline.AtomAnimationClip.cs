@@ -16,8 +16,6 @@ namespace VamTimeline
     {
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
-
-        private float _animationLength = DefaultAnimationLength;
         private IAnimationTarget _selected;
         private bool _loop = true;
         private string _nextAnimationName;
@@ -30,17 +28,7 @@ namespace VamTimeline
         public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; set; }
         public float Speed { get; set; } = 1f;
-        public float AnimationLength
-        {
-            get
-            {
-                return _animationLength;
-            }
-            private set
-            {
-                _animationLength = value;
-            }
-        }
+        public float AnimationLength { get; private set; } = DefaultAnimationLength;
         public bool Loop
         {
             get
@@ -97,7 +85,7 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             if (TargetControllers.Any(c => c.Controller == controller)) return null;
-            var target = new FreeControllerAnimationTarget(controller, AnimationLength);
+            var target = new FreeControllerAnimationTarget(controller);
             TargetControllers.Add(target);
             return target;
         }
@@ -202,9 +190,9 @@ namespace VamTimeline
 
         public void StretchLength(float value)
         {
-            if (value == _animationLength)
+            if (value == AnimationLength)
                 return;
-            _animationLength = value;
+            AnimationLength = value;
             foreach (var target in AllTargets)
             {
                 foreach (var curve in target.GetCurves())
@@ -214,9 +202,9 @@ namespace VamTimeline
 
         public void CropOrExtendLength(float animationLength)
         {
-            if (animationLength == _animationLength)
+            if (animationLength == AnimationLength)
                 return;
-            _animationLength = animationLength;
+            AnimationLength = animationLength;
             foreach (var target in AllTargets)
             {
                 foreach (var curve in target.GetCurves())

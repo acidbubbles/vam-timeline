@@ -109,7 +109,7 @@ namespace VamTimeline
 
         private void ToggleKeyframe(FloatParamAnimationTarget target, bool val)
         {
-            // TODO: This should be done by the controller (updating the animation resets the time)
+            if (Plugin.Animation.IsPlaying()) return;
             var time = Plugin.Animation.Time;
             if (time == 0f)
             {
@@ -130,6 +130,7 @@ namespace VamTimeline
 
         private void SetFloatParamValue(FloatParamAnimationTarget target, float val)
         {
+            if (Plugin.Animation.IsPlaying()) return;
             target.FloatParam.val = val;
             // TODO: This should be done by the controller (updating the animation resets the time)
             var time = Plugin.Animation.Time;

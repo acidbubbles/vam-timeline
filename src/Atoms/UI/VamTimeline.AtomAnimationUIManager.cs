@@ -81,10 +81,10 @@ namespace VamTimeline
         {
             if (_plugin.Animation == null) return;
 
-            _plugin.StartCoroutine(RefreshCurrentUIDefered(fn));
+            _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn));
         }
 
-        private IEnumerator RefreshCurrentUIDefered(Action fn)
+        private IEnumerator RefreshCurrentUIDeferred(Action fn)
         {
             yield return new WaitForEndOfFrame();
             if (_plugin ==  null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
@@ -124,7 +124,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError("VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDefered: " + exc.ToString());
+                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDefered ({_screens.val}): " + exc.ToString());
                 }
 
                 // Hack to avoid having the drop down shown underneath new controls

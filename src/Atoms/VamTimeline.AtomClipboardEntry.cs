@@ -55,5 +55,7 @@ namespace VamTimeline
         public Keyframe RotY;
         public Keyframe RotZ;
         public Keyframe RotW;
+
+        public string CurveType;
     }
 }

@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
@@ -15,8 +14,8 @@ namespace VamTimeline
     /// </summary>
     public class FreeControllerAnimationTarget : IAnimationTarget
     {
-        private float _animationLength;
         public FreeControllerV3 Controller;
+        public SortedList<float, KeyframeSettings> Settings = new SortedList<float, KeyframeSettings>();
         public AnimationCurve X = new AnimationCurve();
         public AnimationCurve Y = new AnimationCurve();
         public AnimationCurve Z = new AnimationCurve();
@@ -28,13 +27,12 @@ namespace VamTimeline
 
         public string Name => Controller.name;
 
-        public FreeControllerAnimationTarget(FreeControllerV3 controller, float animationLength)
+        public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
             Curves = new List<AnimationCurve> {
                 X, Y, Z, RotX, RotY, RotZ, RotW
             };
             Controller = controller;
-            _animationLength = animationLength;
         }
 
         #region Control
@@ -42,6 +40,25 @@ namespace VamTimeline
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return Curves;
+        }
+
+        public void ReapplyCurveTypes()
+        {
+            if (X.keys.Length <= 2) return;
+            foreach (var setting in Settings)
+            {
+                if (setting.Value.CurveType == CurveTypeValues.LeaveAsIs)
+                    continue;
+
+                // TODO: We should allow curve control for non-looping animations
+                if (setting.Key == 0f || setting.Key == X.keys.Last().time)
+                    continue;
+
+                foreach (var curve in Curves)
+                {
+                    curve.ChangeCurve(setting.Key, setting.Value.CurveType);
+                }
+            }
         }
 
         public void ReapplyCurvesToClip(AnimationClip clip)
@@ -97,6 +114,9 @@ namespace VamTimeline
             RotY.SetKeyframe(time, locationRotation.y);
             RotZ.SetKeyframe(time, locationRotation.z);
             RotW.SetKeyframe(time, locationRotation.w);
+            var setting = Settings.FirstOrDefault(s => s.Key == time);
+            if (setting.Value != null)
+                setting.Value.CurveType = CurveTypeValues.Smooth;
         }
 
         public void DeleteFrame(float time)
@@ -105,6 +125,7 @@ namespace VamTimeline
             {
                 var key = Array.FindIndex(curve.keys, k => k.time == time);
                 if (key != -1) curve.RemoveKey(key);
+                var settingIndex = Settings.Remove(time);
             }
         }
 
@@ -120,12 +141,8 @@ namespace VamTimeline
         public void ChangeCurve(float time, string curveType)
         {
             if (string.IsNullOrEmpty(curveType)) return;
-            if (time == 0f || time == _animationLength) return;
 
-            foreach (var curve in Curves)
-            {
-                curve.ChangeCurve(time, curveType);
-            }
+            UpdateSetting(time, curveType);
         }
 
         public void SmoothAllFrames()
@@ -134,6 +151,9 @@ namespace VamTimeline
             {
                 curve.SmoothAllFrames();
             }
+
+            foreach (var time in X.keys.Select(k => k.time))
+                UpdateSetting(time, CurveTypeValues.Smooth);
         }
 
         #endregion
@@ -143,6 +163,7 @@ namespace VamTimeline
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
             if (!X.keys.Any(k => k.time == time)) return null;
+            KeyframeSettings setting;
             return new FreeControllerV3Snapshot
             {
                 X = X.keys.First(k => k.time == time),
@@ -152,6 +173,7 @@ namespace VamTimeline
                 RotY = RotY.keys.First(k => k.time == time),
                 RotZ = RotZ.keys.First(k => k.time == time),
                 RotW = RotW.keys.First(k => k.time == time),
+                CurveType = Settings.TryGetValue(time, out setting) ? setting.CurveType : CurveTypeValues.LeaveAsIs
             };
         }
 
@@ -164,6 +186,15 @@ namespace VamTimeline
             RotY.SetKeySnapshot(time, snapshot.RotY);
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
             RotW.SetKeySnapshot(time, snapshot.RotW);
+            UpdateSetting(time, snapshot.CurveType);
+        }
+
+        private void UpdateSetting(float time, string curveType)
+        {
+            if (Settings.ContainsKey(time))
+                Settings[time].CurveType = curveType;
+            else
+                Settings.Add(time, new KeyframeSettings { CurveType = curveType });
         }
 
         #endregion

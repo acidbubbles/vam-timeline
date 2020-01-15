@@ -21,7 +21,7 @@ namespace VamTimeline
         }
 
         private List<TargetRef> _targets;
-        private JSONStorableStringChooser _changeCurveJSON;
+        private JSONStorableStringChooser _curveTypeJSON;
         private JSONStorableAction _smoothAllFramesJSON;
 
         public AtomAnimationControllersUI(IAtomPlugin plugin)
@@ -52,10 +52,10 @@ namespace VamTimeline
 
         private void InitCurvesUI()
         {
-            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
-            var changeCurveUI = Plugin.CreatePopup(_changeCurveJSON, false);
-            changeCurveUI.popupPanelHeight = 800f;
-            _linkedStorables.Add(_changeCurveJSON);
+            _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
+            var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, false);
+            curveTypeUI.popupPanelHeight = 340f;
+            _linkedStorables.Add(_curveTypeJSON);
 
             _smoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
 
@@ -72,14 +72,38 @@ namespace VamTimeline
 
         public override void AnimationFrameUpdated()
         {
-            UpdateValues();
             base.AnimationFrameUpdated();
+            UpdateValues();
+            UpdateCurrentCurveType();
         }
 
         public override void AnimationModified()
         {
             base.AnimationModified();
             RefreshTargetsList();
+            UpdateCurrentCurveType();
+        }
+
+        private void UpdateCurrentCurveType()
+        {
+            var time = Plugin.Animation.Time;
+            if (time == 0 || time == Plugin.Animation.Current.AnimationLength)
+            {
+                _curveTypeJSON.valNoCallback = "(Loop)";
+                return;
+            }
+            var curveTypes = Plugin.Animation.Current.TargetControllers
+                .Select(c => c.Settings.ContainsKey(time) ? c.Settings[time] : null)
+                .Where(s => s != null)
+                .Select(s => s.CurveType)
+                .Distinct()
+                .ToList();
+            if (curveTypes.Count == 0)
+                _curveTypeJSON.valNoCallback = "(No Keyframe)";
+            else if (curveTypes.Count == 1)
+                _curveTypeJSON.valNoCallback = curveTypes[0].ToString();
+            else
+                _curveTypeJSON.valNoCallback = "(Multiple Types)";
         }
 
         private void UpdateValues()
@@ -132,9 +156,8 @@ namespace VamTimeline
 
         private void ChangeCurve(string curveType)
         {
-            if (string.IsNullOrEmpty(curveType)) return;
+            if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("(")) return;
             if (Plugin.Animation.IsPlaying()) return;
-            _changeCurveJSON.valNoCallback = "";
             if (Plugin.Animation.Time == 0)
             {
                 SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");

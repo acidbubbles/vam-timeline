@@ -128,12 +128,14 @@ namespace VamTimeline
                     curve.SmoothTangents(key, 0f);
                     break;
                 case CurveTypeValues.LinearFlat:
-                    keyframe.inTangent = CalculateTangent(before, keyframe);
+                    keyframe.inTangent = CalculateLinearTangent(before, keyframe);
                     keyframe.outTangent = 0f;
+                    curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.FlatLinear:
                     keyframe.inTangent = 0f;
-                    keyframe.outTangent = CalculateTangent(keyframe, next);
+                    keyframe.outTangent = CalculateLinearTangent(keyframe, next);
+                    curve.MoveKey(key, keyframe);
                     break;
                 default:
                     throw new NotSupportedException($"Curve type {curveType} is not supported");

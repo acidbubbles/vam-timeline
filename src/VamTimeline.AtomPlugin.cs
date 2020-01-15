@@ -511,16 +511,26 @@ namespace VamTimeline
 
         private void Cut()
         {
-            Copy();
-            if (Animation.Time == 0f) return;
-            Animation.DeleteFrame();
-            AnimationModified();
+            try
+            {
+                if (Animation.IsPlaying()) return;
+                Copy();
+                if (Animation.Time == 0f) return;
+                Animation.DeleteFrame();
+                AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AtomPlugin.Cut: " + exc);
+            }
         }
 
         private void Copy()
         {
             try
             {
+                if (Animation.IsPlaying()) return;
+
                 _clipboard = Animation.Copy();
             }
             catch (Exception exc)
@@ -533,6 +543,8 @@ namespace VamTimeline
         {
             try
             {
+                if (Animation.IsPlaying()) return;
+
                 if (_clipboard == null)
                 {
                     SuperController.LogMessage("VamTimeline: Clipboard is empty");
@@ -552,16 +564,19 @@ namespace VamTimeline
 
         private void Undo()
         {
-            if (_undoList.Count == 0) return;
-            var animationName = AnimationJSON.val;
-            var pop = _undoList[_undoList.Count - 1];
-            _undoList.RemoveAt(_undoList.Count - 1);
-            if (_undoList.Count == 0) return;
-            if (string.IsNullOrEmpty(pop)) return;
-            var time = Animation.Time;
-            _saveEnabled = false;
             try
             {
+                if (Animation.IsPlaying()) return;
+                if (_undoList.Count == 0) return;
+                var animationName = AnimationJSON.val;
+                var pop = _undoList[_undoList.Count - 1];
+                _undoList.RemoveAt(_undoList.Count - 1);
+                if (_undoList.Count == 0) return;
+                if (string.IsNullOrEmpty(pop)) return;
+
+                var time = Animation.Time;
+
+                _saveEnabled = false;
                 Load(pop);
                 if (Animation.Clips.Any(c => c.AnimationName == animationName))
                     AnimationJSON.val = animationName;

@@ -417,8 +417,8 @@ namespace VamTimeline
             if (snapDelta != 0f)
             {
                 v -= snapDelta;
-                if (snapDelta < Plugin.SnapJSON.val / 2f) ;
-                v += Plugin.SnapJSON.val;
+                if (snapDelta < Plugin.SnapJSON.val / 2f)
+                    v += Plugin.SnapJSON.val;
             }
             if (v != _lengthJSON.val)
                 _lengthJSON.valNoCallback = v;
