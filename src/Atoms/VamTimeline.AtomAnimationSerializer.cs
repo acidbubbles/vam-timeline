@@ -25,11 +25,8 @@ namespace VamTimeline
 
         #region Deserialize JSON
 
-        public AtomAnimation DeserializeAnimation(string val)
+        public AtomAnimation DeserializeAnimation(JSONClass animationJSON)
         {
-            if (string.IsNullOrEmpty(val)) return null;
-
-            var animationJSON = JSON.Parse(val);
             var animation = new AtomAnimation(_atom);
             // Legacy
             var defaultBlendDuration = DeserializeFloat(animationJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration);
@@ -217,7 +214,7 @@ namespace VamTimeline
 
         #region Serialize JSON
 
-        public string SerializeAnimation(AtomAnimation animation)
+        public JSONClass SerializeAnimation(AtomAnimation animation)
         {
             var animationJSON = new JSONClass();
             var clipsJSON = new JSONArray();
@@ -242,7 +239,7 @@ namespace VamTimeline
                 SerializeClip(clip, clipJSON);
                 clipsJSON.Add(clipJSON);
             }
-            return animationJSON.ToString();
+            return animationJSON;
         }
 
         private void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)

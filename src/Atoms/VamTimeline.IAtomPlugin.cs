@@ -66,6 +66,7 @@ namespace VamTimeline
     {
         Atom ContainingAtom { get; }
         AtomAnimation Animation { get; }
+        AtomAnimationSerializer Serializer { get; }
 
         JSONStorableStringChooser AnimationJSON { get; }
         JSONStorableFloat ScrubberJSON { get; }
@@ -85,9 +86,7 @@ namespace VamTimeline
         JSONStorableAction UndoJSON { get; }
         JSONStorableBool LockedJSON { get; }
         JSONStorableString DisplayJSON { get; }
-        JSONStorableString StorageJSON { get; }
 
-        void Load(string json);
         void AnimationModified();
 
         UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false);

@@ -9,7 +9,6 @@ namespace VamTimeline
     public static class StorableNames
     {
         // Animation
-        public const string Save = "Save";
         public const string Animation = "Animation";
         public const string Scrubber = "Scrubber";
         public const string Time = "Set Time";
@@ -26,9 +25,6 @@ namespace VamTimeline
         public const string ChangeCurve = "Change Curve";
         public const string Locked = "Locked";
         public const string Display = "Display";
-
-        // Backup
-        public const string AtomAnimationBackup = "AtomAnimationBackup";
-        public const string PushAtomAnimationBackup = "PushAtomAnimationBackup";
+        public const string Import = "Import";
     }
 }

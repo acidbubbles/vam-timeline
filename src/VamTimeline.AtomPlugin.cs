@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,7 +30,7 @@ namespace VamTimeline
         // State
         public AtomAnimation Animation { get; private set; }
         public Atom ContainingAtom => containingAtom;
-        private AtomAnimationSerializer _serializer;
+        public AtomAnimationSerializer Serializer { get; private set; }
         private bool _restoring;
         private readonly List<string> _undoList = new List<string>();
         private AtomClipboardEntry _clipboard;
@@ -55,7 +56,7 @@ namespace VamTimeline
         public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
-        public JSONStorableString StorageJSON { get; private set; }
+        public JSONStorableString ImportJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -66,12 +67,11 @@ namespace VamTimeline
         {
             try
             {
-                _serializer = new AtomAnimationSerializer(containingAtom);
+                Serializer = new AtomAnimationSerializer(containingAtom);
                 _ui = new AtomAnimationUIManager(this);
-                InitSharedStorables();
+                InitStorables();
                 _ui.Init();
-                // Try loading from backup
-                StartCoroutine(CreateAnimationIfNoneIsLoaded());
+                StartCoroutine(DeferredInit());
             }
             catch (Exception exc)
             {
@@ -179,13 +179,17 @@ namespace VamTimeline
 
         #region Initialization
 
-        public void InitSharedStorables()
+        public void InitStorables()
         {
-            StorageJSON = new JSONStorableString(StorableNames.Save, "", (string v) => Load(v))
+            ImportJSON = new JSONStorableString(StorableNames.Import, "", (string v) =>
             {
-                storeType = JSONStorableParam.StoreType.Physical
+                if (!string.IsNullOrEmpty(v))
+                    Load(JSONNode.Parse(v));
+            })
+            {
+                isStorable = false
             };
-            RegisterString(StorageJSON);
+            RegisterString(ImportJSON);
 
             AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
             {
@@ -238,6 +242,7 @@ namespace VamTimeline
                 if (Animation.IsPlaying())
                 {
                     Animation.Stop();
+                    Animation.Time = GetRounded(Animation.Time);
                     IsPlayingJSON.valNoCallback = false;
                 }
                 else
@@ -252,6 +257,7 @@ namespace VamTimeline
             {
                 if (!Animation.IsPlaying()) return;
                 Animation.Stop();
+                Animation.Time = GetRounded(Animation.Time);
                 IsPlayingJSON.valNoCallback = false;
             });
             RegisterAction(StopIfPlayingJSON);
@@ -270,7 +276,7 @@ namespace VamTimeline
 
             SnapJSON = new JSONStorableFloat(StorableNames.Snap, 0.01f, (float val) =>
             {
-                var rounded = (float)(Math.Round(val * 1000f) / 1000f);
+                var rounded = GetRounded(val);
                 if (val != rounded)
                     SnapJSON.valNoCallback = rounded;
                 if (Animation != null && Animation.Time % rounded != 0)
@@ -298,17 +304,27 @@ namespace VamTimeline
             RegisterString(DisplayJSON);
         }
 
-        private IEnumerator CreateAnimationIfNoneIsLoaded()
+        private IEnumerator DeferredInit()
         {
+            yield return new WaitForEndOfFrame();
             if (Animation != null)
             {
                 _saveEnabled = true;
                 yield break;
             }
-            yield return new WaitForEndOfFrame();
+            containingAtom.RestoreFromLast(this);
+            if (Animation != null)
+            {
+                _saveEnabled = true;
+                yield break;
+            }
             try
             {
-                Load(StorageJSON.val);
+                Animation = new AtomAnimation(containingAtom);
+
+                Animation.Initialize();
+                AnimationModified();
+                AnimationFrameUpdated();
             }
             finally
             {
@@ -320,47 +336,49 @@ namespace VamTimeline
 
         #region Load / Save
 
-        public void Load(string json)
+        public override JSONClass GetJSON(bool includePhysical = true, bool includeAppearance = true, bool forceStore = false)
         {
-            if (_restoring) return;
-            _restoring = true;
+            var json = base.GetJSON(includePhysical, includeAppearance, forceStore);
+            json["Animation"] = Serializer.SerializeAnimation(Animation);
+            needsStore = true;
+            return json;
+        }
+
+        public override void RestoreFromJSON(JSONClass jc, bool restorePhysical = true, bool restoreAppearance = true, JSONArray presetAtoms = null, bool setMissingToDefault = true)
+        {
+            base.RestoreFromJSON(jc, restorePhysical, restoreAppearance, presetAtoms, setMissingToDefault);
 
             try
             {
-                if (Animation != null)
-                    Animation = null;
-
-                if (!string.IsNullOrEmpty(json))
+                var animationJSON = jc["Animation"];
+                if (animationJSON != null && animationJSON.AsObject != null)
                 {
-                    Animation = _serializer.DeserializeAnimation(json);
+                    Load(animationJSON);
+                    return;
                 }
 
-                if (Animation == null)
+                var legacyStr = jc["Save"];
+                if (!string.IsNullOrEmpty(legacyStr))
                 {
-                    var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimeline.BackupPlugin"));
-                    if (backupStorableID != null)
-                    {
-                        var backupStorable = containingAtom.GetStorableByID(backupStorableID);
-                        var backupJSON = backupStorable.GetStringJSONParam(StorableNames.AtomAnimationBackup);
-                        if (backupJSON != null && !string.IsNullOrEmpty(backupJSON.val))
-                        {
-                            SuperController.LogMessage("VamTimeline: No save found but a backup was detected. Loading backup.");
-                            StorageJSON.valNoCallback = backupJSON.val;
-                            Animation = _serializer.DeserializeAnimation(backupJSON.val);
-                        }
-                    }
+                    Load(JSONNode.Parse(legacyStr) as JSONClass);
+                    return;
                 }
-
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.PluginImplBase.RestoreState(1): " + exc);
+                SuperController.LogError("VamTimeline.AtomPlugin.RestoreFromJSON: " + exc);
             }
 
+        }
+
+        private void Load(JSONNode animationJSON)
+        {
+            if (_restoring) return;
+            _restoring = true;
             try
             {
-                if (Animation == null)
-                    Animation = new AtomAnimation(containingAtom);
+                Animation = Serializer.DeserializeAnimation(animationJSON.AsObject);
+                if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
 
                 Animation.Initialize();
                 AnimationModified();
@@ -368,10 +386,12 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.PluginImplBase.RestoreState(2): " + exc);
+                SuperController.LogError("VamTimeline.AtomPlugin.Load: " + exc);
             }
-
-            _restoring = false;
+            finally
+            {
+                _restoring = false;
+            }
         }
 
         public void Save()
@@ -381,31 +401,16 @@ namespace VamTimeline
                 if (_restoring) return;
                 if (Animation.IsEmpty()) return;
 
-                var serialized = _serializer.SerializeAnimation(Animation);
+                var serialized = Serializer.SerializeAnimation(Animation);
 
                 if (serialized == _undoList.LastOrDefault())
                     return;
 
-                if (!string.IsNullOrEmpty(StorageJSON.val))
-                {
-                    _undoList.Add(StorageJSON.val);
-                    if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-                }
-
-                StorageJSON.valNoCallback = serialized;
-
-                var backupStorableID = containingAtom.GetStorableIDs().FirstOrDefault(s => s.EndsWith("VamTimeline.BackupPlugin"));
-                if (backupStorableID != null)
-                {
-                    var backupStorable = containingAtom.GetStorableByID(backupStorableID);
-                    var backupJSON = backupStorable.GetStringJSONParam(StorableNames.PushAtomAnimationBackup);
-                    if (backupJSON != null)
-                        backupJSON.val = serialized;
-                }
+                if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.PluginImplBase.SaveState: " + exc);
+                SuperController.LogError("VamTimeline.AtomPlugin.SaveState: " + exc);
             }
         }
 
@@ -425,7 +430,6 @@ namespace VamTimeline
                 {
                     if (Animation.Current.AnimationName != animationName)
                     {
-                        SuperController.LogMessage($"Changing from {Animation.Current.AnimationName} to {animationName}");
                         Animation.ChangeAnimation(animationName);
                         AnimationModified();
                     }
@@ -544,7 +548,6 @@ namespace VamTimeline
             try
             {
                 Load(pop);
-                StorageJSON.valNoCallback = pop;
                 if (Animation.Clips.Any(c => c.AnimationName == animationName))
                     AnimationJSON.val = animationName;
                 else
@@ -710,6 +713,11 @@ namespace VamTimeline
             input.textComponent = textfield.UItext;
             jss.inputField = input;
             return textfield;
+        }
+
+        private static float GetRounded(float val)
+        {
+            return (float)(Math.Round(val * 1000f) / 1000f);
         }
 
         #endregion
