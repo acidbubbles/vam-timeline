@@ -49,7 +49,6 @@ namespace VamTimeline
         public JSONStorableAction NextFrameJSON { get; private set; }
         public JSONStorableAction PreviousFrameJSON { get; private set; }
         public JSONStorableFloat SnapJSON { get; private set; }
-        public JSONStorableAction SmoothAllFramesJSON { get; private set; }
         public JSONStorableAction CutJSON { get; private set; }
         public JSONStorableAction CopyJSON { get; private set; }
         public JSONStorableAction PasteJSON { get; private set; }
@@ -286,8 +285,6 @@ namespace VamTimeline
                 isStorable = true
             };
             RegisterFloat(SnapJSON);
-
-            SmoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
 
             CutJSON = new JSONStorableAction("Cut", () => Cut());
             CopyJSON = new JSONStorableAction("Copy", () => Copy());
@@ -577,12 +574,6 @@ namespace VamTimeline
             {
                 _saveEnabled = true;
             }
-        }
-
-        private void SmoothAllFrames()
-        {
-            Animation.SmoothAllFrames();
-            AnimationModified();
         }
 
         #endregion

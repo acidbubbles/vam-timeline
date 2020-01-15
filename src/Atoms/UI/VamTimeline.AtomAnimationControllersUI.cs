@@ -22,6 +22,7 @@ namespace VamTimeline
 
         private List<TargetRef> _targets;
         private JSONStorableStringChooser _changeCurveJSON;
+        private JSONStorableAction _smoothAllFramesJSON;
 
         public AtomAnimationControllersUI(IAtomPlugin plugin)
             : base(plugin)
@@ -56,8 +57,10 @@ namespace VamTimeline
             changeCurveUI.popupPanelHeight = 800f;
             _linkedStorables.Add(_changeCurveJSON);
 
+            _smoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
+
             var smoothAllFramesUI = Plugin.CreateButton("Smooth All Frames", false);
-            smoothAllFramesUI.button.onClick.AddListener(() => Plugin.SmoothAllFramesJSON.actionCallback());
+            smoothAllFramesUI.button.onClick.AddListener(() => _smoothAllFramesJSON.actionCallback());
             _components.Add(smoothAllFramesUI);
         }
 
@@ -77,19 +80,6 @@ namespace VamTimeline
         {
             base.AnimationModified();
             RefreshTargetsList();
-        }
-
-        private void ChangeCurve(string curveType)
-        {
-            if (string.IsNullOrEmpty(curveType)) return;
-            _changeCurveJSON.valNoCallback = "";
-            if (Plugin.Animation.Time == 0)
-            {
-                SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");
-                return;
-            }
-            Plugin.Animation.ChangeCurve(curveType);
-            AnimationModified();
         }
 
         private void UpdateValues()
@@ -124,9 +114,46 @@ namespace VamTimeline
             }
         }
 
+        public override void Remove()
+        {
+            RemoveTargets();
+            base.Remove();
+        }
+
+        private void RemoveTargets()
+        {
+            if (_targets == null) return;
+            foreach (var targetRef in _targets)
+            {
+                // TODO: Take care of keeping track of those separately
+                Plugin.RemoveToggle(targetRef.KeyframeJSON);
+            }
+        }
+
+        private void ChangeCurve(string curveType)
+        {
+            if (string.IsNullOrEmpty(curveType)) return;
+            if (Plugin.Animation.IsPlaying()) return;
+            _changeCurveJSON.valNoCallback = "";
+            if (Plugin.Animation.Time == 0)
+            {
+                SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");
+                return;
+            }
+            Plugin.Animation.ChangeCurve(curveType);
+            Plugin.AnimationModified();
+        }
+
+        private void SmoothAllFrames()
+        {
+            if (Plugin.Animation.IsPlaying()) return;
+            Plugin.Animation.SmoothAllFrames();
+            Plugin.AnimationModified();
+        }
+
         private void ToggleKeyframe(FreeControllerAnimationTarget target, bool val)
         {
-            // TODO: This should be done by the controller (updating the animation resets the time)
+            if (Plugin.Animation.IsPlaying()) return;
             var time = Plugin.Animation.Time;
             if (time == 0f)
             {
@@ -143,22 +170,6 @@ namespace VamTimeline
             }
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
-        }
-
-        public override void Remove()
-        {
-            RemoveTargets();
-            base.Remove();
-        }
-
-        private void RemoveTargets()
-        {
-            if (_targets == null) return;
-            foreach (var targetRef in _targets)
-            {
-                // TODO: Take care of keeping track of those separately
-                Plugin.RemoveToggle(targetRef.KeyframeJSON);
-            }
         }
     }
 }
