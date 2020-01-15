@@ -338,9 +338,27 @@ namespace VamTimeline
 
         public override JSONClass GetJSON(bool includePhysical = true, bool includeAppearance = true, bool forceStore = false)
         {
+            try
+            {
+                Animation?.Stop();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AtomPlugin.GetJSON (Stop): " + exc);
+            }
+
             var json = base.GetJSON(includePhysical, includeAppearance, forceStore);
-            json["Animation"] = Serializer.SerializeAnimation(Animation);
-            needsStore = true;
+
+            try
+            {
+                json["Animation"] = Serializer.SerializeAnimation(Animation);
+                needsStore = true;
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("VamTimeline.AtomPlugin.GetJSON (Serialize): " + exc);
+            }
+
             return json;
         }
 
