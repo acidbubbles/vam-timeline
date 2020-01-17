@@ -180,7 +180,11 @@ namespace VamTimeline
             _linkButton.button.onClick.AddListener(() => LinkAtom(_atomsToLink.val));
 
             var resyncButton = CreateButton("Re-Sync Atom Plugins");
-            resyncButton.button.onClick.AddListener(() => RestoreAtomsLink(_savedAtomsJSON.val));
+            resyncButton.button.onClick.AddListener(() =>
+            {
+                RestoreAtomsLink(_savedAtomsJSON.val);
+                _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
+            });
 
             CreateToggle(_autoPlayJSON, true);
 

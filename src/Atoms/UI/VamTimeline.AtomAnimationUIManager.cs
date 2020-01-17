@@ -27,14 +27,7 @@ namespace VamTimeline
         {
             _screens = new JSONStorableStringChooser(
                 "Screen",
-                new List<string>{
-                AtomAnimationSettingsUI.ScreenName,
-                AtomAnimationControllersUI.ScreenName,
-                AtomAnimationFloatParamsUI.ScreenName,
-                AtomAnimationAdvancedUI.ScreenName,
-                AtomAnimationHelpUI.ScreenName,
-                AtomAnimationLockedUI.ScreenName
-                },
+                ListAvailableScreens(),
                 GetDefaultScreen(),
                 "Tab",
                 (string screen) =>
@@ -44,6 +37,21 @@ namespace VamTimeline
                 }
             );
             _screenUI = _plugin.CreateScrollablePopup(_screens);
+        }
+
+        private List<string> ListAvailableScreens()
+        {
+            var list = new List<string>();
+            if (_plugin.Animation == null || _plugin.Animation.Current == null) return list;
+            list.Add(AtomAnimationSettingsUI.ScreenName);
+            if (_plugin.Animation.Current.TargetControllers.Count > 0)
+                list.Add(AtomAnimationControllersUI.ScreenName);
+            if (_plugin.Animation.Current.TargetFloatParams.Count > 0)
+                list.Add(AtomAnimationFloatParamsUI.ScreenName);
+            list.Add(AtomAnimationAdvancedUI.ScreenName);
+            list.Add(AtomAnimationHelpUI.ScreenName);
+            list.Add(AtomAnimationLockedUI.ScreenName);
+            return list;
         }
 
         public string GetDefaultScreen()
@@ -59,6 +67,7 @@ namespace VamTimeline
         public void AnimationModified()
         {
             if (_plugin.Animation == null) return;
+            _screens.choices = ListAvailableScreens();
             if (_plugin.LockedJSON.val && _screens.val != AtomAnimationLockedUI.ScreenName)
                 _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
             if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
@@ -87,7 +96,7 @@ namespace VamTimeline
         private IEnumerator RefreshCurrentUIDeferred(Action fn)
         {
             yield return new WaitForEndOfFrame();
-            if (_plugin ==  null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
+            if (_plugin == null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
             if (_current == null || _current.Name != _screens.val)
             {
                 if (_current != null)
