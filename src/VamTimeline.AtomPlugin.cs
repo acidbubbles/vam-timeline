@@ -134,7 +134,8 @@ namespace VamTimeline
             else if (_grabbedController != null && grabbing == null)
             {
                 // TODO: This should be done by the controller (updating the animation resets the time)
-                Animation.SetKeyframeToCurrentTransform(_grabbedController, Animation.Time);
+                var time = (float)(Math.Round(Animation.Time * 1000f) / 1000f);
+                Animation.SetKeyframeToCurrentTransform(_grabbedController, time);
                 _grabbedController = null;
                 AnimationModified();
             }
@@ -456,6 +457,7 @@ namespace VamTimeline
                 else
                 {
                     Animation.ChangeAnimation(animationName);
+                    UpdateTime(0f, false);
                     AnimationModified();
                 }
             }
@@ -469,6 +471,7 @@ namespace VamTimeline
             }
         }
 
+        private IEnumerator _reEnableCollisions = null;
         private void UpdateTime(float time, bool snap)
         {
             time = (float)(Math.Round(time * 1000f) / 1000f);
@@ -488,10 +491,27 @@ namespace VamTimeline
             if (Animation.Current.Loop && time >= Animation.Current.AnimationLength)
                 time = Animation.Current.AnimationLength - SnapJSON.val;
 
+            if (containingAtom.collisionEnabledJSON.val == true && Math.Abs(Animation.Time - time) > 1f)
+            {
+                if (_reEnableCollisions != null)
+                    StopCoroutine(_reEnableCollisions);
+                else
+                    containingAtom.collisionEnabledJSON.val = false;
+                _reEnableCollisions = ReEnableCollisions();
+                StartCoroutine(_reEnableCollisions);
+            }
+
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
                 Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
             AnimationFrameUpdated();
+        }
+
+        private IEnumerator ReEnableCollisions()
+        {
+            yield return new WaitForSeconds(0.3f);
+            containingAtom.collisionEnabledJSON.val = true;
+            _reEnableCollisions = null;
         }
 
         private void NextFrame()
