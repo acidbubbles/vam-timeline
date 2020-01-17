@@ -25,7 +25,7 @@ namespace VamTimeline
         private float _blendingDuration;
         private string _nextAnimation;
         private float _nextAnimationTime;
-        private float _speed;
+        private float _speed = 1f;
 
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
