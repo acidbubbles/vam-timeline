@@ -81,7 +81,6 @@ namespace VamTimeline
             for (var i = curve.keys.Length - 1; i >= 0; i--)
             {
                 var keyframe = curve.keys[i];
-                SuperController.LogMessage("Keyframe: " + keyframe.time + " to " + (keyframe.time + lengthDiff));
                 keyframe.time += lengthDiff;
                 if (keyframe.time < 0)
                     curve.RemoveKey(i);
