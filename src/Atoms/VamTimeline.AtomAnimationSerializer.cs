@@ -45,7 +45,7 @@ namespace VamTimeline
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     NextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0)
                 };
-                clip.CropOrExtendLength(DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength));
+                clip.CropOrExtendLengthEnd(DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength));
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
             }

@@ -15,8 +15,9 @@ namespace VamTimeline
         public const string ScreenName = "Animation Settings";
         public override string Name => ScreenName;
 
-        public const string ChangeLengthModeLocked = "Locked";
-        public const string ChangeLengthModeCropExtend = "Crop or Extend";
+        public const string ChangeLengthModeLocked = "Length Locked";
+        public const string ChangeLengthModeCropExtendEnd = "Crop/Extend End";
+        public const string ChangeLengthModeCropExtendBegin = "Crop/Extend Begin";
         public const string ChangeLengthModeStretch = "Stretch";
 
         private JSONStorableString _animationNameJSON;
@@ -98,21 +99,22 @@ namespace VamTimeline
 
             _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
                 ChangeLengthModeLocked,
-                ChangeLengthModeCropExtend,
+                ChangeLengthModeCropExtendEnd,
+                ChangeLengthModeCropExtendBegin,
                 ChangeLengthModeStretch
              }, ChangeLengthModeLocked, "Change Length Mode");
             Plugin.CreateScrollablePopup(_lengthModeJSON);
             _linkedStorables.Add(_lengthModeJSON);
 
-            _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false);
-            var speedUI = Plugin.CreateSlider(_speedJSON, rightSide);
-            speedUI.valueFormat = "F3";
-            _linkedStorables.Add(_speedJSON);
-
             _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
             var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
             lengthUI.valueFormat = "F2";
             _linkedStorables.Add(_lengthJSON);
+
+            _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false);
+            var speedUI = Plugin.CreateSlider(_speedJSON, rightSide);
+            speedUI.valueFormat = "F3";
+            _linkedStorables.Add(_speedJSON);
 
             _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
             var blendDurationUI = Plugin.CreateSlider(_blendDurationJSON, rightSide);
@@ -132,7 +134,7 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
-            clip.CropOrExtendLength(current.AnimationLength);
+            clip.CropOrExtendLengthEnd(current.AnimationLength);
             foreach (var origTarget in current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
@@ -155,7 +157,7 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
-            clip.CropOrExtendLength(current.AnimationLength);
+            clip.CropOrExtendLengthEnd(current.AnimationLength);
             foreach (var origTarget in current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
@@ -431,8 +433,11 @@ namespace VamTimeline
                 case ChangeLengthModeStretch:
                     Plugin.Animation.Current.StretchLength(time);
                     break;
-                case ChangeLengthModeCropExtend:
-                    Plugin.Animation.Current.CropOrExtendLength(time);
+                case ChangeLengthModeCropExtendEnd:
+                    Plugin.Animation.Current.CropOrExtendLengthEnd(time);
+                    break;
+                case ChangeLengthModeCropExtendBegin:
+                    Plugin.Animation.Current.CropOrExtendLengthBegin(time);
                     break;
             }
             Plugin.Animation.RebuildAnimation();

@@ -196,7 +196,7 @@ namespace VamTimeline
             UpdateKeyframeSettings();
         }
 
-        public void CropOrExtendLength(float animationLength)
+        public void CropOrExtendLengthEnd(float animationLength)
         {
             if (animationLength == AnimationLength)
                 return;
@@ -204,7 +204,20 @@ namespace VamTimeline
             foreach (var target in AllTargets)
             {
                 foreach (var curve in target.GetCurves())
-                    curve.CropOrExtendLength(animationLength);
+                    curve.CropOrExtendLengthEnd(animationLength);
+            }
+            UpdateKeyframeSettings();
+        }
+
+        public void CropOrExtendLengthBegin(float animationLength)
+        {
+            if (animationLength == AnimationLength)
+                return;
+            AnimationLength = animationLength;
+            foreach (var target in AllTargets)
+            {
+                foreach (var curve in target.GetCurves())
+                    curve.CropOrExtendLengthBegin(animationLength);
             }
             UpdateKeyframeSettings();
         }

@@ -57,9 +57,10 @@ namespace VamTimeline
             curve.MoveKey(lastKey, lastframe);
         }
 
-        public static void CropOrExtendLength(this AnimationCurve curve, float length)
+        public static void CropOrExtendLengthEnd(this AnimationCurve curve, float length)
         {
-            if (length > curve.keys[curve.keys.Length - 1].time)
+            float currentLength = curve.keys[curve.keys.Length - 1].time;
+            if (length < currentLength)
             {
                 for (var i = 0; i < curve.keys.Length - 1; i++)
                 {
@@ -71,6 +72,26 @@ namespace VamTimeline
             var last = curve.keys[curve.keys.Length - 1];
             last.time = length;
             curve.MoveKey(curve.keys.Length - 1, last);
+        }
+
+        public static void CropOrExtendLengthBegin(this AnimationCurve curve, float length)
+        {
+            var currentLength = curve.keys[curve.keys.Length - 1].time;
+            var lengthDiff = length - currentLength;
+            for (var i = curve.keys.Length - 1; i >= 0; i--)
+            {
+                var keyframe = curve.keys[i];
+                SuperController.LogMessage("Keyframe: " + keyframe.time + " to " + (keyframe.time + lengthDiff));
+                keyframe.time += lengthDiff;
+                if (keyframe.time < 0)
+                    curve.RemoveKey(i);
+                else
+                    curve.MoveKey(i, keyframe);
+            }
+
+            var first = curve.keys[0];
+            first.time = 0f;
+            curve.MoveKey(0, first);
         }
 
         #endregion
