@@ -193,7 +193,7 @@ namespace VamTimeline
                 foreach (var curve in target.GetCurves())
                     curve.StretchLength(value);
             }
-            UpdateKeyframeSettings();
+            UpdateKeyframeSettingsFromBegin();
         }
 
         public void CropOrExtendLengthEnd(float animationLength)
@@ -206,7 +206,7 @@ namespace VamTimeline
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLengthEnd(animationLength);
             }
-            UpdateKeyframeSettings();
+            UpdateKeyframeSettingsFromBegin();
         }
 
         public void CropOrExtendLengthBegin(float animationLength)
@@ -219,10 +219,10 @@ namespace VamTimeline
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLengthBegin(animationLength);
             }
-            UpdateKeyframeSettings();
+            UpdateKeyframeSettingsFromEnd();
         }
 
-        private void UpdateKeyframeSettings()
+        private void UpdateKeyframeSettingsFromBegin()
         {
             foreach (var target in TargetControllers)
             {
@@ -232,6 +232,20 @@ namespace VamTimeline
                 {
                     if (i >= settings.Count) break;
                     target.Settings.Add(target.X.keys[i].time, settings[i]);
+                }
+            }
+        }
+
+        private void UpdateKeyframeSettingsFromEnd()
+        {
+            foreach (var target in TargetControllers)
+            {
+                var settings = target.Settings.Values.ToList();
+                target.Settings.Clear();
+                for (var i = 0; i < target.X.keys.Length; i++)
+                {
+                    if (i >= settings.Count) break;
+                    target.Settings.Add(target.X.keys[target.X.keys.Length - i - 1].time, settings[settings.Count - i - 1]);
                 }
             }
         }
