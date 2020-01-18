@@ -11,17 +11,19 @@ namespace VamTimeline
         public const string Bounce = "Bounce";
         public const string LinearFlat = "Linear -> Flat";
         public const string FlatLinear = "Flat -> Linear";
+        public const string CopyPrevious = "Copy Previous (Flat)";
 
-        public static readonly List<string> CurveTypes = new List<string> { LeaveAsIs, Flat, Linear, Smooth, Bounce, LinearFlat, FlatLinear };
+        private static readonly List<string> _indexedCurveTypes = new List<string> { LeaveAsIs, Flat, Linear, Smooth, Bounce, LinearFlat, FlatLinear, CopyPrevious };
+        public static readonly List<string> DisplayCurveTypes = new List<string> { LeaveAsIs, Flat, Linear, Smooth, Bounce, LinearFlat, FlatLinear, CopyPrevious };
 
         public static string FromInt(int v)
         {
-            return CurveTypes[v];
+            return _indexedCurveTypes[v];
         }
 
         public static int ToInt(string v)
         {
-            return CurveTypes.FindIndex(c => c == v);
+            return _indexedCurveTypes.FindIndex(c => c == v);
         }
     }
 }

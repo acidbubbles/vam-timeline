@@ -90,8 +90,9 @@ namespace VamTimeline
                     DeserializeCurve(target.RotW, controllerJSON["RotW"], clip.AnimationLength);
                     foreach (var time in target.X.keys.Select(k => k.time))
                     {
-                        if (!target.Settings.ContainsKey(time))
-                            target.Settings.Add(time, new KeyframeSettings { CurveType = CurveTypeValues.LeaveAsIs });
+                        var ms = time.ToMilliseconds();
+                        if (!target.Settings.ContainsKey(ms))
+                            target.Settings.Add(ms, new KeyframeSettings { CurveType = CurveTypeValues.LeaveAsIs });
                     }
                 }
             }
@@ -151,7 +152,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON is JSONClass)
                 DeserializeCurveLegacy(curve, curveJSON);
@@ -171,12 +172,12 @@ namespace VamTimeline
                 {
                     keyframeSettings.Clear();
                     keyframeSettings.Add(0, new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
-                    keyframeSettings.Add(length, new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
+                    keyframeSettings.Add(length.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
                 }
             }
         }
 
-        private void DeserializeCurveFromString(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromString(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             var last = -1f;
             foreach (var keyframe in curveJSON.Value.Split(';').Where(x => x != ""))
@@ -196,7 +197,7 @@ namespace VamTimeline
                         outTangent = DeserializeFloat(parts[4])
                     });
                     if (keyframeSettings != null)
-                        keyframeSettings.Add(time, new KeyframeSettings { CurveType = CurveTypeValues.FromInt(int.Parse(parts[2])) });
+                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.FromInt(int.Parse(parts[2])) });
                 }
                 catch (IndexOutOfRangeException exc)
                 {
@@ -311,7 +312,7 @@ namespace VamTimeline
             }
         }
 
-        private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<float, KeyframeSettings> settings = null)
+        private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
         {
             // TODO: Use US locale to avoid commas in floats
             // TODO: Serialize as: time,value,type,inTangent,outTangent;...
@@ -320,11 +321,12 @@ namespace VamTimeline
 
             foreach (var keyframe in curve.keys)
             {
+                var ms = keyframe.time.ToMilliseconds();
                 sb.Append(keyframe.time.ToString(CultureInfo.InvariantCulture));
                 sb.Append(',');
                 sb.Append(keyframe.value.ToString(CultureInfo.InvariantCulture));
                 sb.Append(',');
-                sb.Append(settings == null ? "0" : (settings.ContainsKey(keyframe.time) ? CurveTypeValues.ToInt(settings[keyframe.time].CurveType).ToString() : "0"));
+                sb.Append(settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].CurveType).ToString() : "0"));
                 sb.Append(',');
                 sb.Append(keyframe.inTangent.ToString(CultureInfo.InvariantCulture));
                 sb.Append(',');

@@ -52,7 +52,7 @@ namespace VamTimeline
 
         private void InitCurvesUI()
         {
-            _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.CurveTypes, "", "Change Curve", ChangeCurve);
+            _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, false);
             curveTypeUI.popupPanelHeight = 340f;
             _linkedStorables.Add(_curveTypeJSON);
@@ -92,8 +92,9 @@ namespace VamTimeline
                 _curveTypeJSON.valNoCallback = "(Loop)";
                 return;
             }
+            var ms = time.ToMilliseconds();
             var curveTypes = Plugin.Animation.Current.GetAllOrSelectedControllerTargets()
-                .Select(c => c.Settings.ContainsKey(time) ? c.Settings[time] : null)
+                .Select(c => c.Settings.ContainsKey(ms) ? c.Settings[ms] : null)
                 .Where(s => s != null)
                 .Select(s => s.CurveType)
                 .Distinct()
@@ -161,20 +162,27 @@ namespace VamTimeline
                 UpdateCurrentCurveType();
                 return;
             }
-            if (Plugin.Animation.IsPlaying()) return;
-            if (Plugin.Animation.Current.Loop && (Plugin.Animation.Time.IsSameFrame(0) || Plugin.Animation.Time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
+            float time = Plugin.Animation.Time.Snap();
+            if (time.IsSameFrame(0) && curveType == CurveTypeValues.CopyPrevious)
             {
                 UpdateCurrentCurveType();
                 return;
             }
-            Plugin.Animation.ChangeCurve(curveType);
+            if (Plugin.Animation.IsPlaying()) return;
+            if (Plugin.Animation.Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
+            {
+                UpdateCurrentCurveType();
+                return;
+            }
+            Plugin.Animation.Current.ChangeCurve(time, curveType);
             Plugin.AnimationModified();
         }
 
         private void SmoothAllFrames()
         {
             if (Plugin.Animation.IsPlaying()) return;
-            Plugin.Animation.SmoothAllFrames();
+            Plugin.Animation.Current.SmoothAllFrames();
+            Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
 

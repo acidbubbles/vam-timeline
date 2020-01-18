@@ -118,7 +118,7 @@ namespace VamTimeline
 
         private IEnumerator StopWhenPlaybackIsComplete()
         {
-            var waitFor = Plugin.Animation.Clips.Sum(c => c.NextAnimationTime == 0 ? c.AnimationLength : c.NextAnimationTime);
+            var waitFor = Plugin.Animation.Clips.Sum(c => c.NextAnimationTime.IsSameFrame(0) ? c.AnimationLength : c.NextAnimationTime);
             yield return new WaitForSeconds(waitFor);
 
             SuperController.singleton.motionAnimationMaster.StopRecord();

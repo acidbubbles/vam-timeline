@@ -35,5 +35,10 @@ namespace VamTimeline
 
             return value;
         }
+
+        public static int ToMilliseconds(this float value)
+        {
+            return (int)(Math.Round(value * 1000f));
+        }
     }
 }

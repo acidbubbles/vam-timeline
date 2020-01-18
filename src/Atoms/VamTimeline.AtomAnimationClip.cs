@@ -135,7 +135,7 @@ namespace VamTimeline
             foreach (var controller in GetAllOrSelectedTargets())
             {
                 var targetNextTime = controller.GetCurves().First().keys.FirstOrDefault(k => k.time > time).time;
-                if (targetNextTime != 0 && targetNextTime < nextTime) nextTime = targetNextTime;
+                if (!targetNextTime.IsSameFrame(0) && targetNextTime < nextTime) nextTime = targetNextTime;
             }
             if (nextTime.IsSameFrame(AnimationLength) && Loop)
                 return 0f;
@@ -232,7 +232,7 @@ namespace VamTimeline
                 for (var i = 0; i < target.X.keys.Length; i++)
                 {
                     if (i >= settings.Count) break;
-                    target.Settings.Add(target.X.keys[i].time, settings[i]);
+                    target.Settings.Add(target.X.keys[i].time.ToMilliseconds(), settings[i]);
                 }
             }
         }
@@ -246,7 +246,7 @@ namespace VamTimeline
                 for (var i = 0; i < target.X.keys.Length; i++)
                 {
                     if (i >= settings.Count) break;
-                    target.Settings.Add(target.X.keys[target.X.keys.Length - i - 1].time, settings[settings.Count - i - 1]);
+                    target.Settings.Add(target.X.keys[target.X.keys.Length - i - 1].time.ToMilliseconds(), settings[settings.Count - i - 1]);
                 }
             }
         }
@@ -282,9 +282,35 @@ namespace VamTimeline
             };
         }
 
+        public void Validate()
+        {
+            foreach (var target in TargetControllers)
+            {
+                if (target.X.keys.Length < 2)
+                {
+                    SuperController.LogError($"Target {target.Name} has {target.X.keys.Length} frames");
+                    return;
+                }
+                if (target.Settings.Count != target.X.keys.Length)
+                {
+                    SuperController.LogError($"Target {target.Name} has {target.X.keys.Length} frames but {target.Settings.Count} settings");
+                    return;
+                }
+                var settings = target.Settings.Select(s => s.Key);
+                var keys = target.X.keys.Select(k => k.time.ToMilliseconds()).ToArray();
+                if (!settings.SequenceEqual(keys))
+                {
+                    SuperController.LogError($"Target {target.Name} has different times for settings and keyframes");
+                    SuperController.LogError($"Settings: {string.Join(", ", settings.Select(s => s.ToString()).ToArray())}");
+                    SuperController.LogError($"Keyframes: {string.Join(", ", keys.Select(k => k.ToString()).ToArray())}");
+                    return;
+                }
+            }
+        }
+
         public void Paste(float time, AtomClipboardEntry clipboard)
         {
-            if (Loop && time >= AnimationLength)
+            if (Loop && time >= AnimationLength - float.Epsilon)
                 time = 0f;
             foreach (var entry in clipboard.Controllers)
             {

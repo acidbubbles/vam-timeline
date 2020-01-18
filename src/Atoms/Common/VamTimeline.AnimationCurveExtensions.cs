@@ -115,7 +115,7 @@ namespace VamTimeline
 
         #region Curves
 
-        public static void ChangeCurve(this AnimationCurve curve, float time, string curveType)
+        public static void ApplyCurve(this AnimationCurve curve, float time, string curveType)
         {
             var key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
             if (key == -1) return;
@@ -155,6 +155,16 @@ namespace VamTimeline
                     keyframe.inTangent = 0f;
                     keyframe.outTangent = CalculateLinearTangent(keyframe, next);
                     curve.MoveKey(key, keyframe);
+                    break;
+                case CurveTypeValues.CopyPrevious:
+                    if (before != null)
+                    {
+                        SuperController.LogMessage("OK");
+                        keyframe.value = before.Value.value;
+                        keyframe.inTangent = 0f;
+                        keyframe.outTangent = 0f;
+                        curve.MoveKey(key, keyframe);
+                    }
                     break;
                 default:
                     throw new NotSupportedException($"Curve type {curveType} is not supported");
@@ -275,7 +285,7 @@ namespace VamTimeline
             keyframe.time = time;
             curve.MoveKey(index, keyframe);
 
-            if (time == 0f)
+            if (time.IsSameFrame(0f))
             {
                 keyframe.time = curve.keys[curve.keys.Length - 1].time;
                 curve.MoveKey(curve.keys.Length - 1, keyframe);

@@ -125,12 +125,6 @@ namespace VamTimeline
             return Guid.NewGuid().ToString();
         }
 
-        public void DeleteFrame()
-        {
-            Current.DeleteFrame(Time);
-            RebuildAnimation();
-        }
-
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             var added = Current.Add(controller);
@@ -138,7 +132,8 @@ namespace VamTimeline
             {
                 added.SetKeyframeToCurrentTransform(0f);
                 added.SetKeyframeToCurrentTransform(Current.AnimationLength);
-                RebuildAnimation();
+                if (!Current.Loop)
+                    added.ChangeCurve(Current.AnimationLength, CurveTypeValues.CopyPrevious);
             }
             return added;
         }
@@ -150,31 +145,24 @@ namespace VamTimeline
             {
                 added.SetKeyframe(0f, jsf.val);
                 added.SetKeyframe(Current.AnimationLength, jsf.val);
-                RebuildAnimation();
             }
             return added;
         }
 
         public void SetKeyframe(FloatParamAnimationTarget target, float time, float val)
         {
+            time = time.Snap();
             if (time > Current.AnimationLength)
                 time = Current.AnimationLength;
             target.SetKeyframe(time, val);
-            RebuildAnimation();
         }
 
         public void SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
         {
+            time = time.Snap();
             if (time > Current.AnimationLength)
                 time = Current.AnimationLength;
             target.SetKeyframeToCurrentTransform(time);
-            RebuildAnimation();
-        }
-
-        public void Remove(FreeControllerV3 controller)
-        {
-            Current.Remove(controller);
-            RebuildAnimation();
         }
 
         public void Play()
@@ -203,8 +191,8 @@ namespace VamTimeline
 
             if (Current.NextAnimationName == null) return;
 
-            if (Current.NextAnimationTime > 0)
-                _nextAnimationTime = time + Current.NextAnimationTime;
+            if (Current.NextAnimationTime > 0 + float.Epsilon)
+                _nextAnimationTime = (time + Current.NextAnimationTime).Snap();
             else
                 return;
 
@@ -257,7 +245,7 @@ namespace VamTimeline
                 SampleParamsAnimation();
             }
 
-            if (_nextAnimationTime > 0 && _playTime >= _nextAnimationTime)
+            if (_nextAnimationTime > 0 + float.Epsilon && _playTime >= _nextAnimationTime)
             {
                 // TODO: Keep only the name or make a ChangeAnimation overload
                 var nextAnimation = _nextAnimation;
@@ -301,9 +289,10 @@ namespace VamTimeline
         public void RebuildAnimation()
         {
             if (Current == null) throw new NullReferenceException("No current animation set");
-            var time = Time;
+            var time = Time.Snap();
             foreach (var clip in Clips)
             {
+                clip.Validate();
                 RebuildClipCurve(clip);
                 _animation.AddClip(clip.Clip, clip.AnimationName);
                 var animState = _animation[clip.AnimationName];
@@ -337,7 +326,6 @@ namespace VamTimeline
             {
                 if (clip.Loop)
                 {
-                    // TODO: Extract this since we may need to smooth between two animations too
                     target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));
                     target.SmoothLoop();
                 }
@@ -360,13 +348,6 @@ namespace VamTimeline
         private bool HasAnimatableControllers()
         {
             return Current.TargetControllers.Count > 0;
-        }
-
-        public void ChangeCurve(string curveType)
-        {
-            var time = Time;
-            Current.ChangeCurve(time, curveType);
-            RebuildAnimation();
         }
 
         public AtomAnimationClip AddAnimation()
@@ -423,12 +404,6 @@ namespace VamTimeline
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
             }
-        }
-
-        public void SmoothAllFrames()
-        {
-            Current.SmoothAllFrames();
-            RebuildAnimation();
         }
     }
 }

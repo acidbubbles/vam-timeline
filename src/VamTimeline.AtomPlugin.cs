@@ -112,7 +112,7 @@ namespace VamTimeline
         {
             Animation.Update();
             _ui.UpdatePlaying();
-            if (!Animation.Current.Loop && Animation.Time >= Animation.Current.AnimationLength)
+            if (!Animation.Current.Loop && Animation.Time >= Animation.Current.AnimationLength - float.Epsilon)
             {
                 Animation.Stop();
                 AnimationFrameUpdated();
@@ -134,8 +134,12 @@ namespace VamTimeline
             else if (_grabbedController != null && grabbing == null)
             {
                 // TODO: This should be done by the controller (updating the animation resets the time)
+                var time = Animation.Time.Snap();
                 Animation.SetKeyframeToCurrentTransform(_grabbedController, Animation.Time.Snap());
+                if (_grabbedController.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
+                    Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
                 _grabbedController = null;
+                Animation.RebuildAnimation();
                 AnimationModified();
             }
         }
@@ -476,7 +480,7 @@ namespace VamTimeline
         {
             time = time.Snap(snap ? SnapJSON.val : 0f);
 
-            if (Animation.Current.Loop && time >= Animation.Current.AnimationLength)
+            if (Animation.Current.Loop && time >= Animation.Current.AnimationLength - float.Epsilon)
                 time = Animation.Current.AnimationLength - SnapJSON.val;
 
             if (containingAtom.collisionEnabledJSON.val == true && Math.Abs(Animation.Time - time) > 1f)
@@ -523,8 +527,8 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying()) return;
                 _clipboard = Animation.Current.Copy(Animation.Time);
-                var time = Animation.Time;
-                if (time == 0f || time == Animation.Current.AnimationLength) return;
+                var time = Animation.Time.Snap();
+                if (time.IsSameFrame(0f) || time.IsSameFrame(Animation.Current.AnimationLength)) return;
                 Animation.Current.DeleteFrame(time);
                 Animation.RebuildAnimation();
                 AnimationModified();

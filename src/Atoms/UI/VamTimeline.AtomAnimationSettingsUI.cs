@@ -225,7 +225,7 @@ namespace VamTimeline
                 return;
             }
 
-            if (_nextAnimationTimeJSON.val == 0)
+            if (_nextAnimationTimeJSON.val.IsSameFrame(0))
             {
                 _nextAnimationPreviewJSON.val = "Will loop indefinitely";
             }
@@ -459,6 +459,22 @@ namespace VamTimeline
         private void ChangeLoop(bool val)
         {
             Plugin.Animation.Current.Loop = val;
+            if (val == true)
+            {
+                foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+                {
+                    if (target.Settings.Count == 2)
+                        target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.LeaveAsIs;
+                }
+            }
+            else
+            {
+                foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+                {
+                    if (target.Settings.Count == 2)
+                        target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.CopyPrevious;
+                }
+            }
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
@@ -537,6 +553,7 @@ namespace VamTimeline
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
                 var target = Plugin.Animation.Add(controller);
+                Plugin.Animation.RebuildAnimation();
                 Plugin.AnimationModified();
             }
             catch (Exception exc)
@@ -567,6 +584,7 @@ namespace VamTimeline
                 }
 
                 Plugin.Animation.Add(storable, sourceFloatParam);
+                Plugin.Animation.RebuildAnimation();
                 Plugin.AnimationModified();
             }
             catch (Exception exc)
@@ -579,7 +597,8 @@ namespace VamTimeline
         {
             try
             {
-                Plugin.Animation.Remove(target.Controller);
+                Plugin.Animation.Current.Remove(target.Controller);
+                Plugin.Animation.RebuildAnimation();
                 Plugin.AnimationModified();
             }
             catch (Exception exc)

@@ -15,7 +15,7 @@ namespace VamTimeline
     public class FreeControllerAnimationTarget : IAnimationTarget
     {
         public FreeControllerV3 Controller;
-        public SortedDictionary<float, KeyframeSettings> Settings = new SortedDictionary<float, KeyframeSettings>();
+        public SortedDictionary<int, KeyframeSettings> Settings = new SortedDictionary<int, KeyframeSettings>();
         public AnimationCurve X = new AnimationCurve();
         public AnimationCurve Y = new AnimationCurve();
         public AnimationCurve Z = new AnimationCurve();
@@ -51,9 +51,10 @@ namespace VamTimeline
                 if (setting.Value.CurveType == CurveTypeValues.LeaveAsIs)
                     continue;
 
+                var time = (setting.Key / 1000f).Snap();
                 foreach (var curve in Curves)
                 {
-                    curve.ChangeCurve(setting.Key, setting.Value.CurveType);
+                    curve.ApplyCurve(time, setting.Value.CurveType);
                 }
             }
         }
@@ -111,8 +112,9 @@ namespace VamTimeline
             RotY.SetKeyframe(time, locationRotation.y);
             RotZ.SetKeyframe(time, locationRotation.z);
             RotW.SetKeyframe(time, locationRotation.w);
-            if (!Settings.ContainsKey(time))
-                Settings[time] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
+            var ms = time.ToMilliseconds();
+            if (!Settings.ContainsKey(ms))
+                Settings[ms] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
         }
 
         public void DeleteFrame(float time)
@@ -121,7 +123,7 @@ namespace VamTimeline
             {
                 var key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
                 if (key != -1) curve.RemoveKey(key);
-                var settingIndex = Settings.Remove(time);
+                var settingIndex = Settings.Remove(time.ToMilliseconds());
             }
         }
 
@@ -169,7 +171,7 @@ namespace VamTimeline
                 RotY = RotY.keys.First(k => k.time.IsSameFrame(time)),
                 RotZ = RotZ.keys.First(k => k.time.IsSameFrame(time)),
                 RotW = RotW.keys.First(k => k.time.IsSameFrame(time)),
-                CurveType = Settings.TryGetValue(time, out setting) ? setting.CurveType : CurveTypeValues.LeaveAsIs
+                CurveType = Settings.TryGetValue(time.ToMilliseconds(), out setting) ? setting.CurveType : CurveTypeValues.LeaveAsIs
             };
         }
 
@@ -187,10 +189,11 @@ namespace VamTimeline
 
         private void UpdateSetting(float time, string curveType)
         {
-            if (Settings.ContainsKey(time))
-                Settings[time].CurveType = curveType;
+            var ms = time.ToMilliseconds();
+            if (Settings.ContainsKey(ms))
+                Settings[ms].CurveType = curveType;
             else
-                Settings.Add(time, new KeyframeSettings { CurveType = curveType });
+                Settings.Add(ms, new KeyframeSettings { CurveType = curveType });
         }
 
         #endregion
