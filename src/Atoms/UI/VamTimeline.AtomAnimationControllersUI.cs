@@ -87,7 +87,7 @@ namespace VamTimeline
         private void UpdateCurrentCurveType()
         {
             var time = Plugin.Animation.Time;
-            if (time == 0 || time == Plugin.Animation.Current.AnimationLength)
+            if (Plugin.Animation.Current.Loop && (time == 0 || time == Plugin.Animation.Current.AnimationLength))
             {
                 _curveTypeJSON.valNoCallback = "(Loop)";
                 return;
@@ -156,11 +156,15 @@ namespace VamTimeline
 
         private void ChangeCurve(string curveType)
         {
-            if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("(")) return;
-            if (Plugin.Animation.IsPlaying()) return;
-            if (Plugin.Animation.Time == 0)
+            if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("("))
             {
-                SuperController.LogMessage("VamTimeline: Cannot specify curve type on frame 0");
+                UpdateCurrentCurveType();
+                return;
+            }
+            if (Plugin.Animation.IsPlaying()) return;
+            if (Plugin.Animation.Current.Loop && (Plugin.Animation.Time == 0 || Plugin.Animation.Time == Plugin.Animation.Current.AnimationLength))
+            {
+                UpdateCurrentCurveType();
                 return;
             }
             Plugin.Animation.ChangeCurve(curveType);

@@ -121,8 +121,8 @@ namespace VamTimeline
             var key = Array.FindIndex(curve.keys, k => k.time == time);
             if (key == -1) return;
             var keyframe = curve.keys[key];
-            var before = curve.keys[key - 1];
-            var next = curve.keys[key + 1];
+            var before = key > 0 ? (Keyframe?)curve.keys[key - 1] : null;
+            var next = key < curve.keys.Length - 1 ? (Keyframe?)curve.keys[key + 1] : null;
 
             switch (curveType)
             {
@@ -140,8 +140,8 @@ namespace VamTimeline
                     curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.Bounce:
-                    keyframe.inTangent = CalculateTangent(before, keyframe);
-                    keyframe.outTangent = CalculateTangent(keyframe, next);
+                    keyframe.inTangent = CalculateFixedMirrorTangent(before, keyframe);
+                    keyframe.outTangent = CalculateFixedMirrorTangent(keyframe, next);
                     curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.Smooth:
@@ -242,7 +242,7 @@ namespace VamTimeline
             curve.MoveKey(curve.keys.Length - 1, keyframe);
         }
 
-        private static float CalculateTangent(Keyframe from, Keyframe to, float strength = 0.8f)
+        private static float CalculateFixedMirrorTangent(Keyframe? from, Keyframe? to, float strength = 0.8f)
         {
             var tangent = CalculateLinearTangent(from, to);
             if (tangent > 0)
@@ -253,9 +253,10 @@ namespace VamTimeline
                 return 0;
         }
 
-        private static float CalculateLinearTangent(Keyframe from, Keyframe to)
+        private static float CalculateLinearTangent(Keyframe? from, Keyframe? to)
         {
-            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
+            if (from == null || to == null) return 0f;
+            return (float)((from.Value.value - (double)to.Value.value) / (from.Value.time - (double)to.Value.time));
         }
 
         private static float CalculateLinearTangent(float fromValue, float toValue, float fromTime, float toTime)

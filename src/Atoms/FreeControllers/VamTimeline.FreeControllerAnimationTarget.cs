@@ -44,14 +44,11 @@ namespace VamTimeline
 
         public void ReapplyCurveTypes()
         {
-            if (X.keys.Length <= 2) return;
+            if (X.keys.Length < 2) return;
+
             foreach (var setting in Settings)
             {
                 if (setting.Value.CurveType == CurveTypeValues.LeaveAsIs)
-                    continue;
-
-                // TODO: We should allow curve control for non-looping animations
-                if (setting.Key == 0f || setting.Key == X.keys.Last().time)
                     continue;
 
                 foreach (var curve in Curves)

@@ -112,8 +112,6 @@ namespace VamTimeline
 
         public void ChangeCurve(float time, string curveType)
         {
-            if (time == 0 || time == AnimationLength) return;
-
             foreach (var controller in GetAllOrSelectedControllerTargets())
             {
                 controller.ChangeCurve(time, curveType);
