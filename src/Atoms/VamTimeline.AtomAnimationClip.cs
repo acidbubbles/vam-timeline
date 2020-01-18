@@ -27,7 +27,7 @@ namespace VamTimeline
         public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());
         public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; set; }
-        public float AnimationLength { get; private set; } = DefaultAnimationLength;
+        public float AnimationLength { get; set; } = DefaultAnimationLength;
         public bool Loop
         {
             get

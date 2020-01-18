@@ -93,7 +93,7 @@ namespace VamTimeline
         public void Initialize()
         {
             if (Clips.Count == 0)
-                AddClip(new AtomAnimationClip("Anim1"));
+                AddClip(new AtomAnimationClip("Anim 1"));
             if (Current == null)
                 Current = Clips.First();
         }

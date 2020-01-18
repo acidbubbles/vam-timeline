@@ -45,7 +45,7 @@ namespace VamTimeline
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     NextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0)
                 };
-                clip.CropOrExtendLengthEnd(DeserializeFloat(clipJSON["AnimationLength"], AtomAnimationClip.DefaultAnimationLength));
+                clip.AnimationLength = DeserializeFloat(clipJSON["AnimationLength"]);
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
             }
@@ -80,14 +80,14 @@ namespace VamTimeline
                     }
                     var target = new FreeControllerAnimationTarget(controller);
                     clip.TargetControllers.Add(target);
-                    DeserializeCurve(target.X, controllerJSON["X"], target.Settings);
-                    DeserializeCurve(target.X, controllerJSON["X"]);
-                    DeserializeCurve(target.Y, controllerJSON["Y"]);
-                    DeserializeCurve(target.Z, controllerJSON["Z"]);
-                    DeserializeCurve(target.RotX, controllerJSON["RotX"]);
-                    DeserializeCurve(target.RotY, controllerJSON["RotY"]);
-                    DeserializeCurve(target.RotZ, controllerJSON["RotZ"]);
-                    DeserializeCurve(target.RotW, controllerJSON["RotW"]);
+                    DeserializeCurve(target.X, controllerJSON["X"], clip.AnimationLength, target.Settings);
+                    DeserializeCurve(target.X, controllerJSON["X"], clip.AnimationLength);
+                    DeserializeCurve(target.Y, controllerJSON["Y"], clip.AnimationLength);
+                    DeserializeCurve(target.Z, controllerJSON["Z"], clip.AnimationLength);
+                    DeserializeCurve(target.RotX, controllerJSON["RotX"], clip.AnimationLength);
+                    DeserializeCurve(target.RotY, controllerJSON["RotY"], clip.AnimationLength);
+                    DeserializeCurve(target.RotZ, controllerJSON["RotZ"], clip.AnimationLength);
+                    DeserializeCurve(target.RotW, controllerJSON["RotW"], clip.AnimationLength);
                     foreach (var time in target.X.keys.Select(k => k.time))
                     {
                         if (!target.Settings.ContainsKey(time))
@@ -130,7 +130,7 @@ namespace VamTimeline
                     }
                     var target = new FloatParamAnimationTarget(storable, jsf);
                     clip.TargetFloatParams.Add(target);
-                    DeserializeCurve(target.Value, paramJSON["Value"]);
+                    DeserializeCurve(target.Value, paramJSON["Value"], clip.AnimationLength);
                 }
             }
         }
@@ -151,12 +151,29 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON is JSONClass)
                 DeserializeCurveLegacy(curve, curveJSON);
             else
                 DeserializeCurveFromString(curve, curveJSON, keyframeSettings);
+
+            if (curve.keys.Length < 2)
+            {
+                // Attempt repair
+                var keyframe = curve.keys.Length > 0 ? curve.keys[0] : new Keyframe { value = 0 };
+                curve.RemoveKey(0);
+                keyframe.time = 0f;
+                curve.AddKey(keyframe);
+                keyframe.time = length;
+                curve.AddKey(keyframe);
+                if (keyframeSettings != null)
+                {
+                    keyframeSettings.Clear();
+                    keyframeSettings.Add(0, new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
+                    keyframeSettings.Add(length, new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
+                }
+            }
         }
 
         private void DeserializeCurveFromString(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<float, KeyframeSettings> keyframeSettings = null)
@@ -186,7 +203,6 @@ namespace VamTimeline
                     throw new InvalidOperationException($"Failed to read curve: {keyframe}", exc);
                 }
             }
-            if (curve.keys.Length < 2) { throw new Exception($"Curve '{curveJSON.Value}' deserialized to an empty curve."); }
         }
 
         private void DeserializeCurveLegacy(AnimationCurve curve, JSONNode curveJSON)
@@ -206,7 +222,6 @@ namespace VamTimeline
                 };
                 curve.AddKey(keyframe);
             }
-            if (curve.keys.Length < 2) { throw new Exception($"Curve '{curveJSON.ToString()}' deserialized to an empty curve."); }
         }
 
         private float DeserializeFloat(JSONNode node, float defaultVal = 0)

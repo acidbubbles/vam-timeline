@@ -54,7 +54,7 @@ You can switch between animations using the `Animation` drop down. When the anim
 
 Animation switching can be automated using the `Next Animation` setting.
 
-Note that if you try to blend sequential animations in a way that overlap (e.g. Anim1 transitions to Anim2 in 1s, Anim2 has a length of 1s, and Anim2 transitions to Anim3 in .5s, this means that Anim2's transition to Anim3 will start before the transition from Anim1 to Anim2 has completed), you will get animation jumps.
+Note that if you try to blend sequential animations in a way that overlap (e.g. Anim 1 transitions to Anim 2 in 1s, Anim 2 has a length of 1s, and Anim2 transitions to Anim 3 in .5s, this means that Anim 2's transition to Anim 3 will start before the transition from Anim 1 to Anim 2 has completed), you will get animation jumps.
 
 ### Animating morphs and other parameters
 
