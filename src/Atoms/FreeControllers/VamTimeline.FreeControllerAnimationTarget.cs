@@ -119,7 +119,7 @@ namespace VamTimeline
         {
             foreach (var curve in GetCurves())
             {
-                var key = Array.FindIndex(curve.keys, k => k.time == time);
+                var key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
                 if (key != -1) curve.RemoveKey(key);
                 var settingIndex = Settings.Remove(time);
             }
@@ -158,17 +158,17 @@ namespace VamTimeline
 
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
-            if (!X.keys.Any(k => k.time == time)) return null;
+            if (!X.keys.Any(k => k.time.IsSameFrame(time))) return null;
             KeyframeSettings setting;
             return new FreeControllerV3Snapshot
             {
-                X = X.keys.First(k => k.time == time),
-                Y = Y.keys.First(k => k.time == time),
-                Z = Z.keys.First(k => k.time == time),
-                RotX = RotX.keys.First(k => k.time == time),
-                RotY = RotY.keys.First(k => k.time == time),
-                RotZ = RotZ.keys.First(k => k.time == time),
-                RotW = RotW.keys.First(k => k.time == time),
+                X = X.keys.First(k => k.time.IsSameFrame(time)),
+                Y = Y.keys.First(k => k.time.IsSameFrame(time)),
+                Z = Z.keys.First(k => k.time.IsSameFrame(time)),
+                RotX = RotX.keys.First(k => k.time.IsSameFrame(time)),
+                RotY = RotY.keys.First(k => k.time.IsSameFrame(time)),
+                RotZ = RotZ.keys.First(k => k.time.IsSameFrame(time)),
+                RotW = RotW.keys.First(k => k.time.IsSameFrame(time)),
                 CurveType = Settings.TryGetValue(time, out setting) ? setting.CurveType : CurveTypeValues.LeaveAsIs
             };
         }
@@ -215,7 +215,7 @@ namespace VamTimeline
             display.AppendLine($"{name}");
             foreach (var keyframe in curve.keys)
             {
-                display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
+                display.AppendLine($"  {(keyframe.time.IsSameFrame(time) ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
                 display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
                 display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
             }

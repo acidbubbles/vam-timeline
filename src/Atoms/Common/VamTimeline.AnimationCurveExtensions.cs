@@ -39,8 +39,7 @@ namespace VamTimeline
             {
                 var keyframe = curve.keys[key];
                 var time = keyframe.time *= ratio;
-                time = (float)(Math.Round(time * 1000f) / 1000f);
-                keyframe.time = time;
+                keyframe.time = time.Snap();
 
                 curve.MoveKey(key, keyframe);
             }
@@ -103,7 +102,7 @@ namespace VamTimeline
             Keyframe keyframe;
             if (key == -1)
             {
-                key = Array.FindIndex(curve.keys, k => k.time == time);
+                key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
                 if (key == -1) throw new InvalidOperationException($"Cannot AddKey at time {time}, but no keys exist at this position");
                 keyframe = curve.keys[key];
                 keyframe.value = value;
@@ -118,7 +117,7 @@ namespace VamTimeline
 
         public static void ChangeCurve(this AnimationCurve curve, float time, string curveType)
         {
-            var key = Array.FindIndex(curve.keys, k => k.time == time);
+            var key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
             if (key == -1) return;
             var keyframe = curve.keys[key];
             var before = key > 0 ? (Keyframe?)curve.keys[key - 1] : null;
@@ -270,7 +269,7 @@ namespace VamTimeline
 
         public static void SetKeySnapshot(this AnimationCurve curve, float time, Keyframe keyframe)
         {
-            var index = Array.FindIndex(curve.keys, k => k.time == time);
+            var index = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
             if (index == -1)
                 index = curve.AddKey(time, keyframe.value);
             keyframe.time = time;

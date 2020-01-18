@@ -409,17 +409,7 @@ namespace VamTimeline
 
         private void UpdateAnimationLength(float time)
         {
-            time = (float)(Math.Round(time * 100f) / 100f);
-            if (time <= 0.1f)
-                time = 0.1f;
-            var snapDelta = time % Plugin.SnapJSON.val;
-            if (snapDelta != 0f)
-            {
-                time -= snapDelta;
-                if (snapDelta > Plugin.SnapJSON.val / 2f)
-                    time += Plugin.SnapJSON.val;
-
-            }
+            time = time.Snap(Plugin.SnapJSON.val);
             if (time != _lengthJSON.val)
                 _lengthJSON.valNoCallback = time;
 
@@ -458,7 +448,7 @@ namespace VamTimeline
         {
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
-            v = (float)(Math.Round(v * 1000f) / 1000f);
+            v = v.Snap();
             if (!Plugin.Animation.Current.Loop && v > Plugin.Animation.Current.AnimationLength)
                 _blendDurationJSON.valNoCallback = v = Plugin.Animation.Current.AnimationLength;
             Plugin.Animation.Current.BlendDuration = v;
@@ -500,10 +490,7 @@ namespace VamTimeline
                 return;
             }
 
-            if (nextTime < 0f)
-                nextTime = 0f;
-
-            nextTime = (float)(Math.Round(nextTime * 1000f) / 1000f);
+            nextTime = nextTime.Snap();
 
             _nextAnimationTimeJSON.valNoCallback = nextTime;
             Plugin.Animation.Current.NextAnimationTime = nextTime;

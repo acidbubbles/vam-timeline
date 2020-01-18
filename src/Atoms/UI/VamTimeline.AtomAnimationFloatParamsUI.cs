@@ -75,7 +75,7 @@ namespace VamTimeline
                 foreach (var targetRef in _targets)
                 {
                     targetRef.FloatParamProxyJSON.valNoCallback = targetRef.Target.FloatParam.val;
-                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.Value.keys.Any(k => k.time == time);
+                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.Value.keys.Any(k => k.time.IsSameFrame(time));
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace VamTimeline
             foreach (var target in Plugin.Animation.Current.TargetFloatParams)
             {
                 var sourceFloatParamJSON = target.FloatParam;
-                var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.keys.Any(k => k.time == time), (bool val) => ToggleKeyframe(target, val));
+                var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.keys.Any(k => k.time.IsSameFrame(time)), (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
                 var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{sourceFloatParamJSON.name}", sourceFloatParamJSON.defaultVal, (float val) => SetFloatParamValue(target, val), sourceFloatParamJSON.min, sourceFloatParamJSON.max, sourceFloatParamJSON.constrained, true)
                 {
@@ -110,8 +110,8 @@ namespace VamTimeline
         private void ToggleKeyframe(FloatParamAnimationTarget target, bool val)
         {
             if (Plugin.Animation.IsPlaying()) return;
-            var time = Plugin.Animation.Time;
-            if (time == 0f)
+            var time = Plugin.Animation.Time.Snap();
+            if (time.IsSameFrame(0f))
             {
                 _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
                 return;

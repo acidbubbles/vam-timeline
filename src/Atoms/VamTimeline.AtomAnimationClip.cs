@@ -128,7 +128,8 @@ namespace VamTimeline
 
         public float GetNextFrame(float time)
         {
-            if (time == AnimationLength)
+            time = time.Snap();
+            if (time.IsSameFrame(AnimationLength))
                 return 0f;
             var nextTime = AnimationLength;
             foreach (var controller in GetAllOrSelectedTargets())
@@ -136,7 +137,7 @@ namespace VamTimeline
                 var targetNextTime = controller.GetCurves().First().keys.FirstOrDefault(k => k.time > time).time;
                 if (targetNextTime != 0 && targetNextTime < nextTime) nextTime = targetNextTime;
             }
-            if (nextTime == AnimationLength && Loop)
+            if (nextTime.IsSameFrame(AnimationLength) && Loop)
                 return 0f;
             else
                 return nextTime;
@@ -144,19 +145,21 @@ namespace VamTimeline
 
         public float GetPreviousFrame(float time)
         {
-            if (time == 0f)
+            time = time.Snap();
+            if (time.IsSameFrame(0f))
                 return GetAllOrSelectedTargets().SelectMany(c => c.GetCurves()).SelectMany(c => c.keys).Select(c => c.time).Where(t => !Loop || t != AnimationLength).Max();
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedTargets())
             {
                 var targetPreviousTime = controller.GetCurves().First().keys.LastOrDefault(k => k.time < time).time;
-                if (targetPreviousTime != 0 && targetPreviousTime > previousTime) previousTime = targetPreviousTime;
+                if (!targetPreviousTime.IsSameFrame(0) && targetPreviousTime > previousTime) previousTime = targetPreviousTime;
             }
             return previousTime;
         }
 
         public void DeleteFrame(float time)
         {
+            time = time.Snap();
             foreach (var target in GetAllOrSelectedTargets())
             {
                 target.DeleteFrame(time);
@@ -264,12 +267,12 @@ namespace VamTimeline
             var floatParams = new List<FloatParamValClipboardEntry>();
             foreach (var target in GetAllOrSelectedFloatParamTargets())
             {
-                if (!target.Value.keys.Any(k => k.time == time)) continue;
+                if (!target.Value.keys.Any(k => k.time.IsSameFrame(time))) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
                     Storable = target.Storable,
                     FloatParam = target.FloatParam,
-                    Snapshot = target.Value.keys.First(k => k.time == time)
+                    Snapshot = target.Value.keys.First(k => k.time.IsSameFrame(time))
                 });
             }
             return new AtomClipboardEntry

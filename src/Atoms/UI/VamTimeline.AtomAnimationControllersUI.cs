@@ -86,8 +86,8 @@ namespace VamTimeline
 
         private void UpdateCurrentCurveType()
         {
-            var time = Plugin.Animation.Time;
-            if (Plugin.Animation.Current.Loop && (time == 0 || time == Plugin.Animation.Current.AnimationLength))
+            var time = Plugin.Animation.Time.Snap();
+            if (Plugin.Animation.Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
             {
                 _curveTypeJSON.valNoCallback = "(Loop)";
                 return;
@@ -113,7 +113,7 @@ namespace VamTimeline
                 var time = Plugin.Animation.Time;
                 foreach (var targetRef in _targets)
                 {
-                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.X.keys.Any(k => k.time == time);
+                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.X.keys.Any(k => k.time.IsSameFrame(time));
                 }
             }
         }
@@ -128,7 +128,7 @@ namespace VamTimeline
             _targets = new List<TargetRef>();
             foreach (var target in Plugin.Animation.Current.TargetControllers)
             {
-                var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.X.keys.Any(k => k.time == time), (bool val) => ToggleKeyframe(target, val));
+                var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.X.keys.Any(k => k.time.IsSameFrame(time)), (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
                 _targets.Add(new TargetRef
                 {
@@ -162,7 +162,7 @@ namespace VamTimeline
                 return;
             }
             if (Plugin.Animation.IsPlaying()) return;
-            if (Plugin.Animation.Current.Loop && (Plugin.Animation.Time == 0 || Plugin.Animation.Time == Plugin.Animation.Current.AnimationLength))
+            if (Plugin.Animation.Current.Loop && (Plugin.Animation.Time.IsSameFrame(0) || Plugin.Animation.Time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
             {
                 UpdateCurrentCurveType();
                 return;
@@ -181,8 +181,8 @@ namespace VamTimeline
         private void ToggleKeyframe(FreeControllerAnimationTarget target, bool val)
         {
             if (Plugin.Animation.IsPlaying()) return;
-            var time = Plugin.Animation.Time;
-            if (time == 0f)
+            var time = Plugin.Animation.Time.Snap();
+            if (time.IsSameFrame(0f))
             {
                 _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
                 return;

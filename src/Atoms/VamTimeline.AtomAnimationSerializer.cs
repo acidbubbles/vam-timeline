@@ -184,7 +184,7 @@ namespace VamTimeline
                 var parts = keyframe.Split(',');
                 try
                 {
-                    var time = (float)(Math.Round(float.Parse(parts[0], CultureInfo.InvariantCulture) * 1000f) / 1000f);
+                    var time = float.Parse(parts[0], CultureInfo.InvariantCulture).Snap();
                     if (time == last) continue;
                     last = time;
                     curve.AddKey(new Keyframe
@@ -210,7 +210,7 @@ namespace VamTimeline
             var last = -1f;
             foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
             {
-                var time = (float)(Math.Round(DeserializeFloat(keyframeJSON["time"]) * 1000f) / 1000f);
+                var time = DeserializeFloat(keyframeJSON["time"]).Snap();
                 if (time == last) continue;
                 last = time;
                 var keyframe = new Keyframe

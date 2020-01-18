@@ -61,6 +61,7 @@
 
     <Compile Include="src/Atoms/VamTimeline.IAtomPlugin.cs" />
 
+    <Compile Include="src/Atoms/Common/VamTimeline.FloatExtensions.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.KeyframeSettings.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.AnimationCurveExtensions.cs" />

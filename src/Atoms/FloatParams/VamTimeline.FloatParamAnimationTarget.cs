@@ -38,7 +38,7 @@ namespace VamTimeline
 
         public void DeleteFrame(float time)
         {
-            var key = Array.FindIndex(Value.keys, k => k.time == time);
+            var key = Array.FindIndex(Value.keys, k => k.time.IsSameFrame(time));
             if (key != -1) Value.RemoveKey(key);
         }
 
@@ -51,7 +51,7 @@ namespace VamTimeline
         {
             foreach (var keyframe in Value.keys)
             {
-                display.AppendLine($"  {(keyframe.time == time ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
+                display.AppendLine($"  {(keyframe.time.IsSameFrame(time) ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
                 display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
                 display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
             }

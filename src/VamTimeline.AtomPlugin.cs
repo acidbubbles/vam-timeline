@@ -134,8 +134,7 @@ namespace VamTimeline
             else if (_grabbedController != null && grabbing == null)
             {
                 // TODO: This should be done by the controller (updating the animation resets the time)
-                var time = (float)(Math.Round(Animation.Time * 1000f) / 1000f);
-                Animation.SetKeyframeToCurrentTransform(_grabbedController, time);
+                Animation.SetKeyframeToCurrentTransform(_grabbedController, Animation.Time.Snap());
                 _grabbedController = null;
                 AnimationModified();
             }
@@ -243,7 +242,7 @@ namespace VamTimeline
                 if (Animation.IsPlaying())
                 {
                     Animation.Stop();
-                    Animation.Time = GetRounded(Animation.Time);
+                    Animation.Time = Animation.Time.Snap();
                     IsPlayingJSON.valNoCallback = false;
                 }
                 else
@@ -258,7 +257,7 @@ namespace VamTimeline
             {
                 if (!Animation.IsPlaying()) return;
                 Animation.Stop();
-                Animation.Time = GetRounded(Animation.Time);
+                Animation.Time = Animation.Time.Snap();
                 IsPlayingJSON.valNoCallback = false;
             });
             RegisterAction(StopIfPlayingJSON);
@@ -277,7 +276,7 @@ namespace VamTimeline
 
             SnapJSON = new JSONStorableFloat(StorableNames.Snap, 0.01f, (float val) =>
             {
-                var rounded = GetRounded(val);
+                var rounded = val.Snap();
                 if (val != rounded)
                     SnapJSON.valNoCallback = rounded;
                 if (Animation != null && Animation.Time % rounded != 0)
@@ -475,19 +474,7 @@ namespace VamTimeline
         private IEnumerator _reEnableCollisions = null;
         private void UpdateTime(float time, bool snap)
         {
-            time = (float)(Math.Round(time * 1000f) / 1000f);
-
-            if (snap)
-            {
-                var snapDelta = time % SnapJSON.val;
-                if (snapDelta != 0f)
-                {
-                    time -= snapDelta;
-                    if (snapDelta > SnapJSON.val / 2f)
-                        time += SnapJSON.val;
-
-                }
-            }
+            time = time.Snap(snap ? SnapJSON.val : 0f);
 
             if (Animation.Current.Loop && time >= Animation.Current.AnimationLength)
                 time = Animation.Current.AnimationLength - SnapJSON.val;
@@ -642,7 +629,7 @@ namespace VamTimeline
                 foreach (var keyTime in keyTimes)
                 {
                     frames.Add(keyTime);
-                    if (keyTime == time)
+                    if (keyTime.IsSameFrame(time))
                         targets.Add(target.Name);
                 }
             }
@@ -665,7 +652,7 @@ namespace VamTimeline
                 display.Append("Frames:");
                 foreach (var f in frames.Distinct())
                 {
-                    if (f == time)
+                    if (f.IsSameFrame(time))
                         display.Append($"[{f}]");
                     else
                         display.Append($" {f} ");
@@ -761,11 +748,6 @@ namespace VamTimeline
             input.textComponent = textfield.UItext;
             jss.inputField = input;
             return textfield;
-        }
-
-        private static float GetRounded(float val)
-        {
-            return (float)(Math.Round(val * 1000f) / 1000f);
         }
 
         #endregion
