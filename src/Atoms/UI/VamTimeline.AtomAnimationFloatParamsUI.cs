@@ -111,7 +111,7 @@ namespace VamTimeline
         {
             if (Plugin.Animation.IsPlaying()) return;
             var time = Plugin.Animation.Time.Snap();
-            if (time.IsSameFrame(0f))
+            if (time.IsSameFrame(0f) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength))
             {
                 _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
                 return;
