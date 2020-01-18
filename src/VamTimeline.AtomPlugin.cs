@@ -222,6 +222,7 @@ namespace VamTimeline
                 if (Animation.IsPlaying()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
+                AnimationFrameUpdated();
             });
             RegisterAction(PlayIfNotPlayingJSON);
 
