@@ -159,7 +159,6 @@ namespace VamTimeline
                 case CurveTypeValues.CopyPrevious:
                     if (before != null)
                     {
-                        SuperController.LogMessage("OK");
                         keyframe.value = before.Value.value;
                         keyframe.inTangent = 0f;
                         keyframe.outTangent = 0f;
