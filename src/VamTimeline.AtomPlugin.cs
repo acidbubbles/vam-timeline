@@ -402,7 +402,7 @@ namespace VamTimeline
             _restoring = true;
             try
             {
-                Animation = Serializer.DeserializeAnimation(animationJSON.AsObject);
+                Animation = Serializer.DeserializeAnimation(Animation, animationJSON.AsObject);
                 if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
 
                 Animation.Initialize();

@@ -25,21 +25,27 @@ namespace VamTimeline
 
         #region Deserialize JSON
 
-        public AtomAnimation DeserializeAnimation(JSONClass animationJSON)
+        public AtomAnimation DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON)
         {
-            var animation = new AtomAnimation(_atom)
+            if (animation == null)
             {
-                Speed = DeserializeFloat(animationJSON["Speed"], 1f)
-            };
-            // Legacy
-            var defaultBlendDuration = DeserializeFloat(animationJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration);
+                animation = new AtomAnimation(_atom)
+                {
+                    Speed = DeserializeFloat(animationJSON["Speed"], 1f)
+                };
+            }
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                var clip = new AtomAnimationClip(clipJSON["AnimationName"].Value)
+                string animationName = clipJSON["AnimationName"].Value;
+                if (animation.Clips.Any(c => c.AnimationName == animationName))
                 {
-                    BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], defaultBlendDuration),
+                    animation.Clips.Remove(animation.Clips.First(c => c.AnimationName == animationName));
+                }
+                var clip = new AtomAnimationClip(animationName)
+                {
+                    BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                     Loop = DeserializeBool(clipJSON["Loop"], true),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
