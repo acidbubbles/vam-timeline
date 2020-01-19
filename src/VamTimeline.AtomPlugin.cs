@@ -353,7 +353,7 @@ namespace VamTimeline
 
             try
             {
-                json["Animation"] = Serializer.SerializeAnimation(Animation);
+                json["Animation"] = GetAnimationJSON();
                 needsStore = true;
             }
             catch (Exception exc)
@@ -362,6 +362,11 @@ namespace VamTimeline
             }
 
             return json;
+        }
+
+        public JSONClass GetAnimationJSON(string animationName = null)
+        {
+            return Serializer.SerializeAnimation(Animation, animationName);
         }
 
         public override void RestoreFromJSON(JSONClass jc, bool restorePhysical = true, bool restoreAppearance = true, JSONArray presetAtoms = null, bool setMissingToDefault = true)
@@ -391,7 +396,7 @@ namespace VamTimeline
 
         }
 
-        private void Load(JSONNode animationJSON)
+        public void Load(JSONNode animationJSON)
         {
             if (_restoring) return;
             _restoring = true;

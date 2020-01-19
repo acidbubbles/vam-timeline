@@ -245,7 +245,7 @@ namespace VamTimeline
 
         #region Serialize JSON
 
-        public JSONClass SerializeAnimation(AtomAnimation animation)
+        public JSONClass SerializeAnimation(AtomAnimation animation, string animationNameFilter = null)
         {
             var animationJSON = new JSONClass
             {
@@ -253,7 +253,7 @@ namespace VamTimeline
             };
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);
-            foreach (var clip in animation.Clips)
+            foreach (var clip in animation.Clips.Where(c => animationNameFilter == null || c.AnimationName == animationNameFilter))
             {
                 var clipJSON = new JSONClass
                 {

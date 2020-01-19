@@ -1,4 +1,5 @@
 using System.Collections;
+using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
@@ -85,6 +86,9 @@ namespace VamTimeline
         JSONStorableAction UndoJSON { get; }
         JSONStorableBool LockedJSON { get; }
         JSONStorableString DisplayJSON { get; }
+
+        void Load(JSONNode animationJSON);
+        JSONClass GetAnimationJSON(string animationName = null);
 
         void AnimationModified();
 
