@@ -55,7 +55,6 @@ namespace VamTimeline
         public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
-        public JSONStorableString ImportJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -184,16 +183,6 @@ namespace VamTimeline
 
         public void InitStorables()
         {
-            ImportJSON = new JSONStorableString(StorableNames.Import, "", (string v) =>
-            {
-                if (!string.IsNullOrEmpty(v))
-                    Load(JSONNode.Parse(v));
-            })
-            {
-                isStorable = false
-            };
-            RegisterString(ImportJSON);
-
             AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
             {
                 isStorable = false
