@@ -55,6 +55,7 @@ namespace VamTimeline
         public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
+        public JSONStorableBool AutoKeyframeAllControllersJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -134,13 +135,26 @@ namespace VamTimeline
             {
                 // TODO: This should be done by the controller (updating the animation resets the time)
                 var time = Animation.Time.Snap();
-                Animation.SetKeyframeToCurrentTransform(_grabbedController, Animation.Time.Snap());
-                if (_grabbedController.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
-                    Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
+                if (AutoKeyframeAllControllersJSON.val)
+                {
+                    foreach (var target in Animation.Current.TargetControllers)
+                        SetControllerKeyframe(time, target);
+                }
+                else
+                {
+                    SetControllerKeyframe(time, _grabbedController);
+                }
                 _grabbedController = null;
                 Animation.RebuildAnimation();
                 AnimationModified();
             }
+        }
+
+        private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
+        {
+            Animation.SetKeyframeToCurrentTransform(target, time);
+            if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
+                Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
         }
 
         #endregion
@@ -293,6 +307,11 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterString(DisplayJSON);
+
+            AutoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
+            {
+                isStorable = false
+            };
         }
 
         private IEnumerator DeferredInit()

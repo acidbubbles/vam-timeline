@@ -45,6 +45,9 @@ namespace VamTimeline
 
             InitClipboardUI(false);
 
+            Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
+            _linkedStorables.Add(Plugin.AutoKeyframeAllControllersJSON);
+
             // Right side
 
             InitDisplayUI(true);
@@ -123,7 +126,10 @@ namespace VamTimeline
         {
             if (Plugin.Animation == null) return;
             if (_targets != null && Enumerable.SequenceEqual(Plugin.Animation.Current.TargetControllers, _targets.Select(t => t.Target)))
+            {
+                UpdateValues();
                 return;
+            }
             RemoveTargets();
             var time = Plugin.Animation.Time;
             _targets = new List<TargetRef>();
@@ -186,7 +192,7 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private void ToggleKeyframe(FreeControllerAnimationTarget target, bool val)
+        private void ToggleKeyframe(FreeControllerAnimationTarget target, bool enable)
         {
             if (Plugin.Animation.IsPlaying()) return;
             var time = Plugin.Animation.Time.Snap();
@@ -195,16 +201,39 @@ namespace VamTimeline
                 _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
                 return;
             }
-            if (val)
+            if (enable)
             {
-                Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
+                if (Plugin.AutoKeyframeAllControllersJSON.val)
+                {
+                    foreach (var target1 in Plugin.Animation.Current.TargetControllers)
+                        SetControllerKeyframe(time, target1);
+                }
+                else
+                {
+                    SetControllerKeyframe(time, target);
+                }
             }
             else
             {
-                target.DeleteFrame(time);
+                if (Plugin.AutoKeyframeAllControllersJSON.val)
+                {
+                    foreach (var target1 in Plugin.Animation.Current.TargetControllers)
+                        target1.DeleteFrame(time);
+                }
+                else
+                {
+                    target.DeleteFrame(time);
+                }
             }
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
+        }
+
+        private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
+        {
+            Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
+            if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
+                Plugin.Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
         }
     }
 }
