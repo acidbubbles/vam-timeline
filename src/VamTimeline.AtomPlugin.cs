@@ -23,8 +23,6 @@ namespace VamTimeline
         // Storables
 
         private const int MaxUndo = 20;
-        private const string AllTargets = "(All)";
-        private const string PlayingAnimationName = "(Playing...)";
         private bool _saveEnabled;
 
         // State
@@ -269,7 +267,7 @@ namespace VamTimeline
             });
             RegisterAction(StopIfPlayingJSON);
 
-            FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { AllTargets }, AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == AllTargets ? "" : val); AnimationFrameUpdated(); })
+            FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { StorableNames.AllTargets }, StorableNames.AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == StorableNames.AllTargets ? "" : val); AnimationFrameUpdated(); })
             {
                 isStorable = false
             };
@@ -458,7 +456,7 @@ namespace VamTimeline
             _saveEnabled = false;
             try
             {
-                FilterAnimationTargetJSON.val = AllTargets;
+                FilterAnimationTargetJSON.val = StorableNames.AllTargets;
                 if (Animation.IsPlaying())
                 {
                     if (Animation.Current.AnimationName != animationName)
@@ -468,7 +466,7 @@ namespace VamTimeline
                     }
                     else
                     {
-                        AnimationJSON.valNoCallback = PlayingAnimationName;
+                        AnimationJSON.valNoCallback = StorableNames.PlayingAnimationName;
                     }
                 }
                 else
@@ -698,8 +696,8 @@ namespace VamTimeline
                 TimeJSON.max = Animation.Current.AnimationLength;
                 TimeJSON.valNoCallback = Animation.Time;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
-                AnimationJSON.valNoCallback = Animation.IsPlaying() ? PlayingAnimationName : Animation.Current.AnimationName;
-                FilterAnimationTargetJSON.choices = new List<string> { AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
+                AnimationJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
+                FilterAnimationTargetJSON.choices = new List<string> { StorableNames.AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
 
                 // Save
                 if (_saveEnabled)
@@ -733,7 +731,7 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
                 TimeJSON.valNoCallback = time;
-                AnimationJSON.valNoCallback = Animation.IsPlaying() ? PlayingAnimationName : Animation.Current.AnimationName;
+                AnimationJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
                 _ui.AnimationFrameUpdated();
 

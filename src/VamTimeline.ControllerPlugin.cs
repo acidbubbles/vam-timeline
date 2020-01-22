@@ -14,7 +14,6 @@ namespace VamTimeline
     /// </summary>
     public class ControllerPlugin : MVRScript
     {
-        private const string AllTargets = "(All)";
         private Atom _atom;
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
@@ -102,7 +101,7 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction("Stop", () => Stop());
             RegisterAction(_stopJSON);
 
-            _targetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string>(), AllTargets, StorableNames.FilterAnimationTarget, (string v) => SelectTargetFilter(v))
+            _targetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string>(), StorableNames.AllTargets, StorableNames.FilterAnimationTarget, (string v) => SelectTargetFilter(v))
             {
                 isStorable = false
             };
@@ -305,49 +304,51 @@ namespace VamTimeline
         {
             if (_ignoreVamTimelineAnimationFrameUpdated) return;
             _ignoreVamTimelineAnimationFrameUpdated = true;
+
             try
             {
-                if (_linkedAnimations.Count == 0) return;
-
-                var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
-                if (updated != null)
-                {
-                    var time = updated.Time.val;
-                    var isPlaying = updated.IsPlaying.val;
-                    var animationName = updated.Animation.val;
-                    _animationJSON.valNoCallback = animationName;
-
-                    foreach (var other in _linkedAnimations.Where(la => la != updated))
-                    {
-                        if (other.Animation.val != animationName)
-                            other.ChangeAnimation(animationName);
-
-                        if (isPlaying)
-                            other.PlayIfNotPlaying();
-                        else
-                            other.StopIfPlaying();
-
-                        var setTime = other.Time;
-                        if (setTime.val != time)
-                            setTime.val = time;
-                    }
-
-                    if (!isPlaying)
-                    {
-                        if (_linkedAnimations.Where(la => la != updated).All(la => la.Animation.val == animationName))
-                            _animationJSON.valNoCallback = animationName;
-                        else
-                            _animationJSON.valNoCallback = $"(Multiple animations: {string.Join(", ", _linkedAnimations.Select(la => la.Animation.val).ToArray())})";
-                    }
-                }
-
                 if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                     return;
 
                 _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
                 var target = _mainLinkedAnimation.FilterAnimationTarget.val;
-                _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? AllTargets : target;
+                _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
                 _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
+
+                if (_linkedAnimations.Count < 2) return;
+
+                var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
+                if (updated == null)
+                    return;
+
+                var animationName = updated.Animation.val;
+                _animationJSON.valNoCallback = animationName;
+                var time = updated.Time.val;
+                var isPlaying = updated.IsPlaying.val;
+
+                foreach (var other in _linkedAnimations.Where(la => la != updated))
+                {
+
+                    if (animationName != StorableNames.PlayingAnimationName && other.Animation.val != animationName)
+                        other.ChangeAnimation(animationName);
+
+                    if (isPlaying)
+                        other.PlayIfNotPlaying();
+                    else
+                        other.StopIfPlaying();
+
+                    var setTime = other.Time;
+                    if (setTime.val != time)
+                        setTime.val = time;
+                }
+
+                if (!isPlaying)
+                {
+                    if (_linkedAnimations.Where(la => la != updated).All(la => la.Animation.val == animationName))
+                        _animationJSON.valNoCallback = animationName;
+                    else
+                        _animationJSON.valNoCallback = $"(Multiple animations: {string.Join(", ", _linkedAnimations.Select(la => la.Animation.val).ToArray())})";
+                }
             }
             finally
             {
@@ -425,8 +426,8 @@ namespace VamTimeline
 
         private void ChangeAnimation(string name)
         {
-            if (_mainLinkedAnimation == null) return;
-            _mainLinkedAnimation.ChangeAnimation(name);
+            foreach (var la in _linkedAnimations)
+                la.ChangeAnimation(name);
         }
 
         private void Play()
@@ -462,7 +463,7 @@ namespace VamTimeline
         private void SelectTargetFilter(string v)
         {
             if (_mainLinkedAnimation == null) return;
-            if (string.IsNullOrEmpty(v) || v == AllTargets)
+            if (string.IsNullOrEmpty(v) || v == StorableNames.AllTargets)
             {
                 _mainLinkedAnimation.FilterAnimationTarget.val = null;
                 return;
