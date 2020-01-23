@@ -119,7 +119,8 @@ namespace VamTimeline
 
         private void UpdateNotPlaying()
         {
-            var grabbing = SuperController.singleton.RightGrabbedController ?? SuperController.singleton.LeftGrabbedController;
+            var sc = SuperController.singleton;
+            var grabbing = sc.RightGrabbedController ?? sc.LeftGrabbedController ?? sc.RightFullGrabbedController ?? sc.LeftFullGrabbedController;
             if (grabbing != null && grabbing.containingAtom != containingAtom)
                 grabbing = null;
             else if (Input.GetMouseButton(0) && grabbing == null)
