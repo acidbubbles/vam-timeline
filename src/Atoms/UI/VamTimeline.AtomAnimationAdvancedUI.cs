@@ -39,6 +39,12 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
+            var enableAllTargetsUI = Plugin.CreateButton("Enable Miss. Targets On All Anims", true);
+            enableAllTargetsUI.button.onClick.AddListener(() => EnableAllTargets());
+            _components.Add(enableAllTargetsUI);
+
+            CreateSpacer(true);
+
             var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
             _components.Add(keyframeCurrentPoseUI);
@@ -47,9 +53,13 @@ namespace VamTimeline
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
             _components.Add(keyframeCurrentPoseTrackedUI);
 
+            CreateSpacer(true);
+
             var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
+
+            CreateSpacer(true);
 
             _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
             {
@@ -71,6 +81,43 @@ namespace VamTimeline
             // TODO: Copy all missing controllers and morphs on every animation
 
             // TODO: Import / Export animation(s) to another atom and create an atom just to store and share animations
+        }
+
+        private class FloatParamRef
+        {
+            public JSONStorable Storable { get; set; }
+            public JSONStorableFloat FloatParam { get; set; }
+        }
+
+        private void EnableAllTargets()
+        {
+            var allControllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.Controller).Distinct().ToList();
+            var h = new HashSet<JSONStorableFloat>();
+            var allFloatParams = Plugin.Animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.FloatParam)).Select(t => new FloatParamRef { Storable = t.Storable, FloatParam = t.FloatParam }).ToList();
+
+            foreach (var clip in Plugin.Animation.Clips)
+            {
+                SuperController.LogMessage("" + clip.AnimationName);
+                foreach (var controller in allControllers)
+                {
+                    SuperController.LogMessage("" + controller.name);
+                    if (!clip.TargetControllers.Any(t => t.Controller == controller))
+                    {
+                        clip.Add(controller);
+                    }
+                }
+                clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+
+                foreach (var floatParamRef in allFloatParams)
+                {
+                    SuperController.LogMessage("" + floatParamRef.FloatParam.name);
+                    if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
+                    {
+                        clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
+                    }
+                }
+                clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+            }
         }
 
         private void Export()

@@ -225,5 +225,14 @@ namespace VamTimeline
         }
 
         #endregion
+
+        public class Comparer : IComparer<FreeControllerAnimationTarget>
+        {
+            public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
+            {
+                return t1.Controller.name.CompareTo(t2.Controller.name);
+
+            }
+        }
     }
 }

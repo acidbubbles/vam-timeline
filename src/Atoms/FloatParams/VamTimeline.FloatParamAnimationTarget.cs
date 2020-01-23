@@ -56,5 +56,14 @@ namespace VamTimeline
                 display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
             }
         }
+
+        public class Comparer : IComparer<FloatParamAnimationTarget>
+        {
+            public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)
+            {
+                return t1.FloatParam.name.CompareTo(t2.FloatParam.name);
+
+            }
+        }
     }
 }
