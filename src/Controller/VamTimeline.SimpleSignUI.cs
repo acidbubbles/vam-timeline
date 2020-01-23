@@ -35,7 +35,7 @@ namespace VamTimeline
 
             var ui = transform.GetComponent<UIDynamicSlider>();
             if (ui == null) throw new NullReferenceException("Could not find a UIDynamicSlider component");
-            ui.Configure(jsf.name, jsf.min, jsf.max, jsf.defaultVal, jsf.constrained, "F2", true, !jsf.constrained);
+            ui.Configure(jsf.name, jsf.min, jsf.max, jsf.defaultVal, jsf.constrained, "F3", true, !jsf.constrained);
             jsf.slider = ui.slider;
             ui.slider.interactable = true;
 
