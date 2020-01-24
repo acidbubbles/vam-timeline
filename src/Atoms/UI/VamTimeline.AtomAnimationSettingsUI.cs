@@ -485,6 +485,10 @@ namespace VamTimeline
                             .ToList();
 
                         var snapshots = frames.Select(f => Plugin.Animation.Current.Copy(f, true)).ToList();
+                        foreach (var c in snapshots[0].Controllers)
+                        {
+                            c.Snapshot.CurveType = CurveTypeValues.Smooth;
+                        }
 
                         Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
 
