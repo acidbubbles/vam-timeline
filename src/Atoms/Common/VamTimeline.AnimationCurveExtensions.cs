@@ -77,19 +77,32 @@ namespace VamTimeline
         {
             var currentLength = curve.keys[curve.keys.Length - 1].time;
             var lengthDiff = length - currentLength;
-            for (var i = curve.keys.Length - 1; i >= 0; i--)
+
+            var keys = curve.keys.ToList();
+            for (var i = keys.Count - 1; i >= 0; i--)
             {
-                var keyframe = curve.keys[i];
+                if (keys[i].time + lengthDiff < 0)
+                {
+                    keys.RemoveAt(i);
+                    continue;
+                }
+
+                var keyframe = keys[i];
                 keyframe.time += lengthDiff;
-                if (keyframe.time < 0)
-                    curve.RemoveKey(i);
-                else
-                    curve.MoveKey(i, keyframe);
+                keys[i] = keyframe;
+            }
+
+            if (keys.Count == 0)
+            {
+                SuperController.LogError("VamTimeline: CropOrExtendLengthBegin resulted in an empty curve.");
+                return;
             }
 
             var first = curve.keys[0];
             first.time = 0f;
-            curve.MoveKey(0, first);
+            keys[0] = first;
+
+            curve.keys = keys.ToArray();
         }
 
         #endregion

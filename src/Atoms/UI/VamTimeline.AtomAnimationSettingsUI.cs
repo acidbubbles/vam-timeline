@@ -17,8 +17,11 @@ namespace VamTimeline
 
         public const string ChangeLengthModeLocked = "Length Locked";
         public const string ChangeLengthModeCropExtendEnd = "Crop/Extend End";
+        public const string ChangeLengthModeAddKeyframeEnd = "Add Keyframe End";
         public const string ChangeLengthModeCropExtendBegin = "Crop/Extend Begin";
+        public const string ChangeLengthModeAddKeyframeBegin = "Add Keyframe Begin";
         public const string ChangeLengthModeStretch = "Stretch";
+        public const string ChangeLengthModeLoop = "Loop (Extend)";
 
         private JSONStorableString _animationNameJSON;
         private JSONStorableStringChooser _lengthModeJSON;
@@ -40,6 +43,7 @@ namespace VamTimeline
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
+        private float _lengthWhenLengthModeChanged;
         private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
@@ -100,9 +104,12 @@ namespace VamTimeline
             _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
                 ChangeLengthModeLocked,
                 ChangeLengthModeCropExtendEnd,
+                ChangeLengthModeAddKeyframeEnd,
                 ChangeLengthModeCropExtendBegin,
-                ChangeLengthModeStretch
-             }, ChangeLengthModeLocked, "Change Length Mode");
+                ChangeLengthModeAddKeyframeBegin,
+                ChangeLengthModeStretch,
+                ChangeLengthModeLoop
+             }, ChangeLengthModeLocked, "Change Length Mode", (string _) => _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0f);
             Plugin.CreateScrollablePopup(_lengthModeJSON);
             _linkedStorables.Add(_lengthModeJSON);
 
@@ -407,11 +414,13 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private void UpdateAnimationLength(float time)
+        private void UpdateAnimationLength(float newLength)
         {
-            time = time.Snap(Plugin.SnapJSON.val);
-            if (time != _lengthJSON.val)
-                _lengthJSON.valNoCallback = time;
+            if (_lengthWhenLengthModeChanged == 0f) return;
+
+            newLength = newLength.Snap(Plugin.SnapJSON.val);
+            if (newLength != _lengthJSON.val)
+                _lengthJSON.valNoCallback = newLength;
 
             switch (_lengthModeJSON.val)
             {
@@ -421,13 +430,75 @@ namespace VamTimeline
                         return;
                     }
                 case ChangeLengthModeStretch:
-                    Plugin.Animation.Current.StretchLength(time);
+                    Plugin.Animation.Current.StretchLength(newLength);
+                    _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendEnd:
-                    Plugin.Animation.Current.CropOrExtendLengthEnd(time);
+                    Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
+                    _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendBegin:
-                    Plugin.Animation.Current.CropOrExtendLengthBegin(time);
+                    Plugin.Animation.Current.CropOrExtendLengthBegin(newLength);
+                    _lengthWhenLengthModeChanged = newLength;
+                    break;
+                case ChangeLengthModeAddKeyframeEnd:
+                    {
+                        if (newLength <= _lengthWhenLengthModeChanged)
+                        {
+                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            return;
+                        }
+                        var snapshot = Plugin.Animation.Current.Copy(_lengthWhenLengthModeChanged, true);
+                        Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
+                        Plugin.Animation.Current.Paste(_lengthWhenLengthModeChanged, snapshot);
+                        break;
+                    }
+                case ChangeLengthModeAddKeyframeBegin:
+                    {
+                        if (newLength <= _lengthWhenLengthModeChanged)
+                        {
+                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            return;
+                        }
+                        var snapshot = Plugin.Animation.Current.Copy(0f, true);
+                        Plugin.Animation.Current.CropOrExtendLengthBegin(newLength);
+                        Plugin.Animation.Current.Paste((newLength - _lengthWhenLengthModeChanged).Snap(), snapshot);
+                        break;
+                    }
+                case ChangeLengthModeLoop:
+                    {
+                        newLength = newLength.Snap(_lengthWhenLengthModeChanged);
+                        var loops = (int)Math.Round(newLength / _lengthWhenLengthModeChanged);
+                        if (loops <= 1 || newLength <= _lengthWhenLengthModeChanged)
+                        {
+                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            return;
+                        }
+                        var frames = Plugin.Animation.Current
+                            .TargetControllers.SelectMany(t => t.X.keys.Select(k => k.time))
+                            .Concat(Plugin.Animation.Current.TargetFloatParams.SelectMany(t => t.Value.keys.Select(k => k.time)))
+                            .Select(t => t.Snap())
+                            .Where(t => t < _lengthWhenLengthModeChanged)
+                            .Distinct()
+                            .ToList();
+
+                        var snapshots = frames.Select(f => Plugin.Animation.Current.Copy(f, true)).ToList();
+
+                        Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
+
+                        for (var repeat = 0; repeat < loops; repeat++)
+                        {
+                            for (var i = 0; i < frames.Count; i++)
+                            {
+                                var pasteTime = frames[i] + (_lengthWhenLengthModeChanged * repeat);
+                                if (pasteTime >= newLength) continue;
+                                Plugin.Animation.Current.Paste(pasteTime, snapshots[i]);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    SuperController.LogError($"VamTimeline: Unknown animation length type: {_lengthModeJSON.val}");
                     break;
             }
             Plugin.Animation.RebuildAnimation();

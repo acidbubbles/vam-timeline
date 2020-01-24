@@ -251,10 +251,10 @@ namespace VamTimeline
             }
         }
 
-        public AtomClipboardEntry Copy(float time)
+        public AtomClipboardEntry Copy(float time, bool all = false)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
-            foreach (var target in GetAllOrSelectedControllerTargets())
+            foreach (var target in all ? TargetControllers : GetAllOrSelectedControllerTargets())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -265,7 +265,7 @@ namespace VamTimeline
                 });
             }
             var floatParams = new List<FloatParamValClipboardEntry>();
-            foreach (var target in GetAllOrSelectedFloatParamTargets())
+            foreach (var target in all ? TargetFloatParams : GetAllOrSelectedFloatParamTargets())
             {
                 if (!target.Value.keys.Any(k => k.time.IsSameFrame(time))) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
