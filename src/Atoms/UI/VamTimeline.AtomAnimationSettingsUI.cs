@@ -62,6 +62,8 @@ namespace VamTimeline
 
             InitAnimationSelectorUI(false);
 
+            InitPlaybackUI(false);
+
             InitAnimationSettingsUI(false);
 
             InitSequenceUI();
