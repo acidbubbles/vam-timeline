@@ -151,6 +151,10 @@ namespace VamTimeline
                 {
                     newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
                 }
+                foreach (var kvp in origTarget.Settings)
+                {
+                    newTarget.Settings[kvp.Key] = new KeyframeSettings { CurveType = kvp.Value.CurveType };
+                }
             }
             foreach (var origTarget in current.TargetFloatParams)
             {
