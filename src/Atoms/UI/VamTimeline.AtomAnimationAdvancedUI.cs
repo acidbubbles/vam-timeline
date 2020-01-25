@@ -97,10 +97,8 @@ namespace VamTimeline
 
             foreach (var clip in Plugin.Animation.Clips)
             {
-                SuperController.LogMessage("" + clip.AnimationName);
                 foreach (var controller in allControllers)
                 {
-                    SuperController.LogMessage("" + controller.name);
                     if (!clip.TargetControllers.Any(t => t.Controller == controller))
                     {
                         clip.Add(controller);
@@ -110,7 +108,6 @@ namespace VamTimeline
 
                 foreach (var floatParamRef in allFloatParams)
                 {
-                    SuperController.LogMessage("" + floatParamRef.FloatParam.name);
                     if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
                     {
                         clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);

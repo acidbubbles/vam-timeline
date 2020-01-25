@@ -47,6 +47,7 @@ namespace VamTimeline
         protected void InitPlaybackUI(bool rightSide)
         {
             if (Plugin.ScrubberJSON.slider != null) throw new InvalidOperationException("Another screen was not fully unregistered, scrubber is still associated with another slider.");
+
             var scrubberUI = Plugin.CreateSlider(Plugin.ScrubberJSON);
             scrubberUI.valueFormat = "F3";
             _linkedStorables.Add(Plugin.ScrubberJSON);
