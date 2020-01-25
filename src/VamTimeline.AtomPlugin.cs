@@ -110,11 +110,6 @@ namespace VamTimeline
         {
             Animation.Update();
             _ui.UpdatePlaying();
-            if (!Animation.Current.Loop && Animation.Time >= Animation.Current.AnimationLength - float.Epsilon)
-            {
-                Animation.Stop();
-                AnimationFrameUpdated();
-            }
         }
 
         private void UpdateNotPlaying()
