@@ -9,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public abstract class AtomAnimationBaseUI
+    public abstract class AtomAnimationBaseUI : IDisposable
     {
         public abstract string Name { get; }
 
@@ -118,7 +118,7 @@ namespace VamTimeline
             _components.Add(spacerUI);
         }
 
-        public virtual void Remove()
+        public virtual void Dispose()
         {
             foreach (var component in _linkedStorables)
             {

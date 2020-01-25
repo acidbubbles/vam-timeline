@@ -99,24 +99,25 @@ namespace VamTimeline
 
         private IEnumerator RefreshCurrentUIDeferred(Action fn)
         {
+            if (_current != null && _current.Name != _screens.val)
+            {
+                try
+                {
+                    _current.Dispose();
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while removing {_current.Name}): " + exc.ToString());
+                }
+
+                _current = null;
+            }
+
             yield return new WaitForEndOfFrame();
+
             if (_plugin == null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
             if (_current == null || _current.Name != _screens.val)
             {
-                if (_current != null)
-                {
-                    try
-                    {
-                        _current.Remove();
-                    }
-                    catch (Exception exc)
-                    {
-                        SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while removing {_current.Name}): " + exc.ToString());
-                    }
-
-                    _current = null;
-                }
-
                 switch (_screens.val)
                 {
                     case AtomAnimationSettingsUI.ScreenName:

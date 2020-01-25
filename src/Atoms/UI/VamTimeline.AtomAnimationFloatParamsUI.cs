@@ -142,10 +142,10 @@ namespace VamTimeline
             // Plugin.AnimationModified();
         }
 
-        public override void Remove()
+        public override void Dispose()
         {
             RemoveTargets();
-            base.Remove();
+            base.Dispose();
         }
 
         private void RemoveTargets()

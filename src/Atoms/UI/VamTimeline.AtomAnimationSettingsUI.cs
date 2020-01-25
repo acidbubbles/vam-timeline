@@ -724,10 +724,10 @@ namespace VamTimeline
             UpdateNextAnimationPreview();
         }
 
-        public override void Remove()
+        public override void Dispose()
         {
             ClearRemoveToggles();
-            base.Remove();
+            base.Dispose();
         }
 
         #endregion
