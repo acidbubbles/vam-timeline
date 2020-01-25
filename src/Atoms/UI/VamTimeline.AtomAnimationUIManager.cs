@@ -17,6 +17,7 @@ namespace VamTimeline
         private AtomAnimationBaseUI _current;
         private JSONStorableStringChooser _screens;
         private UIDynamicPopup _screenUI;
+        private Coroutine _refreshCurrentUIDeferred;
 
         public AtomAnimationUIManager(IAtomPlugin plugin)
         {
@@ -90,7 +91,10 @@ namespace VamTimeline
         {
             if (_plugin.Animation == null) return;
 
-            _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn));
+            if (_refreshCurrentUIDeferred != null)
+                _plugin.StopCoroutine(_refreshCurrentUIDeferred);
+
+            _refreshCurrentUIDeferred = _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn));
         }
 
         private IEnumerator RefreshCurrentUIDeferred(Action fn)
@@ -100,7 +104,18 @@ namespace VamTimeline
             if (_current == null || _current.Name != _screens.val)
             {
                 if (_current != null)
-                    _current.Remove();
+                {
+                    try
+                    {
+                        _current.Remove();
+                    }
+                    catch (Exception exc)
+                    {
+                        SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while removing {_current.Name}): " + exc.ToString());
+                    }
+
+                    _current = null;
+                }
 
                 switch (_screens.val)
                 {
@@ -129,11 +144,19 @@ namespace VamTimeline
                 try
                 {
                     _current.Init();
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while initializing {_current.Name}): " + exc.ToString());
+                }
+
+                try
+                {
                     _current.AnimationModified();
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDefered ({_screens.val}): " + exc.ToString());
+                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while triggering modified event on {_current.Name}): " + exc.ToString());
                 }
 
                 // Hack to avoid having the drop down shown underneath new controls
@@ -142,8 +165,17 @@ namespace VamTimeline
             }
             else
             {
-                fn?.Invoke();
+                try
+                {
+                    fn?.Invoke();
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while updating {_current.Name}): " + exc.ToString());
+                }
             }
+
+            _refreshCurrentUIDeferred = null;
         }
 
         public void UpdatePlaying()

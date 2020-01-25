@@ -13,6 +13,7 @@ namespace VamTimeline
     public interface IMonoBehavior
     {
         Coroutine StartCoroutine(IEnumerator enumerator);
+        void StopCoroutine(Coroutine coroutine);
     }
 
     /// <summary>

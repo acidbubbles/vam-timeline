@@ -31,10 +31,6 @@ namespace VamTimeline
         {
             base.Init();
 
-            InitPlaybackUI(false);
-
-            InitFrameNavUI(false);
-
             // Left side
 
             InitAnimationSelectorUI(false);

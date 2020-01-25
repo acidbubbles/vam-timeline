@@ -705,11 +705,6 @@ namespace VamTimeline
 
         #region Events
 
-        public override void UIUpdated()
-        {
-            base.UIUpdated();
-        }
-
         public override void AnimationModified()
         {
             base.AnimationModified();
