@@ -89,6 +89,8 @@ namespace VamTimeline
 
         private void UpdateCurrentCurveType()
         {
+            if (_curveTypeJSON == null) return;
+
             var time = Plugin.Animation.Time.Snap();
             if (Plugin.Animation.Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
             {

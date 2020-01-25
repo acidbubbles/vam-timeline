@@ -169,7 +169,8 @@ namespace VamTimeline
             {
                 // Attempt repair
                 var keyframe = curve.keys.Length > 0 ? curve.keys[0] : new Keyframe { value = 0 };
-                curve.RemoveKey(0);
+                if (curve.keys.Length > 0)
+                    curve.RemoveKey(0);
                 keyframe.time = 0f;
                 curve.AddKey(keyframe);
                 keyframe.time = length;
