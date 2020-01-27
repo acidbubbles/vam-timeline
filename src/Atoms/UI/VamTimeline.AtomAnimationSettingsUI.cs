@@ -542,7 +542,7 @@ namespace VamTimeline
             Plugin.Animation.Current.Loop = val;
             if (val == true)
             {
-                foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+                foreach (var target in Plugin.Animation.Current.TargetControllers)
                 {
                     if (target.Settings.Count == 2)
                         target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.LeaveAsIs;
@@ -550,7 +550,7 @@ namespace VamTimeline
             }
             else
             {
-                foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+                foreach (var target in Plugin.Animation.Current.TargetControllers)
                 {
                     if (target.Settings.Count == 2)
                         target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.CopyPrevious;
