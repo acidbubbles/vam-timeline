@@ -84,6 +84,8 @@ namespace VamTimeline
             CreateSpacer(true);
 
             GenerateRemoveToggles();
+
+            _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0;
         }
 
         private void InitAnimationSettingsUI(bool rightSide)
