@@ -369,32 +369,6 @@ namespace VamTimeline
                     isPlaying = true;
                     _scrubberJSON.valNoCallback = scrubber.val;
                 }
-
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
-                {
-                    PreviousFrame();
-                }
-                else if (Input.GetKeyDown(KeyCode.RightArrow))
-                {
-                    NextFrame();
-                }
-                else if (Input.GetKeyDown(KeyCode.UpArrow))
-                {
-                    if (_targetJSON.choices.Count > 1 && _targetJSON.val != _targetJSON.choices[0])
-                        _targetJSON.val = _targetJSON.choices.ElementAtOrDefault(_targetJSON.choices.IndexOf(_targetJSON.val) - 1);
-                }
-                else if (Input.GetKeyDown(KeyCode.DownArrow))
-                {
-                    if (_targetJSON.choices.Count > 1 && _targetJSON.val != _targetJSON.choices[_targetJSON.choices.Count - 1])
-                        _targetJSON.val = _targetJSON.choices.ElementAtOrDefault(_targetJSON.choices.IndexOf(_targetJSON.val) + 1);
-                }
-                else if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    if (isPlaying)
-                        Stop();
-                    else
-                        Play();
-                }
             }
             catch (Exception exc)
             {
