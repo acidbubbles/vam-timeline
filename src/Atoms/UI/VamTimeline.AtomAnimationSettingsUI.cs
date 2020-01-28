@@ -20,6 +20,7 @@ namespace VamTimeline
         public const string ChangeLengthModeAddKeyframeEnd = "Add Keyframe End";
         public const string ChangeLengthModeCropExtendBegin = "Crop/Extend Begin";
         public const string ChangeLengthModeAddKeyframeBegin = "Add Keyframe Begin";
+        public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend At Time";
         public const string ChangeLengthModeStretch = "Stretch";
         public const string ChangeLengthModeLoop = "Loop (Extend)";
 
@@ -109,6 +110,7 @@ namespace VamTimeline
                 ChangeLengthModeAddKeyframeEnd,
                 ChangeLengthModeCropExtendBegin,
                 ChangeLengthModeAddKeyframeBegin,
+                ChangeLengthModeCropExtendAtTime,
                 ChangeLengthModeStretch,
                 ChangeLengthModeLoop
              }, ChangeLengthModeLocked, "Change Length Mode", (string _) => _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0f);
@@ -425,8 +427,7 @@ namespace VamTimeline
             if (_lengthWhenLengthModeChanged == 0f) return;
 
             newLength = newLength.Snap(Plugin.SnapJSON.val);
-            if (newLength != _lengthJSON.val)
-                _lengthJSON.valNoCallback = newLength;
+            if (newLength < 0.1f) newLength = 0.1f;
 
             switch (_lengthModeJSON.val)
             {
@@ -447,9 +448,30 @@ namespace VamTimeline
                     Plugin.Animation.Current.CropOrExtendLengthBegin(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
+                case ChangeLengthModeCropExtendAtTime:
+                    {
+                        if (Plugin.Animation.IsPlaying())
+                        {
+                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            return;
+                        }
+                        var time = Plugin.Animation.Time.Snap();
+                        var previousKeyframe = Plugin.Animation.Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
+                        var nextKeyframe = Plugin.Animation.Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
+
+                        var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
+
+                        if ((Plugin.Animation.Current.AnimationLength - newLength) > keyframeAllowedDiff)
+                        {
+                            newLength = Plugin.Animation.Current.AnimationLength - keyframeAllowedDiff;
+                        }
+
+                        Plugin.Animation.Current.CropOrExtendLengthAtTime(newLength, time);
+                        break;
+                    }
                 case ChangeLengthModeAddKeyframeEnd:
                     {
-                        if (newLength <= _lengthWhenLengthModeChanged)
+                        if (newLength <= _lengthWhenLengthModeChanged + float.Epsilon)
                         {
                             _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
                             return;
@@ -461,7 +483,7 @@ namespace VamTimeline
                     }
                 case ChangeLengthModeAddKeyframeBegin:
                     {
-                        if (newLength <= _lengthWhenLengthModeChanged)
+                        if (newLength <= _lengthWhenLengthModeChanged + float.Epsilon)
                         {
                             _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
                             return;

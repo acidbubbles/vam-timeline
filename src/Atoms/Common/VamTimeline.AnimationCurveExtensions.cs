@@ -105,6 +105,26 @@ namespace VamTimeline
             curve.keys = keys.ToArray();
         }
 
+        public static void CropOrExtendLengthAtTime(this AnimationCurve curve, float length, float time)
+        {
+            var lengthDiff = length - curve.keys[curve.keys.Length - 1].time;
+
+            var keys = curve.keys.ToList();
+            for (var i = 0; i < keys.Count - 1; i++)
+            {
+                var keyframe = keys[i];
+                if (keyframe.time <= time - float.Epsilon) continue;
+                keyframe.time = (keyframe.time + lengthDiff).Snap();
+                keys[i] = keyframe;
+            }
+
+            var last = keys[curve.keys.Length - 1];
+            last.time = length;
+            keys[keys.Count - 1] = last;
+
+            curve.keys = keys.ToArray();
+        }
+
         #endregion
 
         #region Keyframes control

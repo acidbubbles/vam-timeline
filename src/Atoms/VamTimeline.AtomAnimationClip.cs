@@ -223,6 +223,19 @@ namespace VamTimeline
             UpdateKeyframeSettingsFromEnd();
         }
 
+        public void CropOrExtendLengthAtTime(float animationLength, float time)
+        {
+            if (AnimationLength.IsSameFrame(animationLength))
+                return;
+            AnimationLength = animationLength;
+            foreach (var target in AllTargets)
+            {
+                foreach (var curve in target.GetCurves())
+                    curve.CropOrExtendLengthAtTime(animationLength, time);
+            }
+            UpdateKeyframeSettingsFromBegin();
+        }
+
         private void UpdateKeyframeSettingsFromBegin()
         {
             foreach (var target in TargetControllers)
