@@ -117,7 +117,7 @@ namespace VamTimeline
 
             _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
             var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
-            lengthUI.valueFormat = "F2";
+            lengthUI.valueFormat = "F3";
             _linkedStorables.Add(_lengthJSON);
 
             _speedJSON = new JSONStorableFloat("AnimationSpeed", 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false);
