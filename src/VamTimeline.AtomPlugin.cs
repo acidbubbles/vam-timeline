@@ -206,7 +206,8 @@ namespace VamTimeline
 
             PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                if (Animation.IsInterpolating()) {
+                if (Animation.IsInterpolating())
+                {
                     return;
                 }
                 Animation.Play();
@@ -627,12 +628,6 @@ namespace VamTimeline
                 }
             }
 
-            if (targets.Count == 0)
-            {
-                DisplayJSON.val = $"No controller has been registered{(Animation.Current.AllTargets.Any() ? " at this frame." : ". Go to Animation Settings and add one.")}";
-                return;
-            }
-
 
             var display = new StringBuilder();
             if (frames.Count == 1)
@@ -652,9 +647,16 @@ namespace VamTimeline
                 }
             }
             display.AppendLine();
-            display.AppendLine("Affects:");
-            foreach (var c in targets)
-                display.AppendLine(c);
+            if (targets.Count == 0)
+            {
+                display.AppendLine($"No controller has been registered{(Animation.Current.AllTargets.Any() ? " at this frame." : ". Go to Animation Settings and add one.")}");
+            }
+            else
+            {
+                display.AppendLine("Affects:");
+                foreach (var c in targets)
+                    display.AppendLine(c);
+            }
             DisplayJSON.val = display.ToString();
         }
 
