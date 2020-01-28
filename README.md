@@ -64,10 +64,6 @@ You can animate morphs and any other `float param`, such as light intensity, ski
 
 To gain a little bit of performance, you can use the `Locked` screen. It will reduce processing a little bit, and prevent moving controllers by accident.
 
-### Triggering events
-
-To use events, you can use an `AnimationPattern` of the same length as the animation. When an Animation Pattern is linked, it will play, stop and scrub with the VamTimeline animation.
-
 ### Adding an external playback controller
 
 ![VamTimeline Controller Plugin](screenshots/vam-timeline-controller.png)

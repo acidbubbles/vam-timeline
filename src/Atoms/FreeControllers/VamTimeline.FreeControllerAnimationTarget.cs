@@ -201,16 +201,18 @@ namespace VamTimeline
         #region Interpolation
 
 
-        public bool Interpolate(float playTime, float maxDistanceDelta, float maxDegreesDelta)
+        public bool Interpolate(float playTime, float maxDistanceDelta, float maxRadiansDelta)
         {
-            var position = new Vector3
+            // TODO: We should calculate this once, and start a coroutine and just wait.
+
+            var targetLocalPosition = new Vector3
             {
                 x = X.Evaluate(playTime),
                 y = Y.Evaluate(playTime),
                 z = Z.Evaluate(playTime)
             };
 
-            var rotation = new Quaternion
+            var targetLocalRotation = new Quaternion
             {
                 x = RotX.Evaluate(playTime),
                 y = RotY.Evaluate(playTime),
@@ -218,12 +220,13 @@ namespace VamTimeline
                 w = RotW.Evaluate(playTime)
             };
 
-            Controller.transform.localPosition = Vector3.MoveTowards(Controller.transform.localPosition, position, maxDistanceDelta);
-            Controller.transform.localRotation = Quaternion.RotateTowards(Controller.transform.localRotation, rotation, maxDegreesDelta);
+            Controller.transform.localPosition = Vector3.MoveTowards(Controller.transform.localPosition, targetLocalPosition, maxDistanceDelta);
+            Controller.transform.localRotation = Quaternion.RotateTowards(Controller.transform.localRotation, targetLocalRotation, maxRadiansDelta);
 
-            var posDistance = Vector3.Distance(Controller.transform.localPosition, position);
-            var rotDot = Mathf.Abs(Quaternion.Dot(Controller.transform.localRotation, rotation));
-            return posDistance < 0.001f && rotDot >= 0.999f;
+            var posDistance = Vector3.Distance(Controller.transform.localPosition, targetLocalPosition);
+            // NOTE: We skip checking for rotation reached because in some cases we just never get even near the target rotation.
+            // var rotDistance = Quaternion.Dot(Controller.transform.localRotation, targetLocalRotation);
+            return posDistance < 0.01f;
         }
 
         #endregion

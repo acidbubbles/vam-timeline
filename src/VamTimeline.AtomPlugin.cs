@@ -206,6 +206,9 @@ namespace VamTimeline
 
             PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
+                if (Animation.IsInterpolating()) {
+                    return;
+                }
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
                 AnimationFrameUpdated();
@@ -214,7 +217,7 @@ namespace VamTimeline
 
             PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (Animation.IsPlaying()) return;
+                if (Animation.IsPlaying() || Animation.IsInterpolating()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
                 AnimationFrameUpdated();
@@ -405,6 +408,7 @@ namespace VamTimeline
                 Animation.Initialize();
                 AnimationModified();
                 AnimationFrameUpdated();
+                UpdateTime(0f, false);
             }
             catch (Exception exc)
             {
@@ -477,7 +481,6 @@ namespace VamTimeline
             }
         }
 
-        private IEnumerator _reEnableCollisions = null;
         private void UpdateTime(float time, bool snap)
         {
             time = time.Snap(snap ? SnapJSON.val : 0f);
@@ -485,27 +488,9 @@ namespace VamTimeline
             if (Animation.Current.Loop && time >= Animation.Current.AnimationLength - float.Epsilon)
                 time = Animation.Current.AnimationLength - SnapJSON.val;
 
-            if (containingAtom.collisionEnabledJSON.val == true && Math.Abs(Animation.Time - time) > 1f)
-            {
-                if (_reEnableCollisions != null)
-                    StopCoroutine(_reEnableCollisions);
-                else
-                    containingAtom.collisionEnabledJSON.val = false;
-                _reEnableCollisions = ReEnableCollisions();
-                StartCoroutine(_reEnableCollisions);
-            }
-
             Animation.Time = time;
-            if (Animation.Current.AnimationPattern != null)
-                Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
-            AnimationFrameUpdated();
-        }
 
-        private IEnumerator ReEnableCollisions()
-        {
-            yield return new WaitForSeconds(0.3f);
-            containingAtom.collisionEnabledJSON.val = true;
-            _reEnableCollisions = null;
+            AnimationFrameUpdated();
         }
 
         private void NextFrame()

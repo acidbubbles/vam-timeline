@@ -21,7 +21,6 @@ namespace VamTimeline
         private string _nextAnimationName;
 
         public AnimationClip Clip { get; }
-        public AnimationPattern AnimationPattern { get; set; }
         public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
         public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
         public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());

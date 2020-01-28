@@ -62,16 +62,6 @@ namespace VamTimeline
 
         private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
-            var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
-            if (!string.IsNullOrEmpty(animationPatternUID))
-            {
-                var animationPattern = SuperController.singleton.GetAtomByUid(animationPatternUID)?.GetComponentInChildren<AnimationPattern>();
-                if (animationPattern == null)
-                    SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.AnimationName}' of atom '{_atom.uid}' was not found in scene");
-                else
-                    clip.AnimationPattern = animationPattern;
-            }
-
             JSONArray controllersJSON = clipJSON["Controllers"].AsArray;
             if (controllersJSON != null)
             {
@@ -284,9 +274,6 @@ namespace VamTimeline
 
         private void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
-            if (clip.AnimationPattern != null)
-                clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);
-
             var controllersJSON = new JSONArray();
             clipJSON.Add("Controllers", controllersJSON);
             foreach (var controller in clip.TargetControllers)

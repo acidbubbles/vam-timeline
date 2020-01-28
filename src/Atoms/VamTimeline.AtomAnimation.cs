@@ -14,7 +14,8 @@ namespace VamTimeline
     public class AtomAnimation
     {
         public const float PaddingBeforeLoopFrame = 0.001f;
-
+        public const float InterpolationMaxDistanceDelta = 1.5f;
+        public const float InterpolationMaxAngleDelta = 180.0f;
         private readonly Atom _atom;
         private readonly Animation _animation;
         private AnimationState _animState;
@@ -67,8 +68,6 @@ namespace VamTimeline
                     var animState = _animation[clip.AnimationName];
                     if (animState != null)
                         animState.speed = _speed;
-                    if (clip.AnimationPattern != null)
-                        clip.AnimationPattern.SetFloatParamValue("speed", value);
                 }
             }
         }
@@ -160,21 +159,11 @@ namespace VamTimeline
         {
             if (Current == null) return;
             PlayedAnimation = Current.AnimationName;
-            // TODO: Should we play immediately when interpolating?
             _isInterpolating = false;
             _isPlaying = true;
-            _playTime = 0;
             if (_animState != null)
-            {
-                _animState.time = 0;
                 _animation.Play(Current.AnimationName);
-            }
-            if (Current.AnimationPattern)
-            {
-                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
-                Current.AnimationPattern.ResetAndPlay();
-            }
-            DetermineNextAnimation(0f);
+            DetermineNextAnimation(_playTime);
         }
 
         private void DetermineNextAnimation(float time)
@@ -252,22 +241,27 @@ namespace VamTimeline
                 var allControllersReached = true;
                 foreach (var target in Current.TargetControllers)
                 {
-                    var controllerReached = target.Interpolate(_playTime, 1.5f * UnityEngine.Time.deltaTime, 90f * UnityEngine.Time.deltaTime);
+                    var controllerReached = target.Interpolate(_playTime, InterpolationMaxDistanceDelta * UnityEngine.Time.deltaTime, InterpolationMaxAngleDelta * UnityEngine.Time.deltaTime);
                     if (!controllerReached) allControllersReached = false;
                 }
 
                 if (allControllersReached)
                 {
-                    if (_animState != null)
-                    {
-                        _animState.enabled = true;
-                        _animState.weight = 1f;
-                        _animation.Sample();
-                        _animState.enabled = false;
-                    }
+                    SampleControllers();
                     _isInterpolating = false;
                 }
             }
+        }
+
+        private void SampleControllers()
+        {
+            if (_animState == null)
+                return;
+
+            _animState.enabled = true;
+            _animState.weight = 1f;
+            _animation.Sample();
+            _animState.enabled = false;
         }
 
         public void Stop()
@@ -275,13 +269,6 @@ namespace VamTimeline
             if (Current == null) return;
             _isPlaying = false;
             _animation.Stop();
-            foreach (var clip in Clips)
-            {
-                if (clip.AnimationPattern)
-                {
-                    clip.AnimationPattern.SetBoolParamValue("loopOnce", true);
-                }
-            }
             _blendingTimeLeft = 0;
             _blendingDuration = 0;
             _blendingClip = null;
@@ -391,11 +378,6 @@ namespace VamTimeline
                     _animation.Blend(Current.AnimationName, 0f, Current.BlendDuration);
                     _animation.Blend(animationName, 1f, Current.BlendDuration);
                 }
-                if (Current.AnimationPattern != null)
-                {
-                    // Let the loop finish during the transition
-                    Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
-                }
                 if (_blendingClip != null)
                 {
                     // TODO: Fade multiple blending clips
@@ -417,12 +399,6 @@ namespace VamTimeline
             }
             else
                 Time = 0f;
-
-            if (_isPlaying && Current.AnimationPattern != null)
-            {
-                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
-                Current.AnimationPattern.ResetAndPlay();
-            }
         }
     }
 }
