@@ -19,6 +19,7 @@ namespace VamTimeline
         private readonly Animation _animation;
         private AnimationState _animState;
         private bool _isPlaying;
+        private bool _isInterpolating;
         private float _playTime;
         private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
@@ -45,19 +46,9 @@ namespace VamTimeline
                 if (Current == null) return;
                 SampleParamsAnimation();
                 if (_animState != null)
-                {
-                    if (!_isPlaying)
-                    {
-                        _animState.enabled = true;
-                        _animState.weight = 1f;
-                    }
                     _animState.time = value;
-                    if (!_isPlaying)
-                    {
-                        _animation.Sample();
-                        _animState.enabled = false;
-                    }
-                }
+                if (!_isPlaying)
+                    _isInterpolating = true;
             }
         }
 
@@ -169,6 +160,8 @@ namespace VamTimeline
         {
             if (Current == null) return;
             PlayedAnimation = Current.AnimationName;
+            // TODO: Should we play immediately when interpolating?
+            _isInterpolating = false;
             _isPlaying = true;
             _playTime = 0;
             if (_animState != null)
@@ -243,15 +236,36 @@ namespace VamTimeline
                 }
 
                 SampleParamsAnimation();
-            }
 
-            if (_nextAnimationTime > 0 + float.Epsilon && _playTime >= _nextAnimationTime)
-            {
-                // TODO: Keep only the name or make a ChangeAnimation overload
-                var nextAnimation = _nextAnimation;
-                if (nextAnimation != null)
+                if (_nextAnimationTime > 0 + float.Epsilon && _playTime >= _nextAnimationTime)
                 {
-                    ChangeAnimation(nextAnimation);
+                    // TODO: Keep only the name or make a ChangeAnimation overload
+                    var nextAnimation = _nextAnimation;
+                    if (nextAnimation != null)
+                    {
+                        ChangeAnimation(nextAnimation);
+                    }
+                }
+            }
+            else if (_isInterpolating)
+            {
+                var allControllersReached = true;
+                foreach (var target in Current.TargetControllers)
+                {
+                    var controllerReached = target.Interpolate(_playTime, 1.5f * UnityEngine.Time.deltaTime, 90f * UnityEngine.Time.deltaTime);
+                    if (!controllerReached) allControllersReached = false;
+                }
+
+                if (allControllersReached)
+                {
+                    if (_animState != null)
+                    {
+                        _animState.enabled = true;
+                        _animState.weight = 1f;
+                        _animation.Sample();
+                        _animState.enabled = false;
+                    }
+                    _isInterpolating = false;
                 }
             }
         }
@@ -284,6 +298,11 @@ namespace VamTimeline
         public bool IsPlaying()
         {
             return _isPlaying;
+        }
+
+        public bool IsInterpolating()
+        {
+            return _isInterpolating;
         }
 
         public void RebuildAnimation()

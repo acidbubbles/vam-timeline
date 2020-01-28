@@ -86,14 +86,15 @@ namespace VamTimeline
 
             try
             {
+                Animation.Update();
+
                 if (Animation.IsPlaying())
                 {
                     var time = Animation.Time;
                     if (time != ScrubberJSON.val)
                         ScrubberJSON.valNoCallback = time;
-                    // Note: We don't update SetTime in real time, it's not necessary
-                    UpdatePlaying();
-                    // RenderState() // In practice, we don't see anything useful
+
+                    _ui.UpdatePlaying();
                 }
                 else if (LockedJSON != null && !LockedJSON.val)
                 {
@@ -104,12 +105,6 @@ namespace VamTimeline
             {
                 SuperController.LogError("VamTimeline.AtomPlugin.Update: " + exc);
             }
-        }
-
-        private void UpdatePlaying()
-        {
-            Animation.Update();
-            _ui.UpdatePlaying();
         }
 
         private void UpdateNotPlaying()

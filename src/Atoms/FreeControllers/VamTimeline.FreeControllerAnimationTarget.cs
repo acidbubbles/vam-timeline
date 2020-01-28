@@ -198,6 +198,36 @@ namespace VamTimeline
 
         #endregion
 
+        #region Interpolation
+
+
+        public bool Interpolate(float playTime, float maxDistanceDelta, float maxDegreesDelta)
+        {
+            var position = new Vector3
+            {
+                x = X.Evaluate(playTime),
+                y = Y.Evaluate(playTime),
+                z = Z.Evaluate(playTime)
+            };
+
+            var rotation = new Quaternion
+            {
+                x = RotX.Evaluate(playTime),
+                y = RotY.Evaluate(playTime),
+                z = RotZ.Evaluate(playTime),
+                w = RotW.Evaluate(playTime)
+            };
+
+            Controller.transform.localPosition = Vector3.MoveTowards(Controller.transform.localPosition, position, maxDistanceDelta);
+            Controller.transform.localRotation = Quaternion.RotateTowards(Controller.transform.localRotation, rotation, maxDegreesDelta);
+
+            var posDistance = Vector3.Distance(Controller.transform.localPosition, position);
+            var rotDot = Mathf.Abs(Quaternion.Dot(Controller.transform.localRotation, rotation));
+            return posDistance < 0.001f && rotDot >= 0.999f;
+        }
+
+        #endregion
+
         #region  Rendering
 
         public void RenderDebugInfo(StringBuilder display, float time)
