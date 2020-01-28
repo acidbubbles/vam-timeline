@@ -34,6 +34,10 @@ See below for screenshots, or check out this video walkthrough:
 
 [![VamTimeline Video Walkthrough](https://img.youtube.com/vi/WgMns-oJWdo/0.jpg)](https://www.youtube.com/watch?v=WgMns-oJWdo)
 
+The well-known /u/JustLookingForNothin also made a very nice and detailed walkthrough
+
+[![VamTimeline Video Walkthrough](https://img.youtube.com/vi/IzLmwfxF1Aw/0.jpg)](https://www.youtube.com/watch?v=IzLmwfxF1Aw)
+
 ### Controller filtering
 
 To allow moving between the frames of a specific controller instead of stopping at every frame of every controller, you canuse the `Filter Target` drop down. This will also make the `Change Curve`, `Cut`, `Copy` and `Paste` features only affect a single frame of a single controller, instead of all affected controller of that frame. Note that this will still allow you to move and create frames for other controllers.
