@@ -199,7 +199,7 @@ namespace VamTimeline
 
         public void CropOrExtendLengthEnd(float animationLength)
         {
-            if (animationLength == AnimationLength)
+            if (AnimationLength.IsSameFrame(animationLength))
                 return;
             AnimationLength = animationLength;
             foreach (var target in AllTargets)
@@ -212,7 +212,7 @@ namespace VamTimeline
 
         public void CropOrExtendLengthBegin(float animationLength)
         {
-            if (animationLength == AnimationLength)
+            if (AnimationLength.IsSameFrame(animationLength))
                 return;
             AnimationLength = animationLength;
             foreach (var target in AllTargets)
@@ -312,6 +312,9 @@ namespace VamTimeline
         {
             if (Loop && time >= AnimationLength - float.Epsilon)
                 time = 0f;
+
+            time = time.Snap();
+
             foreach (var entry in clipboard.Controllers)
             {
                 var target = TargetControllers.FirstOrDefault(c => c.Controller == entry.Controller);
