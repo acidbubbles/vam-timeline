@@ -68,6 +68,8 @@ namespace VamTimeline
                     var animState = _animation[clip.AnimationName];
                     if (animState != null)
                         animState.speed = _speed;
+                    if (clip.AnimationPattern != null)
+                        clip.AnimationPattern.SetFloatParamValue("speed", value);
                 }
             }
         }
@@ -163,6 +165,11 @@ namespace VamTimeline
             _isPlaying = true;
             if (_animState != null)
                 _animation.Play(Current.AnimationName);
+            if (Current.AnimationPattern)
+            {
+                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
+                Current.AnimationPattern.ResetAndPlay();
+            }
             DetermineNextAnimation(_playTime);
         }
 
@@ -269,6 +276,13 @@ namespace VamTimeline
             if (Current == null) return;
             _isPlaying = false;
             _animation.Stop();
+            foreach (var clip in Clips)
+            {
+                if (clip.AnimationPattern)
+                {
+                    clip.AnimationPattern.SetBoolParamValue("loopOnce", true);
+                }
+            }
             _blendingTimeLeft = 0;
             _blendingDuration = 0;
             _blendingClip = null;
@@ -378,6 +392,11 @@ namespace VamTimeline
                     _animation.Blend(Current.AnimationName, 0f, Current.BlendDuration);
                     _animation.Blend(animationName, 1f, Current.BlendDuration);
                 }
+                if (Current.AnimationPattern != null)
+                {
+                    // Let the loop finish during the transition
+                    Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
+                }
                 if (_blendingClip != null)
                 {
                     // TODO: Fade multiple blending clips
@@ -399,6 +418,12 @@ namespace VamTimeline
             }
             else
                 Time = 0f;
+
+            if (_isPlaying && Current.AnimationPattern != null)
+            {
+                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
+                Current.AnimationPattern.ResetAndPlay();
+            }
         }
     }
 }

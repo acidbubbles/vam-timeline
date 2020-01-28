@@ -36,6 +36,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _addControllerListJSON;
         private JSONStorableAction _toggleControllerJSON;
         private UIDynamicPopup _addControllerUI;
+        private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _addStorableListJSON;
         private JSONStorableStringChooser _addParamListJSON;
         private UIDynamicPopup _addFloatParamListUI;
@@ -72,6 +73,8 @@ namespace VamTimeline
             InitControllersUI();
 
             CreateSpacer(true);
+
+            InitAnimationPatternLinkUI();
 
             CreateSpacer(true);
 
@@ -276,6 +279,19 @@ namespace VamTimeline
                 if (!fc.name.EndsWith("Control")) continue;
                 yield return fc.name;
             }
+        }
+
+        private void InitAnimationPatternLinkUI()
+        {
+            _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid))
+            {
+                isStorable = false
+            };
+
+            var linkedAnimationPatternUI = Plugin.CreateScrollablePopup(_linkedAnimationPatternJSON, true);
+            linkedAnimationPatternUI.popupPanelHeight = 800f;
+            linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
+            _linkedStorables.Add(_linkedAnimationPatternJSON);
         }
 
         private void InitFloatParamsUI()
@@ -578,6 +594,29 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
+        private void LinkAnimationPattern(string uid)
+        {
+            if (string.IsNullOrEmpty(uid))
+            {
+                Plugin.Animation.Current.AnimationPattern = null;
+                return;
+            }
+            var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
+            if (animationPattern == null)
+            {
+                SuperController.LogError($"VamTimeline: Could not find Animation Pattern '{uid}'");
+                return;
+            }
+            Plugin.Animation.Current.AnimationPattern = animationPattern;
+            animationPattern.SetBoolParamValue("autoPlay", false);
+            animationPattern.SetBoolParamValue("pause", false);
+            animationPattern.SetBoolParamValue("loop", false);
+            animationPattern.SetBoolParamValue("loopOnce", false);
+            animationPattern.SetFloatParamValue("speed", Plugin.Animation.Speed);
+            animationPattern.ResetAnimation();
+            Plugin.AnimationModified();
+        }
+
         private void AddAnimatedController()
         {
             try
@@ -681,6 +720,7 @@ namespace VamTimeline
             _nextAnimationJSON.valNoCallback = current.NextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.NextAnimationTime;
+            _linkedAnimationPatternJSON.valNoCallback = current.AnimationPattern?.containingAtom.uid ?? "";
             UpdateNextAnimationPreview();
         }
 

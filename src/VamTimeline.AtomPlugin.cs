@@ -489,6 +489,8 @@ namespace VamTimeline
                 time = Animation.Current.AnimationLength - SnapJSON.val;
 
             Animation.Time = time;
+            if (Animation.Current.AnimationPattern != null)
+                Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
 
             AnimationFrameUpdated();
         }
