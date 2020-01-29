@@ -54,7 +54,6 @@ namespace VamTimeline
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableBool AutoKeyframeAllControllersJSON { get; private set; }
-        public JSONStorableBool AutoPlayJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -305,15 +304,6 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-
-            AutoPlayJSON = new JSONStorableBool("Auto Play", false, (bool val) =>
-            {
-                if (val) PlayIfNotPlayingJSON.actionCallback();
-            })
-            {
-                isStorable = true
-            };
-            RegisterBool(AutoPlayJSON);
         }
 
         private IEnumerator DeferredInit()
@@ -322,7 +312,12 @@ namespace VamTimeline
             if (Animation != null)
             {
                 _saveEnabled = true;
-                if (AutoPlayJSON.val) PlayIfNotPlayingJSON.actionCallback();
+                var autoPlayClip = Animation.Clips.FirstOrDefault(c => c.AutoPlay);
+                if (autoPlayClip != null)
+                {
+                    ChangeAnimation(autoPlayClip.AnimationName);
+                    PlayIfNotPlayingJSON.actionCallback();
+                }
                 yield break;
             }
             containingAtom.RestoreFromLast(this);

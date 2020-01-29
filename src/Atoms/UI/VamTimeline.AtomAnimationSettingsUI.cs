@@ -34,6 +34,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
+        private JSONStorableBool _autoPlayJSON;
         private JSONStorableStringChooser _addControllerListJSON;
         private JSONStorableAction _toggleControllerJSON;
         private UIDynamicPopup _addControllerUI;
@@ -210,6 +211,18 @@ namespace VamTimeline
             var nextAnimationResultUI = Plugin.CreateTextField(_nextAnimationPreviewJSON);
             nextAnimationResultUI.height = 30f;
             _linkedStorables.Add(_nextAnimationPreviewJSON);
+
+            _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
+            {
+                foreach (var c in Plugin.Animation.Clips)
+                    c.AutoPlay = false;
+                Plugin.Animation.Current.AutoPlay = true;
+            })
+            {
+                isStorable = false
+            };
+            Plugin.CreateToggle(_autoPlayJSON);
+            _linkedStorables.Add(_autoPlayJSON);
 
             UpdateNextAnimationPreview();
         }
@@ -746,6 +759,7 @@ namespace VamTimeline
             _nextAnimationJSON.valNoCallback = current.NextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.NextAnimationTime;
+            _autoPlayJSON.valNoCallback = current.AutoPlay;
             _linkedAnimationPatternJSON.valNoCallback = current.AnimationPattern?.containingAtom.uid ?? "";
             UpdateNextAnimationPreview();
         }

@@ -28,6 +28,7 @@ namespace VamTimeline
         public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; set; }
         public float AnimationLength { get; set; } = DefaultAnimationLength;
+        public bool AutoPlay { get; set; } = false;
         public bool Loop
         {
             get
