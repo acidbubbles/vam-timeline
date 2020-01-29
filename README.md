@@ -84,7 +84,7 @@ Note that all specified atoms must contain the same animations, and animations m
 
 ### Keyboard shortcuts
 
-When the Controller Plugin has been added, you can use the left/right keyboard arrows to move between keyframes, up/down to move between filter targets, and spacebar to play/stop the animation.
+I recommend [LFE's Keyboard Shortcuts plugin](https://github.com/lfe999/KeyboardShortcuts) to control keyframes.
 
 ### Interacting with scenes
 
