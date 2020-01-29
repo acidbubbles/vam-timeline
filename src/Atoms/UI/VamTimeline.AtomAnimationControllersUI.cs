@@ -16,8 +16,8 @@ namespace VamTimeline
 
         private class TargetRef
         {
-            internal JSONStorableBool KeyframeJSON;
-            internal FreeControllerAnimationTarget Target;
+            public JSONStorableBool KeyframeJSON;
+            public FreeControllerAnimationTarget Target;
         }
 
         private List<TargetRef> _targets;

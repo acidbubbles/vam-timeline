@@ -18,8 +18,8 @@ namespace VamTimeline
         private class TargetRef
         {
             public JSONStorableFloat FloatParamProxyJSON;
-            internal JSONStorableBool KeyframeJSON;
-            internal FloatParamAnimationTarget Target;
+            public JSONStorableBool KeyframeJSON;
+            public FloatParamAnimationTarget Target;
         }
 
         private List<TargetRef> _targets;
