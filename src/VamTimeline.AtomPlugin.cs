@@ -207,7 +207,6 @@ namespace VamTimeline
             PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
                 if (Animation == null) return;
-                if (Animation.IsInterpolating()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
                 AnimationFrameUpdated();
@@ -217,7 +216,7 @@ namespace VamTimeline
             PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
                 if (Animation == null) return;
-                if (Animation.IsPlaying() || Animation.IsInterpolating()) return;
+                if (Animation.IsPlaying()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
                 AnimationFrameUpdated();
@@ -312,12 +311,7 @@ namespace VamTimeline
             if (Animation != null)
             {
                 _saveEnabled = true;
-                var autoPlayClip = Animation.Clips.FirstOrDefault(c => c.AutoPlay);
-                if (autoPlayClip != null)
-                {
-                    ChangeAnimation(autoPlayClip.AnimationName);
-                    PlayIfNotPlayingJSON.actionCallback();
-                }
+                StartAutoPlay();
                 yield break;
             }
             containingAtom.RestoreFromLast(this);
@@ -337,6 +331,16 @@ namespace VamTimeline
             finally
             {
                 _saveEnabled = true;
+            }
+        }
+
+        private void StartAutoPlay()
+        {
+            var autoPlayClip = Animation.Clips.FirstOrDefault(c => c.AutoPlay);
+            if (autoPlayClip != null)
+            {
+                ChangeAnimation(autoPlayClip.AnimationName);
+                PlayIfNotPlayingJSON.actionCallback();
             }
         }
 

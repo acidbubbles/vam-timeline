@@ -21,6 +21,7 @@ namespace VamTimeline
         private AnimationState _animState;
         private bool _isPlaying;
         private bool _isInterpolating;
+        private bool _playQueuedAfterInterpolation;
         private float _playTime;
         private AtomAnimationClip _blendingClip;
         private float _blendingTimeLeft;
@@ -160,8 +161,12 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
+            if (_isInterpolating)
+            {
+                _playQueuedAfterInterpolation = true;
+                return;
+            }
             PlayedAnimation = Current.AnimationName;
-            _isInterpolating = false;
             _isPlaying = true;
             if (_animState != null)
                 _animation.Play(Current.AnimationName);
@@ -254,8 +259,17 @@ namespace VamTimeline
 
                 if (allControllersReached)
                 {
-                    SampleControllers();
                     _isInterpolating = false;
+                    if (_playQueuedAfterInterpolation)
+                    {
+                        _playQueuedAfterInterpolation = false;
+                        Play();
+                    }
+                    else
+                    {
+                        SampleParamsAnimation();
+                        SampleControllers();
+                    }
                 }
             }
         }
@@ -273,8 +287,9 @@ namespace VamTimeline
 
         public void Stop()
         {
-            if (Current == null) return;
+            _playQueuedAfterInterpolation = false;
             _isPlaying = false;
+            if (Current == null) return;
             _animation.Stop();
             foreach (var clip in Clips)
             {
@@ -298,7 +313,7 @@ namespace VamTimeline
 
         public bool IsPlaying()
         {
-            return _isPlaying;
+            return _isPlaying || _playQueuedAfterInterpolation;
         }
 
         public bool IsInterpolating()
