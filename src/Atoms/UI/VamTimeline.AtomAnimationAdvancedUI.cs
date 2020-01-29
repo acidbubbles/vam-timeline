@@ -61,6 +61,12 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
+            var moveAnimUpUI = Plugin.CreateButton("Reorder Animation (Move Up)", true);
+            moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
+            _components.Add(moveAnimUpUI);
+
+            CreateSpacer(true);
+
             _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
             {
                 isStorable = false
@@ -77,10 +83,6 @@ namespace VamTimeline
             _components.Add(importUI);
 
             // TODO: Keyframe all animatable morphs
-
-            // TODO: Copy all missing controllers and morphs on every animation
-
-            // TODO: Import / Export animation(s) to another atom and create an atom just to store and share animations
         }
 
         private class FloatParamRef
@@ -115,6 +117,17 @@ namespace VamTimeline
                 }
                 clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
             }
+        }
+
+        private void ReorderAnimationMoveUp()
+        {
+            var anim = Plugin.Animation.Current;
+            if (anim == null) return;
+            var idx = Plugin.Animation.Clips.IndexOf(anim);
+            if (idx <= 0) return;
+            Plugin.Animation.Clips.RemoveAt(idx);
+            Plugin.Animation.Clips.Insert(0, anim);
+            Plugin.AnimationModified();
         }
 
         private void Export()
