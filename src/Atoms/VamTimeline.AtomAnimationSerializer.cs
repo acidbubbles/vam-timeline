@@ -40,9 +40,7 @@ namespace VamTimeline
             {
                 string animationName = clipJSON["AnimationName"].Value;
                 if (animation.Clips.Any(c => c.AnimationName == animationName))
-                {
                     animation.Clips.Remove(animation.Clips.First(c => c.AnimationName == animationName));
-                }
                 var clip = new AtomAnimationClip(animationName)
                 {
                     BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),

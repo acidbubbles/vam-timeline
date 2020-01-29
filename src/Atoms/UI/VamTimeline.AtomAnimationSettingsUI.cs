@@ -331,7 +331,8 @@ namespace VamTimeline
             foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs().OrderBy(s => s))
             {
                 var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
-                if ((storable?.GetFloatParamNames()?.Count ?? 0) > 0)
+                if (storable == null) continue;
+                if (storable.GetFloatParamNames().Count > 0)
                     yield return storableId;
             }
         }

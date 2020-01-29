@@ -363,10 +363,8 @@ namespace VamTimeline
                 if (_mainLinkedAnimation == null) return;
 
                 var scrubber = _mainLinkedAnimation.Scrubber;
-                var isPlaying = false;
                 if (scrubber != null && scrubber.val != _scrubberJSON.val)
                 {
-                    isPlaying = true;
                     _scrubberJSON.valNoCallback = scrubber.val;
                 }
             }
