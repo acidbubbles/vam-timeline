@@ -330,6 +330,7 @@ namespace VamTimeline
         {
             foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs().OrderBy(s => s))
             {
+                if (storableId.StartsWith("hairTool")) continue;
                 var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
                 if (storable == null) continue;
                 if (storable.GetFloatParamNames().Count > 0)
