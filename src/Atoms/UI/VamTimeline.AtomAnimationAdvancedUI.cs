@@ -65,6 +65,10 @@ namespace VamTimeline
             moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
             _components.Add(moveAnimUpUI);
 
+            var deleteAnimationUI = Plugin.CreateButton("Delete Animation", true);
+            deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
+            _components.Add(deleteAnimationUI);
+
             CreateSpacer(true);
 
             _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
@@ -117,6 +121,28 @@ namespace VamTimeline
                 }
                 clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
             }
+        }
+
+        private void DeleteAnimation()
+        {
+            var anim = Plugin.Animation.Current;
+            if (anim == null) return;
+            if (Plugin.Animation.Clips.Count >= 1)
+            {
+                SuperController.LogError("VamTimeline: Cannot delete the only animation.");
+                return;
+            }
+            Plugin.Animation.Clips.Remove(anim);
+            foreach (var clip in Plugin.Animation.Clips)
+            {
+                if (clip.NextAnimationName != null)
+                {
+                    clip.NextAnimationName = null;
+                    clip.NextAnimationTime = 0;
+                }
+            }
+            Plugin.Animation.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
+            Plugin.AnimationModified();
         }
 
         private void ReorderAnimationMoveUp()
