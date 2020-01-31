@@ -72,7 +72,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Init: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Init)}: " + exc);
             }
         }
 
@@ -103,7 +103,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Update: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Update)}: " + exc);
             }
         }
 
@@ -158,7 +158,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.OnEnable: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnEnable)}: " + exc);
             }
         }
 
@@ -170,7 +170,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.OnDisable: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnDisable)}: " + exc);
             }
         }
 
@@ -356,7 +356,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.GetJSON (Stop): " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(GetJSON)} (Stop): " + exc);
             }
 
             var json = base.GetJSON(includePhysical, includeAppearance, forceStore);
@@ -368,7 +368,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.GetJSON (Serialize): " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(GetJSON)} (Serialize): " + exc);
             }
 
             return json;
@@ -401,7 +401,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.RestoreFromJSON: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(RestoreFromJSON)}: " + exc);
             }
 
         }
@@ -422,7 +422,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Load: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Load)}: " + exc);
             }
             finally
             {
@@ -446,7 +446,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.SaveState: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Save)}: " + exc);
             }
         }
 
@@ -483,7 +483,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.ChangeAnimation: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ChangeAnimation)}: " + exc);
             }
             finally
             {
@@ -534,7 +534,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Cut: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Cut)}: " + exc);
             }
         }
 
@@ -548,7 +548,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Copy: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Copy)}: " + exc);
             }
         }
 
@@ -572,7 +572,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.Paste: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Paste)}: " + exc);
             }
         }
 
@@ -705,7 +705,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.AnimationModified: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(AnimationModified)}: " + exc);
             }
         }
 
@@ -734,7 +734,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomPlugin.AnimationFrameUpdated: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(AnimationFrameUpdated)}: " + exc);
             }
         }
 

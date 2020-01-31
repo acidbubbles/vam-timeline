@@ -107,7 +107,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while removing {_current.Name}): " + exc.ToString());
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.Name}): {exc}");
                 }
 
                 _current = null;
@@ -148,7 +148,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while initializing {_current.Name}): " + exc.ToString());
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
                 }
 
                 try
@@ -157,7 +157,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while triggering modified event on {_current.Name}): " + exc.ToString());
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
                 }
 
                 // Hack to avoid having the drop down shown underneath new controls
@@ -172,7 +172,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.AtomAnimationUIManager.RefreshCurrentUIDeferred (while updating {_current.Name}): " + exc.ToString());
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while updating {_current.Name}): {exc}");
                 }
             }
 

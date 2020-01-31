@@ -48,7 +48,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.ControllerPlugin.Init: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(Init)}: " + exc);
             }
         }
 
@@ -217,7 +217,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.ControllerPlugin.OnEnable: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(OnEnable)}: " + exc);
             }
         }
 
@@ -233,7 +233,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.ControllerPlugin.OnDisable: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(OnDisable)}: " + exc);
             }
         }
 
@@ -268,7 +268,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.ControllerPlugin.LinkAtom: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(LinkAtom)}: " + exc);
             }
         }
 
@@ -370,7 +370,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.ControllerPlugin.Update: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(Update)}: " + exc);
             }
         }
 

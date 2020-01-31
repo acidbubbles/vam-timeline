@@ -97,63 +97,84 @@ namespace VamTimeline
 
         private void EnableAllTargets()
         {
-            var allControllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.Controller).Distinct().ToList();
-            var h = new HashSet<JSONStorableFloat>();
-            var allFloatParams = Plugin.Animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.FloatParam)).Select(t => new FloatParamRef { Storable = t.Storable, FloatParam = t.FloatParam }).ToList();
-
-            foreach (var clip in Plugin.Animation.Clips)
+            try
             {
-                foreach (var controller in allControllers)
-                {
-                    if (!clip.TargetControllers.Any(t => t.Controller == controller))
-                    {
-                        clip.Add(controller);
-                    }
-                }
-                clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+                var allControllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.Controller).Distinct().ToList();
+                var h = new HashSet<JSONStorableFloat>();
+                var allFloatParams = Plugin.Animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.FloatParam)).Select(t => new FloatParamRef { Storable = t.Storable, FloatParam = t.FloatParam }).ToList();
 
-                foreach (var floatParamRef in allFloatParams)
+                foreach (var clip in Plugin.Animation.Clips)
                 {
-                    if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
+                    foreach (var controller in allControllers)
                     {
-                        clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
+                        if (!clip.TargetControllers.Any(t => t.Controller == controller))
+                        {
+                            clip.Add(controller);
+                        }
                     }
+                    clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+
+                    foreach (var floatParamRef in allFloatParams)
+                    {
+                        if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
+                        {
+                            clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
+                        }
+                    }
+                    clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
                 }
-                clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(EnableAllTargets)}: {exc}");
             }
         }
 
         private void DeleteAnimation()
         {
-            var anim = Plugin.Animation.Current;
-            if (anim == null) return;
-            if (Plugin.Animation.Clips.Count >= 1)
+            try
             {
-                SuperController.LogError("VamTimeline: Cannot delete the only animation.");
-                return;
-            }
-            Plugin.Animation.Clips.Remove(anim);
-            foreach (var clip in Plugin.Animation.Clips)
-            {
-                if (clip.NextAnimationName != null)
+                var anim = Plugin.Animation.Current;
+                if (anim == null) return;
+                if (Plugin.Animation.Clips.Count >= 1)
                 {
-                    clip.NextAnimationName = null;
-                    clip.NextAnimationTime = 0;
+                    SuperController.LogError("VamTimeline: Cannot delete the only animation.");
+                    return;
                 }
+                Plugin.Animation.Clips.Remove(anim);
+                foreach (var clip in Plugin.Animation.Clips)
+                {
+                    if (clip.NextAnimationName != null)
+                    {
+                        clip.NextAnimationName = null;
+                        clip.NextAnimationTime = 0;
+                    }
+                }
+                Plugin.Animation.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
+                Plugin.AnimationModified();
             }
-            Plugin.Animation.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
-            Plugin.AnimationModified();
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(DeleteAnimation)}: {exc}");
+            }
         }
 
         private void ReorderAnimationMoveUp()
         {
-            var anim = Plugin.Animation.Current;
-            if (anim == null) return;
-            var idx = Plugin.Animation.Clips.IndexOf(anim);
-            if (idx <= 0) return;
-            Plugin.Animation.Clips.RemoveAt(idx);
-            Plugin.Animation.Clips.Insert(0, anim);
-            Plugin.AnimationModified();
+            try
+            {
+                var anim = Plugin.Animation.Current;
+                if (anim == null) return;
+                var idx = Plugin.Animation.Clips.IndexOf(anim);
+                if (idx <= 0) return;
+                Plugin.Animation.Clips.RemoveAt(idx);
+                Plugin.Animation.Clips.Insert(0, anim);
+                Plugin.AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReorderAnimationMoveUp)}: {exc}");
+            }
         }
 
         private void Export()
@@ -234,7 +255,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline: Failed to import animation: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
             }
         }
 
@@ -262,23 +283,30 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomAnimationAdvancedUI: " + exc.ToString());
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(KeyframeCurrentPose)}: {exc}");
             }
         }
 
         private void Bake()
         {
-            var controllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(c => c.Controller).Distinct().ToList();
-            foreach (var mac in Plugin.ContainingAtom.motionAnimationControls)
+            try
             {
-                if (!controllers.Contains(mac.controller)) continue;
-                mac.armedForRecord = true;
+                var controllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(c => c.Controller).Distinct().ToList();
+                foreach (var mac in Plugin.ContainingAtom.motionAnimationControls)
+                {
+                    if (!controllers.Contains(mac.controller)) continue;
+                    mac.armedForRecord = true;
+                }
+
+                Plugin.Animation.Play();
+                SuperController.singleton.motionAnimationMaster.StartRecord();
+
+                Plugin.StartCoroutine(StopWhenPlaybackIsComplete());
             }
-
-            Plugin.Animation.Play();
-            SuperController.singleton.motionAnimationMaster.StartRecord();
-
-            Plugin.StartCoroutine(StopWhenPlaybackIsComplete());
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(Bake)}: {exc}");
+            }
         }
 
         private IEnumerator StopWhenPlaybackIsComplete()

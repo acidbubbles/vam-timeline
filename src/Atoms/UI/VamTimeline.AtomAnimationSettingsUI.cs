@@ -678,7 +678,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomAnimationSettingsUI.AddAnimatedController: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(AddAnimatedController)}: " + exc);
             }
         }
 
@@ -709,7 +709,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomAnimationSettingsUI.ToggleAnimatedFloatParam: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(AddAnimatedFloatParam)}: " + exc);
             }
         }
 
@@ -723,7 +723,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomAnimationSettingsUI.RemoveAnimatedController: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 
@@ -736,7 +736,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError("VamTimeline.AtomAnimationSettingsUI.RemoveAnimatedController: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 
