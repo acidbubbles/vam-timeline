@@ -208,6 +208,8 @@ namespace VamTimeline
         {
             try
             {
+                if (string.IsNullOrEmpty(path)) return;
+
                 if (!path.EndsWith(".json"))
                     path += ".json";
 
@@ -242,6 +244,8 @@ namespace VamTimeline
 
         private void ImportFileSelected(string path)
         {
+            if (string.IsNullOrEmpty(path)) return;
+
             var jc = SuperController.singleton.LoadJSON(path);
             if (jc["AtomType"]?.Value != Plugin.ContainingAtom.type)
             {
