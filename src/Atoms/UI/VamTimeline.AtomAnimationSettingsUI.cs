@@ -36,7 +36,6 @@ namespace VamTimeline
         private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableStringChooser _addControllerListJSON;
-        private JSONStorableAction _toggleControllerJSON;
         private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _addStorableListJSON;
@@ -199,7 +198,7 @@ namespace VamTimeline
             nextAnimationUI.popupPanelHeight = 260f;
             _linkedStorables.Add(_nextAnimationJSON);
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 1f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
+            _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {
                 valNoCallback = Plugin.Animation.Current.NextAnimationTime
             };
@@ -235,7 +234,7 @@ namespace VamTimeline
                 Plugin.Animation.Current.NextAnimationTime = 0;
                 _nextAnimationTimeJSON.valNoCallback = 0;
             }
-            Plugin.Animation.Current.NextAnimationTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration);
+            Plugin.Animation.Current.NextAnimationTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration).Snap();
             _nextAnimationTimeJSON.valNoCallback = Plugin.Animation.Current.NextAnimationTime;
         }
 
@@ -251,7 +250,7 @@ namespace VamTimeline
 
             if (!current.Loop)
             {
-                _nextAnimationPreviewJSON.val = $"Will loop once and blend at {Math.Round(current.AnimationLength - current.BlendDuration, 2)}s";
+                _nextAnimationPreviewJSON.val = $"Will play once and blend at {current.NextAnimationTime}s";
                 return;
             }
 
@@ -277,19 +276,18 @@ namespace VamTimeline
                 isStorable = false
             };
 
-            _toggleControllerJSON = new JSONStorableAction("Toggle Controller", () => AddAnimatedController());
-
             _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
             _addControllerUI.popupPanelHeight = 900f;
             _linkedStorables.Add(_addControllerListJSON);
 
             _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
-            _toggleControllerUI.button.onClick.AddListener(() => _toggleControllerJSON.actionCallback());
+            _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
             _components.Add(_toggleControllerUI);
         }
 
         private IEnumerable<string> GetEligibleFreeControllers()
         {
+            yield return "";
             foreach (var fc in Plugin.ContainingAtom.freeControllers)
             {
                 if (fc.name == "control") yield return fc.name;
@@ -319,7 +317,7 @@ namespace VamTimeline
                 isStorable = false
             };
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string>(), "", "Animate Param", (string name) => UIUpdated())
+            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param", (string name) => UIUpdated())
             {
                 isStorable = false
             };
@@ -341,6 +339,7 @@ namespace VamTimeline
 
         private IEnumerable<string> GetStorablesWithFloatParams()
         {
+            yield return "";
             foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs().OrderBy(s => s))
             {
                 if (storableId.StartsWith("hairTool")) continue;
@@ -569,8 +568,8 @@ namespace VamTimeline
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
             v = v.Snap();
-            if (!Plugin.Animation.Current.Loop && v > Plugin.Animation.Current.AnimationLength)
-                _blendDurationJSON.valNoCallback = v = Plugin.Animation.Current.AnimationLength;
+            if (!Plugin.Animation.Current.Loop && v >= (Plugin.Animation.Current.AnimationLength - 0.001f))
+                _blendDurationJSON.valNoCallback = v = (Plugin.Animation.Current.AnimationLength - 0.001f).Snap();
             Plugin.Animation.Current.BlendDuration = v;
             UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
@@ -595,6 +594,11 @@ namespace VamTimeline
                         target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.CopyPrevious;
                 }
             }
+            SetNextAnimationTime(
+                Plugin.Animation.Current.NextAnimationTime == 0
+                ? Plugin.Animation.Current.NextAnimationTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration
+                : Plugin.Animation.Current.NextAnimationTime
+            );
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
@@ -609,6 +613,11 @@ namespace VamTimeline
         private void ChangeNextAnimation(string val)
         {
             Plugin.Animation.Current.NextAnimationName = val;
+            SetNextAnimationTime(
+                Plugin.Animation.Current.NextAnimationTime == 0
+                ? Plugin.Animation.Current.NextAnimationTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration
+                : Plugin.Animation.Current.NextAnimationTime
+            );
             Plugin.AnimationModified();
         }
 
@@ -622,8 +631,9 @@ namespace VamTimeline
             }
             else if (!Plugin.Animation.Current.Loop)
             {
-                nextTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration;
+                nextTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration).Snap();
                 Plugin.Animation.Current.NextAnimationTime = nextTime;
+                _nextAnimationTimeJSON.valNoCallback = nextTime;
                 return;
             }
 
@@ -662,6 +672,7 @@ namespace VamTimeline
             try
             {
                 var uid = _addControllerListJSON.val;
+                if (string.IsNullOrEmpty(uid)) return;
                 var controller = Plugin.ContainingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
@@ -687,6 +698,8 @@ namespace VamTimeline
         {
             try
             {
+                if (string.IsNullOrEmpty(_addStorableListJSON.val)) return;
+
                 var storable = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val);
                 if (storable == null)
                 {
