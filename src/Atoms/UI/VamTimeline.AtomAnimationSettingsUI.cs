@@ -602,6 +602,7 @@ namespace VamTimeline
         private void SetEnsureQuaternionContinuity(bool val)
         {
             Plugin.Animation.Current.EnsureQuaternionContinuity = val;
+            Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
 
