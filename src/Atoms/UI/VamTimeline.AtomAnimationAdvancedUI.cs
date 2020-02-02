@@ -182,7 +182,7 @@ namespace VamTimeline
             try
             {
                 var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.defaultPath = SuperController.singleton.savesDirResolved + "animations";
+                fileBrowserUI.defaultPath =  SuperController.singleton.savesDirResolved;
                 SuperController.singleton.activeUI = SuperController.ActiveUI.None;
                 fileBrowserUI.SetTitle("Select Animation File");
                 fileBrowserUI.SetTextEntry(true);
@@ -229,7 +229,7 @@ namespace VamTimeline
             try
             {
                 var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.defaultPath = SuperController.singleton.savesDirResolved + "animations";
+                fileBrowserUI.defaultPath = SuperController.singleton.savesDirResolved;
                 SuperController.singleton.activeUI = SuperController.ActiveUI.None;
                 fileBrowserUI.SetTextEntry(false);
                 fileBrowserUI.keepOpen = false;
