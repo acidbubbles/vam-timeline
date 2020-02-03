@@ -9,7 +9,6 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
-
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
@@ -403,7 +402,6 @@ namespace VamTimeline
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(RestoreFromJSON)}: " + exc);
             }
-
         }
 
         public void Load(JSONNode animationJSON)
