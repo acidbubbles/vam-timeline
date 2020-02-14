@@ -53,6 +53,7 @@ namespace VamTimeline
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableBool AutoKeyframeAllControllersJSON { get; private set; }
+        public JSONStorableFloat SpeedJSON { get; private set; }
 
         // UI
         private AtomAnimationUIManager _ui;
@@ -302,6 +303,12 @@ namespace VamTimeline
             {
                 isStorable = false
             };
+
+            SpeedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
+            {
+                isStorable = false
+            };
+            RegisterFloat(SpeedJSON);
         }
 
         private IEnumerator DeferredInit()
@@ -603,6 +610,13 @@ namespace VamTimeline
             }
         }
 
+        private void UpdateAnimationSpeed(float v)
+        {
+            if (v < 0) SpeedJSON.valNoCallback = v = 0f;
+            Animation.Speed = v;
+            AnimationModified();
+        }
+
         #endregion
 
         #region State Rendering
@@ -682,6 +696,7 @@ namespace VamTimeline
                 ScrubberJSON.valNoCallback = Animation.Time;
                 TimeJSON.max = Animation.Current.AnimationLength;
                 TimeJSON.valNoCallback = Animation.Time;
+                SpeedJSON.valNoCallback = Animation.Speed;
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
                 AnimationJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
                 FilterAnimationTargetJSON.choices = new List<string> { StorableNames.AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
@@ -718,6 +733,7 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
                 TimeJSON.valNoCallback = time;
+                SpeedJSON.valNoCallback = Animation.Speed;
                 AnimationJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
                 _ui.AnimationFrameUpdated();

@@ -29,5 +29,6 @@ namespace VamTimeline
         public const string Locked = "Locked";
         public const string Display = "Display";
         public const string Import = "Import";
+        public const string Speed = "Speed";
     }
 }

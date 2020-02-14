@@ -88,6 +88,7 @@ namespace VamTimeline
         JSONStorableBool LockedJSON { get; }
         JSONStorableString DisplayJSON { get; }
         JSONStorableBool AutoKeyframeAllControllersJSON { get; }
+        JSONStorableFloat SpeedJSON { get; }
 
         void Load(JSONNode animationJSON);
         JSONClass GetAnimationJSON(string animationName = null);
