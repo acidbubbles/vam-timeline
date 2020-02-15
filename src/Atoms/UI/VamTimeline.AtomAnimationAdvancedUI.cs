@@ -136,7 +136,7 @@ namespace VamTimeline
             {
                 var anim = Plugin.Animation.Current;
                 if (anim == null) return;
-                if (Plugin.Animation.Clips.Count >= 1)
+                if (Plugin.Animation.Clips.Count == 1)
                 {
                     SuperController.LogError("VamTimeline: Cannot delete the only animation.");
                     return;
@@ -144,7 +144,7 @@ namespace VamTimeline
                 Plugin.Animation.Clips.Remove(anim);
                 foreach (var clip in Plugin.Animation.Clips)
                 {
-                    if (clip.NextAnimationName != null)
+                    if (clip.NextAnimationName == anim.AnimationName)
                     {
                         clip.NextAnimationName = null;
                         clip.NextAnimationTime = 0;
@@ -182,7 +182,7 @@ namespace VamTimeline
             try
             {
                 var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.defaultPath =  SuperController.singleton.savesDirResolved;
+                fileBrowserUI.defaultPath = SuperController.singleton.savesDirResolved;
                 SuperController.singleton.activeUI = SuperController.ActiveUI.None;
                 fileBrowserUI.SetTitle("Select Animation File");
                 fileBrowserUI.SetTextEntry(true);
