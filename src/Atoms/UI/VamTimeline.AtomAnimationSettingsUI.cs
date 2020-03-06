@@ -264,7 +264,10 @@ namespace VamTimeline
 
         private List<string> GetEligibleNextAnimations()
         {
-            return new[] { "" }.Concat(Plugin.Animation.GetAnimationNames().Where(n => n != Plugin.Animation.Current.AnimationName)).ToList();
+            return new[] { "" }
+                .Concat(Plugin.Animation.GetAnimationNames().Where(n => n != Plugin.Animation.Current.AnimationName))
+                .Concat(new[] { AtomAnimation.RandomizeAnimationName })
+                .ToList();
         }
 
         private void InitControllersUI()

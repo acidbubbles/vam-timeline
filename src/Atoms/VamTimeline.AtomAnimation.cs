@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace VamTimeline
 {
@@ -16,6 +17,7 @@ namespace VamTimeline
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const float InterpolationMaxDistanceDelta = 1.5f;
         public const float InterpolationMaxAngleDelta = 180.0f;
+        public const string RandomizeAnimationName = "(Randomize)";
         private readonly Atom _atom;
         private readonly Animation _animation;
         private AnimationState _animState;
@@ -190,7 +192,17 @@ namespace VamTimeline
             else
                 return;
 
-            _nextAnimation = Current.NextAnimationName;
+            if (Current.NextAnimationName == RandomizeAnimationName)
+            {
+                if (Clips.Count == 1) return;
+                var idx = Random.Range(0, Clips.Count - 1);
+                if (idx >= Clips.IndexOf(Current)) idx += 1;
+                _nextAnimation = Clips[idx].AnimationName;
+            }
+            else
+            {
+                _nextAnimation = Current.NextAnimationName;
+            }
         }
 
         private void SampleParamsAnimation()
