@@ -45,6 +45,7 @@ namespace VamTimeline
             var list = new List<string>();
             if (_plugin.Animation == null || _plugin.Animation.Current == null) return list;
             list.Add(AtomAnimationSettingsUI.ScreenName);
+            list.Add(AtomAnimationTargetsUI.ScreenName);
             if (_plugin.Animation.Current.TargetControllers.Count > 0)
                 list.Add(AtomAnimationControllersUI.ScreenName);
             if (_plugin.Animation.Current.TargetFloatParams.Count > 0)
@@ -60,7 +61,7 @@ namespace VamTimeline
             if (_plugin.Animation == null || _plugin.LockedJSON.val)
                 return AtomAnimationLockedUI.ScreenName;
             else if (_plugin.Animation.IsEmpty())
-                return AtomAnimationSettingsUI.ScreenName;
+                return AtomAnimationTargetsUI.ScreenName;
             else
                 return AtomAnimationControllersUI.ScreenName;
         }
@@ -122,6 +123,9 @@ namespace VamTimeline
                 {
                     case AtomAnimationSettingsUI.ScreenName:
                         _current = new AtomAnimationSettingsUI(_plugin);
+                        break;
+                    case AtomAnimationTargetsUI.ScreenName:
+                        _current = new AtomAnimationTargetsUI(_plugin);
                         break;
                     case AtomAnimationControllersUI.ScreenName:
                         _current = new AtomAnimationControllersUI(_plugin);

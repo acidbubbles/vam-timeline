@@ -34,17 +34,8 @@ namespace VamTimeline
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableBool _autoPlayJSON;
-        private JSONStorableStringChooser _addControllerListJSON;
-        private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
-        private JSONStorableStringChooser _addStorableListJSON;
-        private JSONStorableStringChooser _addParamListJSON;
-        private UIDynamicPopup _addFloatParamListUI;
-        private UIDynamicButton _toggleControllerUI;
-        private UIDynamicButton _toggleFloatParamUI;
-        private UIDynamicPopup _addParamListUI;
         private float _lengthWhenLengthModeChanged;
-        private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
         public AtomAnimationSettingsUI(IAtomPlugin plugin)
             : base(plugin)
@@ -66,23 +57,13 @@ namespace VamTimeline
 
             InitAnimationSettingsUI(false);
 
-            InitSequenceUI();
-
             // Right side
 
-            InitControllersUI();
+            InitSequenceUI(true);
 
-            CreateSpacer(true);
+            InitMiscSettingsUI(true);
 
-            InitAnimationPatternLinkUI();
-
-            CreateSpacer(true);
-
-            InitFloatParamsUI();
-
-            CreateSpacer(true);
-
-            GenerateRemoveToggles();
+            InitAnimationPatternLinkUI(true);
 
             _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0;
         }
@@ -122,77 +103,12 @@ namespace VamTimeline
             var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
             lengthUI.valueFormat = "F3";
             _linkedStorables.Add(_lengthJSON);
-
-            var speedUI = Plugin.CreateSlider(Plugin.SpeedJSON, rightSide);
-            speedUI.valueFormat = "F3";
-            _linkedStorables.Add(Plugin.SpeedJSON);
-
-            _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
-            var blendDurationUI = Plugin.CreateSlider(_blendDurationJSON, rightSide);
-            blendDurationUI.valueFormat = "F3";
-            _linkedStorables.Add(_blendDurationJSON);
-
-            _loop = new JSONStorableBool("Loop", Plugin.Animation?.Current?.Loop ?? true, (bool val) => ChangeLoop(val));
-            var loopingUI = Plugin.CreateToggle(_loop);
-            _linkedStorables.Add(_loop);
-
-            _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
-            Plugin.CreateToggle(_ensureQuaternionContinuity);
-            _linkedStorables.Add(_ensureQuaternionContinuity);
         }
 
-        private void AddAnimationAsCopy()
-        {
-            var current = Plugin.Animation.Current;
-            var clip = Plugin.Animation.AddAnimation();
-            clip.CropOrExtendLengthEnd(current.AnimationLength);
-            foreach (var origTarget in current.TargetControllers)
-            {
-                var newTarget = clip.Add(origTarget.Controller);
-                for (var i = 0; i < origTarget.Curves.Count; i++)
-                {
-                    newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
-                }
-                foreach (var kvp in origTarget.Settings)
-                {
-                    newTarget.Settings[kvp.Key] = new KeyframeSettings { CurveType = kvp.Value.CurveType };
-                }
-            }
-            foreach (var origTarget in current.TargetFloatParams)
-            {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.Value.keys = origTarget.Value.keys.ToArray();
-            }
-            Plugin.Animation.RebuildAnimation();
-            Plugin.Animation.ChangeAnimation(clip.AnimationName);
-            Plugin.AnimationModified();
-        }
-
-        private void AddAnimationFromCurrentFrame()
-        {
-            var current = Plugin.Animation.Current;
-            var clip = Plugin.Animation.AddAnimation();
-            clip.CropOrExtendLengthEnd(current.AnimationLength);
-            foreach (var origTarget in current.TargetControllers)
-            {
-                var newTarget = clip.Add(origTarget.Controller);
-                newTarget.SetKeyframeToCurrentTransform(0f);
-                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
-            }
-            foreach (var origTarget in current.TargetFloatParams)
-            {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
-                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
-            }
-            Plugin.Animation.ChangeAnimation(clip.AnimationName);
-            Plugin.AnimationModified();
-        }
-
-        private void InitSequenceUI()
+        private void InitSequenceUI(bool rightSide)
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
-            var nextAnimationUI = Plugin.CreateScrollablePopup(_nextAnimationJSON);
+            var nextAnimationUI = Plugin.CreateScrollablePopup(_nextAnimationJSON, rightSide);
             nextAnimationUI.popupPanelHeight = 260f;
             _linkedStorables.Add(_nextAnimationJSON);
 
@@ -200,14 +116,36 @@ namespace VamTimeline
             {
                 valNoCallback = Plugin.Animation.Current.NextAnimationTime
             };
-            var nextAnimationTimeUI = Plugin.CreateSlider(_nextAnimationTimeJSON);
+            var nextAnimationTimeUI = Plugin.CreateSlider(_nextAnimationTimeJSON, rightSide);
             nextAnimationTimeUI.valueFormat = "F3";
             _linkedStorables.Add(_nextAnimationTimeJSON);
 
             _nextAnimationPreviewJSON = new JSONStorableString("Next Preview", "");
-            var nextAnimationResultUI = Plugin.CreateTextField(_nextAnimationPreviewJSON);
+            var nextAnimationResultUI = Plugin.CreateTextField(_nextAnimationPreviewJSON, rightSide);
             nextAnimationResultUI.height = 30f;
             _linkedStorables.Add(_nextAnimationPreviewJSON);
+
+            _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
+            var blendDurationUI = Plugin.CreateSlider(_blendDurationJSON, rightSide);
+            blendDurationUI.valueFormat = "F3";
+            _linkedStorables.Add(_blendDurationJSON);
+
+            UpdateNextAnimationPreview();
+        }
+
+        private void InitMiscSettingsUI(bool rightSide)
+        {
+            var speedUI = Plugin.CreateSlider(Plugin.SpeedJSON, rightSide);
+            speedUI.valueFormat = "F3";
+            _linkedStorables.Add(Plugin.SpeedJSON);
+
+            _loop = new JSONStorableBool("Loop", Plugin.Animation?.Current?.Loop ?? true, (bool val) => ChangeLoop(val));
+            var loopingUI = Plugin.CreateToggle(_loop, rightSide);
+            _linkedStorables.Add(_loop);
+
+            _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
+            Plugin.CreateToggle(_ensureQuaternionContinuity, rightSide);
+            _linkedStorables.Add(_ensureQuaternionContinuity);
 
             _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
             {
@@ -218,10 +156,8 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            Plugin.CreateToggle(_autoPlayJSON);
+            Plugin.CreateToggle(_autoPlayJSON, rightSide);
             _linkedStorables.Add(_autoPlayJSON);
-
-            UpdateNextAnimationPreview();
         }
 
         private void UpdateForcedNextAnimationTime()
@@ -270,151 +206,70 @@ namespace VamTimeline
                 .ToList();
         }
 
-        private void InitControllersUI()
-        {
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", GetEligibleFreeControllers().ToList(), GetEligibleFreeControllers().FirstOrDefault(), "Animate controller", (string name) => UIUpdated())
-            {
-                isStorable = false
-            };
-
-            _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
-            _addControllerUI.popupPanelHeight = 900f;
-            _linkedStorables.Add(_addControllerListJSON);
-
-            _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
-            _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
-            _components.Add(_toggleControllerUI);
-        }
-
-        private IEnumerable<string> GetEligibleFreeControllers()
-        {
-            yield return "";
-            foreach (var fc in Plugin.ContainingAtom.freeControllers)
-            {
-                if (fc.name == "control") yield return fc.name;
-                if (!fc.name.EndsWith("Control")) continue;
-                yield return fc.name;
-            }
-        }
-
-        private void InitAnimationPatternLinkUI()
+        private void InitAnimationPatternLinkUI(bool rightSide)
         {
             _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid))
             {
                 isStorable = false
             };
 
-            var linkedAnimationPatternUI = Plugin.CreateScrollablePopup(_linkedAnimationPatternJSON, true);
+            var linkedAnimationPatternUI = Plugin.CreateScrollablePopup(_linkedAnimationPatternJSON, rightSide);
             linkedAnimationPatternUI.popupPanelHeight = 800f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
             _linkedStorables.Add(_linkedAnimationPatternJSON);
         }
 
-        private void InitFloatParamsUI()
-        {
-            var storables = GetStorablesWithFloatParams().ToList();
-            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) => RefreshStorableFloatsList(true))
-            {
-                isStorable = false
-            };
-
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param", (string name) => UIUpdated())
-            {
-                isStorable = false
-            };
-
-            _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
-            _addFloatParamListUI.popupPanelHeight = 700f;
-            _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
-            _linkedStorables.Add(_addStorableListJSON);
-
-            _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
-            _addParamListUI.popupPanelHeight = 600f;
-            _addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList(false);
-            _linkedStorables.Add(_addParamListJSON);
-
-            _toggleFloatParamUI = Plugin.CreateButton("Add Param", true);
-            _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
-            _components.Add(_toggleFloatParamUI);
-        }
-
-        private IEnumerable<string> GetStorablesWithFloatParams()
-        {
-            yield return "";
-            foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs().OrderBy(s => s))
-            {
-                if (storableId.StartsWith("hairTool")) continue;
-                var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
-                if (storable == null) continue;
-                if (storable.GetFloatParamNames().Count > 0)
-                    yield return storableId;
-            }
-        }
-
-        private void RefreshStorableFloatsList(bool autoSelect)
-        {
-            if (string.IsNullOrEmpty(_addStorableListJSON.val))
-            {
-                _addParamListJSON.choices = new List<string>();
-                if (autoSelect)
-                    _addParamListJSON.valNoCallback = "";
-                return;
-            }
-            var values = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val)?.GetFloatParamNames() ?? new List<string>();
-            _addParamListJSON.choices = values.OrderBy(v => v).ToList();
-            if (autoSelect && !values.Contains(_addParamListJSON.val))
-                _addParamListJSON.valNoCallback = values.FirstOrDefault();
-        }
-
-        private void GenerateRemoveToggles()
-        {
-            if (string.Join(",", Plugin.Animation.Current.AllTargets.Select(tc => tc.Name).OrderBy(n => n).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).OrderBy(n => n).ToArray()))
-                return;
-
-            ClearRemoveToggles();
-            foreach (var target in Plugin.Animation.Current.TargetControllers)
-            {
-                var jsb = new JSONStorableBool(target.Name, true, (bool val) =>
-                {
-                    _addControllerListJSON.val = target.Name;
-                    RemoveAnimatedController(target);
-                });
-                var jsbUI = Plugin.CreateToggle(jsb, true);
-                _removeToggles.Add(jsb);
-            }
-            foreach (var target in Plugin.Animation.Current.TargetFloatParams)
-            {
-                var jsb = new JSONStorableBool(target.Name, true, (bool val) =>
-                {
-                    _addStorableListJSON.val = target.Storable.name;
-                    _addParamListJSON.val = target.FloatParam.name;
-                    RemoveFloatParam(target);
-                });
-                var jsbUI = Plugin.CreateToggle(jsb, true);
-                _removeToggles.Add(jsb);
-            }
-            // Ensures shows on top
-            _addControllerListJSON.popup.Toggle();
-            _addControllerListJSON.popup.Toggle();
-            _addStorableListJSON.popup.Toggle();
-            _addStorableListJSON.popup.Toggle();
-            _addParamListJSON.popup.Toggle();
-            _addParamListJSON.popup.Toggle();
-        }
-
-        private void ClearRemoveToggles()
-        {
-            if (_removeToggles == null) return;
-            foreach (var toggleJSON in _removeToggles)
-            {
-                // TODO: Take care of keeping track of those separately
-                Plugin.RemoveToggle(toggleJSON);
-            }
-        }
-
         #endregion
 
         #region Callbacks
+
+        private void AddAnimationAsCopy()
+        {
+            var current = Plugin.Animation.Current;
+            var clip = Plugin.Animation.AddAnimation();
+            clip.CropOrExtendLengthEnd(current.AnimationLength);
+            foreach (var origTarget in current.TargetControllers)
+            {
+                var newTarget = clip.Add(origTarget.Controller);
+                for (var i = 0; i < origTarget.Curves.Count; i++)
+                {
+                    newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
+                }
+                foreach (var kvp in origTarget.Settings)
+                {
+                    newTarget.Settings[kvp.Key] = new KeyframeSettings { CurveType = kvp.Value.CurveType };
+                }
+            }
+            foreach (var origTarget in current.TargetFloatParams)
+            {
+                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
+                newTarget.Value.keys = origTarget.Value.keys.ToArray();
+            }
+            Plugin.Animation.RebuildAnimation();
+            Plugin.Animation.ChangeAnimation(clip.AnimationName);
+            Plugin.AnimationModified();
+        }
+
+        private void AddAnimationFromCurrentFrame()
+        {
+            var current = Plugin.Animation.Current;
+            var clip = Plugin.Animation.AddAnimation();
+            clip.CropOrExtendLengthEnd(current.AnimationLength);
+            foreach (var origTarget in current.TargetControllers)
+            {
+                var newTarget = clip.Add(origTarget.Controller);
+                newTarget.SetKeyframeToCurrentTransform(0f);
+                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
+            }
+            foreach (var origTarget in current.TargetFloatParams)
+            {
+                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
+                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
+                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
+            }
+            Plugin.Animation.ChangeAnimation(clip.AnimationName);
+            Plugin.AnimationModified();
+        }
 
         private void UpdateAnimationName(string val)
         {
@@ -659,93 +514,6 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private void AddAnimatedController()
-        {
-            try
-            {
-                var uid = _addControllerListJSON.val;
-                if (string.IsNullOrEmpty(uid)) return;
-                var controller = Plugin.ContainingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
-                if (controller == null)
-                {
-                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {Plugin.ContainingAtom.uid} does not exist");
-                    return;
-                }
-                if (Plugin.Animation.Current.TargetControllers.Any(c => c.Controller == controller))
-                    return;
-
-                controller.currentPositionState = FreeControllerV3.PositionState.On;
-                controller.currentRotationState = FreeControllerV3.RotationState.On;
-                var target = Plugin.Animation.Add(controller);
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(AddAnimatedController)}: " + exc);
-            }
-        }
-
-        private void AddAnimatedFloatParam()
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(_addStorableListJSON.val)) return;
-
-                var storable = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val);
-                if (storable == null)
-                {
-                    SuperController.LogError($"VamTimeline: Storable {_addStorableListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
-                    return;
-                }
-                var sourceFloatParam = storable.GetFloatJSONParam(_addParamListJSON.val);
-                if (sourceFloatParam == null)
-                {
-                    SuperController.LogError($"VamTimeline: Param {_addParamListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
-                    return;
-                }
-                if (Plugin.Animation.Current.TargetFloatParams.Any(c => c.FloatParam == sourceFloatParam))
-                {
-                    return;
-                }
-
-                Plugin.Animation.Add(storable, sourceFloatParam);
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(AddAnimatedFloatParam)}: " + exc);
-            }
-        }
-
-        private void RemoveAnimatedController(FreeControllerAnimationTarget target)
-        {
-            try
-            {
-                Plugin.Animation.Current.Remove(target.Controller);
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(RemoveAnimatedController)}: " + exc);
-            }
-        }
-
-        private void RemoveFloatParam(FloatParamAnimationTarget target)
-        {
-            try
-            {
-                Plugin.Animation.Current.TargetFloatParams.Remove(target);
-                Plugin.AnimationModified();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(RemoveAnimatedController)}: " + exc);
-            }
-        }
-
         #endregion
 
         #region Events
@@ -753,7 +521,6 @@ namespace VamTimeline
         public override void AnimationModified()
         {
             base.AnimationModified();
-            GenerateRemoveToggles();
 
             var current = Plugin.Animation.Current;
             _animationNameJSON.valNoCallback = current.AnimationName;
@@ -771,7 +538,6 @@ namespace VamTimeline
 
         public override void Dispose()
         {
-            ClearRemoveToggles();
             base.Dispose();
         }
 

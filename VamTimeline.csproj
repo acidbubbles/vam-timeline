@@ -74,6 +74,7 @@
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationBaseUI.cs" />
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationLockedUI.cs" />
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationSettingsUI.cs" />
+    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationTargetsUI.cs" />
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationControllersUI.cs" />
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationFloatParamsUI.cs" />
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationAdvancedUI.cs" />
