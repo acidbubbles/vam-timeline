@@ -119,7 +119,7 @@ namespace VamTimeline
                 if (storableId.StartsWith("hairTool")) continue;
                 var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
                 if (storable == null) continue;
-                if (storable.GetFloatParamNames().Count > 0)
+                if ((storable.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
             }
         }
