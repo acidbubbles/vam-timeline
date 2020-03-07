@@ -227,6 +227,11 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
+            clip.Loop = current.Loop;
+            clip.NextAnimationName = current.NextAnimationName;
+            clip.NextAnimationTime = current.NextAnimationTime;
+            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
+            clip.BlendDuration = current.BlendDuration;
             clip.CropOrExtendLengthEnd(current.AnimationLength);
             foreach (var origTarget in current.TargetControllers)
             {
@@ -254,6 +259,11 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
+            clip.Loop = current.Loop;
+            clip.NextAnimationName = current.NextAnimationName;
+            clip.NextAnimationTime = current.NextAnimationTime;
+            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
+            clip.BlendDuration = current.BlendDuration;
             clip.CropOrExtendLengthEnd(current.AnimationLength);
             foreach (var origTarget in current.TargetControllers)
             {
