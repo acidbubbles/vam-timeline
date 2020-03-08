@@ -67,7 +67,7 @@ namespace VamTimeline
             var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
             _linkedStorables.Add(_importRecordedOptionsJSON);
 
-            var importRecordedUI = Plugin.CreateButton("Import Recorded Animation", true);
+            var importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
             _components.Add(importRecordedUI);
 
@@ -90,11 +90,11 @@ namespace VamTimeline
             var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, true);
             _linkedStorables.Add(_exportAnimationsJSON);
 
-            var exportUI = Plugin.CreateButton("Export", true);
+            var exportUI = Plugin.CreateButton("Export to .json", true);
             exportUI.button.onClick.AddListener(() => Export());
             _components.Add(exportUI);
 
-            var importUI = Plugin.CreateButton("Import", true);
+            var importUI = Plugin.CreateButton("Import from .json", true);
             importUI.button.onClick.AddListener(() => Import());
             _components.Add(importUI);
 
