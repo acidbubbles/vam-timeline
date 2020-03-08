@@ -19,6 +19,7 @@ namespace VamTimeline
 
         public const string ScreenName = "Advanced";
         private JSONStorableStringChooser _exportAnimationsJSON;
+        private JSONStorableStringChooser _importRecordedOptionsJSON;
 
         public override string Name => ScreenName;
 
@@ -58,6 +59,13 @@ namespace VamTimeline
             var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
+
+            _importRecordedOptionsJSON = new JSONStorableStringChooser("Import Recorded Animation Options", new List<string> { "10 fps", "100 fps" }, "10 fps", "Import Recorded Animation Options")
+            {
+                isStorable = false
+            };
+            var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
+            _linkedStorables.Add(_importRecordedOptionsJSON);
 
             var importRecordedUI = Plugin.CreateButton("Import recorded animation", true);
             importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
@@ -337,6 +345,17 @@ namespace VamTimeline
         {
             try
             {
+                var minFrameDuration = 0.1f;
+                switch (_importRecordedOptionsJSON.val)
+                {
+                    case "10 fps":
+                        minFrameDuration = 0.1f;
+                        break;
+                    case "100 fps":
+                        minFrameDuration = 0.01f;
+                        break;
+                }
+
                 var containingAtom = Plugin.ContainingAtom;
                 var current = Plugin.Animation.Current;
                 current.Loop = SuperController.singleton.motionAnimationMaster.loop;
@@ -345,15 +364,20 @@ namespace VamTimeline
                     if (mot == null || mot.clip == null) continue;
                     if (mot.clip.clipLength <= 0.001) continue;
                     var ctrl = mot.controller;
-                    var target = current.TargetControllers.FirstOrDefault(t => t.Controller == ctrl) ?? Plugin.Animation.Add(ctrl);
+                    current.Remove(ctrl);
+                    var target = Plugin.Animation.Add(ctrl);
                     if (mot.clip.clipLength > current.AnimationLength)
                         current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
+                    var lastRecordedFrame = float.MinValue;
                     foreach (var step in mot.clip.steps)
                     {
                         if (!step.positionOn || !step.rotationOn)
                             continue;
-                        if (current.Loop && step.timeStep.IsSameFrame(mot.clip.clipLength)) continue;
-                        target.SetKeyframe(step.timeStep.Snap(), step.position - containingAtom.transform.position, Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation);
+                        var frame = step.timeStep.Snap();
+                        if (frame - lastRecordedFrame < minFrameDuration) continue;
+                        if (current.Loop && frame.IsSameFrame(mot.clip.clipLength)) continue;
+                        target.SetKeyframe(frame, step.position - containingAtom.transform.position, Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation);
+                        lastRecordedFrame = frame;
                     }
                 }
                 Plugin.Animation.RebuildAnimation();
