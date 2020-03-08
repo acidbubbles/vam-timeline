@@ -59,6 +59,10 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
 
+            var importRecordedUI = Plugin.CreateButton("Import recorded animation", true);
+            importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
+            _components.Add(importRecordedUI);
+
             CreateSpacer(true);
 
             var moveAnimUpUI = Plugin.CreateButton("Reorder Animation (Move Up)", true);
@@ -318,8 +322,47 @@ namespace VamTimeline
             var waitFor = Plugin.Animation.Clips.Sum(c => c.NextAnimationTime.IsSameFrame(0) ? c.AnimationLength : c.NextAnimationTime);
             yield return new WaitForSeconds(waitFor);
 
-            SuperController.singleton.motionAnimationMaster.StopRecord();
-            Plugin.Animation.Stop();
+            try
+            {
+                SuperController.singleton.motionAnimationMaster.StopRecord();
+                Plugin.Animation.Stop();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
+            }
+        }
+
+        private void ImportRecorded()
+        {
+            try
+            {
+                var containingAtom = Plugin.ContainingAtom;
+                var current = Plugin.Animation.Current;
+                current.Loop = SuperController.singleton.motionAnimationMaster.loop;
+                foreach (var mot in containingAtom.motionAnimationControls)
+                {
+                    if (mot == null || mot.clip == null) continue;
+                    if (mot.clip.clipLength <= 0.001) continue;
+                    var ctrl = mot.controller;
+                    var target = current.TargetControllers.FirstOrDefault(t => t.Controller == ctrl) ?? Plugin.Animation.Add(ctrl);
+                    if (mot.clip.clipLength > current.AnimationLength)
+                        current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
+                    foreach (var step in mot.clip.steps)
+                    {
+                        if (!step.positionOn || !step.rotationOn)
+                            continue;
+                        if (current.Loop && step.timeStep.IsSameFrame(mot.clip.clipLength)) continue;
+                        target.SetKeyframe(step.timeStep.Snap(), step.position - containingAtom.transform.position, Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation);
+                    }
+                }
+                Plugin.Animation.RebuildAnimation();
+                Plugin.AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(ImportRecorded)}.{nameof(Bake)}: {exc}");
+            }
         }
     }
 }

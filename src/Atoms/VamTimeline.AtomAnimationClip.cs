@@ -308,6 +308,8 @@ namespace VamTimeline
                 if (target.Settings.Count != target.X.keys.Length)
                 {
                     SuperController.LogError($"Target {target.Name} has {target.X.keys.Length} frames but {target.Settings.Count} settings");
+                    SuperController.LogError($"  Target  : {string.Join(", ", target.X.keys.Select(k => k.time.ToString()).ToArray())}");
+                    SuperController.LogError($"  Settings: {string.Join(", ", target.Settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
                     return;
                 }
                 var settings = target.Settings.Select(s => s.Key);
