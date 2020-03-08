@@ -67,7 +67,7 @@ namespace VamTimeline
             var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
             _linkedStorables.Add(_importRecordedOptionsJSON);
 
-            var importRecordedUI = Plugin.CreateButton("Import recorded animation", true);
+            var importRecordedUI = Plugin.CreateButton("Import Recorded Animation", true);
             importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
             _components.Add(importRecordedUI);
 
