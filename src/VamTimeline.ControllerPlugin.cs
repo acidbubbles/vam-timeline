@@ -57,12 +57,12 @@ namespace VamTimeline
             // Note: Yeah, that's horrible, but containingAtom is null
             var container = gameObject?.transform?.parent?.parent?.parent?.parent?.parent?.gameObject;
             if (container == null)
-                throw new NullReferenceException($"Could not find the parent gameObject");
+                throw new NullReferenceException($"Could not find the parent gameObject.");
             var atom = container.GetComponent<Atom>();
             if (atom == null)
-                throw new NullReferenceException($"Could not find the parent atom in {container.name}");
+                throw new NullReferenceException($"Could not find the parent atom in {container.name}.");
             if (atom.type != "SimpleSign")
-                throw new InvalidOperationException("Can only be applied on SimpleSign");
+                throw new InvalidOperationException("Can only be applied on SimpleSign. This plugin is used to synchronize multiple atoms; use VamTimeline.AtomAnimation.cslist to animate an atom.");
             return atom;
         }
 
