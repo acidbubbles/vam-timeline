@@ -374,12 +374,16 @@ namespace VamTimeline
                     var lastRecordedFrame = float.MinValue;
                     foreach (var step in mot.clip.steps)
                     {
-                        if (!step.positionOn || !step.rotationOn)
+                        if (!step.positionOn && !step.rotationOn)
                             continue;
                         var frame = step.timeStep.Snap();
                         if (frame - lastRecordedFrame < minFrameDuration) continue;
                         if (current.Loop && frame.IsSameFrame(mot.clip.clipLength)) continue;
-                        target.SetKeyframe(frame, step.position - containingAtom.transform.position, Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation);
+                        target.SetKeyframe(
+                            frame,
+                            step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition,
+                            step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation
+                        );
                         lastRecordedFrame = frame;
                     }
                 }
