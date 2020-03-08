@@ -60,7 +60,7 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
 
-            _importRecordedOptionsJSON = new JSONStorableStringChooser("Import Recorded Animation Options", new List<string> { "10 fps", "100 fps" }, "10 fps", "Import Recorded Animation Options")
+            _importRecordedOptionsJSON = new JSONStorableStringChooser("Import Recorded Animation Options", new List<string> { "2fps", "10 fps", "100 fps" }, "10 fps", "Import Recorded Animation Options")
             {
                 isStorable = false
             };
@@ -348,6 +348,9 @@ namespace VamTimeline
                 var minFrameDuration = 0.1f;
                 switch (_importRecordedOptionsJSON.val)
                 {
+                    case "2 fps":
+                        minFrameDuration = 0.5f;
+                        break;
                     case "10 fps":
                         minFrameDuration = 0.1f;
                         break;
