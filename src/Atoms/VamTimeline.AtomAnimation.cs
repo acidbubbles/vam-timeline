@@ -14,6 +14,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
+        private const float InterpolationTimeout = 1000f;
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const float InterpolationMaxDistanceDelta = 1.5f;
         public const float InterpolationMaxAngleDelta = 180.0f;
@@ -22,7 +23,7 @@ namespace VamTimeline
         private readonly Animation _animation;
         private AnimationState _animState;
         private bool _isPlaying;
-        private bool _isInterpolating;
+        private float _interpolateUntil = 0f;
         private bool _playQueuedAfterInterpolation;
         private float _playTime;
         private AtomAnimationClip _blendingClip;
@@ -52,7 +53,7 @@ namespace VamTimeline
                 if (_animState != null)
                     _animState.time = value;
                 if (!_isPlaying)
-                    _isInterpolating = true;
+                    _interpolateUntil = UnityEngine.Time.time + InterpolationTimeout;
             }
         }
 
@@ -163,7 +164,7 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
-            if (_isInterpolating)
+            if (_interpolateUntil > 0)
             {
                 _playQueuedAfterInterpolation = true;
                 return;
@@ -260,7 +261,7 @@ namespace VamTimeline
                     }
                 }
             }
-            else if (_isInterpolating)
+            else if (_interpolateUntil > 0)
             {
                 var allControllersReached = true;
                 foreach (var target in Current.TargetControllers)
@@ -269,9 +270,9 @@ namespace VamTimeline
                     if (!controllerReached) allControllersReached = false;
                 }
 
-                if (allControllersReached)
+                if (allControllersReached || _interpolateUntil >= UnityEngine.Time.time)
                 {
-                    _isInterpolating = false;
+                    _interpolateUntil = 0;
                     if (_playQueuedAfterInterpolation)
                     {
                         _playQueuedAfterInterpolation = false;
@@ -330,7 +331,7 @@ namespace VamTimeline
 
         public bool IsInterpolating()
         {
-            return _isInterpolating;
+            return _interpolateUntil > 0;
         }
 
         public void RebuildAnimation()
