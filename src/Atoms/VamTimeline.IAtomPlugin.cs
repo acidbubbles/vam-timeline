@@ -84,7 +84,6 @@ namespace VamTimeline
         JSONStorableAction CutJSON { get; }
         JSONStorableAction CopyJSON { get; }
         JSONStorableAction PasteJSON { get; }
-        JSONStorableAction UndoJSON { get; }
         JSONStorableBool LockedJSON { get; }
         JSONStorableString DisplayJSON { get; }
         JSONStorableBool AutoKeyframeAllControllersJSON { get; }

@@ -13,7 +13,6 @@ namespace VamTimeline
     {
         public abstract string Name { get; }
 
-        private UIDynamicButton _undoUI;
         protected List<UIDynamic> _components = new List<UIDynamic>();
         protected List<JSONStorableParam> _linkedStorables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
@@ -97,10 +96,6 @@ namespace VamTimeline
             var pasteUI = Plugin.CreateButton("Paste Frame", rightSide);
             pasteUI.button.onClick.AddListener(() => Plugin.PasteJSON.actionCallback());
             _components.Add(pasteUI);
-
-            _undoUI = Plugin.CreateButton("Undo", rightSide);
-            _undoUI.button.onClick.AddListener(() => Plugin.UndoJSON.actionCallback());
-            _components.Add(_undoUI);
         }
 
         protected void InitDisplayUI(bool rightSide, float height = 300f)

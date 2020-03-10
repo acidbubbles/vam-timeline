@@ -21,7 +21,6 @@ namespace VamTimeline
 
         // Storables
 
-        private const int MaxUndo = 20;
         private bool _saveEnabled;
 
         // State
@@ -29,7 +28,6 @@ namespace VamTimeline
         public Atom ContainingAtom => containingAtom;
         public AtomAnimationSerializer Serializer { get; private set; }
         private bool _restoring;
-        private readonly List<string> _undoList = new List<string>();
         private AtomClipboardEntry _clipboard;
         private FreeControllerAnimationTarget _grabbedController;
 
@@ -49,7 +47,6 @@ namespace VamTimeline
         public JSONStorableAction CutJSON { get; private set; }
         public JSONStorableAction CopyJSON { get; private set; }
         public JSONStorableAction PasteJSON { get; private set; }
-        public JSONStorableAction UndoJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
         public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableBool AutoKeyframeAllControllersJSON { get; private set; }
@@ -288,7 +285,6 @@ namespace VamTimeline
             CutJSON = new JSONStorableAction("Cut", () => Cut());
             CopyJSON = new JSONStorableAction("Copy", () => Copy());
             PasteJSON = new JSONStorableAction("Paste", () => Paste());
-            UndoJSON = new JSONStorableAction("Undo", () => Undo());
 
             LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationModified());
             RegisterBool(LockedJSON);
@@ -435,26 +431,6 @@ namespace VamTimeline
             }
         }
 
-        public void Save()
-        {
-            try
-            {
-                if (_restoring) return;
-                if (Animation.IsEmpty()) return;
-
-                var serialized = Serializer.SerializeAnimation(Animation);
-
-                if (serialized == _undoList.LastOrDefault())
-                    return;
-
-                if (_undoList.Count > MaxUndo) _undoList.RemoveAt(0);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Save)}: " + exc);
-            }
-        }
-
         #endregion
 
         #region Callbacks
@@ -581,35 +557,6 @@ namespace VamTimeline
             }
         }
 
-        private void Undo()
-        {
-            try
-            {
-                if (Animation.IsPlaying()) return;
-                if (_undoList.Count == 0) return;
-                var animationName = AnimationJSON.val;
-                var pop = _undoList[_undoList.Count - 1];
-                _undoList.RemoveAt(_undoList.Count - 1);
-                if (_undoList.Count == 0) return;
-                if (string.IsNullOrEmpty(pop)) return;
-
-                var time = Animation.Time;
-
-                _saveEnabled = false;
-                Load(pop);
-                if (Animation.Clips.Any(c => c.AnimationName == animationName))
-                    AnimationJSON.val = animationName;
-                else
-                    AnimationJSON.valNoCallback = Animation.Clips.First().AnimationName;
-                AnimationModified();
-                UpdateTime(time, false);
-            }
-            finally
-            {
-                _saveEnabled = true;
-            }
-        }
-
         private void UpdateAnimationSpeed(float v)
         {
             if (v < 0) SpeedJSON.valNoCallback = v = 0f;
@@ -700,10 +647,6 @@ namespace VamTimeline
                 AnimationJSON.choices = Animation.GetAnimationNames().ToList();
                 AnimationJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
                 FilterAnimationTargetJSON.choices = new List<string> { StorableNames.AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
-
-                // Save
-                if (_saveEnabled)
-                    Save();
 
                 // Render
                 RenderState();
