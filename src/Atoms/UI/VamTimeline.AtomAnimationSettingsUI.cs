@@ -385,7 +385,7 @@ namespace VamTimeline
                             return;
                         }
                         var frames = Plugin.Animation.Current
-                            .TargetControllers.SelectMany(t => t.X.keys.Select(k => k.time))
+                            .TargetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
                             .Concat(Plugin.Animation.Current.TargetFloatParams.SelectMany(t => t.Value.keys.Select(k => k.time)))
                             .Select(t => t.Snap())
                             .Where(t => t < _lengthWhenLengthModeChanged)

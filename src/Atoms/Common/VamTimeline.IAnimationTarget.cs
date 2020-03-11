@@ -8,6 +8,7 @@ namespace VamTimeline
     {
         string Name { get; }
 
+        AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
         void RenderDebugInfo(StringBuilder display, float time);
         IEnumerable<float> GetAllKeyframesTime();

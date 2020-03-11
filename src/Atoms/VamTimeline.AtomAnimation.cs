@@ -387,7 +387,7 @@ namespace VamTimeline
             {
                 if (clip.Loop)
                 {
-                    target.SetKeyframe(clip.AnimationLength, target.Value.keys[0].value);
+                    target.SetKeyframe(clip.AnimationLength, target.Value[0].value);
                 }
                 target.Value.FlatAllFrames();
             }
@@ -430,7 +430,7 @@ namespace VamTimeline
                     // TODO: Fade multiple blending clips
                     // For morphs that won't be continued, immediately apply the last value
                     foreach (var morph in Current.TargetFloatParams.Where(t => !clip.TargetFloatParams.Any(ct => t.FloatParam == ct.FloatParam)))
-                        morph.FloatParam.val = morph.Value.Evaluate(morph.Value.keys[morph.Value.keys.Length - 1].time);
+                        morph.FloatParam.val = morph.Value.Evaluate(morph.Value[morph.Value.length - 1].time);
                 }
                 _blendingClip = Current;
                 _blendingTimeLeft = _blendingDuration = Current.BlendDuration;

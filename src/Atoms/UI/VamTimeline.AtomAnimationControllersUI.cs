@@ -120,7 +120,7 @@ namespace VamTimeline
                 var time = Plugin.Animation.Time;
                 foreach (var targetRef in _targets)
                 {
-                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.X.keys.Any(k => k.time.IsSameFrame(time));
+                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace VamTimeline
             _targets = new List<TargetRef>();
             foreach (var target in Plugin.Animation.Current.TargetControllers)
             {
-                var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.X.keys.Any(k => k.time.IsSameFrame(time)), (bool val) => ToggleKeyframe(target, val));
+                var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.GetLeadCurve().KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
                 _targets.Add(new TargetRef
                 {

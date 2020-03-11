@@ -86,15 +86,16 @@ namespace VamTimeline
                     var target = new FreeControllerAnimationTarget(controller);
                     clip.TargetControllers.Add(target);
                     DeserializeCurve(target.X, controllerJSON["X"], clip.AnimationLength, target.Settings);
-                    DeserializeCurve(target.X, controllerJSON["X"], clip.AnimationLength);
                     DeserializeCurve(target.Y, controllerJSON["Y"], clip.AnimationLength);
                     DeserializeCurve(target.Z, controllerJSON["Z"], clip.AnimationLength);
                     DeserializeCurve(target.RotX, controllerJSON["RotX"], clip.AnimationLength);
                     DeserializeCurve(target.RotY, controllerJSON["RotY"], clip.AnimationLength);
                     DeserializeCurve(target.RotZ, controllerJSON["RotZ"], clip.AnimationLength);
                     DeserializeCurve(target.RotW, controllerJSON["RotW"], clip.AnimationLength);
-                    foreach (var time in target.X.keys.Select(k => k.time))
+                    AnimationCurve leadCurve = target.GetLeadCurve();
+                    for (var key = 0; key < leadCurve.length; key++)
                     {
+                        var time = leadCurve[key].time;
                         var ms = time.ToMilliseconds();
                         if (!target.Settings.ContainsKey(ms))
                             target.Settings.Add(ms, new KeyframeSettings { CurveType = CurveTypeValues.LeaveAsIs });
@@ -327,8 +328,9 @@ namespace VamTimeline
             // e.g.: 0,12.345,1,-0.18,0.18;
             var sb = new StringBuilder();
 
-            foreach (var keyframe in curve.keys)
+            for (var key = 0; key < curve.length; key++)
             {
+                var keyframe = curve[key];
                 var ms = keyframe.time.ToMilliseconds();
                 sb.Append(keyframe.time.ToString(CultureInfo.InvariantCulture));
                 sb.Append(',');

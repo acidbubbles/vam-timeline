@@ -136,8 +136,15 @@ namespace VamTimeline
             foreach (var controller in GetAllOrSelectedTargets())
             {
                 // TODO: Use bisect for more efficient navigation
-                var targetNextTime = controller.GetCurves().First().keys.FirstOrDefault(k => k.time > time).time;
-                if (!targetNextTime.IsSameFrame(0) && targetNextTime < nextTime) nextTime = targetNextTime;
+                var leadCurve = controller.GetLeadCurve();
+                for (var key = 0; key < leadCurve.length; key++)
+                {
+                    var potentialNextTime = leadCurve[key].time;
+                    if (potentialNextTime <= time) continue;
+                    if (potentialNextTime > nextTime) continue;
+                    nextTime = potentialNextTime;
+                    break;
+                }
             }
             if (nextTime.IsSameFrame(AnimationLength) && Loop)
                 return 0f;
@@ -148,14 +155,21 @@ namespace VamTimeline
         public float GetPreviousFrame(float time)
         {
             time = time.Snap();
-            if (time.IsSameFrame(0f))
-                return GetAllOrSelectedTargets().SelectMany(c => c.GetCurves()).SelectMany(c => c.keys).Select(c => c.time).Where(t => !Loop || t != AnimationLength).Max();
+            if (time.IsSameFrame(0))
+                return GetAllOrSelectedTargets().Select(t => t.GetLeadCurve()).Select(c => c[c.length - (Loop ? 2 : 1)].time).Max();
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedTargets())
             {
                 // TODO: Use bisect for more efficient navigation
-                var targetPreviousTime = controller.GetCurves().First().keys.LastOrDefault(k => k.time < time).time;
-                if (!targetPreviousTime.IsSameFrame(0) && targetPreviousTime > previousTime) previousTime = targetPreviousTime;
+                var leadCurve = controller.GetLeadCurve();
+                for (var key = leadCurve.length - 2; key >= 0; key--)
+                {
+                    var potentialPreviousTime = leadCurve[key].time;
+                    if (potentialPreviousTime >= time) continue;
+                    if (potentialPreviousTime < previousTime) continue;
+                    previousTime = potentialPreviousTime;
+                    break;
+                }
             }
             return previousTime;
         }
@@ -245,10 +259,11 @@ namespace VamTimeline
             {
                 var settings = target.Settings.Values.ToList();
                 target.Settings.Clear();
-                for (var i = 0; i < target.X.keys.Length; i++)
+                var leadCurve = target.GetLeadCurve();
+                for (var i = 0; i < leadCurve.length; i++)
                 {
                     if (i >= settings.Count) break;
-                    target.Settings.Add(target.X.keys[i].time.ToMilliseconds(), settings[i]);
+                    target.Settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
                 }
             }
         }
@@ -259,10 +274,11 @@ namespace VamTimeline
             {
                 var settings = target.Settings.Values.ToList();
                 target.Settings.Clear();
-                for (var i = 0; i < target.X.keys.Length; i++)
+                var leadCurve = target.GetLeadCurve();
+                for (var i = 0; i < leadCurve.length; i++)
                 {
                     if (i >= settings.Count) break;
-                    target.Settings.Add(target.X.keys[target.X.keys.Length - i - 1].time.ToMilliseconds(), settings[settings.Count - i - 1]);
+                    target.Settings.Add(leadCurve[leadCurve.length - i - 1].time.ToMilliseconds(), settings[settings.Count - i - 1]);
                 }
             }
         }
@@ -283,12 +299,13 @@ namespace VamTimeline
             var floatParams = new List<FloatParamValClipboardEntry>();
             foreach (var target in all ? TargetFloatParams : GetAllOrSelectedFloatParamTargets())
             {
-                if (!target.Value.keys.Any(k => k.time.IsSameFrame(time))) continue;
+                int key = target.Value.KeyframeBinarySearch(time);
+                if (key == -1) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
                     Storable = target.Storable,
                     FloatParam = target.FloatParam,
-                    Snapshot = target.Value.keys.First(k => k.time.IsSameFrame(time))
+                    Snapshot = target.Value[key]
                 });
             }
             return new AtomClipboardEntry
@@ -302,20 +319,21 @@ namespace VamTimeline
         {
             foreach (var target in TargetControllers)
             {
-                if (target.X.keys.Length < 2)
+                var leadCurve = target.GetLeadCurve();
+                if (leadCurve.length < 2)
                 {
-                    SuperController.LogError($"Target {target.Name} has {target.X.keys.Length} frames");
+                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames");
                     return;
                 }
-                if (target.Settings.Count != target.X.keys.Length)
+                if (target.Settings.Count != leadCurve.length)
                 {
-                    SuperController.LogError($"Target {target.Name} has {target.X.keys.Length} frames but {target.Settings.Count} settings");
-                    SuperController.LogError($"  Target  : {string.Join(", ", target.X.keys.Select(k => k.time.ToString()).ToArray())}");
+                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames but {target.Settings.Count} settings");
+                    SuperController.LogError($"  Target  : {string.Join(", ", leadCurve.keys.Select(k => k.time.ToString()).ToArray())}");
                     SuperController.LogError($"  Settings: {string.Join(", ", target.Settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
                     return;
                 }
                 var settings = target.Settings.Select(s => s.Key);
-                var keys = target.X.keys.Select(k => k.time.ToMilliseconds()).ToArray();
+                var keys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToArray();
                 if (!settings.SequenceEqual(keys))
                 {
                     SuperController.LogError($"Target {target.Name} has different times for settings and keyframes");

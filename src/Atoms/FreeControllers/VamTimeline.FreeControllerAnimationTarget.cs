@@ -37,6 +37,11 @@ namespace VamTimeline
 
         #region Control
 
+        public AnimationCurve GetLeadCurve()
+        {
+            return X;
+        }
+
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return Curves;
@@ -44,7 +49,7 @@ namespace VamTimeline
 
         public void ReapplyCurveTypes()
         {
-            if (X.keys.Length < 2) return;
+            if (X.length < 2) return;
 
             foreach (var setting in Settings)
             {
@@ -121,7 +126,7 @@ namespace VamTimeline
         {
             foreach (var curve in GetCurves())
             {
-                var key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
+                var key = curve.KeyframeBinarySearch(time);
                 if (key != -1) curve.RemoveKey(key);
                 var settingIndex = Settings.Remove(time.ToMilliseconds());
             }
@@ -166,17 +171,17 @@ namespace VamTimeline
 
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
-            if (!X.keys.Any(k => k.time.IsSameFrame(time))) return null;
+            if (X.KeyframeBinarySearch(time) == -1) return null;
             KeyframeSettings setting;
             return new FreeControllerV3Snapshot
             {
-                X = X.keys.First(k => k.time.IsSameFrame(time)),
-                Y = Y.keys.First(k => k.time.IsSameFrame(time)),
-                Z = Z.keys.First(k => k.time.IsSameFrame(time)),
-                RotX = RotX.keys.First(k => k.time.IsSameFrame(time)),
-                RotY = RotY.keys.First(k => k.time.IsSameFrame(time)),
-                RotZ = RotZ.keys.First(k => k.time.IsSameFrame(time)),
-                RotW = RotW.keys.First(k => k.time.IsSameFrame(time)),
+                X = X[X.KeyframeBinarySearch(time)],
+                Y = Y[Y.KeyframeBinarySearch(time)],
+                Z = Z[Z.KeyframeBinarySearch(time)],
+                RotX = RotX[RotX.KeyframeBinarySearch(time)],
+                RotY = RotY[RotY.KeyframeBinarySearch(time)],
+                RotZ = RotZ[RotZ.KeyframeBinarySearch(time)],
+                RotW = RotW[RotW.KeyframeBinarySearch(time)],
                 CurveType = Settings.TryGetValue(time.ToMilliseconds(), out setting) ? setting.CurveType : CurveTypeValues.LeaveAsIs
             };
         }

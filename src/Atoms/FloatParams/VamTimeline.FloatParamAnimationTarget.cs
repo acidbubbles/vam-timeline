@@ -26,6 +26,11 @@ namespace VamTimeline
             FloatParam = jsf;
         }
 
+        public AnimationCurve GetLeadCurve()
+        {
+            return Value;
+        }
+
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return new[] { Value };
@@ -38,7 +43,7 @@ namespace VamTimeline
 
         public void DeleteFrame(float time)
         {
-            var key = Array.FindIndex(Value.keys, k => k.time.IsSameFrame(time));
+            var key = Value.KeyframeBinarySearch(time);
             if (key != -1) Value.RemoveKey(key);
         }
 

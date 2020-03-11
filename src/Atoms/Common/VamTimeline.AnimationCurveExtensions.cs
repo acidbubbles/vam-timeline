@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -137,8 +138,8 @@ namespace VamTimeline
             Keyframe keyframe;
             if (key == -1)
             {
-                key = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
-                if (key == -1) throw new InvalidOperationException($"Cannot AddKey at time {time}, but no keys exist at this position");
+                key = curve.KeyframeBinarySearch(time);
+                if (key == -1) throw new InvalidOperationException($"Cannot find keyframe at time {time}, no keys exist at this position. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
                 keyframe = curve[key];
                 keyframe.value = value;
                 curve.MoveKey(key, keyframe);
@@ -153,6 +154,9 @@ namespace VamTimeline
         [MethodImpl(256)]
         public static int KeyframeBinarySearch(this AnimationCurve curve, float time)
         {
+            if (time == 0) return 0;
+            if (time == curve[curve.length - 1].time) return curve.length - 1;
+
             var left = 0;
             var right = curve.length - 1;
 
@@ -161,11 +165,11 @@ namespace VamTimeline
                 var middle = left + (right - left) / 2;
 
                 var keyTime = curve[middle].time;
-                if (keyTime > time - 0.0001f)
+                if (keyTime > time)
                 {
                     right = middle - 1;
                 }
-                else if (curve[middle].time < time + 0.0001f)
+                else if (curve[middle].time < time)
                 {
                     left = middle + 1;
                 }
@@ -343,7 +347,7 @@ namespace VamTimeline
 
         public static void SetKeySnapshot(this AnimationCurve curve, float time, Keyframe keyframe)
         {
-            var index = Array.FindIndex(curve.keys, k => k.time.IsSameFrame(time));
+            var index = curve.KeyframeBinarySearch(time);
             if (index == -1)
                 index = curve.AddKey(time, keyframe.value);
             keyframe.time = time;

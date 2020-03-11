@@ -20,10 +20,6 @@ namespace VamTimeline
         private const int MaxDisplayedFrames = 500;
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
-        // Storables
-
-        private bool _saveEnabled;
-
         // State
         public AtomAnimation Animation { get; private set; }
         public Atom ContainingAtom => containingAtom;
@@ -313,28 +309,18 @@ namespace VamTimeline
             yield return new WaitForEndOfFrame();
             if (Animation != null)
             {
-                _saveEnabled = true;
                 StartAutoPlay();
                 yield break;
             }
             containingAtom.RestoreFromLast(this);
             if (Animation != null)
             {
-                _saveEnabled = true;
                 yield break;
             }
-            try
-            {
-                Animation = new AtomAnimation(containingAtom);
-
-                Animation.Initialize();
-                AnimationModified();
-                AnimationFrameUpdated();
-            }
-            finally
-            {
-                _saveEnabled = true;
-            }
+            Animation = new AtomAnimation(containingAtom);
+            Animation.Initialize();
+            AnimationModified();
+            AnimationFrameUpdated();
         }
 
         private void StartAutoPlay()
@@ -440,7 +426,6 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(animationName)) return;
 
-            _saveEnabled = false;
             try
             {
                 FilterAnimationTargetJSON.val = StorableNames.AllTargets;
@@ -466,10 +451,6 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ChangeAnimation)}: " + exc);
-            }
-            finally
-            {
-                _saveEnabled = true;
             }
         }
 

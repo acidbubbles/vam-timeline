@@ -397,7 +397,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(ImportRecorded)}.{nameof(Bake)}[Init]: {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Init]: {exc}");
                     yield break;
                 }
 
@@ -423,7 +423,7 @@ namespace VamTimeline
                     }
                     catch (Exception exc)
                     {
-                        SuperController.LogError($"VamTimeline.{nameof(ImportRecorded)}.{nameof(Bake)}[Step]: {exc}");
+                        SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
                         yield break;
                     }
 
