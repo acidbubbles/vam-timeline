@@ -164,11 +164,11 @@ namespace VamTimeline
             else
                 DeserializeCurveFromString(curve, curveJSON, keyframeSettings);
 
-            if (curve.keys.Length < 2)
+            if (curve.length < 2)
             {
                 // Attempt repair
-                var keyframe = curve.keys.Length > 0 ? curve.keys[0] : new Keyframe { value = 0 };
-                if (curve.keys.Length > 0)
+                var keyframe = curve.length > 0 ? curve[0] : new Keyframe { value = 0 };
+                if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
                 curve.AddKey(keyframe);

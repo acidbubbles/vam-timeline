@@ -442,14 +442,14 @@ namespace VamTimeline
 
             SuperController.singleton.ClearMessages();
             SuperController.LogMessage($"Import all keyframes in {totalStopwatch.Elapsed.TotalSeconds:0.00}s, rebuilding animation...");
+
             yield return 0;
+
             Plugin.Animation.RebuildAnimation();
 
-            SuperController.singleton.ClearMessages();
-            SuperController.LogMessage($"Import all keyframes in {totalStopwatch.Elapsed.TotalSeconds:0.00}s, updating plugin state...");
             yield return 0;
-            Plugin.AnimationModified();
 
+            Plugin.AnimationModified();
             SuperController.singleton.ClearMessages();
             SuperController.LogMessage($"Import completed in {totalStopwatch.Elapsed.TotalSeconds:0.00}s");
         }
