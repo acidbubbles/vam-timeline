@@ -135,6 +135,7 @@ namespace VamTimeline
             var nextTime = AnimationLength;
             foreach (var controller in GetAllOrSelectedTargets())
             {
+                // TODO: Use bisect for more efficient navigation
                 var targetNextTime = controller.GetCurves().First().keys.FirstOrDefault(k => k.time > time).time;
                 if (!targetNextTime.IsSameFrame(0) && targetNextTime < nextTime) nextTime = targetNextTime;
             }
@@ -152,6 +153,7 @@ namespace VamTimeline
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedTargets())
             {
+                // TODO: Use bisect for more efficient navigation
                 var targetPreviousTime = controller.GetCurves().First().keys.LastOrDefault(k => k.time < time).time;
                 if (!targetPreviousTime.IsSameFrame(0) && targetPreviousTime > previousTime) previousTime = targetPreviousTime;
             }

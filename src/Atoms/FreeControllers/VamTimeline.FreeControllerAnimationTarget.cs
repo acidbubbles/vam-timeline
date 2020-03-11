@@ -129,7 +129,13 @@ namespace VamTimeline
 
         public IEnumerable<float> GetAllKeyframesTime()
         {
-            return Curves.SelectMany(c => c.keys).Select(k => k.time).Distinct();
+            var set = new SortedDictionary<float, int>();
+            foreach (var curve in Curves)
+            {
+                for (var i = 0; i < curve.length; i++)
+                    set[curve[i].time] = 0;
+            }
+            return set.Keys;
         }
 
         #endregion

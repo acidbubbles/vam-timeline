@@ -151,7 +151,7 @@ namespace VamTimeline
         #region Curves
 
         [MethodImpl(256)]
-        private static int KeyframeBinarySearch(AnimationCurve curve, float time)
+        public static int KeyframeBinarySearch(this AnimationCurve curve, float time)
         {
             var left = 0;
             var right = curve.length - 1;
@@ -161,11 +161,11 @@ namespace VamTimeline
                 var middle = left + (right - left) / 2;
 
                 var keyTime = curve[middle].time;
-                if (keyTime > time)
+                if (keyTime > time - 0.0001f)
                 {
                     right = middle - 1;
                 }
-                else if (curve[middle].time < time)
+                else if (curve[middle].time < time + 0.0001f)
                 {
                     left = middle + 1;
                 }
@@ -179,7 +179,7 @@ namespace VamTimeline
 
         public static void ApplyCurve(this AnimationCurve curve, float time, string curveType)
         {
-            var key = KeyframeBinarySearch(curve, time);
+            var key = curve.KeyframeBinarySearch(time);
             if (key == -1) return;
             var keyframe = curve[key];
             var before = key > 0 ? (Keyframe?)curve[key - 1] : null;

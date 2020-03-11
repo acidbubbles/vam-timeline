@@ -98,18 +98,19 @@ namespace VamTimeline
                 return;
             }
             var ms = time.ToMilliseconds();
-            var curveTypes = Plugin.Animation.Current.GetAllOrSelectedControllerTargets()
-                .Select(c => c.Settings.ContainsKey(ms) ? c.Settings[ms] : null)
-                .Where(s => s != null)
-                .Select(s => s.CurveType)
-                .Distinct()
-                .ToArray();
-            if (curveTypes.Length == 0)
+            var curveTypes = new HashSet<string>();
+            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+            {
+                KeyframeSettings v;
+                if (!target.Settings.TryGetValue(ms, out v)) continue;
+                curveTypes.Add(v.CurveType);
+            }
+            if (curveTypes.Count == 0)
                 _curveTypeJSON.valNoCallback = "(No Keyframe)";
-            else if (curveTypes.Length == 1)
-                _curveTypeJSON.valNoCallback = curveTypes[0].ToString();
+            else if (curveTypes.Count == 1)
+                _curveTypeJSON.valNoCallback = curveTypes.First().ToString();
             else
-                _curveTypeJSON.valNoCallback = "(" + string.Join("/", curveTypes) + ")";
+                _curveTypeJSON.valNoCallback = "(" + string.Join("/", curveTypes.ToArray()) + ")";
         }
 
         private void UpdateValues()

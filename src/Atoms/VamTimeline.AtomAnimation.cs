@@ -218,7 +218,7 @@ namespace VamTimeline
                     if (blendingTarget != null)
                     {
                         var weight = _blendingTimeLeft / _blendingDuration;
-                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(time) * (weight)) + (val * (1 - weight));
+                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(time) * weight) + (val * (1 - weight));
                     }
                     else
                     {

@@ -17,6 +17,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
+        private const int MaxDisplayedFrames = 500;
         private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // Storables
@@ -591,11 +592,15 @@ namespace VamTimeline
                 foreach (var keyTime in keyTimes)
                 {
                     frames.Add(keyTime);
+                    if (frames.Count >= MaxDisplayedFrames)
+                    {
+                        DisplayJSON.val = "Too many frames to display";
+                        return;
+                    }
                     if (keyTime.IsSameFrame(time))
                         targets.Add(target.Name);
                 }
             }
-
 
             var display = new StringBuilder();
             if (frames.Count == 1)
