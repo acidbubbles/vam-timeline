@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -341,59 +342,116 @@ namespace VamTimeline
             }
         }
 
+
         private void ImportRecorded()
         {
-            try
+            if (SuperController.singleton.motionAnimationMaster == null || Plugin.ContainingAtom.motionAnimationControls == null)
             {
-                var minFrameDuration = 0.1f;
-                switch (_importRecordedOptionsJSON.val)
-                {
-                    case "2 fps":
-                        minFrameDuration = 0.5f;
-                        break;
-                    case "10 fps":
-                        minFrameDuration = 0.1f;
-                        break;
-                    case "100 fps":
-                        minFrameDuration = 0.01f;
-                        break;
-                }
+                SuperController.LogError("Missing motion animation controls");
+                return;
+            }
 
-                var containingAtom = Plugin.ContainingAtom;
-                var current = Plugin.Animation.Current;
-                current.Loop = SuperController.singleton.motionAnimationMaster.loop;
-                foreach (var mot in containingAtom.motionAnimationControls)
+            Plugin.StartCoroutine(ImportRecordedCoroutine());
+        }
+
+        private IEnumerator ImportRecordedCoroutine()
+        {
+            var timeout = TimeSpan.FromSeconds(5);
+            var current = Plugin.Animation.Current;
+            var containingAtom = Plugin.ContainingAtom;
+            var minFrameDuration = 0.1f;
+            var totalStopwatch = Stopwatch.StartNew();
+            var batchStopwatch = Stopwatch.StartNew();
+
+            switch (_importRecordedOptionsJSON.val)
+            {
+                case "2 fps":
+                    minFrameDuration = 0.5f;
+                    break;
+                case "10 fps":
+                    minFrameDuration = 0.1f;
+                    break;
+                case "100 fps":
+                    minFrameDuration = 0.01f;
+                    break;
+            }
+
+            current.Loop = SuperController.singleton.motionAnimationMaster.loop;
+
+            yield return 0;
+
+            foreach (var mot in containingAtom.motionAnimationControls)
+            {
+                FreeControllerAnimationTarget target;
+                FreeControllerV3 ctrl;
+
+                try
                 {
                     if (mot == null || mot.clip == null) continue;
                     if (mot.clip.clipLength <= 0.001) continue;
-                    var ctrl = mot.controller;
+                    ctrl = mot.controller;
                     current.Remove(ctrl);
-                    var target = Plugin.Animation.Add(ctrl);
+                    target = Plugin.Animation.Add(ctrl);
                     if (mot.clip.clipLength > current.AnimationLength)
                         current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
-                    var lastRecordedFrame = float.MinValue;
-                    foreach (var step in mot.clip.steps)
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.{nameof(ImportRecorded)}.{nameof(Bake)}[Init]: {exc}");
+                    yield break;
+                }
+
+                var lastRecordedFrame = float.MinValue;
+                foreach (var step in mot.clip.steps)
+                {
+                    try
                     {
                         if (!step.positionOn && !step.rotationOn)
                             continue;
                         var frame = step.timeStep.Snap();
                         if (frame - lastRecordedFrame < minFrameDuration) continue;
                         if (current.Loop && frame.IsSameFrame(mot.clip.clipLength)) continue;
+                        var localPosition = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition;
+                        var locationRotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation;
                         target.SetKeyframe(
                             frame,
-                            step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition,
-                            step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation
+                            localPosition,
+                            locationRotation
                         );
                         lastRecordedFrame = frame;
+                        if (totalStopwatch.Elapsed > timeout) throw new TimeoutException($"Importing took more that {timeout.TotalSeconds} seconds. Reached {step.timeStep}s of {mot.clip.clipLength}s");
+                    }
+                    catch (Exception exc)
+                    {
+                        SuperController.LogError($"VamTimeline.{nameof(ImportRecorded)}.{nameof(Bake)}[Step]: {exc}");
+                        yield break;
+                    }
+
+                    if (batchStopwatch.ElapsedMilliseconds > 5)
+                    {
+                        SuperController.singleton.ClearMessages();
+                        SuperController.LogMessage($"Import {step.timeStep / mot.clip.clipLength * 100:0.0}% of {mot.clip.clipLength:0.0}s (elapsed: {totalStopwatch.Elapsed.TotalSeconds:0.00}s)");
+                        batchStopwatch.Reset();
+                        yield return 0;
+                        batchStopwatch.Start();
                     }
                 }
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
             }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(ImportRecorded)}.{nameof(Bake)}: {exc}");
-            }
+
+            yield return 0;
+
+            SuperController.singleton.ClearMessages();
+            SuperController.LogMessage($"Import all keyframes in {totalStopwatch.Elapsed.TotalSeconds:0.00}s, rebuilding animation...");
+            yield return 0;
+            Plugin.Animation.RebuildAnimation();
+
+            SuperController.singleton.ClearMessages();
+            SuperController.LogMessage($"Import all keyframes in {totalStopwatch.Elapsed.TotalSeconds:0.00}s, updating plugin state...");
+            yield return 0;
+            Plugin.AnimationModified();
+
+            SuperController.singleton.ClearMessages();
+            SuperController.LogMessage($"Import completed in {totalStopwatch.Elapsed.TotalSeconds:0.00}s");
         }
     }
 }
