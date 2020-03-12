@@ -124,11 +124,16 @@ namespace VamTimeline
 
         public void DeleteFrame(float time)
         {
+            var key = GetLeadCurve().KeyframeBinarySearch(time);
+            if (key != -1) DeleteFrameByKey(key);
+        }
+
+        public void DeleteFrameByKey(int key)
+        {
+            var settingIndex = Settings.Remove(GetLeadCurve()[key].time.ToMilliseconds());
             foreach (var curve in GetCurves())
             {
-                var key = curve.KeyframeBinarySearch(time);
-                if (key != -1) curve.RemoveKey(key);
-                var settingIndex = Settings.Remove(time.ToMilliseconds());
+                curve.RemoveKey(key);
             }
         }
 

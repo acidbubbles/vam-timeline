@@ -15,7 +15,7 @@ namespace VamTimeline
     public class FloatParamAnimationTarget : IAnimationTarget
     {
         public JSONStorable Storable { get; }
-        public JSONStorableFloat FloatParam{get;}
+        public JSONStorableFloat FloatParam { get; }
         public AnimationCurve Value { get; } = new AnimationCurve();
 
         public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
@@ -45,6 +45,11 @@ namespace VamTimeline
         {
             var key = Value.KeyframeBinarySearch(time);
             if (key != -1) Value.RemoveKey(key);
+        }
+
+        public void DeleteFrameByKey(int key)
+        {
+            Value.RemoveKey(key);
         }
 
         public IEnumerable<float> GetAllKeyframesTime()

@@ -13,5 +13,6 @@ namespace VamTimeline
         void RenderDebugInfo(StringBuilder display, float time);
         IEnumerable<float> GetAllKeyframesTime();
         void DeleteFrame(float time);
+        void DeleteFrameByKey(int key);
     }
 }
