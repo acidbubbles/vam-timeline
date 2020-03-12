@@ -61,7 +61,7 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
 
-            _importRecordedOptionsJSON = new JSONStorableStringChooser("Import Recorded Animation Options", new List<string> { "2fps", "10 fps", "100 fps" }, "10 fps", "Import Recorded Animation Options")
+            _importRecordedOptionsJSON = new JSONStorableStringChooser("Import Recorded Animation Options", new List<string> { "2 fps", "10 fps", "100 fps" }, "10 fps", "Import Recorded Animation Options")
             {
                 isStorable = false
             };
@@ -359,7 +359,7 @@ namespace VamTimeline
             var timeout = TimeSpan.FromSeconds(5);
             var current = Plugin.Animation.Current;
             var containingAtom = Plugin.ContainingAtom;
-            var minFrameDuration = 0.1f;
+            float minFrameDuration;
             var totalStopwatch = Stopwatch.StartNew();
             var batchStopwatch = Stopwatch.StartNew();
 
@@ -374,6 +374,9 @@ namespace VamTimeline
                 case "100 fps":
                     minFrameDuration = 0.01f;
                     break;
+                default:
+                    SuperController.LogError($"Unknown import option {_importRecordedOptionsJSON.val}");
+                    yield break;
             }
 
             current.Loop = SuperController.singleton.motionAnimationMaster.loop;
