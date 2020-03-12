@@ -160,10 +160,12 @@ namespace VamTimeline
 
         private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
+            if (curveJSON is JSONArray)
+                DeserializeCurveFromArray(curve, (JSONArray)curveJSON, keyframeSettings);
             if (curveJSON is JSONClass)
-                DeserializeCurveLegacy(curve, curveJSON);
+                DeserializeCurveFromClassLegacy(curve, curveJSON);
             else
-                DeserializeCurveFromString(curve, curveJSON, keyframeSettings);
+                DeserializeCurveFromStringLegacy(curve, curveJSON, keyframeSettings);
 
             if (curve.length < 2)
             {
@@ -184,7 +186,34 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromString(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromArray(AnimationCurve curve, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        {
+            var last = -1f;
+            foreach (JSONClass keyframeJSON in curveJSON)
+            {
+                try
+                {
+                    var time = float.Parse(keyframeJSON["t"], CultureInfo.InvariantCulture).Snap();
+                    if (time == last) continue;
+                    last = time;
+                    curve.AddKey(new Keyframe
+                    {
+                        time = time,
+                        value = DeserializeFloat(keyframeJSON["v"]),
+                        inTangent = DeserializeFloat(keyframeJSON["ti"]),
+                        outTangent = DeserializeFloat(keyframeJSON["to"])
+                    });
+                    if (keyframeSettings != null)
+                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.FromInt(int.Parse(keyframeJSON["c"])) });
+                }
+                catch (IndexOutOfRangeException exc)
+                {
+                    throw new InvalidOperationException($"Failed to read curve: {keyframeJSON}", exc);
+                }
+            }
+        }
+
+        private void DeserializeCurveFromStringLegacy(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             var last = -1f;
             foreach (var keyframe in curveJSON.Value.Split(';').Where(x => x != ""))
@@ -199,7 +228,6 @@ namespace VamTimeline
                     {
                         time = time,
                         value = DeserializeFloat(parts[1]),
-                        // TODO: Load curve type
                         inTangent = DeserializeFloat(parts[3]),
                         outTangent = DeserializeFloat(parts[4])
                     });
@@ -213,7 +241,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveLegacy(AnimationCurve curve, JSONNode curveJSON)
+        private void DeserializeCurveFromClassLegacy(AnimationCurve curve, JSONNode curveJSON)
         {
             var last = -1f;
             foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
@@ -326,25 +354,24 @@ namespace VamTimeline
             // TODO: Use US locale to avoid commas in floats
             // TODO: Serialize as: time,value,type,inTangent,outTangent;...
             // e.g.: 0,12.345,1,-0.18,0.18;
-            var sb = new StringBuilder();
+            var curveJSON = new JSONArray();
 
             for (var key = 0; key < curve.length; key++)
             {
                 var keyframe = curve[key];
                 var ms = keyframe.time.ToMilliseconds();
-                sb.Append(keyframe.time.ToString(CultureInfo.InvariantCulture));
-                sb.Append(',');
-                sb.Append(keyframe.value.ToString(CultureInfo.InvariantCulture));
-                sb.Append(',');
-                sb.Append(settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].CurveType).ToString() : "0"));
-                sb.Append(',');
-                sb.Append(keyframe.inTangent.ToString(CultureInfo.InvariantCulture));
-                sb.Append(',');
-                sb.Append(keyframe.outTangent.ToString(CultureInfo.InvariantCulture));
-                sb.Append(';');
+                var curveEntry = new JSONClass
+                {
+                    ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
+                    ["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture),
+                    ["c"] = settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].CurveType).ToString() : "0"),
+                    ["ti"] = keyframe.inTangent.ToString(CultureInfo.InvariantCulture),
+                    ["to"] = keyframe.outTangent.ToString(CultureInfo.InvariantCulture)
+                };
+                curveJSON.Add(curveEntry);
             }
 
-            return sb.ToString();
+            return curveJSON;
         }
 
         #endregion
