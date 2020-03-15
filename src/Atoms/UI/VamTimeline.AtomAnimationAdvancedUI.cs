@@ -62,7 +62,11 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
 
-            _importRecordedOptionsJSON = new JSONStorableStringChooser("Import Recorded Animation Options", new List<string> { "2 fps", "10 fps", "100 fps" }, "10 fps", "Import Recorded Animation Options")
+            _importRecordedOptionsJSON = new JSONStorableStringChooser(
+                "Import Recorded Animation Options",
+                 new List<string> { "Reduction (No Subdivision)", "2 fps", "10 fps", "100 fps" },
+                 "Reduction (No Subdivision)",
+                 "Import Recorded Animation Options")
             {
                 isStorable = false
             };
@@ -359,19 +363,22 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var containingAtom = Plugin.ContainingAtom;
-            float minFrameDuration;
+            float recordOptionValue;
             var totalStopwatch = Stopwatch.StartNew();
 
             switch (_importRecordedOptionsJSON.val)
             {
+                case "Reduction (No Subdivision)":
+                    recordOptionValue = 0;
+                    break;
                 case "2 fps":
-                    minFrameDuration = 0.5f;
+                    recordOptionValue = 0.5f;
                     break;
                 case "10 fps":
-                    minFrameDuration = 0.1f;
+                    recordOptionValue = 0.1f;
                     break;
                 case "100 fps":
-                    minFrameDuration = 0.01f;
+                    recordOptionValue = 0.01f;
                     break;
                 default:
                     SuperController.LogError($"Unknown import option {_importRecordedOptionsJSON.val}");
@@ -403,16 +410,12 @@ namespace VamTimeline
                     yield break;
                 }
 
-                foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, minFrameDuration, current, target, totalStopwatch, ctrl))
-                {
-                    yield return x;
-                }
+                if (_importRecordedOptionsJSON.val.StartsWith("Reduction"))
+                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, recordOptionValue, current, target, totalStopwatch, ctrl)) yield return x;
+                else
+                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, recordOptionValue, current, target, totalStopwatch, ctrl)) yield return x;
+
             }
-
-            yield return 0;
-
-            SuperController.singleton.ClearMessages();
-            SuperController.LogMessage($"Import all keyframes in {totalStopwatch.Elapsed.TotalSeconds:0.00}s, rebuilding animation...");
 
             yield return 0;
 
@@ -421,8 +424,102 @@ namespace VamTimeline
             yield return 0;
 
             Plugin.AnimationModified();
-            SuperController.singleton.ClearMessages();
-            SuperController.LogMessage($"Import completed in {totalStopwatch.Elapsed.TotalSeconds:0.00}s");
+        }
+
+        private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, float minFrameDuration, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        {
+            var batchStopwatch = Stopwatch.StartNew();
+            var containingAtom = Plugin.ContainingAtom;
+            var minDelta = 0.001f;
+
+            // No more than the target fps
+            var lastTime = -1f;
+            var steps = new List<MotionAnimationStep>();
+            foreach (var step in clip.steps)
+            {
+                if (step.timeStep < lastTime + 0.01f) continue;
+                steps.Add(step);
+                lastTime = step.timeStep;
+            }
+
+            var segmentKeyframes = new List<int> { 0, steps.Count - 1 };
+            var skipKeyframes = new HashSet<int>();
+            var maxIterations = 5;
+            for (var iteration = 0; iteration < maxIterations; iteration++)
+            {
+                var splits = 0;
+                for (var segmentIndex = 0; segmentIndex < segmentKeyframes.Count - 1; segmentIndex++)
+                {
+                    int firstIndex = segmentKeyframes[segmentIndex];
+                    if (skipKeyframes.Contains(firstIndex)) continue;
+                    var first = steps[firstIndex];
+                    int lastIndex = segmentKeyframes[segmentIndex + 1];
+                    var last = steps[lastIndex];
+                    SuperController.LogMessage($"Segment {segmentIndex} / {segmentKeyframes.Count} (frames {firstIndex} to {lastIndex})");
+
+                    var largestDelta = 0f;
+                    var largestDeltaIndex = -1;
+                    for (var stepIndex = firstIndex + 1; stepIndex < lastIndex - 1; stepIndex++)
+                    {
+                        var step = clip.steps[stepIndex];
+                        // We can pre-calculate these once and iterate after, avoiding re-calculating the delta
+                        float ratioOfSteps = stepIndex / (float)steps.Count;
+                        var expectedXValue = (last.position.x - first.position.x) * ratioOfSteps + first.position.x;
+                        var expectedYValue = (last.position.y - first.position.y) * ratioOfSteps + first.position.y;
+                        var expectedZValue = (last.position.z - first.position.z) * ratioOfSteps + first.position.z;
+                        var actualDelta = Vector3.SqrMagnitude(new Vector3(
+                            Math.Abs(step.position.x - expectedXValue),
+                            Math.Abs(step.position.y - expectedYValue),
+                            Math.Abs(step.position.z - expectedZValue)
+                        ));
+                        if (actualDelta > largestDelta)
+                        {
+                            largestDelta = actualDelta;
+                            largestDeltaIndex = stepIndex;
+                        }
+
+                        if (batchStopwatch.ElapsedMilliseconds > 5)
+                        {
+                            batchStopwatch.Reset();
+                            yield return 0;
+                            batchStopwatch.Start();
+                        }
+                    }
+                    if (largestDelta > minDelta)
+                    {
+                        segmentKeyframes.Insert(++segmentIndex, largestDeltaIndex);
+                        SuperController.LogMessage($"  Split at frame {largestDeltaIndex} with delta {largestDelta}, seg {segmentIndex} of {string.Join(", ", segmentKeyframes.Select(v => v.ToString()).ToArray())}");
+                        splits++;
+                    }
+                    else
+                    {
+                        skipKeyframes.Add(firstIndex);
+                        SuperController.LogMessage($"  Skip at frame {largestDeltaIndex} with delta {largestDelta}, seg {segmentIndex} of {string.Join(", ", segmentKeyframes.Select(v => v.ToString()).ToArray())}");
+                    }
+
+                    if (splits == 0)
+                    {
+                        SuperController.LogMessage("  Done splitting");
+                        break;
+                    }
+                }
+            }
+
+            foreach (var key in segmentKeyframes)
+            {
+                if (key == -1) continue;
+                var step = steps[key];
+                SetKeyframeFromStep(target, ctrl, containingAtom, steps[key], step.timeStep.Snap());
+
+                if (batchStopwatch.ElapsedMilliseconds > 5)
+                {
+                    batchStopwatch.Reset();
+                    yield return 0;
+                    batchStopwatch.Start();
+                }
+            }
+
+            yield break;
         }
 
         private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float minFrameDuration, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
@@ -435,18 +532,11 @@ namespace VamTimeline
             {
                 try
                 {
-                    if (!step.positionOn && !step.rotationOn)
-                        continue;
                     var frame = step.timeStep.Snap();
                     if (frame - lastRecordedFrame < minFrameDuration) continue;
+                    // TODO: Replace by a for that skips the last entry
                     if (current.Loop && frame.IsSameFrame(clip.clipLength)) continue;
-                    var localPosition = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition;
-                    var locationRotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation;
-                    target.SetKeyframe(
-                        frame,
-                        localPosition,
-                        locationRotation
-                    );
+                    SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
                     lastRecordedFrame = frame;
                     if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
                 }
@@ -458,13 +548,23 @@ namespace VamTimeline
 
                 if (batchStopwatch.ElapsedMilliseconds > 5)
                 {
-                    SuperController.singleton.ClearMessages();
-                    SuperController.LogMessage($"Import {step.timeStep / clip.clipLength * 100:0.0}% of {clip.clipLength:0.0}s (elapsed: {totalStopwatch.Elapsed.TotalSeconds:0.00}s)");
                     batchStopwatch.Reset();
                     yield return 0;
                     batchStopwatch.Start();
                 }
             }
+        }
+
+        private static void SetKeyframeFromStep(FreeControllerAnimationTarget target, FreeControllerV3 ctrl, Atom containingAtom, MotionAnimationStep step, float frame)
+        {
+            if (!step.positionOn && !step.rotationOn) return;
+            var localPosition = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition;
+            var locationRotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation;
+            target.SetKeyframe(
+                frame,
+                localPosition,
+                locationRotation
+            );
         }
     }
 }
