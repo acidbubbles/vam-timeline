@@ -363,22 +363,24 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var containingAtom = Plugin.ContainingAtom;
-            float recordOptionValue;
+            float frameDistanceSeconds;
+            int subdivisions = 0;
             var totalStopwatch = Stopwatch.StartNew();
 
             switch (_importRecordedOptionsJSON.val)
             {
                 case "Reduction (No Subdivision)":
-                    recordOptionValue = 0;
+                    frameDistanceSeconds = 0.1f;
+                    subdivisions = 0;
                     break;
                 case "2 fps":
-                    recordOptionValue = 0.5f;
+                    frameDistanceSeconds = 0.5f;
                     break;
                 case "10 fps":
-                    recordOptionValue = 0.1f;
+                    frameDistanceSeconds = 0.1f;
                     break;
                 case "100 fps":
-                    recordOptionValue = 0.01f;
+                    frameDistanceSeconds = 0.01f;
                     break;
                 default:
                     SuperController.LogError($"Unknown import option {_importRecordedOptionsJSON.val}");
@@ -411,9 +413,9 @@ namespace VamTimeline
                 }
 
                 if (_importRecordedOptionsJSON.val.StartsWith("Reduction"))
-                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, recordOptionValue, current, target, totalStopwatch, ctrl)) yield return x;
+                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, frameDistanceSeconds, subdivisions, current, target, totalStopwatch, ctrl)) yield return x;
                 else
-                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, recordOptionValue, current, target, totalStopwatch, ctrl)) yield return x;
+                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameDistanceSeconds, current, target, totalStopwatch, ctrl)) yield return x;
 
             }
 
@@ -426,7 +428,7 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, float minFrameDuration, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, float frameDistanceSeconds, int subdivisions, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
@@ -437,7 +439,7 @@ namespace VamTimeline
             var steps = new List<MotionAnimationStep>();
             foreach (var step in clip.steps)
             {
-                if (step.timeStep < lastTime + 0.01f) continue;
+                if (step.timeStep < lastTime + frameDistanceSeconds) continue;
                 steps.Add(step);
                 lastTime = step.timeStep;
             }
@@ -505,24 +507,37 @@ namespace VamTimeline
                 }
             }
 
-            foreach (var key in segmentKeyframes)
             {
-                if (key == -1) continue;
-                var step = steps[key];
-                SetKeyframeFromStep(target, ctrl, containingAtom, steps[key], step.timeStep.Snap());
-
-                if (batchStopwatch.ElapsedMilliseconds > 5)
+                int previousKey = 0;
+                foreach (var key in segmentKeyframes.Where(k => k != -1).Skip(1))
                 {
-                    batchStopwatch.Reset();
-                    yield return 0;
-                    batchStopwatch.Start();
+                    var step = steps[key];
+                    var previousStep = steps[previousKey];
+                    var timeDelta = step.timeStep - previousStep.timeStep;
+                    var maxSubd = Math.Min(subdivisions, timeDelta / frameDistanceSeconds);
+                    var keyIncr = Math.Max((int)((key - previousKey) / maxSubd), 1);
+                    SuperController.LogMessage($"Subd key {previousKey} ({steps[previousKey].timeStep}s) to {key} ({steps[key].timeStep}s) subdivide in {maxSubd} by incr {keyIncr}");
+                    for (var k = previousKey; k < key; k += keyIncr)
+                    {
+                        SuperController.LogMessage($"  {k}");
+                        var s = steps[k];
+                        SetKeyframeFromStep(target, ctrl, containingAtom, steps[key], step.timeStep.Snap());
+                    }
+
+                    previousKey = key;
+                    if (batchStopwatch.ElapsedMilliseconds > 5)
+                    {
+                        batchStopwatch.Reset();
+                        yield return 0;
+                        batchStopwatch.Start();
+                    }
                 }
             }
 
             yield break;
         }
 
-        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float minFrameDuration, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float frameDistanceSeconds, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
@@ -533,7 +548,7 @@ namespace VamTimeline
                 try
                 {
                     var frame = step.timeStep.Snap();
-                    if (frame - lastRecordedFrame < minFrameDuration) continue;
+                    if (frame - lastRecordedFrame < frameDistanceSeconds) continue;
                     // TODO: Replace by a for that skips the last entry
                     if (current.Loop && frame.IsSameFrame(clip.clipLength)) continue;
                     SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
