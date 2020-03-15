@@ -17,6 +17,7 @@ namespace VamTimeline
     public class AtomAnimationAdvancedUI : AtomAnimationBaseUI
     {
         private static readonly Regex _sanitizeRE = new Regex("[^a-zA-Z0-9 _-]", RegexOptions.Compiled);
+        private static readonly TimeSpan ImportMocapTimeout = TimeSpan.FromSeconds(5);
 
         public const string ScreenName = "Advanced";
         private JSONStorableStringChooser _exportAnimationsJSON;
@@ -356,12 +357,10 @@ namespace VamTimeline
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            var timeout = TimeSpan.FromSeconds(5);
             var current = Plugin.Animation.Current;
             var containingAtom = Plugin.ContainingAtom;
             float minFrameDuration;
             var totalStopwatch = Stopwatch.StartNew();
-            var batchStopwatch = Stopwatch.StartNew();
 
             switch (_importRecordedOptionsJSON.val)
             {
@@ -404,40 +403,9 @@ namespace VamTimeline
                     yield break;
                 }
 
-                var lastRecordedFrame = float.MinValue;
-                foreach (var step in mot.clip.steps)
+                foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, minFrameDuration, current, target, totalStopwatch, ctrl))
                 {
-                    try
-                    {
-                        if (!step.positionOn && !step.rotationOn)
-                            continue;
-                        var frame = step.timeStep.Snap();
-                        if (frame - lastRecordedFrame < minFrameDuration) continue;
-                        if (current.Loop && frame.IsSameFrame(mot.clip.clipLength)) continue;
-                        var localPosition = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition;
-                        var locationRotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation;
-                        target.SetKeyframe(
-                            frame,
-                            localPosition,
-                            locationRotation
-                        );
-                        lastRecordedFrame = frame;
-                        if (totalStopwatch.Elapsed > timeout) throw new TimeoutException($"Importing took more that {timeout.TotalSeconds} seconds. Reached {step.timeStep}s of {mot.clip.clipLength}s");
-                    }
-                    catch (Exception exc)
-                    {
-                        SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
-                        yield break;
-                    }
-
-                    if (batchStopwatch.ElapsedMilliseconds > 5)
-                    {
-                        SuperController.singleton.ClearMessages();
-                        SuperController.LogMessage($"Import {step.timeStep / mot.clip.clipLength * 100:0.0}% of {mot.clip.clipLength:0.0}s (elapsed: {totalStopwatch.Elapsed.TotalSeconds:0.00}s)");
-                        batchStopwatch.Reset();
-                        yield return 0;
-                        batchStopwatch.Start();
-                    }
+                    yield return x;
                 }
             }
 
@@ -455,6 +423,48 @@ namespace VamTimeline
             Plugin.AnimationModified();
             SuperController.singleton.ClearMessages();
             SuperController.LogMessage($"Import completed in {totalStopwatch.Elapsed.TotalSeconds:0.00}s");
+        }
+
+        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float minFrameDuration, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        {
+            var batchStopwatch = Stopwatch.StartNew();
+            var containingAtom = Plugin.ContainingAtom;
+
+            var lastRecordedFrame = float.MinValue;
+            foreach (var step in clip.steps)
+            {
+                try
+                {
+                    if (!step.positionOn && !step.rotationOn)
+                        continue;
+                    var frame = step.timeStep.Snap();
+                    if (frame - lastRecordedFrame < minFrameDuration) continue;
+                    if (current.Loop && frame.IsSameFrame(clip.clipLength)) continue;
+                    var localPosition = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition;
+                    var locationRotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation;
+                    target.SetKeyframe(
+                        frame,
+                        localPosition,
+                        locationRotation
+                    );
+                    lastRecordedFrame = frame;
+                    if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
+                    yield break;
+                }
+
+                if (batchStopwatch.ElapsedMilliseconds > 5)
+                {
+                    SuperController.singleton.ClearMessages();
+                    SuperController.LogMessage($"Import {step.timeStep / clip.clipLength * 100:0.0}% of {clip.clipLength:0.0}s (elapsed: {totalStopwatch.Elapsed.TotalSeconds:0.00}s)");
+                    batchStopwatch.Reset();
+                    yield return 0;
+                    batchStopwatch.Start();
+                }
+            }
         }
     }
 }
