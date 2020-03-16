@@ -21,7 +21,6 @@ namespace VamTimeline
 
         public const string ScreenName = "Advanced";
         private JSONStorableStringChooser _exportAnimationsJSON;
-        private JSONStorableStringChooser _importRecordedOptionsJSON;
 
         public override string Name => ScreenName;
 
@@ -61,17 +60,6 @@ namespace VamTimeline
             var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
-
-            _importRecordedOptionsJSON = new JSONStorableStringChooser(
-                "Import Recorded Animation Options",
-                 new List<string> { "Reduction (No Subdivision)", "2 fps", "10 fps", "100 fps" },
-                 "Reduction (No Subdivision)",
-                 "Import Recorded Animation Options")
-            {
-                isStorable = false
-            };
-            var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
-            _linkedStorables.Add(_importRecordedOptionsJSON);
 
             var importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
@@ -363,29 +351,7 @@ namespace VamTimeline
         {
             var current = Plugin.Animation.Current;
             var containingAtom = Plugin.ContainingAtom;
-            float frameDistanceSeconds;
-            int subdivisions = 0;
             var totalStopwatch = Stopwatch.StartNew();
-
-            switch (_importRecordedOptionsJSON.val)
-            {
-                case "Reduction (No Subdivision)":
-                    frameDistanceSeconds = 0.1f;
-                    subdivisions = 0;
-                    break;
-                case "2 fps":
-                    frameDistanceSeconds = 0.5f;
-                    break;
-                case "10 fps":
-                    frameDistanceSeconds = 0.1f;
-                    break;
-                case "100 fps":
-                    frameDistanceSeconds = 0.01f;
-                    break;
-                default:
-                    SuperController.LogError($"Unknown import option {_importRecordedOptionsJSON.val}");
-                    yield break;
-            }
 
             current.Loop = SuperController.singleton.motionAnimationMaster.loop;
 
@@ -412,11 +378,7 @@ namespace VamTimeline
                     yield break;
                 }
 
-                if (_importRecordedOptionsJSON.val.StartsWith("Reduction"))
-                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, frameDistanceSeconds, subdivisions, current, target, totalStopwatch, ctrl)) yield return x;
-                else
-                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameDistanceSeconds, current, target, totalStopwatch, ctrl)) yield return x;
-
+                foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, current, target, totalStopwatch, ctrl)) yield return x;
             }
 
             yield return 0;
@@ -428,25 +390,26 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
-        private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, float frameDistanceSeconds, int subdivisions, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
             var minDelta = 0.001f;
 
-            // No more than the target fps
-            var lastTime = -1f;
-            var steps = new List<MotionAnimationStep>();
-            foreach (var step in clip.steps)
-            {
-                if (step.timeStep < lastTime + frameDistanceSeconds) continue;
-                steps.Add(step);
-                lastTime = step.timeStep;
-            }
+            var steps = ReduceStepsCount(clip, ctrl, containingAtom);
 
             var segmentKeyframes = new List<int> { 0, steps.Count - 1 };
             var skipKeyframes = new HashSet<int>();
             var maxIterations = 5;
+            var curveX = new AnimationCurve();
+            curveX.AddKey(0, steps[0].position.x);
+            curveX.AddKey(0, steps[steps.Count - 1].position.x);
+            var curveY = new AnimationCurve();
+            curveY.AddKey(0, steps[0].position.y);
+            curveY.AddKey(0, steps[steps.Count - 1].position.y);
+            var curveZ = new AnimationCurve();
+            curveZ.AddKey(0, steps[0].position.z);
+            curveZ.AddKey(0, steps[steps.Count - 1].position.z);
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
                 var splits = 0;
@@ -464,15 +427,10 @@ namespace VamTimeline
                     for (var stepIndex = firstIndex + 1; stepIndex < lastIndex - 1; stepIndex++)
                     {
                         var step = clip.steps[stepIndex];
-                        // We can pre-calculate these once and iterate after, avoiding re-calculating the delta
-                        float ratioOfSteps = stepIndex / (float)steps.Count;
-                        var expectedXValue = (last.position.x - first.position.x) * ratioOfSteps + first.position.x;
-                        var expectedYValue = (last.position.y - first.position.y) * ratioOfSteps + first.position.y;
-                        var expectedZValue = (last.position.z - first.position.z) * ratioOfSteps + first.position.z;
                         var actualDelta = Vector3.SqrMagnitude(new Vector3(
-                            Math.Abs(step.position.x - expectedXValue),
-                            Math.Abs(step.position.y - expectedYValue),
-                            Math.Abs(step.position.z - expectedZValue)
+                            Math.Abs(step.position.x - curveX.Evaluate(step.timeStep)),
+                            Math.Abs(step.position.y - curveY.Evaluate(step.timeStep)),
+                            Math.Abs(step.position.z - curveZ.Evaluate(step.timeStep))
                         ));
                         if (actualDelta > largestDelta)
                         {
@@ -490,6 +448,10 @@ namespace VamTimeline
                     if (largestDelta > minDelta)
                     {
                         segmentKeyframes.Insert(++segmentIndex, largestDeltaIndex);
+                        var largestDeltaStep = steps[largestDeltaIndex];
+                        curveX.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.x);
+                        curveY.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.y);
+                        curveZ.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.z);
                         SuperController.LogMessage($"  Split at frame {largestDeltaIndex} with delta {largestDelta}, seg {segmentIndex} of {string.Join(", ", segmentKeyframes.Select(v => v.ToString()).ToArray())}");
                         splits++;
                     }
@@ -504,37 +466,67 @@ namespace VamTimeline
                         SuperController.LogMessage("  Done splitting");
                         break;
                     }
+
+                    curveX.SmoothAllFrames();
+                    curveY.SmoothAllFrames();
+                    curveZ.SmoothAllFrames();
                 }
             }
 
-            {
-                int previousKey = 0;
-                foreach (var key in segmentKeyframes.Where(k => k != -1).Skip(1))
-                {
-                    var step = steps[key];
-                    var previousStep = steps[previousKey];
-                    var timeDelta = step.timeStep - previousStep.timeStep;
-                    var maxSubd = Math.Min(subdivisions, timeDelta / frameDistanceSeconds);
-                    var keyIncr = Math.Max((int)((key - previousKey) / maxSubd), 1);
-                    SuperController.LogMessage($"Subd key {previousKey} ({steps[previousKey].timeStep}s) to {key} ({steps[key].timeStep}s) subdivide in {maxSubd} by incr {keyIncr}");
-                    for (var k = previousKey; k < key; k += keyIncr)
-                    {
-                        SuperController.LogMessage($"  {k}");
-                        var s = steps[k];
-                        SetKeyframeFromStep(target, ctrl, containingAtom, steps[key], step.timeStep.Snap());
-                    }
+SuperController.LogMessage(steps.Count.ToString());
+            foreach (var step in steps)
+                SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
+            // {
+            //     foreach (var key in segmentKeyframes.Where(k => k != -1))
+            //     {
+            //         var step = steps[key];
+            //         SetKeyframeFromStep(target, ctrl, containingAtom, steps[key], step.timeStep.Snap());
 
-                    previousKey = key;
-                    if (batchStopwatch.ElapsedMilliseconds > 5)
-                    {
-                        batchStopwatch.Reset();
-                        yield return 0;
-                        batchStopwatch.Start();
-                    }
-                }
-            }
+            //         if (batchStopwatch.ElapsedMilliseconds > 5)
+            //         {
+            //             batchStopwatch.Reset();
+            //             yield return 0;
+            //             batchStopwatch.Start();
+            //         }
+            //     }
+            // }
 
             yield break;
+        }
+
+        private static List<MotionAnimationStep> ReduceStepsCount(MotionAnimationClip clip, FreeControllerV3 ctrl, Atom containingAtom)
+        {
+            var lastTime = -1f;
+            var steps = new List<MotionAnimationStep>();
+            var averagedSteps = new List<MotionAnimationStep>();
+            foreach (var s in clip.steps)
+            {
+                var step = s;
+                if (!step.positionOn && !step.rotationOn) continue;
+                if (!step.positionOn || !step.rotationOn)
+                {
+                    step = new MotionAnimationStep
+                    {
+                        timeStep = step.timeStep,
+                        position = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition,
+                        rotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation
+                    };
+                }
+                averagedSteps.Add(step);
+                if (step.timeStep < lastTime + 0.1f) continue;
+                var averagedStep = new MotionAnimationStep
+                {
+                    timeStep = averagedSteps.Sum(p => p.timeStep) / averagedSteps.Count,
+                    positionOn = true,
+                    position = averagedSteps.Aggregate(Vector3.zero, (r, p) => r + p.position) / averagedSteps.Count,
+                    rotationOn = true,
+                    rotation = Quaternion.Euler(averagedSteps.Aggregate(Vector3.zero, (r, p) => r + p.rotation.eulerAngles) / averagedSteps.Count)
+                };
+                steps.Add(averagedStep);
+                averagedSteps.Clear();
+                lastTime = step.timeStep;
+            }
+            return steps;
         }
 
         private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float frameDistanceSeconds, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
