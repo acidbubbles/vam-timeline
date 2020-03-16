@@ -184,6 +184,7 @@ namespace VamTimeline
                 return;
             }
             Plugin.Animation.Current.ChangeCurve(time, curveType);
+            Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
 
