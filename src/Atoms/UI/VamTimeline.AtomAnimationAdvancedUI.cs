@@ -21,6 +21,7 @@ namespace VamTimeline
 
         public const string ScreenName = "Advanced";
         private JSONStorableStringChooser _exportAnimationsJSON;
+        private UIDynamicButton _importRecordedUI;
 
         public override string Name => ScreenName;
 
@@ -61,9 +62,9 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
 
-            var importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
-            importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
-            _components.Add(importRecordedUI);
+            _importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
+            _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
+            _components.Add(_importRecordedUI);
 
             CreateSpacer(true);
 
@@ -344,6 +345,9 @@ namespace VamTimeline
                 return;
             }
 
+            if(_importRecordedUI == null) return;
+            _importRecordedUI.buttonText.text = "Importing, please wait...";
+
             Plugin.StartCoroutine(ImportRecordedCoroutine());
         }
 
@@ -388,11 +392,14 @@ namespace VamTimeline
             yield return 0;
 
             Plugin.AnimationModified();
+
+            _importRecordedUI.buttonText.text = "Import Recorded Animation (Mocap)";
         }
 
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
-            var minDelta = 0.01f;
+            var minDelta = 0.1f;
+            var minFrameDistance = 0.1f;
             var maxIterations = (int)Math.Floor(Math.Sqrt(clip.clipLength * 10));
 
             var batchStopwatch = Stopwatch.StartNew();
@@ -419,7 +426,6 @@ namespace VamTimeline
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
-                SuperController.LogMessage($"== Iteration {iteration}");
                 var splits = 0;
                 for (var segmentIndex = 0; segmentIndex < segmentKeyframes.Count - 1; segmentIndex++)
                 {
@@ -428,25 +434,35 @@ namespace VamTimeline
                     var first = steps[firstIndex];
                     int lastIndex = segmentKeyframes[segmentIndex + 1] - 1;
                     var last = steps[lastIndex];
-                    SuperController.LogMessage($"Segment {segmentIndex} / {segmentKeyframes.Count} (frames {firstIndex} to {lastIndex})");
+                    if (last.timeStep - first.timeStep < minFrameDistance)
+                    {
+                        skipKeyframes.Add(firstIndex);
+                        continue;
+                    }
 
                     var largestDelta = 0f;
                     var largestDeltaIndex = -1;
                     for (var stepIndex = firstIndex + 1; stepIndex < lastIndex - 1; stepIndex++)
                     {
-                        var step = clip.steps[stepIndex];
-                        Vector3 curvePosition = new Vector3(
-                            curveX.Evaluate(step.timeStep),
-                            curveY.Evaluate(step.timeStep),
-                            curveZ.Evaluate(step.timeStep)
-                        );
-                        var actualDelta = Vector3.Distance(step.position, curvePosition);
-                        // if (stepIndex % 10 == 0)
-                        //     SuperController.LogMessage($"  {step.timeStep}: {curvePosition} -> {step.position} ({actualDelta})");
-                        if (actualDelta > largestDelta)
+                        try
                         {
-                            largestDelta = actualDelta;
-                            largestDeltaIndex = stepIndex;
+                            var step = clip.steps[stepIndex];
+                            Vector3 curvePosition = new Vector3(
+                                curveX.Evaluate(step.timeStep),
+                                curveY.Evaluate(step.timeStep),
+                                curveZ.Evaluate(step.timeStep)
+                            );
+                            var actualDelta = Vector3.Distance(step.position, curvePosition);
+                            if (actualDelta > largestDelta)
+                            {
+                                largestDelta = actualDelta;
+                                largestDeltaIndex = stepIndex;
+                            }
+                        }
+                        catch (Exception exc)
+                        {
+                            SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ExtractFramesWithReductionTechnique)}[Step]: {exc}");
+                            yield break;
                         }
 
                         if (batchStopwatch.ElapsedMilliseconds > 5)
@@ -456,51 +472,49 @@ namespace VamTimeline
                             batchStopwatch.Start();
                         }
                     }
-                    if (largestDelta > minDelta)
+                    try
                     {
-                        segmentKeyframes.Insert(++segmentIndex, largestDeltaIndex);
-                        var largestDeltaStep = steps[largestDeltaIndex];
+                        if (largestDelta > minDelta)
+                        {
+                            segmentKeyframes.Insert(++segmentIndex, largestDeltaIndex);
+                            var largestDeltaStep = steps[largestDeltaIndex];
 
-                        var curveXKey = curveX.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.x);
-                        if (curveXKey == -1) throw new Exception("Twice x?");
-                        if (curveXKey > 0) curveX.SmoothTangents(curveXKey - 1, 1f);
-                        curveX.SmoothTangents(curveXKey, 1f);
-                        if (curveXKey < curveX.length - 2) curveX.SmoothTangents(curveXKey + 1, 1f);
+                            var curveXKey = curveX.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.x);
+                            if (curveXKey > 0) curveX.SmoothTangents(curveXKey - 1, 1f);
+                            curveX.SmoothTangents(curveXKey, 1f);
+                            if (curveXKey < curveX.length - 2) curveX.SmoothTangents(curveXKey + 1, 1f);
 
-                        var curveYKey = curveY.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.y);
-                        if (curveYKey == -1) throw new Exception("Twice y?");
-                        if (curveYKey > 0) curveY.SmoothTangents(curveYKey - 1, 1f);
-                        curveY.SmoothTangents(curveYKey, 1f);
-                        if (curveYKey < curveY.length - 2) curveY.SmoothTangents(curveYKey + 1, 1f);
+                            var curveYKey = curveY.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.y);
+                            if (curveYKey > 0) curveY.SmoothTangents(curveYKey - 1, 1f);
+                            curveY.SmoothTangents(curveYKey, 1f);
+                            if (curveYKey < curveY.length - 2) curveY.SmoothTangents(curveYKey + 1, 1f);
 
-                        var curveZKey = curveZ.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.z);
-                        if (curveZKey == -1) throw new Exception("Twice z?");
-                        if (curveZKey > 0) curveZ.SmoothTangents(curveZKey - 1, 1f);
-                        curveZ.SmoothTangents(curveZKey, 1f);
-                        if (curveZKey < curveZ.length - 2) curveZ.SmoothTangents(curveZKey + 1, 1f);
+                            var curveZKey = curveZ.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.z);
+                            if (curveZKey > 0) curveZ.SmoothTangents(curveZKey - 1, 1f);
+                            curveZ.SmoothTangents(curveZKey, 1f);
+                            if (curveZKey < curveZ.length - 2) curveZ.SmoothTangents(curveZKey + 1, 1f);
 
-                        SuperController.LogMessage($"  Split at time {steps[largestDeltaIndex].timeStep:0.000} frame {largestDeltaIndex} with delta {largestDelta:0.0000}");
-                        splits++;
+                            splits++;
+                        }
+                        else
+                        {
+                            skipKeyframes.Add(firstIndex);
+                        }
+
+                        if (splits == 0)
+                        {
+                            break;
+                        }
                     }
-                    else
+                    catch (Exception exc)
                     {
-                        skipKeyframes.Add(firstIndex);
-                        SuperController.LogMessage($"  Skip at time {steps[largestDeltaIndex].timeStep:0.000} frame {largestDeltaIndex} with delta {largestDelta:0.0000}");
-                    }
-
-                    if (splits == 0)
-                    {
-                        SuperController.LogMessage("  No more splits");
-                        break;
+                        SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ExtractFramesWithReductionTechnique)}[Apply]: {exc}");
+                        yield break;
                     }
                 }
             }
 
             {
-                // foreach (var s in steps)
-                // {
-                //     SetKeyframeFromStep(target, ctrl, containingAtom, s, s.timeStep.Snap());
-                // }
                 int previousKey = 0;
                 MotionAnimationStep previousStep = null;
                 foreach (var key in segmentKeyframes.Where(k => k != -1))
@@ -538,6 +552,12 @@ namespace VamTimeline
                 localPosition,
                 locationRotation
             );
+        }
+
+        public override void Dispose()
+        {
+            _importRecordedUI = null;
+            base.Dispose();
         }
     }
 }
