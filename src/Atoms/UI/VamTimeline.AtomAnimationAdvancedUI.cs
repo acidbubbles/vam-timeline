@@ -392,15 +392,21 @@ namespace VamTimeline
 
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
+            var minDelta = 0.01f;
+            var maxIterations = (int)Math.Floor(Math.Sqrt(clip.clipLength * 10));
+
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
-            var minDelta = 0.001f;
-
-            var steps = ReduceStepsCount(clip, ctrl, containingAtom);
-
+            var simplify = new HashSet<float>();
+            var steps = clip.steps.Where(s =>
+            {
+                var timeStep = s.timeStep.Snap(0.01f);
+                if (simplify.Contains(timeStep)) return false;
+                simplify.Add(timeStep);
+                return true;
+            }).ToList();
             var segmentKeyframes = new List<int> { 0, steps.Count - 1 };
             var skipKeyframes = new HashSet<int>();
-            var maxIterations = 5;
             var curveX = new AnimationCurve();
             curveX.AddKey(0, steps[0].position.x);
             curveX.AddKey(0, steps[steps.Count - 1].position.x);
@@ -410,15 +416,17 @@ namespace VamTimeline
             var curveZ = new AnimationCurve();
             curveZ.AddKey(0, steps[0].position.z);
             curveZ.AddKey(0, steps[steps.Count - 1].position.z);
+
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
+                SuperController.LogMessage($"== Iteration {iteration}");
                 var splits = 0;
                 for (var segmentIndex = 0; segmentIndex < segmentKeyframes.Count - 1; segmentIndex++)
                 {
                     int firstIndex = segmentKeyframes[segmentIndex];
                     if (skipKeyframes.Contains(firstIndex)) continue;
                     var first = steps[firstIndex];
-                    int lastIndex = segmentKeyframes[segmentIndex + 1];
+                    int lastIndex = segmentKeyframes[segmentIndex + 1] - 1;
                     var last = steps[lastIndex];
                     SuperController.LogMessage($"Segment {segmentIndex} / {segmentKeyframes.Count} (frames {firstIndex} to {lastIndex})");
 
@@ -427,11 +435,14 @@ namespace VamTimeline
                     for (var stepIndex = firstIndex + 1; stepIndex < lastIndex - 1; stepIndex++)
                     {
                         var step = clip.steps[stepIndex];
-                        var actualDelta = Vector3.SqrMagnitude(new Vector3(
-                            Math.Abs(step.position.x - curveX.Evaluate(step.timeStep)),
-                            Math.Abs(step.position.y - curveY.Evaluate(step.timeStep)),
-                            Math.Abs(step.position.z - curveZ.Evaluate(step.timeStep))
-                        ));
+                        Vector3 curvePosition = new Vector3(
+                            curveX.Evaluate(step.timeStep),
+                            curveY.Evaluate(step.timeStep),
+                            curveZ.Evaluate(step.timeStep)
+                        );
+                        var actualDelta = Vector3.Distance(step.position, curvePosition);
+                        // if (stepIndex % 10 == 0)
+                        //     SuperController.LogMessage($"  {step.timeStep}: {curvePosition} -> {step.position} ({actualDelta})");
                         if (actualDelta > largestDelta)
                         {
                             largestDelta = actualDelta;
@@ -449,117 +460,72 @@ namespace VamTimeline
                     {
                         segmentKeyframes.Insert(++segmentIndex, largestDeltaIndex);
                         var largestDeltaStep = steps[largestDeltaIndex];
-                        curveX.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.x);
-                        curveY.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.y);
-                        curveZ.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.z);
-                        SuperController.LogMessage($"  Split at frame {largestDeltaIndex} with delta {largestDelta}, seg {segmentIndex} of {string.Join(", ", segmentKeyframes.Select(v => v.ToString()).ToArray())}");
+
+                        var curveXKey = curveX.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.x);
+                        if (curveXKey == -1) throw new Exception("Twice x?");
+                        if (curveXKey > 0) curveX.SmoothTangents(curveXKey - 1, 1f);
+                        curveX.SmoothTangents(curveXKey, 1f);
+                        if (curveXKey < curveX.length - 2) curveX.SmoothTangents(curveXKey + 1, 1f);
+
+                        var curveYKey = curveY.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.y);
+                        if (curveYKey == -1) throw new Exception("Twice y?");
+                        if (curveYKey > 0) curveY.SmoothTangents(curveYKey - 1, 1f);
+                        curveY.SmoothTangents(curveYKey, 1f);
+                        if (curveYKey < curveY.length - 2) curveY.SmoothTangents(curveYKey + 1, 1f);
+
+                        var curveZKey = curveZ.AddKey(largestDeltaStep.timeStep, largestDeltaStep.position.z);
+                        if (curveZKey == -1) throw new Exception("Twice z?");
+                        if (curveZKey > 0) curveZ.SmoothTangents(curveZKey - 1, 1f);
+                        curveZ.SmoothTangents(curveZKey, 1f);
+                        if (curveZKey < curveZ.length - 2) curveZ.SmoothTangents(curveZKey + 1, 1f);
+
+                        SuperController.LogMessage($"  Split at time {steps[largestDeltaIndex].timeStep:0.000} frame {largestDeltaIndex} with delta {largestDelta:0.0000}");
                         splits++;
                     }
                     else
                     {
                         skipKeyframes.Add(firstIndex);
-                        SuperController.LogMessage($"  Skip at frame {largestDeltaIndex} with delta {largestDelta}, seg {segmentIndex} of {string.Join(", ", segmentKeyframes.Select(v => v.ToString()).ToArray())}");
+                        SuperController.LogMessage($"  Skip at time {steps[largestDeltaIndex].timeStep:0.000} frame {largestDeltaIndex} with delta {largestDelta:0.0000}");
                     }
 
                     if (splits == 0)
                     {
-                        SuperController.LogMessage("  Done splitting");
+                        SuperController.LogMessage("  No more splits");
                         break;
                     }
-
-                    curveX.SmoothAllFrames();
-                    curveY.SmoothAllFrames();
-                    curveZ.SmoothAllFrames();
                 }
             }
 
-SuperController.LogMessage(steps.Count.ToString());
-            foreach (var step in steps)
-                SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
-            // {
-            //     foreach (var key in segmentKeyframes.Where(k => k != -1))
-            //     {
-            //         var step = steps[key];
-            //         SetKeyframeFromStep(target, ctrl, containingAtom, steps[key], step.timeStep.Snap());
+            {
+                // foreach (var s in steps)
+                // {
+                //     SetKeyframeFromStep(target, ctrl, containingAtom, s, s.timeStep.Snap());
+                // }
+                int previousKey = 0;
+                MotionAnimationStep previousStep = null;
+                foreach (var key in segmentKeyframes.Where(k => k != -1))
+                {
+                    var step = steps[key];
+                    if (previousStep != null && key - previousKey > 3 && step.timeStep - previousStep.timeStep > 1f)
+                    {
+                        // Long distances can cause long curves, here we try to reduce that
+                        var middleStep = steps[previousKey + (key - previousKey) / 2];
+                        SetKeyframeFromStep(target, ctrl, containingAtom, middleStep, middleStep.timeStep.Snap());
+                    }
+                    SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
+                    previousKey = key;
+                    previousStep = step;
 
-            //         if (batchStopwatch.ElapsedMilliseconds > 5)
-            //         {
-            //             batchStopwatch.Reset();
-            //             yield return 0;
-            //             batchStopwatch.Start();
-            //         }
-            //     }
-            // }
+                    if (batchStopwatch.ElapsedMilliseconds > 5)
+                    {
+                        batchStopwatch.Reset();
+                        yield return 0;
+                        batchStopwatch.Start();
+                    }
+                }
+            }
 
             yield break;
-        }
-
-        private static List<MotionAnimationStep> ReduceStepsCount(MotionAnimationClip clip, FreeControllerV3 ctrl, Atom containingAtom)
-        {
-            var lastTime = -1f;
-            var steps = new List<MotionAnimationStep>();
-            var averagedSteps = new List<MotionAnimationStep>();
-            foreach (var s in clip.steps)
-            {
-                var step = s;
-                if (!step.positionOn && !step.rotationOn) continue;
-                if (!step.positionOn || !step.rotationOn)
-                {
-                    step = new MotionAnimationStep
-                    {
-                        timeStep = step.timeStep,
-                        position = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition,
-                        rotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation
-                    };
-                }
-                averagedSteps.Add(step);
-                if (step.timeStep < lastTime + 0.1f) continue;
-                var averagedStep = new MotionAnimationStep
-                {
-                    timeStep = averagedSteps.Sum(p => p.timeStep) / averagedSteps.Count,
-                    positionOn = true,
-                    position = averagedSteps.Aggregate(Vector3.zero, (r, p) => r + p.position) / averagedSteps.Count,
-                    rotationOn = true,
-                    rotation = Quaternion.Euler(averagedSteps.Aggregate(Vector3.zero, (r, p) => r + p.rotation.eulerAngles) / averagedSteps.Count)
-                };
-                steps.Add(averagedStep);
-                averagedSteps.Clear();
-                lastTime = step.timeStep;
-            }
-            return steps;
-        }
-
-        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float frameDistanceSeconds, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
-        {
-            var batchStopwatch = Stopwatch.StartNew();
-            var containingAtom = Plugin.ContainingAtom;
-
-            var lastRecordedFrame = float.MinValue;
-            foreach (var step in clip.steps)
-            {
-                try
-                {
-                    var frame = step.timeStep.Snap();
-                    if (frame - lastRecordedFrame < frameDistanceSeconds) continue;
-                    // TODO: Replace by a for that skips the last entry
-                    if (current.Loop && frame.IsSameFrame(clip.clipLength)) continue;
-                    SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
-                    lastRecordedFrame = frame;
-                    if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
-                }
-                catch (Exception exc)
-                {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
-                    yield break;
-                }
-
-                if (batchStopwatch.ElapsedMilliseconds > 5)
-                {
-                    batchStopwatch.Reset();
-                    yield return 0;
-                    batchStopwatch.Start();
-                }
-            }
         }
 
         private static void SetKeyframeFromStep(FreeControllerAnimationTarget target, FreeControllerV3 ctrl, Atom containingAtom, MotionAnimationStep step, float frame)
