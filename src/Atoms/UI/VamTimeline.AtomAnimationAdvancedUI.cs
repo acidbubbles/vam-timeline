@@ -22,6 +22,7 @@ namespace VamTimeline
         public const string ScreenName = "Advanced";
         private JSONStorableStringChooser _exportAnimationsJSON;
         private UIDynamicButton _importRecordedUI;
+        private JSONStorableStringChooser _importRecordedOptionsJSON;
 
         public override string Name => ScreenName;
 
@@ -61,6 +62,17 @@ namespace VamTimeline
             var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
             _components.Add(bakeUI);
+
+            _importRecordedOptionsJSON = new JSONStorableStringChooser(
+                "Import Recorded Animation Options",
+                 new List<string> { "Keyframe Reduction", "1 fps", "2 fps", "10 fps" },
+                 "Keyframe Reduction",
+                 "Import Recorded Animation Options")
+            {
+                isStorable = false
+            };
+            var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
+            _linkedStorables.Add(_importRecordedOptionsJSON);
 
             _importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
@@ -359,6 +371,26 @@ namespace VamTimeline
 
             current.Loop = SuperController.singleton.motionAnimationMaster.loop;
 
+            float frameLength;
+            switch (_importRecordedOptionsJSON.val)
+            {
+                case "Keyframe Reduction":
+                    frameLength = 0f;
+                    break;
+                case "1 fps":
+                    frameLength = 1f;
+                    break;
+                case "2 fps":
+                    frameLength = 0.5f;
+                    break;
+                case "10 fps":
+                    frameLength = 0.1f;
+                    break;
+                default:
+                    SuperController.LogError($"Unknown import option {_importRecordedOptionsJSON.val}");
+                    yield break;
+            }
+
             yield return 0;
 
             foreach (var mot in containingAtom.motionAnimationControls)
@@ -382,7 +414,10 @@ namespace VamTimeline
                     yield break;
                 }
 
-                foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, current, target, totalStopwatch, ctrl)) yield return x;
+                if (_importRecordedOptionsJSON.val == "Keyframe Reduction")
+                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, current, target, totalStopwatch, ctrl)) yield return x;
+                else
+                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameLength, current, target, totalStopwatch, ctrl)) yield return x;
             }
 
             yield return 0;
@@ -526,11 +561,10 @@ namespace VamTimeline
                     {
                         if (Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                         {
-                            target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Flat);
                             flat = true;
-                            // KeyframeSettings settings;
-                            // if(target.Settings.TryGetValue(previousStep.timeStep.ToMilliseconds(), out settings))
-                            //     if(settings.CurveType == CurveTypeValues.Linear)
+                            KeyframeSettings settings;
+                            if (target.Settings.TryGetValue(previousStep.timeStep.ToMilliseconds(), out settings) && settings.CurveType != CurveTypeValues.Linear)
+                                target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Flat);
                         }
                         else if (key - previousKey > 3 && step.timeStep - previousStep.timeStep > 1f)
                         {
@@ -540,7 +574,7 @@ namespace VamTimeline
                         }
                     }
                     SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
-                    if(flat) target.ChangeCurve(step.timeStep, CurveTypeValues.Flat);
+                    if (flat) target.ChangeCurve(step.timeStep, CurveTypeValues.Flat);
                     previousKey = key;
                     previousStep = step;
 
@@ -554,6 +588,41 @@ namespace VamTimeline
             }
 
             yield break;
+        }
+
+
+        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float frameLength, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        {
+            var batchStopwatch = Stopwatch.StartNew();
+            var containingAtom = Plugin.ContainingAtom;
+
+            var lastRecordedFrame = float.MinValue;
+            for (var stepIndex = 0; stepIndex < (clip.steps.Count - (current.Loop ? 1 : 0)); stepIndex++)
+            {
+                try
+                {
+                    var step = clip.steps[stepIndex];
+                    var frame = step.timeStep.Snap();
+                    SuperController.LogMessage($"{frame} - {lastRecordedFrame} < {frameLength}");
+                    if (frame - lastRecordedFrame < frameLength) continue;
+                    SuperController.LogMessage($"At {frame}");
+                    SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
+                    lastRecordedFrame = frame;
+                    if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
+                    yield break;
+                }
+
+                if (batchStopwatch.ElapsedMilliseconds > 5)
+                {
+                    batchStopwatch.Reset();
+                    yield return 0;
+                    batchStopwatch.Start();
+                }
+            }
         }
 
         private static void SetKeyframeFromStep(FreeControllerAnimationTarget target, FreeControllerV3 ctrl, Atom containingAtom, MotionAnimationStep step, float frame)
