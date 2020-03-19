@@ -22,7 +22,9 @@ jobs:
         cp -r src publish/Custom/Scripts/
         cp *.cslist publish/Custom/Scripts/
         cp vam/meta.json publish/
-        echo "${{ steps.get_version.outputs.VERSION }}" > version.txt
+        echo "Tag: ${{ steps.get_version.outputs.VERSION }}" > version.txt
+        echo "Run: ${{ github.run_number }}" >> version.txt
+        git show -s --pretty=format:'Hash: %H' >> version.txt
         cd publish
         zip -r "AcidBubbles.Timeline.${{ github.run_number }}.var" *
     - name: GitHub release
