@@ -12,14 +12,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: Zip the release package
       id: zip
-      run: zip -r "VamTimeline.zip" src *.cslist
+      run: |
+        mkdir -p publish/Custom/Scripts
+        cp -r src publish/Custom/Scripts/
+        cp *.cslist publish/Custom/Scripts/
+        cp vam/meta.json publish/
+        echo "${{ steps.get_version.outputs.VERSION }}" > version.txt
+        cd publish
+        zip -r "AcidBubbles.Timeline.${{ github.run_number }}.var" *
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
-        files: VamTimeline.zip
+        files: publish/AcidBubbles.Timeline.${{ github.run_number }}.var
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
