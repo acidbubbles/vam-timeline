@@ -22,6 +22,7 @@ jobs:
         cp -r src publish/Custom/Scripts/
         cp *.cslist publish/Custom/Scripts/
         cp vam/meta.json publish/
+        sed -i 's/v0.0.0/${{ steps.get_version.outputs.VERSION }}/ publish/meta.json'
         echo "Tag: ${{ steps.get_version.outputs.VERSION }}" > version.txt
         echo "Run: ${{ github.run_number }}" >> version.txt
         git show -s --pretty=format:'Hash: %H' >> version.txt

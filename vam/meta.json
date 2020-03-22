@@ -3,7 +3,7 @@
    "creatorName" : "AcidBubbles", 
    "packageName" : "Timeline", 
    "includeVersionsInReferences" : "true", 
-   "description" : "An animation timeline engine with keyframes and controllable curves.", 
+   "description" : "v0.0.0 An animation timeline engine with keyframes and controllable curves.", 
    "credits" : "", 
    "instructions" : "See https://github.com/acidbubbles/vam-timeline/blob/master/README.md for detailed instructions. This may require a small learning curve, especially if you never used spline animation timelines before.", 
    "promotionalLink" : "https://github.com/acidbubbles/vam-timeline", 
