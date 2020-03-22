@@ -32,6 +32,8 @@ namespace VamTimeline
         private string _nextAnimation;
         private float _nextAnimationTime;
         private float _speed = 1f;
+        // TODO: If we can either get a global counter or infer this from the plugin number, it would be better.
+        private readonly int _layer = Random.Range(0, int.MaxValue);
 
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
@@ -346,6 +348,8 @@ namespace VamTimeline
                 var animState = _animation[clip.AnimationName];
                 if (animState != null)
                 {
+                    animState.layer = _layer;
+                    animState.weight = 1;
                     animState.wrapMode = clip.Loop ? WrapMode.Loop : WrapMode.Once;
                     animState.speed = _speed;
                 }
