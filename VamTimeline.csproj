@@ -69,7 +69,7 @@
 
     <Compile Include="src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationTarget.cs" />
 
-    <Compile Include="src/Atoms/FloatParams/VamTimeline.FloatParamAnimationTarget.cs" />
+    <Compile Include="src/Atoms/Params/VamTimeline.FloatParamAnimationTarget.cs" />
 
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationBaseUI.cs" />
     <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationLockedUI.cs" />
