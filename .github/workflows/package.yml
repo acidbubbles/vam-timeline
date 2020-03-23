@@ -18,14 +18,11 @@ jobs:
     - name: Zip the release package
       id: zip
       run: |
-        mkdir -p publish/Custom/Scripts
-        cp -r src publish/Custom/Scripts/
-        cp *.cslist publish/Custom/Scripts/
+        mkdir -p publish/Custom/Scripts/AcidBubbles/Timeline
+        cp -r src publish/Custom/Scripts/AcidBubbles/Timeline/
+        cp *.cslist publish/Custom/Scripts/AcidBubbles/Timeline/
         cp vam/meta.json publish/
-        sed -i 's/v0.0.0/${{ steps.get_version.outputs.VERSION }}/ publish/meta.json'
-        echo "Tag: ${{ steps.get_version.outputs.VERSION }}" > version.txt
-        echo "Run: ${{ github.run_number }}" >> version.txt
-        git show -s --pretty=format:'Hash: %H' >> version.txt
+        sed -i 's/v0.0.0/${{ steps.get_version.outputs.VERSION }}/' publish/meta.json
         cd publish
         zip -r "AcidBubbles.Timeline.${{ github.run_number }}.var" *
     - name: GitHub release
