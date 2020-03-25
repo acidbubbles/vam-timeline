@@ -88,6 +88,10 @@ namespace VamTimeline
             deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
             _components.Add(deleteAnimationUI);
 
+            var reverseAnimationUI = Plugin.CreateButton("Reverse Animation", true);
+            reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
+            _components.Add(reverseAnimationUI);
+
             CreateSpacer(true);
 
             _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
@@ -175,6 +179,39 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(DeleteAnimation)}: {exc}");
+            }
+        }
+
+        private void ReverseAnimation()
+        {
+            try
+            {
+                var anim = Plugin.Animation.Current;
+                if (anim == null) throw new NullReferenceException("No current animation to reverse");
+                foreach (var target in anim.AllTargets)
+                {
+                    var controllerTarget = target as FreeControllerAnimationTarget;
+                    foreach (var curve in target.GetCurves())
+                    {
+                        curve.Reverse();
+                    }
+                    if (controllerTarget != null)
+                    {
+                        var settings = controllerTarget.Settings.ToList();
+                        var length = settings.Last().Key;
+                        controllerTarget.Settings.Clear();
+                        foreach (var setting in settings)
+                        {
+                            controllerTarget.Settings.Add(length - setting.Key, setting.Value);
+                        }
+                    }
+                }
+                Plugin.Animation.RebuildAnimation();
+                Plugin.AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReverseAnimation)}: {exc}");
             }
         }
 

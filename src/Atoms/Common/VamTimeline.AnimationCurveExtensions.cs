@@ -128,6 +128,22 @@ namespace VamTimeline
             curve.keys = keys.ToArray();
         }
 
+        public static void Reverse(this AnimationCurve curve)
+        {
+            var currentLength = curve[curve.length - 1].time;
+
+            var keys = curve.keys.ToList();
+
+            while (curve.length > 0)
+                curve.RemoveKey(0);
+
+            for (var i = 0; i < keys.Count; i++)
+            {
+                var key = keys[i];
+                curve.AddKey((currentLength - key.time).Snap(), key.value);
+            }
+        }
+
         #endregion
 
         #region Keyframes control
