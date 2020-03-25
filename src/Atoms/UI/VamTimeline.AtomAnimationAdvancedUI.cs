@@ -188,7 +188,7 @@ namespace VamTimeline
             {
                 var anim = Plugin.Animation.Current;
                 if (anim == null) throw new NullReferenceException("No current animation to reverse");
-                foreach (var target in anim.AllTargets)
+                foreach (var target in anim.GetAllOrSelectedTargets())
                 {
                     var controllerTarget = target as FreeControllerAnimationTarget;
                     foreach (var curve in target.GetCurves())
