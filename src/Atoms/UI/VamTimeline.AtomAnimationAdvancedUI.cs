@@ -132,7 +132,12 @@ namespace VamTimeline
                     {
                         if (!clip.TargetControllers.Any(t => t.Controller == controller))
                         {
-                            clip.Add(controller);
+                            var target = clip.Add(controller);
+                            if (target != null)
+                            {
+                                target.SetKeyframeToCurrentTransform(0f);
+                                target.SetKeyframeToCurrentTransform(clip.AnimationLength);
+                            }
                         }
                     }
                     clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
@@ -141,7 +146,12 @@ namespace VamTimeline
                     {
                         if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
                         {
-                            clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
+                            var target = clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
+                            if (target != null)
+                            {
+                                target.SetKeyframe(0f, floatParamRef.FloatParam.val);
+                                target.SetKeyframe(clip.AnimationLength, floatParamRef.FloatParam.val);
+                            }
                         }
                     }
                     clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());

@@ -316,7 +316,6 @@ namespace VamTimeline
             }
             else
             {
-
                 var inTangent = CalculateLinearTangent(curve[curve.length - 2].value, keyframe.value, curve[curve.length - 2].time, curve[curve.length - 1].time);
                 var outTangent = CalculateLinearTangent(keyframe, curve[1]);
                 var tangent = (inTangent + outTangent) / 2f;
