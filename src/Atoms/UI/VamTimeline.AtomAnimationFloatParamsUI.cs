@@ -157,6 +157,7 @@ namespace VamTimeline
                 Plugin.RemoveToggle(targetRef.KeyframeJSON);
                 Plugin.RemoveSlider(targetRef.FloatParamProxyJSON);
             }
+            _targets.Clear();
         }
     }
 }

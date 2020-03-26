@@ -17,7 +17,9 @@ namespace VamTimeline
         private AtomAnimationBaseUI _current;
         private JSONStorableStringChooser _screens;
         private UIDynamicPopup _screenUI;
-        private Coroutine _refreshCurrentUIDeferred;
+        private bool _uiRefreshScheduled;
+        private bool _uiRefreshInProgress;
+        private bool _uiRefreshInvalidated;
 
         public AtomAnimationUIManager(IAtomPlugin plugin)
         {
@@ -33,7 +35,7 @@ namespace VamTimeline
                 "Tab",
                 (string screen) =>
                 {
-                    _plugin.LockedJSON.val = screen == AtomAnimationLockedUI.ScreenName;
+                    _plugin.LockedJSON.valNoCallback = screen == AtomAnimationLockedUI.ScreenName;
                     RefreshCurrentUI();
                 }
             );
@@ -76,33 +78,62 @@ namespace VamTimeline
                 _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
             if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
                 _screens.valNoCallback = GetDefaultScreen();
-            RefreshCurrentUI(() => _current.AnimationModified());
+            RefreshCurrentUI(c => c.AnimationModified());
         }
 
         public void AnimationFrameUpdated()
         {
-            RefreshCurrentUI(() => _current.AnimationFrameUpdated());
+            RefreshCurrentUI(c => c.AnimationFrameUpdated());
         }
 
         public void UIUpdated()
         {
             if (_plugin.Animation == null) return;
-            RefreshCurrentUI(() => _current.UIUpdated());
+            RefreshCurrentUI(c => c.UIUpdated());
         }
 
-        public void RefreshCurrentUI(Action fn = null)
+        public void RefreshCurrentUI(Action<AtomAnimationBaseUI> fn = null)
         {
             if (_plugin.Animation == null) return;
 
-            if (_refreshCurrentUIDeferred != null)
-                _plugin.StopCoroutine(_refreshCurrentUIDeferred);
-
-            _refreshCurrentUIDeferred = _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn));
+            if (_uiRefreshInProgress)
+                _uiRefreshInvalidated = true;
+            else if (!_uiRefreshScheduled)
+            {
+                _uiRefreshScheduled = true;
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn, _screens.val));
+            }
         }
 
-        private IEnumerator RefreshCurrentUIDeferred(Action fn)
+        private IEnumerator RefreshCurrentUIDeferred(Action<AtomAnimationBaseUI> fn, string screen)
         {
-            if (_current != null && _current.Name != _screens.val)
+            // Let every event trigger a UI refresh
+            yield return 0;
+
+            _uiRefreshScheduled = false;
+
+            // Cannot proceed
+            if (_plugin == null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
+
+            // Same UI, just refresh
+            if (_current != null && _current.Name == screen)
+            {
+                try
+                {
+                    fn?.Invoke(_current);
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while refreshing existing {_current.Name}): {exc}");
+                }
+                yield break;
+            }
+
+            // UI Change
+            _uiRefreshInProgress = true;
+
+            // Dispose previous
+            if (_current != null)
             {
                 try
                 {
@@ -116,76 +147,71 @@ namespace VamTimeline
                 _current = null;
             }
 
-            yield return new WaitForEndOfFrame();
+            yield return 0;
 
-            if (_plugin == null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
-            if (_current == null || _current.Name != _screens.val)
+            // Create new screen
+            switch (screen)
             {
-                switch (_screens.val)
-                {
-                    case AtomAnimationSettingsUI.ScreenName:
-                        _current = new AtomAnimationSettingsUI(_plugin);
-                        break;
-                    case AtomAnimationTargetsUI.ScreenName:
-                        _current = new AtomAnimationTargetsUI(_plugin);
-                        break;
-                    case AtomAnimationControllersUI.ScreenName:
-                        _current = new AtomAnimationControllersUI(_plugin);
-                        break;
-                    case AtomAnimationFloatParamsUI.ScreenName:
-                        _current = new AtomAnimationFloatParamsUI(_plugin);
-                        break;
-                    case AtomAnimationBulkUI.ScreenName:
-                        _current = new AtomAnimationBulkUI(_plugin);
-                        break;
-                    case AtomAnimationAdvancedUI.ScreenName:
-                        _current = new AtomAnimationAdvancedUI(_plugin);
-                        break;
-                    case AtomAnimationHelpUI.ScreenName:
-                        _current = new AtomAnimationHelpUI(_plugin);
-                        break;
-                    case AtomAnimationLockedUI.ScreenName:
-                        _current = new AtomAnimationLockedUI(_plugin);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown screen {_screens.val}");
-                }
-
-                try
-                {
-                    _current.Init();
-                }
-                catch (Exception exc)
-                {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
-                }
-
-                try
-                {
-                    _current.AnimationModified();
-                }
-                catch (Exception exc)
-                {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
-                }
-
-                // Hack to avoid having the drop down shown underneath new controls
-                _screenUI.popup.Toggle();
-                _screenUI.popup.Toggle();
-            }
-            else
-            {
-                try
-                {
-                    fn?.Invoke();
-                }
-                catch (Exception exc)
-                {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while updating {_current.Name}): {exc}");
-                }
+                case AtomAnimationSettingsUI.ScreenName:
+                    _current = new AtomAnimationSettingsUI(_plugin);
+                    break;
+                case AtomAnimationTargetsUI.ScreenName:
+                    _current = new AtomAnimationTargetsUI(_plugin);
+                    break;
+                case AtomAnimationControllersUI.ScreenName:
+                    _current = new AtomAnimationControllersUI(_plugin);
+                    break;
+                case AtomAnimationFloatParamsUI.ScreenName:
+                    _current = new AtomAnimationFloatParamsUI(_plugin);
+                    break;
+                case AtomAnimationBulkUI.ScreenName:
+                    _current = new AtomAnimationBulkUI(_plugin);
+                    break;
+                case AtomAnimationAdvancedUI.ScreenName:
+                    _current = new AtomAnimationAdvancedUI(_plugin);
+                    break;
+                case AtomAnimationHelpUI.ScreenName:
+                    _current = new AtomAnimationHelpUI(_plugin);
+                    break;
+                case AtomAnimationLockedUI.ScreenName:
+                    _current = new AtomAnimationLockedUI(_plugin);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown screen {screen}");
             }
 
-            _refreshCurrentUIDeferred = null;
+            try
+            {
+                _current.Init();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
+            }
+
+            try
+            {
+                _current.AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
+            }
+
+            // Hack to avoid having the drop down shown underneath new controls
+            _screenUI.popup.Toggle();
+            _screenUI.popup.Toggle();
+
+            yield return 0;
+
+            _uiRefreshInProgress = false;
+
+            if (_uiRefreshInvalidated)
+            {
+                _uiRefreshInvalidated = false;
+                _uiRefreshScheduled = true;
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn, _screens.val));
+            }
         }
 
         public void UpdatePlaying()

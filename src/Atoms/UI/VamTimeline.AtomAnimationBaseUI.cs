@@ -63,6 +63,7 @@ namespace VamTimeline
         protected void InitAnimationSelectorUI(bool rightSide)
         {
             var animationUI = Plugin.CreateScrollablePopup(Plugin.AnimationJSON, rightSide);
+            if(animationUI == null) throw new NullReferenceException(nameof(animationUI));
             animationUI.popupPanelHeight = 800f;
             _linkedStorables.Add(Plugin.AnimationJSON);
         }
