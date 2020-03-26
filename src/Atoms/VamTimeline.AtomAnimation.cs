@@ -321,7 +321,8 @@ namespace VamTimeline
             SampleParamsAnimation();
             if (PlayedAnimation != null && PlayedAnimation != Current.AnimationName)
             {
-                ChangeAnimation(PlayedAnimation);
+                if (Clips.Any(c => c.AnimationName == PlayedAnimation))
+                    ChangeAnimation(PlayedAnimation);
                 PlayedAnimation = null;
             }
         }
