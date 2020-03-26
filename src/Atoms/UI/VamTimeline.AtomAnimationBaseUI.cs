@@ -32,14 +32,9 @@ namespace VamTimeline
 
         public virtual void AnimationModified()
         {
-            UIUpdated();
         }
 
         public virtual void AnimationFrameUpdated()
-        {
-        }
-
-        public virtual void UIUpdated()
         {
         }
 

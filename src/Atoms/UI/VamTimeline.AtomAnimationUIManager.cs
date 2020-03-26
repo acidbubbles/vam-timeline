@@ -20,6 +20,7 @@ namespace VamTimeline
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
+        private bool _uiRefreshInvokeAnimationModified;
 
         public AtomAnimationUIManager(IAtomPlugin plugin)
         {
@@ -36,7 +37,7 @@ namespace VamTimeline
                 (string screen) =>
                 {
                     _plugin.LockedJSON.valNoCallback = screen == AtomAnimationLockedUI.ScreenName;
-                    RefreshCurrentUI();
+                    RefreshCurrentUI(false);
                 }
             );
             _screenUI = _plugin.CreateScrollablePopup(_screens);
@@ -78,34 +79,30 @@ namespace VamTimeline
                 _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
             if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
                 _screens.valNoCallback = GetDefaultScreen();
-            RefreshCurrentUI(c => c.AnimationModified());
+            RefreshCurrentUI(true);
         }
 
         public void AnimationFrameUpdated()
         {
-            RefreshCurrentUI(c => c.AnimationFrameUpdated());
+            RefreshCurrentUI(false);
         }
 
-        public void UIUpdated()
+        public void RefreshCurrentUI(bool animationModified)
         {
             if (_plugin.Animation == null) return;
-            RefreshCurrentUI(c => c.UIUpdated());
-        }
 
-        public void RefreshCurrentUI(Action<AtomAnimationBaseUI> fn = null)
-        {
-            if (_plugin.Animation == null) return;
+            if (animationModified) _uiRefreshInvokeAnimationModified = true;
 
             if (_uiRefreshInProgress)
                 _uiRefreshInvalidated = true;
             else if (!_uiRefreshScheduled)
             {
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn, _screens.val));
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screens.val));
             }
         }
 
-        private IEnumerator RefreshCurrentUIDeferred(Action<AtomAnimationBaseUI> fn, string screen)
+        private IEnumerator RefreshCurrentUIDeferred(string screen)
         {
             // Let every event trigger a UI refresh
             yield return 0;
@@ -120,7 +117,15 @@ namespace VamTimeline
             {
                 try
                 {
-                    fn?.Invoke(_current);
+                    if (_uiRefreshInvokeAnimationModified)
+                    {
+                        _uiRefreshInvokeAnimationModified = false;
+                        _current.AnimationModified();
+                    }
+                    else
+                    {
+                        _current.AnimationFrameUpdated();
+                    }
                 }
                 catch (Exception exc)
                 {
@@ -210,7 +215,7 @@ namespace VamTimeline
             {
                 _uiRefreshInvalidated = false;
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(fn, _screens.val));
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screens.val));
             }
         }
 

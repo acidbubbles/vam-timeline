@@ -132,14 +132,11 @@ namespace VamTimeline
         {
             if (Plugin.Animation.IsPlaying()) return;
             target.FloatParam.val = val;
-            // TODO: This should be done by the controller (updating the animation resets the time)
             var time = Plugin.Animation.Time;
             Plugin.Animation.SetKeyframe(target, time, val);
             Plugin.Animation.RebuildAnimation();
             var targetRef = _targets.FirstOrDefault(j => j.Target == target);
             targetRef.KeyframeJSON.valNoCallback = true;
-            // TODO: Breaks sliders
-            // Plugin.AnimationModified();
         }
 
         public override void Dispose()
