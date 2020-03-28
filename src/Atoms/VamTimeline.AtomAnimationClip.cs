@@ -325,6 +325,14 @@ namespace VamTimeline
                     SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames");
                     return;
                 }
+                if (target.Settings.Count > leadCurve.length)
+                {
+                    var curveKeys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToList();
+                    var extraneousKeys = target.Settings.Keys.Except(curveKeys);
+                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames but {target.Settings.Count} settings. Attempting auto-repair.");
+                    foreach(var extraneousKey in extraneousKeys)
+                        target.Settings.Remove(extraneousKey);
+                }
                 if (target.Settings.Count != leadCurve.length)
                 {
                     SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames but {target.Settings.Count} settings");
