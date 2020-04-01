@@ -481,7 +481,7 @@ namespace VamTimeline
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
             var minPositionDistance = 0.06f;
-            var minPositionDistanceForFlat = 0.03f;
+            var minPositionDistanceForFlat = 0.02f;
             var minFrameDistance = 0.1f;
             var maxIterations = (int)Math.Floor(Math.Sqrt(clip.clipLength * 10));
 
@@ -603,25 +603,29 @@ namespace VamTimeline
                 foreach (var key in segmentKeyframes.Where(k => k != -1))
                 {
                     var step = steps[key];
-                    var flat = false;
+                    string previousCurveType = null;
                     if (previousStep != null)
                     {
                         if (Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                         {
-                            flat = true;
                             KeyframeSettings settings;
-                            if (target.Settings.TryGetValue(previousStep.timeStep.ToMilliseconds(), out settings) && settings.CurveType != CurveTypeValues.Linear)
-                                target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Flat);
+                            if (target.Settings.TryGetValue(previousStep.timeStep.ToMilliseconds(), out settings))
+                            {
+                                var foot = target.Controller.name == "lFootControl" || target.Controller.name == "rFootControl";
+                                previousCurveType = foot ? CurveTypeValues.Linear : CurveTypeValues.Flat;
+                                target.ChangeCurve(previousStep.timeStep, previousCurveType);
+                            }
                         }
                         else if (key - previousKey > 3 && step.timeStep - previousStep.timeStep > 1f)
                         {
                             // Long distances can cause long curves, here we try to reduce that
+                            // After at least three keys that spans over 1s, split
                             var middleStep = steps[previousKey + (key - previousKey) / 2];
                             SetKeyframeFromStep(target, ctrl, containingAtom, middleStep, middleStep.timeStep.Snap());
                         }
                     }
                     SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
-                    if (flat) target.ChangeCurve(step.timeStep, CurveTypeValues.Flat);
+                    if (previousCurveType != null) target.ChangeCurve(step.timeStep, previousCurveType);
                     previousKey = key;
                     previousStep = step;
 
