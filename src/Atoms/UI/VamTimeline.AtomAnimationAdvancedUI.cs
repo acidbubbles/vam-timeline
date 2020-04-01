@@ -650,9 +650,7 @@ namespace VamTimeline
                 {
                     var step = clip.steps[stepIndex];
                     var frame = step.timeStep.Snap();
-                    SuperController.LogMessage($"{frame} - {lastRecordedFrame} < {frameLength}");
                     if (frame - lastRecordedFrame < frameLength) continue;
-                    SuperController.LogMessage($"At {frame}");
                     SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
                     lastRecordedFrame = frame;
                     if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
