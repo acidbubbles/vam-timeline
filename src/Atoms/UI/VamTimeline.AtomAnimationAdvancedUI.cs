@@ -640,10 +640,12 @@ namespace VamTimeline
 
         private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float frameLength, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
+            var minPositionDistanceForFlat = 0.01f;
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
 
             var lastRecordedFrame = float.MinValue;
+            MotionAnimationStep previousStep = null;
             for (var stepIndex = 0; stepIndex < (clip.steps.Count - (current.Loop ? 1 : 0)); stepIndex++)
             {
                 try
@@ -652,7 +654,15 @@ namespace VamTimeline
                     var frame = step.timeStep.Snap();
                     if (frame - lastRecordedFrame < frameLength) continue;
                     SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
+                    if (previousStep != null && (target.Controller.name == "lFootControl" || target.Controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
+                    {
+                        SuperController.LogMessage("ok " + target.Controller.name);
+                        KeyframeSettings settings;
+                        if (target.Settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
+                            target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);
+                    }
                     lastRecordedFrame = frame;
+                    previousStep = step;
                     if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
                 }
                 catch (Exception exc)
