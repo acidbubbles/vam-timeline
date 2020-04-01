@@ -20,7 +20,7 @@ namespace VamTimeline
             public FreeControllerAnimationTarget Target;
         }
 
-        private List<TargetRef> _targets;
+        private List<TargetRef> _targets = new List<TargetRef>();
         private JSONStorableStringChooser _curveTypeJSON;
         private JSONStorableAction _smoothAllFramesJSON;
 
@@ -115,27 +115,23 @@ namespace VamTimeline
 
         private void UpdateValues()
         {
-            if (_targets != null)
+            var time = Plugin.Animation.Time;
+            foreach (var targetRef in _targets)
             {
-                var time = Plugin.Animation.Time;
-                foreach (var targetRef in _targets)
-                {
-                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
-                }
+                targetRef.KeyframeJSON.valNoCallback = targetRef.Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
             }
         }
 
         private void RefreshTargetsList()
         {
             if (Plugin.Animation == null) return;
-            if (_targets != null && Enumerable.SequenceEqual(Plugin.Animation.Current.TargetControllers, _targets.Select(t => t.Target)))
+            if (Enumerable.SequenceEqual(Plugin.Animation.Current.TargetControllers, _targets.Select(t => t.Target)))
             {
                 UpdateValues();
                 return;
             }
             RemoveTargets();
             var time = Plugin.Animation.Time;
-            _targets = new List<TargetRef>();
             foreach (var target in Plugin.Animation.Current.TargetControllers)
             {
                 var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.GetLeadCurve().KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
@@ -156,12 +152,11 @@ namespace VamTimeline
 
         private void RemoveTargets()
         {
-            if (_targets == null) return;
             foreach (var targetRef in _targets)
             {
-                // TODO: Take care of keeping track of those separately
                 Plugin.RemoveToggle(targetRef.KeyframeJSON);
             }
+            _targets.Clear();
         }
 
         private void ChangeCurve(string curveType)

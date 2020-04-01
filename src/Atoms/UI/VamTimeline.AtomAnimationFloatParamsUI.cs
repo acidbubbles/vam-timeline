@@ -22,7 +22,7 @@ namespace VamTimeline
             public FloatParamAnimationTarget Target;
         }
 
-        private List<TargetRef> _targets;
+        private readonly List<TargetRef> _targets = new List<TargetRef>();
 
 
         public AtomAnimationFloatParamsUI(IAtomPlugin plugin)
@@ -69,25 +69,21 @@ namespace VamTimeline
 
         private void UpdateValues()
         {
-            if (_targets != null)
+            var time = Plugin.Animation.Time;
+            foreach (var targetRef in _targets)
             {
-                var time = Plugin.Animation.Time;
-                foreach (var targetRef in _targets)
-                {
-                    targetRef.FloatParamProxyJSON.valNoCallback = targetRef.Target.FloatParam.val;
-                    targetRef.KeyframeJSON.valNoCallback = targetRef.Target.Value.KeyframeBinarySearch(time) != -1;
-                }
+                targetRef.FloatParamProxyJSON.valNoCallback = targetRef.Target.FloatParam.val;
+                targetRef.KeyframeJSON.valNoCallback = targetRef.Target.Value.KeyframeBinarySearch(time) != -1;
             }
         }
 
         private void RefreshTargetsList()
         {
             if (Plugin.Animation == null) return;
-            if (_targets != null && Enumerable.SequenceEqual(Plugin.Animation.Current.TargetFloatParams, _targets.Select(t => t.Target)))
+            if (Enumerable.SequenceEqual(Plugin.Animation.Current.TargetFloatParams, _targets.Select(t => t.Target)))
                 return;
             RemoveTargets();
             var time = Plugin.Animation.Time;
-            _targets = new List<TargetRef>();
             foreach (var target in Plugin.Animation.Current.TargetFloatParams)
             {
                 var sourceFloatParamJSON = target.FloatParam;
@@ -147,7 +143,6 @@ namespace VamTimeline
 
         private void RemoveTargets()
         {
-            if (_targets == null) return;
             foreach (var targetRef in _targets)
             {
                 // TODO: Take care of keeping track of those separately
