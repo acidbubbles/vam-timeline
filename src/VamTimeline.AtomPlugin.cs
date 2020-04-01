@@ -27,6 +27,7 @@ namespace VamTimeline
         private bool _restoring;
         private AtomClipboardEntry _clipboard;
         private FreeControllerAnimationTarget _grabbedController;
+        private bool _resumePlayOnUnfreeze;
 
         // Storables
         public JSONStorableStringChooser AnimationJSON { get; private set; }
@@ -89,10 +90,26 @@ namespace VamTimeline
                         ScrubberJSON.valNoCallback = time;
 
                     _ui.UpdatePlaying();
+
+
+                    if (SuperController.singleton.freezeAnimation)
+                    {
+                        Animation.Stop();
+                        Animation.Time = Animation.Time.Snap();
+                        _resumePlayOnUnfreeze = true;
+                    }
                 }
-                else if (LockedJSON != null && !LockedJSON.val)
+                else
                 {
-                    UpdateNotPlaying();
+                    if (_resumePlayOnUnfreeze && !SuperController.singleton.freezeAnimation)
+                    {
+                        _resumePlayOnUnfreeze = false;
+                        Animation.Play();
+                    }
+                    else if (LockedJSON != null && !LockedJSON.val)
+                    {
+                        UpdateNotPlaying();
+                    }
                 }
             }
             catch (Exception exc)
@@ -201,6 +218,7 @@ namespace VamTimeline
             PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
                 if (Animation == null) return;
+                if (SuperController.singleton.freezeAnimation) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
                 AnimationFrameUpdated();
@@ -210,6 +228,7 @@ namespace VamTimeline
             PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
                 if (Animation == null) return;
+                if (SuperController.singleton.freezeAnimation) return;
                 if (Animation.IsPlaying()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
@@ -233,6 +252,7 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying())
                 {
+                    _resumePlayOnUnfreeze = false;
                     Animation.Stop();
                     Animation.Time = Animation.Time.Snap();
                     IsPlayingJSON.valNoCallback = false;
@@ -341,7 +361,7 @@ namespace VamTimeline
         {
             try
             {
-                Animation?.Stop();
+                Animation.Stop();
             }
             catch (Exception exc)
             {
