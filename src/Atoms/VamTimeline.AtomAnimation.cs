@@ -26,7 +26,7 @@ namespace VamTimeline
         private float _interpolateUntil = 0f;
         private bool _playQueuedAfterInterpolation;
         private float _playTime;
-        private AtomAnimationClip _blendingClip;
+        private AtomAnimationClip _previousClip;
         private float _blendingTimeLeft;
         private float _blendingDuration;
         private string _nextAnimation;
@@ -211,16 +211,16 @@ namespace VamTimeline
         private void SampleParamsAnimation()
         {
             var time = Time;
+            var weight = _blendingTimeLeft / _blendingDuration;
             foreach (var morph in Current.TargetFloatParams)
             {
                 var val = morph.Value.Evaluate(time);
-                if (_blendingClip != null)
+                if (_previousClip != null)
                 {
-                    var blendingTarget = _blendingClip.TargetFloatParams.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
+                    var blendingTarget = _previousClip.TargetFloatParams.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
                     if (blendingTarget != null)
                     {
-                        var weight = _blendingTimeLeft / _blendingDuration;
-                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(time) * weight) + (val * (1 - weight));
+                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(_playTime) * weight) + (val * (1 - weight));
                     }
                     else
                     {
@@ -240,14 +240,14 @@ namespace VamTimeline
             {
                 _playTime += UnityEngine.Time.deltaTime * Speed;
 
-                if (_blendingClip != null)
+                if (_previousClip != null)
                 {
                     _blendingTimeLeft -= UnityEngine.Time.deltaTime;
                     if (_blendingTimeLeft <= 0)
                     {
                         _blendingTimeLeft = 0;
                         _blendingDuration = 0;
-                        _blendingClip = null;
+                        _previousClip = null;
                     }
                 }
 
@@ -315,7 +315,7 @@ namespace VamTimeline
             }
             _blendingTimeLeft = 0;
             _blendingDuration = 0;
-            _blendingClip = null;
+            _previousClip = null;
             _nextAnimation = null;
             _nextAnimationTime = 0;
             SampleParamsAnimation();
@@ -430,14 +430,7 @@ namespace VamTimeline
                     // Let the loop finish during the transition
                     Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
                 }
-                if (_blendingClip != null)
-                {
-                    // TODO: Fade multiple blending clips
-                    // For morphs that won't be continued, immediately apply the last value
-                    foreach (var morph in Current.TargetFloatParams.Where(t => !clip.TargetFloatParams.Any(ct => t.FloatParam == ct.FloatParam)))
-                        morph.FloatParam.val = morph.Value.Evaluate(morph.Value[morph.Value.length - 1].time);
-                }
-                _blendingClip = Current;
+                _previousClip = Current;
                 _blendingTimeLeft = _blendingDuration = Current.BlendDuration;
             }
 
