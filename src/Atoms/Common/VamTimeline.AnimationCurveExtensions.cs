@@ -221,8 +221,8 @@ namespace VamTimeline
                     curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.Bounce:
-                    keyframe.inTangent = CalculateFixedMirrorTangent(before, keyframe);
-                    keyframe.outTangent = CalculateFixedMirrorTangent(keyframe, next);
+                    keyframe.inTangent = CalculateLinearTangent(before, keyframe);
+                    keyframe.outTangent = -keyframe.inTangent;
                     curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.Smooth:
