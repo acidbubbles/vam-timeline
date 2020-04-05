@@ -20,9 +20,8 @@ namespace VamTimeline
             public FreeControllerAnimationTarget Target;
         }
 
-        private List<TargetRef> _targets = new List<TargetRef>();
+        private readonly List<TargetRef> _targets = new List<TargetRef>();
         private JSONStorableStringChooser _curveTypeJSON;
-        private JSONStorableAction _smoothAllFramesJSON;
 
         public AtomAnimationControllersUI(IAtomPlugin plugin)
             : base(plugin)
@@ -59,12 +58,6 @@ namespace VamTimeline
             var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, false);
             curveTypeUI.popupPanelHeight = 340f;
             _linkedStorables.Add(_curveTypeJSON);
-
-            _smoothAllFramesJSON = new JSONStorableAction(StorableNames.SmoothAllFrames, () => SmoothAllFrames());
-
-            var smoothAllFramesUI = Plugin.CreateButton("Smooth All Frames", false);
-            smoothAllFramesUI.button.onClick.AddListener(() => _smoothAllFramesJSON.actionCallback());
-            _components.Add(smoothAllFramesUI);
         }
 
         public override void UpdatePlaying()
@@ -179,14 +172,6 @@ namespace VamTimeline
                 return;
             }
             Plugin.Animation.Current.ChangeCurve(time, curveType);
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
-        }
-
-        private void SmoothAllFrames()
-        {
-            if (Plugin.Animation.IsPlaying()) return;
-            Plugin.Animation.Current.SmoothAllFrames();
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }

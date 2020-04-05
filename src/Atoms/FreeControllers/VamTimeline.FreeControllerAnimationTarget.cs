@@ -159,17 +159,6 @@ namespace VamTimeline
             UpdateSetting(time, curveType);
         }
 
-        public void SmoothAllFrames()
-        {
-            foreach (var curve in Curves)
-            {
-                curve.SmoothAllFrames();
-            }
-
-            foreach (var time in X.keys.Select(k => k.time))
-                UpdateSetting(time, CurveTypeValues.Smooth);
-        }
-
         #endregion
 
         #region Snapshots

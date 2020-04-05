@@ -119,14 +119,6 @@ namespace VamTimeline
             }
         }
 
-        public void SmoothAllFrames()
-        {
-            foreach (var controller in TargetControllers)
-            {
-                controller.SmoothAllFrames();
-            }
-        }
-
         public float GetNextFrame(float time)
         {
             time = time.Snap();

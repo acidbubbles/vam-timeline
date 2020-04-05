@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Text;
 
@@ -18,6 +17,7 @@ namespace VamTimeline
         private string _selectedControllers;
         private float _selectionStart = 0;
         private float _selectionEnd = 0;
+        private JSONStorableStringChooser _changeCurveJSON;
 
         public AtomAnimationBulkUI(IAtomPlugin plugin)
             : base(plugin)
@@ -76,6 +76,11 @@ namespace VamTimeline
             var deleteSelectedUI = Plugin.CreateButton("Delete Selected", rightSide);
             deleteSelectedUI.button.onClick.AddListener(DeleteSelected);
             _components.Add(deleteSelectedUI);
+
+            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
+            var curveTypeUI = Plugin.CreateScrollablePopup(_changeCurveJSON, true);
+            curveTypeUI.popupPanelHeight = 340f;
+            _linkedStorables.Add(_changeCurveJSON);
         }
 
         #region Callbacks
@@ -127,6 +132,27 @@ namespace VamTimeline
                     {
                         target.DeleteFrameByKey(key);
                         deletedFrames++;
+                    }
+                }
+            }
+            Plugin.Animation.RebuildAnimation();
+            Plugin.AnimationModified();
+        }
+
+        public void ChangeCurve(string val)
+        {
+            if (string.IsNullOrEmpty(val)) return;
+            _changeCurveJSON.valNoCallback = "";
+
+            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+            {
+                var leadCurve = target.GetLeadCurve();
+                for (var key = leadCurve.length - 2; key > 0; key--)
+                {
+                    var keyTime = leadCurve[key].time;
+                    if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                    {
+                        target.ChangeCurve(keyTime, val);
                     }
                 }
             }
