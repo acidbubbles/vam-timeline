@@ -32,6 +32,7 @@ namespace VamTimeline
         private JSONStorableString _displayJSON;
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
+        private JSONStorableBool _enableKeyboardShortcuts;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         #region Initialization
@@ -73,6 +74,9 @@ namespace VamTimeline
 
             _hideJSON = new JSONStorableBool("Hide", false, (bool val) => Hide(val));
             RegisterBool(_hideJSON);
+
+            _enableKeyboardShortcuts = new JSONStorableBool("Enable Keyboard Shortcuts", false);
+            RegisterBool(_enableKeyboardShortcuts);
 
             _lockedJSON = new JSONStorableBool("Locked (Performance)", false, (bool val) => Lock(val))
             {
@@ -188,6 +192,8 @@ namespace VamTimeline
             CreateToggle(_autoPlayJSON, true);
 
             CreateToggle(_hideJSON, true);
+
+            CreateToggle(_enableKeyboardShortcuts, true);
         }
 
         #endregion
@@ -367,10 +373,44 @@ namespace VamTimeline
                 {
                     _scrubberJSON.valNoCallback = scrubber.val;
                 }
+
+                HandleKeyboardShortcuts();
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(Update)}: " + exc);
+            }
+        }
+
+        private void HandleKeyboardShortcuts()
+        {
+            if (_mainLinkedAnimation == null) return;
+            if (!_enableKeyboardShortcuts.val) return;
+
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                PreviousFrame();
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                NextFrame();
+            }
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if (_targetJSON.choices.Count > 1 && _targetJSON.val != _targetJSON.choices[0])
+                    _targetJSON.val = _targetJSON.choices.ElementAtOrDefault(_targetJSON.choices.IndexOf(_targetJSON.val) - 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                if (_targetJSON.choices.Count > 1 && _targetJSON.val != _targetJSON.choices[_targetJSON.choices.Count - 1])
+                    _targetJSON.val = _targetJSON.choices.ElementAtOrDefault(_targetJSON.choices.IndexOf(_targetJSON.val) + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                if (_mainLinkedAnimation.IsPlaying.val)
+                    Stop();
+                else
+                    Play();
             }
         }
 
