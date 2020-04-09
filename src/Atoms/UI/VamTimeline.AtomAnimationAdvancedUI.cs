@@ -156,6 +156,8 @@ namespace VamTimeline
                     }
                     clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
                 }
+
+                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
