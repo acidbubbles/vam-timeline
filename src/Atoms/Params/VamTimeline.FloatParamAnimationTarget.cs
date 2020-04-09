@@ -71,7 +71,7 @@ namespace VamTimeline
         {
             public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)
             {
-                return t1.FloatParam.name.CompareTo(t2.FloatParam.name);
+                return t1.Name.CompareTo(t2.Name);
 
             }
         }
