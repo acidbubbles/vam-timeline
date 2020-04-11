@@ -13,8 +13,8 @@ namespace VamTimeline
     {
         public abstract string Name { get; }
 
-        protected List<UIDynamic> _components = new List<UIDynamic>();
-        protected List<JSONStorableParam> _linkedStorables = new List<JSONStorableParam>();
+        private List<UIDynamic> _components = new List<UIDynamic>();
+        private List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
@@ -44,38 +44,38 @@ namespace VamTimeline
 
             var scrubberUI = Plugin.CreateSlider(Plugin.ScrubberJSON);
             scrubberUI.valueFormat = "F3";
-            _linkedStorables.Add(Plugin.ScrubberJSON);
+            RegisterStorable(Plugin.ScrubberJSON);
 
             var playUI = Plugin.CreateButton("\u25B6 Play", rightSide);
             playUI.button.onClick.AddListener(() => Plugin.PlayJSON.actionCallback());
-            _components.Add(playUI);
+            RegisterComponent(playUI);
 
             var stopUI = Plugin.CreateButton("\u25A0 Stop", rightSide);
             stopUI.button.onClick.AddListener(() => Plugin.StopJSON.actionCallback());
-            _components.Add(stopUI);
+            RegisterComponent(stopUI);
         }
 
         protected void InitAnimationSelectorUI(bool rightSide)
         {
             var animationUI = Plugin.CreateScrollablePopup(Plugin.AnimationJSON, rightSide);
-            if(animationUI == null) throw new NullReferenceException(nameof(animationUI));
+            if (animationUI == null) throw new NullReferenceException(nameof(animationUI));
             animationUI.popupPanelHeight = 800f;
-            _linkedStorables.Add(Plugin.AnimationJSON);
+            RegisterStorable(Plugin.AnimationJSON);
         }
 
         protected void InitFrameNavUI(bool rightSide)
         {
             var selectedControllerUI = Plugin.CreateScrollablePopup(Plugin.FilterAnimationTargetJSON, rightSide);
             selectedControllerUI.popupPanelHeight = 600f;
-            _linkedStorables.Add(Plugin.FilterAnimationTargetJSON);
+            RegisterStorable(Plugin.FilterAnimationTargetJSON);
 
             var nextFrameUI = Plugin.CreateButton("\u2192 Next Frame", rightSide);
             nextFrameUI.button.onClick.AddListener(() => Plugin.NextFrameJSON.actionCallback());
-            _components.Add(nextFrameUI);
+            RegisterComponent(nextFrameUI);
 
             var previousFrameUI = Plugin.CreateButton("\u2190 Previous Frame", rightSide);
             previousFrameUI.button.onClick.AddListener(() => Plugin.PreviousFrameJSON.actionCallback());
-            _components.Add(previousFrameUI);
+            RegisterComponent(previousFrameUI);
 
         }
 
@@ -83,35 +83,49 @@ namespace VamTimeline
         {
             var cutUI = Plugin.CreateButton("Cut / Delete Frame", rightSide);
             cutUI.button.onClick.AddListener(() => Plugin.CutJSON.actionCallback());
-            _components.Add(cutUI);
+            RegisterComponent(cutUI);
 
             var copyUI = Plugin.CreateButton("Copy Frame", rightSide);
             copyUI.button.onClick.AddListener(() => Plugin.CopyJSON.actionCallback());
-            _components.Add(copyUI);
+            RegisterComponent(copyUI);
 
             var pasteUI = Plugin.CreateButton("Paste Frame", rightSide);
             pasteUI.button.onClick.AddListener(() => Plugin.PasteJSON.actionCallback());
-            _components.Add(pasteUI);
+            RegisterComponent(pasteUI);
         }
 
         protected void InitDisplayUI(bool rightSide, float height = 300f)
         {
             var displayUI = Plugin.CreateTextField(Plugin.DisplayJSON, rightSide);
             displayUI.height = height;
-            _components.Add(displayUI);
-            _linkedStorables.Add(Plugin.DisplayJSON);
+            RegisterComponent(displayUI);
+            RegisterStorable(Plugin.DisplayJSON);
         }
 
         protected void CreateSpacer(bool rightSide)
         {
             var spacerUI = Plugin.CreateSpacer(rightSide);
             spacerUI.height = 30f;
-            _components.Add(spacerUI);
+            RegisterComponent(spacerUI);
+        }
+
+        protected T RegisterStorable<T>(T v)
+            where T : JSONStorableParam
+        {
+            RegisterStorable(v);
+            return v;
+        }
+
+        protected T RegisterComponent<T>(T v)
+            where T : UIDynamic
+        {
+            RegisterComponent(v);
+            return v;
         }
 
         public virtual void Dispose()
         {
-            foreach (var component in _linkedStorables)
+            foreach (var component in _storables)
             {
                 if (component is JSONStorableStringChooser)
                     Plugin.RemovePopup((JSONStorableStringChooser)component);
@@ -124,7 +138,7 @@ namespace VamTimeline
                 else
                     SuperController.LogError($"VamTimeline: Cannot remove component {component}");
             }
-            _linkedStorables.Clear();
+            _storables.Clear();
 
             foreach (var component in _components)
             {

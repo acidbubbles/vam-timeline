@@ -45,23 +45,23 @@ namespace VamTimeline
 
             var enableAllTargetsUI = Plugin.CreateButton("Enable Miss. Targets On All Anims", true);
             enableAllTargetsUI.button.onClick.AddListener(() => EnableAllTargets());
-            _components.Add(enableAllTargetsUI);
+            RegisterComponent(enableAllTargetsUI);
 
             CreateSpacer(true);
 
             var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
-            _components.Add(keyframeCurrentPoseUI);
+            RegisterComponent(keyframeCurrentPoseUI);
 
             var keyframeCurrentPoseTrackedUI = Plugin.CreateButton("Keyframe Pose (Animated)", true);
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
-            _components.Add(keyframeCurrentPoseTrackedUI);
+            RegisterComponent(keyframeCurrentPoseTrackedUI);
 
             CreateSpacer(true);
 
             var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
-            _components.Add(bakeUI);
+            RegisterComponent(bakeUI);
 
             _importRecordedOptionsJSON = new JSONStorableStringChooser(
                 "Import Recorded Animation Options",
@@ -72,25 +72,25 @@ namespace VamTimeline
                 isStorable = false
             };
             var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
-            _linkedStorables.Add(_importRecordedOptionsJSON);
+            RegisterStorable(_importRecordedOptionsJSON);
 
             _importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
-            _components.Add(_importRecordedUI);
+            RegisterComponent(_importRecordedUI);
 
             CreateSpacer(true);
 
             var moveAnimUpUI = Plugin.CreateButton("Reorder Animation (Move Up)", true);
             moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
-            _components.Add(moveAnimUpUI);
+            RegisterComponent(moveAnimUpUI);
 
             var deleteAnimationUI = Plugin.CreateButton("Delete Animation", true);
             deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
-            _components.Add(deleteAnimationUI);
+            RegisterComponent(deleteAnimationUI);
 
             var reverseAnimationUI = Plugin.CreateButton("Reverse Animation", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
-            _components.Add(reverseAnimationUI);
+            RegisterComponent(reverseAnimationUI);
 
             CreateSpacer(true);
 
@@ -99,15 +99,15 @@ namespace VamTimeline
                 isStorable = false
             };
             var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, true);
-            _linkedStorables.Add(_exportAnimationsJSON);
+            RegisterStorable(_exportAnimationsJSON);
 
             var exportUI = Plugin.CreateButton("Export to .json", true);
             exportUI.button.onClick.AddListener(() => Export());
-            _components.Add(exportUI);
+            RegisterComponent(exportUI);
 
             var importUI = Plugin.CreateButton("Import from .json", true);
             importUI.button.onClick.AddListener(() => Import());
-            _components.Add(importUI);
+            RegisterComponent(importUI);
 
             // TODO: Keyframe all animatable morphs
         }

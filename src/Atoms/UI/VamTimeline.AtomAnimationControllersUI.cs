@@ -45,7 +45,7 @@ namespace VamTimeline
             InitClipboardUI(false);
 
             Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
-            _linkedStorables.Add(Plugin.AutoKeyframeAllControllersJSON);
+            RegisterStorable(Plugin.AutoKeyframeAllControllersJSON);
 
             // Right side
 
@@ -57,7 +57,7 @@ namespace VamTimeline
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, false);
             curveTypeUI.popupPanelHeight = 340f;
-            _linkedStorables.Add(_curveTypeJSON);
+            RegisterStorable(_curveTypeJSON);
         }
 
         public override void UpdatePlaying()

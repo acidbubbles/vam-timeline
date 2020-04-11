@@ -60,27 +60,27 @@ namespace VamTimeline
                 isStorable = false
             };
             Plugin.CreateTextField(_selectionJSON, rightSide);
-            _linkedStorables.Add(_selectionJSON);
+            RegisterStorable(_selectionJSON);
 
             var markSelectionStartUI = Plugin.CreateButton("Mark Selection Start", rightSide);
             markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
-            _components.Add(markSelectionStartUI);
+            RegisterComponent(markSelectionStartUI);
 
             var markSelectionEndUI = Plugin.CreateButton("Mark Selection End", rightSide);
             markSelectionEndUI.button.onClick.AddListener(MarkSelectionEnd);
-            _components.Add(markSelectionEndUI);
+            RegisterComponent(markSelectionEndUI);
         }
 
         private void InitOperationsUI(bool rightSide)
         {
             var deleteSelectedUI = Plugin.CreateButton("Delete Selected", rightSide);
             deleteSelectedUI.button.onClick.AddListener(DeleteSelected);
-            _components.Add(deleteSelectedUI);
+            RegisterComponent(deleteSelectedUI);
 
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             var curveTypeUI = Plugin.CreateScrollablePopup(_changeCurveJSON, true);
             curveTypeUI.popupPanelHeight = 340f;
-            _linkedStorables.Add(_changeCurveJSON);
+            RegisterStorable(_changeCurveJSON);
         }
 
         #region Callbacks

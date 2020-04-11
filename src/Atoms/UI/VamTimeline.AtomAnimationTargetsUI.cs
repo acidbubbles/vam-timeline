@@ -65,11 +65,11 @@ namespace VamTimeline
 
             _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
             _addControllerUI.popupPanelHeight = 900f;
-            _linkedStorables.Add(_addControllerListJSON);
+            RegisterStorable(_addControllerListJSON);
 
             _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
-            _components.Add(_toggleControllerUI);
+            RegisterComponent(_toggleControllerUI);
         }
 
         private IEnumerable<string> GetEligibleFreeControllers()
@@ -99,16 +99,16 @@ namespace VamTimeline
             _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
             _addFloatParamListUI.popupPanelHeight = 700f;
             _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
-            _linkedStorables.Add(_addStorableListJSON);
+            RegisterStorable(_addStorableListJSON);
 
             _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
             _addParamListUI.popupPanelHeight = 600f;
             _addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList(false);
-            _linkedStorables.Add(_addParamListJSON);
+            RegisterStorable(_addParamListJSON);
 
             _toggleFloatParamUI = Plugin.CreateButton("Add Param", true);
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
-            _components.Add(_toggleFloatParamUI);
+            RegisterComponent(_toggleFloatParamUI);
         }
 
         private IEnumerable<string> GetStorablesWithFloatParams()
