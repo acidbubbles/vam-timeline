@@ -45,9 +45,7 @@ namespace VamTimeline
 
             InitClipboardUI(false);
 
-            // Right side
-
-            InitDisplayUI(true);
+            InitDisplayUI(false);
         }
 
         public override void UpdatePlaying()

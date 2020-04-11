@@ -96,7 +96,7 @@ namespace VamTimeline
             RegisterComponent(pasteUI);
         }
 
-        protected void InitDisplayUI(bool rightSide, float height = 300f)
+        protected void InitDisplayUI(bool rightSide, float height = 260f)
         {
             RegisterStorable(Plugin.DisplayJSON);
             var displayUI = Plugin.CreateTextField(Plugin.DisplayJSON, rightSide);
