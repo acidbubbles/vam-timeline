@@ -18,6 +18,7 @@ namespace VamTimeline
         {
             public JSONStorableBool KeyframeJSON;
             public FreeControllerAnimationTarget Target;
+            public UIDynamicToggle KeyframeUI;
         }
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
@@ -44,8 +45,9 @@ namespace VamTimeline
 
             InitClipboardUI(false);
 
-            Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
             RegisterStorable(Plugin.AutoKeyframeAllControllersJSON);
+            var autoKeyframeAllControllersUI = Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
+            RegisterComponent(autoKeyframeAllControllersUI);
 
             // Right side
 
@@ -55,9 +57,10 @@ namespace VamTimeline
         private void InitCurvesUI()
         {
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
+            RegisterStorable(_curveTypeJSON);
             var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, false);
             curveTypeUI.popupPanelHeight = 340f;
-            RegisterStorable(_curveTypeJSON);
+            RegisterComponent(curveTypeUI);
         }
 
         public override void UpdatePlaying()
@@ -132,7 +135,8 @@ namespace VamTimeline
                 _targets.Add(new TargetRef
                 {
                     Target = target,
-                    KeyframeJSON = keyframeJSON
+                    KeyframeJSON = keyframeJSON,
+                    KeyframeUI = keyframeUI
                 });
             }
         }
@@ -148,6 +152,7 @@ namespace VamTimeline
             foreach (var targetRef in _targets)
             {
                 Plugin.RemoveToggle(targetRef.KeyframeJSON);
+                Plugin.RemoveToggle(targetRef.KeyframeUI);
             }
             _targets.Clear();
         }

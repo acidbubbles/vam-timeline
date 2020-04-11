@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,6 +19,8 @@ namespace VamTimeline
             public JSONStorableFloat FloatParamProxyJSON;
             public JSONStorableBool KeyframeJSON;
             public FloatParamAnimationTarget Target;
+            public UIDynamicSlider SliderUI;
+            public UIDynamicToggle KeyframeUI;
         }
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
@@ -87,18 +88,24 @@ namespace VamTimeline
             foreach (var target in Plugin.Animation.Current.TargetFloatParams)
             {
                 var sourceFloatParamJSON = target.FloatParam;
-                var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
+                var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val))
+                {
+                    isStorable= false
+                };
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
                 var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{sourceFloatParamJSON.name}", sourceFloatParamJSON.defaultVal, (float val) => SetFloatParamValue(target, val), sourceFloatParamJSON.min, sourceFloatParamJSON.max, sourceFloatParamJSON.constrained, true)
                 {
+                    isStorable = false,
                     valNoCallback = sourceFloatParamJSON.val
                 };
-                var slider = Plugin.CreateSlider(jsfJSONProxy, true);
+                var sliderUI = Plugin.CreateSlider(jsfJSONProxy, true);
                 _targets.Add(new TargetRef
                 {
                     Target = target,
                     FloatParamProxyJSON = jsfJSONProxy,
-                    KeyframeJSON = keyframeJSON
+                    SliderUI = sliderUI,
+                    KeyframeJSON = keyframeJSON,
+                    KeyframeUI = keyframeUI
                 });
             }
         }
@@ -147,7 +154,9 @@ namespace VamTimeline
             {
                 // TODO: Take care of keeping track of those separately
                 Plugin.RemoveToggle(targetRef.KeyframeJSON);
+                Plugin.RemoveToggle(targetRef.KeyframeUI);
                 Plugin.RemoveSlider(targetRef.FloatParamProxyJSON);
+                Plugin.RemoveSlider(targetRef.SliderUI);
             }
             _targets.Clear();
         }

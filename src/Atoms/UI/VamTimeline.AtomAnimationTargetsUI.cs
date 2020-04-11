@@ -62,10 +62,10 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-
+            RegisterStorable(_addControllerListJSON);
             _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
             _addControllerUI.popupPanelHeight = 900f;
-            RegisterStorable(_addControllerListJSON);
+            RegisterComponent(_addControllerUI);
 
             _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
@@ -90,21 +90,21 @@ namespace VamTimeline
             {
                 isStorable = false
             };
+            RegisterStorable(_addStorableListJSON);
+            _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
+            _addFloatParamListUI.popupPanelHeight = 700f;
+            _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
+            RegisterComponent(_addFloatParamListUI);
 
             _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param", (string name) => AnimationModified())
             {
                 isStorable = false
             };
-
-            _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
-            _addFloatParamListUI.popupPanelHeight = 700f;
-            _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
-            RegisterStorable(_addStorableListJSON);
-
+            RegisterStorable(_addParamListJSON);
             _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
             _addParamListUI.popupPanelHeight = 600f;
             _addParamListUI.popup.onOpenPopupHandlers += () => RefreshStorableFloatsList(false);
-            RegisterStorable(_addParamListJSON);
+            RegisterComponent(_addParamListUI);
 
             _toggleFloatParamUI = Plugin.CreateButton("Add Param", true);
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
