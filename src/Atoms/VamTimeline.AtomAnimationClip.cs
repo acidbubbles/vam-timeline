@@ -87,6 +87,7 @@ namespace VamTimeline
             if (TargetControllers.Any(c => c.Controller == controller)) return null;
             var target = new FreeControllerAnimationTarget(controller);
             TargetControllers.Add(target);
+            TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
             return target;
         }
 
@@ -102,6 +103,7 @@ namespace VamTimeline
         {
             if (target == null) throw new NullReferenceException(nameof(target));
             TargetFloatParams.Add(target);
+            TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
         }
 
         public void Remove(FreeControllerV3 controller)
@@ -322,7 +324,7 @@ namespace VamTimeline
                     var curveKeys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToList();
                     var extraneousKeys = target.Settings.Keys.Except(curveKeys);
                     SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames but {target.Settings.Count} settings. Attempting auto-repair.");
-                    foreach(var extraneousKey in extraneousKeys)
+                    foreach (var extraneousKey in extraneousKeys)
                         target.Settings.Remove(extraneousKey);
                 }
                 if (target.Settings.Count != leadCurve.length)
