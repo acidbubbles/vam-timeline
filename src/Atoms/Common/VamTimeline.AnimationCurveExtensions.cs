@@ -48,7 +48,7 @@ namespace VamTimeline
             }
 
             // Sanity check
-            if (curve[lastKey].time > length + float.Epsilon)
+            if (curve[lastKey].time > length + 0.001f - float.Epsilon)
             {
                 SuperController.LogError($"VamTimeline: Problem while resizing animation. Expected length {length} but was {curve[lastKey].time}");
             }
