@@ -9,6 +9,7 @@
    "promotionalLink" : "https://github.com/acidbubbles/vam-timeline", 
    "programVersion" : "1.19.0.5", 
    "contentList" : [ 
+      "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\External\\Unity\\UnitySpecific.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\VamTimeline.StorableNames.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\VamTimeline.IAtomPlugin.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Common\\VamTimeline.FloatExtensions.cs", 

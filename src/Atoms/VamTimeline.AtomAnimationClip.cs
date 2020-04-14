@@ -369,5 +369,17 @@ namespace VamTimeline
                 target.SetKeyframe(time, entry.Snapshot.value);
             }
         }
+
+        public void EnsureQuaternionContinuityAndRecalculateSlope()
+        {
+            foreach (var target in TargetControllers)
+            {
+                UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
+                    target.RotX,
+                    target.RotY,
+                    target.RotZ,
+                    target.RotW);
+            }
+        }
     }
 }

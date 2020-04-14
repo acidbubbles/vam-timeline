@@ -1,3 +1,4 @@
+src/External/Unity/UnitySpecific.cs
 src/VamTimeline.StorableNames.cs
 src/Atoms/VamTimeline.IAtomPlugin.cs
 src/Atoms/Common/VamTimeline.FloatExtensions.cs
