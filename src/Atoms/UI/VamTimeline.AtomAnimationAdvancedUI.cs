@@ -85,6 +85,10 @@ namespace VamTimeline
             moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
             RegisterComponent(moveAnimUpUI);
 
+            var moveAnimDownUI = Plugin.CreateButton("Reorder Animation (Move Down)", true);
+            moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
+            RegisterComponent(moveAnimDownUI);
+
             var deleteAnimationUI = Plugin.CreateButton("Delete Animation", true);
             deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
             RegisterComponent(deleteAnimationUI);
@@ -238,12 +242,30 @@ namespace VamTimeline
                 var idx = Plugin.Animation.Clips.IndexOf(anim);
                 if (idx <= 0) return;
                 Plugin.Animation.Clips.RemoveAt(idx);
-                Plugin.Animation.Clips.Insert(0, anim);
+                Plugin.Animation.Clips.Insert(idx - 1, anim);
                 Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReorderAnimationMoveUp)}: {exc}");
+            }
+        }
+
+        private void ReorderAnimationMoveDown()
+        {
+            try
+            {
+                var anim = Plugin.Animation.Current;
+                if (anim == null) return;
+                var idx = Plugin.Animation.Clips.IndexOf(anim);
+                if (idx >= Plugin.Animation.Clips.Count - 1) return;
+                Plugin.Animation.Clips.RemoveAt(idx);
+                Plugin.Animation.Clips.Insert(idx + 1, anim);
+                Plugin.AnimationModified();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReorderAnimationMoveDown)}: {exc}");
             }
         }
 
