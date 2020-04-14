@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -36,6 +37,8 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
+            InitBulkClipboardUI(false);
+
             // Right side
 
             InitDisplayUI(true);
@@ -51,6 +54,21 @@ namespace VamTimeline
             _selectionStart = 0f;
             _selectionEnd = Plugin.Animation.Current.AnimationLength;
             AnimationFrameUpdated();
+        }
+
+        protected void InitBulkClipboardUI(bool rightSide)
+        {
+            var cutUI = Plugin.CreateButton("Cut / Delete Frame(s)", rightSide);
+            cutUI.button.onClick.AddListener(() => CopyDeleteSelected(true, true));
+            RegisterComponent(cutUI);
+
+            var copyUI = Plugin.CreateButton("Copy Frame(s)", rightSide);
+            copyUI.button.onClick.AddListener(() => CopyDeleteSelected(true, false));
+            RegisterComponent(copyUI);
+
+            var pasteUI = Plugin.CreateButton("Paste Frame(s)", rightSide);
+            pasteUI.button.onClick.AddListener(() => Plugin.PasteJSON.actionCallback());
+            RegisterComponent(pasteUI);
         }
 
         private void InitSelectionUI(bool rightSide)
@@ -75,7 +93,7 @@ namespace VamTimeline
         private void InitOperationsUI(bool rightSide)
         {
             var deleteSelectedUI = Plugin.CreateButton("Delete Selected", rightSide);
-            deleteSelectedUI.button.onClick.AddListener(DeleteSelected);
+            deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
             RegisterComponent(deleteSelectedUI);
 
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
@@ -109,7 +127,7 @@ namespace VamTimeline
             foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())
             {
                 var leadCurve = target.GetLeadCurve();
-                for (var key = 1; key < leadCurve.length - 1; key++)
+                for (var key = 0; key < leadCurve.length; key++)
                 {
                     var keyTime = leadCurve[key].time;
                     if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
@@ -121,24 +139,34 @@ namespace VamTimeline
             _selectionJSON.val = sb.ToString();
         }
 
-        public void DeleteSelected()
+        public void CopyDeleteSelected(bool copy, bool delete)
         {
-            var deletedFrames = 0;
+            Plugin.Clipboard.Clear();
             foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())
             {
                 var leadCurve = target.GetLeadCurve();
-                for (var key = leadCurve.length - 2; key > 0; key--)
+                for (var key = leadCurve.length - 1; key >= 0; key--)
                 {
                     var keyTime = leadCurve[key].time;
                     if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
                     {
-                        target.DeleteFrameByKey(key);
-                        deletedFrames++;
+                        if (copy)
+                        {
+                            SuperController.LogMessage($"Copied {Plugin.Animation.Current.Copy(keyTime).Time}");
+                            Plugin.Clipboard.Insert(0, Plugin.Animation.Current.Copy(keyTime));
+                        }
+                        if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Plugin.Animation.Current.AnimationLength))
+                        {
+                            target.DeleteFrameByKey(key);
+                        }
                     }
                 }
             }
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
+            if (delete)
+            {
+                Plugin.Animation.RebuildAnimation();
+                Plugin.AnimationModified();
+            }
         }
 
         public void ChangeCurve(string val)
