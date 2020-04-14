@@ -11,6 +11,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomClipboardEntry
     {
+        public float Time;
         public List<FreeControllerV3ClipboardEntry> Controllers;
         public List<FloatParamValClipboardEntry> FloatParams;
     }

@@ -25,7 +25,7 @@ namespace VamTimeline
         public Atom ContainingAtom => containingAtom;
         public AtomAnimationSerializer Serializer { get; private set; }
         private bool _restoring;
-        private AtomClipboardEntry _clipboard;
+        public IList<AtomClipboardEntry> Clipboard { get; } = new List<AtomClipboardEntry>();
         private FreeControllerAnimationTarget _grabbedController;
         private bool _resumePlayOnUnfreeze;
 
@@ -508,7 +508,8 @@ namespace VamTimeline
             try
             {
                 if (Animation.IsPlaying()) return;
-                _clipboard = Animation.Current.Copy(Animation.Time);
+                Clipboard.Clear();
+                Clipboard.Add(Animation.Current.Copy(Animation.Time));
                 var time = Animation.Time.Snap();
                 if (time.IsSameFrame(0f) || time.IsSameFrame(Animation.Current.AnimationLength)) return;
                 Animation.Current.DeleteFrame(time);
@@ -527,7 +528,8 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying()) return;
 
-                _clipboard = Animation.Current.Copy(Animation.Time);
+                Clipboard.Clear();
+                Clipboard.Add(Animation.Current.Copy(Animation.Time));
             }
             catch (Exception exc)
             {
@@ -541,13 +543,15 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying()) return;
 
-                if (_clipboard == null)
+                if (Clipboard.Count == 0)
                 {
                     SuperController.LogMessage("VamTimeline: Clipboard is empty");
                     return;
                 }
                 var time = Animation.Time;
-                Animation.Current.Paste(Animation.Time, _clipboard);
+                var timeOffset = Clipboard[0].Time;
+                foreach (var entry in Clipboard)
+                    Animation.Current.Paste(Animation.Time + entry.Time - timeOffset, entry);
                 Animation.RebuildAnimation();
                 // Sample animation now
                 UpdateTime(time, false);

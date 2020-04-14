@@ -304,6 +304,7 @@ namespace VamTimeline
             }
             return new AtomClipboardEntry
             {
+                Time = time,
                 Controllers = controllers,
                 FloatParams = floatParams
             };

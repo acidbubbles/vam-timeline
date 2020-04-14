@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using SimpleJSON;
 using UnityEngine;
 
@@ -69,6 +70,7 @@ namespace VamTimeline
         Atom ContainingAtom { get; }
         AtomAnimation Animation { get; }
         AtomAnimationSerializer Serializer { get; }
+        IList<AtomClipboardEntry> Clipboard { get; }
 
         JSONStorableStringChooser AnimationJSON { get; }
         JSONStorableFloat ScrubberJSON { get; }
