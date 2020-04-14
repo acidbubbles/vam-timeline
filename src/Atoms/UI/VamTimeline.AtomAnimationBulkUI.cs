@@ -152,7 +152,6 @@ namespace VamTimeline
                     {
                         if (copy)
                         {
-                            SuperController.LogMessage($"Copied {Plugin.Animation.Current.Copy(keyTime).Time}");
                             Plugin.Clipboard.Insert(0, Plugin.Animation.Current.Copy(keyTime));
                         }
                         if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Plugin.Animation.Current.AnimationLength))

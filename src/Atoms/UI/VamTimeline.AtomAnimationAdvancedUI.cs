@@ -686,7 +686,6 @@ namespace VamTimeline
                     SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
                     if (previousStep != null && (target.Controller.name == "lFootControl" || target.Controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                     {
-                        SuperController.LogMessage("ok " + target.Controller.name);
                         KeyframeSettings settings;
                         if (target.Settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
                             target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);

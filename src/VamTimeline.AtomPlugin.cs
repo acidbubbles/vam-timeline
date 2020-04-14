@@ -553,7 +553,6 @@ namespace VamTimeline
                 foreach (var entry in Clipboard)
                 {
                     Animation.Current.Paste(Animation.Time + entry.Time - timeOffset, entry);
-                    SuperController.LogMessage($"Paste {Animation.Time + entry.Time - timeOffset}");
                 }
                 Animation.RebuildAnimation();
                 // Sample animation now
