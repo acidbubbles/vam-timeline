@@ -378,8 +378,10 @@ namespace VamTimeline
             foreach (var target in clip.TargetControllers)
             {
                 target.ReapplyCurveTypes();
+
                 if (clip.EnsureQuaternionContinuity)
                     clip.EnsureQuaternionContinuityAndRecalculateSlope();
+
                 if (clip.Loop)
                 {
                     target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));

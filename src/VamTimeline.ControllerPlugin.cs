@@ -412,6 +412,56 @@ namespace VamTimeline
                 else
                     Play();
             }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Stop();
+            }
+            else if (Input.GetKeyDown(KeyCode.PageUp))
+            {
+                if (_atomsJSON.choices.Count > 1 && _atomsJSON.val != _atomsJSON.choices[0])
+                    _atomsJSON.val = _atomsJSON.choices.ElementAtOrDefault(_atomsJSON.choices.IndexOf(_atomsJSON.val) - 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.PageDown))
+            {
+                if (_atomsJSON.choices.Count > 1 && _atomsJSON.val != _atomsJSON.choices[_atomsJSON.choices.Count - 1])
+                    _atomsJSON.val = _atomsJSON.choices.ElementAtOrDefault(_atomsJSON.choices.IndexOf(_atomsJSON.val) + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(0));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(1));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(2));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(3));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(4));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha6))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(5));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha7))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(6));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha8))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(7));
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha9))
+            {
+                ChangeAnimation(_mainLinkedAnimation.Animation.choices.ElementAtOrDefault(8));
+            }
         }
 
         private void Lock(bool val)
@@ -438,6 +488,7 @@ namespace VamTimeline
 
         private void ChangeAnimation(string name)
         {
+            if (string.IsNullOrEmpty(name)) return;
             foreach (var la in _linkedAnimations)
                 la.ChangeAnimation(name);
         }
