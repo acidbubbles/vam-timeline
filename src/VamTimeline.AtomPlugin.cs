@@ -27,6 +27,7 @@ namespace VamTimeline
         private bool _restoring;
         public IList<AtomClipboardEntry> Clipboard { get; } = new List<AtomClipboardEntry>();
         private FreeControllerAnimationTarget _grabbedController;
+        private bool _cancelNextGrabbedControllerRelease;
         private bool _resumePlayOnUnfreeze;
 
         // Storables
@@ -131,8 +132,20 @@ namespace VamTimeline
             {
                 _grabbedController = Animation.Current.TargetControllers.FirstOrDefault(c => c.Controller == grabbing);
             }
+            if (_grabbedController != null && grabbing != null)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                    _cancelNextGrabbedControllerRelease = true;
+            }
             else if (_grabbedController != null && grabbing == null)
             {
+                var grabbedController = _grabbedController;
+                _grabbedController = null;
+                if (_cancelNextGrabbedControllerRelease)
+                {
+                    _cancelNextGrabbedControllerRelease = false;
+                    return;
+                }
                 // TODO: This should be done by the controller (updating the animation resets the time)
                 var time = Animation.Time.Snap();
                 if (AutoKeyframeAllControllersJSON.val)
@@ -142,9 +155,8 @@ namespace VamTimeline
                 }
                 else
                 {
-                    SetControllerKeyframe(time, _grabbedController);
+                    SetControllerKeyframe(time, grabbedController);
                 }
-                _grabbedController = null;
                 Animation.RebuildAnimation();
                 AnimationModified();
             }
