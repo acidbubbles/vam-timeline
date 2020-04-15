@@ -1,0 +1,3 @@
+[submodule "src/External/curve-editor"]
+	path = src/External/curve-editor
+	url = https://github.com/acidbubbles/vam-curve-editor.git
