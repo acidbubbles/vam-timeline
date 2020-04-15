@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using CurveEditor;
+using CurveEditor.UI;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -16,6 +20,7 @@ namespace VamTimeline
         private readonly List<UIDynamic> _components = new List<UIDynamic>();
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
+        private UICurveEditor _curveUI;
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
         {
@@ -32,6 +37,7 @@ namespace VamTimeline
 
         public virtual void AnimationModified()
         {
+            _curveUI?.UpdatePoints();
         }
 
         public virtual void AnimationFrameUpdated()
@@ -99,10 +105,38 @@ namespace VamTimeline
 
         protected void InitDisplayUI(bool rightSide, float height = 260f)
         {
-            RegisterStorable(Plugin.DisplayJSON);
-            var displayUI = Plugin.CreateTextField(Plugin.DisplayJSON, rightSide);
-            displayUI.height = height;
-            RegisterComponent(displayUI);
+            if (Plugin.Animation == null || Plugin.Animation.Current == null) return;
+            var builder = new UIBuilder(Plugin as MVRScript);
+            _curveUI = builder.CreateCurveEditor(height, rightSide);
+            foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+            {
+                var x = new StorableAnimationCurve(controllerTarget.X);
+                _curveUI.AddCurve(x, Color.red, 2);
+                var y = new StorableAnimationCurve(controllerTarget.Y);
+                _curveUI.AddCurve(y, Color.green, 2);
+                var z = new StorableAnimationCurve(controllerTarget.Z);
+                _curveUI.AddCurve(z, Color.blue, 2);
+            }
+            foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
+            {
+                var v = new StorableAnimationCurve(floatParamTarget.Value);
+                _curveUI.AddCurve(v, Color.gray, 2);
+            }
+            RegisterComponent(_curveUI.container);
+        }
+
+        private class StorableAnimationCurve : IStorableAnimationCurve
+        {
+            public AnimationCurve val { get; set; }
+
+            public StorableAnimationCurve(AnimationCurve curve)
+            {
+                val = curve;
+            }
+
+            public void NotifyUpdated()
+            {
+            }
         }
 
         protected void CreateSpacer(bool rightSide)
@@ -186,6 +220,9 @@ namespace VamTimeline
                     Plugin.RemoveSpacer(component);
             }
             _components.Clear();
+
+            if (_curveUI != null)
+                _curveUI = null;
         }
     }
 }
