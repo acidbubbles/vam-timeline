@@ -70,6 +70,26 @@ namespace VamTimeline
 
         private void InitAnimationSettingsUI(bool rightSide)
         {
+            _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
+                ChangeLengthModeLocked,
+                ChangeLengthModeCropExtendEnd,
+                ChangeLengthModeAddKeyframeEnd,
+                ChangeLengthModeCropExtendBegin,
+                ChangeLengthModeAddKeyframeBegin,
+                ChangeLengthModeCropExtendAtTime,
+                ChangeLengthModeStretch,
+                ChangeLengthModeLoop
+             }, ChangeLengthModeLocked, "Change Length Mode", (string _) => _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0f);
+            RegisterStorable(_lengthModeJSON);
+            var lengthModeUI = Plugin.CreateScrollablePopup(_lengthModeJSON);
+            lengthModeUI.popupPanelHeight = 550f;
+            RegisterComponent(lengthModeUI);
+
+            _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 10f, false, true);
+            RegisterStorable(_lengthJSON);
+            var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
+            lengthUI.valueFormat = "F3";
+            RegisterComponent(lengthUI);
             RegisterStorable(Plugin.SnapJSON);
             var snapUI = Plugin.CreateSlider(Plugin.SnapJSON);
             snapUI.valueFormat = "F3";
@@ -87,26 +107,6 @@ namespace VamTimeline
             _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
             var animationNameUI = Plugin.CreateTextInput(_animationNameJSON);
             RegisterComponent(animationNameUI);
-
-            _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
-                ChangeLengthModeLocked,
-                ChangeLengthModeCropExtendEnd,
-                ChangeLengthModeAddKeyframeEnd,
-                ChangeLengthModeCropExtendBegin,
-                ChangeLengthModeAddKeyframeBegin,
-                ChangeLengthModeCropExtendAtTime,
-                ChangeLengthModeStretch,
-                ChangeLengthModeLoop
-             }, ChangeLengthModeLocked, "Change Length Mode", (string _) => _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0f);
-            RegisterStorable(_lengthModeJSON);
-            var lengthModeUI = Plugin.CreateScrollablePopup(_lengthModeJSON);
-            RegisterComponent(lengthModeUI);
-
-            _lengthJSON = new JSONStorableFloat("AnimationLength", AtomAnimationClip.DefaultAnimationLength, v => UpdateAnimationLength(v), 0.5f, 120f, false, true);
-            RegisterStorable(_lengthJSON);
-            var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
-            lengthUI.valueFormat = "F3";
-            RegisterComponent(lengthUI);
         }
 
         private void InitSequenceUI(bool rightSide)
