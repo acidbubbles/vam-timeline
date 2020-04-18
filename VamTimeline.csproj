@@ -85,6 +85,7 @@
     <Compile Include="src/Atoms/Common/VamTimeline.KeyframeSettings.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.AnimationCurveExtensions.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.IAnimationTarget.cs" />
+    <Compile Include="src/Atoms/Common/VamTimeline.StorableAnimationCurve.cs" />
 
     <Compile Include="src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationTarget.cs" />
 

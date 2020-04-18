@@ -16,19 +16,33 @@ namespace VamTimeline
     {
         public FreeControllerV3 Controller;
         public SortedDictionary<int, KeyframeSettings> Settings = new SortedDictionary<int, KeyframeSettings>();
-        public AnimationCurve X = new AnimationCurve();
-        public AnimationCurve Y = new AnimationCurve();
-        public AnimationCurve Z = new AnimationCurve();
-        public AnimationCurve RotX = new AnimationCurve();
-        public AnimationCurve RotY = new AnimationCurve();
-        public AnimationCurve RotZ = new AnimationCurve();
-        public AnimationCurve RotW = new AnimationCurve();
+        public StorableAnimationCurve StorableX;
+        public AnimationCurve X => StorableX.val;
+        public StorableAnimationCurve StorableY;
+        public AnimationCurve Y => StorableY.val;
+        public StorableAnimationCurve StorableZ;
+        public AnimationCurve Z => StorableZ.val;
+        public StorableAnimationCurve StorableRotX;
+        public AnimationCurve RotX => StorableRotX.val;
+        public StorableAnimationCurve StorableRotY;
+        public AnimationCurve RotY => StorableRotY.val;
+        public StorableAnimationCurve StorableRotZ;
+        public AnimationCurve RotZ => StorableRotZ.val;
+        public StorableAnimationCurve StorableRotW;
+        public AnimationCurve RotW => StorableRotW.val;
         public List<AnimationCurve> Curves;
 
         public string Name => Controller.name;
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
+            StorableX = new StorableAnimationCurve(new AnimationCurve());
+            StorableY = new StorableAnimationCurve(new AnimationCurve());
+            StorableZ = new StorableAnimationCurve(new AnimationCurve());
+            StorableRotX = new StorableAnimationCurve(new AnimationCurve());
+            StorableRotY = new StorableAnimationCurve(new AnimationCurve());
+            StorableRotZ = new StorableAnimationCurve(new AnimationCurve());
+            StorableRotW = new StorableAnimationCurve(new AnimationCurve());
             Curves = new List<AnimationCurve> {
                 X, Y, Z, RotX, RotY, RotZ, RotW
             };

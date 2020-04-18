@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using CurveEditor;
 using CurveEditor.UI;
 using UnityEngine;
 
@@ -112,36 +110,21 @@ namespace VamTimeline
             _curveEditorContainer = Plugin.CreateSpacer(rightSide);
             _curveEditorContainer.height = height;
             RegisterComponent(_curveEditorContainer);
-            _curveUI = new UICurveEditor(_curveEditorContainer, 520, _curveEditorContainer.height, buttons: new List<UIDynamicButton>());
+            _curveUI = new UICurveEditor(_curveEditorContainer, 520, _curveEditorContainer.height, buttons: new List<UIDynamicButton>())
+            {
+                readOnly = true
+            };
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
-                var x = new StorableAnimationCurve(controllerTarget.X);
-                _lines.Add(_curveUI.AddCurve(x, UICurveLineColors.CreateFrom(Color.red), 2));
-                var y = new StorableAnimationCurve(controllerTarget.Y);
-                _lines.Add(_curveUI.AddCurve(y, UICurveLineColors.CreateFrom(Color.green), 2));
-                var z = new StorableAnimationCurve(controllerTarget.Z);
-                _lines.Add(_curveUI.AddCurve(z, UICurveLineColors.CreateFrom(Color.blue), 2));
+                _lines.Add(_curveUI.AddCurve(controllerTarget.StorableX, UICurveLineColors.CreateFrom(Color.red), 2));
+                _lines.Add(_curveUI.AddCurve(controllerTarget.StorableY, UICurveLineColors.CreateFrom(Color.green), 2));
+                _lines.Add(_curveUI.AddCurve(controllerTarget.StorableZ, UICurveLineColors.CreateFrom(Color.blue), 2));
             }
             foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
             {
-                var v = new StorableAnimationCurve(floatParamTarget.Value);
-                _lines.Add(_curveUI.AddCurve(v, UICurveLineColors.CreateFrom(Color.gray), 2));
+                _lines.Add(_curveUI.AddCurve(floatParamTarget.StorableValue, UICurveLineColors.CreateFrom(Color.gray), 2));
             }
             RegisterComponent(_curveUI.container);
-        }
-
-        private class StorableAnimationCurve : IStorableAnimationCurve
-        {
-            public AnimationCurve val { get; set; }
-
-            public StorableAnimationCurve(AnimationCurve curve)
-            {
-                val = curve;
-            }
-
-            public void NotifyUpdated()
-            {
-            }
         }
 
         protected void CreateSpacer(bool rightSide)

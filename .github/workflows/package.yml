@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        submodules: true
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
