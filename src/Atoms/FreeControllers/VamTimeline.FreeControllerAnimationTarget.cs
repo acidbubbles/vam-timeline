@@ -156,7 +156,7 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(curveType)) return;
 
-            UpdateSetting(time, curveType);
+            UpdateSetting(time, curveType, false);
         }
 
         #endregion
@@ -189,15 +189,15 @@ namespace VamTimeline
             RotY.SetKeySnapshot(time, snapshot.RotY);
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
             RotW.SetKeySnapshot(time, snapshot.RotW);
-            UpdateSetting(time, snapshot.CurveType);
+            UpdateSetting(time, snapshot.CurveType, true);
         }
 
-        private void UpdateSetting(float time, string curveType)
+        private void UpdateSetting(float time, string curveType, bool create)
         {
             var ms = time.ToMilliseconds();
             if (Settings.ContainsKey(ms))
                 Settings[ms].CurveType = curveType;
-            else
+            else if (create)
                 Settings.Add(ms, new KeyframeSettings { CurveType = curveType });
         }
 
