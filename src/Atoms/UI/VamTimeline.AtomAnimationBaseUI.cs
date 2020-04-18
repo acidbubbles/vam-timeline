@@ -13,8 +13,8 @@ namespace VamTimeline
     {
         public abstract string Name { get; }
 
-        private List<UIDynamic> _components = new List<UIDynamic>();
-        private List<JSONStorableParam> _storables = new List<JSONStorableParam>();
+        private readonly List<UIDynamic> _components = new List<UIDynamic>();
+        private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
