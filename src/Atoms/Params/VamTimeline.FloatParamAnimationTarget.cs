@@ -16,7 +16,8 @@ namespace VamTimeline
     {
         public JSONStorable Storable { get; }
         public JSONStorableFloat FloatParam { get; }
-        public AnimationCurve Value { get; } = new AnimationCurve();
+        public StorableAnimationCurve StorableValue;
+        public AnimationCurve Value => StorableValue.val;
 
         public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
 
@@ -24,6 +25,7 @@ namespace VamTimeline
         {
             Storable = storable;
             FloatParam = jsf;
+            StorableValue = new StorableAnimationCurve(new AnimationCurve());
         }
 
         public AnimationCurve GetLeadCurve()
