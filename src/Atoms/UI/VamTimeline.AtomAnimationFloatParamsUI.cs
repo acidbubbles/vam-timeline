@@ -138,6 +138,7 @@ namespace VamTimeline
             Plugin.Animation.RebuildAnimation();
             var targetRef = _targets.FirstOrDefault(j => j.Target == target);
             targetRef.KeyframeJSON.valNoCallback = true;
+            // TODO: This won't update the curve since we don't call Plugin.AnimationModified
         }
 
         public override void Dispose()

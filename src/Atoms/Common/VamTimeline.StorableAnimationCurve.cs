@@ -12,6 +12,7 @@ namespace VamTimeline
     public class StorableAnimationCurve : IStorableAnimationCurve
     {
         public AnimationCurve val { get; set; }
+        public bool dirty { get; set; }
 
         public StorableAnimationCurve(AnimationCurve curve)
         {

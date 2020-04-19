@@ -20,7 +20,7 @@ namespace VamTimeline
         protected IAtomPlugin Plugin;
         private UICurveEditor _curveUI;
         private UIDynamic _curveEditorContainer;
-        private readonly List<UICurveLine> _lines = new List<UICurveLine>();
+        private readonly List<CurveLine> _lines = new List<CurveLine>();
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
         {
@@ -38,11 +38,14 @@ namespace VamTimeline
         public virtual void AnimationModified()
         {
             foreach (var line in _lines)
-                line.RedrawLine();
+            {
+                line.SetPointsFromCurve();
+            }
         }
 
         public virtual void AnimationFrameUpdated()
         {
+            _curveUI.SetScrubber(Plugin.Animation.Time);
         }
 
         protected void InitPlaybackUI(bool rightSide)
@@ -86,7 +89,6 @@ namespace VamTimeline
             var previousFrameUI = Plugin.CreateButton("\u2190 Previous Frame", rightSide);
             previousFrameUI.button.onClick.AddListener(() => Plugin.PreviousFrameJSON.actionCallback());
             RegisterComponent(previousFrameUI);
-
         }
 
         protected void InitClipboardUI(bool rightSide)
@@ -112,7 +114,8 @@ namespace VamTimeline
             RegisterComponent(_curveEditorContainer);
             _curveUI = new UICurveEditor(_curveEditorContainer, 520, _curveEditorContainer.height, buttons: new List<UIDynamicButton>())
             {
-                readOnly = true
+                readOnly = true,
+                showScrubbers = true
             };
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
