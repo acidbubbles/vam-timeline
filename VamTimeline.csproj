@@ -59,21 +59,15 @@
   <ItemGroup>
     <Compile Include="src/External/Unity/UnitySpecific.cs" />
 
-    <Compile Include="src/External/curve-editor/Plugin.cs" />
     <Compile Include="src/External/curve-editor/IStorableAnimationCurve.cs" />
     <Compile Include="src/External/curve-editor/JSONStorableAnimationCurve.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UIScrubber.cs" />
-    <Compile Include="src/External/curve-editor/UI/Utils/InputEventArgs.cs" />
-    <Compile Include="src/External/curve-editor/UI/Utils/PointerEventArgs.cs" />
+    <Compile Include="src/External/curve-editor/UI/Control/UICurveEditorCanvas.cs" />
+    <Compile Include="src/External/curve-editor/UI/Graphic/IDrawable.cs" />
     <Compile Include="src/External/curve-editor/UI/Control/UICurveEditor.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UICurveEditorPoint.cs" />
-    <Compile Include="src/External/curve-editor/UI/Utils/UIInputBehaviour.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UILine.cs" />
-    <Compile Include="src/External/curve-editor/UI/Utils/UIMouseClickBehaviour.cs" />
-    <Compile Include="src/External/curve-editor/UI/Utils/UIMouseDragBehaviour.cs" />
+    <Compile Include="src/External/curve-editor/UI/Graphic/CurveEditorPoint.cs" />
     <Compile Include="src/External/curve-editor/UI/Control/UIColors.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UICurveLine.cs" />
-    <Compile Include="src/External/curve-editor/UI/Utils/UIRaycastEventsBehaviour.cs" />
+    <Compile Include="src/External/curve-editor/UI/Graphic/CurveLine.cs" />
+    <Compile Include="src/External/curve-editor/UI/Graphic/VertexHelperExtensions.cs" />
     <Compile Include="src/External/curve-editor/Utils/MathUtils.cs" />
 
     <Compile Include="src/VamTimeline.StorableNames.cs" />
