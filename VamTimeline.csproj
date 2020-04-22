@@ -62,8 +62,8 @@
     <Compile Include="src/External/curve-editor/IStorableAnimationCurve.cs" />
     <Compile Include="src/External/curve-editor/JSONStorableAnimationCurve.cs" />
     <Compile Include="src/External/curve-editor/UI/Control/UICurveEditorCanvas.cs" />
-    <Compile Include="src/External/curve-editor/UI/Graphic/IDrawable.cs" />
     <Compile Include="src/External/curve-editor/UI/Control/UICurveEditor.cs" />
+    <Compile Include="src/External/curve-editor/UI/Graphic/DrawScaleOffset.cs" />
     <Compile Include="src/External/curve-editor/UI/Graphic/CurveEditorPoint.cs" />
     <Compile Include="src/External/curve-editor/UI/Control/UIColors.cs" />
     <Compile Include="src/External/curve-editor/UI/Graphic/CurveLine.cs" />
@@ -75,6 +75,7 @@
     <Compile Include="src/Atoms/VamTimeline.IAtomPlugin.cs" />
 
     <Compile Include="src/Atoms/Common/VamTimeline.FloatExtensions.cs" />
+    <Compile Include="src/Atoms/Common/VamTimeline.ListExtensions.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.CurveTypeValues.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.KeyframeSettings.cs" />
     <Compile Include="src/Atoms/Common/VamTimeline.AnimationCurveExtensions.cs" />
