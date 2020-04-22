@@ -38,20 +38,28 @@ namespace VamTimeline
             return new[] { Value };
         }
 
+        public IEnumerable<StorableAnimationCurve> GetStorableCurves()
+        {
+            return new[] { StorableValue };
+        }
+
         public void SetKeyframe(float time, float value)
         {
             Value.SetKeyframe(time, value);
+            StorableValue.Update(time);
         }
 
         public void DeleteFrame(float time)
         {
             var key = Value.KeyframeBinarySearch(time);
-            if (key != -1) Value.RemoveKey(key);
+            if (key == -1) return;
+            DeleteFrameByKey(key);
         }
 
         public void DeleteFrameByKey(int key)
         {
             Value.RemoveKey(key);
+            StorableValue.Update();
         }
 
         public IEnumerable<float> GetAllKeyframesTime()

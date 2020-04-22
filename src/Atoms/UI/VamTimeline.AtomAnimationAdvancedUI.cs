@@ -231,9 +231,10 @@ namespace VamTimeline
                 foreach (var target in anim.GetAllOrSelectedTargets())
                 {
                     var controllerTarget = target as FreeControllerAnimationTarget;
-                    foreach (var curve in target.GetCurves())
+                    foreach (var storable in target.GetStorableCurves())
                     {
-                        curve.Reverse();
+                        storable.val.Reverse();
+                        storable.Update();
                     }
                     if (controllerTarget != null)
                     {

@@ -56,6 +56,7 @@ namespace VamTimeline
         }
 
         public float NextAnimationTime { get; set; }
+        public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
 
         public AtomAnimationClip(string animationName)
         {
@@ -327,36 +328,7 @@ namespace VamTimeline
         {
             foreach (var target in TargetControllers)
             {
-                var leadCurve = target.GetLeadCurve();
-                if (leadCurve.length < 2)
-                {
-                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frame(s) and require at least 2.");
-                    return;
-                }
-                if (target.Settings.Count > leadCurve.length)
-                {
-                    var curveKeys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToList();
-                    var extraneousKeys = target.Settings.Keys.Except(curveKeys);
-                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames but {target.Settings.Count} settings. Attempting auto-repair.");
-                    foreach (var extraneousKey in extraneousKeys)
-                        target.Settings.Remove(extraneousKey);
-                }
-                if (target.Settings.Count != leadCurve.length)
-                {
-                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames but {target.Settings.Count} settings");
-                    SuperController.LogError($"  Target  : {string.Join(", ", leadCurve.keys.Select(k => k.time.ToString()).ToArray())}");
-                    SuperController.LogError($"  Settings: {string.Join(", ", target.Settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
-                    return;
-                }
-                var settings = target.Settings.Select(s => s.Key);
-                var keys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToArray();
-                if (!settings.SequenceEqual(keys))
-                {
-                    SuperController.LogError($"Target {target.Name} has different times for settings and keyframes");
-                    SuperController.LogError($"Settings: {string.Join(", ", settings.Select(s => s.ToString()).ToArray())}");
-                    SuperController.LogError($"Keyframes: {string.Join(", ", keys.Select(k => k.ToString()).ToArray())}");
-                    return;
-                }
+                target.Validate();
             }
         }
 
@@ -393,6 +365,12 @@ namespace VamTimeline
                     target.RotZ,
                     target.RotW);
             }
+        }
+
+        public void DirtyAll()
+        {
+            foreach (var s in AllTargets.SelectMany(t => t.GetStorableCurves()))
+                s.Update();
         }
     }
 }

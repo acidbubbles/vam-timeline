@@ -30,6 +30,7 @@ namespace VamTimeline
         public AnimationCurve RotZ => StorableRotZ.val;
         public StorableAnimationCurve StorableRotW;
         public AnimationCurve RotW => StorableRotW.val;
+        public List<StorableAnimationCurve> Storables;
         public List<AnimationCurve> Curves;
 
         public string Name => Controller.name;
@@ -43,9 +44,10 @@ namespace VamTimeline
             StorableRotY = new StorableAnimationCurve(new AnimationCurve());
             StorableRotZ = new StorableAnimationCurve(new AnimationCurve());
             StorableRotW = new StorableAnimationCurve(new AnimationCurve());
-            Curves = new List<AnimationCurve> {
-                X, Y, Z, RotX, RotY, RotZ, RotW
+            Storables = new List<StorableAnimationCurve> {
+                StorableX, StorableY, StorableZ, StorableRotX, StorableRotY, StorableRotZ, StorableRotW
             };
+            Curves = Storables.Select(s => s.val).ToList();
             Controller = controller;
         }
 
@@ -59,6 +61,45 @@ namespace VamTimeline
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return Curves;
+        }
+
+        public IEnumerable<StorableAnimationCurve> GetStorableCurves()
+        {
+            return Storables;
+        }
+
+        public void Validate()
+        {
+            var leadCurve = GetLeadCurve();
+            if (leadCurve.length < 2)
+            {
+                SuperController.LogError($"Target {Name} has {leadCurve.length} frames");
+                return;
+            }
+            if (Settings.Count > leadCurve.length)
+            {
+                var curveKeys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToList();
+                var extraneousKeys = Settings.Keys.Except(curveKeys);
+                SuperController.LogError($"Target {Name} has {leadCurve.length} frames but {Settings.Count} settings. Attempting auto-repair.");
+                foreach (var extraneousKey in extraneousKeys)
+                    Settings.Remove(extraneousKey);
+            }
+            if (Settings.Count != leadCurve.length)
+            {
+                SuperController.LogError($"Target {Name} has {leadCurve.length} frames but {Settings.Count} settings");
+                SuperController.LogError($"  Target  : {string.Join(", ", leadCurve.keys.Select(k => k.time.ToString()).ToArray())}");
+                SuperController.LogError($"  Settings: {string.Join(", ", Settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
+                return;
+            }
+            var settings = Settings.Select(s => s.Key);
+            var keys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToArray();
+            if (!settings.SequenceEqual(keys))
+            {
+                SuperController.LogError($"Target {Name} has different times for settings and keyframes");
+                SuperController.LogError($"Settings: {string.Join(", ", settings.Select(s => s.ToString()).ToArray())}");
+                SuperController.LogError($"Keyframes: {string.Join(", ", keys.Select(k => k.ToString()).ToArray())}");
+                return;
+            }
         }
 
         public void ReapplyCurveTypes()
@@ -125,12 +166,19 @@ namespace VamTimeline
         public void SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
             X.SetKeyframe(time, localPosition.x);
+            StorableX.Update(time);
             Y.SetKeyframe(time, localPosition.y);
+            StorableY.Update(time);
             Z.SetKeyframe(time, localPosition.z);
+            StorableZ.Update(time);
             RotX.SetKeyframe(time, locationRotation.x);
+            StorableRotX.Update(time);
             RotY.SetKeyframe(time, locationRotation.y);
+            StorableRotY.Update(time);
             RotZ.SetKeyframe(time, locationRotation.z);
+            StorableRotZ.Update(time);
             RotW.SetKeyframe(time, locationRotation.w);
+            StorableRotW.Update(time);
             var ms = time.ToMilliseconds();
             if (!Settings.ContainsKey(ms))
                 Settings[ms] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
@@ -145,9 +193,11 @@ namespace VamTimeline
         public void DeleteFrameByKey(int key)
         {
             var settingIndex = Settings.Remove(GetLeadCurve()[key].time.ToMilliseconds());
-            foreach (var curve in GetCurves())
+            foreach (var storable in Storables)
             {
-                curve.RemoveKey(key);
+                storable.val.RemoveKey(key);
+                storable.Update();
+
             }
         }
 
@@ -171,6 +221,10 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(curveType)) return;
 
             UpdateSetting(time, curveType, false);
+
+            StorableX.Update();
+            StorableY.Update();
+            StorableZ.Update();
         }
 
         #endregion
@@ -197,12 +251,19 @@ namespace VamTimeline
         public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
         {
             X.SetKeySnapshot(time, snapshot.X);
+            StorableX.Update(time);
             Y.SetKeySnapshot(time, snapshot.Y);
+            StorableY.Update(time);
             Z.SetKeySnapshot(time, snapshot.Z);
+            StorableZ.Update(time);
             RotX.SetKeySnapshot(time, snapshot.RotX);
+            StorableRotX.Update(time);
             RotY.SetKeySnapshot(time, snapshot.RotY);
+            StorableRotY.Update(time);
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
+            StorableRotZ.Update(time);
             RotW.SetKeySnapshot(time, snapshot.RotW);
+            StorableRotW.Update(time);
             UpdateSetting(time, snapshot.CurveType, true);
         }
 

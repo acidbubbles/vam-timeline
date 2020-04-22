@@ -271,9 +271,10 @@ namespace VamTimeline
             foreach (var origTarget in current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
-                for (var i = 0; i < origTarget.Curves.Count; i++)
+                for (var i = 0; i < origTarget.Storables.Count; i++)
                 {
                     newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
+                    newTarget.Storables[i].Update();
                 }
                 foreach (var kvp in origTarget.Settings)
                 {
@@ -284,6 +285,7 @@ namespace VamTimeline
             {
                 var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
                 newTarget.Value.keys = origTarget.Value.keys.ToArray();
+                newTarget.StorableValue.Update();
             }
             Plugin.Animation.RebuildAnimation();
             Plugin.Animation.ChangeAnimation(clip.AnimationName);
@@ -450,6 +452,9 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Unknown animation length type: {_lengthModeJSON.val}");
                     break;
             }
+
+            Plugin.Animation.Current.DirtyAll();
+
             Plugin.Animation.RebuildAnimation();
             UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
@@ -497,6 +502,7 @@ namespace VamTimeline
                 _transitionJSON.valNoCallback = false;
                 Plugin.Animation.Current.Transition = false;
             }
+            Plugin.Animation.Current.DirtyAll();
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
@@ -513,6 +519,9 @@ namespace VamTimeline
         private void SetEnsureQuaternionContinuity(bool val)
         {
             Plugin.Animation.Current.EnsureQuaternionContinuity = val;
+
+            Plugin.Animation.Current.DirtyAll();
+
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
