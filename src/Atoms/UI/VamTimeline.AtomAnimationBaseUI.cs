@@ -20,7 +20,7 @@ namespace VamTimeline
         protected IAtomPlugin Plugin;
         private UICurveEditor _curveUI;
         private UIDynamic _curveEditorContainer;
-        private readonly List<CurveLine> _lines = new List<CurveLine>();
+        private readonly List<StorableAnimationCurve> _curves = new List<StorableAnimationCurve>();
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
         {
@@ -37,15 +37,19 @@ namespace VamTimeline
 
         public virtual void AnimationModified()
         {
-            foreach (var line in _lines)
-            {
-                line.SetPointsFromCurve();
-            }
+            foreach (var curve in _curves)
+                UpdateCurveGraph(curve);
+        }
+
+        protected void UpdateCurveGraph(StorableAnimationCurve storable)
+        {
+            _curveUI.UpdateCurve(storable);
         }
 
         public virtual void AnimationFrameUpdated()
         {
-            _curveUI.SetScrubber(Plugin.Animation.Time);
+            if (_curves.Count > 0)
+                _curveUI.SetScrubber(_curves[0], Plugin.Animation.Time);
         }
 
         protected void InitPlaybackUI(bool rightSide)
@@ -115,21 +119,40 @@ namespace VamTimeline
             _curveUI = new UICurveEditor(_curveEditorContainer, 520, _curveEditorContainer.height, buttons: new List<UIDynamicButton>())
             {
                 readOnly = true,
-                showScrubbers = true
+                showScrubbers = true,
+                allowKeyboardShortcuts = false
             };
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
-                _lines.Add(_curveUI.AddCurve(controllerTarget.StorableX, UICurveLineColors.CreateFrom(Color.red), 2));
-                _lines.Add(_curveUI.AddCurve(controllerTarget.StorableY, UICurveLineColors.CreateFrom(Color.green), 2));
-                _lines.Add(_curveUI.AddCurve(controllerTarget.StorableZ, UICurveLineColors.CreateFrom(Color.blue), 2));
+                var x = _curves.AddAndRetreive(controllerTarget.StorableX);
+                _curveUI.AddCurve(x, UICurveLineColors.CreateFrom(Color.red), 0.02f);
+                var y = _curves.AddAndRetreive(controllerTarget.StorableY);
+                _curveUI.AddCurve(y, UICurveLineColors.CreateFrom(Color.green), 0.02f);
+                var z = _curves.AddAndRetreive(controllerTarget.StorableZ);
+                _curveUI.AddCurve(z, UICurveLineColors.CreateFrom(Color.blue), 0.02f);
+
+                // Only showing the w component of the quaternion since it shows if there's rotation, and that's enough
+                var rotW = _curves.AddAndRetreive(controllerTarget.StorableRotW);
+                _curveUI.AddCurve(rotW, UICurveLineColors.CreateFrom(Color.yellow), 0.02f);
             }
             foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
             {
-                _lines.Add(_curveUI.AddCurve(floatParamTarget.StorableValue, UICurveLineColors.CreateFrom(Color.gray), 2));
+                var v = _curves.AddAndRetreive(floatParamTarget.StorableValue);
+                _curveUI.AddCurve(v, UICurveLineColors.CreateFrom(new Color(0.6f, 0.6f, 0.6f)), 0.02f);
             }
+            UpdateCurveBounds();
+            if (_curves.Count > 0)
+                _curveUI.SetScrubber(_curves[0], Plugin.Animation.Time);
             RegisterComponent(_curveUI.container);
         }
 
+        private void UpdateCurveBounds()
+        {
+            var length = Plugin.Animation.Current.AnimationLength;
+
+            foreach (var curve in _curves)
+                _curveUI.SetValueBounds(curve, new Vector2(0, curve.min), new Vector2(length, curve.max));
+        }
         protected void CreateSpacer(bool rightSide)
         {
             var spacerUI = Plugin.CreateSpacer(rightSide);
@@ -215,7 +238,7 @@ namespace VamTimeline
             if (_curveUI != null)
             {
                 _curveUI = null;
-                _lines.Clear();
+                _curves.Clear();
             }
         }
     }
