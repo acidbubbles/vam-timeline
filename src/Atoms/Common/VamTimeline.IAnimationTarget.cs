@@ -10,6 +10,7 @@ namespace VamTimeline
 
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
+        IEnumerable<StorableAnimationCurve> GetStorableCurves();
         void RenderDebugInfo(StringBuilder display, float time);
         IEnumerable<float> GetAllKeyframesTime();
         void DeleteFrame(float time);

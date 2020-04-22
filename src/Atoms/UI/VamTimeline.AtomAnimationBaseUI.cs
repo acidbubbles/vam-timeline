@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CurveEditor.UI;
 using UnityEngine;
 
@@ -20,6 +21,8 @@ namespace VamTimeline
         protected IAtomPlugin Plugin;
         private UICurveEditor _curveUI;
         private UIDynamic _curveEditorContainer;
+        private int _currentTargets = 0;
+        private string _currentAnimation = null;
         private readonly List<StorableAnimationCurve> _curves = new List<StorableAnimationCurve>();
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
@@ -37,8 +40,32 @@ namespace VamTimeline
 
         public virtual void AnimationModified()
         {
-            foreach (var curve in _curves)
-                UpdateCurveGraph(curve);
+            var currentTargets = Plugin.Animation.Current.AllTargetsCount;
+            var currentAnimation = Plugin.Animation.Current.AnimationName;
+            if (currentTargets != _currentTargets || currentAnimation != _currentAnimation)
+            {
+                if (_curveUI != null)
+                {
+                    foreach (var curve in _curves)
+                    {
+                        _curveUI.RemoveCurve(curve);
+                    }
+                    _curves.Clear();
+
+                    RegisterCurrentCurves();
+                }
+            }
+            else
+            {
+                foreach (var curve in _curves)
+                {
+                    if (!curve.graphDirty) continue;
+                    // TODO: Differenciate between new curve (change animation, new animation) and position change
+                    UpdateCurveGraph(curve);
+                    UpdateCurveBounds();
+                    curve.graphDirty = false;
+                }
+            }
         }
 
         protected void UpdateCurveGraph(StorableAnimationCurve storable)
@@ -122,37 +149,52 @@ namespace VamTimeline
                 showScrubbers = true,
                 allowKeyboardShortcuts = false
             };
+            RegisterCurrentCurves();
+            RegisterComponent(_curveUI.container);
+        }
+
+        private void RegisterCurrentCurves()
+        {
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
                 var x = _curves.AddAndRetreive(controllerTarget.StorableX);
                 _curveUI.AddCurve(x, UICurveLineColors.CreateFrom(Color.red), 0.02f);
+                x.graphDirty = false;
                 var y = _curves.AddAndRetreive(controllerTarget.StorableY);
                 _curveUI.AddCurve(y, UICurveLineColors.CreateFrom(Color.green), 0.02f);
+                y.graphDirty = false;
                 var z = _curves.AddAndRetreive(controllerTarget.StorableZ);
                 _curveUI.AddCurve(z, UICurveLineColors.CreateFrom(Color.blue), 0.02f);
+                z.graphDirty = false;
 
                 // Only showing the w component of the quaternion since it shows if there's rotation, and that's enough
                 var rotW = _curves.AddAndRetreive(controllerTarget.StorableRotW);
                 _curveUI.AddCurve(rotW, UICurveLineColors.CreateFrom(Color.yellow), 0.02f);
+                rotW.graphDirty = false;
             }
             foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
             {
                 var v = _curves.AddAndRetreive(floatParamTarget.StorableValue);
                 _curveUI.AddCurve(v, UICurveLineColors.CreateFrom(new Color(0.6f, 0.6f, 0.6f)), 0.02f);
+                v.graphDirty = false;
             }
             UpdateCurveBounds();
             if (_curves.Count > 0)
                 _curveUI.SetScrubber(_curves[0], Plugin.Animation.Time);
-            RegisterComponent(_curveUI.container);
+            _currentTargets = Plugin.Animation.Current.AllTargetsCount;
+            _currentAnimation = Plugin.Animation.Current.AnimationName;
         }
 
         private void UpdateCurveBounds()
         {
             var length = Plugin.Animation.Current.AnimationLength;
+            var min = _curves.Min(c => c.min);
+            var max = _curves.Max(c => c.max);
 
             foreach (var curve in _curves)
-                _curveUI.SetValueBounds(curve, new Vector2(0, curve.min), new Vector2(length, curve.max));
+                _curveUI.SetValueBounds(curve, new Vector2(0, min), new Vector2(length, max));
         }
+
         protected void CreateSpacer(bool rightSide)
         {
             var spacerUI = Plugin.CreateSpacer(rightSide);

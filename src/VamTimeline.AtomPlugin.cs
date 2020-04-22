@@ -163,8 +163,6 @@ namespace VamTimeline
                 {
                     SetControllerKeyframe(time, grabbedController);
                 }
-                Animation.RebuildAnimation();
-                AnimationModified();
                 if(Animation.Current.Transition) Animation.Sample();
             }
         }
@@ -174,6 +172,8 @@ namespace VamTimeline
             Animation.SetKeyframeToCurrentTransform(target, time);
             if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
                 Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
+            Animation.RebuildAnimation();
+            AnimationModified();
         }
 
         #endregion

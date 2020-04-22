@@ -444,29 +444,43 @@ namespace VamTimeline
         private void RebuildClipCurve(AtomAnimationClip clip)
         {
             clip.Clip.ClearCurves();
+
             foreach (var target in clip.TargetControllers)
             {
-                if (clip.Loop)
-                    target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));
+                if (target.Storables.Any(s => s.animationDirty))
+                {
+                    target.Validate();
 
-                target.ReapplyCurveTypes();
+                    if (clip.Loop)
+                        target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));
 
-                if (clip.Loop)
-                    target.SmoothLoop();
+                    target.ReapplyCurveTypes();
 
-                if (clip.EnsureQuaternionContinuity)
-                    clip.EnsureQuaternionContinuityAndRecalculateSlope();
+                    if (clip.Loop)
+                        target.SmoothLoop();
+
+                    if (clip.EnsureQuaternionContinuity)
+                        clip.EnsureQuaternionContinuityAndRecalculateSlope();
+
+                    foreach (var s in target.Storables)
+                        s.animationDirty = false;
+                }
 
                 target.ReapplyCurvesToClip(clip.Clip);
             }
 
             foreach (var target in clip.TargetFloatParams)
             {
-                if (clip.Loop)
+                if (target.StorableValue.animationDirty)
                 {
-                    target.SetKeyframe(clip.AnimationLength, target.Value[0].value);
+                    if (clip.Loop)
+                    {
+                        target.SetKeyframe(clip.AnimationLength, target.Value[0].value);
+                    }
+                    target.Value.FlatAllFrames();
+
+                    target.StorableValue.animationDirty = false;
                 }
-                target.Value.FlatAllFrames();
             }
         }
 
