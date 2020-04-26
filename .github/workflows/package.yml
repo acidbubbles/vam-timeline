@@ -22,7 +22,7 @@ jobs:
       run: |
         mkdir -p publish/Custom/Scripts/AcidBubbles/Timeline
         cp -r src publish/Custom/Scripts/AcidBubbles/Timeline/
-        cp *.cslist publish/Custom/Scripts/AcidBubbles/Timeline/
+        rm publish/Custom/Scripts/AcidBubbles/Timeline/src/external/curve-editor/.*
         cp vam/meta.json publish/
         sed -i 's/v0.0.0/${{ steps.get_version.outputs.VERSION }}/' publish/meta.json
         cd publish
