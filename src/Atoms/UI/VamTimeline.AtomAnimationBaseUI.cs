@@ -36,6 +36,7 @@ namespace VamTimeline
 
         public virtual void UpdatePlaying()
         {
+            // _curveUI?.SetScrubber(_curves[0], Plugin.Animation.Time);
         }
 
         public virtual void AnimationModified()
