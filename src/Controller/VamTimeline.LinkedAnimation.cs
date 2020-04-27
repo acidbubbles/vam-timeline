@@ -20,6 +20,8 @@ namespace VamTimeline
 
         public Atom Atom;
         public string Label => Atom.uid;
+        private JSONStorable _storable;
+        private JSONStorableFloat _scrubber;
 
         public LinkedAnimation(Atom atom)
         {
@@ -30,9 +32,21 @@ namespace VamTimeline
         {
             get
             {
+                if (_storable != null)
+                {
+                    if (_storable.containingAtom == null)
+                    {
+                        _storable = null;
+                    }
+                    else
+                    {
+                        return _storable;
+                    }
+                }
                 var storableId = GetStorableId();
                 if (storableId == null) return null;
-                return Atom.GetStorableByID(storableId);
+                _storable = Atom.GetStorableByID(storableId);
+                return _storable;
             }
         }
 
@@ -41,8 +55,17 @@ namespace VamTimeline
             return GetStorableId(Atom);
         }
 
+        public JSONStorableFloat Scrubber
+        {
+            get
+            {
+                var previous = _storable;
+                if (_scrubber != null && Storable == previous) return _scrubber;
+                _scrubber = Storable?.GetFloatJSONParam(StorableNames.Scrubber);
+                return _scrubber;
+            }
+        }
         public JSONStorableBool Locked { get { return Storable?.GetBoolJSONParam(StorableNames.Locked); } }
-        public JSONStorableFloat Scrubber { get { return Storable?.GetFloatJSONParam(StorableNames.Scrubber); } }
         public JSONStorableFloat Time { get { return Storable?.GetFloatJSONParam(StorableNames.Time); } }
         public JSONStorableStringChooser Animation { get { return Storable?.GetStringChooserJSONParam(StorableNames.Animation); } }
         public JSONStorableStringChooser FilterAnimationTarget { get { return Storable?.GetStringChooserJSONParam(StorableNames.FilterAnimationTarget); } }
