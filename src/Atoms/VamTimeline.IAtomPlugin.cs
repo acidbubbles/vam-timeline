@@ -70,7 +70,7 @@ namespace VamTimeline
         Atom ContainingAtom { get; }
         AtomAnimation Animation { get; }
         AtomAnimationSerializer Serializer { get; }
-        IList<AtomClipboardEntry> Clipboard { get; }
+        AtomClipboard Clipboard { get; }
 
         JSONStorableStringChooser AnimationJSON { get; }
         JSONStorableFloat ScrubberJSON { get; }

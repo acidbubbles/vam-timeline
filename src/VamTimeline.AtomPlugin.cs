@@ -25,7 +25,7 @@ namespace VamTimeline
         public Atom ContainingAtom => containingAtom;
         public AtomAnimationSerializer Serializer { get; private set; }
         private bool _restoring;
-        public IList<AtomClipboardEntry> Clipboard { get; } = new List<AtomClipboardEntry>();
+        public AtomClipboard Clipboard { get; } = new AtomClipboard();
         private FreeControllerAnimationTarget _grabbedController;
         private bool _cancelNextGrabbedControllerRelease;
         private bool _resumePlayOnUnfreeze;
@@ -521,7 +521,8 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying()) return;
                 Clipboard.Clear();
-                Clipboard.Add(Animation.Current.Copy(Animation.Time));
+                Clipboard.Time = Animation.Time.Snap();
+                Clipboard.Entries.Add(Animation.Current.Copy(Clipboard.Time));
                 var time = Animation.Time.Snap();
                 if (time.IsSameFrame(0f) || time.IsSameFrame(Animation.Current.AnimationLength)) return;
                 Animation.Current.DeleteFrame(time);
@@ -541,7 +542,8 @@ namespace VamTimeline
                 if (Animation.IsPlaying()) return;
 
                 Clipboard.Clear();
-                Clipboard.Add(Animation.Current.Copy(Animation.Time));
+                Clipboard.Time = Animation.Time.Snap();
+                Clipboard.Entries.Add(Animation.Current.Copy(Clipboard.Time));
             }
             catch (Exception exc)
             {
@@ -555,14 +557,14 @@ namespace VamTimeline
             {
                 if (Animation.IsPlaying()) return;
 
-                if (Clipboard.Count == 0)
+                if (Clipboard.Entries.Count == 0)
                 {
                     SuperController.LogMessage("VamTimeline: Clipboard is empty");
                     return;
                 }
                 var time = Animation.Time;
-                var timeOffset = Clipboard[0].Time;
-                foreach (var entry in Clipboard)
+                var timeOffset = Clipboard.Time;
+                foreach (var entry in Clipboard.Entries)
                 {
                     Animation.Current.Paste(Animation.Time + entry.Time - timeOffset, entry);
                 }

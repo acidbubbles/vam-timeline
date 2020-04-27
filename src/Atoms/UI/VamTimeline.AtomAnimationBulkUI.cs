@@ -142,6 +142,7 @@ namespace VamTimeline
         public void CopyDeleteSelected(bool copy, bool delete)
         {
             Plugin.Clipboard.Clear();
+            Plugin.Clipboard.Time = _selectionStart;
             foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())
             {
                 var leadCurve = target.GetLeadCurve();
@@ -152,7 +153,7 @@ namespace VamTimeline
                     {
                         if (copy)
                         {
-                            Plugin.Clipboard.Insert(0, Plugin.Animation.Current.Copy(keyTime));
+                            Plugin.Clipboard.Entries.Insert(0, Plugin.Animation.Current.Copy(keyTime));
                         }
                         if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Plugin.Animation.Current.AnimationLength))
                         {

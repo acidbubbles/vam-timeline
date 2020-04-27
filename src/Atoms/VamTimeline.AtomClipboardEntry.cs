@@ -9,6 +9,24 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
+    public class AtomClipboard
+    {
+        public float Time;
+        public readonly IList<AtomClipboardEntry> Entries = new List<AtomClipboardEntry>();
+
+        public void Clear()
+        {
+            Time = 0f;
+            Entries.Clear();
+        }
+    }
+
+    /// <summary>
+    /// VaM Timeline
+    /// By Acidbubbles
+    /// Animation timeline with keyframes
+    /// Source: https://github.com/acidbubbles/vam-timeline
+    /// </summary>
     public class AtomClipboardEntry
     {
         public float Time;
