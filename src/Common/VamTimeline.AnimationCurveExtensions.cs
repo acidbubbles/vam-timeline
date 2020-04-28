@@ -216,61 +216,6 @@ namespace VamTimeline
             return -1;
         }
 
-        public static void ApplyCurve(this AnimationCurve curve, float time, string curveType)
-        {
-            var key = curve.KeyframeBinarySearch(time);
-            if (key == -1) return;
-            var keyframe = curve[key];
-            var before = key > 0 ? (Keyframe?)curve[key - 1] : null;
-            var next = key < curve.length - 1 ? (Keyframe?)curve[key + 1] : null;
-
-            switch (curveType)
-            {
-                case null:
-                case "":
-                    return;
-                case CurveTypeValues.Flat:
-                    keyframe.inTangent = 0f;
-                    keyframe.outTangent = 0f;
-                    curve.MoveKey(key, keyframe);
-                    break;
-                case CurveTypeValues.Linear:
-                    keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                    keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                    curve.MoveKey(key, keyframe);
-                    break;
-                case CurveTypeValues.Bounce:
-                    keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                    keyframe.outTangent = -keyframe.inTangent;
-                    curve.MoveKey(key, keyframe);
-                    break;
-                case CurveTypeValues.Smooth:
-                    curve.SmoothTangents(key, 0f);
-                    break;
-                case CurveTypeValues.LinearFlat:
-                    keyframe.inTangent = CalculateLinearTangent(before, keyframe);
-                    keyframe.outTangent = 0f;
-                    curve.MoveKey(key, keyframe);
-                    break;
-                case CurveTypeValues.FlatLinear:
-                    keyframe.inTangent = 0f;
-                    keyframe.outTangent = CalculateLinearTangent(keyframe, next);
-                    curve.MoveKey(key, keyframe);
-                    break;
-                case CurveTypeValues.CopyPrevious:
-                    if (before != null)
-                    {
-                        keyframe.value = before.Value.value;
-                        keyframe.inTangent = 0f;
-                        keyframe.outTangent = 0f;
-                        curve.MoveKey(key, keyframe);
-                    }
-                    break;
-                default:
-                    throw new NotSupportedException($"Curve type {curveType} is not supported");
-            }
-        }
-
         public static void SmoothAllFrames(this AnimationCurve curve)
         {
             if (curve.length == 2)
@@ -351,7 +296,7 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private static float CalculateFixedMirrorTangent(Keyframe? from, Keyframe? to, float strength = 0.8f)
+        public static float CalculateFixedMirrorTangent(Keyframe? from, Keyframe? to, float strength = 0.8f)
         {
             var tangent = CalculateLinearTangent(from, to);
             if (tangent > 0)
@@ -363,14 +308,14 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private static float CalculateLinearTangent(Keyframe? from, Keyframe? to)
+        public static float CalculateLinearTangent(Keyframe? from, Keyframe? to)
         {
             if (from == null || to == null) return 0f;
             return (float)((from.Value.value - (double)to.Value.value) / (from.Value.time - (double)to.Value.time));
         }
 
         [MethodImpl(256)]
-        private static float CalculateLinearTangent(float fromValue, float toValue, float fromTime, float toTime)
+        public static float CalculateLinearTangent(float fromValue, float toValue, float fromTime, float toTime)
         {
             return (float)((fromValue - (double)toValue) / (fromTime - (double)toTime));
         }
