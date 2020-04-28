@@ -538,5 +538,24 @@ namespace VamTimeline
                 Current.AnimationPattern.ResetAndPlay();
             }
         }
+
+        public Dictionary<string, AnimationCurve> GetCurvesDictionary()
+        {
+            // TODO: List of named curves instead of an actual dictionary (we don't need the hash tree)
+            // TODO: Reuse the dictionary unless controllers are added or removed (list dirty flag)
+            var dict = new Dictionary<string, AnimationCurve>();
+            foreach (var target in Current.GetAllOrSelectedControllerTargets())
+            {
+                // TODO: Add rotation w value too?
+                dict.Add($"{target.Name}.x", target.X);
+                dict.Add($"{target.Name}.y", target.Y);
+                dict.Add($"{target.Name}.z", target.Z);
+            }
+            foreach (var target in Current.GetAllOrSelectedFloatParamTargets())
+            {
+                dict.Add($"{target.Name}", target.Value);
+            }
+            return dict;
+        }
     }
 }

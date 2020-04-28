@@ -405,6 +405,18 @@ namespace VamTimeline
             }
         }
 
+        public void VamTimelineAnimationCurvesModified(Dictionary<string, AnimationCurve> curves)
+        {
+            foreach (var kvp in curves)
+            {
+                // TODO: Receive colors too
+                var storable = new StorableAnimationCurve(kvp.Value);
+                _curveEditor.AddCurve(storable);
+            }
+            // TODO: Add some padding to SetViewToFit
+            _curveEditor.SetViewToFit();
+        }
+
         public void Update()
         {
             try
