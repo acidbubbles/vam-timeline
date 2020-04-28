@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using CurveEditor.UI;
 using UnityEngine;
 
 namespace VamTimeline
@@ -29,10 +30,10 @@ namespace VamTimeline
         private LinkedAnimation _mainLinkedAnimation;
         private JSONStorableString _savedAtomsJSON;
         private JSONStorableStringChooser _targetJSON;
-        private JSONStorableString _displayJSON;
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
         private JSONStorableBool _enableKeyboardShortcuts;
+        private UICurveEditor _curveEditor;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         #region Initialization
@@ -114,11 +115,6 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterFloat(_scrubberJSON);
-
-            _displayJSON = new JSONStorableString("Display", "")
-            {
-                isStorable = false
-            };
 
             var atoms = GetAtomsWithVamTimelinePlugin().ToList();
             _atomsToLink = new JSONStorableStringChooser("Atom To Link", atoms, atoms.FirstOrDefault() ?? "", "Add");
@@ -253,12 +249,24 @@ namespace VamTimeline
                 _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
                 _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
                 _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
-                _ui.CreateUITextfieldInCanvas(_displayJSON, x, y + 0.62f);
+                var container = _ui.CreateUISpacerInCanvas(x, y + 0.54f, 300f);
+                _curveEditor = InitEditor(container);
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(OnEnable)}: " + exc);
             }
+        }
+
+        private UICurveEditor InitEditor(UIDynamic container)
+        {
+            var curveEditor = new UICurveEditor(container, 1157, container.height, buttons: new List<UIDynamicButton>())
+            {
+                readOnly = true,
+                showScrubbers = true,
+                allowKeyboardShortcuts = false
+            };
+            return curveEditor;
         }
 
         public void OnDisable()
@@ -354,7 +362,6 @@ namespace VamTimeline
                 _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
                 var target = _mainLinkedAnimation.FilterAnimationTarget.val;
                 _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
-                _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
 
                 var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
                 if (updated == null)
