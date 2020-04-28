@@ -36,7 +36,7 @@ namespace VamTimeline
 
         public virtual void UpdatePlaying()
         {
-            // _curveUI?.SetScrubber(_curves[0], Plugin.Animation.Time);
+            // _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         public virtual void AnimationModified()
@@ -77,7 +77,7 @@ namespace VamTimeline
         public virtual void AnimationFrameUpdated()
         {
             if (_curves.Count > 0)
-                _curveUI.SetScrubber(_curves[0], Plugin.Animation.Time);
+                _curveUI.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         protected void InitPlaybackUI(bool rightSide)
