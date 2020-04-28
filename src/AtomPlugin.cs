@@ -50,7 +50,6 @@ namespace VamTimeline
         public JSONStorableAction CopyJSON { get; private set; }
         public JSONStorableAction PasteJSON { get; private set; }
         public JSONStorableBool LockedJSON { get; private set; }
-        public JSONStorableString DisplayJSON { get; private set; }
         public JSONStorableBool AutoKeyframeAllControllersJSON { get; private set; }
         public JSONStorableFloat SpeedJSON { get; private set; }
 
@@ -363,12 +362,6 @@ namespace VamTimeline
             LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationModified());
             RegisterBool(LockedJSON);
 
-            DisplayJSON = new JSONStorableString(StorableNames.Display, "")
-            {
-                isStorable = false
-            };
-            RegisterString(DisplayJSON);
-
             AutoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
             {
                 isStorable = false
@@ -631,74 +624,6 @@ namespace VamTimeline
 
         #endregion
 
-        #region State Rendering
-
-        public void RenderState()
-        {
-            if (LockedJSON.val)
-            {
-                DisplayJSON.val = "Locked";
-                return;
-            }
-
-            if (Animation.IsPlaying())
-            {
-                DisplayJSON.val = "Playing...";
-                return;
-            }
-
-            var time = Animation.Time;
-            var frames = new List<float>();
-            var targets = new List<string>();
-            foreach (var target in Animation.Current.GetAllOrSelectedTargets())
-            {
-                var keyTimes = target.GetAllKeyframesTime();
-                foreach (var keyTime in keyTimes)
-                {
-                    frames.Add(keyTime);
-                    if (frames.Count >= _maxDisplayedFrames)
-                    {
-                        DisplayJSON.val = "Too many frames to display";
-                        return;
-                    }
-                    if (keyTime.IsSameFrame(time))
-                        targets.Add(target.Name);
-                }
-            }
-
-            var display = new StringBuilder();
-            if (frames.Count == 1)
-            {
-                display.AppendLine("No frame have been recorded yet.");
-            }
-            else
-            {
-                frames.Sort();
-                display.Append("Frames:");
-                foreach (var f in frames.Distinct())
-                {
-                    if (f.IsSameFrame(time))
-                        display.Append($"[{f}]");
-                    else
-                        display.Append($" {f} ");
-                }
-            }
-            display.AppendLine();
-            if (targets.Count == 0)
-            {
-                display.AppendLine($"No controller has been registered{(Animation.Current.AllTargets.Any() ? " at this frame." : ". Go to Animation Settings and add one.")}");
-            }
-            else
-            {
-                display.AppendLine("Affects:");
-                foreach (var c in targets)
-                    display.AppendLine(c);
-            }
-            DisplayJSON.val = display.ToString();
-        }
-
-        #endregion
-
         #region Updates
 
         public void AnimationModified()
@@ -718,9 +643,6 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
                 FilterAnimationTargetJSON.choices = new List<string> { StorableNames.AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
-
-                // Render
-                RenderState();
 
                 // UI
                 _ui.AnimationModified();
@@ -757,9 +679,6 @@ namespace VamTimeline
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
                 _ui.AnimationFrameUpdated();
-
-                // Render
-                RenderState();
 
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");

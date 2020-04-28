@@ -30,7 +30,6 @@ namespace VamTimeline
         public const string SmoothAllFrames = "Smooth All Frames";
         public const string ChangeCurve = "Change Curve";
         public const string Locked = "Locked";
-        public const string Display = "Display";
         public const string Import = "Import";
         public const string Speed = "Speed";
     }
