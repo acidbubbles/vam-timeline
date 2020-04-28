@@ -105,7 +105,7 @@ namespace VamTimeline
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicTextField>();
-            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicButton component");
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicTextField component");
             jss.dynamicText = ui;
 
             transform.Translate(Vector3.down * y, Space.Self);
@@ -126,9 +126,30 @@ namespace VamTimeline
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicToggle>();
-            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicPopup component");
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamicToggle component");
             ui.label = jsb.name;
             jsb.toggle = ui.toggle;
+
+            transform.Translate(Vector3.down * y, Space.Self);
+            transform.Translate(Vector3.right * x, Space.Self);
+
+            return ui;
+        }
+
+        public UIDynamic CreateUISpacerInCanvas(float x, float y, float height)
+        {
+            var canvas = _atom.GetComponentInChildren<Canvas>();
+            if (canvas == null) throw new NullReferenceException("Could not find a canvas to attach to");
+
+            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableSpacerPrefab.transform);
+            if (transform == null) throw new NullReferenceException("Could not instantiate configurableSpacerPrefab");
+            _components.Add(transform);
+            transform.SetParent(canvas.transform, false);
+            transform.gameObject.SetActive(true);
+
+            var ui = transform.GetComponent<UIDynamic>();
+            if (ui == null) throw new NullReferenceException("Could not find a UIDynamic component");
+            ui.height = height;
 
             transform.Translate(Vector3.down * y, Space.Self);
             transform.Translate(Vector3.right * x, Space.Self);
