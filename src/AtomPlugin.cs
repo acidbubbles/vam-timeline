@@ -728,7 +728,12 @@ namespace VamTimeline
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
+                {
+                    // TODO: Replace broadcasting by a link
                     controller.BroadcastMessage("VamTimelineAnimationModified", containingAtom.uid);
+                    // TODO: Dirty flag to avoid broadcasting
+                    controller.BroadcastMessage("VamTimelineAnimationCurvesModified", Animation.GetCurvesDictionary());
+                }
             }
             catch (Exception exc)
             {
