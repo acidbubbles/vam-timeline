@@ -413,8 +413,7 @@ namespace VamTimeline
                 var storable = new StorableAnimationCurve(kvp.Value);
                 _curveEditor.AddCurve(storable);
             }
-            // TODO: Add some padding to SetViewToFit
-            _curveEditor.SetViewToFit();
+            _curveEditor.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
         }
 
         public void Update()
