@@ -70,43 +70,43 @@
     <Compile Include="src/External/curve-editor/UI/Graphic/VertexHelperExtensions.cs" />
     <Compile Include="src/External/curve-editor/Utils/MathUtils.cs" />
 
-    <Compile Include="src/Common/VamTimeline.FloatExtensions.cs" />
-    <Compile Include="src/Common/VamTimeline.ListExtensions.cs" />
-    <Compile Include="src/Common/VamTimeline.StorableNames.cs" />
-    <Compile Include="src/Common/VamTimeline.StorableAnimationCurve.cs" />
-    <Compile Include="src/Common/VamTimeline.AnimationCurveExtensions.cs" />
+    <Compile Include="src/Common/FloatExtensions.cs" />
+    <Compile Include="src/Common/ListExtensions.cs" />
+    <Compile Include="src/Common/StorableNames.cs" />
+    <Compile Include="src/Common/StorableAnimationCurve.cs" />
+    <Compile Include="src/Common/AnimationCurveExtensions.cs" />
 
-    <Compile Include="src/Atoms/VamTimeline.IAtomPlugin.cs" />
+    <Compile Include="src/Atoms/IAtomPlugin.cs" />
 
-    <Compile Include="src/Atoms/Common/VamTimeline.CurveTypeValues.cs" />
-    <Compile Include="src/Atoms/Common/VamTimeline.KeyframeSettings.cs" />
-    <Compile Include="src/Atoms/Common/VamTimeline.IAnimationTarget.cs" />
+    <Compile Include="src/Atoms/Common/CurveTypeValues.cs" />
+    <Compile Include="src/Atoms/Common/KeyframeSettings.cs" />
+    <Compile Include="src/Atoms/Common/IAnimationTarget.cs" />
 
-    <Compile Include="src/Atoms/FreeControllers/VamTimeline.FreeControllerAnimationTarget.cs" />
+    <Compile Include="src/Atoms/FreeControllers/FreeControllerAnimationTarget.cs" />
 
-    <Compile Include="src/Atoms/Params/VamTimeline.FloatParamAnimationTarget.cs" />
+    <Compile Include="src/Atoms/Params/FloatParamAnimationTarget.cs" />
 
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationBaseUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationLockedUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationSettingsUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationTargetsUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationControllersUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationFloatParamsUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationBulkUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationAdvancedUI.cs" />
-    <Compile Include="src/Atoms/UI/VamTimeline.AtomAnimationUIManager.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationBaseUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationLockedUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationSettingsUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationTargetsUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationControllersUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationFloatParamsUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationBulkUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationAdvancedUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationUIManager.cs" />
 
-    <Compile Include="src/Atoms/VamTimeline.AtomAnimationClip.cs" />
-    <Compile Include="src/Atoms/VamTimeline.AtomClipboardEntry.cs" />
-    <Compile Include="src/Atoms/VamTimeline.AtomAnimation.cs" />
-    <Compile Include="src/Atoms/VamTimeline.AtomAnimationSerializer.cs" />
+    <Compile Include="src/Atoms/AtomAnimationClip.cs" />
+    <Compile Include="src/Atoms/AtomClipboardEntry.cs" />
+    <Compile Include="src/Atoms/AtomAnimation.cs" />
+    <Compile Include="src/Atoms/AtomAnimationSerializer.cs" />
 
-    <Compile Include="src/VamTimeline.AtomPlugin.cs" />
+    <Compile Include="src/AtomPlugin.cs" />
 
-    <Compile Include="src/Controller/VamTimeline.SimpleSignUI.cs" />
-    <Compile Include="src/Controller/VamTimeline.LinkedAnimation.cs" />
+    <Compile Include="src/Controller/SimpleSignUI.cs" />
+    <Compile Include="src/Controller/LinkedAnimation.cs" />
 
-    <Compile Include="src/VamTimeline.ControllerPlugin.cs" />
+    <Compile Include="src/ControllerPlugin.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
