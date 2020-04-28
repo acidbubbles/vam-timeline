@@ -114,8 +114,63 @@ namespace VamTimeline
                 var time = (setting.Key / 1000f).Snap();
                 foreach (var curve in Curves)
                 {
-                    curve.ApplyCurve(time, setting.Value.CurveType);
+                    ApplyCurve(curve, time, setting.Value.CurveType);
                 }
+            }
+        }
+
+        public static void ApplyCurve(AnimationCurve curve, float time, string curveType)
+        {
+            var key = curve.KeyframeBinarySearch(time);
+            if (key == -1) return;
+            var keyframe = curve[key];
+            var before = key > 0 ? (Keyframe?)curve[key - 1] : null;
+            var next = key < curve.length - 1 ? (Keyframe?)curve[key + 1] : null;
+
+            switch (curveType)
+            {
+                case null:
+                case "":
+                    return;
+                case CurveTypeValues.Flat:
+                    keyframe.inTangent = 0f;
+                    keyframe.outTangent = 0f;
+                    curve.MoveKey(key, keyframe);
+                    break;
+                case CurveTypeValues.Linear:
+                    keyframe.inTangent = AnimationCurveExtensions.CalculateLinearTangent(before, keyframe);
+                    keyframe.outTangent = AnimationCurveExtensions.CalculateLinearTangent(keyframe, next);
+                    curve.MoveKey(key, keyframe);
+                    break;
+                case CurveTypeValues.Bounce:
+                    keyframe.inTangent = AnimationCurveExtensions.CalculateLinearTangent(before, keyframe);
+                    keyframe.outTangent = -keyframe.inTangent;
+                    curve.MoveKey(key, keyframe);
+                    break;
+                case CurveTypeValues.Smooth:
+                    curve.SmoothTangents(key, 0f);
+                    break;
+                case CurveTypeValues.LinearFlat:
+                    keyframe.inTangent = AnimationCurveExtensions.CalculateLinearTangent(before, keyframe);
+                    keyframe.outTangent = 0f;
+                    curve.MoveKey(key, keyframe);
+                    break;
+                case CurveTypeValues.FlatLinear:
+                    keyframe.inTangent = 0f;
+                    keyframe.outTangent = AnimationCurveExtensions.CalculateLinearTangent(keyframe, next);
+                    curve.MoveKey(key, keyframe);
+                    break;
+                case CurveTypeValues.CopyPrevious:
+                    if (before != null)
+                    {
+                        keyframe.value = before.Value.value;
+                        keyframe.inTangent = 0f;
+                        keyframe.outTangent = 0f;
+                        curve.MoveKey(key, keyframe);
+                    }
+                    break;
+                default:
+                    throw new NotSupportedException($"Curve type {curveType} is not supported");
             }
         }
 
