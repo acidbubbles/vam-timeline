@@ -188,7 +188,7 @@ namespace VamTimeline
 
         private void UpdateCurveBounds()
         {
-            _curveUI.SetViewToFit();
+            _curveUI.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
             /*
             var length = Plugin.Animation.Current.AnimationLength;
             var min = _curves.Min(c => c.min);
