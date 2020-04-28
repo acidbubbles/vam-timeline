@@ -343,6 +343,7 @@ namespace VamTimeline
 
             if (_scrubberJSON.slider != null) _scrubberJSON.slider.interactable = true;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
+            _curveEditor.SetScrubberPosition(_scrubberJSON.val);
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
             _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
@@ -359,7 +360,9 @@ namespace VamTimeline
                 if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                     return;
 
-                _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
+                var linkedScrubber = _mainLinkedAnimation.Scrubber;
+                _scrubberJSON.max = linkedScrubber.max;
+                _curveEditor.SetScrubberPosition(linkedScrubber.max);
                 var target = _mainLinkedAnimation.FilterAnimationTarget.val;
                 _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
 
