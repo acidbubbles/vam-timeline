@@ -67,16 +67,6 @@ namespace VamTimeline
             return Value.keys.Select(k => k.time);
         }
 
-        public void RenderDebugInfo(StringBuilder display, float time)
-        {
-            foreach (var keyframe in Value.keys)
-            {
-                display.AppendLine($"  {(keyframe.time.IsSameFrame(time) ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
-                display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
-                display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
-            }
-        }
-
         public class Comparer : IComparer<FloatParamAnimationTarget>
         {
             public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)

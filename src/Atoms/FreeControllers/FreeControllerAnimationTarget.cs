@@ -366,34 +366,6 @@ namespace VamTimeline
 
         #endregion
 
-        #region  Rendering
-
-        public void RenderDebugInfo(StringBuilder display, float time)
-        {
-            RenderStateController(time, display, "X", X);
-            /*
-            RenderStateController(time, display, "Y", Y);
-            RenderStateController(time, display, "Z", Z);
-            RenderStateController(time, display, "RotX", RotX);
-            RenderStateController(time, display, "RotY", RotY);
-            RenderStateController(time, display, "RotZ", RotZ);
-            RenderStateController(time, display, "RotW", RotW);
-            */
-        }
-
-        private static void RenderStateController(float time, StringBuilder display, string name, AnimationCurve curve)
-        {
-            display.AppendLine($"{name}");
-            foreach (var keyframe in curve.keys)
-            {
-                display.AppendLine($"  {(keyframe.time.IsSameFrame(time) ? "+" : "-")} {keyframe.time:0.00}s: {keyframe.value:0.00}");
-                display.AppendLine($"    Tngt in: {keyframe.inTangent:0.00} out: {keyframe.outTangent:0.00}");
-                display.AppendLine($"    Wght in: {keyframe.inWeight:0.00} out: {keyframe.outWeight:0.00} {keyframe.weightedMode}");
-            }
-        }
-
-        #endregion
-
         public class Comparer : IComparer<FreeControllerAnimationTarget>
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
