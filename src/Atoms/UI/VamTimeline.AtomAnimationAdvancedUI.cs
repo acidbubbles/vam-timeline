@@ -86,7 +86,7 @@ namespace VamTimeline
             RegisterComponent(moveAnimUpUI);
 
             var moveAnimDownUI = Plugin.CreateButton("Reorder Animation (Move Down)", true);
-            moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
+            moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveDown());
             RegisterComponent(moveAnimDownUI);
 
             var deleteAnimationUI = Plugin.CreateButton("Delete Animation", true);
