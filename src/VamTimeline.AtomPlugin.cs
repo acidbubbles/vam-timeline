@@ -229,7 +229,11 @@ namespace VamTimeline
 
             PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                if (Animation == null) return;
+                if (Animation?.Current == null)
+                {
+                    SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
+                    return;
+                }
                 if (SuperController.singleton.freezeAnimation) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
@@ -239,7 +243,11 @@ namespace VamTimeline
 
             PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (Animation == null) return;
+                if (Animation?.Current == null)
+                {
+                    SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
+                    return;
+                }
                 if (SuperController.singleton.freezeAnimation) return;
                 if (Animation.IsPlaying()) return;
                 Animation.Play();

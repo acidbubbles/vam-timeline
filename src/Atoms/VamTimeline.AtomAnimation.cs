@@ -166,6 +166,11 @@ namespace VamTimeline
         public void Play()
         {
             if (Current == null) return;
+            if (Current == null)
+            {
+                SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
+                return;
+            }
             if (_interpolateUntil > 0)
             {
                 _playQueuedAfterInterpolation = true;
@@ -416,7 +421,7 @@ namespace VamTimeline
         public void ChangeAnimation(string animationName)
         {
             var clip = Clips.FirstOrDefault(c => c.AnimationName == animationName);
-            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'");
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", Clips.Select(c => c.AnimationName).ToArray())}'.");
             var time = Time;
             if (_isPlaying)
             {
