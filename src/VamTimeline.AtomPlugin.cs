@@ -106,6 +106,7 @@ namespace VamTimeline
                     {
                         _resumePlayOnUnfreeze = false;
                         Animation.Play();
+                        IsPlayingJSON.valNoCallback = true;
                     }
                     else if (LockedJSON != null && !LockedJSON.val)
                     {
@@ -234,7 +235,11 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
                     return;
                 }
-                if (SuperController.singleton.freezeAnimation) return;
+                if (SuperController.singleton.freezeAnimation)
+                {
+                    _resumePlayOnUnfreeze = true;
+                    return;
+                }
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
                 AnimationFrameUpdated();
@@ -248,7 +253,11 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
                     return;
                 }
-                if (SuperController.singleton.freezeAnimation) return;
+                if (SuperController.singleton.freezeAnimation)
+                {
+                    _resumePlayOnUnfreeze = true;
+                    return;
+                }
                 if (Animation.IsPlaying()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
