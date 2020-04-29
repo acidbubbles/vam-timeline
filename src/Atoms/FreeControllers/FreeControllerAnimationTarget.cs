@@ -338,8 +338,6 @@ namespace VamTimeline
 
         public bool Interpolate(float playTime, float maxDistanceDelta, float maxRadiansDelta)
         {
-            // TODO: We should calculate this once, and start a coroutine and just wait.
-
             var targetLocalPosition = new Vector3
             {
                 x = X.Evaluate(playTime),

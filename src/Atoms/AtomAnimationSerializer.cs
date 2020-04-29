@@ -324,7 +324,6 @@ namespace VamTimeline
                 var clipJSON = new JSONClass
                 {
                     { "AnimationName", clip.AnimationName },
-                    // TODO: Speed should be an animation setting, not a clip setting
                     { "AnimationLength", clip.AnimationLength.ToString(CultureInfo.InvariantCulture) },
                     { "BlendDuration", clip.BlendDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.Loop ? "1" : "0" },
@@ -383,9 +382,6 @@ namespace VamTimeline
 
         private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
         {
-            // TODO: Use US locale to avoid commas in floats
-            // TODO: Serialize as: time,value,type,inTangent,outTangent;...
-            // e.g.: 0,12.345,1,-0.18,0.18;
             var curveJSON = new JSONArray();
 
             for (var key = 0; key < curve.length; key++)

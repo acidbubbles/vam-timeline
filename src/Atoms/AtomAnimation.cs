@@ -303,11 +303,9 @@ namespace VamTimeline
 
                 if (_nextAnimationTime > 0 + float.Epsilon && _playTime >= _nextAnimationTime)
                 {
-                    // TODO: Keep only the name or make a ChangeAnimation overload
-                    var nextAnimation = _nextAnimation;
-                    if (nextAnimation != null)
+                    if (_nextAnimation != null)
                     {
-                        ChangeAnimation(nextAnimation);
+                        ChangeAnimation(_nextAnimation);
                     }
                 }
             }

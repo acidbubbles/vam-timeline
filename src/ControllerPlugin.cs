@@ -15,6 +15,7 @@ namespace VamTimeline
     /// </summary>
     public class ControllerPlugin : MVRScript
     {
+        private const string AtomSeparator = ";";
         private Atom _atom;
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
@@ -308,10 +309,19 @@ namespace VamTimeline
         {
             try
             {
+                if (uid.IndexOf(AtomSeparator) > -1)
+                {
+                    SuperController.LogError($"VamTimeline: Atom '{uid}' cannot contain '{AtomSeparator}'.");
+                    return;
+                }
                 if (_linkedAnimations.Any(la => la.Atom.uid == uid)) return;
 
                 var atom = SuperController.singleton.GetAtomByUid(uid);
-                if (atom == null) return;
+                if(atom == null)
+                {
+                    SuperController.LogError($"VamTimeline: Atom '{uid}' cannot be found. Re-link the atom to fix.");
+                    return;
+                }
                 LinkAnimationPlugin(atom);
             }
             catch (Exception exc)
@@ -328,8 +338,7 @@ namespace VamTimeline
             _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
             if (_mainLinkedAnimation == null)
                 SelectCurrentAtom(link.Label);
-            // TODO: If an atom contains ';' it won't work
-            _savedAtomsJSON.val = string.Join(";", _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
+            _savedAtomsJSON.val = string.Join(AtomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
             _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
             _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
         }

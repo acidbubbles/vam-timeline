@@ -151,7 +151,6 @@ namespace VamTimeline
         {
             foreach (var targetRef in _targets)
             {
-                // TODO: Take care of keeping track of those separately
                 Plugin.RemoveToggle(targetRef.KeyframeJSON);
                 Plugin.RemoveToggle(targetRef.KeyframeUI);
                 Plugin.RemoveSlider(targetRef.FloatParamProxyJSON);
