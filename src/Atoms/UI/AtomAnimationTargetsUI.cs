@@ -180,7 +180,6 @@ namespace VamTimeline
             if (_removeToggles == null) return;
             foreach (var toggleJSON in _removeToggles)
             {
-                // TODO: Take care of keeping track of those separately
                 Plugin.RemoveToggle(toggleJSON);
             }
         }
