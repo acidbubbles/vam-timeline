@@ -128,6 +128,25 @@ namespace VamTimeline
 
             _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => StartCoroutine(RestoreAtomsLink(v)));
             RegisterString(_savedAtomsJSON);
+
+            var nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
+            {
+                var i = _animationJSON.choices.IndexOf(_mainLinkedAnimation?.Animation.val);
+                if (i < 0 || i > _animationJSON.choices.Count - 2) return;
+                _animationJSON.val = _animationJSON.choices[i + 1];
+            });
+            RegisterAction(nextAnimationJSON);
+
+            var previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
+            {
+                var i = _animationJSON.choices.IndexOf(_mainLinkedAnimation?.Animation.val);
+                if (i < 1 || i > _animationJSON.choices.Count - 1) return;
+                _animationJSON.val = _animationJSON.choices[i - 1];
+            });
+            RegisterAction(previousAnimationJSON);
+
+            if (!string.IsNullOrEmpty(_savedAtomsJSON.val))
+                StartCoroutine(RestoreAtomsLink(_savedAtomsJSON.val));
         }
 
         private void Hide(bool val)
@@ -164,6 +183,9 @@ namespace VamTimeline
                     LinkAtom(atomUid);
                 }
             }
+
+            if (_mainLinkedAnimation == null && _linkedAnimations.Count > 0)
+                SelectCurrentAtom(_linkedAnimations[0].Label);
 
             if (_hideJSON.val)
                 OnDisable();
@@ -302,6 +324,7 @@ namespace VamTimeline
             _scrubberJSON.slider.interactable = true;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
+            _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
             _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
             _lockedJSON.val = _mainLinkedAnimation.Locked.val;
         }
@@ -321,21 +344,18 @@ namespace VamTimeline
                 _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
                 _displayJSON.valNoCallback = _mainLinkedAnimation.Display.val;
 
-                if (_linkedAnimations.Count < 2) return;
-
                 var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
                 if (updated == null)
                     return;
 
                 var animationName = updated.Animation.val;
-                _animationJSON.valNoCallback = animationName;
-                var time = updated.Time.val;
                 var isPlaying = updated.IsPlaying.val;
+                var time = updated.Time.val;
+                _animationJSON.valNoCallback = isPlaying ? StorableNames.PlayingAnimationName : animationName;
 
                 foreach (var other in _linkedAnimations.Where(la => la != updated))
                 {
-
-                    if (animationName != StorableNames.PlayingAnimationName && other.Animation.val != animationName)
+                    if (other.Animation.val != animationName)
                         other.ChangeAnimation(animationName);
 
                     if (isPlaying)
@@ -483,7 +503,6 @@ namespace VamTimeline
             if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Label;
             VamTimelineAnimationModified(_mainLinkedAnimation.Atom.uid);
-            VamTimelineAnimationFrameUpdated(_mainLinkedAnimation.Atom.uid);
         }
 
         private void ChangeAnimation(string name)

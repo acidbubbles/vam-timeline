@@ -73,6 +73,7 @@ namespace VamTimeline
         AtomClipboard Clipboard { get; }
 
         JSONStorableStringChooser AnimationJSON { get; }
+        JSONStorableStringChooser AnimationDisplayJSON { get; }
         JSONStorableFloat ScrubberJSON { get; }
         JSONStorableAction PlayJSON { get; }
         JSONStorableAction PlayIfNotPlayingJSON { get; }
