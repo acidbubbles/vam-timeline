@@ -272,8 +272,11 @@ namespace VamTimeline
                 for (var i = 0; i < leadCurve.length; i++)
                 {
                     if (i >= settings.Count) break;
-                    target.Settings.Add(leadCurve[leadCurve.length - i - 1].time.ToMilliseconds(), settings[settings.Count - i - 1]);
+                    int ms = leadCurve[leadCurve.length - i - 1].time.ToMilliseconds();
+                    target.Settings.Add(ms, settings[settings.Count - i - 1]);
                 }
+                if (!target.Settings.ContainsKey(0))
+                    target.Settings.Add(0, new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
             }
         }
 
@@ -317,7 +320,7 @@ namespace VamTimeline
                 var leadCurve = target.GetLeadCurve();
                 if (leadCurve.length < 2)
                 {
-                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frames");
+                    SuperController.LogError($"Target {target.Name} has {leadCurve.length} frame(s) and require at least 2.");
                     return;
                 }
                 if (target.Settings.Count > leadCurve.length)

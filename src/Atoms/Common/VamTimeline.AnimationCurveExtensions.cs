@@ -84,14 +84,17 @@ namespace VamTimeline
             var keys = curve.keys.ToList();
             for (var i = keys.Count - 1; i >= 0; i--)
             {
-                if (keys[i].time + lengthDiff < 0)
+                var keyframe = keys[i];
+                float oldTime = keyframe.time;
+                float newTime = oldTime + lengthDiff;
+
+                if (newTime < 0)
                 {
                     keys.RemoveAt(i);
                     continue;
                 }
 
-                var keyframe = keys[i];
-                keyframe.time += lengthDiff;
+                keyframe.time = newTime.Snap();
                 keys[i] = keyframe;
             }
 
@@ -101,9 +104,20 @@ namespace VamTimeline
                 return;
             }
 
-            var first = curve[0];
-            first.time = 0f;
-            keys[0] = first;
+            if (lengthDiff > 0)
+            {
+                var first = curve[0];
+                first.time = 0f;
+                keys[0] = first;
+            }
+            else if (keys[0].time != 0)
+            {
+                keys.Insert(0, new Keyframe(0f, curve.Evaluate(-lengthDiff)));
+            }
+
+            var last = keys[keys.Count - 1];
+            last.time = length;
+            keys[keys.Count - 1] = last;
 
             curve.keys = keys.ToArray();
         }
@@ -121,7 +135,7 @@ namespace VamTimeline
                 keys[i] = keyframe;
             }
 
-            var last = keys[curve.length - 1];
+            var last = keys[keys.Count - 1];
             last.time = length;
             keys[keys.Count - 1] = last;
 
