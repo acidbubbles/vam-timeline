@@ -322,6 +322,7 @@ namespace VamTimeline
 
             newLength = newLength.Snap(Plugin.SnapJSON.val);
             if (newLength < 0.1f) newLength = 0.1f;
+            var time = Plugin.Animation.Time.Snap();
 
             switch (_lengthModeJSON.val)
             {
@@ -349,7 +350,6 @@ namespace VamTimeline
                             _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
                             return;
                         }
-                        var time = Plugin.Animation.Time.Snap();
                         var previousKeyframe = Plugin.Animation.Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
                         var nextKeyframe = Plugin.Animation.Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
 
@@ -430,6 +430,7 @@ namespace VamTimeline
             Plugin.Animation.RebuildAnimation();
             UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
+            Plugin.Animation.Time = Math.Max(time, newLength);
         }
 
         private void UpdateBlendDuration(float v)
