@@ -507,14 +507,10 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 if (Animation.IsPlaying())
                 {
+                    AnimationDisplayJSON.valNoCallback = StorableNames.PlayingAnimationName;
                     if (Animation.Current.AnimationName != animationName)
                     {
                         Animation.ChangeAnimation(animationName);
-                        AnimationModified();
-                    }
-                    else
-                    {
-                        AnimationDisplayJSON.valNoCallback = StorableNames.PlayingAnimationName;
                     }
                 }
                 else

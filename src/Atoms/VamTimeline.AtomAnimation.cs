@@ -422,13 +422,15 @@ namespace VamTimeline
         {
             var clip = Clips.FirstOrDefault(c => c.AnimationName == animationName);
             if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", Clips.Select(c => c.AnimationName).ToArray())}'.");
+            var targetAnim = _animation[animationName];
             var time = Time;
             if (_isPlaying)
             {
                 if (HasAnimatableControllers())
                 {
-                    var targetAnim = _animation[animationName];
                     targetAnim.time = 0f;
+                    targetAnim.enabled = true;
+                    targetAnim.weight = 0f;
                     _animation.Blend(Current.AnimationName, 0f, Current.BlendDuration);
                     _animation.Blend(animationName, 1f, Current.BlendDuration);
                 }
@@ -442,11 +444,10 @@ namespace VamTimeline
             }
 
             Current = clip;
-            _animState = _animation[Current.AnimationName];
+            _animState = targetAnim;
 
             if (_isPlaying)
             {
-                _animState.enabled = true;
                 DetermineNextAnimation(_playTime);
             }
             else
