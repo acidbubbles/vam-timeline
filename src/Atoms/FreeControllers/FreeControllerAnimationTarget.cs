@@ -221,19 +221,19 @@ namespace VamTimeline
         public void SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
             X.SetKeyframe(time, localPosition.x);
-            StorableX.Update(time);
+            StorableX.Update();
             Y.SetKeyframe(time, localPosition.y);
-            StorableY.Update(time);
+            StorableY.Update();
             Z.SetKeyframe(time, localPosition.z);
-            StorableZ.Update(time);
+            StorableZ.Update();
             RotX.SetKeyframe(time, locationRotation.x);
-            StorableRotX.Update(time);
+            StorableRotX.Update();
             RotY.SetKeyframe(time, locationRotation.y);
-            StorableRotY.Update(time);
+            StorableRotY.Update();
             RotZ.SetKeyframe(time, locationRotation.z);
-            StorableRotZ.Update(time);
+            StorableRotZ.Update();
             RotW.SetKeyframe(time, locationRotation.w);
-            StorableRotW.Update(time);
+            StorableRotW.Update();
             var ms = time.ToMilliseconds();
             if (!Settings.ContainsKey(ms))
                 Settings[ms] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
@@ -306,19 +306,19 @@ namespace VamTimeline
         public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
         {
             X.SetKeySnapshot(time, snapshot.X);
-            StorableX.Update(time);
+            StorableX.Update();
             Y.SetKeySnapshot(time, snapshot.Y);
-            StorableY.Update(time);
+            StorableY.Update();
             Z.SetKeySnapshot(time, snapshot.Z);
-            StorableZ.Update(time);
+            StorableZ.Update();
             RotX.SetKeySnapshot(time, snapshot.RotX);
-            StorableRotX.Update(time);
+            StorableRotX.Update();
             RotY.SetKeySnapshot(time, snapshot.RotY);
-            StorableRotY.Update(time);
+            StorableRotY.Update();
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
-            StorableRotZ.Update(time);
+            StorableRotZ.Update();
             RotW.SetKeySnapshot(time, snapshot.RotW);
-            StorableRotW.Update(time);
+            StorableRotW.Update();
             UpdateSetting(time, snapshot.CurveType, true);
         }
 

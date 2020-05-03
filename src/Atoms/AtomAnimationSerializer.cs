@@ -194,6 +194,8 @@ namespace VamTimeline
 
         private void DeserializeCurveFromArray(StorableAnimationCurve storable, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
+            if (curveJSON.Count == 0) return;
+
             var last = -1f;
             var min = float.PositiveInfinity;
             var max = float.NegativeInfinity;
@@ -229,11 +231,14 @@ namespace VamTimeline
 
         private void DeserializeCurveFromStringLegacy(StorableAnimationCurve storable, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
+            var strFrames = curveJSON.Value.Split(';').Where(x => x != "").ToList();
+            if (strFrames.Count == 0) return;
+
             var last = -1f;
             var min = float.PositiveInfinity;
             var max = float.NegativeInfinity;
             var curve = storable.val;
-            foreach (var keyframe in curveJSON.Value.Split(';').Where(x => x != ""))
+            foreach (var keyframe in strFrames)
             {
                 var parts = keyframe.Split(',');
                 try
@@ -265,11 +270,14 @@ namespace VamTimeline
 
         private void DeserializeCurveFromClassLegacy(StorableAnimationCurve storable, JSONNode curveJSON)
         {
+            var keysJSON = curveJSON["keys"].AsArray;
+            if (keysJSON.Count == 0) return;
+
             var last = -1f;
             var min = float.PositiveInfinity;
             var max = float.NegativeInfinity;
             var curve = storable.val;
-            foreach (JSONNode keyframeJSON in curveJSON["keys"].AsArray)
+            foreach (JSONNode keyframeJSON in keysJSON)
             {
                 var time = DeserializeFloat(keyframeJSON["time"]).Snap();
                 if (time == last) continue;

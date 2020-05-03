@@ -46,7 +46,7 @@ namespace VamTimeline
         public void SetKeyframe(float time, float value)
         {
             Value.SetKeyframe(time, value);
-            StorableValue.Update(time);
+            StorableValue.Update();
         }
 
         public void DeleteFrame(float time)

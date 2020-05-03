@@ -188,15 +188,13 @@ namespace VamTimeline
 
         private void UpdateCurveBounds()
         {
-            _curveUI.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
-            /*
+            // _curveUI.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
             var length = Plugin.Animation.Current.AnimationLength;
-            var min = _curves.Min(c => c.min);
-            var max = _curves.Max(c => c.max);
 
             foreach (var curve in _curves)
-                _curveUI.SetValueBounds(curve, new Vector2(0, min), new Vector2(length, max));
-            */
+            {
+                _curveUI.SetValueBounds(curve, new Rect(0, curve.min * 1.2f, length, (curve.max - curve.min) * 1.4f), true, true);
+            }
         }
 
         protected void CreateSpacer(bool rightSide)
