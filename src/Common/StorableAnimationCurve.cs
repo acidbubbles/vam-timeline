@@ -27,14 +27,18 @@ namespace VamTimeline
             SuperController.LogError("A curve was updated, but it should be readonly.");
         }
 
-        public void Update(float? time = null)
+        public void Update()
         {
             animationDirty = true;
             graphDirty = true;
 
             float min;
             float max;
-            if (time == null)
+            if (val.length == 0)
+            {
+                min = max = 0f;
+            }
+            else
             {
                 min = Mathf.Infinity;
                 max = Mathf.NegativeInfinity;
@@ -44,14 +48,6 @@ namespace VamTimeline
                     min = Mathf.Min(min, v);
                     max = Mathf.Max(max, v);
                 }
-            }
-            else
-            {
-                var k = val.KeyframeBinarySearch(time.Value.Snap());
-                if (k == -1) return;
-                var keyframe = val[k];
-                min = Mathf.Min(this.min, keyframe.value);
-                max = Mathf.Max(this.max, keyframe.value);
             }
 
             this.min = min;
