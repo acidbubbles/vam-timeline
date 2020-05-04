@@ -61,13 +61,14 @@
 
     <Compile Include="src/External/curve-editor/IStorableAnimationCurve.cs" />
     <Compile Include="src/External/curve-editor/JSONStorableAnimationCurve.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UICurveEditorCanvas.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UICurveEditor.cs" />
-    <Compile Include="src/External/curve-editor/UI/Graphic/DrawScaleOffset.cs" />
-    <Compile Include="src/External/curve-editor/UI/Graphic/CurveEditorPoint.cs" />
-    <Compile Include="src/External/curve-editor/UI/Control/UIColors.cs" />
-    <Compile Include="src/External/curve-editor/UI/Graphic/CurveLine.cs" />
-    <Compile Include="src/External/curve-editor/UI/Graphic/VertexHelperExtensions.cs" />
+    <Compile Include="src/External/curve-editor/UI/UICurveEditorCanvas.cs" />
+    <Compile Include="src/External/curve-editor/UI/UICurveEditor.cs" />
+    <Compile Include="src/External/curve-editor/UI/DrawScaleOffset.cs" />
+    <Compile Include="src/External/curve-editor/UI/CurveEditorPoint.cs" />
+    <Compile Include="src/External/curve-editor/UI/UICurveEditorSettings.cs" />
+    <Compile Include="src/External/curve-editor/UI/CurveLineSettings.cs" />
+    <Compile Include="src/External/curve-editor/UI/CurveLine.cs" />
+    <Compile Include="src/External/curve-editor/Utils/VertexHelperExtensions.cs" />
     <Compile Include="src/External/curve-editor/Utils/MathUtils.cs" />
 
     <Compile Include="src/Common/FloatExtensions.cs" />
