@@ -261,12 +261,13 @@ namespace VamTimeline
 
         private UICurveEditor InitEditor(UIDynamic container)
         {
-            var curveEditor = new UICurveEditor(container, 1157, container.height, buttons: new List<UIDynamicButton>())
+            var curveEditorSettings = new UICurveEditorSettings
             {
                 readOnly = true,
                 showScrubbers = true,
                 allowKeyboardShortcuts = false
             };
+            var curveEditor = new UICurveEditor(container, 1157, container.height, buttons: new List<UIDynamicButton>());
             return curveEditor;
         }
 

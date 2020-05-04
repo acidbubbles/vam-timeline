@@ -144,12 +144,13 @@ namespace VamTimeline
             _curveEditorContainer = Plugin.CreateSpacer(rightSide);
             _curveEditorContainer.height = height;
             RegisterComponent(_curveEditorContainer);
-            _curveUI = new UICurveEditor(_curveEditorContainer, 520, _curveEditorContainer.height, buttons: new List<UIDynamicButton>())
+            var curveEditorSettings = new UICurveEditorSettings
             {
                 readOnly = true,
                 showScrubbers = true,
                 allowKeyboardShortcuts = false
             };
+            _curveUI = new UICurveEditor(_curveEditorContainer, 520, _curveEditorContainer.height, buttons: new List<UIDynamicButton>(), settings: curveEditorSettings);
             RegisterCurrentCurves();
             RegisterComponent(_curveUI.container);
         }
@@ -159,24 +160,24 @@ namespace VamTimeline
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
                 var x = _curves.AddAndRetreive(controllerTarget.StorableX);
-                _curveUI.AddCurve(x, UICurveLineColors.CreateFrom(Color.red), 0.02f);
+                _curveUI.AddCurve(x, CurveLineSettings.Colorize(Color.red));
                 x.graphDirty = false;
                 var y = _curves.AddAndRetreive(controllerTarget.StorableY);
-                _curveUI.AddCurve(y, UICurveLineColors.CreateFrom(Color.green), 0.02f);
+                _curveUI.AddCurve(y, CurveLineSettings.Colorize(Color.green));
                 y.graphDirty = false;
                 var z = _curves.AddAndRetreive(controllerTarget.StorableZ);
-                _curveUI.AddCurve(z, UICurveLineColors.CreateFrom(Color.blue), 0.02f);
+                _curveUI.AddCurve(z, CurveLineSettings.Colorize(Color.blue));
                 z.graphDirty = false;
 
                 // Only showing the w component of the quaternion since it shows if there's rotation, and that's enough
                 var rotW = _curves.AddAndRetreive(controllerTarget.StorableRotW);
-                _curveUI.AddCurve(rotW, UICurveLineColors.CreateFrom(Color.yellow), 0.02f);
+                _curveUI.AddCurve(rotW, CurveLineSettings.Colorize(Color.yellow));
                 rotW.graphDirty = false;
             }
             foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
             {
                 var v = _curves.AddAndRetreive(floatParamTarget.StorableValue);
-                _curveUI.AddCurve(v, UICurveLineColors.CreateFrom(new Color(0.6f, 0.6f, 0.6f)), 0.02f);
+                _curveUI.AddCurve(v, CurveLineSettings.Colorize(new Color(0.6f, 0.6f, 0.6f)));
                 v.graphDirty = false;
             }
             UpdateCurveBounds();
