@@ -36,7 +36,7 @@ namespace VamTimeline
 
         public virtual void UpdatePlaying()
         {
-            // _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
+            _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         public virtual void AnimationModified()
@@ -160,42 +160,42 @@ namespace VamTimeline
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
                 var x = _curves.AddAndRetreive(controllerTarget.StorableX);
-                _curveUI.AddCurve(x, CurveLineSettings.Colorize(Color.red));
+                _curveUI.AddCurve(x, new CurveLineSettings().Colorize(Color.red));
                 x.graphDirty = false;
                 var y = _curves.AddAndRetreive(controllerTarget.StorableY);
-                _curveUI.AddCurve(y, CurveLineSettings.Colorize(Color.green));
+                _curveUI.AddCurve(y, new CurveLineSettings().Colorize(Color.green));
                 y.graphDirty = false;
                 var z = _curves.AddAndRetreive(controllerTarget.StorableZ);
-                _curveUI.AddCurve(z, CurveLineSettings.Colorize(Color.blue));
+                _curveUI.AddCurve(z, new CurveLineSettings().Colorize(Color.blue));
                 z.graphDirty = false;
 
                 // Only showing the w component of the quaternion since it shows if there's rotation, and that's enough
                 var rotW = _curves.AddAndRetreive(controllerTarget.StorableRotW);
-                _curveUI.AddCurve(rotW, CurveLineSettings.Colorize(Color.yellow));
+                _curveUI.AddCurve(rotW, new CurveLineSettings().Colorize(Color.yellow));
                 rotW.graphDirty = false;
             }
             foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
             {
                 var v = _curves.AddAndRetreive(floatParamTarget.StorableValue);
-                _curveUI.AddCurve(v, CurveLineSettings.Colorize(new Color(0.6f, 0.6f, 0.6f)));
+                _curveUI.AddCurve(v, new CurveLineSettings().Colorize(new Color(0.6f, 0.6f, 0.6f)));
                 v.graphDirty = false;
             }
             UpdateCurveBounds();
             if (_curves.Count > 0)
-                _curveUI.SetScrubber(_curves[0], Plugin.Animation.Time);
+                _curveUI.SetScrubberPosition(Plugin.Animation.Time);
             _currentTargets = Plugin.Animation.Current.AllTargetsCount;
             _currentAnimation = Plugin.Animation.Current.AnimationName;
         }
 
         private void UpdateCurveBounds()
         {
-            // _curveUI.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
-            var length = Plugin.Animation.Current.AnimationLength;
+            _curveUI.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
+            // var length = Plugin.Animation.Current.AnimationLength;
 
-            foreach (var curve in _curves)
-            {
-                _curveUI.SetValueBounds(curve, new Rect(0, curve.min * 1.2f, length, (curve.max - curve.min) * 1.4f), true, true);
-            }
+            // foreach (var curve in _curves)
+            // {
+            //     _curveUI.SetValueBounds(curve, new Rect(0, curve.min * 1.2f, length, (curve.max - curve.min) * 1.4f), true, true);
+            // }
         }
 
         protected void CreateSpacer(bool rightSide)
