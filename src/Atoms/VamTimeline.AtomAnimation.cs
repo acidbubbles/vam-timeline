@@ -277,7 +277,7 @@ namespace VamTimeline
                     if (!controllerReached) allControllersReached = false;
                 }
 
-                if (allControllersReached || _interpolateUntil >= UnityEngine.Time.time)
+                if (allControllersReached || UnityEngine.Time.time >= _interpolateUntil)
                 {
                     _interpolateUntil = 0;
                     if (_playQueuedAfterInterpolation)
