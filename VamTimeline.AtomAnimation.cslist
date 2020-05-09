@@ -4,12 +4,12 @@ src/External/curve-editor/JSONStorableAnimationCurve.cs
 src/External/curve-editor/UI/UICurveEditorSettings.cs
 src/External/curve-editor/UI/UICurveEditor.cs
 src/External/curve-editor/UI/UICurveEditorCanvas.cs
-src/External/curve-editor/UI/DrawScaleOffset.cs
 src/External/curve-editor/UI/CurveLine.cs
 src/External/curve-editor/UI/CurveLineSettings.cs
 src/External/curve-editor/UI/CurveEditorPoint.cs
 src/External/curve-editor/Utils/VertexHelperExtensions.cs
 src/External/curve-editor/Utils/MathUtils.cs
+src/External/curve-editor/Utils/Matrix2x3.cs
 src/Common/FloatExtensions.cs
 src/Common/ListExtensions.cs
 src/Common/StorableNames.cs
