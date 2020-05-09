@@ -173,8 +173,8 @@ namespace VamTimeline
 
         private IEnumerator RestoreAtomsLink(string savedAtoms)
         {
-            // This is an ugly way to wait for the target atom restore
-            yield return new WaitForEndOfFrame();
+            while (SuperController.singleton.isLoading)
+                yield return 0;
 
             if (!string.IsNullOrEmpty(savedAtoms))
             {
@@ -190,8 +190,17 @@ namespace VamTimeline
             if (_hideJSON.val)
                 OnDisable();
 
-            if (_autoPlayJSON.val)
-                Play();
+            if (_autoPlayJSON.val && _mainLinkedAnimation != null)
+                StartCoroutine(AutoPlay());
+        }
+
+        public IEnumerator AutoPlay()
+        {
+            // Wait for link, animation modified and then try to play
+            yield return 0;
+            yield return 0;
+
+            PlayIfNotPlaying();
         }
 
         private void InitCustomUI()
@@ -321,7 +330,7 @@ namespace VamTimeline
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
 
-            _scrubberJSON.slider.interactable = true;
+            if (_scrubberJSON.slider != null) _scrubberJSON.slider.interactable = true;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
@@ -502,7 +511,13 @@ namespace VamTimeline
             _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
             if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Label;
-            VamTimelineAnimationModified(_mainLinkedAnimation.Atom.uid);
+            StartCoroutine(InitializeMainAtom(_mainLinkedAnimation.Atom.uid));
+        }
+
+        private IEnumerator InitializeMainAtom(string uid)
+        {
+            yield return 0;
+            VamTimelineAnimationModified(uid);
         }
 
         private void ChangeAnimation(string name)
