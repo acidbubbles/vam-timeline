@@ -16,12 +16,12 @@ namespace VamTimeline
     {
         #region Control
 
-        public static void StretchLength(this AnimationCurve curve, float length)
+        public static void StretchLength(this AnimationCurve curve, float newLength)
         {
             int lastKey = curve.length - 1;
             var curveLength = curve[lastKey].time;
-            if (length == curveLength) return;
-            var ratio = length / curveLength;
+            if (newLength == curveLength) return;
+            var ratio = newLength / curveLength;
             if (Math.Abs(ratio) < float.Epsilon) return;
             int from;
             int to;
@@ -48,38 +48,43 @@ namespace VamTimeline
             }
 
             // Sanity check
-            if (curve[lastKey].time > length + 0.001f - float.Epsilon)
+            if (curve[lastKey].time > newLength + 0.001f - float.Epsilon)
             {
-                SuperController.LogError($"VamTimeline: Problem while resizing animation. Expected length {length} but was {curve[lastKey].time}");
+                SuperController.LogError($"VamTimeline: Problem while resizing animation. Expected length {newLength} but was {curve[lastKey].time}");
             }
 
             // Ensure exact match
             var lastframe = curve[lastKey];
-            lastframe.time = length;
+            lastframe.time = newLength;
             curve.MoveKey(lastKey, lastframe);
         }
 
-        public static void CropOrExtendLengthEnd(this AnimationCurve curve, float length)
+        public static void CropOrExtendLengthEnd(this AnimationCurve curve, float newLength)
         {
             float currentLength = curve[curve.length - 1].time;
-            if (length < currentLength)
+            if (newLength < currentLength)
             {
-                for (var i = 0; i < curve.length - 1; i++)
+                curve.AddKey(newLength, curve.Evaluate(newLength));
+                for (var i = curve.length - 1; i >= 0; i--)
                 {
-                    if (curve[i].time < length) continue;
+                    if (curve[i].time <= newLength) break;
                     curve.RemoveKey(i);
                 }
-            }
 
-            var last = curve[curve.length - 1];
-            last.time = length;
-            curve.MoveKey(curve.length - 1, last);
+                var last = curve[curve.length - 1];
+                last.time = newLength;
+                curve.MoveKey(curve.length - 1, last);
+            }
+            else if (newLength > currentLength)
+            {
+                curve.AddKey(newLength, curve[curve.length - 1].value);
+            }
         }
 
-        public static void CropOrExtendLengthBegin(this AnimationCurve curve, float length)
+        public static void CropOrExtendLengthBegin(this AnimationCurve curve, float newLength)
         {
             var currentLength = curve[curve.length - 1].time;
-            var lengthDiff = length - currentLength;
+            var lengthDiff = newLength - currentLength;
 
             var keys = curve.keys.ToList();
             for (var i = keys.Count - 1; i >= 0; i--)
@@ -116,15 +121,15 @@ namespace VamTimeline
             }
 
             var last = keys[keys.Count - 1];
-            last.time = length;
+            last.time = newLength;
             keys[keys.Count - 1] = last;
 
             curve.keys = keys.ToArray();
         }
 
-        public static void CropOrExtendLengthAtTime(this AnimationCurve curve, float length, float time)
+        public static void CropOrExtendLengthAtTime(this AnimationCurve curve, float newLength, float time)
         {
-            var lengthDiff = length - curve[curve.length - 1].time;
+            var lengthDiff = newLength - curve[curve.length - 1].time;
 
             var keys = curve.keys.ToList();
             for (var i = 0; i < keys.Count - 1; i++)
@@ -136,7 +141,7 @@ namespace VamTimeline
             }
 
             var last = keys[keys.Count - 1];
-            last.time = length;
+            last.time = newLength;
             keys[keys.Count - 1] = last;
 
             curve.keys = keys.ToArray();

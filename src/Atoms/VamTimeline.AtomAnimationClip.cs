@@ -256,8 +256,8 @@ namespace VamTimeline
                 var leadCurve = target.GetLeadCurve();
                 for (var i = 0; i < leadCurve.length; i++)
                 {
-                    if (i >= settings.Count) break;
-                    target.Settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
+                    if (i < settings.Count) target.Settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
+                    else target.Settings.Add(leadCurve[i].time.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.CopyPrevious });
                 }
             }
         }
