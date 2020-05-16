@@ -14,7 +14,6 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation
     {
-        private const float InterpolationTimeout = 1000f;
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const float InterpolationMaxDistanceDelta = 1.5f;
         public const float InterpolationMaxAngleDelta = 180.0f;
@@ -38,6 +37,7 @@ namespace VamTimeline
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
         public string PlayedAnimation { get; private set; }
+        public float InterpolationTimeout { get; set; } = 1f;
 
         public float Time
         {
@@ -243,6 +243,38 @@ namespace VamTimeline
         {
             if (_isPlaying)
             {
+                /* Diagnostics
+                if (_animState == null)
+                {
+                    SuperController.LogError("VamTimeline: Animation state is null");
+                    _isPlaying = false;
+                    return;
+                }
+                if (!_animState.enabled)
+                {
+                    SuperController.LogError("VamTimeline: Animation has stopped");
+                    _isPlaying = false;
+                    return;
+                }
+                if (_animState.weight == 0)
+                {
+                    SuperController.LogError("VamTimeline: Animation has a weight of 0");
+                    _isPlaying = false;
+                    return;
+                }
+                if (!_animation.IsPlaying(_animState.name))
+                {
+                    SuperController.LogError("VamTimeline: Animation state is enabled but animation is not playing");
+                    _isPlaying = false;
+                    return;
+                }
+                if (_animState.time == 0)
+                {
+                    SuperController.LogError("VamTimeline: Animation state time is 0");
+                    return;
+                }
+                */
+
                 _playTime += UnityEngine.Time.deltaTime * Speed;
 
                 if (_previousClip != null)
@@ -369,6 +401,10 @@ namespace VamTimeline
                 if (_animState != null)
                 {
                     _animState.time = time;
+                }
+                else
+                {
+                    SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Could not find animation {Current.AnimationName}");
                 }
             }
             else

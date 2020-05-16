@@ -115,6 +115,16 @@ namespace VamTimeline
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
 
+            CreateSpacer(true);
+
+            var interpolationTimeoutJSON = new JSONStorableFloat("Interpolation Timeout", 1f, (float val) => Plugin.Animation.InterpolationTimeout = val, 0f, 10f, true)
+            {
+                valNoCallback = Plugin.Animation.InterpolationTimeout
+            };
+            RegisterStorable(interpolationTimeoutJSON);
+            var interpolationTimeoutUI = Plugin.CreateSlider(interpolationTimeoutJSON, true);
+            RegisterComponent(interpolationTimeoutUI);
+
             // TODO: Keyframe all animatable morphs
         }
 
