@@ -150,7 +150,16 @@ namespace VamTimeline
         {
             time = time.Snap();
             if (time.IsSameFrame(0))
-                return GetAllOrSelectedTargets().Select(t => t.GetLeadCurve()).Select(c => c[c.length - (Loop ? 2 : 1)].time).Max();
+            {
+                try
+                {
+                    return GetAllOrSelectedTargets().Select(t => t.GetLeadCurve()).Select(c => c[c.length - (Loop ? 2 : 1)].time).Max();
+                }
+                catch (InvalidOperationException)
+                {
+                    return 0f;
+                }
+            }
             var previousTime = 0f;
             foreach (var controller in GetAllOrSelectedTargets())
             {

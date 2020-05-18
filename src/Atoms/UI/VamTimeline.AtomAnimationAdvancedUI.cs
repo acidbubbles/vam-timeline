@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using MVR.FileManagementSecure;
 using UnityEngine;
 
 namespace VamTimeline
@@ -16,8 +17,10 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationAdvancedUI : AtomAnimationBaseUI
     {
+        private const string _saveExt = "timeline";
+        private const string _saveFolder = "Saves\\animations";
         private static readonly Regex _sanitizeRE = new Regex("[^a-zA-Z0-9 _-]", RegexOptions.Compiled);
-        private static readonly TimeSpan ImportMocapTimeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
 
         public const string ScreenName = "Advanced";
         private JSONStorableStringChooser _exportAnimationsJSON;
@@ -107,11 +110,11 @@ namespace VamTimeline
             var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, true);
             RegisterComponent(exportAnimationsUI);
 
-            var exportUI = Plugin.CreateButton("Export to .json", true);
+            var exportUI = Plugin.CreateButton("Export to .timeline", true);
             exportUI.button.onClick.AddListener(() => Export());
             RegisterComponent(exportUI);
 
-            var importUI = Plugin.CreateButton("Import from .json", true);
+            var importUI = Plugin.CreateButton("Import from .timeline", true);
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
 
@@ -283,22 +286,13 @@ namespace VamTimeline
         {
             try
             {
-                var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.defaultPath = SuperController.singleton.savesDirResolved;
-                SuperController.singleton.activeUI = SuperController.ActiveUI.None;
-                fileBrowserUI.SetTitle("Select Animation File");
-                fileBrowserUI.SetTextEntry(true);
-                fileBrowserUI.Show(ExportFileSelected);
-                if (fileBrowserUI.fileEntryField != null)
-                {
-                    var dt = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
-                    fileBrowserUI.fileEntryField.text = _exportAnimationsJSON.val == "(All)" ? $"anims-{dt}" : $"anim-{_sanitizeRE.Replace(_exportAnimationsJSON.val, "")}-{dt}";
-                    fileBrowserUI.ActivateFileNameField();
-                }
-                else
-                {
-                    SuperController.LogError("VamTimeline: No fileBrowserUI.fileEntryField");
-                }
+                FileManagerSecure.CreateDirectory(_saveFolder);
+                SuperController.singleton.GetMediaPathDialog(ExportFileSelected, _saveExt, _saveFolder, false);
+
+                var browser = SuperController.singleton.mediaFileBrowserUI;
+                browser.SetTextEntry(true);
+                browser.fileEntryField.text = string.Format("{0}.{1}", ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString(), _saveExt);
+                browser.ActivateFileNameField();
             }
             catch (Exception exc)
             {
@@ -308,13 +302,10 @@ namespace VamTimeline
 
         private void ExportFileSelected(string path)
         {
+            if (string.IsNullOrEmpty(path)) return;
+
             try
             {
-                if (string.IsNullOrEmpty(path)) return;
-
-                if (!path.EndsWith(".json"))
-                    path += ".json";
-
                 var jc = Plugin.GetAnimationJSON(_exportAnimationsJSON.val == "(All)" ? null : _exportAnimationsJSON.val);
                 jc["AtomType"] = Plugin.ContainingAtom.type;
                 SuperController.singleton.SaveJSON(jc, path);
@@ -330,13 +321,9 @@ namespace VamTimeline
         {
             try
             {
-                var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.defaultPath = SuperController.singleton.savesDirResolved;
-                SuperController.singleton.activeUI = SuperController.ActiveUI.None;
-                fileBrowserUI.SetTextEntry(false);
-                fileBrowserUI.keepOpen = false;
-                fileBrowserUI.SetTitle("Select Animation File");
-                fileBrowserUI.Show(ImportFileSelected);
+                FileManagerSecure.CreateDirectory(_saveFolder);
+                var shortcuts = FileManagerSecure.GetShortCutsForDirectory(_saveFolder);
+                SuperController.singleton.GetMediaPathDialog(ImportFileSelected, _saveExt, _saveFolder, false, true, false, null, false, shortcuts);
             }
             catch (Exception exc)
             {
@@ -348,15 +335,17 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(path)) return;
 
-            var jc = SuperController.singleton.LoadJSON(path);
-            if (jc["AtomType"]?.Value != Plugin.ContainingAtom.type)
-            {
-                SuperController.LogError($"VamTimeline: Loaded animation for {jc["AtomType"]} but current atom type is {Plugin.ContainingAtom.type}");
-                return;
-            }
             try
             {
+                var jc = SuperController.singleton.LoadJSON(path);
+                if (jc["AtomType"]?.Value != Plugin.ContainingAtom.type)
+                {
+                    SuperController.LogError($"VamTimeline: Loaded animation for {jc["AtomType"]} but current atom type is {Plugin.ContainingAtom.type}");
+                    return;
+                }
+
                 Plugin.Load(jc);
+                Plugin.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
                 Plugin.Animation.Stop();
             }
             catch (Exception exc)
@@ -702,7 +691,7 @@ namespace VamTimeline
                     }
                     lastRecordedFrame = frame;
                     previousStep = step;
-                    if (totalStopwatch.Elapsed > ImportMocapTimeout) throw new TimeoutException($"Importing took more that {ImportMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
+                    if (totalStopwatch.Elapsed > _importMocapTimeout) throw new TimeoutException($"Importing took more that {_importMocapTimeout.TotalSeconds} seconds. Reached {step.timeStep}s of {clip.clipLength}s");
                 }
                 catch (Exception exc)
                 {

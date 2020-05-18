@@ -17,8 +17,8 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
-        private const int MaxDisplayedFrames = 500;
-        private static readonly HashSet<string> GrabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
+        private const int _maxDisplayedFrames = 500;
+        private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // State
         public AtomAnimation Animation { get; private set; }
@@ -131,7 +131,7 @@ namespace VamTimeline
             if (grabbing != null && grabbing.containingAtom != containingAtom)
                 grabbing = null;
             else if (Input.GetMouseButton(0) && grabbing == null)
-                grabbing = containingAtom.freeControllers.FirstOrDefault(c => GrabbingControllers.Contains(c.linkToRB?.gameObject.name));
+                grabbing = containingAtom.freeControllers.FirstOrDefault(c => _grabbingControllers.Contains(c.linkToRB?.gameObject.name));
 
             if (_grabbedController == null && grabbing != null)
             {
@@ -479,6 +479,7 @@ namespace VamTimeline
                 if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
 
                 Animation.Initialize();
+                Animation.RebuildAnimation();
                 AnimationModified();
                 AnimationFrameUpdated();
                 UpdateTime(0f, false);
@@ -497,7 +498,7 @@ namespace VamTimeline
 
         #region Callbacks
 
-        private void ChangeAnimation(string animationName)
+        public void ChangeAnimation(string animationName)
         {
             if (string.IsNullOrEmpty(animationName)) return;
 
@@ -653,7 +654,7 @@ namespace VamTimeline
                 foreach (var keyTime in keyTimes)
                 {
                     frames.Add(keyTime);
-                    if (frames.Count >= MaxDisplayedFrames)
+                    if (frames.Count >= _maxDisplayedFrames)
                     {
                         DisplayJSON.val = "Too many frames to display";
                         return;

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using SimpleJSON;
 using UnityEngine;
 
@@ -96,6 +95,7 @@ namespace VamTimeline
         JSONClass GetAnimationJSON(string animationName = null);
 
         void AnimationModified();
+        void ChangeAnimation(string animationName);
 
         UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false);
     }
