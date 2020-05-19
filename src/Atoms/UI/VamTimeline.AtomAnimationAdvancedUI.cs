@@ -300,6 +300,7 @@ namespace VamTimeline
                 fileBrowserUI.browseVarFilesAsDirectories = false;
                 fileBrowserUI.SetTextEntry(true);
                 fileBrowserUI.Show(ExportFileSelected);
+                fileBrowserUI.ActivateFileNameField();
             }
             catch (Exception exc)
             {
@@ -310,7 +311,7 @@ namespace VamTimeline
         private void ExportFileSelected(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
-            if (!path.EndsWith($".{_saveExt}")) path += $".{_saveExt}";
+            if (!path.ToLower().EndsWith($".{_saveExt}")) path += $".{_saveExt}";
 
             try
             {
