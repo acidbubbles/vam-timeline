@@ -287,12 +287,18 @@ namespace VamTimeline
             try
             {
                 FileManagerSecure.CreateDirectory(_saveFolder);
-                SuperController.singleton.GetMediaPathDialog(ExportFileSelected, _saveExt, _saveFolder, false);
-
-                var browser = SuperController.singleton.mediaFileBrowserUI;
-                browser.SetTextEntry(true);
-                browser.fileEntryField.text = string.Format("{0}.{1}", ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString(), _saveExt);
-                browser.ActivateFileNameField();
+                var fileBrowserUI = SuperController.singleton.fileBrowserUI;
+                fileBrowserUI.SetTitle("Save animation");
+                fileBrowserUI.fileRemovePrefix = null;
+                fileBrowserUI.hideExtension = false;
+                fileBrowserUI.keepOpen = false;
+                fileBrowserUI.fileFormat = _saveExt;
+                fileBrowserUI.defaultPath = _saveFolder;
+                fileBrowserUI.showDirs = true;
+                fileBrowserUI.shortCuts = null;
+                fileBrowserUI.browseVarFilesAsDirectories = false;
+                fileBrowserUI.SetTextEntry(true);
+                fileBrowserUI.Show(ExportFileSelected);
             }
             catch (Exception exc)
             {
@@ -303,6 +309,7 @@ namespace VamTimeline
         private void ExportFileSelected(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
+            if (!path.EndsWith($".{_saveExt}")) path += $".{_saveExt}";
 
             try
             {
