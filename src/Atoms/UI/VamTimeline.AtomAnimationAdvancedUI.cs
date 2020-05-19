@@ -17,7 +17,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationAdvancedUI : AtomAnimationBaseUI
     {
-        private const string _saveExt = "timeline";
+        private const string _saveExt = "json";
         private const string _saveFolder = "Saves\\animations";
         private static readonly Regex _sanitizeRE = new Regex("[^a-zA-Z0-9 _-]", RegexOptions.Compiled);
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
