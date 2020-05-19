@@ -396,7 +396,8 @@ namespace VamTimeline
             {
                 // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
                 _animation.Play(Current.AnimationName);
-                _animation.Stop(Current.AnimationName);
+                if (!_isPlaying)
+                    _animation.Stop(Current.AnimationName);
                 _animState = _animation[Current.AnimationName];
                 if (_animState != null)
                 {

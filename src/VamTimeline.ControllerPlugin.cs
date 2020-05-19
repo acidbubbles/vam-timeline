@@ -197,6 +197,8 @@ namespace VamTimeline
         public IEnumerator AutoPlay()
         {
             // Wait for link, animation modified and then try to play
+            while (SuperController.singleton.isLoading)
+                yield return 0;
             yield return 0;
             yield return 0;
 
