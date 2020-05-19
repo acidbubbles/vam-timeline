@@ -84,11 +84,10 @@ namespace VamTimeline
             };
             RegisterBool(_lockedJSON);
 
-            _atomsJSON = new JSONStorableStringChooser("Atoms", new List<string> { "" }, "", "Atoms", (string v) => SelectCurrentAtom(v))
+            _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string> { "" }, "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
                 isStorable = false
             };
-            RegisterStringChooser(_atomsJSON);
 
             _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v))
             {
@@ -109,7 +108,6 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterStringChooser(_targetJSON);
 
             _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 2f, true)
             {
@@ -121,12 +119,11 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterString(_displayJSON);
 
             var atoms = GetAtomsWithVamTimelinePlugin().ToList();
             _atomsToLink = new JSONStorableStringChooser("Atom To Link", atoms, atoms.FirstOrDefault() ?? "", "Add");
 
-            _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => StartCoroutine(RestoreAtomsLink(v)));
+            _savedAtomsJSON = new JSONStorableString("Atoms", "", (string v) => RestoreAtomsLink(v));
             RegisterString(_savedAtomsJSON);
 
             var nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
@@ -145,8 +142,27 @@ namespace VamTimeline
             });
             RegisterAction(previousAnimationJSON);
 
-            if (!string.IsNullOrEmpty(_savedAtomsJSON.val))
-                StartCoroutine(RestoreAtomsLink(_savedAtomsJSON.val));
+            StartCoroutine(InitDeferred());
+        }
+
+        private IEnumerator InitDeferred()
+        {
+            if (_hideJSON.val)
+                OnDisable();
+
+            while (SuperController.singleton.isLoading)
+                yield return 0;
+
+            yield return 0;
+
+            if (string.IsNullOrEmpty(_savedAtomsJSON.val)) yield break;
+            RestoreAtomsLink(_savedAtomsJSON.val);
+
+            while (SuperController.singleton.freezeAnimation)
+                yield return 0;
+
+            if (_autoPlayJSON.val && _mainLinkedAnimation != null)
+                AutoPlay();
         }
 
         private void Hide(bool val)
@@ -171,11 +187,8 @@ namespace VamTimeline
             }
         }
 
-        private IEnumerator RestoreAtomsLink(string savedAtoms)
+        private void RestoreAtomsLink(string savedAtoms)
         {
-            while (SuperController.singleton.isLoading)
-                yield return 0;
-
             if (!string.IsNullOrEmpty(savedAtoms))
             {
                 foreach (var atomUid in savedAtoms.Split(';'))
@@ -186,22 +199,10 @@ namespace VamTimeline
 
             if (_mainLinkedAnimation == null && _linkedAnimations.Count > 0)
                 SelectCurrentAtom(_linkedAnimations[0].Label);
-
-            if (_hideJSON.val)
-                OnDisable();
-
-            if (_autoPlayJSON.val && _mainLinkedAnimation != null)
-                StartCoroutine(AutoPlay());
         }
 
-        public IEnumerator AutoPlay()
+        public void AutoPlay()
         {
-            // Wait for link, animation modified and then try to play
-            while (SuperController.singleton.isLoading)
-                yield return 0;
-            yield return 0;
-            yield return 0;
-
             PlayIfNotPlaying();
         }
 
@@ -375,7 +376,8 @@ namespace VamTimeline
                         other.StopIfPlaying();
 
                     var setTime = other.Time;
-                    if (setTime.val != time)
+                    var setTimeValue = setTime.val;
+                    if (setTimeValue < time - 0.0005f || setTimeValue > time + 0.0005f)
                         setTime.val = time;
                 }
 

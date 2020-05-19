@@ -111,6 +111,7 @@ namespace VamTimeline
                         _resumePlayOnUnfreeze = false;
                         Animation.Play();
                         IsPlayingJSON.valNoCallback = true;
+                        AnimationFrameUpdated();
                     }
                     else if (LockedJSON != null && !LockedJSON.val)
                     {
