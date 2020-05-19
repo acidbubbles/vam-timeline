@@ -40,7 +40,10 @@ namespace VamTimeline
             {
                 string animationName = clipJSON["AnimationName"].Value;
                 if (animation.Clips.Any(c => c.AnimationName == animationName))
+                {
+                    SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be overwritten");
                     animation.Clips.Remove(animation.Clips.First(c => c.AnimationName == animationName));
+                }
                 var clip = new AtomAnimationClip(animationName)
                 {
                     BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
@@ -373,6 +376,50 @@ namespace VamTimeline
             }
 
             return curveJSON;
+        }
+
+        #endregion
+
+        #region Static serializers
+
+        public static JSONClass SerializeQuaternion(Quaternion localRotation)
+        {
+            var jc = new JSONClass();
+            jc["x"].AsFloat = localRotation.x;
+            jc["y"].AsFloat = localRotation.y;
+            jc["z"].AsFloat = localRotation.z;
+            jc["w"].AsFloat = localRotation.w;
+            return jc;
+        }
+
+        public static JSONClass SerializeVector3(Vector3 localPosition)
+        {
+            var jc = new JSONClass();
+            jc["x"].AsFloat = localPosition.x;
+            jc["y"].AsFloat = localPosition.y;
+            jc["z"].AsFloat = localPosition.z;
+            return jc;
+        }
+
+        public static Quaternion DeserializeQuaternion(JSONClass jc)
+        {
+            return new Quaternion
+            (
+                jc["x"].AsFloat,
+                jc["y"].AsFloat,
+                jc["z"].AsFloat,
+                jc["w"].AsFloat
+            );
+        }
+
+        public static Vector3 DeserializeVector3(JSONClass jc)
+        {
+            return new Vector3
+            (
+                jc["x"].AsFloat,
+                jc["y"].AsFloat,
+                jc["z"].AsFloat
+            );
         }
 
         #endregion

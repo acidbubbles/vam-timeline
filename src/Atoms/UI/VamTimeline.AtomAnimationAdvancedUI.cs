@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MVR.FileManagementSecure;
+using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
@@ -315,6 +316,26 @@ namespace VamTimeline
             {
                 var jc = Plugin.GetAnimationJSON(_exportAnimationsJSON.val == "(All)" ? null : _exportAnimationsJSON.val);
                 jc["AtomType"] = Plugin.ContainingAtom.type;
+                var atomState = new JSONClass();
+                var allTargets = new HashSet<FreeControllerV3>(
+                    Plugin.Animation.Clips
+                        .Where(c => _exportAnimationsJSON.val == "(All)" || c.AnimationName == _exportAnimationsJSON.val)
+                        .SelectMany(c => c.TargetControllers)
+                        .Select(t => t.Controller)
+                        .Distinct());
+                foreach (var fc in Plugin.ContainingAtom.freeControllers)
+                {
+                    if (fc.name == "control") continue;
+                    if (!fc.name.EndsWith("Control")) continue;
+                    atomState[fc.name] = new JSONClass
+                    {
+                        {"currentPositionState", ((int)fc.currentPositionState).ToString()},
+                        {"localPosition", AtomAnimationSerializer.SerializeVector3(fc.transform.localPosition)},
+                        {"currentRotationState", ((int)fc.currentRotationState).ToString()},
+                        {"localRotation", AtomAnimationSerializer.SerializeQuaternion(fc.transform.localRotation)}
+                    };
+                }
+                jc["ControllersState"] = atomState;
                 SuperController.singleton.SaveJSON(jc, path);
                 SuperController.singleton.DoSaveScreenshot(path);
             }
@@ -344,15 +365,35 @@ namespace VamTimeline
 
             try
             {
-                var jc = SuperController.singleton.LoadJSON(path);
-                if (jc["AtomType"]?.Value != Plugin.ContainingAtom.type)
+                var json = SuperController.singleton.LoadJSON(path);
+                if (json["AtomType"]?.Value != Plugin.ContainingAtom.type)
                 {
-                    SuperController.LogError($"VamTimeline: Loaded animation for {jc["AtomType"]} but current atom type is {Plugin.ContainingAtom.type}");
+                    SuperController.LogError($"VamTimeline: Loaded animation for {json["AtomType"]} but current atom type is {Plugin.ContainingAtom.type}");
                     return;
                 }
 
+                var jc = json.AsObject;
+                if (jc.HasKey("ControllersState"))
+                {
+                    var controllersState = jc["ControllersState"].AsObject;
+                    foreach (var k in controllersState.Keys)
+                    {
+                        var fc = Plugin.ContainingAtom.freeControllers.FirstOrDefault(x => x.name == k);
+                        if (fc == null)
+                        {
+                            SuperController.LogError($"VamTimeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
+                            continue;
+                        }
+                        var state = controllersState[k];
+                        fc.currentPositionState = (FreeControllerV3.PositionState)state["currentPositionState"].AsInt;
+                        fc.transform.localPosition = AtomAnimationSerializer.DeserializeVector3(state["localPosition"].AsObject);
+                        fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
+                        fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
+                    }
+                }
+
                 Plugin.Load(jc);
-                Plugin.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
+                Plugin.ChangeAnimation(jc["Clips"][0]["AnimationName"].Value);
                 Plugin.Animation.Stop();
             }
             catch (Exception exc)
