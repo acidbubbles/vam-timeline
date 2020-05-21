@@ -154,7 +154,7 @@ namespace VamTimeline
             var loopingUI = Plugin.CreateToggle(_loop, rightSide);
             RegisterComponent(loopingUI);
 
-            _transitionJSON = new JSONStorableBool("Transition (Sync prev/next anim)", false, (bool val) => ChangeTransition(val));
+            _transitionJSON = new JSONStorableBool("Transition (Sync First/Last Frames)", false, (bool val) => ChangeTransition(val));
             RegisterStorable(_transitionJSON);
             var transitionUI = Plugin.CreateToggle(_transitionJSON, rightSide);
             RegisterComponent(transitionUI);
