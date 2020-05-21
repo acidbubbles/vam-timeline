@@ -73,6 +73,7 @@
 
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetCanvas.cs" />
+    <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />
     <Compile Include="src/Components/DopeSheet/TargetRow.cs" />
 
     <Compile Include="src/Common/FloatExtensions.cs" />

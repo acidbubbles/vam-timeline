@@ -158,7 +158,7 @@ namespace VamTimeline
             nextFrameUI.button.onClick.AddListener(() => Plugin.NextFrameJSON.actionCallback());
             buttons.Add(nextFrameUI);
 
-            var dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, buttons);
+            var dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, DopeSheetStyle.Default());
 
             // TODO: Highlight current filtered target, and allow selection through dope sheet
             // TODO: Rename Draw, refresh when updated, recreate when animation changed

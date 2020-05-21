@@ -12,6 +12,7 @@ src/External/curve-editor/Utils/MathUtils.cs
 src/External/curve-editor/Utils/Matrix2x3.cs
 src/Components/DopeSheet/DopeSheet.cs
 src/Components/DopeSheet/DopeSheetCanvas.cs
+src/Components/DopeSheet/DopeSheetStyle.cs
 src/Components/DopeSheet/TargetRow.cs
 src/Common/FloatExtensions.cs
 src/Common/ListExtensions.cs
