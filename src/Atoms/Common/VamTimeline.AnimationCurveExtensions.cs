@@ -386,12 +386,6 @@ namespace VamTimeline
                 index = curve.AddKey(time, keyframe.value);
             keyframe.time = time;
             curve.MoveKey(index, keyframe);
-
-            if (time.IsSameFrame(0f))
-            {
-                keyframe.time = curve[curve.length - 1].time;
-                curve.MoveKey(curve.length - 1, keyframe);
-            }
         }
 
         #endregion
