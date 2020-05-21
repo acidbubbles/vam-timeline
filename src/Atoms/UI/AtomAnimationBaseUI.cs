@@ -141,6 +141,22 @@ namespace VamTimeline
         protected void InitDisplayUI(bool rightSide, float height = 260f)
         {
             if (Plugin.Animation == null || Plugin.Animation.Current == null) return;
+            
+            var dopeSheetContainer = Plugin.CreateSpacer(rightSide);
+            dopeSheetContainer.height = height;
+            RegisterComponent(dopeSheetContainer);
+            var buttons = new List<UIDynamicButton>(2);
+
+            var previousFrameUI = Plugin.CreateButton("\u2190 Prev", rightSide);
+            previousFrameUI.button.onClick.AddListener(() => Plugin.PreviousFrameJSON.actionCallback());
+            buttons.Add(previousFrameUI);
+
+            var nextFrameUI = Plugin.CreateButton("Next \u2192", rightSide);
+            nextFrameUI.button.onClick.AddListener(() => Plugin.NextFrameJSON.actionCallback());
+            buttons.Add(nextFrameUI);
+
+            var dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, buttons);
+            
             _curveEditorContainer = Plugin.CreateSpacer(rightSide);
             _curveEditorContainer.height = height;
             RegisterComponent(_curveEditorContainer);
