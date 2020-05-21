@@ -212,10 +212,27 @@ namespace VamTimeline
 
         private List<string> GetEligibleNextAnimations()
         {
+            var animations = Plugin.Animation.GetAnimationNames()
+                .GroupBy(x =>
+                {
+                    var i = x.IndexOf("/");
+                    if (i == -1) return null;
+                    return x.Substring(0, i);
+                });
             return new[] { "" }
-                .Concat(Plugin.Animation.GetAnimationNames().Where(n => n != Plugin.Animation.Current.AnimationName))
+                .Concat(animations.SelectMany(EnumerateAnimations))
+                .Where(n => n != Plugin.Animation.Current.AnimationName)
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
+        }
+
+        private IEnumerable<string> EnumerateAnimations(IGrouping<string, string> group)
+        {
+            foreach (var name in group)
+                yield return name;
+
+            if (group.Key != null)
+                yield return group.Key + AtomAnimation.RandomizeGroupSuffix;
         }
 
         private void InitAnimationPatternLinkUI(bool rightSide)

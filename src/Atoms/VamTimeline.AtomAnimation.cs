@@ -18,6 +18,7 @@ namespace VamTimeline
         public const float InterpolationMaxDistanceDelta = 1.5f;
         public const float InterpolationMaxAngleDelta = 180.0f;
         public const string RandomizeAnimationName = "(Randomize)";
+        public const string RandomizeGroupSuffix = "/*";
         private readonly Atom _atom;
         private readonly Animation _animation;
         private AnimationState _animState;
@@ -194,6 +195,7 @@ namespace VamTimeline
             _nextAnimationTime = 0;
 
             if (Current.NextAnimationName == null) return;
+            if (Clips.Count == 1) return;
 
             if (Current.NextAnimationTime > 0 + float.Epsilon)
                 _nextAnimationTime = (time + Current.NextAnimationTime).Snap();
@@ -202,10 +204,19 @@ namespace VamTimeline
 
             if (Current.NextAnimationName == RandomizeAnimationName)
             {
-                if (Clips.Count == 1) return;
                 var idx = Random.Range(0, Clips.Count - 1);
                 if (idx >= Clips.IndexOf(Current)) idx += 1;
                 _nextAnimation = Clips[idx].AnimationName;
+            }
+            else if (Current.NextAnimationName.EndsWith(RandomizeGroupSuffix))
+            {
+                var prefix = Current.NextAnimationName.Substring(0, Current.NextAnimationName.Length - RandomizeGroupSuffix.Length);
+                var group = Clips
+                    .Where(c => c.AnimationName != Current.AnimationName)
+                    .Where(c => c.AnimationName.StartsWith(prefix))
+                    .ToList();
+                var idx = Random.Range(0, group.Count);
+                _nextAnimation = group[idx].AnimationName;
             }
             else
             {
