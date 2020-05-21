@@ -511,6 +511,7 @@ namespace VamTimeline
         {
             if (Plugin.Animation.Current.Loop) _loop.val = false;
             Plugin.Animation.Current.Transition = val;
+            Plugin.Animation.Current.DirtyAll();
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
             Plugin.Animation.Sample();
