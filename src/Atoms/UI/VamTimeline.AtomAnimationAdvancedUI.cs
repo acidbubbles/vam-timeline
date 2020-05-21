@@ -479,6 +479,7 @@ namespace VamTimeline
             }
 
             if (_importRecordedUI == null) return;
+            if (_importRecordedUI.buttonText.text == "Importing, please wait...") return;
             _importRecordedUI.buttonText.text = "Importing, please wait...";
 
             Plugin.StartCoroutine(ImportRecordedCoroutine());
