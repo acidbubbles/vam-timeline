@@ -337,6 +337,13 @@ namespace VamTimeline
             }
         }
 
+        public void Sample()
+        {
+            if (_isPlaying) return;
+            SampleParamsAnimation();
+            SampleControllers();
+        }
+
         private void SampleControllers()
         {
             if (_animState == null)
@@ -391,6 +398,15 @@ namespace VamTimeline
             var time = Time.Snap();
             foreach (var clip in Clips)
             {
+                if (clip.Transition)
+                {
+                    var previous = Clips.FirstOrDefault(c => c.NextAnimationName == clip.AnimationName);
+                    if (previous != null)
+                        clip.Paste(0f, previous.Copy(previous.AnimationLength, true));
+                    var next = Clips.FirstOrDefault(c => c.AnimationName == clip.NextAnimationName);
+                    if (next != null)
+                        clip.Paste(clip.AnimationLength, next.Copy(0f, true));
+                }
                 clip.Validate();
                 RebuildClipCurve(clip);
                 _animation.AddClip(clip.Clip, clip.AnimationName);

@@ -48,6 +48,7 @@ namespace VamTimeline
                 {
                     BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                     Loop = DeserializeBool(clipJSON["Loop"], true),
+                    Transition = DeserializeBool(clipJSON["Transition"], false),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     NextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
@@ -301,6 +302,7 @@ namespace VamTimeline
                     { "AnimationLength", clip.AnimationLength.ToString(CultureInfo.InvariantCulture) },
                     { "BlendDuration", clip.BlendDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.Loop ? "1" : "0" },
+                    { "Transition", clip.Transition ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity ? "1" : "0" }
                 };
                 if (clip.NextAnimationName != null)

@@ -41,6 +41,7 @@ namespace VamTimeline
                 Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
             }
         }
+        public bool Transition { get; set; }
         public float BlendDuration { get; set; } = DefaultBlendDuration;
         public string NextAnimationName
         {

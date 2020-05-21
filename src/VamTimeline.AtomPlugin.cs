@@ -165,6 +165,7 @@ namespace VamTimeline
                 }
                 Animation.RebuildAnimation();
                 AnimationModified();
+                if(Animation.Current.Transition) Animation.Sample();
             }
         }
 

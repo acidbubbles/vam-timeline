@@ -33,6 +33,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
+        private JSONStorableBool _transitionJSON;
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private float _lengthWhenLengthModeChanged;
@@ -152,6 +153,11 @@ namespace VamTimeline
             RegisterStorable(_loop);
             var loopingUI = Plugin.CreateToggle(_loop, rightSide);
             RegisterComponent(loopingUI);
+
+            _transitionJSON = new JSONStorableBool("Transition (Sync prev/next anim)", false, (bool val) => ChangeTransition(val));
+            RegisterStorable(_transitionJSON);
+            var transitionUI = Plugin.CreateToggle(_transitionJSON, rightSide);
+            RegisterComponent(transitionUI);
 
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
             RegisterStorable(_ensureQuaternionContinuity);
@@ -486,8 +492,22 @@ namespace VamTimeline
                 ? Plugin.Animation.Current.NextAnimationTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration
                 : Plugin.Animation.Current.NextAnimationTime
             );
+            if (val)
+            {
+                _transitionJSON.valNoCallback = false;
+                Plugin.Animation.Current.Transition = false;
+            }
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
+        }
+
+        private void ChangeTransition(bool val)
+        {
+            if (Plugin.Animation.Current.Loop) _loop.val = false;
+            Plugin.Animation.Current.Transition = val;
+            Plugin.Animation.RebuildAnimation();
+            Plugin.AnimationModified();
+            Plugin.Animation.Sample();
         }
 
         private void SetEnsureQuaternionContinuity(bool val)
@@ -567,6 +587,7 @@ namespace VamTimeline
             _lengthJSON.valNoCallback = current.AnimationLength;
             _blendDurationJSON.valNoCallback = current.BlendDuration;
             _loop.valNoCallback = current.Loop;
+            _transitionJSON.valNoCallback = current.Transition;
             _ensureQuaternionContinuity.valNoCallback = current.EnsureQuaternionContinuity;
             _nextAnimationJSON.valNoCallback = current.NextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
