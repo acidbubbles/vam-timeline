@@ -74,5 +74,7 @@ namespace VamTimeline
                     button.gameObject.transform.SetParent(gridLayout.transform, false);
             }
         }
+
+        public void Draw(AtomAnimationClip clip) => _canvas.Draw(clip);
     }
 }
