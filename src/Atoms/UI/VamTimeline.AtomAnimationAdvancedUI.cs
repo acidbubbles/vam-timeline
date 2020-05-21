@@ -111,11 +111,11 @@ namespace VamTimeline
             var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, true);
             RegisterComponent(exportAnimationsUI);
 
-            var exportUI = Plugin.CreateButton("Export to .timeline", true);
+            var exportUI = Plugin.CreateButton("Export animation", true);
             exportUI.button.onClick.AddListener(() => Export());
             RegisterComponent(exportUI);
 
-            var importUI = Plugin.CreateButton("Import from .timeline", true);
+            var importUI = Plugin.CreateButton("Import animation", true);
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
 
