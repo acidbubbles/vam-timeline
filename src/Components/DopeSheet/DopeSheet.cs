@@ -73,44 +73,62 @@ namespace VamTimeline
 
         private void CreateHeader(string title)
         {
-            var gameObject = new GameObject();
+            var rowContainer = new GameObject();
+
+            var rectTransform = rowContainer.AddComponent<RectTransform>();
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
             var backgroundContent = new GameObject();
-            backgroundContent.transform.SetParent(gameObject.transform, false);
+            backgroundContent.transform.SetParent(rowContainer.transform, false);
 
             var backgroundImage = backgroundContent.AddComponent<Image>();
             backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
             backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             backgroundImage.color = _style.GroupBackgroundColor;
 
-            var text = gameObject.AddComponent<Text>();
+            var textContent = new GameObject();
+            textContent.transform.SetParent(rowContainer.transform, false);
+
+            var text = textContent.AddComponent<Text>();
             text.text = title;
             text.font = _style.Font;
+            text.color = _style.FontColor;
             text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleLeft;
             text.material = _style.Font.material;
 
-            gameObject.transform.SetParent(_gridLayout.transform, false);
+            rowContainer.transform.SetParent(_gridLayout.transform, false);
         }
 
         private void CreateRow(IAnimationTarget target)
         {
-            var gameObject = new GameObject();
+            var rowContainer = new GameObject();
+
+            var layout = rowContainer.AddComponent<LayoutElement>();
+            layout.preferredHeight = _style.RowHeight;
 
             var backgroundContent = new GameObject();
-            backgroundContent.transform.SetParent(gameObject.transform, false);
+            backgroundContent.transform.SetParent(rowContainer.transform, false);
 
             var backgroundImage = backgroundContent.AddComponent<Image>();
-            backgroundImage.rectTransform.anchoredPosition = Vector2.zero;
+            backgroundImage.rectTransform.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f, 0);
             backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
             backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             backgroundImage.color = _style.LabelBackgroundColor;
 
-            var text = gameObject.AddComponent<Text>();
+            var textContent = new GameObject();
+            textContent.transform.SetParent(rowContainer.transform, false);
+
+            var text = textContent.AddComponent<Text>();
             text.text = target.Name;
             text.font = _style.Font;
+            text.color = _style.FontColor;
+            text.alignment = TextAnchor.MiddleLeft;
             text.material = _style.Font.material;
 
-            gameObject.transform.SetParent(_gridLayout.transform, false);
+            rowContainer.transform.SetParent(_gridLayout.transform, false);
         }
     }
 }

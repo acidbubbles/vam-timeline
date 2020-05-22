@@ -145,18 +145,9 @@ namespace VamTimeline
             var dopeSheetContainer = Plugin.CreateSpacer(rightSide);
             dopeSheetContainer.height = height;
             RegisterComponent(dopeSheetContainer);
-            var buttons = new List<UIDynamicButton>(2);
 
             // Replace play, stop, frame nav and scrubber (text field for precise time?)
             // https://docs.blender.org/manual/en/latest/editors/dope_sheet/introduction.html
-
-            var previousFrameUI = Plugin.CreateButton("\u2190 Prev", rightSide);
-            previousFrameUI.button.onClick.AddListener(() => Plugin.PreviousFrameJSON.actionCallback());
-            buttons.Add(previousFrameUI);
-
-            var nextFrameUI = Plugin.CreateButton("Next \u2192", rightSide);
-            nextFrameUI.button.onClick.AddListener(() => Plugin.NextFrameJSON.actionCallback());
-            buttons.Add(nextFrameUI);
 
             var dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, DopeSheetStyle.Default());
 
