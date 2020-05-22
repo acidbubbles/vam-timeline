@@ -161,7 +161,7 @@ namespace VamTimeline
                 {
                     SetControllerKeyframe(time, grabbedController);
                 }
-                if(Animation.Current.Transition) Animation.Sample();
+                if (Animation.Current.Transition) Animation.Sample();
             }
         }
 
@@ -651,9 +651,9 @@ namespace VamTimeline
                 foreach (var controller in externalControllers)
                 {
                     // TODO: Replace broadcasting by a link
-                    controller.BroadcastMessage("VamTimelineAnimationModified", containingAtom.uid);
+                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
                     // TODO: Dirty flag to avoid broadcasting
-                    controller.BroadcastMessage("VamTimelineAnimationCurvesModified", Animation.GetCurvesDictionary());
+                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationCurvesModified), Animation.GetCurvesDictionary());
                 }
             }
             catch (Exception exc)
@@ -682,7 +682,7 @@ namespace VamTimeline
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
-                    controller.BroadcastMessage("VamTimelineAnimationFrameUpdated", containingAtom.uid);
+                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationFrameUpdated), containingAtom.uid);
             }
             catch (Exception exc)
             {

@@ -13,7 +13,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class ControllerPlugin : MVRScript
+    public class ControllerPlugin : MVRScript, IAnimationController
     {
         private const string AtomSeparator = ";";
         private Atom _atom;

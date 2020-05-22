@@ -77,6 +77,8 @@
 
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />
+    <Compile Include="src/Common/IAnimatedAtom.cs " />
+    <Compile Include="src/Common/IAnimationController.cs " />
     <Compile Include="src/Common/StorableNames.cs" />
     <Compile Include="src/Common/StorableAnimationCurve.cs" />
     <Compile Include="src/Common/AnimationCurveExtensions.cs" />
@@ -107,7 +109,6 @@
     <Compile Include="src/Atoms/AtomAnimationSerializer.cs" />
 
     <Compile Include="src/AtomPlugin.cs" />
-
 
     <Compile Include="src/Controller/SimpleSignUI.cs" />
     <Compile Include="src/Controller/LinkedAnimation.cs" />

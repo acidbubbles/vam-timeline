@@ -11,6 +11,8 @@ src/External/curve-editor/Utils/MathUtils.cs
 src/External/curve-editor/Utils/Matrix2x3.cs
 src/Common/FloatExtensions.cs
 src/Common/ListExtensions.cs
+src/Common/IAnimatedAtom.cs
+src/Common/IAnimationController.cs
 src/Common/StorableNames.cs
 src/Common/StorableAnimationCurve.cs
 src/Common/AnimationCurveExtensions.cs
