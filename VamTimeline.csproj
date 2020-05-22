@@ -72,9 +72,8 @@
     <Compile Include="src/External/curve-editor/Utils/Matrix2x3.cs" />
 
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
-    <Compile Include="src/Components/DopeSheet/DopeSheetCanvas.cs" />
+    <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />
-    <Compile Include="src/Components/DopeSheet/TargetRow.cs" />
 
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />

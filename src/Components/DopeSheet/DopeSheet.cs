@@ -49,6 +49,8 @@ namespace VamTimeline
 
             _gridLayout = sheetContainer.AddComponent<VerticalLayoutGroup>();
             _gridLayout.spacing = _style.RowSpacing;
+            _gridLayout.childForceExpandHeight = false;
+            _gridLayout.childControlHeight = true;
             _gridLayout.childAlignment = TextAnchor.UpperLeft;
         }
 
@@ -62,23 +64,22 @@ namespace VamTimeline
                     CreateRow(target);
             }
 
-            // if (clip.TargetFloatParams.Count > 0)
-            // {
-            //     CreateHeader("Params");
+            if (clip.TargetFloatParams.Count > 0)
+            {
+                CreateHeader("Params");
 
-            //     foreach (var target in clip.TargetFloatParams)
-            //         CreateRow(target);
-            // }
+                foreach (var target in clip.TargetFloatParams)
+                    CreateRow(target);
+            }
         }
 
         private void CreateHeader(string title)
         {
             var rowContainer = new GameObject();
+            rowContainer.transform.SetParent(_gridLayout.transform, false);
 
-            var rectTransform = rowContainer.AddComponent<RectTransform>();
-            rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+            var layout = rowContainer.AddComponent<LayoutElement>();
+            layout.preferredHeight = _style.RowHeight;
 
             var backgroundContent = new GameObject();
             backgroundContent.transform.SetParent(rowContainer.transform, false);
@@ -94,17 +95,17 @@ namespace VamTimeline
             var text = textContent.AddComponent<Text>();
             text.text = title;
             text.font = _style.Font;
+            text.fontSize = 13;
             text.color = _style.FontColor;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleLeft;
             text.material = _style.Font.material;
-
-            rowContainer.transform.SetParent(_gridLayout.transform, false);
         }
 
         private void CreateRow(IAnimationTarget target)
         {
             var rowContainer = new GameObject();
+            rowContainer.transform.SetParent(_gridLayout.transform, false);
 
             var layout = rowContainer.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
@@ -122,13 +123,25 @@ namespace VamTimeline
             textContent.transform.SetParent(rowContainer.transform, false);
 
             var text = textContent.AddComponent<Text>();
+            text.rectTransform.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f, 0);
+            text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
+            text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             text.text = target.Name;
             text.font = _style.Font;
+            text.fontSize = 10;
             text.color = _style.FontColor;
             text.alignment = TextAnchor.MiddleLeft;
             text.material = _style.Font.material;
 
-            rowContainer.transform.SetParent(_gridLayout.transform, false);
+            var keyframesContent = new GameObject();
+            keyframesContent.transform.SetParent(rowContainer.transform, false);
+
+            var keyframes = keyframesContent.AddComponent<DopeSheetKeyframes>();
+            keyframes.target = target;
+            keyframes.style = _style;
+            keyframes.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+            keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
+            keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
         }
     }
 }

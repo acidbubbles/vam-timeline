@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CurveEditor.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -136,6 +137,8 @@ namespace VamTimeline
             var pasteUI = Plugin.CreateButton("Paste Frame", rightSide);
             pasteUI.button.onClick.AddListener(() => Plugin.PasteJSON.actionCallback());
             RegisterComponent(pasteUI);
+
+            var text = pasteUI.GetComponentInChildren<Text>();
         }
 
         protected void InitDisplayUI(bool rightSide, float height = 260f)
