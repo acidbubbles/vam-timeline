@@ -47,6 +47,24 @@ namespace VamTimeline
 
             InitFrameNavUI(false);
 
+            CreateSpacer(false);
+
+            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
+            {
+                isStorable = false
+            };
+            RegisterStorable(_exportAnimationsJSON);
+            var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, false);
+            RegisterComponent(exportAnimationsUI);
+
+            var exportUI = Plugin.CreateButton("Export animation", false);
+            exportUI.button.onClick.AddListener(() => Export());
+            RegisterComponent(exportUI);
+
+            var importUI = Plugin.CreateButton("Import animation", false);
+            importUI.button.onClick.AddListener(() => Import());
+            RegisterComponent(importUI);
+
             var enableAllTargetsUI = Plugin.CreateButton("Enable Miss. Targets On All Anims", true);
             enableAllTargetsUI.button.onClick.AddListener(() => EnableAllTargets());
             RegisterComponent(enableAllTargetsUI);
@@ -100,24 +118,6 @@ namespace VamTimeline
             var reverseAnimationUI = Plugin.CreateButton("Reverse Animation", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
-
-            CreateSpacer(true);
-
-            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
-            {
-                isStorable = false
-            };
-            RegisterStorable(_exportAnimationsJSON);
-            var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, true);
-            RegisterComponent(exportAnimationsUI);
-
-            var exportUI = Plugin.CreateButton("Export animation", true);
-            exportUI.button.onClick.AddListener(() => Export());
-            RegisterComponent(exportUI);
-
-            var importUI = Plugin.CreateButton("Import animation", true);
-            importUI.button.onClick.AddListener(() => Import());
-            RegisterComponent(importUI);
 
             CreateSpacer(true);
 
