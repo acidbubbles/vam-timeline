@@ -31,7 +31,8 @@ namespace VamTimeline
                 animation = new AtomAnimation(_atom)
                 {
                     Speed = DeserializeFloat(animationJSON["Speed"], 1f),
-                    InterpolationTimeout = DeserializeFloat(animationJSON["InterpolationTimeout"], 1f),
+                    InterpolationTimeout = DeserializeFloat(animationJSON["InterpolationTimeout"], 0.25f),
+                    InterpolationSpeed = DeserializeFloat(animationJSON["InterpolationSpeed"], 1f),
                 };
             }
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
@@ -289,7 +290,8 @@ namespace VamTimeline
             var animationJSON = new JSONClass
             {
                 { "Speed", animation.Speed.ToString(CultureInfo.InvariantCulture) },
-                { "InterpolationTimeout", animation.InterpolationTimeout.ToString(CultureInfo.InvariantCulture) }
+                { "InterpolationTimeout", animation.InterpolationTimeout.ToString(CultureInfo.InvariantCulture) },
+                { "InterpolationSpeed", animation.InterpolationSpeed.ToString(CultureInfo.InvariantCulture) }
             };
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);

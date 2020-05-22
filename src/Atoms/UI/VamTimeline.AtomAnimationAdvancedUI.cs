@@ -121,6 +121,14 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
+            var interpolationSpeedJSON = new JSONStorableFloat("Interpolation Speed", 1f, (float val) => Plugin.Animation.InterpolationSpeed = val, 0.1f, 4f, true)
+            {
+                valNoCallback = Plugin.Animation.InterpolationSpeed
+            };
+            RegisterStorable(interpolationSpeedJSON);
+            var interpolationSpeedUI = Plugin.CreateSlider(interpolationSpeedJSON, true);
+            RegisterComponent(interpolationSpeedUI);
+
             var interpolationTimeoutJSON = new JSONStorableFloat("Interpolation Timeout", 1f, (float val) => Plugin.Animation.InterpolationTimeout = val, 0f, 10f, true)
             {
                 valNoCallback = Plugin.Animation.InterpolationTimeout

@@ -15,7 +15,7 @@ namespace VamTimeline
     public class AtomAnimation
     {
         public const float PaddingBeforeLoopFrame = 0.001f;
-        public const float InterpolationMaxDistanceDelta = 1.5f;
+        public const float InterpolationMaxDistanceDelta = 3.0f;
         public const float InterpolationMaxAngleDelta = 180.0f;
         public const string RandomizeAnimationName = "(Randomize)";
         public const string RandomizeGroupSuffix = "/*";
@@ -38,7 +38,8 @@ namespace VamTimeline
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current { get; set; }
         public string PlayedAnimation { get; private set; }
-        public float InterpolationTimeout { get; set; } = 1f;
+        public float InterpolationSpeed { get; set; } = 1f;
+        public float InterpolationTimeout { get; set; } = 0.25f;
 
         public float Time
         {
@@ -316,7 +317,7 @@ namespace VamTimeline
                 var allControllersReached = true;
                 foreach (var target in Current.TargetControllers)
                 {
-                    var controllerReached = target.Interpolate(_playTime, InterpolationMaxDistanceDelta * UnityEngine.Time.deltaTime, InterpolationMaxAngleDelta * UnityEngine.Time.deltaTime);
+                    var controllerReached = target.Interpolate(_playTime, InterpolationMaxDistanceDelta * InterpolationSpeed * UnityEngine.Time.deltaTime, InterpolationMaxAngleDelta * InterpolationSpeed * UnityEngine.Time.deltaTime);
                     if (!controllerReached) allControllersReached = false;
                 }
 
