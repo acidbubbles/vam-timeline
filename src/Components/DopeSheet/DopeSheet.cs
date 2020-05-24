@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -202,6 +204,12 @@ namespace VamTimeline
                 text.alignment = TextAnchor.MiddleLeft;
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.resizeTextForBestFit = false; // Better but ugly if true
+
+                var click = child.AddComponent<ClickAction>();
+                click.onClick.AddListener(() =>
+                {
+                    SuperController.LogMessage("Select target " + target.Name);
+                });
             }
 
             {
@@ -215,6 +223,15 @@ namespace VamTimeline
                 keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
                 keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             }
+        }
+    }
+    public class ClickAction : MonoBehaviour, IPointerClickHandler
+    {
+        public UnityEvent onClick = new UnityEvent();
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            onClick.Invoke();
         }
     }
 }
