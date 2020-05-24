@@ -15,7 +15,7 @@ namespace VamTimeline
         private readonly float _height;
         private readonly DopeSheetStyle _style;
         private readonly GameObject _gameObject;
-        private readonly VerticalLayoutGroup _gridLayout;
+        private readonly VerticalLayoutGroup _layout;
 
         public DopeSheet(UIDynamic container, float width, float height, DopeSheetStyle style)
         {
@@ -23,35 +23,85 @@ namespace VamTimeline
             _height = height;
             _style = style;
 
-            _gameObject = new GameObject();
+            _gameObject = new GameObject("Dope Sheet");
             _gameObject.transform.SetParent(container.transform, false);
 
-            var mask = _gameObject.AddComponent<RectMask2D>();
-            mask.rectTransform.anchoredPosition = new Vector2(0, 0);
-            mask.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-            mask.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            CreateBackground(_gameObject, _style.BackgroundColor);
 
-            var backgroundContent = new GameObject();
-            backgroundContent.transform.SetParent(_gameObject.transform, false);
+            var scrollView = CreateScrollView(_gameObject);
+            var viewport = CreateViewport(scrollView);
+            var content = CreateContent(viewport);
+            var scrollRect = scrollView.GetComponent<ScrollRect>();
+            scrollRect.viewport = viewport.GetComponent<RectTransform>();
+            scrollRect.content = content.GetComponent<RectTransform>();
+            _layout = content.GetComponent<VerticalLayoutGroup>();
+        }
 
-            var backgroundImage = backgroundContent.AddComponent<Image>();
-            backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-            backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-            backgroundImage.color = _style.BackgroundColor;
+        private GameObject CreateBackground(GameObject parent, Color color)
+        {
+            var go = new GameObject();
+            go.transform.SetParent(parent.transform, false);
 
-            var sheetContainer = new GameObject();
-            sheetContainer.transform.SetParent(container.transform, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent(_width, _height);
 
-            var rectTransform = sheetContainer.AddComponent<RectTransform>();
-            rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            var image = go.AddComponent<Image>();
+            image.color = color;
 
-            _gridLayout = sheetContainer.AddComponent<VerticalLayoutGroup>();
-            _gridLayout.spacing = _style.RowSpacing;
-            _gridLayout.childForceExpandHeight = false;
-            _gridLayout.childControlHeight = true;
-            _gridLayout.childAlignment = TextAnchor.UpperLeft;
+            return go;
+        }
+
+        private GameObject CreateScrollView(GameObject parent)
+        {
+            var go = new GameObject("Scroll View");
+            go.transform.SetParent(parent.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent(_width, _height);
+
+            var scroll = go.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+
+            return go;
+        }
+
+        private GameObject CreateViewport(GameObject scrollView)
+        {
+            var go = new GameObject("Viewport");
+            go.transform.SetParent(scrollView.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent(_width, _height);
+
+            var image = go.AddComponent<Image>();
+
+            var mask = go.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
+            return go;
+        }
+
+        public GameObject CreateContent(GameObject viewport)
+        {
+            var go = new GameObject("Content");
+            go.transform.SetParent(viewport.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchTop(_width);
+
+            var layout = go.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = _style.RowSpacing;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childAlignment = TextAnchor.UpperLeft;
+
+            var fit = go.AddComponent<ContentSizeFitter>();
+            fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            return go;
         }
 
         public void Draw(AtomAnimationClip clip)
@@ -75,73 +125,114 @@ namespace VamTimeline
 
         private void CreateHeader(string title)
         {
-            var rowContainer = new GameObject();
-            rowContainer.transform.SetParent(_gridLayout.transform, false);
+            var go = new GameObject("Header");
+            go.transform.SetParent(_layout.transform, false);
 
-            var layout = rowContainer.AddComponent<LayoutElement>();
+            var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
 
-            var backgroundContent = new GameObject();
-            backgroundContent.transform.SetParent(rowContainer.transform, false);
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
 
-            var backgroundImage = backgroundContent.AddComponent<Image>();
-            backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
-            backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
-            backgroundImage.color = _style.GroupBackgroundColor;
+                var rect = child.AddComponent<RectTransform>();
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
-            var textContent = new GameObject();
-            textContent.transform.SetParent(rowContainer.transform, false);
+                var image = child.AddComponent<Image>();
+                image.color = _style.GroupBackgroundColor;
+            }
 
-            var text = textContent.AddComponent<Text>();
-            text.text = title;
-            text.font = _style.Font;
-            text.fontSize = 13;
-            text.color = _style.FontColor;
-            text.fontStyle = FontStyle.Bold;
-            text.alignment = TextAnchor.MiddleLeft;
-            text.material = _style.Font.material;
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
+
+                var rect = child.AddComponent<RectTransform>();
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - 12f);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+
+                var text = child.AddComponent<Text>();
+                text.text = title;
+                text.font = _style.Font;
+                text.fontSize = 24;
+                text.color = _style.FontColor;
+                text.fontStyle = FontStyle.Bold;
+                text.alignment = TextAnchor.MiddleLeft;
+            }
         }
 
         private void CreateRow(IAnimationTarget target)
         {
-            var rowContainer = new GameObject();
-            rowContainer.transform.SetParent(_gridLayout.transform, false);
+            var go = new GameObject("Row");
+            go.transform.SetParent(_layout.transform, false);
 
-            var layout = rowContainer.AddComponent<LayoutElement>();
+            var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
 
-            var backgroundContent = new GameObject();
-            backgroundContent.transform.SetParent(rowContainer.transform, false);
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
 
-            var backgroundImage = backgroundContent.AddComponent<Image>();
-            backgroundImage.rectTransform.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f, 0);
-            backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
-            backgroundImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
-            backgroundImage.color = _style.LabelBackgroundColor;
+                var rect = child.AddComponent<RectTransform>();
+                rect.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f, 0);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
-            var textContent = new GameObject();
-            textContent.transform.SetParent(rowContainer.transform, false);
+                var image = child.AddComponent<Image>();
+                image.color = _style.LabelBackgroundColor;
+            }
 
-            var text = textContent.AddComponent<Text>();
-            text.rectTransform.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f, 0);
-            text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
-            text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
-            text.text = target.Name;
-            text.font = _style.Font;
-            text.fontSize = 10;
-            text.color = _style.FontColor;
-            text.alignment = TextAnchor.MiddleLeft;
-            text.material = _style.Font.material;
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
 
-            var keyframesContent = new GameObject();
-            keyframesContent.transform.SetParent(rowContainer.transform, false);
+                var rect = child.AddComponent<RectTransform>();
+                var padding = 2f;
+                rect.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f + padding, 0);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth - padding * 2f);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
-            var keyframes = keyframesContent.AddComponent<DopeSheetKeyframes>();
-            keyframes.target = target;
-            keyframes.style = _style;
-            keyframes.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
-            keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
-            keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+                var text = child.AddComponent<Text>();
+                text.text = target.GetShortName();
+                text.font = _style.Font;
+                text.fontSize = 20;
+                text.color = _style.FontColor;
+                text.alignment = TextAnchor.MiddleLeft;
+                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                text.resizeTextForBestFit = false; // Better but ugly if true
+            }
+
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
+
+                var keyframes = child.AddComponent<DopeSheetKeyframes>();
+                keyframes.target = target;
+                keyframes.style = _style;
+                keyframes.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+                keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
+                keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+            }
+        }
+    }
+
+    public static class RectTransformExtensions
+    {
+        public static void StretchParent(this RectTransform rect, float width, float height)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.anchoredPosition = new Vector2(0, 1);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        }
+
+        public static void StretchTop(this RectTransform rect, float width)
+        {
+            rect.anchorMin = new Vector2(0, 0);
+            rect.anchorMax = new Vector2(1, 0);
+            rect.anchoredPosition = new Vector2(0, 1);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         }
     }
 }

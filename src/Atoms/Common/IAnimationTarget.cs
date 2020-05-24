@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace VamTimeline
@@ -7,6 +6,7 @@ namespace VamTimeline
     public interface IAnimationTarget
     {
         string Name { get; }
+        string GetShortName();
 
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();

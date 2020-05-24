@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace VamTimeline
@@ -49,6 +48,13 @@ namespace VamTimeline
             };
             Curves = Storables.Select(s => s.val).ToList();
             Controller = controller;
+        }
+
+        public string GetShortName()
+        {
+            if (Name.EndsWith("Control"))
+                return Name.Substring(0, Name.Length - "Control".Length);
+            return Name;
         }
 
         #region Control

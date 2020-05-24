@@ -28,6 +28,11 @@ namespace VamTimeline
             StorableValue = new StorableAnimationCurve(new AnimationCurve());
         }
 
+        public string GetShortName()
+        {
+            return FloatParam.name;
+        }
+
         public AnimationCurve GetLeadCurve()
         {
             return Value;
