@@ -13,8 +13,10 @@ src/External/curve-editor/Utils/Matrix2x3.cs
 src/Components/DopeSheet/DopeSheet.cs
 src/Components/DopeSheet/DopeSheetKeyframes.cs
 src/Components/DopeSheet/DopeSheetStyle.cs
+src/Components/DopeSheet/GradientImage.cs
 src/Common/FloatExtensions.cs
 src/Common/ListExtensions.cs
+src/Common/RectTransformExtensions.cs
 src/Common/IAnimatedAtom.cs
 src/Common/IAnimationController.cs
 src/Common/StorableNames.cs

@@ -139,8 +139,9 @@ namespace VamTimeline
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
-                var image = child.AddComponent<Image>();
-                image.color = _style.GroupBackgroundColor;
+                var image = child.AddComponent<GradientImage>();
+                image.top = _style.GroupBackgroundColorTop;
+                image.bottom = _style.GroupBackgroundColorBottom;
             }
 
             {
@@ -178,8 +179,9 @@ namespace VamTimeline
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
-                var image = child.AddComponent<Image>();
-                image.color = _style.LabelBackgroundColor;
+                var image = child.AddComponent<GradientImage>();
+                image.top = _style.LabelBackgroundColorTop;
+                image.bottom = _style.LabelBackgroundColorBottom;
             }
 
             {
@@ -213,26 +215,6 @@ namespace VamTimeline
                 keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
                 keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             }
-        }
-    }
-
-    public static class RectTransformExtensions
-    {
-        public static void StretchParent(this RectTransform rect, float width, float height)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.anchoredPosition = new Vector2(0, 1);
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-        }
-
-        public static void StretchTop(this RectTransform rect, float width)
-        {
-            rect.anchorMin = new Vector2(0, 0);
-            rect.anchorMax = new Vector2(1, 0);
-            rect.anchoredPosition = new Vector2(0, 1);
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         }
     }
 }

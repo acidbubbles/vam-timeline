@@ -74,9 +74,11 @@
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />
+    <Compile Include="src/Components/DopeSheet/GradientImage.cs" />
 
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />
+    <Compile Include="src/Common/RectTransformExtensions.cs" />
     <Compile Include="src/Common/IAnimatedAtom.cs " />
     <Compile Include="src/Common/IAnimationController.cs " />
     <Compile Include="src/Common/StorableNames.cs" />

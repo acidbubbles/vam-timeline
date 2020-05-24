@@ -13,8 +13,10 @@ namespace VamTimeline
         public Font Font { get; }
         public Color FontColor { get; set; } = new Color(0, 0, 0);
         public Color BackgroundColor { get; set; } = new Color(0.721f, 0.682f, 0.741f);
-        public Color GroupBackgroundColor { get; set; } = new Color(0.774f, 0.770f, 0.770f);
-        public Color LabelBackgroundColor { get; set; } = new Color(0.874f, 0.870f, 0.870f);
+        public Color GroupBackgroundColorTop { get; set; } = new Color(0.874f, 0.870f, 0.870f);
+        public Color GroupBackgroundColorBottom { get; set; } = new Color(0.704f, 0.700f, 0.700f);
+        public Color LabelBackgroundColorTop { get; set; } = new Color(0.974f, 0.970f, 0.970f);
+        public Color LabelBackgroundColorBottom { get; set; } = new Color(0.824f, 0.820f, 0.820f);
         public float RowHeight { get; set; } = 30f;
         public float RowSpacing { get; set; } = 5f;
         public float LabelWidth { get; set; } = 150f;
