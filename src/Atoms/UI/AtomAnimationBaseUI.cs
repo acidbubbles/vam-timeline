@@ -174,6 +174,7 @@ namespace VamTimeline
 
         private void RegisterCurrentCurves()
         {
+            // TODO: Only show the current target
             foreach (var controllerTarget in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
             {
                 var x = _curves.AddAndRetreive(controllerTarget.StorableX);
@@ -190,13 +191,15 @@ namespace VamTimeline
                 var rotW = _curves.AddAndRetreive(controllerTarget.StorableRotW);
                 _curveUI.AddCurve(rotW, new CurveLineSettings().Colorize(Color.yellow));
                 rotW.graphDirty = false;
+
+                break;
             }
-            foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
-            {
-                var v = _curves.AddAndRetreive(floatParamTarget.StorableValue);
-                _curveUI.AddCurve(v, new CurveLineSettings().Colorize(new Color(0.6f, 0.6f, 0.6f)));
-                v.graphDirty = false;
-            }
+            // foreach (var floatParamTarget in Plugin.Animation.Current.GetAllOrSelectedFloatParamTargets())
+            // {
+            //     var v = _curves.AddAndRetreive(floatParamTarget.StorableValue);
+            //     _curveUI.AddCurve(v, new CurveLineSettings().Colorize(new Color(0.6f, 0.6f, 0.6f)));
+            //     v.graphDirty = false;
+            // }
             UpdateCurveBounds();
             if (_curves.Count > 0)
                 _curveUI.SetScrubberPosition(Plugin.Animation.Time);
