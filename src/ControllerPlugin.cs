@@ -157,6 +157,13 @@ namespace VamTimeline
             while (SuperController.singleton.freezeAnimation)
                 yield return 0;
 
+            foreach (var la in _linkedAnimations)
+            {
+                la.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo));
+            }
+
+            yield return 0;
+
             if (_autoPlayJSON.val && _mainLinkedAnimation != null)
                 AutoPlay();
         }
@@ -311,30 +318,28 @@ namespace VamTimeline
                 if (_linkedAnimations.Any(la => la.Atom.uid == uid)) return;
 
                 var atom = SuperController.singleton.GetAtomByUid(uid);
-                if(atom == null)
+                if (atom == null)
                 {
                     SuperController.LogError($"VamTimeline: Atom '{uid}' cannot be found. Re-link the atom to fix.");
                     return;
                 }
-                LinkAnimationPlugin(atom);
+
+                var link = LinkedAnimation.TryCreate(atom);
+                if (link == null) return;
+                _linkedAnimations.Add(link);
+                _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
+                if (_mainLinkedAnimation == null)
+                    SelectCurrentAtom(link.Label);
+                _savedAtomsJSON.val = string.Join(AtomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
+                _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
+                _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
+
+                atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo));
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(LinkAtom)}: " + exc);
             }
-        }
-
-        private void LinkAnimationPlugin(Atom atom)
-        {
-            var link = LinkedAnimation.TryCreate(atom);
-            if (link == null) return;
-            _linkedAnimations.Add(link);
-            _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
-            if (_mainLinkedAnimation == null)
-                SelectCurrentAtom(link.Label);
-            _savedAtomsJSON.val = string.Join(AtomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
-            _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
-            _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
         }
 
         public void VamTimelineAnimationModified(string uid)

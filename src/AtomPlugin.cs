@@ -707,6 +707,15 @@ namespace VamTimeline
         }
 
         #endregion
+
+        #region Controller integration
+
+        public void VamTimelineRequestAnimationInfo()
+        {
+            AnimationModified();
+        }
+
+        #endregion
     }
 }
 
