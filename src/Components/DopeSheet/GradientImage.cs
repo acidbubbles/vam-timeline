@@ -11,25 +11,19 @@ namespace VamTimeline
     /// </summary>
     public class GradientImage : MaskableGraphic
     {
-        private bool _dirty;
-        private Color _top;
-        private Color _bottom;
-
-        public Color top { get { return _top; } set { _top = value; _dirty = true; } }
-        public Color bottom { get { return _bottom; } set { _bottom = value; _dirty = true; } }
+        public Color top { get; set; }
+        public Color bottom { get; set; }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
-            if (!_dirty) return;
-            _dirty = false;
             vh.Clear();
 
             vh.AddUIVertexQuad(new[]
             {
-                CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMin), _bottom),
-                CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMax), _top),
-                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMax), _top),
-                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMin), _bottom),
+                CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMin), bottom),
+                CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMax), top),
+                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMax), top),
+                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMin), bottom),
             });
         }
 
