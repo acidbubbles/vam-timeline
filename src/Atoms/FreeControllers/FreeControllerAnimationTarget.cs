@@ -11,7 +11,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FreeControllerAnimationTarget : IAnimationTarget
+    public class FreeControllerAnimationTarget : IAnimationTargetWithCurves
     {
         public FreeControllerV3 Controller;
         public SortedDictionary<int, KeyframeSettings> Settings = new SortedDictionary<int, KeyframeSettings>();

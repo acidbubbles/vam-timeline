@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -106,22 +107,17 @@ namespace VamTimeline
             return go;
         }
 
-        public void Draw(AtomAnimationClip clip)
+        public void Draw(IAtomAnimationClip clip)
         {
-            if (clip.TargetControllers.Count > 0)
+            foreach(var group in clip.GetTargetGroups())
             {
-                CreateHeader("Controllers");
+            if (group.Count > 0)
+            {
+                CreateHeader(group.Label);
 
-                foreach (var target in clip.TargetControllers)
+                foreach (var target in group.GetTargets())
                     CreateRow(target);
             }
-
-            if (clip.TargetFloatParams.Count > 0)
-            {
-                CreateHeader("Params");
-
-                foreach (var target in clip.TargetFloatParams)
-                    CreateRow(target);
             }
         }
 
@@ -164,7 +160,7 @@ namespace VamTimeline
             }
         }
 
-        private void CreateRow(IAnimationTarget target)
+        private void CreateRow(IAtomAnimationTarget target)
         {
             var go = new GameObject("Row");
             go.transform.SetParent(_layout.transform, false);
@@ -208,7 +204,7 @@ namespace VamTimeline
                 var click = child.AddComponent<ClickAction>();
                 click.onClick.AddListener(() =>
                 {
-                    SuperController.LogMessage("Select target " + target.Name);
+                    SuperController.LogMessage("Select target " + target.GetShortName());
                 });
             }
 
@@ -223,6 +219,11 @@ namespace VamTimeline
                 keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
                 keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             }
+        }
+
+        public void SetScrubberPosition(float val)
+        {
+            // TODO: Implement
         }
     }
     public class ClickAction : MonoBehaviour, IPointerClickHandler

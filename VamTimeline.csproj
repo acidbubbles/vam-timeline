@@ -81,6 +81,9 @@
     <Compile Include="src/Common/RectTransformExtensions.cs" />
     <Compile Include="src/Common/IAnimatedAtom.cs " />
     <Compile Include="src/Common/IAnimationController.cs " />
+    <Compile Include="src/Common/IAtomAnimationTarget.cs " />
+    <Compile Include="src/Common/IAtomAnimationClip.cs" />
+    <Compile Include="src/Common/IAtomAnimationTargetsList.cs" />
     <Compile Include="src/Common/StorableNames.cs" />
     <Compile Include="src/Common/StorableAnimationCurve.cs" />
     <Compile Include="src/Common/AnimationCurveExtensions.cs" />
@@ -89,7 +92,7 @@
 
     <Compile Include="src/Atoms/Common/CurveTypeValues.cs" />
     <Compile Include="src/Atoms/Common/KeyframeSettings.cs" />
-    <Compile Include="src/Atoms/Common/IAnimationTarget.cs" />
+    <Compile Include="src/Atoms/Common/IAnimationTargetWithCurves.cs" />
 
     <Compile Include="src/Atoms/FreeControllers/FreeControllerAnimationTarget.cs" />
 
@@ -108,12 +111,14 @@
     <Compile Include="src/Atoms/AtomAnimationClip.cs" />
     <Compile Include="src/Atoms/AtomClipboardEntry.cs" />
     <Compile Include="src/Atoms/AtomAnimation.cs" />
+    <Compile Include="src/Atoms/AtomAnimationTargetsList.cs" />
     <Compile Include="src/Atoms/AtomAnimationSerializer.cs" />
 
     <Compile Include="src/AtomPlugin.cs" />
 
-    <Compile Include="src/Controller/SimpleSignUI.cs" />
+    <Compile Include="src/Controller/AtomAnimationClipProxy.cs" />
     <Compile Include="src/Controller/LinkedAnimation.cs" />
+    <Compile Include="src/Controller/SimpleSignUI.cs" />
 
     <Compile Include="src/ControllerPlugin.cs" />
   </ItemGroup>

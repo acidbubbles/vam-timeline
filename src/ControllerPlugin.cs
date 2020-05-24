@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using CurveEditor.UI;
 using UnityEngine;
 
 namespace VamTimeline
@@ -34,7 +33,7 @@ namespace VamTimeline
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
         private JSONStorableBool _enableKeyboardShortcuts;
-        private UICurveEditor _curveEditor;
+        private DopeSheet _dopeSheet;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         #region Initialization
@@ -251,7 +250,7 @@ namespace VamTimeline
                 _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
                 _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
                 var container = _ui.CreateUISpacerInCanvas(x, y + 0.54f, 300f);
-                _curveEditor = InitEditor(container);
+                _dopeSheet = InitDopeSheet(container);
             }
             catch (Exception exc)
             {
@@ -259,16 +258,10 @@ namespace VamTimeline
             }
         }
 
-        private UICurveEditor InitEditor(UIDynamic container)
+        private DopeSheet InitDopeSheet(UIDynamic container)
         {
-            var curveEditorSettings = new UICurveEditorSettings
-            {
-                readOnly = true,
-                showScrubbers = true,
-                allowKeyboardShortcuts = false
-            };
-            var curveEditor = new UICurveEditor(container, 1157, container.height, buttons: new List<UIDynamicButton>());
-            return curveEditor;
+            var dopeSheet = new DopeSheet(container, 1157, container.height, new DopeSheetStyle());
+            return dopeSheet;
         }
 
         public void OnDisable()
@@ -353,7 +346,7 @@ namespace VamTimeline
 
             if (_scrubberJSON.slider != null) _scrubberJSON.slider.interactable = true;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
-            _curveEditor.SetScrubberPosition(_scrubberJSON.val);
+            _dopeSheet.SetScrubberPosition(_scrubberJSON.val);
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
             _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
@@ -372,7 +365,7 @@ namespace VamTimeline
 
                 var linkedScrubber = _mainLinkedAnimation.Scrubber;
                 _scrubberJSON.max = linkedScrubber.max;
-                _curveEditor.SetScrubberPosition(linkedScrubber.max);
+                _dopeSheet.SetScrubberPosition(linkedScrubber.val);
                 var target = _mainLinkedAnimation.FilterAnimationTarget.val;
                 _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
 
@@ -415,15 +408,11 @@ namespace VamTimeline
             }
         }
 
-        public void VamTimelineAnimationCurvesModified(Dictionary<string, AnimationCurve> curves)
+        public void VamTimelineAnimationTargetsModified(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets)
         {
-            foreach (var kvp in curves)
-            {
-                // TODO: Receive colors too
-                var storable = new StorableAnimationCurve(kvp.Value);
-                _curveEditor.AddCurve(storable);
-            }
-            _curveEditor.SetViewToFit(new Vector4(0, 0.5f, 0, 0.5f));
+            // TODO: Instead of re-creating, we can update and just notify that it was changed
+            var proxy = new AtomAnimationClipProxy(targets);
+            _dopeSheet.Draw(proxy);
         }
 
         public void Update()

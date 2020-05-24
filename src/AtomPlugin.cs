@@ -653,7 +653,7 @@ namespace VamTimeline
                     // TODO: Replace broadcasting by a link
                     controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
                     // TODO: Dirty flag to avoid broadcasting
-                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationCurvesModified), Animation.GetCurvesDictionary());
+                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationTargetsModified), Animation.SerializeForBroadcast());
                 }
             }
             catch (Exception exc)

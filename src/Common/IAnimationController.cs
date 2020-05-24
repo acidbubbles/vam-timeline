@@ -13,6 +13,6 @@ namespace VamTimeline
     {
         void VamTimelineAnimationModified(string uid);
         void VamTimelineAnimationFrameUpdated(string uid);
-        void VamTimelineAnimationCurvesModified(Dictionary<string, AnimationCurve> curves);
+        void VamTimelineAnimationTargetsModified(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets);
     }
 }

@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace VamTimeline
@@ -12,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FloatParamAnimationTarget : IAnimationTarget
+    public class FloatParamAnimationTarget : IAnimationTargetWithCurves
     {
         public JSONStorable Storable { get; }
         public JSONStorableFloat FloatParam { get; }

@@ -538,23 +538,19 @@ namespace VamTimeline
             }
         }
 
-        public Dictionary<string, AnimationCurve> GetCurvesDictionary()
+        public List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> SerializeForBroadcast()
         {
-            // TODO: List of named curves instead of an actual dictionary (we don't need the hash tree)
-            // TODO: Reuse the dictionary unless controllers are added or removed (list dirty flag)
-            var dict = new Dictionary<string, AnimationCurve>();
-            foreach (var target in Current.GetAllOrSelectedControllerTargets())
+            var clipL = new List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>>();
+            foreach (var group in Current.GetTargetGroups())
             {
-                // TODO: Add rotation w value too?
-                dict.Add($"{target.Name}.x", target.X);
-                dict.Add($"{target.Name}.y", target.Y);
-                dict.Add($"{target.Name}.z", target.Z);
+                var targetsL = new List<KeyValuePair<string, List<float>>>();
+                foreach (var target in group.GetTargets())
+                {
+                    targetsL.Add(new KeyValuePair<string, List<float>>(target.GetShortName(), target.GetAllKeyframesTime().ToList()));
+                }
+                clipL.Add(new KeyValuePair<string, List<KeyValuePair<string, List<float>>>>(group.Label, targetsL));
             }
-            foreach (var target in Current.GetAllOrSelectedFloatParamTargets())
-            {
-                dict.Add($"{target.Name}", target.Value);
-            }
-            return dict;
+            return clipL;
         }
     }
 }

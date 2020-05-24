@@ -11,7 +11,7 @@ namespace VamTimeline
     /// </summary>
     public class DopeSheetKeyframes : MaskableGraphic
     {
-        public IAnimationTarget target;
+        public IAtomAnimationTarget target;
         public DopeSheetStyle style;
 
         protected override void OnPopulateMesh(VertexHelper vh)

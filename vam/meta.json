@@ -16,7 +16,7 @@
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Common\\VamTimeline.CurveTypeValues.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Common\\VamTimeline.AnimationCurveExtensions.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Common\\VamTimeline.KeyframeSettings.cs", 
-      "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Common\\VamTimeline.IAnimationTarget.cs", 
+      "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Common\\VamTimeline.IAtomAnimationTarget.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\FreeControllers\\VamTimeline.FreeControllerAnimationTarget.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Float\\VamTimeline.FloatParamAnimationTarget.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationBaseUI.cs", 

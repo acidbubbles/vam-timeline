@@ -5,26 +5,25 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-
     /// <summary>
     /// VaM Timeline
     /// By Acidbubbles
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationClip
+    public class AtomAnimationClip : IAtomAnimationClip
     {
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
-        private IAnimationTarget _selected;
+        private IAnimationTargetWithCurves _selected;
         private bool _loop = true;
         private string _nextAnimationName;
 
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }
-        public readonly List<FloatParamAnimationTarget> TargetFloatParams = new List<FloatParamAnimationTarget>();
-        public readonly List<FreeControllerAnimationTarget> TargetControllers = new List<FreeControllerAnimationTarget>();
-        public IEnumerable<IAnimationTarget> AllTargets => TargetControllers.Cast<IAnimationTarget>().Concat(TargetFloatParams.Cast<IAnimationTarget>());
+        public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> TargetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { Label = "Controllers" };
+        public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> TargetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { Label = "Float Params" };
+        public IEnumerable<IAnimationTargetWithCurves> AllTargets => TargetControllers.Cast<IAnimationTargetWithCurves>().Concat(TargetFloatParams.Cast<IAnimationTargetWithCurves>());
         public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; set; }
         public float AnimationLength { get; set; } = DefaultAnimationLength;
@@ -188,10 +187,10 @@ namespace VamTimeline
             }
         }
 
-        public IEnumerable<IAnimationTarget> GetAllOrSelectedTargets()
+        public IEnumerable<IAnimationTargetWithCurves> GetAllOrSelectedTargets()
         {
-            if (_selected != null) return new IAnimationTarget[] { _selected };
-            return AllTargets.Cast<IAnimationTarget>();
+            if (_selected != null) return new IAnimationTargetWithCurves[] { _selected };
+            return AllTargets.Cast<IAnimationTargetWithCurves>();
         }
 
         public IEnumerable<FreeControllerAnimationTarget> GetAllOrSelectedControllerTargets()
@@ -371,6 +370,12 @@ namespace VamTimeline
         {
             foreach (var s in AllTargets.SelectMany(t => t.GetStorableCurves()))
                 s.Update();
+        }
+
+        public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
+        {
+            yield return TargetControllers;
+            yield return TargetFloatParams;
         }
     }
 }
