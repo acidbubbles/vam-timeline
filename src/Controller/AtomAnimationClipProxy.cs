@@ -16,9 +16,10 @@ namespace VamTimeline
 
         private readonly List<AtomAnimationTargetsListProxy> _targetLists;
 
-        public AtomAnimationClipProxy(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets)
+        public AtomAnimationClipProxy(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets, float animationLength)
         {
             _targetLists = targets.Select(t => new AtomAnimationTargetsListProxy(t.Key, t.Value)).ToList();
+            AnimationLength = animationLength;
         }
 
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()

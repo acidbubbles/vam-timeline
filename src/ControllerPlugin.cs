@@ -416,7 +416,7 @@ namespace VamTimeline
         public void VamTimelineAnimationTargetsModified(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets)
         {
             // TODO: Instead of re-creating, we can update and just notify that it was changed
-            var proxy = new AtomAnimationClipProxy(targets);
+            var proxy = new AtomAnimationClipProxy(targets, _scrubberJSON.max);
             _dopeSheet.Draw(proxy);
         }
 
@@ -430,6 +430,7 @@ namespace VamTimeline
                 if (scrubber != null && scrubber.val != _scrubberJSON.val)
                 {
                     _scrubberJSON.valNoCallback = scrubber.val;
+                    _dopeSheet.SetScrubberPosition(scrubber.val);
                 }
 
                 HandleKeyboardShortcuts();
