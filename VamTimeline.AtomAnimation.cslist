@@ -26,6 +26,7 @@ src/Components/GradientImage.cs
 src/Components/DopeSheet/DopeSheet.cs
 src/Components/DopeSheet/DopeSheetKeyframes.cs
 src/Components/DopeSheet/DopeSheetStyle.cs
+src/Components/AnimationControlPanel/AnimationControlPanel.cs
 src/Atoms/IAtomPlugin.cs
 src/Atoms/Common/CurveTypeValues.cs
 src/Atoms/Common/KeyframeSettings.cs

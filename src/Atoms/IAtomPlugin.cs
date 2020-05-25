@@ -39,6 +39,7 @@ namespace VamTimeline
     /// </summary>
     public interface IMVRScript : IJSONStorable
     {
+        MVRPluginManager Manager { get; }
         UIDynamic CreateSpacer(bool rightSide = false);
         void RemoveSpacer(UIDynamic spacer);
         UIDynamicSlider CreateSlider(JSONStorableFloat jsf, bool rightSide = false);

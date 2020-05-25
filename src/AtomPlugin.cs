@@ -22,6 +22,7 @@ namespace VamTimeline
         // State
         public AtomAnimation Animation { get; private set; }
         public Atom ContainingAtom => containingAtom;
+        public MVRPluginManager Manager => manager;
         public AtomAnimationSerializer Serializer { get; private set; }
         private bool _restoring;
         public AtomClipboard Clipboard { get; } = new AtomClipboard();
@@ -708,19 +709,24 @@ namespace VamTimeline
 
         #region Controller integration
 
-        public void VamTimelineRequestAnimationInfo(UIDynamic dopeSheetContainer)
+        public void VamTimelineRequestAnimationInfo(UIDynamic container)
         {
             AnimationModified();
-            Destroy(gameObject.GetComponent<DopeSheet>());
-            while(dopeSheetContainer.transform.childCount > 0)
+            Destroy(gameObject.GetComponent<AnimationControlPanel>());
+            while (container.transform.childCount > 0)
             {
-                var child = dopeSheetContainer.transform.GetChild(0);
+                var child = container.transform.GetChild(0);
                 child.transform.parent = null;
                 Destroy(child);
             }
 
-            var dopeSheet = dopeSheetContainer.gameObject.AddComponent<DopeSheet>();
-            // dopeSheet.Bind(Animation.Current);
+            var controlPanel = container.gameObject.GetComponent<AnimationControlPanel>();
+            if(controlPanel == null)
+            {
+                controlPanel = container.gameObject.AddComponent<AnimationControlPanel>();
+                controlPanel.Bind(this);
+            }
+            controlPanel.Bind(Animation.Current);
         }
 
         #endregion

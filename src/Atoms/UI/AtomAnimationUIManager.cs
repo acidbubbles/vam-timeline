@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -16,7 +17,7 @@ namespace VamTimeline
         private AtomAnimationBaseUI _current;
         private JSONStorableStringChooser _screensJSON;
         private UIDynamicPopup _screenUI;
-        private DopeSheet _dopeSheet;
+        private AnimationControlPanel _controlPanel;
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
@@ -31,9 +32,8 @@ namespace VamTimeline
         {
             // Left side
             InitAnimationSelectorUI(false);
-            InitDopeSheetUI(false);
-            InitPlaybackUI(false);
-            InitFrameNavUI(false);
+
+            InitControlPanelUI(false);
 
             // Right side
             _screensJSON = new JSONStorableStringChooser(
@@ -57,37 +57,13 @@ namespace VamTimeline
             animationUI.popupPanelHeight = 800f;
         }
 
-        protected void InitDopeSheetUI(bool rightSide)
+        private void InitControlPanelUI(bool rightSide)
         {
-            // Replace play, stop, frame nav and scrubber (text field for precise time?)
-            // https://docs.blender.org/manual/en/latest/editors/dope_sheet/introduction.html
-            var dopeSheetContainer = _plugin.CreateSpacer(rightSide);
-            dopeSheetContainer.height = 260f;
-            _dopeSheet = dopeSheetContainer.gameObject.AddComponent<DopeSheet>();
-        }
-
-        protected void InitPlaybackUI(bool rightSide)
-        {
-            var scrubberUI = _plugin.CreateSlider(_plugin.ScrubberJSON);
-            scrubberUI.valueFormat = "F3";
-
-            var playUI = _plugin.CreateButton("\u25B6 Play", rightSide);
-            playUI.button.onClick.AddListener(() => _plugin.PlayJSON.actionCallback());
-
-            var stopUI = _plugin.CreateButton("\u25A0 Stop", rightSide);
-            stopUI.button.onClick.AddListener(() => _plugin.StopJSON.actionCallback());
-        }
-
-        protected void InitFrameNavUI(bool rightSide)
-        {
-            var selectedControllerUI = _plugin.CreateScrollablePopup(_plugin.FilterAnimationTargetJSON, rightSide);
-            selectedControllerUI.popupPanelHeight = 600f;
-
-            var nextFrameUI = _plugin.CreateButton("\u2192 Next Frame", rightSide);
-            nextFrameUI.button.onClick.AddListener(() => _plugin.NextFrameJSON.actionCallback());
-
-            var previousFrameUI = _plugin.CreateButton("\u2190 Previous Frame", rightSide);
-            previousFrameUI.button.onClick.AddListener(() => _plugin.PreviousFrameJSON.actionCallback());
+            var controlPanelContainer = _plugin.CreateSpacer(rightSide);
+            foreach (var c in controlPanelContainer.GetComponents<MonoBehaviour>())
+                controlPanelContainer.height = 500f;
+            _controlPanel = controlPanelContainer.gameObject.AddComponent<AnimationControlPanel>();
+            _controlPanel.Bind(_plugin);
         }
 
         private List<string> ListAvailableScreens()
@@ -129,14 +105,14 @@ namespace VamTimeline
 
             // TODO: Highlight current filtered target, and allow selection through dope sheet
             // TODO: Rename Draw, refresh when updated, recreate when animation changed
-            _dopeSheet.Bind(_plugin.Animation.Current);
+            _controlPanel.Bind(_plugin.Animation.Current);
         }
 
         public void AnimationFrameUpdated()
         {
             RefreshCurrentUI(false);
 
-            _dopeSheet.SetScrubberPosition(_plugin.Animation.Time);
+            _controlPanel.SetScrubberPosition(_plugin.Animation.Time);
         }
 
         public void RefreshCurrentUI(bool animationModified)
@@ -272,7 +248,7 @@ namespace VamTimeline
         {
             if (_current == null) return;
             _current.UpdatePlaying();
-            _dopeSheet.SetScrubberPosition(_plugin.Animation.Time);
+            _controlPanel.SetScrubberPosition(_plugin.Animation.Time);
         }
     }
 }

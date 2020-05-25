@@ -78,6 +78,8 @@
     <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />
 
+    <Compile Include="src/Components/AnimationControlPanel/AnimationControlPanel.cs" />
+
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />
     <Compile Include="src/Common/RectTransformExtensions.cs" />

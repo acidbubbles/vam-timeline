@@ -33,7 +33,7 @@ namespace VamTimeline
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
         private JSONStorableBool _enableKeyboardShortcuts;
-        private UIDynamic _dopeSheetContainer;
+        private UIDynamic _controlPanelContainer;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         #region Initialization
@@ -159,7 +159,7 @@ namespace VamTimeline
 
             foreach (var la in _linkedAnimations)
             {
-                la.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _dopeSheetContainer);
+                la.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _controlPanelContainer);
             }
 
             yield return 0;
@@ -248,15 +248,15 @@ namespace VamTimeline
                 // const float baseWidth = 1160f;
                 _ui = new SimpleSignUI(_atom, this);
                 _ui.CreateUIToggleInCanvas(_lockedJSON, x, y + 0.1f);
-                _ui.CreateUIPopupInCanvas(_animationJSON, x, y + 0.355f);
-                _ui.CreateUISliderInCanvas(_scrubberJSON, x, y + 0.14f);
-                _ui.CreateUIButtonInCanvas("\u25B6 Play", x - 0.105f, y + 0.60f, 810f, 100f).button.onClick.AddListener(() => Play());
-                _ui.CreateUIButtonInCanvas("\u25A0 Stop", x + 0.257f, y + 0.60f, 300f, 100f).button.onClick.AddListener(() => Stop());
-                _ui.CreateUIPopupInCanvas(_atomsJSON, x, y + 0.585f);
-                _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
-                _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
-                _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
-                _dopeSheetContainer = _ui.CreateUISpacerInCanvas(x, y + 0.54f, 300f);
+                _ui.CreateUIPopupInCanvas(_atomsJSON, x, y + 0.355f);
+                _ui.CreateUIPopupInCanvas(_animationJSON, x, y + 0.425f);
+                // _ui.CreateUISliderInCanvas(_scrubberJSON, x, y + 0.14f);
+                // _ui.CreateUIButtonInCanvas("\u25B6 Play", x - 0.105f, y + 0.60f, 810f, 100f).button.onClick.AddListener(() => Play());
+                // _ui.CreateUIButtonInCanvas("\u25A0 Stop", x + 0.257f, y + 0.60f, 300f, 100f).button.onClick.AddListener(() => Stop());
+                // _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
+                // _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
+                // _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
+                _controlPanelContainer = _ui.CreateUISpacerInCanvas(x, y + 0.375f, 780f);
             }
             catch (Exception exc)
             {
@@ -327,7 +327,7 @@ namespace VamTimeline
                 _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
                 _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
 
-                atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _dopeSheetContainer);
+                atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _controlPanelContainer);
             }
             catch (Exception exc)
             {
