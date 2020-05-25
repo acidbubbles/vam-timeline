@@ -19,11 +19,15 @@ namespace VamTimeline
         private readonly Text _timeText;
 
         private float _previousTime = -1f;
+        private float _previousMax = -1f;
 
         public JSONStorableFloat jsf { get; set; }
 
         public Scrubber()
         {
+            gameObject.AddComponent<Canvas>();
+            gameObject.AddComponent<GraphicRaycaster>();
+
             CreateBackground(gameObject, _style.BackgroundColor);
             _scrubberRect = CreateLine(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
             // TODO: Add second markers
@@ -41,6 +45,7 @@ namespace VamTimeline
 
             var image = go.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = true;
 
             return go;
         }
@@ -62,6 +67,7 @@ namespace VamTimeline
 
             var image = line.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = false;
 
             return line;
         }
@@ -81,16 +87,18 @@ namespace VamTimeline
             text.color = _style.FontColor;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
+            text.raycastTarget = false;
 
             return text;
         }
 
         public void Update()
         {
-            if (_previousTime == jsf.val) return;
+            if (_previousTime == jsf.val && _previousMax == jsf.max) return;
 
             // TODO: Change animation length won't update. TODO: Animation change events
             _previousTime = jsf.val;
+            _previousMax = jsf.max;
             var ratio = Mathf.Clamp(jsf.val / jsf.max, 0, jsf.max);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);

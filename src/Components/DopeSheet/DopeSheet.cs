@@ -18,6 +18,9 @@ namespace VamTimeline
 
         public DopeSheet()
         {
+            gameObject.AddComponent<Canvas>();
+            gameObject.AddComponent<GraphicRaycaster>();
+
             CreateBackground(gameObject, _style.BackgroundColor);
 
             _scrubberRect = CreateScrubber(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
@@ -41,6 +44,7 @@ namespace VamTimeline
 
             var image = go.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = false;
 
             return go;
         }
@@ -64,6 +68,7 @@ namespace VamTimeline
 
             var image = line.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = false;
 
             return line;
         }
@@ -91,6 +96,7 @@ namespace VamTimeline
             rect.StretchParent();
 
             var image = go.AddComponent<Image>();
+            image.raycastTarget = false;
 
             var mask = go.AddComponent<Mask>();
             mask.showMaskGraphic = false;
@@ -161,6 +167,7 @@ namespace VamTimeline
                 var image = child.AddComponent<GradientImage>();
                 image.top = _style.GroupBackgroundColorTop;
                 image.bottom = _style.GroupBackgroundColorBottom;
+                image.raycastTarget = false;
             }
 
             {
@@ -179,6 +186,7 @@ namespace VamTimeline
                 text.color = _style.FontColor;
                 text.fontStyle = FontStyle.Bold;
                 text.alignment = TextAnchor.MiddleLeft;
+                text.raycastTarget = false;
             }
         }
 
@@ -202,6 +210,13 @@ namespace VamTimeline
                 var image = child.AddComponent<GradientImage>();
                 image.top = _style.LabelBackgroundColorTop;
                 image.bottom = _style.LabelBackgroundColorBottom;
+                image.raycastTarget = true;
+
+                var click = child.AddComponent<Clickable>();
+                click.onClick.AddListener(() =>
+                {
+                    SuperController.LogMessage("Select target " + target.GetShortName());
+                });
             }
 
             {
@@ -222,12 +237,7 @@ namespace VamTimeline
                 text.alignment = TextAnchor.MiddleLeft;
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.resizeTextForBestFit = false; // Better but ugly if true
-
-                var click = child.AddComponent<Clickable>();
-                click.onClick.AddListener(() =>
-                {
-                    SuperController.LogMessage("Select target " + target.GetShortName());
-                });
+                text.raycastTarget = false;
             }
 
             {
@@ -242,6 +252,7 @@ namespace VamTimeline
                 var keyframes = child.AddComponent<DopeSheetKeyframes>();
                 keyframes.target = target;
                 keyframes.style = _style;
+                keyframes.raycastTarget = false;
             }
         }
 
