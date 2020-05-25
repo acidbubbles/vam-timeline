@@ -11,29 +11,20 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class DopeSheet
+    public class DopeSheet : MonoBehaviour
     {
-        private readonly float _width;
-        private readonly float _height;
-        private readonly DopeSheetStyle _style;
+        private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
         private readonly VerticalLayoutGroup _layout;
         private float _scrubberMax;
 
-        public DopeSheet(UIDynamic container, float width, float height, DopeSheetStyle style)
+        public DopeSheet()
         {
-            _width = width;
-            _height = height;
-            _style = style;
+            CreateBackground(gameObject, _style.BackgroundColor);
 
-            var go = new GameObject("Dope Sheet");
-            go.transform.SetParent(container.transform, false);
+            _scrubberRect = CreateScrubber(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
 
-            CreateBackground(go, _style.BackgroundColor);
-
-            _scrubberRect = CreateScrubber(go, _style.ScrubberColor).GetComponent<RectTransform>();
-
-            var scrollView = CreateScrollView(go);
+            var scrollView = CreateScrollView(gameObject);
             var viewport = CreateViewport(scrollView);
             var content = CreateContent(viewport);
             var scrollRect = scrollView.GetComponent<ScrollRect>();
@@ -48,7 +39,7 @@ namespace VamTimeline
             go.transform.SetParent(parent.transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent(_width, _height);
+            rect.StretchParent();
 
             var image = go.AddComponent<Image>();
             image.color = color;
@@ -58,20 +49,25 @@ namespace VamTimeline
 
         private GameObject CreateScrubber(GameObject parent, Color color)
         {
-            var go = new GameObject();
+            var go = new GameObject("Scrubber");
             go.transform.SetParent(parent.transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = new Vector2(0, 1);
-            rect.anchoredPosition = new Vector2(0.5f, 1);
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.ScrubberSize);
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _height);
+            rect.StretchParent();
+            rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+            rect.sizeDelta = new Vector2(-_style.LabelWidth - _style.KeyframesRowPadding * 2f, 0);
 
-            var image = go.AddComponent<Image>();
+            var line = new GameObject("Scrubber Line");
+            line.transform.SetParent(go.transform, false);
+
+            var lineRect = line.AddComponent<RectTransform>();
+            lineRect.StretchLeft();
+            lineRect.sizeDelta = new Vector2(_style.ScrubberSize, 0);
+
+            var image = line.AddComponent<Image>();
             image.color = color;
 
-            return go;
+            return line;
         }
 
         private GameObject CreateScrollView(GameObject parent)
@@ -80,7 +76,7 @@ namespace VamTimeline
             go.transform.SetParent(parent.transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent(_width, _height);
+            rect.StretchParent();
 
             var scroll = go.AddComponent<ScrollRect>();
             scroll.horizontal = false;
@@ -94,7 +90,7 @@ namespace VamTimeline
             go.transform.SetParent(scrollView.transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent(_width, _height);
+            rect.StretchParent();
 
             var image = go.AddComponent<Image>();
 
@@ -110,7 +106,7 @@ namespace VamTimeline
             go.transform.SetParent(viewport.transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.StretchTop(_width);
+            rect.StretchTop();
 
             var layout = go.AddComponent<VerticalLayoutGroup>();
             layout.spacing = _style.RowSpacing;
@@ -135,7 +131,7 @@ namespace VamTimeline
             {
                 var child = _layout.transform.GetChild(0);
                 child.transform.parent = null;
-                Object.Destroy(child);
+                UnityEngine.Object.Destroy(child);
             }
             foreach (var group in clip.GetTargetGroups())
             {
@@ -162,8 +158,7 @@ namespace VamTimeline
                 child.transform.SetParent(go.transform, false);
 
                 var rect = child.AddComponent<RectTransform>();
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width);
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+                rect.StretchParent();
 
                 var image = child.AddComponent<GradientImage>();
                 image.top = _style.GroupBackgroundColorTop;
@@ -175,8 +170,9 @@ namespace VamTimeline
                 child.transform.SetParent(go.transform, false);
 
                 var rect = child.AddComponent<RectTransform>();
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - 12f);
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+                rect.StretchParent();
+                rect.offsetMin = new Vector2(6f, 0);
+                rect.offsetMax = new Vector2(-6f, 0);
 
                 var text = child.AddComponent<Text>();
                 text.text = title;
@@ -201,9 +197,9 @@ namespace VamTimeline
                 child.transform.SetParent(go.transform, false);
 
                 var rect = child.AddComponent<RectTransform>();
-                rect.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f, 0);
+                rect.StretchLeft();
+                rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
 
                 var image = child.AddComponent<GradientImage>();
                 image.top = _style.LabelBackgroundColorTop;
@@ -216,9 +212,9 @@ namespace VamTimeline
 
                 var rect = child.AddComponent<RectTransform>();
                 var padding = 2f;
-                rect.anchoredPosition = new Vector2(-_width / 2f + _style.LabelWidth / 2f + padding, 0);
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth - padding * 2f);
-                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
+                rect.StretchLeft();
+                rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth - padding * 2);
 
                 var text = child.AddComponent<Text>();
                 text.text = target.GetShortName();
@@ -240,24 +236,26 @@ namespace VamTimeline
                 var child = new GameObject();
                 child.transform.SetParent(go.transform, false);
 
+                var rect = child.AddComponent<RectTransform>();
+                rect.StretchParent();
+                rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+                rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
+
                 var keyframes = child.AddComponent<DopeSheetKeyframes>();
                 keyframes.target = target;
                 keyframes.style = _style;
-                keyframes.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
-                keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _width - _style.LabelWidth);
-                keyframes.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _style.RowHeight);
             }
         }
 
         public void SetScrubberPosition(float val)
         {
-            // TODO: Precalculate this
-            var width = _width - _style.LabelWidth - _style.KeyframesRowPadding * 2f;
-            var offsetX = _style.LabelWidth / 2f - width / 2f;// + _style.KeyframesRowPadding - _style.ScrubberSize / 2f;
-            _scrubberRect.anchoredPosition = new Vector2(Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax) * width + offsetX, _scrubberRect.anchoredPosition.y);
-            // TODO: Implement
+            var ratio = Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax);
+            _scrubberRect.anchorMin = new Vector2(ratio, 0);
+            _scrubberRect.anchorMax = new Vector2(ratio, 1);
         }
     }
+
+    // TODO: Extract
     public class ClickAction : MonoBehaviour, IPointerClickHandler
     {
         public UnityEvent onClick = new UnityEvent();

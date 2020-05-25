@@ -59,13 +59,11 @@ namespace VamTimeline
 
         protected void InitDopeSheetUI(bool rightSide)
         {
-            var dopeSheetContainer = _plugin.CreateSpacer(rightSide);
-            dopeSheetContainer.height = 260f;
-
             // Replace play, stop, frame nav and scrubber (text field for precise time?)
             // https://docs.blender.org/manual/en/latest/editors/dope_sheet/introduction.html
-
-            _dopeSheet = new DopeSheet(dopeSheetContainer, 520, dopeSheetContainer.height, DopeSheetStyle.Default());
+            var dopeSheetContainer = _plugin.CreateSpacer(rightSide);
+            dopeSheetContainer.height = 260f;
+            _dopeSheet = dopeSheetContainer.gameObject.AddComponent<DopeSheet>();
         }
 
         protected void InitPlaybackUI(bool rightSide)
@@ -274,6 +272,7 @@ namespace VamTimeline
         {
             if (_current == null) return;
             _current.UpdatePlaying();
+            _dopeSheet.SetScrubberPosition(_plugin.Animation.Time);
         }
     }
 }

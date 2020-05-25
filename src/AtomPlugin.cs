@@ -711,14 +711,16 @@ namespace VamTimeline
         public void VamTimelineRequestAnimationInfo(UIDynamic dopeSheetContainer)
         {
             AnimationModified();
+            Destroy(gameObject.GetComponent<DopeSheet>());
             while(dopeSheetContainer.transform.childCount > 0)
             {
                 var child = dopeSheetContainer.transform.GetChild(0);
                 child.transform.parent = null;
                 Destroy(child);
             }
-            var dopeSheet = new DopeSheet(dopeSheetContainer, 1157, dopeSheetContainer.height, new DopeSheetStyle());
-            dopeSheet.Bind(Animation.Current);
+
+            var dopeSheet = dopeSheetContainer.gameObject.AddComponent<DopeSheet>();
+            // dopeSheet.Bind(Animation.Current);
         }
 
         #endregion
