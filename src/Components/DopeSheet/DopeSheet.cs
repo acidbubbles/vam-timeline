@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -17,8 +16,9 @@ namespace VamTimeline
         private readonly float _width;
         private readonly float _height;
         private readonly DopeSheetStyle _style;
-        private readonly GameObject _gameObject;
+        private readonly RectTransform _scrubberRect;
         private readonly VerticalLayoutGroup _layout;
+        private float _scrubberMax;
 
         public DopeSheet(UIDynamic container, float width, float height, DopeSheetStyle style)
         {
@@ -26,12 +26,14 @@ namespace VamTimeline
             _height = height;
             _style = style;
 
-            _gameObject = new GameObject("Dope Sheet");
-            _gameObject.transform.SetParent(container.transform, false);
+            var go = new GameObject("Dope Sheet");
+            go.transform.SetParent(container.transform, false);
 
-            CreateBackground(_gameObject, _style.BackgroundColor);
+            CreateBackground(go, _style.BackgroundColor);
 
-            var scrollView = CreateScrollView(_gameObject);
+            _scrubberRect = CreateScrubber(go, _style.ScrubberColor).GetComponent<RectTransform>();
+
+            var scrollView = CreateScrollView(go);
             var viewport = CreateViewport(scrollView);
             var content = CreateContent(viewport);
             var scrollRect = scrollView.GetComponent<ScrollRect>();
@@ -47,6 +49,24 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent(_width, _height);
+
+            var image = go.AddComponent<Image>();
+            image.color = color;
+
+            return go;
+        }
+
+        private GameObject CreateScrubber(GameObject parent, Color color)
+        {
+            var go = new GameObject();
+            go.transform.SetParent(parent.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = new Vector2(0, 1);
+            rect.anchoredPosition = new Vector2(0.5f, 1);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.ScrubberSize);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _height);
 
             var image = go.AddComponent<Image>();
             image.color = color;
@@ -109,15 +129,21 @@ namespace VamTimeline
 
         public void Draw(IAtomAnimationClip clip)
         {
-            foreach(var group in clip.GetTargetGroups())
+            _scrubberMax = clip.AnimationLength;
+            // TODO: Instead of destroying children, try updating them (dirty + index)
+            foreach (Transform child in _layout.transform)
             {
-            if (group.Count > 0)
-            {
-                CreateHeader(group.Label);
-
-                foreach (var target in group.GetTargets())
-                    CreateRow(target);
+                Object.Destroy(child);
             }
+            foreach (var group in clip.GetTargetGroups())
+            {
+                if (group.Count > 0)
+                {
+                    CreateHeader(group.Label);
+
+                    foreach (var target in group.GetTargets())
+                        CreateRow(target);
+                }
             }
         }
 
@@ -223,6 +249,10 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float val)
         {
+            // TODO: Precalculate this
+            var width = _width - _style.LabelWidth - _style.KeyframesRowPadding * 2f;
+            var offsetX = _style.LabelWidth / 2f - width / 2f;// + _style.KeyframesRowPadding - _style.ScrubberSize / 2f;
+            _scrubberRect.anchoredPosition = new Vector2(Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax) * width + offsetX, _scrubberRect.anchoredPosition.y);
             // TODO: Implement
         }
     }

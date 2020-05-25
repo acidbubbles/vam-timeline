@@ -25,8 +25,12 @@ namespace VamTimeline
         public Color KeyframesRowLineColor { get; set; } = new Color(0.650f, 0.650f, 0.650f);
         public Color KeyframeColor { get; set; } = new Color(0.050f, 0.020f, 0.020f);
         public float KeyframeSize { get; set; } = 7f;
-        public float KeyframesRowPadding { get; set; } = 10f;
+        public float KeyframesRowPadding { get; set; } = 16f;
         public float KeyframesRowLineSize { get; set; } = 1f;
+
+        // Scrubber
+        public Color ScrubberColor { get; set; } = new Color(0.88f, 0.84f, 0.86f);
+        public float ScrubberSize { get; set; } = 9f;
 
         public DopeSheetStyle()
         {

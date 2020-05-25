@@ -21,6 +21,7 @@ namespace VamTimeline
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
         private UICurveEditor _curveUI;
+        private DopeSheet _dopeSheet;
         private UIDynamic _curveEditorContainer;
         private int _currentTargets = 0;
         private string _currentAnimation = null;
@@ -37,6 +38,7 @@ namespace VamTimeline
 
         public virtual void UpdatePlaying()
         {
+            _dopeSheet?.SetScrubberPosition(Plugin.Animation.Time);
             _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
@@ -77,8 +79,8 @@ namespace VamTimeline
 
         public virtual void AnimationFrameUpdated()
         {
-            if (_curves.Count > 0)
-                _curveUI.SetScrubberPosition(Plugin.Animation.Time);
+            _dopeSheet?.SetScrubberPosition(Plugin.Animation.Time);
+            _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         protected void InitPlaybackUI(bool rightSide)
@@ -152,11 +154,12 @@ namespace VamTimeline
             // Replace play, stop, frame nav and scrubber (text field for precise time?)
             // https://docs.blender.org/manual/en/latest/editors/dope_sheet/introduction.html
 
-            var dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, DopeSheetStyle.Default());
+            _dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, DopeSheetStyle.Default());
 
             // TODO: Highlight current filtered target, and allow selection through dope sheet
             // TODO: Rename Draw, refresh when updated, recreate when animation changed
-            dopeSheet.Draw(Plugin.Animation.Current);
+            _dopeSheet.Draw(Plugin.Animation.Current);
+            _dopeSheet.SetScrubberPosition(Plugin.Animation.Time);
 
             _curveEditorContainer = Plugin.CreateSpacer(rightSide);
             _curveEditorContainer.height = height;

@@ -12,6 +12,8 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationClipProxy : IAtomAnimationClip
     {
+        public float AnimationLength { get; private set; }
+
         private readonly List<AtomAnimationTargetsListProxy> _targetLists;
 
         public AtomAnimationClipProxy(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets)

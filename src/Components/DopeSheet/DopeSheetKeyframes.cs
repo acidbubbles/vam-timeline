@@ -24,7 +24,7 @@ namespace VamTimeline
             // TODO: Avoid enumerating, we know the array size upfront!
             var keyframes = target.GetAllKeyframesTime().ToList();
             var size = style.KeyframeSize;
-            var padding = size + style.KeyframesRowPadding;
+            var padding = style.KeyframesRowPadding;
             var ratio = (width - padding * 2f) / keyframes[keyframes.Count - 1];
             var lineHeight = style.KeyframesRowLineSize;
             vh.AddUIVertexQuad(CreateVBO(style.KeyframesRowLineColor, new[]
