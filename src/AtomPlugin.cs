@@ -652,8 +652,6 @@ namespace VamTimeline
                 {
                     // TODO: Replace broadcasting by a link
                     controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
-                    // TODO: Dirty flag to avoid broadcasting
-                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationTargetsModified), Animation.SerializeForBroadcast());
                 }
             }
             catch (Exception exc)
@@ -710,9 +708,17 @@ namespace VamTimeline
 
         #region Controller integration
 
-        public void VamTimelineRequestAnimationInfo()
+        public void VamTimelineRequestAnimationInfo(UIDynamic dopeSheetContainer)
         {
             AnimationModified();
+            while(dopeSheetContainer.transform.childCount > 0)
+            {
+                var child = dopeSheetContainer.transform.GetChild(0);
+                child.transform.parent = null;
+                Destroy(child);
+            }
+            var dopeSheet = new DopeSheet(dopeSheetContainer, 1157, dopeSheetContainer.height, new DopeSheetStyle());
+            dopeSheet.Bind(Animation.Current);
         }
 
         #endregion

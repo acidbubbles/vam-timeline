@@ -127,12 +127,14 @@ namespace VamTimeline
             return go;
         }
 
-        public void Draw(IAtomAnimationClip clip)
+        public void Bind(IAtomAnimationClip clip)
         {
             _scrubberMax = clip.AnimationLength;
             // TODO: Instead of destroying children, try updating them (dirty + index)
-            foreach (Transform child in _layout.transform)
+            while (_layout.transform.childCount > 0)
             {
+                var child = _layout.transform.GetChild(0);
+                child.transform.parent = null;
                 Object.Destroy(child);
             }
             foreach (var group in clip.GetTargetGroups())

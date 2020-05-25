@@ -158,7 +158,7 @@ namespace VamTimeline
 
             // TODO: Highlight current filtered target, and allow selection through dope sheet
             // TODO: Rename Draw, refresh when updated, recreate when animation changed
-            _dopeSheet.Draw(Plugin.Animation.Current);
+            _dopeSheet.Bind(Plugin.Animation.Current);
             _dopeSheet.SetScrubberPosition(Plugin.Animation.Time);
 
             _curveEditorContainer = Plugin.CreateSpacer(rightSide);

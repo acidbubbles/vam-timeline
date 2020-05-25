@@ -9,6 +9,6 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimatedAtom
     {
-        void VamTimelineRequestAnimationInfo();
+        void VamTimelineRequestAnimationInfo(UIDynamic dopeSheetContainer);
     }
 }

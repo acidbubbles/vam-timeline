@@ -33,7 +33,7 @@ namespace VamTimeline
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
         private JSONStorableBool _enableKeyboardShortcuts;
-        private DopeSheet _dopeSheet;
+        private UIDynamic _dopeSheetContainer;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         #region Initialization
@@ -159,7 +159,7 @@ namespace VamTimeline
 
             foreach (var la in _linkedAnimations)
             {
-                la.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo));
+                la.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _dopeSheetContainer);
             }
 
             yield return 0;
@@ -256,19 +256,12 @@ namespace VamTimeline
                 _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
                 _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
                 _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
-                var container = _ui.CreateUISpacerInCanvas(x, y + 0.54f, 300f);
-                _dopeSheet = InitDopeSheet(container);
+                _dopeSheetContainer = _ui.CreateUISpacerInCanvas(x, y + 0.54f, 300f);
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(OnEnable)}: " + exc);
             }
-        }
-
-        private DopeSheet InitDopeSheet(UIDynamic container)
-        {
-            var dopeSheet = new DopeSheet(container, 1157, container.height, new DopeSheetStyle());
-            return dopeSheet;
         }
 
         public void OnDisable()
@@ -334,7 +327,7 @@ namespace VamTimeline
                 _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
                 _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
 
-                atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo));
+                atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _dopeSheetContainer);
             }
             catch (Exception exc)
             {
@@ -351,7 +344,6 @@ namespace VamTimeline
 
             if (_scrubberJSON.slider != null) _scrubberJSON.slider.interactable = true;
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
-            _dopeSheet.SetScrubberPosition(_scrubberJSON.val);
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
             _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
@@ -370,7 +362,6 @@ namespace VamTimeline
 
                 var linkedScrubber = _mainLinkedAnimation.Scrubber;
                 _scrubberJSON.max = linkedScrubber.max;
-                _dopeSheet.SetScrubberPosition(linkedScrubber.val);
                 var target = _mainLinkedAnimation.FilterAnimationTarget.val;
                 _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
 
@@ -413,13 +404,6 @@ namespace VamTimeline
             }
         }
 
-        public void VamTimelineAnimationTargetsModified(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets)
-        {
-            // TODO: Instead of re-creating, we can update and just notify that it was changed
-            var proxy = new AtomAnimationClipProxy(targets, _scrubberJSON.max);
-            _dopeSheet.Draw(proxy);
-        }
-
         public void Update()
         {
             try
@@ -430,7 +414,6 @@ namespace VamTimeline
                 if (scrubber != null && scrubber.val != _scrubberJSON.val)
                 {
                     _scrubberJSON.valNoCallback = scrubber.val;
-                    _dopeSheet.SetScrubberPosition(scrubber.val);
                 }
 
                 HandleKeyboardShortcuts();
@@ -538,7 +521,9 @@ namespace VamTimeline
                 _mainLinkedAnimation = null;
                 return;
             }
-            _mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
+            var mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
+            if (_mainLinkedAnimation == mainLinkedAnimation) return;
+            _mainLinkedAnimation = mainLinkedAnimation;
             if (_mainLinkedAnimation == null) return;
             _atomsJSON.valNoCallback = _mainLinkedAnimation.Label;
             StartCoroutine(InitializeMainAtom(_mainLinkedAnimation.Atom.uid));
@@ -548,6 +533,7 @@ namespace VamTimeline
         {
             yield return 0;
             VamTimelineAnimationModified(uid);
+            _mainLinkedAnimation.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo));
         }
 
         private void ChangeAnimation(string name)

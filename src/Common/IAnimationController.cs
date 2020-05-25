@@ -13,6 +13,5 @@ namespace VamTimeline
     {
         void VamTimelineAnimationModified(string uid);
         void VamTimelineAnimationFrameUpdated(string uid);
-        void VamTimelineAnimationTargetsModified(List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> targets);
     }
 }
