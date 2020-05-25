@@ -19,14 +19,6 @@ namespace VamTimeline
         public override void Init()
         {
             base.Init();
-
-            // Left side
-
-            InitAnimationSelectorUI(false);
-
-            InitPlaybackUI(false);
-
-            InitFrameNavUI(false);
         }
     }
 }

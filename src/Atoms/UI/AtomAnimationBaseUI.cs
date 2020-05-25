@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using CurveEditor.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +20,6 @@ namespace VamTimeline
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
         private UICurveEditor _curveUI;
-        private DopeSheet _dopeSheet;
         private UIDynamic _curveEditorContainer;
         private int _currentTargets = 0;
         private string _currentAnimation = null;
@@ -38,7 +36,6 @@ namespace VamTimeline
 
         public virtual void UpdatePlaying()
         {
-            _dopeSheet?.SetScrubberPosition(Plugin.Animation.Time);
             _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
@@ -79,51 +76,7 @@ namespace VamTimeline
 
         public virtual void AnimationFrameUpdated()
         {
-            _dopeSheet?.SetScrubberPosition(Plugin.Animation.Time);
             _curveUI?.SetScrubberPosition(Plugin.Animation.Time);
-        }
-
-        protected void InitPlaybackUI(bool rightSide)
-        {
-            if (Plugin.ScrubberJSON.slider != null) throw new InvalidOperationException("Another screen was not fully unregistered, scrubber is still associated with another slider.");
-
-            RegisterStorable(Plugin.ScrubberJSON);
-            var scrubberUI = Plugin.CreateSlider(Plugin.ScrubberJSON);
-            scrubberUI.valueFormat = "F3";
-            RegisterComponent(scrubberUI);
-
-            var playUI = Plugin.CreateButton("\u25B6 Play", rightSide);
-            playUI.button.onClick.AddListener(() => Plugin.PlayJSON.actionCallback());
-            RegisterComponent(playUI);
-
-            var stopUI = Plugin.CreateButton("\u25A0 Stop", rightSide);
-            stopUI.button.onClick.AddListener(() => Plugin.StopJSON.actionCallback());
-            RegisterComponent(stopUI);
-        }
-
-        protected void InitAnimationSelectorUI(bool rightSide)
-        {
-            RegisterStorable(Plugin.AnimationDisplayJSON);
-            var animationUI = Plugin.CreateScrollablePopup(Plugin.AnimationDisplayJSON, rightSide);
-            animationUI.label = "Animation";
-            animationUI.popupPanelHeight = 800f;
-            RegisterComponent(animationUI);
-        }
-
-        protected void InitFrameNavUI(bool rightSide)
-        {
-            RegisterStorable(Plugin.FilterAnimationTargetJSON);
-            var selectedControllerUI = Plugin.CreateScrollablePopup(Plugin.FilterAnimationTargetJSON, rightSide);
-            selectedControllerUI.popupPanelHeight = 600f;
-            RegisterComponent(selectedControllerUI);
-
-            var nextFrameUI = Plugin.CreateButton("\u2192 Next Frame", rightSide);
-            nextFrameUI.button.onClick.AddListener(() => Plugin.NextFrameJSON.actionCallback());
-            RegisterComponent(nextFrameUI);
-
-            var previousFrameUI = Plugin.CreateButton("\u2190 Previous Frame", rightSide);
-            previousFrameUI.button.onClick.AddListener(() => Plugin.PreviousFrameJSON.actionCallback());
-            RegisterComponent(previousFrameUI);
         }
 
         protected void InitClipboardUI(bool rightSide)
@@ -146,20 +99,6 @@ namespace VamTimeline
         protected void InitDisplayUI(bool rightSide, float height = 260f)
         {
             if (Plugin.Animation == null || Plugin.Animation.Current == null) return;
-
-            var dopeSheetContainer = Plugin.CreateSpacer(rightSide);
-            dopeSheetContainer.height = height;
-            RegisterComponent(dopeSheetContainer);
-
-            // Replace play, stop, frame nav and scrubber (text field for precise time?)
-            // https://docs.blender.org/manual/en/latest/editors/dope_sheet/introduction.html
-
-            _dopeSheet = new DopeSheet(dopeSheetContainer, 520, height, DopeSheetStyle.Default());
-
-            // TODO: Highlight current filtered target, and allow selection through dope sheet
-            // TODO: Rename Draw, refresh when updated, recreate when animation changed
-            _dopeSheet.Bind(Plugin.Animation.Current);
-            _dopeSheet.SetScrubberPosition(Plugin.Animation.Time);
 
             _curveEditorContainer = Plugin.CreateSpacer(rightSide);
             _curveEditorContainer.height = height;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -15,8 +14,9 @@ namespace VamTimeline
     {
         protected IAtomPlugin _plugin;
         private AtomAnimationBaseUI _current;
-        private JSONStorableStringChooser _screens;
+        private JSONStorableStringChooser _screensJSON;
         private UIDynamicPopup _screenUI;
+        private DopeSheet _dopeSheet;
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
@@ -29,7 +29,14 @@ namespace VamTimeline
 
         public void Init()
         {
-            _screens = new JSONStorableStringChooser(
+            // Left side
+            InitAnimationSelectorUI(false);
+            InitDopeSheetUI(false);
+            InitPlaybackUI(false);
+            InitFrameNavUI(false);
+
+            // Right side
+            _screensJSON = new JSONStorableStringChooser(
                 "Screen",
                 ListAvailableScreens(),
                 GetDefaultScreen(),
@@ -40,7 +47,49 @@ namespace VamTimeline
                     RefreshCurrentUI(false);
                 }
             );
-            _screenUI = _plugin.CreateScrollablePopup(_screens);
+            _screenUI = _plugin.CreateScrollablePopup(_screensJSON, true);
+        }
+
+        protected void InitAnimationSelectorUI(bool rightSide)
+        {
+            var animationUI = _plugin.CreateScrollablePopup(_plugin.AnimationDisplayJSON, rightSide);
+            animationUI.label = "Animation";
+            animationUI.popupPanelHeight = 800f;
+        }
+
+        protected void InitDopeSheetUI(bool rightSide)
+        {
+            var dopeSheetContainer = _plugin.CreateSpacer(rightSide);
+            dopeSheetContainer.height = 260f;
+
+            // Replace play, stop, frame nav and scrubber (text field for precise time?)
+            // https://docs.blender.org/manual/en/latest/editors/dope_sheet/introduction.html
+
+            _dopeSheet = new DopeSheet(dopeSheetContainer, 520, dopeSheetContainer.height, DopeSheetStyle.Default());
+        }
+
+        protected void InitPlaybackUI(bool rightSide)
+        {
+            var scrubberUI = _plugin.CreateSlider(_plugin.ScrubberJSON);
+            scrubberUI.valueFormat = "F3";
+
+            var playUI = _plugin.CreateButton("\u25B6 Play", rightSide);
+            playUI.button.onClick.AddListener(() => _plugin.PlayJSON.actionCallback());
+
+            var stopUI = _plugin.CreateButton("\u25A0 Stop", rightSide);
+            stopUI.button.onClick.AddListener(() => _plugin.StopJSON.actionCallback());
+        }
+
+        protected void InitFrameNavUI(bool rightSide)
+        {
+            var selectedControllerUI = _plugin.CreateScrollablePopup(_plugin.FilterAnimationTargetJSON, rightSide);
+            selectedControllerUI.popupPanelHeight = 600f;
+
+            var nextFrameUI = _plugin.CreateButton("\u2192 Next Frame", rightSide);
+            nextFrameUI.button.onClick.AddListener(() => _plugin.NextFrameJSON.actionCallback());
+
+            var previousFrameUI = _plugin.CreateButton("\u2190 Previous Frame", rightSide);
+            previousFrameUI.button.onClick.AddListener(() => _plugin.PreviousFrameJSON.actionCallback());
         }
 
         private List<string> ListAvailableScreens()
@@ -73,17 +122,23 @@ namespace VamTimeline
         public void AnimationModified()
         {
             if (_plugin.Animation == null) return;
-            _screens.choices = ListAvailableScreens();
-            if (_plugin.LockedJSON.val && _screens.val != AtomAnimationLockedUI.ScreenName)
-                _screens.valNoCallback = AtomAnimationLockedUI.ScreenName;
-            if (!_plugin.LockedJSON.val && _screens.val == AtomAnimationLockedUI.ScreenName)
-                _screens.valNoCallback = GetDefaultScreen();
+            _screensJSON.choices = ListAvailableScreens();
+            if (_plugin.LockedJSON.val && _screensJSON.val != AtomAnimationLockedUI.ScreenName)
+                _screensJSON.valNoCallback = AtomAnimationLockedUI.ScreenName;
+            if (!_plugin.LockedJSON.val && _screensJSON.val == AtomAnimationLockedUI.ScreenName)
+                _screensJSON.valNoCallback = GetDefaultScreen();
             RefreshCurrentUI(true);
+
+            // TODO: Highlight current filtered target, and allow selection through dope sheet
+            // TODO: Rename Draw, refresh when updated, recreate when animation changed
+            _dopeSheet.Bind(_plugin.Animation.Current);
         }
 
         public void AnimationFrameUpdated()
         {
             RefreshCurrentUI(false);
+
+            _dopeSheet.SetScrubberPosition(_plugin.Animation.Time);
         }
 
         public void RefreshCurrentUI(bool animationModified)
@@ -97,7 +152,7 @@ namespace VamTimeline
             else if (!_uiRefreshScheduled)
             {
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screens.val));
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screensJSON.val));
             }
         }
 
@@ -211,7 +266,7 @@ namespace VamTimeline
             {
                 _uiRefreshInvalidated = false;
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screens.val));
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screensJSON.val));
             }
         }
 

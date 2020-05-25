@@ -39,10 +39,6 @@ namespace VamTimeline
 
             // Left side
 
-            InitAnimationSelectorUI(false);
-
-            InitPlaybackUI(false);
-
             // Right side
 
             InitControllersUI();

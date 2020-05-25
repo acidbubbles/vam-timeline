@@ -41,12 +41,6 @@ namespace VamTimeline
 
             // Left side
 
-            InitAnimationSelectorUI(false);
-
-            InitPlaybackUI(false);
-
-            InitFrameNavUI(false);
-
             CreateSpacer(false);
 
             _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")

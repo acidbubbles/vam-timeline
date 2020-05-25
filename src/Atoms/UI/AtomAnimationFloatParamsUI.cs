@@ -37,12 +37,6 @@ namespace VamTimeline
 
             // Left side
 
-            InitAnimationSelectorUI(false);
-
-            InitPlaybackUI(false);
-
-            InitFrameNavUI(false);
-
             InitClipboardUI(false);
 
             InitDisplayUI(false);
