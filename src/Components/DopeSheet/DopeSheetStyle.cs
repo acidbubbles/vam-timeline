@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class DopeSheetStyle
+    public class DopeSheetStyle : StyleBase
     {
         public static DopeSheetStyle Default()
         {
@@ -10,9 +10,6 @@ namespace VamTimeline
         }
 
         // Global
-        public Font Font { get; }
-        public Color FontColor { get; set; } = new Color(0, 0, 0);
-        public Color BackgroundColor { get; set; } = new Color(0.721f, 0.682f, 0.741f);
         public Color GroupBackgroundColorTop { get; set; } = new Color(0.874f, 0.870f, 0.870f);
         public Color GroupBackgroundColorBottom { get; set; } = new Color(0.704f, 0.700f, 0.700f);
         public Color LabelBackgroundColorTop { get; set; } = new Color(0.974f, 0.970f, 0.970f);
@@ -31,10 +28,5 @@ namespace VamTimeline
         // Scrubber
         public Color ScrubberColor { get; set; } = new Color(0.88f, 0.84f, 0.86f);
         public float ScrubberSize { get; set; } = 9f;
-
-        public DopeSheetStyle()
-        {
-            Font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
-        }
     }
 }

@@ -20,7 +20,7 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
-            InitScrubber(plugin.Manager.configurableSliderPrefab, plugin.ScrubberJSON);
+            InitScrubber(plugin.ScrubberJSON);
             InitSpacer();
             // TODO: Integrate play/stop inside scrubber
             InitPlaybackButtons(plugin.Manager.configurableButtonPrefab, plugin.PlayJSON, plugin.StopJSON);
@@ -30,15 +30,16 @@ namespace VamTimeline
             InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
         }
 
-        private void InitScrubber(Transform sliderPrefab, JSONStorableFloat scrubberJSON)
+        private void InitScrubber(JSONStorableFloat scrubberJSON)
         {
             // TODO: Multiple sliders will be created for the same scrubber. Replace by a custom (and nicer) component.
-            var scrubber = Instantiate(sliderPrefab);
-            scrubber.SetParent(transform, false);
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
 
-            var ui = scrubber.GetComponent<UIDynamicSlider>();
-            ui.Configure(scrubberJSON.name, scrubberJSON.min, scrubberJSON.max, scrubberJSON.val, scrubberJSON.constrained, "F2", true, !scrubberJSON.constrained);
-            scrubberJSON.slider = ui.slider;
+            go.AddComponent<LayoutElement>().preferredHeight = 60f;
+
+            var scrubber = go.AddComponent<Scrubber>();
+            scrubber.jsf = scrubberJSON;
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab, JSONStorableAction playJSON, JSONStorableAction stopJSON)

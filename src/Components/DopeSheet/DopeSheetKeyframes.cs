@@ -16,6 +16,7 @@ namespace VamTimeline
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
+            // TODO: Determine if dirty or not
             vh.Clear();
             if (target == null || style == null) return;
             var width = rectTransform.rect.width;

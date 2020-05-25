@@ -74,6 +74,11 @@
     <Compile Include="src/Components/Clickable.cs" />
     <Compile Include="src/Components/GradientImage.cs" />
 
+    <Compile Include="src/Components/Styling/StyleBase.cs" />
+
+    <Compile Include="src/Components/DopeSheet/Scrubber.cs" />
+    <Compile Include="src/Components/DopeSheet/ScrubberStyle.cs" />
+
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />

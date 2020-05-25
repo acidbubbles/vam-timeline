@@ -23,6 +23,9 @@ src/Common/StorableAnimationCurve.cs
 src/Common/AnimationCurveExtensions.cs
 src/Components/Clickable.cs
 src/Components/GradientImage.cs
+src/Components/Styling/StyleBase.cs
+src/Components/Scrubber/Scrubber.cs
+src/Components/Scrubber/ScrubberStyle.cs
 src/Components/DopeSheet/DopeSheet.cs
 src/Components/DopeSheet/DopeSheetKeyframes.cs
 src/Components/DopeSheet/DopeSheetStyle.cs
