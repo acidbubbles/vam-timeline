@@ -71,10 +71,12 @@
     <Compile Include="src/External/curve-editor/Utils/MathUtils.cs" />
     <Compile Include="src/External/curve-editor/Utils/Matrix2x3.cs" />
 
+    <Compile Include="src/Components/Clickable.cs" />
+    <Compile Include="src/Components/GradientImage.cs" />
+
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />
-    <Compile Include="src/Components/DopeSheet/GradientImage.cs" />
 
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />
@@ -116,7 +118,6 @@
 
     <Compile Include="src/AtomPlugin.cs" />
 
-    <Compile Include="src/Controller/AtomAnimationClipProxy.cs" />
     <Compile Include="src/Controller/LinkedAnimation.cs" />
     <Compile Include="src/Controller/SimpleSignUI.cs" />
 

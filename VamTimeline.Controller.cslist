@@ -8,11 +8,6 @@ src/Common/IAtomAnimationTarget.cs
 src/Common/IAtomAnimationTargetsList.cs
 src/Common/StorableNames.cs
 src/Common/AnimationCurveExtensions.cs
-src/Components/DopeSheet/DopeSheet.cs
-src/Components/DopeSheet/DopeSheetKeyframes.cs
-src/Components/DopeSheet/DopeSheetStyle.cs
-src/Components/DopeSheet/GradientImage.cs
-src/Controller/AtomAnimationClipProxy.cs
 src/Controller/LinkedAnimation.cs
 src/Controller/SimpleSignUI.cs
 src/ControllerPlugin.cs

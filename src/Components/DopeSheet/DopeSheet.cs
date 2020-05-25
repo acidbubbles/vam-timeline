@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -225,7 +223,7 @@ namespace VamTimeline
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.resizeTextForBestFit = false; // Better but ugly if true
 
-                var click = child.AddComponent<ClickAction>();
+                var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(() =>
                 {
                     SuperController.LogMessage("Select target " + target.GetShortName());
@@ -252,17 +250,6 @@ namespace VamTimeline
             var ratio = Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-        }
-    }
-
-    // TODO: Extract
-    public class ClickAction : MonoBehaviour, IPointerClickHandler
-    {
-        public UnityEvent onClick = new UnityEvent();
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            onClick.Invoke();
         }
     }
 }
