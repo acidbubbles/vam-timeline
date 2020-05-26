@@ -227,6 +227,8 @@ namespace VamTimeline
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
 
+            DopeSheetKeyframes keyframes = null;
+
             {
                 var child = new GameObject();
                 child.transform.SetParent(go.transform, false);
@@ -247,14 +249,17 @@ namespace VamTimeline
                     {
                         if (target.Selected)
                         {
+                            keyframes.selected = true;
                             image.top = _style.LabelBackgroundColorTopSelected;
                             image.bottom = _style.LabelBackgroundColorBottomSelected;
                         }
                         else
                         {
+                            keyframes.selected = false;
                             image.top = _style.LabelBackgroundColorTop;
                             image.bottom = _style.LabelBackgroundColorBottom;
                         }
+                        keyframes.SetVerticesDirty();
                         image.SetVerticesDirty();
                     },
                     handler => { target.SelectedChanged += handler; },
@@ -264,7 +269,7 @@ namespace VamTimeline
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(() =>
                 {
-                    // TODO: Highlight
+                    // TODO: Highlight row
                     // TODO: Unselect
                     target.Selected = !target.Selected;
                     // TODO: AnimationFrameUpdated
@@ -302,7 +307,7 @@ namespace VamTimeline
                 rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
                 rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
 
-                var keyframes = child.AddComponent<DopeSheetKeyframes>();
+                keyframes = child.AddComponent<DopeSheetKeyframes>();
                 keyframes.target = target;
                 keyframes.style = _style;
                 keyframes.raycastTarget = false;

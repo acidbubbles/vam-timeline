@@ -13,6 +13,7 @@ namespace VamTimeline
     {
         public IAtomAnimationTarget target;
         public DopeSheetStyle style;
+        public bool selected;
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
@@ -28,7 +29,7 @@ namespace VamTimeline
             var padding = style.KeyframesRowPadding;
             var ratio = (width - padding * 2f) / keyframes[keyframes.Count - 1];
             var lineHeight = style.KeyframesRowLineSize;
-            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframesRowLineColor, new[]
+            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframesRowLineColorSelected : style.KeyframesRowLineColor, new[]
             {
                 new Vector2(-width / 2f + padding, -lineHeight),
                 new Vector2(width / 2f - padding, -lineHeight),

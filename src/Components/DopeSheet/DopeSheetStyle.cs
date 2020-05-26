@@ -10,6 +10,7 @@ namespace VamTimeline
         }
 
         // Global
+        public Color BackgroundColorSelected { get; set; } = new Color(0.751f, 0.712f, 0.771f);
         public Color GroupBackgroundColorTop { get; set; } = new Color(0.874f, 0.870f, 0.870f);
         public Color GroupBackgroundColorBottom { get; set; } = new Color(0.704f, 0.700f, 0.700f);
         public Color LabelBackgroundColorTop { get; set; } = new Color(0.974f, 0.970f, 0.970f);
@@ -22,6 +23,7 @@ namespace VamTimeline
 
         // Keyframes
         public Color KeyframesRowLineColor { get; set; } = new Color(0.650f, 0.650f, 0.650f);
+        public Color KeyframesRowLineColorSelected { get; set; } = new Color(0.750f, 0.750f, 0.750f);
         public Color KeyframeColor { get; set; } = new Color(0.050f, 0.020f, 0.020f);
         public float KeyframeSize { get; set; } = 7f;
         public float KeyframesRowPadding { get; set; } = 16f;
