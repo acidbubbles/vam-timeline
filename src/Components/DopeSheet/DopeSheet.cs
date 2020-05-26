@@ -44,7 +44,6 @@ namespace VamTimeline
 
             var image = go.AddComponent<Image>();
             image.color = color;
-            image.raycastTarget = false;
 
             return go;
         }
@@ -96,7 +95,7 @@ namespace VamTimeline
             rect.StretchParent();
 
             var image = go.AddComponent<Image>();
-            image.raycastTarget = false;
+            image.raycastTarget = true;
 
             var mask = go.AddComponent<Mask>();
             mask.showMaskGraphic = false;

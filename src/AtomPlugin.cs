@@ -55,6 +55,7 @@ namespace VamTimeline
 
         // UI
         private AtomAnimationUIManager _ui;
+        private UIDynamic _controllerPanelContainer;
 
         #region Init
 
@@ -196,6 +197,7 @@ namespace VamTimeline
             try
             {
                 Animation?.Stop();
+                DestroyControllerPanel();
             }
             catch (Exception exc)
             {
@@ -205,7 +207,13 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            OnDisable();
+            try
+            {
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnDestroy)}: " + exc);
+            }
         }
 
         #endregion
@@ -712,21 +720,28 @@ namespace VamTimeline
         public void VamTimelineRequestAnimationInfo(UIDynamic container)
         {
             AnimationModified();
-            Destroy(gameObject.GetComponent<AnimationControlPanel>());
-            while (container.transform.childCount > 0)
-            {
-                var child = container.transform.GetChild(0);
-                child.transform.parent = null;
-                Destroy(child);
-            }
 
             var controlPanel = container.gameObject.GetComponent<AnimationControlPanel>();
-            if(controlPanel == null)
+            if (controlPanel == null)
             {
                 controlPanel = container.gameObject.AddComponent<AnimationControlPanel>();
                 controlPanel.Bind(this);
             }
             controlPanel.Bind(Animation.Current);
+            _controllerPanelContainer = container;
+        }
+
+        private void DestroyControllerPanel()
+        {
+            if (_controllerPanelContainer == null) return;
+            Destroy(_controllerPanelContainer.GetComponent<AnimationControlPanel>());
+            while (_controllerPanelContainer.transform.childCount > 0)
+            {
+                var child = _controllerPanelContainer.transform.GetChild(0);
+                child.transform.parent = null;
+                Destroy(child);
+            }
+            _controllerPanelContainer = null;
         }
 
         #endregion
