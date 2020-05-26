@@ -63,7 +63,7 @@ namespace VamTimeline
             line.transform.SetParent(go.transform, false);
 
             var lineRect = line.AddComponent<RectTransform>();
-            lineRect.StretchLeft();
+            lineRect.StretchCenter();
             lineRect.sizeDelta = new Vector2(_style.ScrubberSize, 0);
 
             var image = line.AddComponent<Image>();

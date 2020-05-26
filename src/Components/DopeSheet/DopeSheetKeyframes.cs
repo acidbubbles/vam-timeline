@@ -28,7 +28,7 @@ namespace VamTimeline
             var padding = style.KeyframesRowPadding;
             var ratio = (width - padding * 2f) / keyframes[keyframes.Count - 1];
             var lineHeight = style.KeyframesRowLineSize;
-            vh.AddUIVertexQuad(CreateVBO(style.KeyframesRowLineColor, new[]
+            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframesRowLineColor, new[]
             {
                 new Vector2(-width / 2f + padding, -lineHeight),
                 new Vector2(width / 2f - padding, -lineHeight),
@@ -40,7 +40,7 @@ namespace VamTimeline
             {
                 // TODO: 0f here should be the y offset based on a predetermined row height
                 var center = new Vector2(offsetX + keyframe * ratio, 0);
-                vh.AddUIVertexQuad(CreateVBO(style.KeyframeColor, new[]
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor, new[]
                 {
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
@@ -48,20 +48,6 @@ namespace VamTimeline
                     center - new Vector2(-size, 0)
                 }));
             }
-        }
-
-        private static UIVertex[] CreateVBO(Color color, params Vector2[] vertices)
-        {
-            var vbo = new UIVertex[vertices.Length];
-            for (var i = 0; i < vertices.Length; i++)
-            {
-                var vert = UIVertex.simpleVert;
-                vert.color = color;
-                vert.position = vertices[i];
-                vbo[i] = vert;
-            }
-
-            return vbo;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,6 +21,7 @@ namespace VamTimeline
 
         private float _previousTime = -1f;
         private float _previousMax = -1f;
+        private ScrubberMarkers _markers;
 
         public JSONStorableFloat jsf { get; set; }
 
@@ -28,7 +30,14 @@ namespace VamTimeline
             gameObject.AddComponent<Canvas>();
             gameObject.AddComponent<GraphicRaycaster>();
 
+            var image = gameObject.AddComponent<Image>();
+            image.raycastTarget = false;
+
+            var mask = gameObject.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
             CreateBackground(gameObject, _style.BackgroundColor);
+            CreateMarkers();
             _scrubberRect = CreateLine(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
             // TODO: Add second markers
             // TODO: Add keyframe markers (only for filtered targets)
@@ -50,6 +59,19 @@ namespace VamTimeline
             return go;
         }
 
+        private void CreateMarkers()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+            _markers = go.AddComponent<ScrubberMarkers>();
+            _markers.raycastTarget = false;
+            _markers.style = _style;
+        }
+
         private GameObject CreateLine(GameObject parent, Color color)
         {
             var go = new GameObject("Scrubber");
@@ -62,7 +84,7 @@ namespace VamTimeline
             line.transform.SetParent(go.transform, false);
 
             var lineRect = line.AddComponent<RectTransform>();
-            lineRect.StretchLeft();
+            lineRect.StretchCenter();
             lineRect.sizeDelta = new Vector2(_style.ScrubberSize, 0);
 
             var image = line.AddComponent<Image>();
@@ -79,14 +101,14 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
+            rect.anchoredPosition = new Vector2(0, -5f);
 
             var text = go.AddComponent<Text>();
-            text.text = "0.000 / 0.000";
+            text.text = "0.000s / 0.000s";
             text.font = _style.Font;
             text.fontSize = 24;
             text.color = _style.FontColor;
-            text.fontStyle = FontStyle.Bold;
-            text.alignment = TextAnchor.MiddleCenter;
+            text.alignment = TextAnchor.UpperCenter;
             text.raycastTarget = false;
 
             return text;
@@ -94,7 +116,14 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (_previousTime == jsf.val && _previousMax == jsf.max) return;
+            if(_previousMax != jsf.max)
+            {
+                _previousMax = jsf.max;
+                _previousTime = -1f;
+                _markers.length = jsf.max;
+            }
+
+            if (_previousTime == jsf.val) return;
 
             // TODO: Change animation length won't update. TODO: Animation change events
             _previousTime = jsf.val;
@@ -102,7 +131,7 @@ namespace VamTimeline
             var ratio = Mathf.Clamp(jsf.val / jsf.max, 0, jsf.max);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-            _timeText.text = $"{jsf.val:0.000} / {jsf.max:0.000}";
+            _timeText.text = $"{jsf.val:0.000}s / {jsf.max:0.000}s";
         }
 
         public void OnPointerDown(PointerEventData eventData)

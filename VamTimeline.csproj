@@ -72,12 +72,14 @@
     <Compile Include="src/External/curve-editor/Utils/Matrix2x3.cs" />
 
     <Compile Include="src/Components/Clickable.cs" />
+    <Compile Include="src/Components/UIVertexHelper.cs" />
     <Compile Include="src/Components/GradientImage.cs" />
 
     <Compile Include="src/Components/Styling/StyleBase.cs" />
 
-    <Compile Include="src/Components/DopeSheet/Scrubber.cs" />
-    <Compile Include="src/Components/DopeSheet/ScrubberStyle.cs" />
+    <Compile Include="src/Components/Scrubber/Scrubber.cs" />
+    <Compile Include="src/Components/Scrubber/ScrubberMarkers.cs" />
+    <Compile Include="src/Components/Scrubber/ScrubberStyle.cs" />
 
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
