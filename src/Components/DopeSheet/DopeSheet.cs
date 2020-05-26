@@ -13,6 +13,7 @@ namespace VamTimeline
     {
         private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
+        public readonly ScrollRect _scrollRect;
         private readonly VerticalLayoutGroup _layout;
         private float _scrubberMax;
 
@@ -28,10 +29,15 @@ namespace VamTimeline
             var scrollView = CreateScrollView(gameObject);
             var viewport = CreateViewport(scrollView);
             var content = CreateContent(viewport);
-            var scrollRect = scrollView.GetComponent<ScrollRect>();
-            scrollRect.viewport = viewport.GetComponent<RectTransform>();
-            scrollRect.content = content.GetComponent<RectTransform>();
+            _scrollRect = scrollView.GetComponent<ScrollRect>();
+            _scrollRect.viewport = viewport.GetComponent<RectTransform>();
+            _scrollRect.content = content.GetComponent<RectTransform>();
             _layout = content.GetComponent<VerticalLayoutGroup>();
+        }
+
+        public void Start()
+        {
+            _scrollRect.verticalNormalizedPosition = 1f;
         }
 
         private GameObject CreateBackground(GameObject parent, Color color)
@@ -134,7 +140,7 @@ namespace VamTimeline
             {
                 var child = _layout.transform.GetChild(0);
                 child.transform.parent = null;
-                UnityEngine.Object.Destroy(child);
+                Destroy(child);
             }
             foreach (var group in clip.GetTargetGroups())
             {
