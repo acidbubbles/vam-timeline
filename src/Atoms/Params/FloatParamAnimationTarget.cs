@@ -58,9 +58,13 @@ namespace VamTimeline
             Dirty = true;
         }
 
-        public IEnumerable<float> GetAllKeyframesTime()
+        public float[] GetAllKeyframesTime()
         {
-            return Value.keys.Select(k => k.time);
+            var curve = Value;
+            var keyframes = new float[curve.length];
+            for (var i = 0; i < curve.length; i++)
+                keyframes[i] = curve[i].time;
+            return keyframes;
         }
 
         public class Comparer : IComparer<FloatParamAnimationTarget>

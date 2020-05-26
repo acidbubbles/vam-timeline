@@ -535,20 +535,5 @@ namespace VamTimeline
                 Current.AnimationPattern.ResetAndPlay();
             }
         }
-
-        public List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>> SerializeForBroadcast()
-        {
-            var clipL = new List<KeyValuePair<string, List<KeyValuePair<string, List<float>>>>>();
-            foreach (var group in Current.GetTargetGroups())
-            {
-                var targetsL = new List<KeyValuePair<string, List<float>>>();
-                foreach (var target in group.GetTargets())
-                {
-                    targetsL.Add(new KeyValuePair<string, List<float>>(target.GetShortName(), target.GetAllKeyframesTime().ToList()));
-                }
-                clipL.Add(new KeyValuePair<string, List<KeyValuePair<string, List<float>>>>(group.Label, targetsL));
-            }
-            return clipL;
-        }
     }
 }

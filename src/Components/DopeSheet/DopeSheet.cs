@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,7 @@ namespace VamTimeline
         private readonly VerticalLayoutGroup _layout;
         private float _scrubberMax;
         private IAtomAnimationClip _clip;
+        private List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
 
         public DopeSheet()
         {
@@ -162,8 +164,8 @@ namespace VamTimeline
 
         private void Unbind()
         {
-            if (_clip == null) return;
-            _clip.AnimationLengthUpdated -= AnimationUpdated;
+            _keyframesRows.Clear();
+            if (_clip != null) _clip.AnimationLengthUpdated -= AnimationUpdated;
             while (_layout.transform.childCount > 0)
             {
                 var child = _layout.transform.GetChild(0);
@@ -244,7 +246,7 @@ namespace VamTimeline
                 image.raycastTarget = true;
 
                 var listener = child.AddComponent<Listener>();
-                listener.Bind(
+                listener.BindAndEnable(
                     () =>
                     {
                         if (target.Selected)
@@ -259,8 +261,6 @@ namespace VamTimeline
                             image.top = _style.LabelBackgroundColorTop;
                             image.bottom = _style.LabelBackgroundColorBottom;
                         }
-                        keyframes.SetVerticesDirty();
-                        image.SetVerticesDirty();
                     },
                     handler => { target.SelectedChanged += handler; },
                     handler => { target.SelectedChanged -= handler; }
@@ -308,9 +308,11 @@ namespace VamTimeline
                 rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
-                keyframes.target = target;
+                keyframes.SetKeyframes(target.GetAllKeyframesTime());
+                keyframes.SetTime(0);
                 keyframes.style = _style;
                 keyframes.raycastTarget = false;
+                _keyframesRows.Add(keyframes);
             }
         }
 
@@ -319,6 +321,8 @@ namespace VamTimeline
             var ratio = Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
+            var ms = val.ToMilliseconds();
+            foreach(var keyframe in _keyframesRows) keyframe.SetTime(ms);
         }
     }
 }

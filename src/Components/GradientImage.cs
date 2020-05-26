@@ -11,8 +11,33 @@ namespace VamTimeline
     /// </summary>
     public class GradientImage : MaskableGraphic
     {
-        public Color top { get; set; }
-        public Color bottom { get; set; }
+        private Color _top;
+        private Color _bottom;
+
+        public Color top
+        {
+            get
+            {
+                return _top;
+            }
+            set
+            {
+                _top = value;
+                SetVerticesDirty();
+            }
+        }
+        public Color bottom
+        {
+            get
+            {
+                return _bottom;
+            }
+            set
+            {
+                _bottom = value;
+                SetVerticesDirty();
+            }
+        }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {

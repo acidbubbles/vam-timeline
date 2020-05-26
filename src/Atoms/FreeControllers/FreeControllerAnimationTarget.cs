@@ -235,15 +235,13 @@ namespace VamTimeline
             Dirty = true;
         }
 
-        public IEnumerable<float> GetAllKeyframesTime()
+        public float[] GetAllKeyframesTime()
         {
-            var set = new SortedDictionary<float, int>();
-            foreach (var curve in Curves)
-            {
-                for (var i = 0; i < curve.length; i++)
-                    set[curve[i].time] = 0;
-            }
-            return set.Keys;
+            var curve = X;
+            var keyframes = new float[curve.length];
+            for (var i = 0; i < curve.length; i++)
+                keyframes[i] = curve[i].time;
+            return keyframes;
         }
 
         #endregion

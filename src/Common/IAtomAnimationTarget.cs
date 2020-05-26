@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace VamTimeline
 {
@@ -15,6 +14,6 @@ namespace VamTimeline
         event EventHandler SelectedChanged;
         string Name { get; }
         string GetShortName();
-        IEnumerable<float> GetAllKeyframesTime();
+        float[] GetAllKeyframesTime();
     }
 }

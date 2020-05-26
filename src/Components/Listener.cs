@@ -17,14 +17,19 @@ namespace VamTimeline
         private Action<EventHandler> _attach;
         private Action<EventHandler> _detach;
 
+        public void Awake()
+        {
+            enabled = false;
+        }
+
         public void OnEnable()
         {
-            _attach(Handle);
+            _attach?.Invoke(Handle);
         }
 
         public void OnDisable()
         {
-            _detach(Handle);
+            _detach?.Invoke(Handle);
         }
 
         public void Handle(object o, EventArgs args)
@@ -32,11 +37,12 @@ namespace VamTimeline
             _handler();
         }
 
-        public void Bind(Action handler, Action<EventHandler> attach, Action<EventHandler> detach)
+        public void BindAndEnable(Action handler, Action<EventHandler> attach, Action<EventHandler> detach)
         {
             _handler = handler;
             _attach = attach;
             _detach = detach;
+            enabled = true;
         }
     }
 }
