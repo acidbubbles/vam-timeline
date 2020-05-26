@@ -15,7 +15,6 @@ namespace VamTimeline
     {
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
-        private IAnimationTargetWithCurves _selected;
         private bool _loop = true;
         private string _nextAnimationName;
         private float _animationLength = DefaultAnimationLength;
@@ -83,13 +82,6 @@ namespace VamTimeline
         public bool IsEmpty()
         {
             return AllTargets.Count() == 0;
-        }
-
-        public void SelectTargetByName(string val)
-        {
-            _selected = string.IsNullOrEmpty(val)
-                ? null
-                : AllTargets.FirstOrDefault(c => c.Name == val);
         }
 
         public IEnumerable<string> GetTargetsNames()
@@ -203,20 +195,27 @@ namespace VamTimeline
 
         public IEnumerable<IAnimationTargetWithCurves> GetAllOrSelectedTargets()
         {
-            if (_selected != null) return new IAnimationTargetWithCurves[] { _selected };
-            return AllTargets.Cast<IAnimationTargetWithCurves>();
+            var found = false;
+            var result = AllTargets
+                .Where(t => { if (t.Selected) { found = true; return t.Selected; } else { return false; } })
+                .Cast<IAnimationTargetWithCurves>();
+            return found ? result : AllTargets;
         }
 
         public IEnumerable<FreeControllerAnimationTarget> GetAllOrSelectedControllerTargets()
         {
-            if (_selected as FreeControllerAnimationTarget != null) return new[] { (FreeControllerAnimationTarget)_selected };
-            return TargetControllers;
+            var found = false;
+            var result = TargetControllers
+                .Where(t => { if (t.Selected) { found = true; return t.Selected; } else { return false; } });
+            return found ? result : TargetControllers;
         }
 
         public IEnumerable<FloatParamAnimationTarget> GetAllOrSelectedFloatParamTargets()
         {
-            if (_selected as FloatParamAnimationTarget != null) return new[] { (FloatParamAnimationTarget)_selected };
-            return TargetFloatParams;
+            var found = false;
+            var result = TargetFloatParams
+                .Where(t => { if (t.Selected) { found = true; return t.Selected; } else { return false; } });
+            return found ? result : TargetFloatParams;
         }
 
         public void StretchLength(float value)

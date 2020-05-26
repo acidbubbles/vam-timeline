@@ -15,6 +15,5 @@ namespace VamTimeline
         event EventHandler AnimationLengthUpdated;
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
-        void SelectTargetByName(string val);
     }
 }

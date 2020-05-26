@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace VamTimeline
@@ -10,6 +11,8 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomAnimationTarget
     {
+        bool Selected { get; set; }
+        event EventHandler SelectedChanged;
         string Name { get; }
         string GetShortName();
         IEnumerable<float> GetAllKeyframesTime();

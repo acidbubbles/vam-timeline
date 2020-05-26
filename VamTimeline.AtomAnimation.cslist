@@ -10,6 +10,7 @@ src/Common/IAtomAnimationTargetsList.cs
 src/Common/StorableNames.cs
 src/Common/AnimationCurveExtensions.cs
 src/Components/Clickable.cs
+src/Components/Listener.cs
 src/Components/UIVertexHelper.cs
 src/Components/GradientImage.cs
 src/Components/Styling/StyleBase.cs
@@ -21,6 +22,7 @@ src/Components/DopeSheet/DopeSheetKeyframes.cs
 src/Components/DopeSheet/DopeSheetStyle.cs
 src/Components/AnimationControlPanel/AnimationControlPanel.cs
 src/Atoms/IAtomPlugin.cs
+src/Atoms/Common/AnimationTargetBase.cs
 src/Atoms/Common/CurveTypeValues.cs
 src/Atoms/Common/KeyframeSettings.cs
 src/Atoms/Common/IAnimationTargetWithCurves.cs

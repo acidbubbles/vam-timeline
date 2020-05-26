@@ -14,6 +14,8 @@ namespace VamTimeline
         public Color GroupBackgroundColorBottom { get; set; } = new Color(0.704f, 0.700f, 0.700f);
         public Color LabelBackgroundColorTop { get; set; } = new Color(0.974f, 0.970f, 0.970f);
         public Color LabelBackgroundColorBottom { get; set; } = new Color(0.824f, 0.820f, 0.820f);
+        public Color LabelBackgroundColorTopSelected { get; set; } = new Color(0.924f, 0.920f, 0.920f);
+        public Color LabelBackgroundColorBottomSelected { get; set; } = new Color(1, 1, 1);
         public float RowHeight { get; set; } = 30f;
         public float RowSpacing { get; set; } = 5f;
         public float LabelWidth { get; set; } = 150f;

@@ -10,9 +10,8 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FloatParamAnimationTarget : IAnimationTargetWithCurves
+    public class FloatParamAnimationTarget : AnimationTargetBase, IAnimationTargetWithCurves
     {
-        public bool Dirty { get; set; } = true;
         public JSONStorable Storable { get; }
         public JSONStorableFloat FloatParam { get; }
         public AnimationCurve Value { get; } = new AnimationCurve();

@@ -241,13 +241,34 @@ namespace VamTimeline
                 image.bottom = _style.LabelBackgroundColorBottom;
                 image.raycastTarget = true;
 
+                var listener = child.AddComponent<Listener>();
+                listener.Bind(
+                    () =>
+                    {
+                        if (target.Selected)
+                        {
+                            image.top = _style.LabelBackgroundColorTopSelected;
+                            image.bottom = _style.LabelBackgroundColorBottomSelected;
+                        }
+                        else
+                        {
+                            image.top = _style.LabelBackgroundColorTop;
+                            image.bottom = _style.LabelBackgroundColorBottom;
+                        }
+                        image.SetVerticesDirty();
+                    },
+                    handler => { target.SelectedChanged += handler; },
+                    handler => { target.SelectedChanged -= handler; }
+                );
+
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(() =>
                 {
                     // TODO: Highlight
                     // TODO: Unselect
-                    _clip.SelectTargetByName(target.Name);
+                    target.Selected = !target.Selected;
                     // TODO: AnimationFrameUpdated
+                    // TODO: Highlight the row keyframes
                 });
             }
 

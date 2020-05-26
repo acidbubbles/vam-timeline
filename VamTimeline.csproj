@@ -60,6 +60,7 @@
     <Compile Include="src/External/Unity/UnitySpecific.cs" />
 
     <Compile Include="src/Components/Clickable.cs" />
+    <Compile Include="src/Components/Listener.cs" />
     <Compile Include="src/Components/UIVertexHelper.cs" />
     <Compile Include="src/Components/GradientImage.cs" />
 
@@ -88,6 +89,7 @@
 
     <Compile Include="src/Atoms/IAtomPlugin.cs" />
 
+    <Compile Include="src/Atoms/Common/AnimationTargetBase.cs" />
     <Compile Include="src/Atoms/Common/CurveTypeValues.cs" />
     <Compile Include="src/Atoms/Common/KeyframeSettings.cs" />
     <Compile Include="src/Atoms/Common/IAnimationTargetWithCurves.cs" />

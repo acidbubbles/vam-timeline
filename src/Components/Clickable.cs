@@ -18,5 +18,10 @@ namespace VamTimeline
         {
             onClick.Invoke();
         }
+
+        public void OnDestroy()
+        {
+            onClick.RemoveAllListeners();
+        }
     }
 }

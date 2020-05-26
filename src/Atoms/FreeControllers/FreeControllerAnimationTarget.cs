@@ -11,9 +11,8 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class FreeControllerAnimationTarget : IAnimationTargetWithCurves
+    public class FreeControllerAnimationTarget : AnimationTargetBase, IAnimationTargetWithCurves
     {
-        public bool Dirty { get; set; } = true;
         public FreeControllerV3 Controller;
         public SortedDictionary<int, KeyframeSettings> Settings = new SortedDictionary<int, KeyframeSettings>();
         public AnimationCurve X { get; } = new AnimationCurve();
@@ -182,6 +181,7 @@ namespace VamTimeline
 
         private string GetRelativePath()
         {
+            // TODO: This is probably what breaks animations with parenting
             var root = Controller.containingAtom.transform;
             var target = Controller.transform;
             var parts = new List<string>();
