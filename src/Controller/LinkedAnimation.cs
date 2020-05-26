@@ -70,7 +70,6 @@ namespace VamTimeline
         public JSONStorableFloat Time { get { return Storable?.GetFloatJSONParam(StorableNames.Time); } }
         public JSONStorableStringChooser Animation { get { return Storable?.GetStringChooserJSONParam(StorableNames.Animation); } }
         public JSONStorableStringChooser AnimationDisplay { get { return Storable?.GetStringChooserJSONParam(StorableNames.AnimationDisplay); } }
-        public JSONStorableStringChooser FilterAnimationTarget { get { return Storable?.GetStringChooserJSONParam(StorableNames.FilterAnimationTarget); } }
         public JSONStorableBool IsPlaying { get { return Storable?.GetBoolJSONParam(StorableNames.IsPlaying); } }
 
         public void Play()

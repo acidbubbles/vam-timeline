@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace VamTimeline
@@ -11,7 +12,9 @@ namespace VamTimeline
     public interface IAtomAnimationClip
     {
         float AnimationLength { get; }
+        event EventHandler AnimationLengthUpdated;
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
+        void SelectTargetByName(string val);
     }
 }

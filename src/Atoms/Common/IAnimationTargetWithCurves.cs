@@ -12,7 +12,6 @@ namespace VamTimeline
     public interface IAnimationTargetWithCurves : IAtomAnimationTarget
     {
         bool Dirty { get; set; }
-        string Name { get; }
 
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();

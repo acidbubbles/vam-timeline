@@ -17,7 +17,7 @@ namespace VamTimeline
         public readonly ScrollRect _scrollRect;
         private readonly VerticalLayoutGroup _layout;
         private float _scrubberMax;
-        private AtomAnimationClip _clip;
+        private IAtomAnimationClip _clip;
 
         public DopeSheet()
         {
@@ -139,7 +139,7 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(AtomAnimationClip clip)
+        public void Bind(IAtomAnimationClip clip)
         {
             // TODO: Instead of destroying children, try updating them (dirty + index)
             // TODO: If the current clip doesn't change, do not rebind
@@ -244,7 +244,10 @@ namespace VamTimeline
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(() =>
                 {
-                    SuperController.LogMessage("Select target " + target.GetShortName());
+                    // TODO: Highlight
+                    // TODO: Unselect
+                    _clip.SelectTargetByName(target.Name);
+                    // TODO: AnimationFrameUpdated
                 });
             }
 

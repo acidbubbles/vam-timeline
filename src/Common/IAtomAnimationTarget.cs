@@ -10,6 +10,7 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomAnimationTarget
     {
+        string Name { get; }
         string GetShortName();
         IEnumerable<float> GetAllKeyframesTime();
     }

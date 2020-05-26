@@ -42,7 +42,6 @@ namespace VamTimeline
         public JSONStorableAction PlayIfNotPlayingJSON { get; private set; }
         public JSONStorableAction StopJSON { get; private set; }
         public JSONStorableAction StopIfPlayingJSON { get; private set; }
-        public JSONStorableStringChooser FilterAnimationTargetJSON { get; private set; }
         public JSONStorableAction NextFrameJSON { get; private set; }
         public JSONStorableAction PreviousFrameJSON { get; private set; }
         public JSONStorableFloat SnapJSON { get; private set; }
@@ -340,12 +339,6 @@ namespace VamTimeline
             });
             RegisterAction(StopIfPlayingJSON);
 
-            FilterAnimationTargetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string> { StorableNames.AllTargets }, StorableNames.AllTargets, StorableNames.FilterAnimationTarget, val => { Animation.Current.SelectTargetByName(val == StorableNames.AllTargets ? "" : val); AnimationFrameUpdated(); })
-            {
-                isStorable = false
-            };
-            RegisterStringChooser(FilterAnimationTargetJSON);
-
             NextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => NextFrame());
             RegisterAction(NextFrameJSON);
 
@@ -509,7 +502,6 @@ namespace VamTimeline
 
             try
             {
-                FilterAnimationTargetJSON.val = StorableNames.AllTargets;
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 if (Animation.IsPlaying())
                 {
@@ -652,7 +644,6 @@ namespace VamTimeline
                 AnimationDisplayJSON.choices = AnimationJSON.choices;
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
-                FilterAnimationTargetJSON.choices = new List<string> { StorableNames.AllTargets }.Concat(Animation.Current.GetTargetsNames()).ToList();
 
                 // UI
                 _ui.AnimationModified();

@@ -29,7 +29,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _atomsToLink;
         private LinkedAnimation _mainLinkedAnimation;
         private JSONStorableString _savedAtomsJSON;
-        private JSONStorableStringChooser _targetJSON;
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
         private JSONStorableBool _enableKeyboardShortcuts;
@@ -104,11 +103,6 @@ namespace VamTimeline
 
             _stopJSON = new JSONStorableAction("Stop", () => Stop());
             RegisterAction(_stopJSON);
-
-            _targetJSON = new JSONStorableStringChooser(StorableNames.FilterAnimationTarget, new List<string>(), StorableNames.AllTargets, StorableNames.FilterAnimationTarget, (string v) => SelectTargetFilter(v))
-            {
-                isStorable = false
-            };
 
             _scrubberJSON = new JSONStorableFloat("Time", 0f, v => ChangeTime(v), 0f, 2f, true)
             {
@@ -346,7 +340,6 @@ namespace VamTimeline
             _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
-            _targetJSON.choices = _mainLinkedAnimation.FilterAnimationTarget.choices;
             _lockedJSON.val = _mainLinkedAnimation.Locked.val;
         }
 
@@ -362,8 +355,6 @@ namespace VamTimeline
 
                 var linkedScrubber = _mainLinkedAnimation.Scrubber;
                 _scrubberJSON.max = linkedScrubber.max;
-                var target = _mainLinkedAnimation.FilterAnimationTarget.val;
-                _targetJSON.valNoCallback = string.IsNullOrEmpty(target) ? StorableNames.AllTargets : target;
 
                 var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
                 if (updated == null)
@@ -436,16 +427,6 @@ namespace VamTimeline
             else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 NextFrame();
-            }
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                if (_targetJSON.choices.Count > 1 && _targetJSON.val != _targetJSON.choices[0])
-                    _targetJSON.val = _targetJSON.choices.ElementAtOrDefault(_targetJSON.choices.IndexOf(_targetJSON.val) - 1);
-            }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                if (_targetJSON.choices.Count > 1 && _targetJSON.val != _targetJSON.choices[_targetJSON.choices.Count - 1])
-                    _targetJSON.val = _targetJSON.choices.ElementAtOrDefault(_targetJSON.choices.IndexOf(_targetJSON.val) + 1);
             }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -571,17 +552,6 @@ namespace VamTimeline
         {
             if (_mainLinkedAnimation == null) return;
             _mainLinkedAnimation.PreviousFrame();
-        }
-
-        private void SelectTargetFilter(string v)
-        {
-            if (_mainLinkedAnimation == null) return;
-            if (string.IsNullOrEmpty(v) || v == StorableNames.AllTargets)
-            {
-                _mainLinkedAnimation.FilterAnimationTarget.val = null;
-                return;
-            }
-            _mainLinkedAnimation.FilterAnimationTarget.val = v;
         }
     }
 }
