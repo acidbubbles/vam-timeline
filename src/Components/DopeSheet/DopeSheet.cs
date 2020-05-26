@@ -246,7 +246,7 @@ namespace VamTimeline
                 image.raycastTarget = true;
 
                 var listener = child.AddComponent<Listener>();
-                listener.BindAndEnable(
+                listener.Bind(
                     () =>
                     {
                         if (target.Selected)

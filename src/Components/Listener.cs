@@ -1,7 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 
 namespace VamTimeline
 {
@@ -13,23 +11,27 @@ namespace VamTimeline
     /// </summary>
     public class Listener : MonoBehaviour
     {
+        private bool _attached;
         private Action _handler;
         private Action<EventHandler> _attach;
         private Action<EventHandler> _detach;
 
-        public void Awake()
-        {
-            enabled = false;
-        }
-
         public void OnEnable()
         {
-            _attach?.Invoke(Handle);
+            if (!_attached && _attach != null)
+            {
+                _attach.Invoke(Handle);
+                _attached = true;
+            }
         }
 
         public void OnDisable()
         {
-            _detach?.Invoke(Handle);
+            if (_attached && _detach != null)
+            {
+                _detach.Invoke(Handle);
+                _attached = false;
+            }
         }
 
         public void Handle(object o, EventArgs args)
@@ -37,12 +39,12 @@ namespace VamTimeline
             _handler();
         }
 
-        public void BindAndEnable(Action handler, Action<EventHandler> attach, Action<EventHandler> detach)
+        public void Bind(Action handler, Action<EventHandler> attach, Action<EventHandler> detach)
         {
             _handler = handler;
             _attach = attach;
             _detach = detach;
-            enabled = true;
+            OnEnable();
         }
     }
 }

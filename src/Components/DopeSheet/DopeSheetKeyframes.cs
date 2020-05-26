@@ -12,7 +12,7 @@ namespace VamTimeline
     /// </summary>
     public class DopeSheetKeyframes : MaskableGraphic
     {
-        private int _selectedFrame = -1;
+        private int _currentFrame = -1;
         public DopeSheetStyle style;
         private bool _selected;
         private readonly HashSet<int> _frames = new HashSet<int>();
@@ -50,12 +50,12 @@ namespace VamTimeline
         {
             if (_frames.Contains(time))
             {
-                _selectedFrame = time;
+                _currentFrame = time;
                 SetVerticesDirty();
             }
-            else if (_selectedFrame != -1)
+            else if (_currentFrame != -1)
             {
-                _selectedFrame = -1;
+                _currentFrame = -1;
                 SetVerticesDirty();
             }
         }
@@ -82,7 +82,7 @@ namespace VamTimeline
             var offsetX = -width / 2f + padding;
             foreach (var keyframe in _frames)
             {
-                if (_selectedFrame == keyframe) continue;
+                if (_currentFrame == keyframe) continue;
                 var center = new Vector2(offsetX + keyframe * ratio, 0);
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor, new[]
                 {
@@ -93,11 +93,11 @@ namespace VamTimeline
                 }));
             }
 
-            if (_selectedFrame != -1)
+            if (_currentFrame != -1)
             {
-                var center = new Vector2(offsetX + _selectedFrame * ratio, 0);
+                var center = new Vector2(offsetX + _currentFrame * ratio, 0);
                 size = style.KeyframeSizeSelectedBack;
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColorSelectedBack, new[]
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedBack : style.KeyframeColorCurrentBack, new[]
                 {
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
@@ -105,7 +105,7 @@ namespace VamTimeline
                     center - new Vector2(-size, 0)
                 }));
                 size = style.KeyframeSizeSelectedFront;
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColorSelectedFront, new[]
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedFront : style.KeyframeColorCurrentFront, new[]
                 {
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),

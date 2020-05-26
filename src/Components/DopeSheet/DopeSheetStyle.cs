@@ -25,6 +25,8 @@ namespace VamTimeline
         public Color KeyframesRowLineColor { get; set; } = new Color(0.650f, 0.650f, 0.650f);
         public Color KeyframesRowLineColorSelected { get; set; } = new Color(0.750f, 0.750f, 0.750f);
         public Color KeyframeColor { get; set; } = new Color(0.050f, 0.020f, 0.020f);
+        public Color KeyframeColorCurrentBack { get; set; } = new Color(0.050f, 0.020f, 0.020f);
+        public Color KeyframeColorCurrentFront { get; set; } = new Color(0.350f, 0.320f, 0.320f);
         public Color KeyframeColorSelectedBack { get; set; } = new Color(0.050f, 0.020f, 0.020f);
         public Color KeyframeColorSelectedFront { get; set; } = new Color(0.950f, 0.820f, 0.920f);
         public float KeyframeSize { get; set; } = 7f;
