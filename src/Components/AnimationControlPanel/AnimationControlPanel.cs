@@ -12,6 +12,7 @@ namespace VamTimeline
     public class AnimationControlPanel : MonoBehaviour
     {
         private DopeSheet _dopeSheet;
+        private Scrubber _scrubber;
 
         public AnimationControlPanel()
         {
@@ -20,7 +21,7 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
-            InitScrubber(plugin.ScrubberJSON);
+            _scrubber = InitScrubber(plugin.ScrubberJSON);
             InitSpacer();
             // TODO: Integrate play/stop inside scrubber
             InitPlaybackButtons(plugin.Manager.configurableButtonPrefab, plugin.PlayJSON, plugin.StopJSON);
@@ -30,7 +31,7 @@ namespace VamTimeline
             InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
         }
 
-        private void InitScrubber(JSONStorableFloat scrubberJSON)
+        private Scrubber InitScrubber(JSONStorableFloat scrubberJSON)
         {
             // TODO: Multiple sliders will be created for the same scrubber. Replace by a custom (and nicer) component.
             var go = new GameObject();
@@ -40,6 +41,8 @@ namespace VamTimeline
 
             var scrubber = go.AddComponent<Scrubber>();
             scrubber.jsf = scrubberJSON;
+
+            return scrubber;
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab, JSONStorableAction playJSON, JSONStorableAction stopJSON)

@@ -55,7 +55,7 @@ namespace VamTimeline
 
         // UI
         private AtomAnimationUIManager _ui;
-        private UIDynamic _controllerPanelContainer;
+        private AnimationControlPanel _controlPanel;
 
         #region Init
 
@@ -94,6 +94,8 @@ namespace VamTimeline
                         ScrubberJSON.valNoCallback = time;
                     if (AnimationJSON.val != Animation.Current.AnimationName)
                         AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+                    if (_controlPanel != null)
+                        _controlPanel.SetScrubberPosition(time);
 
                     _ui.UpdatePlaying();
 
@@ -686,6 +688,9 @@ namespace VamTimeline
 
                 _ui.AnimationFrameUpdated();
 
+                if (_controlPanel != null)
+                    _controlPanel.SetScrubberPosition(time);
+
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
@@ -721,27 +726,26 @@ namespace VamTimeline
         {
             AnimationModified();
 
-            var controlPanel = container.gameObject.GetComponent<AnimationControlPanel>();
-            if (controlPanel == null)
+            _controlPanel = container.gameObject.GetComponent<AnimationControlPanel>();
+            if (_controlPanel == null)
             {
-                controlPanel = container.gameObject.AddComponent<AnimationControlPanel>();
-                controlPanel.Bind(this);
+                _controlPanel = container.gameObject.AddComponent<AnimationControlPanel>();
+                _controlPanel.Bind(this);
             }
-            controlPanel.Bind(Animation.Current);
-            _controllerPanelContainer = container;
+            _controlPanel.Bind(Animation.Current);
         }
 
         private void DestroyControllerPanel()
         {
-            if (_controllerPanelContainer == null) return;
-            Destroy(_controllerPanelContainer.GetComponent<AnimationControlPanel>());
-            while (_controllerPanelContainer.transform.childCount > 0)
+            if (_controlPanel == null) return;
+            while (_controlPanel.transform.childCount > 0)
             {
-                var child = _controllerPanelContainer.transform.GetChild(0);
+                var child = _controlPanel.transform.GetChild(0);
                 child.transform.parent = null;
                 Destroy(child);
             }
-            _controllerPanelContainer = null;
+            Destroy(_controlPanel);
+            _controlPanel = null;
         }
 
         #endregion

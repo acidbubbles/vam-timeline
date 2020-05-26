@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +17,7 @@ namespace VamTimeline
         public readonly ScrollRect _scrollRect;
         private readonly VerticalLayoutGroup _layout;
         private float _scrubberMax;
+        private AtomAnimationClip _clip;
 
         public DopeSheet()
         {
@@ -38,6 +40,11 @@ namespace VamTimeline
         public void Start()
         {
             _scrollRect.verticalNormalizedPosition = 1f;
+        }
+
+        public void OnDestroy()
+        {
+            Unbind();
         }
 
         private GameObject CreateBackground(GameObject parent, Color color)
@@ -132,17 +139,16 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(IAtomAnimationClip clip)
+        public void Bind(AtomAnimationClip clip)
         {
-            _scrubberMax = clip.AnimationLength;
             // TODO: Instead of destroying children, try updating them (dirty + index)
-            while (_layout.transform.childCount > 0)
-            {
-                var child = _layout.transform.GetChild(0);
-                child.transform.parent = null;
-                Destroy(child);
-            }
-            foreach (var group in clip.GetTargetGroups())
+            // TODO: If the current clip doesn't change, do not rebind
+            Unbind();
+
+            _clip = clip;
+            _scrubberMax = _clip.AnimationLength;
+            _clip.AnimationLengthUpdated += AnimationUpdated;
+            foreach (var group in _clip.GetTargetGroups())
             {
                 if (group.Count > 0)
                 {
@@ -152,6 +158,24 @@ namespace VamTimeline
                         CreateRow(target);
                 }
             }
+        }
+
+        private void Unbind()
+        {
+            if (_clip == null) return;
+            _clip.AnimationLengthUpdated -= AnimationUpdated;
+            while (_layout.transform.childCount > 0)
+            {
+                var child = _layout.transform.GetChild(0);
+                child.transform.parent = null;
+                Destroy(child);
+            }
+        }
+
+        private void AnimationUpdated(object sender, EventArgs e)
+        {
+            // TODO: Implement diff or version number
+            _scrubberMax = (sender as AtomAnimationClip).AnimationLength;
         }
 
         private void CreateHeader(string title)
