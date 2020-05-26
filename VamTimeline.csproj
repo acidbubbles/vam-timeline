@@ -59,18 +59,6 @@
   <ItemGroup>
     <Compile Include="src/External/Unity/UnitySpecific.cs" />
 
-    <Compile Include="src/External/curve-editor/IStorableAnimationCurve.cs" />
-    <Compile Include="src/External/curve-editor/JSONStorableAnimationCurve.cs" />
-    <Compile Include="src/External/curve-editor/UI/UICurveEditorCanvas.cs" />
-    <Compile Include="src/External/curve-editor/UI/UICurveEditor.cs" />
-    <Compile Include="src/External/curve-editor/UI/CurveEditorPoint.cs" />
-    <Compile Include="src/External/curve-editor/UI/UICurveEditorSettings.cs" />
-    <Compile Include="src/External/curve-editor/UI/CurveLineSettings.cs" />
-    <Compile Include="src/External/curve-editor/UI/CurveLine.cs" />
-    <Compile Include="src/External/curve-editor/Utils/VertexHelperExtensions.cs" />
-    <Compile Include="src/External/curve-editor/Utils/MathUtils.cs" />
-    <Compile Include="src/External/curve-editor/Utils/Matrix2x3.cs" />
-
     <Compile Include="src/Components/Clickable.cs" />
     <Compile Include="src/Components/UIVertexHelper.cs" />
     <Compile Include="src/Components/GradientImage.cs" />
@@ -96,7 +84,6 @@
     <Compile Include="src/Common/IAtomAnimationClip.cs" />
     <Compile Include="src/Common/IAtomAnimationTargetsList.cs" />
     <Compile Include="src/Common/StorableNames.cs" />
-    <Compile Include="src/Common/StorableAnimationCurve.cs" />
     <Compile Include="src/Common/AnimationCurveExtensions.cs" />
 
     <Compile Include="src/Atoms/IAtomPlugin.cs" />

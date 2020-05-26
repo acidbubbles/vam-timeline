@@ -39,7 +39,7 @@ namespace VamTimeline
 
             InitClipboardUI(false);
 
-            InitDisplayUI(false);
+            // TODO: Draw curves here
         }
 
         public override void UpdatePlaying()
@@ -82,7 +82,7 @@ namespace VamTimeline
                 var sourceFloatParamJSON = target.FloatParam;
                 var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val))
                 {
-                    isStorable= false
+                    isStorable = false
                 };
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
                 var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{sourceFloatParamJSON.name}", sourceFloatParamJSON.defaultVal, (float val) => SetFloatParamValue(target, val), sourceFloatParamJSON.min, sourceFloatParamJSON.max, sourceFloatParamJSON.constrained, true)
@@ -132,7 +132,6 @@ namespace VamTimeline
             Plugin.Animation.RebuildAnimation();
             var targetRef = _targets.FirstOrDefault(j => j.Target == target);
             targetRef.KeyframeJSON.valNoCallback = true;
-            UpdateCurveGraph(target.StorableValue);
         }
 
         public override void Dispose()

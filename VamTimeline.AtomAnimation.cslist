@@ -1,15 +1,4 @@
 src/External/Unity/UnitySpecific.cs
-src/External/curve-editor/IStorableAnimationCurve.cs
-src/External/curve-editor/JSONStorableAnimationCurve.cs
-src/External/curve-editor/UI/UICurveEditorSettings.cs
-src/External/curve-editor/UI/UICurveEditor.cs
-src/External/curve-editor/UI/UICurveEditorCanvas.cs
-src/External/curve-editor/UI/CurveLine.cs
-src/External/curve-editor/UI/CurveLineSettings.cs
-src/External/curve-editor/UI/CurveEditorPoint.cs
-src/External/curve-editor/Utils/VertexHelperExtensions.cs
-src/External/curve-editor/Utils/MathUtils.cs
-src/External/curve-editor/Utils/Matrix2x3.cs
 src/Common/FloatExtensions.cs
 src/Common/ListExtensions.cs
 src/Common/RectTransformExtensions.cs
@@ -19,7 +8,6 @@ src/Common/IAtomAnimationTarget.cs
 src/Common/IAtomAnimationClip.cs
 src/Common/IAtomAnimationTargetsList.cs
 src/Common/StorableNames.cs
-src/Common/StorableAnimationCurve.cs
 src/Common/AnimationCurveExtensions.cs
 src/Components/Clickable.cs
 src/Components/UIVertexHelper.cs

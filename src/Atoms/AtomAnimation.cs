@@ -446,8 +446,10 @@ namespace VamTimeline
 
             foreach (var target in clip.TargetControllers)
             {
-                if (target.Storables.Any(s => s.animationDirty))
+                if (target.Dirty)
                 {
+                    target.Dirty = false;
+
                     target.Validate();
 
                     if (clip.Loop)
@@ -460,9 +462,6 @@ namespace VamTimeline
 
                     if (clip.EnsureQuaternionContinuity)
                         clip.EnsureQuaternionContinuityAndRecalculateSlope();
-
-                    foreach (var s in target.Storables)
-                        s.animationDirty = false;
                 }
 
                 target.ReapplyCurvesToClip(clip.Clip);
@@ -470,15 +469,14 @@ namespace VamTimeline
 
             foreach (var target in clip.TargetFloatParams)
             {
-                if (target.StorableValue.animationDirty)
+                if (target.Dirty)
                 {
+                    target.Dirty = false;
                     if (clip.Loop)
                     {
                         target.SetKeyframe(clip.AnimationLength, target.Value[0].value);
                     }
                     target.Value.FlatAllFrames();
-
-                    target.StorableValue.animationDirty = false;
                 }
             }
         }

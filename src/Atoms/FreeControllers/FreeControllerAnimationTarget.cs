@@ -13,40 +13,25 @@ namespace VamTimeline
     /// </summary>
     public class FreeControllerAnimationTarget : IAnimationTargetWithCurves
     {
+        public bool Dirty { get; set; } = true;
         public FreeControllerV3 Controller;
         public SortedDictionary<int, KeyframeSettings> Settings = new SortedDictionary<int, KeyframeSettings>();
-        public StorableAnimationCurve StorableX;
-        public AnimationCurve X => StorableX.val;
-        public StorableAnimationCurve StorableY;
-        public AnimationCurve Y => StorableY.val;
-        public StorableAnimationCurve StorableZ;
-        public AnimationCurve Z => StorableZ.val;
-        public StorableAnimationCurve StorableRotX;
-        public AnimationCurve RotX => StorableRotX.val;
-        public StorableAnimationCurve StorableRotY;
-        public AnimationCurve RotY => StorableRotY.val;
-        public StorableAnimationCurve StorableRotZ;
-        public AnimationCurve RotZ => StorableRotZ.val;
-        public StorableAnimationCurve StorableRotW;
-        public AnimationCurve RotW => StorableRotW.val;
-        public List<StorableAnimationCurve> Storables;
+        public AnimationCurve X { get; } = new AnimationCurve();
+        public AnimationCurve Y { get; } = new AnimationCurve();
+        public AnimationCurve Z { get; } = new AnimationCurve();
+        public AnimationCurve RotX { get; } = new AnimationCurve();
+        public AnimationCurve RotY { get; } = new AnimationCurve();
+        public AnimationCurve RotZ { get; } = new AnimationCurve();
+        public AnimationCurve RotW { get; } = new AnimationCurve();
         public List<AnimationCurve> Curves;
 
         public string Name => Controller.name;
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
-            StorableX = new StorableAnimationCurve(new AnimationCurve());
-            StorableY = new StorableAnimationCurve(new AnimationCurve());
-            StorableZ = new StorableAnimationCurve(new AnimationCurve());
-            StorableRotX = new StorableAnimationCurve(new AnimationCurve());
-            StorableRotY = new StorableAnimationCurve(new AnimationCurve());
-            StorableRotZ = new StorableAnimationCurve(new AnimationCurve());
-            StorableRotW = new StorableAnimationCurve(new AnimationCurve());
-            Storables = new List<StorableAnimationCurve> {
-                StorableX, StorableY, StorableZ, StorableRotX, StorableRotY, StorableRotZ, StorableRotW
+            Curves = new List<AnimationCurve> {
+                X, Y, Z, RotX, RotY, RotZ, RotW
             };
-            Curves = Storables.Select(s => s.val).ToList();
             Controller = controller;
         }
 
@@ -67,11 +52,6 @@ namespace VamTimeline
         public IEnumerable<AnimationCurve> GetCurves()
         {
             return Curves;
-        }
-
-        public IEnumerable<StorableAnimationCurve> GetStorableCurves()
-        {
-            return Storables;
         }
 
         public void Validate()
@@ -227,22 +207,16 @@ namespace VamTimeline
         public void SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
             X.SetKeyframe(time, localPosition.x);
-            StorableX.Update();
             Y.SetKeyframe(time, localPosition.y);
-            StorableY.Update();
             Z.SetKeyframe(time, localPosition.z);
-            StorableZ.Update();
             RotX.SetKeyframe(time, locationRotation.x);
-            StorableRotX.Update();
             RotY.SetKeyframe(time, locationRotation.y);
-            StorableRotY.Update();
             RotZ.SetKeyframe(time, locationRotation.z);
-            StorableRotZ.Update();
             RotW.SetKeyframe(time, locationRotation.w);
-            StorableRotW.Update();
             var ms = time.ToMilliseconds();
             if (!Settings.ContainsKey(ms))
                 Settings[ms] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
+            Dirty = true;
         }
 
         public void DeleteFrame(float time)
@@ -254,12 +228,11 @@ namespace VamTimeline
         public void DeleteFrameByKey(int key)
         {
             var settingIndex = Settings.Remove(GetLeadCurve()[key].time.ToMilliseconds());
-            foreach (var storable in Storables)
+            foreach (var curve in Curves)
             {
-                storable.val.RemoveKey(key);
-                storable.Update();
-
+                curve.RemoveKey(key);
             }
+            Dirty = true;
         }
 
         public IEnumerable<float> GetAllKeyframesTime()
@@ -282,10 +255,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(curveType)) return;
 
             UpdateSetting(time, curveType, false);
-
-            StorableX.Update();
-            StorableY.Update();
-            StorableZ.Update();
+            Dirty = true;
         }
 
         #endregion
@@ -312,20 +282,14 @@ namespace VamTimeline
         public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
         {
             X.SetKeySnapshot(time, snapshot.X);
-            StorableX.Update();
             Y.SetKeySnapshot(time, snapshot.Y);
-            StorableY.Update();
             Z.SetKeySnapshot(time, snapshot.Z);
-            StorableZ.Update();
             RotX.SetKeySnapshot(time, snapshot.RotX);
-            StorableRotX.Update();
             RotY.SetKeySnapshot(time, snapshot.RotY);
-            StorableRotY.Update();
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
-            StorableRotZ.Update();
             RotW.SetKeySnapshot(time, snapshot.RotW);
-            StorableRotW.Update();
             UpdateSetting(time, snapshot.CurveType, true);
+            Dirty = true;
         }
 
         private void UpdateSetting(float time, string curveType, bool create)

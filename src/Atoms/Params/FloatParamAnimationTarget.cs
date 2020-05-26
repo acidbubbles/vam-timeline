@@ -12,10 +12,10 @@ namespace VamTimeline
     /// </summary>
     public class FloatParamAnimationTarget : IAnimationTargetWithCurves
     {
+        public bool Dirty { get; set; } = true;
         public JSONStorable Storable { get; }
         public JSONStorableFloat FloatParam { get; }
-        public StorableAnimationCurve StorableValue;
-        public AnimationCurve Value => StorableValue.val;
+        public AnimationCurve Value { get; } = new AnimationCurve();
 
         public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
 
@@ -23,7 +23,6 @@ namespace VamTimeline
         {
             Storable = storable;
             FloatParam = jsf;
-            StorableValue = new StorableAnimationCurve(new AnimationCurve());
         }
 
         public string GetShortName()
@@ -41,15 +40,10 @@ namespace VamTimeline
             return new[] { Value };
         }
 
-        public IEnumerable<StorableAnimationCurve> GetStorableCurves()
-        {
-            return new[] { StorableValue };
-        }
-
         public void SetKeyframe(float time, float value)
         {
             Value.SetKeyframe(time, value);
-            StorableValue.Update();
+            Dirty = true;
         }
 
         public void DeleteFrame(float time)
@@ -62,7 +56,7 @@ namespace VamTimeline
         public void DeleteFrameByKey(int key)
         {
             Value.RemoveKey(key);
-            StorableValue.Update();
+            Dirty = true;
         }
 
         public IEnumerable<float> GetAllKeyframesTime()

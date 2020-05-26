@@ -35,8 +35,6 @@ namespace VamTimeline
 
             // Right side
 
-            InitDisplayUI(true);
-
             InitSelectionUI(true);
 
             CreateSpacer(true);

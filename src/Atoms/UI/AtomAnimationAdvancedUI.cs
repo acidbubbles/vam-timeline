@@ -224,12 +224,13 @@ namespace VamTimeline
                 if (anim == null) throw new NullReferenceException("No current animation to reverse");
                 foreach (var target in anim.GetAllOrSelectedTargets())
                 {
-                    var controllerTarget = target as FreeControllerAnimationTarget;
-                    foreach (var storable in target.GetStorableCurves())
+                    foreach (var curve in target.GetCurves())
                     {
-                        storable.val.Reverse();
-                        storable.Update();
+                        curve.Reverse();
                     }
+                    target.Dirty = true;
+
+                    var controllerTarget = target as FreeControllerAnimationTarget;
                     if (controllerTarget != null)
                     {
                         var settings = controllerTarget.Settings.ToList();

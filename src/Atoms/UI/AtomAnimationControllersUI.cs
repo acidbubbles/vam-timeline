@@ -45,7 +45,7 @@ namespace VamTimeline
 
             // Right side
 
-            InitDisplayUI(true);
+            // TODO: Draw curves here
         }
 
         private void InitCurvesUI()

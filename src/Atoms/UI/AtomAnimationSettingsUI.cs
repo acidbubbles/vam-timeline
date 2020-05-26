@@ -267,21 +267,21 @@ namespace VamTimeline
             foreach (var origTarget in current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
-                for (var i = 0; i < origTarget.Storables.Count; i++)
+                for (var i = 0; i < origTarget.Curves.Count; i++)
                 {
                     newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
-                    newTarget.Storables[i].Update();
                 }
                 foreach (var kvp in origTarget.Settings)
                 {
                     newTarget.Settings[kvp.Key] = new KeyframeSettings { CurveType = kvp.Value.CurveType };
                 }
+                newTarget.Dirty = true;
             }
             foreach (var origTarget in current.TargetFloatParams)
             {
                 var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
                 newTarget.Value.keys = origTarget.Value.keys.ToArray();
-                newTarget.StorableValue.Update();
+                newTarget.Dirty = true;
             }
             Plugin.Animation.RebuildAnimation();
             Plugin.Animation.ChangeAnimation(clip.AnimationName);

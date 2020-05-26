@@ -11,11 +11,11 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimationTargetWithCurves : IAtomAnimationTarget
     {
+        bool Dirty { get; set; }
         string Name { get; }
 
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
-        IEnumerable<StorableAnimationCurve> GetStorableCurves();
         void DeleteFrame(float time);
         void DeleteFrameByKey(int key);
     }

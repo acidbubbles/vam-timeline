@@ -368,8 +368,8 @@ namespace VamTimeline
 
         public void DirtyAll()
         {
-            foreach (var s in AllTargets.SelectMany(t => t.GetStorableCurves()))
-                s.Update();
+            foreach (var s in AllTargets)
+                s.Dirty = true;
         }
 
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
