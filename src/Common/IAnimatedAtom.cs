@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 namespace VamTimeline
 {
     /// <summary>
@@ -9,6 +11,6 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimatedAtom
     {
-        void VamTimelineRequestAnimationInfo(UIDynamic dopeSheetContainer);
+        void VamTimelineRequestControlPanelInjection(GameObject container);
     }
 }

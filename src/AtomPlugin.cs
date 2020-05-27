@@ -185,7 +185,7 @@ namespace VamTimeline
         {
             try
             {
-                // TODO
+                // TODO: Won't re-attach controller panel after disable
             }
             catch (Exception exc)
             {
@@ -713,14 +713,14 @@ namespace VamTimeline
 
         #region Controller integration
 
-        public void VamTimelineRequestAnimationInfo(UIDynamic container)
+        public void VamTimelineRequestControlPanelInjection(GameObject container)
         {
             AnimationModified();
 
-            _controlPanel = container.gameObject.GetComponent<AnimationControlPanel>();
+            _controlPanel = container.GetComponent<AnimationControlPanel>();
             if (_controlPanel == null)
             {
-                _controlPanel = container.gameObject.AddComponent<AnimationControlPanel>();
+                _controlPanel = container.AddComponent<AnimationControlPanel>();
                 _controlPanel.Bind(this);
             }
             _controlPanel.Bind(Animation.Current);
@@ -728,14 +728,9 @@ namespace VamTimeline
 
         private void DestroyControllerPanel()
         {
-            if (_controlPanel == null) return;
-            while (_controlPanel.transform.childCount > 0)
-            {
-                var child = _controlPanel.transform.GetChild(0);
-                child.transform.parent = null;
-                Destroy(child);
-            }
-            Destroy(_controlPanel);
+            if (_controlPanel?.gameObject == null) return;
+            _controlPanel.gameObject.transform.SetParent(null, false);
+            Destroy(_controlPanel.gameObject);
             _controlPanel = null;
         }
 

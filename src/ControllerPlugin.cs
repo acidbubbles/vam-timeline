@@ -32,7 +32,8 @@ namespace VamTimeline
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
         private JSONStorableBool _enableKeyboardShortcuts;
-        private UIDynamic _controlPanelContainer;
+        private UIDynamic _controlPanelSpacer;
+        private GameObject _controlPanelContainer;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
 
         #region Initialization
@@ -151,10 +152,7 @@ namespace VamTimeline
             while (SuperController.singleton.freezeAnimation)
                 yield return 0;
 
-            foreach (var la in _linkedAnimations)
-            {
-                la.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _controlPanelContainer);
-            }
+            RequestControlPanelInjection();
 
             yield return 0;
 
@@ -250,7 +248,7 @@ namespace VamTimeline
                 // _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
                 // _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
                 // _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
-                _controlPanelContainer = _ui.CreateUISpacerInCanvas(x, y + 0.375f, 780f);
+                _controlPanelSpacer = _ui.CreateUISpacerInCanvas(x, y + 0.375f, 780f);
             }
             catch (Exception exc)
             {
@@ -264,6 +262,7 @@ namespace VamTimeline
 
             try
             {
+                DestroyControlPanelContainer();
                 _scrubberJSON.slider = null;
                 _ui.Dispose();
                 _ui = null;
@@ -316,12 +315,12 @@ namespace VamTimeline
                 _linkedAnimations.Add(link);
                 _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
                 if (_mainLinkedAnimation == null)
+                {
                     SelectCurrentAtom(link.Label);
+                }
                 _savedAtomsJSON.val = string.Join(AtomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
                 _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
                 _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
-
-                atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo), _controlPanelContainer);
             }
             catch (Exception exc)
             {
@@ -514,7 +513,30 @@ namespace VamTimeline
         {
             yield return 0;
             VamTimelineAnimationModified(uid);
-            _mainLinkedAnimation.Atom.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestAnimationInfo));
+            RequestControlPanelInjection();
+        }
+
+        private void RequestControlPanelInjection()
+        {
+            if (_controlPanelSpacer == null) return;
+
+            DestroyControlPanelContainer();
+
+            _controlPanelContainer = new GameObject();
+            _controlPanelContainer.transform.SetParent(_controlPanelSpacer.transform, false);
+
+            var rect = _controlPanelContainer.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+            _mainLinkedAnimation.Storable.gameObject.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestControlPanelInjection), _controlPanelContainer);
+        }
+
+        private void DestroyControlPanelContainer()
+        {
+            if (_controlPanelContainer == null) return;
+            _controlPanelContainer.transform.SetParent(null, false);
+            Destroy(_controlPanelContainer);
+            _controlPanelContainer = null;
         }
 
         private void ChangeAnimation(string name)

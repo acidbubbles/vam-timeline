@@ -28,7 +28,7 @@ namespace VamTimeline
             Atom = atom;
         }
 
-        private JSONStorable Storable
+        public JSONStorable Storable
         {
             get
             {

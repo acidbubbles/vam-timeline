@@ -169,7 +169,7 @@ namespace VamTimeline
             while (_layout.transform.childCount > 0)
             {
                 var child = _layout.transform.GetChild(0);
-                child.transform.parent = null;
+                child.transform.SetParent(null, false);
                 Destroy(child);
             }
         }
