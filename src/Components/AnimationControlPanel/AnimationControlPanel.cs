@@ -119,9 +119,9 @@ namespace VamTimeline
             _dopeSheet.Bind(current);
         }
 
-        public void SetScrubberPosition(float time)
+        public void SetScrubberPosition(float time, bool stopped)
         {
-            _dopeSheet.SetScrubberPosition(time);
+            _dopeSheet.SetScrubberPosition(time, stopped);
         }
     }
 }

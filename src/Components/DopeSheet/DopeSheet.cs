@@ -316,13 +316,16 @@ namespace VamTimeline
             }
         }
 
-        public void SetScrubberPosition(float val)
+        public void SetScrubberPosition(float val, bool stopped)
         {
             var ratio = Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-            var ms = val.ToMilliseconds();
-            foreach(var keyframe in _keyframesRows) keyframe.SetTime(ms);
+            if (stopped)
+            {
+                var ms = val.ToMilliseconds();
+                foreach (var keyframe in _keyframesRows) keyframe.SetTime(ms);
+            }
         }
     }
 }

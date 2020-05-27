@@ -106,14 +106,14 @@ namespace VamTimeline
             // TODO: Highlight current filtered target, and allow selection through dope sheet
             // TODO: Rename Draw, refresh when updated, recreate when animation changed
             _controlPanel.Bind(_plugin.Animation.Current);
-            _controlPanel.SetScrubberPosition(_plugin.Animation.Time);
+            _controlPanel.SetScrubberPosition(_plugin.Animation.Time, true);
         }
 
         public void AnimationFrameUpdated()
         {
             RefreshCurrentUI(false);
 
-            _controlPanel.SetScrubberPosition(_plugin.Animation.Time);
+            _controlPanel.SetScrubberPosition(_plugin.Animation.Time, true);
         }
 
         public void RefreshCurrentUI(bool animationModified)
@@ -249,7 +249,7 @@ namespace VamTimeline
         {
             if (_current == null) return;
             _current.UpdatePlaying();
-            _controlPanel.SetScrubberPosition(_plugin.Animation.Time);
+            _controlPanel.SetScrubberPosition(_plugin.Animation.Time, false);
         }
     }
 }

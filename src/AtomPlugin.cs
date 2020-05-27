@@ -94,7 +94,7 @@ namespace VamTimeline
                     if (AnimationJSON.val != Animation.Current.AnimationName)
                         AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                     if (_controlPanel != null)
-                        _controlPanel.SetScrubberPosition(time);
+                        _controlPanel.SetScrubberPosition(time, false);
 
                     _ui.UpdatePlaying();
 
@@ -680,7 +680,7 @@ namespace VamTimeline
                 _ui.AnimationFrameUpdated();
 
                 if (_controlPanel != null)
-                    _controlPanel.SetScrubberPosition(time);
+                    _controlPanel.SetScrubberPosition(time, true);
 
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
@@ -728,7 +728,7 @@ namespace VamTimeline
 
         private void DestroyControllerPanel()
         {
-            if (_controlPanel?.gameObject == null) return;
+            if (_controlPanel == null) return;
             _controlPanel.gameObject.transform.SetParent(null, false);
             Destroy(_controlPanel.gameObject);
             _controlPanel = null;
