@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +14,8 @@ namespace VamTimeline
     public class Curves : MonoBehaviour
     {
         private readonly CurvesStyle _style = new CurvesStyle();
-        private GameObject _noCurves;
+        private readonly GameObject _noCurves;
+        private readonly CurvesLines _lines;
 
         public Curves()
         {
@@ -26,24 +28,41 @@ namespace VamTimeline
             var mask = gameObject.AddComponent<Mask>();
             mask.showMaskGraphic = false;
 
-            CreateBackground(gameObject, _style.BackgroundColor);
+            CreateBackground(_style.BackgroundColor);
 
             _noCurves = CreateNoCurvesText();
+
+            _lines = CreateCurvesLines();
         }
 
-        private GameObject CreateBackground(GameObject parent, Color color)
+        private GameObject CreateBackground(Color color)
         {
             var go = new GameObject();
-            go.transform.SetParent(parent.transform, false);
+            go.transform.SetParent(transform, false);
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
 
             var image = go.AddComponent<Image>();
             image.color = color;
-            image.raycastTarget = true;
+            image.raycastTarget = false;
 
             return go;
+        }
+
+        private CurvesLines CreateCurvesLines()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+            var lines = go.AddComponent<CurvesLines>();
+            lines.style = _style;
+            lines.raycastTarget = false;
+
+            return lines;
         }
 
         private GameObject CreateNoCurvesText()
@@ -70,6 +89,9 @@ namespace VamTimeline
         public void Bind(List<AnimationCurve> curves)
         {
             _noCurves.SetActive(curves == null);
+            // TODO: Assign target instead to drive colors
+            // TODO: Update when the curve is changed (event)
+            _lines.curves = curves?.Select(c => new KeyValuePair<Color, AnimationCurve>(Color.black, c)).ToList();
         }
     }
 }

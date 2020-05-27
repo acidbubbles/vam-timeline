@@ -6,5 +6,7 @@ namespace VamTimeline
         {
             return new ScrubberStyle();
         }
+
+        public float LineSize { get; set; } = 4f;
     }
 }

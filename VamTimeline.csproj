@@ -71,6 +71,7 @@
     <Compile Include="src/Components/Scrubber/ScrubberStyle.cs" />
 
     <Compile Include="src/Components/Curves/Curves.cs" />
+    <Compile Include="src/Components/Curves/CurvesLines.cs" />
     <Compile Include="src/Components/Curves/CurvesStyle.cs" />
 
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />

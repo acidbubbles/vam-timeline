@@ -18,6 +18,7 @@ src/Components/Scrubber/Scrubber.cs
 src/Components/Scrubber/ScrubberMarkers.cs
 src/Components/Scrubber/ScrubberStyle.cs
 src/Components/Curves/Curves.cs
+src/Components/Curves/CurvesLines.cs
 src/Components/Curves/CurvesStyle.cs
 src/Components/DopeSheet/DopeSheet.cs
 src/Components/DopeSheet/DopeSheetKeyframes.cs

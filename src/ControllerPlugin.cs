@@ -413,6 +413,7 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(ControllerPlugin)}.{nameof(Update)}: " + exc);
+                _atomsJSON.val = "";
             }
         }
 
