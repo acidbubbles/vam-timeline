@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -13,6 +14,7 @@ namespace VamTimeline
     {
         bool Loop { get; }
         float AnimationLength { get; }
+        UnityEvent SelectedChanged { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

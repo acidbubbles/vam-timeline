@@ -62,7 +62,7 @@ namespace VamTimeline
 
             InitAnimationPatternLinkUI(true);
 
-            _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0;
+            _lengthWhenLengthModeChanged = Current?.AnimationLength ?? 0;
         }
 
         private void InitAnimationSettingsUI(bool rightSide)
@@ -76,7 +76,7 @@ namespace VamTimeline
                 ChangeLengthModeCropExtendAtTime,
                 ChangeLengthModeStretch,
                 ChangeLengthModeLoop
-             }, ChangeLengthModeLocked, "Change Length Mode", (string _) => _lengthWhenLengthModeChanged = Plugin.Animation?.Current?.AnimationLength ?? 0f);
+             }, ChangeLengthModeLocked, "Change Length Mode", (string _) => _lengthWhenLengthModeChanged = Current?.AnimationLength ?? 0f);
             RegisterStorable(_lengthModeJSON);
             var lengthModeUI = Plugin.CreateScrollablePopup(_lengthModeJSON);
             lengthModeUI.popupPanelHeight = 550f;
@@ -116,7 +116,7 @@ namespace VamTimeline
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {
-                valNoCallback = Plugin.Animation.Current.NextAnimationTime
+                valNoCallback = Current.NextAnimationTime
             };
             RegisterStorable(_nextAnimationTimeJSON);
             var nextAnimationTimeUI = Plugin.CreateSlider(_nextAnimationTimeJSON, rightSide);
@@ -145,7 +145,7 @@ namespace VamTimeline
             speedUI.valueFormat = "F3";
             RegisterComponent(speedUI);
 
-            _loop = new JSONStorableBool("Loop", Plugin.Animation?.Current?.Loop ?? true, (bool val) => ChangeLoop(val));
+            _loop = new JSONStorableBool("Loop", Current?.Loop ?? true, (bool val) => ChangeLoop(val));
             RegisterStorable(_loop);
             var loopingUI = Plugin.CreateToggle(_loop, rightSide);
             RegisterComponent(loopingUI);
@@ -164,7 +164,7 @@ namespace VamTimeline
             {
                 foreach (var c in Plugin.Animation.Clips)
                     c.AutoPlay = false;
-                Plugin.Animation.Current.AutoPlay = true;
+                Current.AutoPlay = true;
             })
             {
                 isStorable = false
@@ -176,29 +176,27 @@ namespace VamTimeline
 
         private void UpdateForcedNextAnimationTime()
         {
-            if (Plugin.Animation.Current.Loop) return;
-            if (Plugin.Animation.Current.NextAnimationName == null)
+            if (Current.Loop) return;
+            if (Current.NextAnimationName == null)
             {
-                Plugin.Animation.Current.NextAnimationTime = 0;
+                Current.NextAnimationTime = 0;
                 _nextAnimationTimeJSON.valNoCallback = 0;
             }
-            Plugin.Animation.Current.NextAnimationTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration).Snap();
-            _nextAnimationTimeJSON.valNoCallback = Plugin.Animation.Current.NextAnimationTime;
+            Current.NextAnimationTime = (Current.AnimationLength - Current.BlendDuration).Snap();
+            _nextAnimationTimeJSON.valNoCallback = Current.NextAnimationTime;
         }
 
         private void UpdateNextAnimationPreview()
         {
-            var current = Plugin.Animation.Current;
-
-            if (current.NextAnimationName == null)
+            if (Current.NextAnimationName == null)
             {
                 _nextAnimationPreviewJSON.val = "No next animation configured";
                 return;
             }
 
-            if (!current.Loop)
+            if (!Current.Loop)
             {
-                _nextAnimationPreviewJSON.val = $"Will play once and blend at {current.NextAnimationTime}s";
+                _nextAnimationPreviewJSON.val = $"Will play once and blend at {Current.NextAnimationTime}s";
                 return;
             }
 
@@ -208,7 +206,7 @@ namespace VamTimeline
             }
             else
             {
-                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.NextAnimationTime + current.BlendDuration) / current.AnimationLength, 2)} times including blending";
+                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((Current.NextAnimationTime + Current.BlendDuration) / Current.AnimationLength, 2)} times including blending";
             }
         }
 
@@ -223,7 +221,7 @@ namespace VamTimeline
                 });
             return new[] { "" }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Where(n => n != Plugin.Animation.Current.AnimationName)
+                .Where(n => n != Current.AnimationName)
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
         }
@@ -256,15 +254,14 @@ namespace VamTimeline
 
         private void AddAnimationAsCopy()
         {
-            var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
-            clip.Loop = current.Loop;
-            clip.NextAnimationName = current.NextAnimationName;
-            clip.NextAnimationTime = current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
-            clip.BlendDuration = current.BlendDuration;
-            clip.CropOrExtendLengthEnd(current.AnimationLength);
-            foreach (var origTarget in current.TargetControllers)
+            clip.Loop = Current.Loop;
+            clip.NextAnimationName = Current.NextAnimationName;
+            clip.NextAnimationTime = Current.NextAnimationTime;
+            clip.EnsureQuaternionContinuity = Current.EnsureQuaternionContinuity;
+            clip.BlendDuration = Current.BlendDuration;
+            clip.CropOrExtendLengthEnd(Current.AnimationLength);
+            foreach (var origTarget in Current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
                 for (var i = 0; i < origTarget.Curves.Count; i++)
@@ -277,7 +274,7 @@ namespace VamTimeline
                 }
                 newTarget.Dirty = true;
             }
-            foreach (var origTarget in current.TargetFloatParams)
+            foreach (var origTarget in Current.TargetFloatParams)
             {
                 var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
                 newTarget.Value.keys = origTarget.Value.keys.ToArray();
@@ -290,21 +287,20 @@ namespace VamTimeline
 
         private void AddAnimationFromCurrentFrame()
         {
-            var current = Plugin.Animation.Current;
             var clip = Plugin.Animation.AddAnimation();
-            clip.Loop = current.Loop;
-            clip.NextAnimationName = current.NextAnimationName;
-            clip.NextAnimationTime = current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
-            clip.BlendDuration = current.BlendDuration;
-            clip.CropOrExtendLengthEnd(current.AnimationLength);
-            foreach (var origTarget in current.TargetControllers)
+            clip.Loop = Current.Loop;
+            clip.NextAnimationName = Current.NextAnimationName;
+            clip.NextAnimationTime = Current.NextAnimationTime;
+            clip.EnsureQuaternionContinuity = Current.EnsureQuaternionContinuity;
+            clip.BlendDuration = Current.BlendDuration;
+            clip.CropOrExtendLengthEnd(Current.AnimationLength);
+            foreach (var origTarget in Current.TargetControllers)
             {
                 var newTarget = clip.Add(origTarget.Controller);
                 newTarget.SetKeyframeToCurrentTransform(0f);
                 newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
             }
-            foreach (var origTarget in current.TargetFloatParams)
+            foreach (var origTarget in Current.TargetFloatParams)
             {
                 var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
                 newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
@@ -316,7 +312,7 @@ namespace VamTimeline
 
         private void UpdateAnimationName(string val)
         {
-            var previousAnimationName = Plugin.Animation.Current.AnimationName;
+            var previousAnimationName = Current.AnimationName;
             if (string.IsNullOrEmpty(val))
             {
                 _animationNameJSON.valNoCallback = previousAnimationName;
@@ -327,7 +323,7 @@ namespace VamTimeline
                 _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
-            Plugin.Animation.Current.AnimationName = val;
+            Current.AnimationName = val;
             foreach (var clip in Plugin.Animation.Clips)
             {
                 if (clip.NextAnimationName == previousAnimationName)
@@ -349,63 +345,63 @@ namespace VamTimeline
             {
                 case ChangeLengthModeLocked:
                     {
-                        _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                        _lengthJSON.valNoCallback = Current.AnimationLength;
                         return;
                     }
                 case ChangeLengthModeStretch:
-                    Plugin.Animation.Current.StretchLength(newLength);
+                    Current.StretchLength(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendEnd:
-                    Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
+                    Current.CropOrExtendLengthEnd(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendBegin:
-                    Plugin.Animation.Current.CropOrExtendLengthBegin(newLength);
+                    Current.CropOrExtendLengthBegin(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendAtTime:
                     {
                         if (Plugin.Animation.IsPlaying())
                         {
-                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            _lengthJSON.valNoCallback = Current.AnimationLength;
                             return;
                         }
-                        var previousKeyframe = Plugin.Animation.Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
-                        var nextKeyframe = Plugin.Animation.Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
+                        var previousKeyframe = Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
+                        var nextKeyframe = Current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
 
                         var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
 
-                        if ((Plugin.Animation.Current.AnimationLength - newLength) > keyframeAllowedDiff)
+                        if ((Current.AnimationLength - newLength) > keyframeAllowedDiff)
                         {
-                            newLength = Plugin.Animation.Current.AnimationLength - keyframeAllowedDiff;
+                            newLength = Current.AnimationLength - keyframeAllowedDiff;
                         }
 
-                        Plugin.Animation.Current.CropOrExtendLengthAtTime(newLength, time);
+                        Current.CropOrExtendLengthAtTime(newLength, time);
                         break;
                     }
                 case ChangeLengthModeAddKeyframeEnd:
                     {
                         if (newLength <= _lengthWhenLengthModeChanged + float.Epsilon)
                         {
-                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            _lengthJSON.valNoCallback = Current.AnimationLength;
                             return;
                         }
-                        var snapshot = Plugin.Animation.Current.Copy(_lengthWhenLengthModeChanged, true);
-                        Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
-                        Plugin.Animation.Current.Paste(_lengthWhenLengthModeChanged, snapshot);
+                        var snapshot = Current.Copy(_lengthWhenLengthModeChanged, true);
+                        Current.CropOrExtendLengthEnd(newLength);
+                        Current.Paste(_lengthWhenLengthModeChanged, snapshot);
                         break;
                     }
                 case ChangeLengthModeAddKeyframeBegin:
                     {
                         if (newLength <= _lengthWhenLengthModeChanged + float.Epsilon)
                         {
-                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            _lengthJSON.valNoCallback = Current.AnimationLength;
                             return;
                         }
-                        var snapshot = Plugin.Animation.Current.Copy(0f, true);
-                        Plugin.Animation.Current.CropOrExtendLengthBegin(newLength);
-                        Plugin.Animation.Current.Paste((newLength - _lengthWhenLengthModeChanged).Snap(), snapshot);
+                        var snapshot = Current.Copy(0f, true);
+                        Current.CropOrExtendLengthBegin(newLength);
+                        Current.Paste((newLength - _lengthWhenLengthModeChanged).Snap(), snapshot);
                         break;
                     }
                 case ChangeLengthModeLoop:
@@ -414,24 +410,24 @@ namespace VamTimeline
                         var loops = (int)Math.Round(newLength / _lengthWhenLengthModeChanged);
                         if (loops <= 1 || newLength <= _lengthWhenLengthModeChanged)
                         {
-                            _lengthJSON.valNoCallback = Plugin.Animation.Current.AnimationLength;
+                            _lengthJSON.valNoCallback = Current.AnimationLength;
                             return;
                         }
-                        var frames = Plugin.Animation.Current
+                        var frames = Current
                             .TargetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
-                            .Concat(Plugin.Animation.Current.TargetFloatParams.SelectMany(t => t.Value.keys.Select(k => k.time)))
+                            .Concat(Current.TargetFloatParams.SelectMany(t => t.Value.keys.Select(k => k.time)))
                             .Select(t => t.Snap())
                             .Where(t => t < _lengthWhenLengthModeChanged)
                             .Distinct()
                             .ToList();
 
-                        var snapshots = frames.Select(f => Plugin.Animation.Current.Copy(f, true)).ToList();
+                        var snapshots = frames.Select(f => Current.Copy(f, true)).ToList();
                         foreach (var c in snapshots[0].Controllers)
                         {
                             c.Snapshot.CurveType = CurveTypeValues.Smooth;
                         }
 
-                        Plugin.Animation.Current.CropOrExtendLengthEnd(newLength);
+                        Current.CropOrExtendLengthEnd(newLength);
 
                         for (var repeat = 0; repeat < loops; repeat++)
                         {
@@ -439,7 +435,7 @@ namespace VamTimeline
                             {
                                 var pasteTime = frames[i] + (_lengthWhenLengthModeChanged * repeat);
                                 if (pasteTime >= newLength) continue;
-                                Plugin.Animation.Current.Paste(pasteTime, snapshots[i]);
+                                Current.Paste(pasteTime, snapshots[i]);
                             }
                         }
                     }
@@ -449,7 +445,7 @@ namespace VamTimeline
                     break;
             }
 
-            Plugin.Animation.Current.DirtyAll();
+            Current.DirtyAll();
 
             Plugin.Animation.RebuildAnimation();
             UpdateForcedNextAnimationTime();
@@ -462,52 +458,52 @@ namespace VamTimeline
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
             v = v.Snap();
-            if (!Plugin.Animation.Current.Loop && v >= (Plugin.Animation.Current.AnimationLength - 0.001f))
-                _blendDurationJSON.valNoCallback = v = (Plugin.Animation.Current.AnimationLength - 0.001f).Snap();
-            Plugin.Animation.Current.BlendDuration = v;
+            if (!Current.Loop && v >= (Current.AnimationLength - 0.001f))
+                _blendDurationJSON.valNoCallback = v = (Current.AnimationLength - 0.001f).Snap();
+            Current.BlendDuration = v;
             UpdateForcedNextAnimationTime();
             Plugin.AnimationModified();
         }
 
         private void ChangeLoop(bool val)
         {
-            Plugin.Animation.Current.Loop = val;
+            Current.Loop = val;
             if (val == true)
             {
-                foreach (var target in Plugin.Animation.Current.TargetControllers)
+                foreach (var target in Current.TargetControllers)
                 {
                     if (target.Settings.Count == 2)
-                        target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.LeaveAsIs;
+                        target.Settings[Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.LeaveAsIs;
                 }
             }
             else
             {
-                foreach (var target in Plugin.Animation.Current.TargetControllers)
+                foreach (var target in Current.TargetControllers)
                 {
                     if (target.Settings.Count == 2)
-                        target.Settings[Plugin.Animation.Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.CopyPrevious;
+                        target.Settings[Current.AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.CopyPrevious;
                 }
             }
             SetNextAnimationTime(
-                Plugin.Animation.Current.NextAnimationTime == 0
-                ? Plugin.Animation.Current.NextAnimationTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration
-                : Plugin.Animation.Current.NextAnimationTime
+                Current.NextAnimationTime == 0
+                ? Current.NextAnimationTime = Current.AnimationLength - Current.BlendDuration
+                : Current.NextAnimationTime
             );
             if (val)
             {
                 _transitionJSON.valNoCallback = false;
-                Plugin.Animation.Current.Transition = false;
+                Current.Transition = false;
             }
-            Plugin.Animation.Current.DirtyAll();
+            Current.DirtyAll();
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
 
         private void ChangeTransition(bool val)
         {
-            if (Plugin.Animation.Current.Loop) _loop.val = false;
-            Plugin.Animation.Current.Transition = val;
-            Plugin.Animation.Current.DirtyAll();
+            if (Current.Loop) _loop.val = false;
+            Current.Transition = val;
+            Current.DirtyAll();
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
             Plugin.Animation.Sample();
@@ -515,9 +511,9 @@ namespace VamTimeline
 
         private void SetEnsureQuaternionContinuity(bool val)
         {
-            Plugin.Animation.Current.EnsureQuaternionContinuity = val;
+            Current.EnsureQuaternionContinuity = val;
 
-            Plugin.Animation.Current.DirtyAll();
+            Current.DirtyAll();
 
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
@@ -525,27 +521,27 @@ namespace VamTimeline
 
         private void ChangeNextAnimation(string val)
         {
-            Plugin.Animation.Current.NextAnimationName = val;
+            Current.NextAnimationName = val;
             SetNextAnimationTime(
-                Plugin.Animation.Current.NextAnimationTime == 0
-                ? Plugin.Animation.Current.NextAnimationTime = Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration
-                : Plugin.Animation.Current.NextAnimationTime
+                Current.NextAnimationTime == 0
+                ? Current.NextAnimationTime = Current.AnimationLength - Current.BlendDuration
+                : Current.NextAnimationTime
             );
             Plugin.AnimationModified();
         }
 
         private void SetNextAnimationTime(float nextTime)
         {
-            if (Plugin.Animation.Current.NextAnimationName == null)
+            if (Current.NextAnimationName == null)
             {
                 _nextAnimationTimeJSON.valNoCallback = 0f;
-                Plugin.Animation.Current.NextAnimationTime = 0f;
+                Current.NextAnimationTime = 0f;
                 return;
             }
-            else if (!Plugin.Animation.Current.Loop)
+            else if (!Current.Loop)
             {
-                nextTime = (Plugin.Animation.Current.AnimationLength - Plugin.Animation.Current.BlendDuration).Snap();
-                Plugin.Animation.Current.NextAnimationTime = nextTime;
+                nextTime = (Current.AnimationLength - Current.BlendDuration).Snap();
+                Current.NextAnimationTime = nextTime;
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
                 return;
             }
@@ -553,7 +549,7 @@ namespace VamTimeline
             nextTime = nextTime.Snap();
 
             _nextAnimationTimeJSON.valNoCallback = nextTime;
-            Plugin.Animation.Current.NextAnimationTime = nextTime;
+            Current.NextAnimationTime = nextTime;
             Plugin.AnimationModified();
         }
 
@@ -561,7 +557,7 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(uid))
             {
-                Plugin.Animation.Current.AnimationPattern = null;
+                Current.AnimationPattern = null;
                 return;
             }
             var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
@@ -570,7 +566,7 @@ namespace VamTimeline
                 SuperController.LogError($"VamTimeline: Could not find Animation Pattern '{uid}'");
                 return;
             }
-            Plugin.Animation.Current.AnimationPattern = animationPattern;
+            Current.AnimationPattern = animationPattern;
             animationPattern.SetBoolParamValue("autoPlay", false);
             animationPattern.SetBoolParamValue("pause", false);
             animationPattern.SetBoolParamValue("loop", false);
@@ -588,18 +584,17 @@ namespace VamTimeline
         {
             base.AnimationModified();
 
-            var current = Plugin.Animation.Current;
-            _animationNameJSON.valNoCallback = current.AnimationName;
-            _lengthJSON.valNoCallback = current.AnimationLength;
-            _blendDurationJSON.valNoCallback = current.BlendDuration;
-            _loop.valNoCallback = current.Loop;
-            _transitionJSON.valNoCallback = current.Transition;
-            _ensureQuaternionContinuity.valNoCallback = current.EnsureQuaternionContinuity;
-            _nextAnimationJSON.valNoCallback = current.NextAnimationName;
+            _animationNameJSON.valNoCallback = Current.AnimationName;
+            _lengthJSON.valNoCallback = Current.AnimationLength;
+            _blendDurationJSON.valNoCallback = Current.BlendDuration;
+            _loop.valNoCallback = Current.Loop;
+            _transitionJSON.valNoCallback = Current.Transition;
+            _ensureQuaternionContinuity.valNoCallback = Current.EnsureQuaternionContinuity;
+            _nextAnimationJSON.valNoCallback = Current.NextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
-            _nextAnimationTimeJSON.valNoCallback = current.NextAnimationTime;
-            _autoPlayJSON.valNoCallback = current.AutoPlay;
-            _linkedAnimationPatternJSON.valNoCallback = current.AnimationPattern?.containingAtom.uid ?? "";
+            _nextAnimationTimeJSON.valNoCallback = Current.NextAnimationTime;
+            _autoPlayJSON.valNoCallback = Current.AutoPlay;
+            _linkedAnimationPatternJSON.valNoCallback = Current.AnimationPattern?.containingAtom.uid ?? "";
             UpdateNextAnimationPreview();
         }
 

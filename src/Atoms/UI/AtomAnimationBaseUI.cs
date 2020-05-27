@@ -17,6 +17,7 @@ namespace VamTimeline
         private readonly List<UIDynamic> _components = new List<UIDynamic>();
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
+        protected AtomAnimationClip Current;
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
         {
@@ -25,6 +26,7 @@ namespace VamTimeline
 
         public virtual void Init()
         {
+            Current = Plugin.Animation?.Current;
         }
 
         public virtual void UpdatePlaying()
@@ -32,6 +34,15 @@ namespace VamTimeline
         }
 
         public virtual void AnimationModified()
+        {
+            if (Plugin.Animation.Current != Current)
+            {
+                AnimationChanged(Current, Current);
+                Current = Plugin.Animation.Current;
+            }
+        }
+
+        protected virtual void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
         {
         }
 

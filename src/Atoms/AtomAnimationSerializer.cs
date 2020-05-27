@@ -91,7 +91,7 @@ namespace VamTimeline
                         continue;
                     }
                     var target = new FreeControllerAnimationTarget(controller);
-                    clip.TargetControllers.Add(target);
+                    clip.Add(target);
                     DeserializeCurve(target.X, controllerJSON["X"], clip.AnimationLength, target.Settings);
                     DeserializeCurve(target.Y, controllerJSON["Y"], clip.AnimationLength);
                     DeserializeCurve(target.Z, controllerJSON["Z"], clip.AnimationLength);

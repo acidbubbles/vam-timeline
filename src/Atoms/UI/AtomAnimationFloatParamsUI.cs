@@ -73,11 +73,11 @@ namespace VamTimeline
         private void RefreshTargetsList()
         {
             if (Plugin.Animation == null) return;
-            if (Enumerable.SequenceEqual(Plugin.Animation.Current.TargetFloatParams, _targets.Select(t => t.Target)))
+            if (Enumerable.SequenceEqual(Current.TargetFloatParams, _targets.Select(t => t.Target)))
                 return;
             RemoveTargets();
             var time = Plugin.Animation.Time;
-            foreach (var target in Plugin.Animation.Current.TargetFloatParams)
+            foreach (var target in Current.TargetFloatParams)
             {
                 var sourceFloatParamJSON = target.FloatParam;
                 var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val))
@@ -106,7 +106,7 @@ namespace VamTimeline
         {
             if (Plugin.Animation.IsPlaying()) return;
             var time = Plugin.Animation.Time.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength))
+            if (time.IsSameFrame(0f) || time.IsSameFrame(Current.AnimationLength))
             {
                 _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
                 return;

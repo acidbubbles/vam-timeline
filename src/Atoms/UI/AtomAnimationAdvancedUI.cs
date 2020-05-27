@@ -191,7 +191,7 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Plugin.Animation.Current;
+                var anim = Current;
                 if (anim == null) return;
                 if (Plugin.Animation.Clips.Count == 1)
                 {
@@ -221,7 +221,7 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Plugin.Animation.Current;
+                var anim = Current;
                 if (anim == null) throw new NullReferenceException("No current animation to reverse");
                 foreach (var target in anim.GetAllOrSelectedTargets())
                 {
@@ -256,7 +256,7 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Plugin.Animation.Current;
+                var anim = Current;
                 if (anim == null) return;
                 var idx = Plugin.Animation.Clips.IndexOf(anim);
                 if (idx <= 0) return;
@@ -274,7 +274,7 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Plugin.Animation.Current;
+                var anim = Current;
                 if (anim == null) return;
                 var idx = Plugin.Animation.Clips.IndexOf(anim);
                 if (idx >= Plugin.Animation.Clips.Count - 1) return;
@@ -419,7 +419,7 @@ namespace VamTimeline
                     if (fc.currentPositionState != FreeControllerV3.PositionState.On) continue;
                     if (fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
 
-                    var target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(tc => tc.Controller == fc);
+                    var target = Current.TargetControllers.FirstOrDefault(tc => tc.Controller == fc);
                     if (target == null)
                     {
                         if (!all) continue;
@@ -492,11 +492,10 @@ namespace VamTimeline
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            var current = Plugin.Animation.Current;
             var containingAtom = Plugin.ContainingAtom;
             var totalStopwatch = Stopwatch.StartNew();
 
-            current.Loop = SuperController.singleton.motionAnimationMaster.loop;
+            Current.Loop = SuperController.singleton.motionAnimationMaster.loop;
 
             float frameLength;
             switch (_importRecordedOptionsJSON.val)
@@ -530,10 +529,10 @@ namespace VamTimeline
                     if (mot == null || mot.clip == null) continue;
                     if (mot.clip.clipLength <= 0.001) continue;
                     ctrl = mot.controller;
-                    current.Remove(ctrl);
+                    Current.Remove(ctrl);
                     target = Plugin.Animation.Add(ctrl);
-                    if (mot.clip.clipLength > current.AnimationLength)
-                        current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
+                    if (mot.clip.clipLength > Current.AnimationLength)
+                        Current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
                 }
                 catch (Exception exc)
                 {
@@ -542,9 +541,9 @@ namespace VamTimeline
                 }
 
                 if (_importRecordedOptionsJSON.val == "Keyframe Reduction")
-                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, current, target, totalStopwatch, ctrl)) yield return x;
+                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, Current, target, totalStopwatch, ctrl)) yield return x;
                 else
-                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameLength, current, target, totalStopwatch, ctrl)) yield return x;
+                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameLength, Current, target, totalStopwatch, ctrl)) yield return x;
             }
 
             yield return 0;

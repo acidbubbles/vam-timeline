@@ -137,11 +137,11 @@ namespace VamTimeline
 
         private void GenerateRemoveToggles()
         {
-            if (string.Join(",", Plugin.Animation.Current.AllTargets.Select(tc => tc.Name).OrderBy(n => n).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).OrderBy(n => n).ToArray()))
+            if (string.Join(",", Current.AllTargets.Select(tc => tc.Name).OrderBy(n => n).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).OrderBy(n => n).ToArray()))
                 return;
 
             ClearRemoveToggles();
-            foreach (var target in Plugin.Animation.Current.TargetControllers)
+            foreach (var target in Current.TargetControllers)
             {
                 var jsb = new JSONStorableBool(target.Name, true, (bool val) =>
                 {
@@ -151,7 +151,7 @@ namespace VamTimeline
                 var jsbUI = Plugin.CreateToggle(jsb, true);
                 _removeToggles.Add(jsb);
             }
-            foreach (var target in Plugin.Animation.Current.TargetFloatParams)
+            foreach (var target in Current.TargetFloatParams)
             {
                 var jsb = new JSONStorableBool(target.Name, true, (bool val) =>
                 {
@@ -196,7 +196,7 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Controller {uid} in atom {Plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
-                if (Plugin.Animation.Current.TargetControllers.Any(c => c.Controller == controller))
+                if (Current.TargetControllers.Any(c => c.Controller == controller))
                     return;
 
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
@@ -229,7 +229,7 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Param {_addParamListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
                     return;
                 }
-                if (Plugin.Animation.Current.TargetFloatParams.Any(c => c.FloatParam == sourceFloatParam))
+                if (Current.TargetFloatParams.Any(c => c.FloatParam == sourceFloatParam))
                 {
                     return;
                 }
@@ -248,7 +248,7 @@ namespace VamTimeline
         {
             try
             {
-                Plugin.Animation.Current.Remove(target.Controller);
+                Current.Remove(target.Controller);
                 Plugin.Animation.RebuildAnimation();
                 Plugin.AnimationModified();
             }
@@ -262,7 +262,7 @@ namespace VamTimeline
         {
             try
             {
-                Plugin.Animation.Current.Remove(target);
+                Current.Remove(target);
                 Plugin.AnimationModified();
             }
             catch (Exception exc)

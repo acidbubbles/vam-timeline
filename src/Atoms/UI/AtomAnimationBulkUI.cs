@@ -44,7 +44,7 @@ namespace VamTimeline
             // Init
 
             _selectionStart = 0f;
-            _selectionEnd = Plugin.Animation.Current.AnimationLength;
+            _selectionEnd = Current.AnimationLength;
             AnimationFrameUpdated();
         }
 
@@ -114,9 +114,9 @@ namespace VamTimeline
         private void SelectionModified()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {Plugin.Animation.Current.AnimationLength:0.000}s");
+            sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {Current.AnimationLength:0.000}s");
             var involvedKeyframes = 0;
-            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())
+            foreach (var target in Current.GetAllOrSelectedTargets())
             {
                 var leadCurve = target.GetLeadCurve();
                 for (var key = 0; key < leadCurve.length; key++)
@@ -135,7 +135,7 @@ namespace VamTimeline
         {
             Plugin.Clipboard.Clear();
             Plugin.Clipboard.Time = _selectionStart;
-            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedTargets())
+            foreach (var target in Current.GetAllOrSelectedTargets())
             {
                 var leadCurve = target.GetLeadCurve();
                 for (var key = leadCurve.length - 1; key >= 0; key--)
@@ -145,9 +145,9 @@ namespace VamTimeline
                     {
                         if (copy)
                         {
-                            Plugin.Clipboard.Entries.Insert(0, Plugin.Animation.Current.Copy(keyTime));
+                            Plugin.Clipboard.Entries.Insert(0, Current.Copy(keyTime));
                         }
-                        if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Plugin.Animation.Current.AnimationLength))
+                        if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Current.AnimationLength))
                         {
                             target.DeleteFrameByKey(key);
                         }
@@ -166,7 +166,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(val)) return;
             _changeCurveJSON.valNoCallback = "";
 
-            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+            foreach (var target in Current.GetAllOrSelectedControllerTargets())
             {
                 var leadCurve = target.GetLeadCurve();
                 for (var key = leadCurve.length - 2; key > 0; key--)
@@ -188,7 +188,7 @@ namespace VamTimeline
         {
             base.AnimationFrameUpdated();
 
-            var selectedControllers = string.Join(",", Plugin.Animation.Current.GetAllOrSelectedTargets().Select(t => t.Name).ToArray());
+            var selectedControllers = string.Join(",", Current.GetAllOrSelectedTargets().Select(t => t.Name).ToArray());
             if (_selectedControllers != selectedControllers)
             {
                 SelectionModified();
@@ -200,10 +200,9 @@ namespace VamTimeline
         {
             base.AnimationModified();
 
-            var current = Plugin.Animation.Current;
-            if (current.AnimationLength < _selectionEnd)
+            if (Current.AnimationLength < _selectionEnd)
             {
-                _selectionEnd = current.AnimationLength;
+                _selectionEnd = Current.AnimationLength;
                 if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
             }
             SelectionModified();

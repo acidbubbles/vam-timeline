@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -72,12 +71,15 @@ namespace VamTimeline
 
             _curves = spacerUI.gameObject.AddComponent<Curves>();
             UpdateCurves();
+
+            // TODO: When changing the current clip this won't update
+            Current.SelectedChanged.AddListener(UpdateCurves);
         }
 
         private void UpdateCurves()
         {
             if (_curves == null) return;
-            var targets = Plugin.Animation.Current.GetAllOrSelectedControllerTargets().ToList();
+            var targets = Current.GetAllOrSelectedControllerTargets();
             if (targets.Count == 1)
                 _curves.Bind(targets[0].Curves);
             else
@@ -95,7 +97,6 @@ namespace VamTimeline
             base.AnimationFrameUpdated();
             UpdateValues();
             UpdateCurrentCurveType();
-            UpdateCurves();
         }
 
         public override void AnimationModified()
@@ -106,19 +107,25 @@ namespace VamTimeline
             UpdateCurves();
         }
 
+        protected override void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
+        {
+            before.SelectedChanged.RemoveListener(UpdateCurves);
+            after.SelectedChanged.AddListener(UpdateCurves);
+        }
+
         private void UpdateCurrentCurveType()
         {
             if (_curveTypeJSON == null) return;
 
             var time = Plugin.Animation.Time.Snap();
-            if (Plugin.Animation.Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
+            if (Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Current.AnimationLength)))
             {
                 _curveTypeJSON.valNoCallback = "(Loop)";
                 return;
             }
             var ms = time.ToMilliseconds();
             var curveTypes = new HashSet<string>();
-            foreach (var target in Plugin.Animation.Current.GetAllOrSelectedControllerTargets())
+            foreach (var target in Current.GetAllOrSelectedControllerTargets())
             {
                 KeyframeSettings v;
                 if (!target.Settings.TryGetValue(ms, out v)) continue;
@@ -144,14 +151,14 @@ namespace VamTimeline
         private void RefreshTargetsList()
         {
             if (Plugin.Animation == null) return;
-            if (Enumerable.SequenceEqual(Plugin.Animation.Current.TargetControllers, _targets.Select(t => t.Target)))
+            if (Enumerable.SequenceEqual(Current.TargetControllers, _targets.Select(t => t.Target)))
             {
                 UpdateValues();
                 return;
             }
             RemoveTargets();
             var time = Plugin.Animation.Time;
-            foreach (var target in Plugin.Animation.Current.TargetControllers)
+            foreach (var target in Current.TargetControllers)
             {
                 var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.GetLeadCurve().KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
@@ -194,12 +201,12 @@ namespace VamTimeline
                 return;
             }
             if (Plugin.Animation.IsPlaying()) return;
-            if (Plugin.Animation.Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength)))
+            if (Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Current.AnimationLength)))
             {
                 UpdateCurrentCurveType();
                 return;
             }
-            Plugin.Animation.Current.ChangeCurve(time, curveType);
+            Current.ChangeCurve(time, curveType);
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
         }
@@ -208,7 +215,7 @@ namespace VamTimeline
         {
             if (Plugin.Animation.IsPlaying()) return;
             var time = Plugin.Animation.Time.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(Plugin.Animation.Current.AnimationLength))
+            if (time.IsSameFrame(0f) || time.IsSameFrame(Current.AnimationLength))
             {
                 _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
                 return;
@@ -217,7 +224,7 @@ namespace VamTimeline
             {
                 if (Plugin.AutoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target1 in Plugin.Animation.Current.TargetControllers)
+                    foreach (var target1 in Current.TargetControllers)
                         SetControllerKeyframe(time, target1);
                 }
                 else
@@ -229,7 +236,7 @@ namespace VamTimeline
             {
                 if (Plugin.AutoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target1 in Plugin.Animation.Current.TargetControllers)
+                    foreach (var target1 in Current.TargetControllers)
                         target1.DeleteFrame(time);
                 }
                 else
@@ -245,7 +252,7 @@ namespace VamTimeline
         {
             Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
             if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
-                Plugin.Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
+                Current.ChangeCurve(time, CurveTypeValues.Smooth);
         }
     }
 }

@@ -167,7 +167,6 @@ namespace VamTimeline
 
         public void Play()
         {
-            if (Current == null) return;
             if (Current == null)
             {
                 SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");

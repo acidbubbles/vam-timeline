@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -52,9 +53,9 @@ namespace VamTimeline
                 _nextAnimationName = value == "" ? null : value;
             }
         }
-
         public float NextAnimationTime { get; set; }
         public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
+        public UnityEvent SelectedChanged { get; } = new UnityEvent();
 
         public AtomAnimationClip(string animationName)
         {
@@ -79,9 +80,15 @@ namespace VamTimeline
         {
             if (TargetControllers.Any(c => c.Controller == controller)) return null;
             var target = new FreeControllerAnimationTarget(controller);
+            Add(target);
+            return target;
+        }
+
+        public void Add(FreeControllerAnimationTarget target)
+        {
             TargetControllers.Add(target);
             TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
-            return target;
+            target.SelectedChanged.AddListener(TargetSelectionChanged);
         }
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
@@ -97,6 +104,12 @@ namespace VamTimeline
             if (target == null) throw new NullReferenceException(nameof(target));
             TargetFloatParams.Add(target);
             TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+            target.SelectedChanged.AddListener(TargetSelectionChanged);
+        }
+
+        private void TargetSelectionChanged()
+        {
+            SelectedChanged.Invoke();
         }
 
         public void Remove(FreeControllerV3 controller)
@@ -188,27 +201,27 @@ namespace VamTimeline
 
         public IEnumerable<IAnimationTargetWithCurves> GetAllOrSelectedTargets()
         {
-            var found = false;
             var result = AllTargets
-                .Where(t => { if (t.Selected) { found = true; return t.Selected; } else { return false; } })
-                .Cast<IAnimationTargetWithCurves>();
-            return found ? result : AllTargets;
+                .Where(t => t.Selected)
+                .Cast<IAnimationTargetWithCurves>()
+                .ToList();
+            return result.Count > 0 ? result : AllTargets;
         }
 
-        public IEnumerable<FreeControllerAnimationTarget> GetAllOrSelectedControllerTargets()
+        public IList<FreeControllerAnimationTarget> GetAllOrSelectedControllerTargets()
         {
-            var found = false;
             var result = TargetControllers
-                .Where(t => { if (t.Selected) { found = true; return t.Selected; } else { return false; } });
-            return found ? result : TargetControllers;
+                .Where(t => t.Selected)
+                .ToList();
+            return result.Count > 0 ? result : TargetControllers;
         }
 
-        public IEnumerable<FloatParamAnimationTarget> GetAllOrSelectedFloatParamTargets()
+        public IList<FloatParamAnimationTarget> GetAllOrSelectedFloatParamTargets()
         {
-            var found = false;
             var result = TargetFloatParams
-                .Where(t => { if (t.Selected) { found = true; return t.Selected; } else { return false; } });
-            return found ? result : TargetFloatParams;
+                .Where(t => t.Selected)
+                .ToList();
+            return result.Count > 0 ? result : TargetFloatParams;
         }
 
         public void StretchLength(float value)
@@ -386,6 +399,7 @@ namespace VamTimeline
 
         public void Dispose()
         {
+            SelectedChanged.RemoveAllListeners();
             foreach (var target in AllTargets)
             {
                 target.Dispose();
