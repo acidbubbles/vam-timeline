@@ -33,7 +33,6 @@ namespace VamTimeline
 
         private Scrubber InitScrubber(JSONStorableFloat scrubberJSON)
         {
-            // TODO: Multiple sliders will be created for the same scrubber. Replace by a custom (and nicer) component.
             var go = new GameObject();
             go.transform.SetParent(transform, false);
 
@@ -102,7 +101,6 @@ namespace VamTimeline
 
             go.AddComponent<LayoutElement>().flexibleHeight = 260f;
 
-            // TODO: Get rid of the "filtered" list and instead use a boolean flag on the animation clip target
             return go.AddComponent<DopeSheet>();
         }
 

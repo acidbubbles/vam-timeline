@@ -38,7 +38,6 @@ namespace VamTimeline
             CreateBackground(gameObject, _style.BackgroundColor);
             CreateMarkers();
             _scrubberRect = CreateLine(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
-            // TODO: Add second markers
             // TODO: Add keyframe markers (only for filtered targets)
             _timeText = CreateTime();
         }
@@ -124,10 +123,9 @@ namespace VamTimeline
 
             if (_previousTime == jsf.val) return;
 
-            // TODO: Change animation length won't update. TODO: Animation change events
             _previousTime = jsf.val;
             _previousMax = jsf.max;
-            var ratio = Mathf.Clamp(jsf.val / jsf.max, 0, jsf.max);
+            var ratio = Mathf.Clamp01(jsf.val / jsf.max);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             _timeText.text = $"{jsf.val:0.000}s / {jsf.max:0.000}s";

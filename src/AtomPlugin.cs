@@ -652,8 +652,12 @@ namespace VamTimeline
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
                 {
-                    // TODO: Replace broadcasting by a link
-                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
+                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
+                    if (pluginId != null)
+                    {
+                        var plugin = controller.GetStorableByID(pluginId);
+                        plugin.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
+                    }
                 }
             }
             catch (Exception exc)
@@ -685,7 +689,14 @@ namespace VamTimeline
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
                 foreach (var controller in externalControllers)
-                    controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationFrameUpdated), containingAtom.uid);
+                {
+                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
+                    if (pluginId != null)
+                    {
+                        var plugin = controller.GetStorableByID(pluginId);
+                        controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationFrameUpdated), containingAtom.uid);
+                    }
+                }
             }
             catch (Exception exc)
             {

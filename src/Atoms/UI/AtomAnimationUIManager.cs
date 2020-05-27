@@ -101,10 +101,9 @@ namespace VamTimeline
                 _screensJSON.valNoCallback = AtomAnimationLockedUI.ScreenName;
             if (!_plugin.LockedJSON.val && _screensJSON.val == AtomAnimationLockedUI.ScreenName)
                 _screensJSON.valNoCallback = GetDefaultScreen();
+
             RefreshCurrentUI(true);
 
-            // TODO: Highlight current filtered target, and allow selection through dope sheet
-            // TODO: Rename Draw, refresh when updated, recreate when animation changed
             _controlPanel.Bind(_plugin.Animation.Current);
             _controlPanel.SetScrubberPosition(_plugin.Animation.Time, true);
         }

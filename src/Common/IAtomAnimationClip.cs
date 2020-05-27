@@ -12,7 +12,6 @@ namespace VamTimeline
     public interface IAtomAnimationClip
     {
         float AnimationLength { get; }
-        event EventHandler AnimationLengthUpdated;
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

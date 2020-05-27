@@ -17,7 +17,6 @@ namespace VamTimeline
         public const float DefaultBlendDuration = 0.75f;
         private bool _loop = true;
         private string _nextAnimationName;
-        private float _animationLength = DefaultAnimationLength;
 
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }
@@ -26,18 +25,7 @@ namespace VamTimeline
         public IEnumerable<IAnimationTargetWithCurves> AllTargets => TargetControllers.Cast<IAnimationTargetWithCurves>().Concat(TargetFloatParams.Cast<IAnimationTargetWithCurves>());
         public bool EnsureQuaternionContinuity { get; set; } = true;
         public string AnimationName { get; set; }
-        public float AnimationLength
-        {
-            get
-            {
-                return _animationLength;
-            }
-            set
-            {
-                _animationLength = value;
-                AnimationLengthUpdated?.Invoke(this, EventArgs.Empty);
-            }
-        }
+        public float AnimationLength { get; set; } = DefaultAnimationLength;
         public bool AutoPlay { get; set; } = false;
         public bool Loop
         {
@@ -67,8 +55,6 @@ namespace VamTimeline
 
         public float NextAnimationTime { get; set; }
         public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
-
-        public event EventHandler AnimationLengthUpdated;
 
         public AtomAnimationClip(string animationName)
         {

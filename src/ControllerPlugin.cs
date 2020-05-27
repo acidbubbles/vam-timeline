@@ -214,6 +214,8 @@ namespace VamTimeline
             var resyncButton = CreateButton("Re-Sync Atom Plugins");
             resyncButton.button.onClick.AddListener(() =>
             {
+                DestroyControlPanelContainer();
+                _mainLinkedAnimation = null;
                 RestoreAtomsLink(_savedAtomsJSON.val);
                 _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
             });

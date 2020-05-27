@@ -13,13 +13,12 @@ namespace VamTimeline
     /// </summary>
     public class DopeSheet : MonoBehaviour
     {
+        private readonly List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
         private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
         public readonly ScrollRect _scrollRect;
         private readonly VerticalLayoutGroup _layout;
-        private float _scrubberMax;
         private IAtomAnimationClip _clip;
-        private List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
 
         public DopeSheet()
         {
@@ -148,8 +147,6 @@ namespace VamTimeline
             Unbind();
 
             _clip = clip;
-            _scrubberMax = _clip.AnimationLength;
-            _clip.AnimationLengthUpdated += AnimationUpdated;
             foreach (var group in _clip.GetTargetGroups())
             {
                 if (group.Count > 0)
@@ -165,19 +162,12 @@ namespace VamTimeline
         private void Unbind()
         {
             _keyframesRows.Clear();
-            if (_clip != null) _clip.AnimationLengthUpdated -= AnimationUpdated;
             while (_layout.transform.childCount > 0)
             {
                 var child = _layout.transform.GetChild(0);
                 child.transform.SetParent(null, false);
                 Destroy(child);
             }
-        }
-
-        private void AnimationUpdated(object sender, EventArgs e)
-        {
-            // TODO: Implement diff or version number
-            _scrubberMax = (sender as AtomAnimationClip).AnimationLength;
         }
 
         private void CreateHeader(string title)
@@ -269,11 +259,7 @@ namespace VamTimeline
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(() =>
                 {
-                    // TODO: Highlight row
-                    // TODO: Unselect
                     target.Selected = !target.Selected;
-                    // TODO: AnimationFrameUpdated
-                    // TODO: Highlight the row keyframes
                 });
             }
 
@@ -318,7 +304,7 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float val, bool stopped)
         {
-            var ratio = Mathf.Clamp(val / _scrubberMax, 0, _scrubberMax);
+            var ratio = Mathf.Clamp01(val / _clip.AnimationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             if (stopped)
