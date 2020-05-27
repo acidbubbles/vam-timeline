@@ -11,6 +11,7 @@ namespace VamTimeline
     /// </summary>
     public class AnimationControlPanel : MonoBehaviour
     {
+        private IAtomPlugin _plugin;
         private DopeSheet _dopeSheet;
         private Scrubber _scrubber;
 
@@ -21,6 +22,8 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
+            _plugin = plugin;
+
             _scrubber = InitScrubber(plugin.ScrubberJSON);
             InitSpacer();
             // TODO: Integrate play/stop inside scrubber
@@ -101,7 +104,11 @@ namespace VamTimeline
 
             go.AddComponent<LayoutElement>().flexibleHeight = 260f;
 
-            return go.AddComponent<DopeSheet>();
+            var dopeSheet = go.AddComponent<DopeSheet>();
+
+            dopeSheet.SetTime.AddListener(time => _plugin.TimeJSON.val = time);
+
+            return dopeSheet;
         }
 
         private void InitSpacer()

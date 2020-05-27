@@ -185,7 +185,7 @@ namespace VamTimeline
         #region Curves
 
         [MethodImpl(256)]
-        public static int KeyframeBinarySearch(this AnimationCurve curve, float time)
+        public static int KeyframeBinarySearch(this AnimationCurve curve, float time, bool returnClosest = false)
         {
             if (time == 0) return 0;
             if (time == curve[curve.length - 1].time) return curve.length - 1;
@@ -211,7 +211,15 @@ namespace VamTimeline
                     return middle;
                 }
             }
-            return -1;
+            if (!returnClosest) return -1;
+            if (left > right)
+            {
+                var tmp = left;
+                left = right;
+                right = tmp;
+            }
+            var avg = curve[left].time + ((curve[right].time - curve[left].time) / 2f);
+            if (time - avg < 0) return left; else return right;
         }
 
         public static void SmoothAllFrames(this AnimationCurve curve)

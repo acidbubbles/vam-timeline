@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -13,12 +14,16 @@ namespace VamTimeline
     /// </summary>
     public class DopeSheet : MonoBehaviour
     {
+        public class SetTimeEvent : UnityEvent<float> { }
+
         private readonly List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
         private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
-        public readonly ScrollRect _scrollRect;
+        private readonly ScrollRect _scrollRect;
         private readonly VerticalLayoutGroup _layout;
         private IAtomAnimationClip _clip;
+
+        public SetTimeEvent SetTime = new SetTimeEvent();
 
         public DopeSheet()
         {
@@ -58,6 +63,7 @@ namespace VamTimeline
 
             var image = go.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = false;
 
             return go;
         }
@@ -257,8 +263,9 @@ namespace VamTimeline
                 );
 
                 var click = child.AddComponent<Clickable>();
-                click.onClick.AddListener(() =>
+                click.onClick.AddListener(_ =>
                 {
+                    // TODO: Also select time based on nearest time with keyframe (clicking close)
                     target.Selected = !target.Selected;
                 });
             }
@@ -294,12 +301,32 @@ namespace VamTimeline
                 rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
-                keyframes.SetKeyframes(target.GetAllKeyframesTime());
+                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
                 keyframes.SetTime(0);
                 keyframes.style = _style;
-                keyframes.raycastTarget = false;
+                keyframes.raycastTarget = true;
                 _keyframesRows.Add(keyframes);
+
+                var targetWithCurves = target as IAnimationTargetWithCurves;
+                if (targetWithCurves != null)
+                {
+                    var click = go.AddComponent<Clickable>();
+                    click.onClick.AddListener(eventData => OnClick(targetWithCurves, rect, eventData));
+                }
             }
+        }
+
+        private void OnClick(IAnimationTargetWithCurves target, RectTransform rect, PointerEventData eventData)
+        {
+            Vector2 localPosition;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
+                return;
+            var curve = target.GetLeadCurve();
+            var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
+            var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
+            var closest = curve.KeyframeBinarySearch(ratio * _clip.AnimationLength, true);
+            var time = curve[closest].time;
+            SetTime.Invoke(time);
         }
 
         public void SetScrubberPosition(float val, bool stopped)

@@ -17,6 +17,7 @@ namespace VamTimeline
         private bool _selected;
         private readonly HashSet<int> _frames = new HashSet<int>();
         private int _animationLength;
+        private bool _loop;
 
         public bool selected
         {
@@ -32,10 +33,11 @@ namespace VamTimeline
             }
         }
 
-        public void SetKeyframes(float[] keyframes)
+        public void SetKeyframes(float[] keyframes, bool loop)
         {
             _frames.Clear();
             _animationLength = 0;
+            _loop = loop;
             if (keyframes.Length == 0) return;
             for (var i = 0; i < keyframes.Length; i++)
             {
@@ -83,6 +85,7 @@ namespace VamTimeline
             foreach (var keyframe in _frames)
             {
                 if (_currentFrame == keyframe) continue;
+                if (_loop && keyframe == _animationLength) continue;
                 var center = new Vector2(offsetX + keyframe * ratio, 0);
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor, new[]
                 {
@@ -90,6 +93,18 @@ namespace VamTimeline
                     center - new Vector2(size, 0),
                     center - new Vector2(0, size),
                     center - new Vector2(-size, 0)
+                }));
+            }
+
+            if (_loop)
+            {
+                var center = new Vector2(offsetX + _animationLength * ratio, 0);
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor, new[]
+                {
+                    center - new Vector2(-2, -size),
+                    center - new Vector2(-2, size),
+                    center - new Vector2(2, size),
+                    center - new Vector2(2, -size)
                 }));
             }
 

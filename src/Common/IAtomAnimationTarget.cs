@@ -11,6 +11,7 @@ namespace VamTimeline
     public interface IAtomAnimationTarget
     {
         bool Selected { get; set; }
+        // TODO: Replace by UnityEvent
         event EventHandler SelectedChanged;
         string Name { get; }
         string GetShortName();

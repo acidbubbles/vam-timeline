@@ -12,16 +12,20 @@ namespace VamTimeline
     /// </summary>
     public class Clickable : MonoBehaviour, IPointerClickHandler
     {
-        public UnityEvent onClick = new UnityEvent();
+        public ClickableEvent onClick = new ClickableEvent();
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            onClick.Invoke();
+            onClick.Invoke(eventData);
         }
 
         public void OnDestroy()
         {
             onClick.RemoveAllListeners();
+        }
+
+        public class ClickableEvent : UnityEvent<PointerEventData>
+        {
         }
     }
 }

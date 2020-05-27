@@ -11,6 +11,7 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomAnimationClip
     {
+        bool Loop { get; }
         float AnimationLength { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();

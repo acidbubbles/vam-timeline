@@ -529,7 +529,7 @@ namespace VamTimeline
             time = time.Snap(snap ? SnapJSON.val : 0f);
 
             if (Animation.Current.Loop && time >= Animation.Current.AnimationLength - float.Epsilon)
-                time = Animation.Current.AnimationLength - SnapJSON.val;
+                time = 0f;
 
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
