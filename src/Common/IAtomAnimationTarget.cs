@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -8,11 +9,10 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAtomAnimationTarget
+    public interface IAtomAnimationTarget : IDisposable
     {
         bool Selected { get; set; }
-        // TODO: Replace by UnityEvent
-        event EventHandler SelectedChanged;
+        UnityEvent SelectedChanged { get; }
         string Name { get; }
         string GetShortName();
         float[] GetAllKeyframesTime();

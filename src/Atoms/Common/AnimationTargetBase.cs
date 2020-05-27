@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -8,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public abstract class AnimationTargetBase
+    public abstract class AnimationTargetBase : IDisposable
     {
         private bool _selected;
         public bool Selected
@@ -18,11 +19,16 @@ namespace VamTimeline
             {
                 if (_selected == value) return;
                 _selected = value;
-                SelectedChanged?.Invoke(this, EventArgs.Empty);
+                SelectedChanged.Invoke();
             }
         }
 
-        public event EventHandler SelectedChanged;
+        public UnityEvent SelectedChanged { get; } = new UnityEvent();
         public bool Dirty { get; set; } = true;
+
+        public void Dispose()
+        {
+            SelectedChanged.RemoveAllListeners();
+        }
     }
 }

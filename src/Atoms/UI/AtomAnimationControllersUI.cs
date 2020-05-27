@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,6 +24,7 @@ namespace VamTimeline
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
         private JSONStorableStringChooser _curveTypeJSON;
+        private Curves _curves;
 
         public AtomAnimationControllersUI(IAtomPlugin plugin)
             : base(plugin)
@@ -35,26 +37,51 @@ namespace VamTimeline
 
             // Left side
 
-            InitCurvesUI();
+            InitChangeCurveTypeUI(false);
 
             InitClipboardUI(false);
 
-            RegisterStorable(Plugin.AutoKeyframeAllControllersJSON);
-            var autoKeyframeAllControllersUI = Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
-            RegisterComponent(autoKeyframeAllControllersUI);
+            InitAutoKeyframeUI();
 
             // Right side
 
-            // TODO: Draw curves here
+            InitCurvesUI(true);
         }
 
-        private void InitCurvesUI()
+        private void InitChangeCurveTypeUI(bool rightSide)
         {
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
-            var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, false);
+            var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
             curveTypeUI.popupPanelHeight = 340f;
             RegisterComponent(curveTypeUI);
+        }
+
+        private void InitAutoKeyframeUI()
+        {
+            RegisterStorable(Plugin.AutoKeyframeAllControllersJSON);
+            var autoKeyframeAllControllersUI = Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
+            RegisterComponent(autoKeyframeAllControllersUI);
+        }
+
+        private void InitCurvesUI(bool rightSide)
+        {
+            var spacerUI = Plugin.CreateSpacer(rightSide);
+            spacerUI.height = 320f;
+            RegisterComponent(spacerUI);
+
+            _curves = spacerUI.gameObject.AddComponent<Curves>();
+            UpdateCurves();
+        }
+
+        private void UpdateCurves()
+        {
+            if (_curves == null) return;
+            var targets = Plugin.Animation.Current.GetAllOrSelectedControllerTargets().ToList();
+            if (targets.Count == 1)
+                _curves.Bind(targets[0].Curves);
+            else
+                _curves.Bind(null);
         }
 
         public override void UpdatePlaying()
@@ -68,6 +95,7 @@ namespace VamTimeline
             base.AnimationFrameUpdated();
             UpdateValues();
             UpdateCurrentCurveType();
+            UpdateCurves();
         }
 
         public override void AnimationModified()
@@ -75,6 +103,7 @@ namespace VamTimeline
             base.AnimationModified();
             RefreshTargetsList();
             UpdateCurrentCurveType();
+            UpdateCurves();
         }
 
         private void UpdateCurrentCurveType()

@@ -43,7 +43,9 @@ namespace VamTimeline
                 if (animation.Clips.Any(c => c.AnimationName == animationName))
                 {
                     SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be overwritten");
-                    animation.Clips.Remove(animation.Clips.First(c => c.AnimationName == animationName));
+                    var clipToRemove = animation.Clips.First(c => c.AnimationName == animationName);
+                    animation.Clips.Remove(clipToRemove);
+                    clipToRemove.Dispose();
                 }
                 var clip = new AtomAnimationClip(animationName)
                 {

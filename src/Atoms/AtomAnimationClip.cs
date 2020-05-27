@@ -104,6 +104,13 @@ namespace VamTimeline
             var existing = TargetControllers.FirstOrDefault(c => c.Controller == controller);
             if (existing == null) return;
             TargetControllers.Remove(existing);
+            existing.Dispose();
+        }
+
+        public void Remove(FloatParamAnimationTarget target)
+        {
+            TargetFloatParams.Remove(target);
+            target.Dispose();
         }
 
         public void ChangeCurve(float time, string curveType)
@@ -375,6 +382,14 @@ namespace VamTimeline
         {
             yield return TargetControllers;
             yield return TargetFloatParams;
+        }
+
+        public void Dispose()
+        {
+            foreach (var target in AllTargets)
+            {
+                target.Dispose();
+            }
         }
     }
 }

@@ -199,6 +199,7 @@ namespace VamTimeline
                     return;
                 }
                 Plugin.Animation.Clips.Remove(anim);
+                anim.Dispose();
                 foreach (var clip in Plugin.Animation.Clips)
                 {
                     if (clip.NextAnimationName == anim.AnimationName)

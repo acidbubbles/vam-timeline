@@ -9,7 +9,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAtomAnimationClip
+    public interface IAtomAnimationClip : IDisposable
     {
         bool Loop { get; }
         float AnimationLength { get; }

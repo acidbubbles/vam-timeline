@@ -70,6 +70,9 @@
     <Compile Include="src/Components/Scrubber/ScrubberMarkers.cs" />
     <Compile Include="src/Components/Scrubber/ScrubberStyle.cs" />
 
+    <Compile Include="src/Components/Curves/Curves.cs" />
+    <Compile Include="src/Components/Curves/CurvesStyle.cs" />
+
     <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
     <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />

@@ -243,6 +243,7 @@ namespace VamTimeline
 
                 var listener = child.AddComponent<Listener>();
                 listener.Bind(
+                    target.SelectedChanged,
                     () =>
                     {
                         if (target.Selected)
@@ -257,9 +258,7 @@ namespace VamTimeline
                             image.top = _style.LabelBackgroundColorTop;
                             image.bottom = _style.LabelBackgroundColorBottom;
                         }
-                    },
-                    handler => { target.SelectedChanged += handler; },
-                    handler => { target.SelectedChanged -= handler; }
+                    }
                 );
 
                 var click = child.AddComponent<Clickable>();

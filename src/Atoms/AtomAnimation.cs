@@ -12,7 +12,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimation
+    public class AtomAnimation : IDisposable
     {
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const float InterpolationMaxDistanceDelta = 3.0f;
@@ -533,6 +533,14 @@ namespace VamTimeline
             {
                 Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
                 Current.AnimationPattern.ResetAndPlay();
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach(var clip in Clips)
+            {
+                clip.Dispose();
             }
         }
     }

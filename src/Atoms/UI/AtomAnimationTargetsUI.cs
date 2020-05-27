@@ -262,7 +262,7 @@ namespace VamTimeline
         {
             try
             {
-                Plugin.Animation.Current.TargetFloatParams.Remove(target);
+                Plugin.Animation.Current.Remove(target);
                 Plugin.AnimationModified();
             }
             catch (Exception exc)
