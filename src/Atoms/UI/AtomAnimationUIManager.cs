@@ -248,7 +248,8 @@ namespace VamTimeline
         {
             if (_current == null) return;
             _current.UpdatePlaying();
-            _controlPanel.SetScrubberPosition(_plugin.Animation.Time, false);
+            if (!_plugin.LockedJSON.val)
+                _controlPanel.SetScrubberPosition(_plugin.Animation.Time, false);
         }
     }
 }

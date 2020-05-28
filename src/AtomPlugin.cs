@@ -93,7 +93,7 @@ namespace VamTimeline
                         ScrubberJSON.valNoCallback = time;
                     if (AnimationJSON.val != Animation.Current.AnimationName)
                         AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                    if (_controlPanel != null)
+                    if (_controlPanel != null && !LockedJSON.val)
                         _controlPanel.SetScrubberPosition(time, false);
 
                     _ui.UpdatePlaying();
