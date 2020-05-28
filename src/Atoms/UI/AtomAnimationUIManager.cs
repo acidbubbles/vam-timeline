@@ -72,10 +72,8 @@ namespace VamTimeline
             if (_plugin.Animation == null || _plugin.Animation.Current == null) return list;
             list.Add(AtomAnimationSettingsUI.ScreenName);
             list.Add(AtomAnimationTargetsUI.ScreenName);
-            if (_plugin.Animation.Current.TargetControllers.Count > 0)
+            if (_plugin.Animation.Current.AllTargetsCount > 0)
                 list.Add(AtomAnimationControllersUI.ScreenName);
-            if (_plugin.Animation.Current.TargetFloatParams.Count > 0)
-                list.Add(AtomAnimationFloatParamsUI.ScreenName);
             if (_plugin.Animation.Current.TargetControllers.Count > 0 || _plugin.Animation.Current.TargetFloatParams.Count > 0)
                 list.Add(AtomAnimationBulkUI.ScreenName);
             list.Add(AtomAnimationAdvancedUI.ScreenName);
@@ -193,9 +191,6 @@ namespace VamTimeline
                     break;
                 case AtomAnimationControllersUI.ScreenName:
                     _current = new AtomAnimationControllersUI(_plugin);
-                    break;
-                case AtomAnimationFloatParamsUI.ScreenName:
-                    _current = new AtomAnimationFloatParamsUI(_plugin);
                     break;
                 case AtomAnimationBulkUI.ScreenName:
                     _current = new AtomAnimationBulkUI(_plugin);

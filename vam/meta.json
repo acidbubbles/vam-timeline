@@ -24,7 +24,6 @@
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationSettingsUI.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationTargetsUI.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationControllersUI.cs", 
-      "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationFloatParamsUI.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationBulkUI.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationAdvancedUI.cs", 
       "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\VamTimeline.AtomAnimationUIManager.cs", 

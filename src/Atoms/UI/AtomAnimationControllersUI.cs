@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,7 +20,12 @@ namespace VamTimeline
             public IAnimationTargetWithCurves Target;
             public UIDynamicToggle KeyframeUI;
 
-            public void Remove(IAtomPlugin plugin)
+            public virtual void UpdateValue(float time)
+            {
+                KeyframeJSON.valNoCallback = Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
+            }
+
+            public virtual void Remove(IAtomPlugin plugin)
             {
                 plugin.RemoveToggle(KeyframeJSON);
                 plugin.RemoveToggle(KeyframeUI);
@@ -30,6 +34,25 @@ namespace VamTimeline
 
         private class ControllerTargetRef : TargetRef
         {
+        }
+
+        private class FloatParamTargetRef : TargetRef
+        {
+            public JSONStorableFloat FloatParamProxyJSON;
+            public UIDynamicSlider SliderUI;
+
+            public override void UpdateValue(float time)
+            {
+                base.UpdateValue(time);
+                FloatParamProxyJSON.valNoCallback = ((FloatParamAnimationTarget)Target).FloatParam.val;
+            }
+
+            public override void Remove(IAtomPlugin plugin)
+            {
+                base.Remove(plugin);
+                plugin.RemoveSlider(FloatParamProxyJSON);
+                plugin.RemoveSlider(SliderUI);
+            }
         }
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
@@ -47,6 +70,8 @@ namespace VamTimeline
 
             // Left side
 
+            InitCurvesUI(false);
+
             InitChangeCurveTypeUI(false);
 
             InitClipboardUI(false);
@@ -54,10 +79,6 @@ namespace VamTimeline
             InitAutoKeyframeUI();
 
             // Right side
-
-            InitCurvesUI(true);
-
-            // Init
 
             RefreshTargetsList();
         }
@@ -81,7 +102,7 @@ namespace VamTimeline
         private void InitCurvesUI(bool rightSide)
         {
             var spacerUI = Plugin.CreateSpacer(rightSide);
-            spacerUI.height = 320f;
+            spacerUI.height = 200f;
             RegisterComponent(spacerUI);
 
             _curves = spacerUI.gameObject.AddComponent<Curves>();
@@ -163,7 +184,7 @@ namespace VamTimeline
             var time = Plugin.Animation.Time;
             foreach (var targetRef in _targets)
             {
-                targetRef.KeyframeJSON.valNoCallback = targetRef.Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
+                targetRef.UpdateValue(time);
             }
         }
 
@@ -172,6 +193,7 @@ namespace VamTimeline
             if (Plugin.Animation == null) return;
             RemoveTargets();
             var time = Plugin.Animation.Time;
+
             foreach (var target in Current.TargetControllers)
             {
                 var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.GetLeadCurve().KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
@@ -179,6 +201,30 @@ namespace VamTimeline
                 _targets.Add(new ControllerTargetRef
                 {
                     Target = target,
+                    KeyframeJSON = keyframeJSON,
+                    KeyframeUI = keyframeUI
+                });
+            }
+
+            foreach (var target in Current.TargetFloatParams)
+            {
+                var sourceFloatParamJSON = target.FloatParam;
+                var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val))
+                {
+                    isStorable = false
+                };
+                var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
+                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{sourceFloatParamJSON.name}", sourceFloatParamJSON.defaultVal, (float val) => SetFloatParamValue(target, val), sourceFloatParamJSON.min, sourceFloatParamJSON.max, sourceFloatParamJSON.constrained, true)
+                {
+                    isStorable = false,
+                    valNoCallback = sourceFloatParamJSON.val
+                };
+                var sliderUI = Plugin.CreateSlider(jsfJSONProxy, true);
+                _targets.Add(new FloatParamTargetRef
+                {
+                    Target = target,
+                    FloatParamProxyJSON = jsfJSONProxy,
+                    SliderUI = sliderUI,
                     KeyframeJSON = keyframeJSON,
                     KeyframeUI = keyframeUI
                 });
@@ -261,11 +307,43 @@ namespace VamTimeline
             Plugin.AnimationModified();
         }
 
+        private void ToggleKeyframe(FloatParamAnimationTarget target, bool val)
+        {
+            if (Plugin.Animation.IsPlaying()) return;
+            var time = Plugin.Animation.Time.Snap();
+            if (time.IsSameFrame(0f) || time.IsSameFrame(Current.AnimationLength))
+            {
+                _targets.First(t => t.Target == target).KeyframeJSON.valNoCallback = true;
+                return;
+            }
+            if (val)
+            {
+                Plugin.Animation.SetKeyframe(target, time, target.FloatParam.val);
+            }
+            else
+            {
+                target.DeleteFrame(time);
+            }
+            Plugin.Animation.RebuildAnimation();
+            Plugin.AnimationModified();
+        }
+
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
             Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
             if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
                 Current.ChangeCurve(time, CurveTypeValues.Smooth);
+        }
+
+        private void SetFloatParamValue(FloatParamAnimationTarget target, float val)
+        {
+            if (Plugin.Animation.IsPlaying()) return;
+            target.FloatParam.val = val;
+            var time = Plugin.Animation.Time;
+            Plugin.Animation.SetKeyframe(target, time, val);
+            Plugin.Animation.RebuildAnimation();
+            var targetRef = _targets.FirstOrDefault(j => j.Target == target);
+            targetRef.KeyframeJSON.valNoCallback = true;
         }
     }
 }
