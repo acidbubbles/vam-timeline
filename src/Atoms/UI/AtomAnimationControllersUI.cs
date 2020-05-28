@@ -84,12 +84,14 @@ namespace VamTimeline
                 _curves.Bind(targets[0]);
             else
                 _curves.Bind(null);
+            _curves?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         public override void UpdatePlaying()
         {
             base.UpdatePlaying();
             UpdateValues();
+            _curves?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         public override void AnimationFrameUpdated()
@@ -97,6 +99,7 @@ namespace VamTimeline
             base.AnimationFrameUpdated();
             UpdateValues();
             UpdateCurrentCurveType();
+            _curves?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         public override void AnimationModified()

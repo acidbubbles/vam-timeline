@@ -12,8 +12,10 @@ namespace VamTimeline
     public class Curves : MonoBehaviour
     {
         private readonly CurvesStyle _style = new CurvesStyle();
+        private readonly RectTransform _scrubberRect;
         private readonly GameObject _noCurves;
         private readonly CurvesLines _lines;
+        private float _animationLength;
 
         public Curves()
         {
@@ -27,6 +29,8 @@ namespace VamTimeline
             mask.showMaskGraphic = false;
 
             CreateBackground(_style.BackgroundColor);
+
+            _scrubberRect = CreateScrubber();
 
             _noCurves = CreateNoCurvesText();
 
@@ -46,6 +50,28 @@ namespace VamTimeline
             image.raycastTarget = false;
 
             return go;
+        }
+
+        private RectTransform CreateScrubber()
+        {
+            var go = new GameObject("Scrubber");
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+            var line = new GameObject("Scrubber Line");
+            line.transform.SetParent(go.transform, false);
+
+            var lineRect = line.AddComponent<RectTransform>();
+            lineRect.StretchCenter();
+            lineRect.sizeDelta = new Vector2(_style.ScrubberSize, 0);
+
+            var image = line.AddComponent<Image>();
+            image.color = _style.ScrubberColor;
+            image.raycastTarget = false;
+
+            return rect;
         }
 
         private CurvesLines CreateCurvesLines()
@@ -86,15 +112,30 @@ namespace VamTimeline
 
         public void Bind(FreeControllerAnimationTarget target)
         {
-            _noCurves.SetActive(target == null);
             // TODO: Update when the curve is changed (event)
             _lines.ClearCurves();
             if (target != null)
             {
+                _animationLength = target.X[target.X.length - 1].time;
                 _lines.AddCurve(Color.red, target.X);
                 _lines.AddCurve(Color.green, target.Y);
                 _lines.AddCurve(Color.blue, target.Z);
+                _noCurves.SetActive(false);
+                _scrubberRect.gameObject.SetActive(true);
             }
+            else
+            {
+                _animationLength = 0f;
+                _noCurves.SetActive(true);
+                _scrubberRect.gameObject.SetActive(false);
+            }
+        }
+
+        public void SetScrubberPosition(float val)
+        {
+            var ratio = Mathf.Clamp01(val / _animationLength);
+            _scrubberRect.anchorMin = new Vector2(ratio, 0);
+            _scrubberRect.anchorMax = new Vector2(ratio, 1);
         }
     }
 }
