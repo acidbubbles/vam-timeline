@@ -143,7 +143,7 @@ namespace VamTimeline
                         continue;
                     }
                     var target = new FloatParamAnimationTarget(storable, jsf);
-                    clip.TargetFloatParams.Add(target);
+                    clip.Add(target);
                     DeserializeCurve(target.Value, paramJSON["Value"], clip.AnimationLength);
                 }
             }

@@ -89,6 +89,7 @@ namespace VamTimeline
             TargetControllers.Add(target);
             TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
             target.SelectedChanged.AddListener(TargetSelectionChanged);
+            TargetSelectionChanged();
         }
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
@@ -105,6 +106,7 @@ namespace VamTimeline
             TargetFloatParams.Add(target);
             TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
             target.SelectedChanged.AddListener(TargetSelectionChanged);
+            TargetSelectionChanged();
         }
 
         private void TargetSelectionChanged()
@@ -118,17 +120,19 @@ namespace VamTimeline
             if (existing == null) return;
             TargetControllers.Remove(existing);
             existing.Dispose();
+            TargetSelectionChanged();
         }
 
         public void Remove(FloatParamAnimationTarget target)
         {
             TargetFloatParams.Remove(target);
             target.Dispose();
+            TargetSelectionChanged();
         }
 
         public void ChangeCurve(float time, string curveType)
         {
-            foreach (var controller in GetAllOrSelectedControllerTargets())
+            foreach (var controller in GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 controller.ChangeCurve(time, curveType);
             }
@@ -206,22 +210,6 @@ namespace VamTimeline
                 .Cast<IAnimationTargetWithCurves>()
                 .ToList();
             return result.Count > 0 ? result : AllTargets;
-        }
-
-        public IList<FreeControllerAnimationTarget> GetAllOrSelectedControllerTargets()
-        {
-            var result = TargetControllers
-                .Where(t => t.Selected)
-                .ToList();
-            return result.Count > 0 ? result : TargetControllers;
-        }
-
-        public IList<FloatParamAnimationTarget> GetAllOrSelectedFloatParamTargets()
-        {
-            var result = TargetFloatParams
-                .Where(t => t.Selected)
-                .ToList();
-            return result.Count > 0 ? result : TargetFloatParams;
         }
 
         public void StretchLength(float value)
@@ -312,7 +300,7 @@ namespace VamTimeline
         public AtomClipboardEntry Copy(float time, bool all = false)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
-            foreach (var target in all ? TargetControllers : GetAllOrSelectedControllerTargets())
+            foreach (var target in all ? TargetControllers : GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -323,7 +311,7 @@ namespace VamTimeline
                 });
             }
             var floatParams = new List<FloatParamValClipboardEntry>();
-            foreach (var target in all ? TargetFloatParams : GetAllOrSelectedFloatParamTargets())
+            foreach (var target in all ? TargetFloatParams : GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 int key = target.Value.KeyframeBinarySearch(time);
                 if (key == -1) continue;

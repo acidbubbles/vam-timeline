@@ -110,16 +110,26 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(FreeControllerAnimationTarget target)
+        public void Bind(IAnimationTargetWithCurves target)
         {
             // TODO: Update when the curve is changed (event)
             _lines.ClearCurves();
             if (target != null)
             {
-                _animationLength = target.X[target.X.length - 1].time;
-                _lines.AddCurve(Color.red, target.X);
-                _lines.AddCurve(Color.green, target.Y);
-                _lines.AddCurve(Color.blue, target.Z);
+                var lead = target.GetLeadCurve();
+                _animationLength = lead[lead.length - 1].time;
+                if (target is FreeControllerAnimationTarget)
+                {
+                    var targetController = (FreeControllerAnimationTarget)target;
+                    _lines.AddCurve(Color.red, targetController.X);
+                    _lines.AddCurve(Color.green, targetController.Y);
+                    _lines.AddCurve(Color.blue, targetController.Z);
+                }
+                else if (target is FloatParamAnimationTarget)
+                {
+                    var targetParam = (FloatParamAnimationTarget)target;
+                    _lines.AddCurve(Color.white, targetParam.Value);
+                }
                 _noCurves.SetActive(false);
                 _scrubberRect.gameObject.SetActive(true);
             }

@@ -166,7 +166,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(val)) return;
             _changeCurveJSON.valNoCallback = "";
 
-            foreach (var target in Current.GetAllOrSelectedControllerTargets())
+            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var leadCurve = target.GetLeadCurve();
                 for (var key = leadCurve.length - 2; key > 0; key--)

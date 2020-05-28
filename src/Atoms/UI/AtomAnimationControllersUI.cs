@@ -58,6 +58,7 @@ namespace VamTimeline
         private readonly List<TargetRef> _targets = new List<TargetRef>();
         private JSONStorableStringChooser _curveTypeJSON;
         private Curves _curves;
+        private UIDynamicPopup _curveTypeUI;
 
         public AtomAnimationControllersUI(IAtomPlugin plugin)
             : base(plugin)
@@ -80,16 +81,18 @@ namespace VamTimeline
 
             // Right side
 
-            RefreshTargetsList();
+            Current.SelectedChanged.AddListener(SelectionChanged);
+
+            SelectionChanged();
         }
 
         private void InitChangeCurveTypeUI(bool rightSide)
         {
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
-            var curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
-            curveTypeUI.popupPanelHeight = 340f;
-            RegisterComponent(curveTypeUI);
+            _curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
+            _curveTypeUI.popupPanelHeight = 340f;
+            RegisterComponent(_curveTypeUI);
         }
 
         private void InitAutoKeyframeUI()
@@ -106,16 +109,12 @@ namespace VamTimeline
             RegisterComponent(spacerUI);
 
             _curves = spacerUI.gameObject.AddComponent<Curves>();
-            UpdateCurves();
-
-            // TODO: When changing the current clip this won't update
-            Current.SelectedChanged.AddListener(UpdateCurves);
         }
 
-        private void UpdateCurves()
+        private void RefreshCurves()
         {
             if (_curves == null) return;
-            var targets = Current.GetAllOrSelectedControllerTargets();
+            var targets = Current.GetAllOrSelectedTargets().ToList();
             if (targets.Count == 1)
                 _curves.Bind(targets[0]);
             else
@@ -142,15 +141,22 @@ namespace VamTimeline
         {
             base.AnimationModified();
             UpdateCurrentCurveType();
-            UpdateCurves();
+            RefreshCurves();
         }
 
         protected override void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
         {
             base.AnimationChanged(before, after);
-            before.SelectedChanged.RemoveListener(UpdateCurves);
-            after.SelectedChanged.AddListener(UpdateCurves);
+            before.SelectedChanged.RemoveListener(SelectionChanged);
+            after.SelectedChanged.AddListener(SelectionChanged);
             RefreshTargetsList();
+        }
+
+        private void SelectionChanged()
+        {
+            RefreshCurves();
+            RefreshTargetsList();
+            _curveTypeUI.popup.topButton.interactable = Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
         }
 
         private void UpdateCurrentCurveType()
@@ -165,7 +171,7 @@ namespace VamTimeline
             }
             var ms = time.ToMilliseconds();
             var curveTypes = new HashSet<string>();
-            foreach (var target in Current.GetAllOrSelectedControllerTargets())
+            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 KeyframeSettings v;
                 if (!target.Settings.TryGetValue(ms, out v)) continue;
@@ -194,7 +200,7 @@ namespace VamTimeline
             RemoveTargets();
             var time = Plugin.Animation.Time;
 
-            foreach (var target in Current.TargetControllers)
+            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.GetLeadCurve().KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
@@ -206,7 +212,7 @@ namespace VamTimeline
                 });
             }
 
-            foreach (var target in Current.TargetFloatParams)
+            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 var sourceFloatParamJSON = target.FloatParam;
                 var keyframeJSON = new JSONStorableBool($"{target.Storable.name}/{sourceFloatParamJSON.name} Keyframe", target.Value.KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val))
@@ -341,7 +347,9 @@ namespace VamTimeline
             target.FloatParam.val = val;
             var time = Plugin.Animation.Time;
             Plugin.Animation.SetKeyframe(target, time, val);
+            // NOTE: We don't call AnimationModified for performance reasons. This could be improved by using more specific events.
             Plugin.Animation.RebuildAnimation();
+            if (target.Selected) RefreshCurves();
             var targetRef = _targets.FirstOrDefault(j => j.Target == target);
             targetRef.KeyframeJSON.valNoCallback = true;
         }
