@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,11 +15,21 @@ namespace VamTimeline
         public const string ScreenName = "Controllers";
         public override string Name => ScreenName;
 
-        private class TargetRef
+        private abstract class TargetRef
         {
             public JSONStorableBool KeyframeJSON;
-            public FreeControllerAnimationTarget Target;
+            public IAnimationTargetWithCurves Target;
             public UIDynamicToggle KeyframeUI;
+
+            public void Remove(IAtomPlugin plugin)
+            {
+                plugin.RemoveToggle(KeyframeJSON);
+                plugin.RemoveToggle(KeyframeUI);
+            }
+        }
+
+        private class ControllerTargetRef : TargetRef
+        {
         }
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
@@ -45,6 +56,10 @@ namespace VamTimeline
             // Right side
 
             InitCurvesUI(true);
+
+            // Init
+
+            RefreshTargetsList();
         }
 
         private void InitChangeCurveTypeUI(bool rightSide)
@@ -105,15 +120,16 @@ namespace VamTimeline
         public override void AnimationModified()
         {
             base.AnimationModified();
-            RefreshTargetsList();
             UpdateCurrentCurveType();
             UpdateCurves();
         }
 
         protected override void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
         {
+            base.AnimationChanged(before, after);
             before.SelectedChanged.RemoveListener(UpdateCurves);
             after.SelectedChanged.AddListener(UpdateCurves);
+            RefreshTargetsList();
         }
 
         private void UpdateCurrentCurveType()
@@ -154,18 +170,13 @@ namespace VamTimeline
         private void RefreshTargetsList()
         {
             if (Plugin.Animation == null) return;
-            if (Enumerable.SequenceEqual(Current.TargetControllers, _targets.Select(t => t.Target)))
-            {
-                UpdateValues();
-                return;
-            }
             RemoveTargets();
             var time = Plugin.Animation.Time;
             foreach (var target in Current.TargetControllers)
             {
                 var keyframeJSON = new JSONStorableBool($"{target.Name} Keyframe", target.GetLeadCurve().KeyframeBinarySearch(time) != -1, (bool val) => ToggleKeyframe(target, val));
                 var keyframeUI = Plugin.CreateToggle(keyframeJSON, true);
-                _targets.Add(new TargetRef
+                _targets.Add(new ControllerTargetRef
                 {
                     Target = target,
                     KeyframeJSON = keyframeJSON,
@@ -184,8 +195,7 @@ namespace VamTimeline
         {
             foreach (var targetRef in _targets)
             {
-                Plugin.RemoveToggle(targetRef.KeyframeJSON);
-                Plugin.RemoveToggle(targetRef.KeyframeUI);
+                targetRef.Remove(Plugin);
             }
             _targets.Clear();
         }
