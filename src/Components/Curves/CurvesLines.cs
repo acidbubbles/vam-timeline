@@ -26,7 +26,7 @@ namespace VamTimeline
             _curves.Add(new KeyValuePair<Color, AnimationCurve>(color, curve));
             SetVerticesDirty();
         }
-        private bool temp = false;
+
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
@@ -37,13 +37,16 @@ namespace VamTimeline
             var offsetX = -width / 2f;
             var precision = 2f; // Draw at every N pixels
             var boundsEvalPrecision = 10f; // Check how many points to detect highest value
+            var minVertexDelta = 1.5f; // How much distance is required to draw a point
+            var handleSize = style.HandleSize;
 
             foreach (var curveInfo in _curves)
             {
                 // Common
                 var curve = curveInfo.Value;
                 var color = curveInfo.Key;
-                var maxX = curve[curve.length - 1].time;
+                var last = curve[curve.length - 1];
+                var maxX = last.time;
                 var xRatio = width / maxX;
 
                 // Detect y bounds, offset and ratio
@@ -67,12 +70,17 @@ namespace VamTimeline
                 // Draw line
                 var step = maxX / width * precision;
                 var points = new List<Vector2>(curve.length);
+                var previousY = Mathf.Infinity;
                 for (var time = 0f; time < maxX; time += step)
                 {
                     var value = curve.Evaluate(time);
-                    var cur = new Vector2(offsetX + time * xRatio, offsetY + value * yRatio);
+                    var y = offsetY + value * yRatio;
+                    if (Mathf.Abs(y - previousY) < minVertexDelta) continue;
+                    var cur = new Vector2(offsetX + time * xRatio, y);
+                    previousY = y;
                     points.Add(cur);
                 }
+                points.Add(new Vector2(offsetX + last.time * xRatio, offsetY + last.value * yRatio));
                 vh.DrawLine(points, style.LineSize, color);
 
                 // Draw handles
@@ -80,19 +88,12 @@ namespace VamTimeline
                 {
                     var keyframe = curve[i];
                     var center = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
-                    if (!temp && color == Color.red)
-                    {
-                        SuperController.LogMessage($"{yRatio} = {height} / ({maxY} - {minY})");
-                        SuperController.LogMessage($"value: {keyframe.value}, offsetY: {offsetY}, center: {center}");
-                        temp = true;
-                    }
-                    var size = 6f;
                     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
                     {
-                        center - new Vector2(-size, -size),
-                        center - new Vector2(-size, size),
-                        center - new Vector2(size, size),
-                        center - new Vector2(size, -size)
+                        center - new Vector2(-handleSize, -handleSize),
+                        center - new Vector2(-handleSize, handleSize),
+                        center - new Vector2(handleSize, handleSize),
+                        center - new Vector2(handleSize, -handleSize)
                     }));
                 }
             }
