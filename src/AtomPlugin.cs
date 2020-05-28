@@ -198,6 +198,7 @@ namespace VamTimeline
             try
             {
                 Animation?.Stop();
+                _ui.Dispose();
                 DestroyControllerPanel();
             }
             catch (Exception exc)

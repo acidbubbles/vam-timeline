@@ -12,7 +12,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationTargetsUI : AtomAnimationBaseUI
     {
-        public const string ScreenName = "Add/Remove Targets";
+        public const string ScreenName = "Targets";
         public override string Name => ScreenName;
 
         private JSONStorableStringChooser _addControllerListJSON;

@@ -12,7 +12,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationSettingsUI : AtomAnimationBaseUI
     {
-        public const string ScreenName = "Animation Settings";
+        public const string ScreenName = "Settings";
         public override string Name => ScreenName;
 
         public const string ChangeLengthModeLocked = "Length Locked";

@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -11,17 +13,17 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationUIManager
+    public class AtomAnimationUIManager : IDisposable
     {
         protected IAtomPlugin _plugin;
         private AtomAnimationBaseUI _current;
-        private JSONStorableStringChooser _screensJSON;
-        private UIDynamicPopup _screenUI;
         private AnimationControlPanel _controlPanel;
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
         private bool _uiRefreshInvokeAnimationModified;
+        private string _currentScreen;
+        private readonly UnityEvent _screenChanged = new UnityEvent();
 
         public AtomAnimationUIManager(IAtomPlugin plugin)
         {
@@ -36,18 +38,59 @@ namespace VamTimeline
             InitControlPanelUI(false);
 
             // Right side
-            _screensJSON = new JSONStorableStringChooser(
-                "Screen",
-                ListAvailableScreens(),
-                GetDefaultScreen(),
-                "Tab",
-                (string screen) =>
+            InitTabs();
+
+            ChangeScreen(GetDefaultScreen());
+        }
+
+        private void InitTabs()
+        {
+            var screens = new[]{
+                AtomAnimationSettingsUI.ScreenName,
+                AtomAnimationTargetsUI.ScreenName,
+                AtomAnimationEditUI.ScreenName,
+                AtomAnimationBulkUI.ScreenName,
+                AtomAnimationAdvancedUI.ScreenName,
+                AtomAnimationLockedUI.ScreenName
+            };
+
+            // TODO: Extract in a component
+            var tabsContainer = _plugin.CreateSpacer(true);
+            tabsContainer.height = 100f;
+
+            var group = tabsContainer.gameObject.AddComponent<GridLayoutGroup>();
+            group.constraint = GridLayoutGroup.Constraint.Flexible;
+            group.constraintCount = screens.Length;
+            group.spacing = Vector2.zero;
+            group.cellSize = new Vector2(512f / 3f, 50f);
+            group.childAlignment = TextAnchor.MiddleCenter;
+
+            foreach (var screen in screens)
+            {
+                var changeTo = screen;
+                var btn = UnityEngine.Object.Instantiate(_plugin.Manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.label = changeTo;
+
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.button.onClick.AddListener(() =>
                 {
-                    _plugin.LockedJSON.valNoCallback = screen == AtomAnimationLockedUI.ScreenName;
-                    RefreshCurrentUI(false);
-                }
-            );
-            _screenUI = _plugin.CreateScrollablePopup(_screensJSON, true);
+                    ChangeScreen(changeTo);
+                });
+
+                _screenChanged.AddListener(() => {
+                    var selected = _currentScreen == changeTo;
+                    btn.button.interactable = !selected;
+                });
+            }
+        }
+
+        private void ChangeScreen(string screen)
+        {
+            _currentScreen = screen;
+            _plugin.LockedJSON.valNoCallback = screen == AtomAnimationLockedUI.ScreenName;
+            _screenChanged.Invoke();
+            RefreshCurrentUI(false);
+            // TODO: Highlight button
         }
 
         protected void InitAnimationSelectorUI(bool rightSide)
@@ -60,8 +103,7 @@ namespace VamTimeline
         private void InitControlPanelUI(bool rightSide)
         {
             var controlPanelContainer = _plugin.CreateSpacer(rightSide);
-            foreach (var c in controlPanelContainer.GetComponents<MonoBehaviour>())
-                controlPanelContainer.height = 500f;
+            controlPanelContainer.height = 500f;
             _controlPanel = controlPanelContainer.gameObject.AddComponent<AnimationControlPanel>();
             _controlPanel.Bind(_plugin);
         }
@@ -70,14 +112,6 @@ namespace VamTimeline
         {
             var list = new List<string>();
             if (_plugin.Animation == null || _plugin.Animation.Current == null) return list;
-            list.Add(AtomAnimationSettingsUI.ScreenName);
-            list.Add(AtomAnimationTargetsUI.ScreenName);
-            if (_plugin.Animation.Current.AllTargetsCount > 0)
-                list.Add(AtomAnimationEditUI.ScreenName);
-            if (_plugin.Animation.Current.TargetControllers.Count > 0 || _plugin.Animation.Current.TargetFloatParams.Count > 0)
-                list.Add(AtomAnimationBulkUI.ScreenName);
-            list.Add(AtomAnimationAdvancedUI.ScreenName);
-            list.Add(AtomAnimationLockedUI.ScreenName);
             return list;
         }
 
@@ -94,11 +128,10 @@ namespace VamTimeline
         public void AnimationModified()
         {
             if (_plugin.Animation == null) return;
-            _screensJSON.choices = ListAvailableScreens();
-            if (_plugin.LockedJSON.val && _screensJSON.val != AtomAnimationLockedUI.ScreenName)
-                _screensJSON.valNoCallback = AtomAnimationLockedUI.ScreenName;
-            if (!_plugin.LockedJSON.val && _screensJSON.val == AtomAnimationLockedUI.ScreenName)
-                _screensJSON.valNoCallback = GetDefaultScreen();
+            if (_plugin.LockedJSON.val && _currentScreen != AtomAnimationLockedUI.ScreenName)
+                ChangeScreen(AtomAnimationLockedUI.ScreenName);
+            if (!_plugin.LockedJSON.val && _currentScreen == AtomAnimationLockedUI.ScreenName)
+                ChangeScreen(GetDefaultScreen());
 
             RefreshCurrentUI(true);
 
@@ -124,7 +157,7 @@ namespace VamTimeline
             else if (!_uiRefreshScheduled)
             {
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screensJSON.val));
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
         }
 
@@ -223,10 +256,6 @@ namespace VamTimeline
                 SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
             }
 
-            // Hack to avoid having the drop down shown underneath new controls
-            _screenUI.popup.Toggle();
-            _screenUI.popup.Toggle();
-
             yield return 0;
 
             _uiRefreshInProgress = false;
@@ -235,7 +264,7 @@ namespace VamTimeline
             {
                 _uiRefreshInvalidated = false;
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_screensJSON.val));
+                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
         }
 
@@ -245,6 +274,11 @@ namespace VamTimeline
             _current.UpdatePlaying();
             if (!_plugin.LockedJSON.val)
                 _controlPanel.SetScrubberPosition(_plugin.Animation.Time, false);
+        }
+
+        public void Dispose()
+        {
+            _screenChanged.RemoveAllListeners();
         }
     }
 }

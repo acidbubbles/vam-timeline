@@ -12,7 +12,7 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationBulkUI : AtomAnimationBaseUI
     {
-        public const string ScreenName = "Bulk Operations";
+        public const string ScreenName = "Bulk";
         public override string Name => ScreenName;
         private JSONStorableString _selectionJSON;
         private string _selectedControllers;
