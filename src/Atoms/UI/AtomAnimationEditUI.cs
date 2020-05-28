@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -59,6 +60,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _curveTypeJSON;
         private Curves _curves;
         private UIDynamicPopup _curveTypeUI;
+        private bool _selectionChangedPending;
 
         public AtomAnimationEditUI(IAtomPlugin plugin)
             : base(plugin)
@@ -154,6 +156,15 @@ namespace VamTimeline
 
         private void SelectionChanged()
         {
+            if (_selectionChangedPending) return;
+            _selectionChangedPending = true;
+            Plugin.StartCoroutine(SelectionChangedDeferred());
+        }
+
+        private IEnumerator SelectionChangedDeferred()
+        {
+            yield return new UnityEngine.WaitForEndOfFrame();
+            _selectionChangedPending = false;
             RefreshCurves();
             RefreshTargetsList();
             _curveTypeUI.popup.topButton.interactable = Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -157,7 +159,7 @@ namespace VamTimeline
             {
                 if (group.Count > 0)
                 {
-                    CreateHeader(group.Label);
+                    CreateHeader(group);
 
                     foreach (var target in group.GetTargets())
                         CreateRow(target);
@@ -176,7 +178,7 @@ namespace VamTimeline
             }
         }
 
-        private void CreateHeader(string title)
+        private void CreateHeader(IAtomAnimationTargetsList group)
         {
             var go = new GameObject("Header");
             go.transform.SetParent(_layout.transform, false);
@@ -207,13 +209,22 @@ namespace VamTimeline
                 rect.offsetMax = new Vector2(-6f, 0);
 
                 var text = child.AddComponent<Text>();
-                text.text = title;
+                text.text = group.Label;
                 text.font = _style.Font;
                 text.fontSize = 24;
                 text.color = _style.FontColor;
                 text.fontStyle = FontStyle.Bold;
                 text.alignment = TextAnchor.MiddleLeft;
-                text.raycastTarget = false;
+                text.raycastTarget = true;
+
+                var click = child.AddComponent<Clickable>();
+                click.onClick.AddListener(_ =>
+                {
+                    var targets = group.GetTargets().ToList();
+                    var selected = !targets.Any(t => t.Selected);
+                    foreach (var target in targets)
+                        target.Selected = selected;
+                });
             }
         }
 
