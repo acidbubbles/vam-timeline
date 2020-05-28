@@ -36,7 +36,7 @@ namespace VamTimeline
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
             var precision = 2f; // Draw at every N pixels
-            var boundsEvalPrecision = 10f; // Check how many points to detect highest value
+            var boundsEvalPrecision = 20f; // Check how many points to detect highest value
             var minVertexDelta = 1.5f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
 
