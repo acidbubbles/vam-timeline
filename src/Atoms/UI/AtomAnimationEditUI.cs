@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -163,8 +164,9 @@ namespace VamTimeline
 
         private IEnumerator SelectionChangedDeferred()
         {
-            yield return new UnityEngine.WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
             _selectionChangedPending = false;
+            if (_disposing) yield break;
             RefreshCurves();
             RefreshTargetsList();
             _curveTypeUI.popup.topButton.interactable = Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
@@ -250,6 +252,7 @@ namespace VamTimeline
 
         public override void Dispose()
         {
+            Current.SelectedChanged.RemoveListener(SelectionChanged);
             RemoveTargets();
             base.Dispose();
         }

@@ -18,6 +18,7 @@ namespace VamTimeline
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin Plugin;
         protected AtomAnimationClip Current;
+        protected bool _disposing;
 
         protected AtomAnimationBaseUI(IAtomPlugin plugin)
         {
@@ -115,6 +116,7 @@ namespace VamTimeline
 
         public virtual void Dispose()
         {
+            _disposing = true;
             foreach (var component in _storables)
             {
                 if (component == null) continue;
