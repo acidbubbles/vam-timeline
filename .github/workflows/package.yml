@@ -27,7 +27,7 @@ jobs:
         rm publish/Custom/Scripts/AcidBubbles/Timeline/src/external/curve-editor/*.csproj
         rm publish/Custom/Scripts/AcidBubbles/Timeline/src/external/curve-editor/*.sln
         rm publish/Custom/Scripts/AcidBubbles/Timeline/src/external/curve-editor/GlobalSuppressions.cs
-        cp vam/meta.json publish/
+        cp meta.json publish/
         sed -i 's/v0.0.0/${{ steps.get_version.outputs.VERSION }}/' publish/meta.json
         cd publish
         zip -r "AcidBubbles.Timeline.${{ github.run_number }}.var" *

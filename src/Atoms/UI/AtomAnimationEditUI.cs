@@ -9,9 +9,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationControllersUI : AtomAnimationBaseUI
+    public class AtomAnimationEditUI : AtomAnimationBaseUI
     {
-        public const string ScreenName = "Controllers";
+        public const string ScreenName = "Edit";
         public override string Name => ScreenName;
 
         private abstract class TargetRef
@@ -60,7 +60,7 @@ namespace VamTimeline
         private Curves _curves;
         private UIDynamicPopup _curveTypeUI;
 
-        public AtomAnimationControllersUI(IAtomPlugin plugin)
+        public AtomAnimationEditUI(IAtomPlugin plugin)
             : base(plugin)
         {
 

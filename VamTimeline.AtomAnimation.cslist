@@ -35,7 +35,7 @@ src/Atoms/UI/AtomAnimationBaseUI.cs
 src/Atoms/UI/AtomAnimationLockedUI.cs
 src/Atoms/UI/AtomAnimationSettingsUI.cs
 src/Atoms/UI/AtomAnimationTargetsUI.cs
-src/Atoms/UI/AtomAnimationControllersUI.cs
+src/Atoms/UI/AtomAnimationEditUI.cs
 src/Atoms/UI/AtomAnimationBulkUI.cs
 src/Atoms/UI/AtomAnimationAdvancedUI.cs
 src/Atoms/UI/AtomAnimationUIManager.cs

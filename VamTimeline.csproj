@@ -106,7 +106,7 @@
     <Compile Include="src/Atoms/UI/AtomAnimationLockedUI.cs" />
     <Compile Include="src/Atoms/UI/AtomAnimationSettingsUI.cs" />
     <Compile Include="src/Atoms/UI/AtomAnimationTargetsUI.cs" />
-    <Compile Include="src/Atoms/UI/AtomAnimationControllersUI.cs" />
+    <Compile Include="src/Atoms/UI/AtomAnimationEditUI.cs" />
     <Compile Include="src/Atoms/UI/AtomAnimationBulkUI.cs" />
     <Compile Include="src/Atoms/UI/AtomAnimationAdvancedUI.cs" />
     <Compile Include="src/Atoms/UI/AtomAnimationUIManager.cs" />
