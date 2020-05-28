@@ -13,66 +13,89 @@ namespace VamTimeline
     public class CurvesLines : MaskableGraphic
     {
         public CurvesStyle style;
-        private List<KeyValuePair<Color, AnimationCurve>> _curves;
+        private readonly List<KeyValuePair<Color, AnimationCurve>> _curves = new List<KeyValuePair<Color, AnimationCurve>>();
 
-        public List<KeyValuePair<Color, AnimationCurve>> curves
+        public void ClearCurves()
         {
-            get
-            {
-                return _curves;
-            }
-
-            set
-            {
-                _curves = value;
-                SetVerticesDirty();
-            }
+            _curves.Clear();
+            SetVerticesDirty();
         }
 
+        public void AddCurve(Color color, AnimationCurve curve)
+        {
+            _curves.Add(new KeyValuePair<Color, AnimationCurve>(color, curve));
+            SetVerticesDirty();
+        }
+        private bool temp = false;
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
-            if (style == null || _curves == null) return;
+            if (style == null) return;
+            var margin = 20f;
             var width = rectTransform.rect.width;
-            var height = rectTransform.rect.height;
+            var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
-            var offsetY = -height / 2f;
+            var precision = 2f; // Draw at every N pixels
+            var boundsEvalPrecision = 10f; // Check how many points to detect highest value
 
             foreach (var curveInfo in _curves)
             {
+                // Common
                 var curve = curveInfo.Value;
                 var color = curveInfo.Key;
-                var length = curve[curve.length - 1].time;
-                var xRatio = width / length;
-                var yRatio = 1f;
-                for (var i = 1; i < curve.length; i++)
+                var maxX = curve[curve.length - 1].time;
+                var xRatio = width / maxX;
+
+                // Detect y bounds, offset and ratio
+                var minY = float.MaxValue;
+                var maxY = float.MinValue;
+                var boundsTestStep = maxX / boundsEvalPrecision;
+                for (var time = 0f; time < maxX; time += boundsTestStep)
                 {
-                    var prev1 = curve[i - 1];
-                    var cur1 = curve[i];
-                    var prev = new Vector2(offsetX + prev1.time * xRatio, offsetY + prev1.value * height * yRatio);
-                    var cur = new Vector2(offsetX + cur1.time * xRatio, offsetY + cur1.value * height * yRatio);
+                    var value = curve.Evaluate(time);
+                    minY = Mathf.Min(minY, value);
+                    maxY = Mathf.Max(maxY, value);
+                }
+                var yRatio = height / (maxY - minY);
+                var offsetY = (-minY - (maxY - minY) / 2f) * yRatio;
+                if (float.IsInfinity(yRatio))
+                {
+                    yRatio = 1f;
+                    offsetY = 0f;
+                }
 
-                    var angle = Mathf.Atan2(cur.y - prev.y, cur.x - prev.x) * 180f / Mathf.PI;
+                // Draw line
+                var step = maxX / width * precision;
+                var points = new List<Vector2>(curve.length);
+                for (var time = 0f; time < maxX; time += step)
+                {
+                    var value = curve.Evaluate(time);
+                    var cur = new Vector2(offsetX + time * xRatio, offsetY + value * yRatio);
+                    points.Add(cur);
+                }
+                vh.DrawLine(points, style.LineSize, color);
 
-                    var v1 = prev + new Vector2(0, -style.LineSize / 2);
-                    var v2 = prev + new Vector2(0, +style.LineSize / 2);
-                    var v3 = cur + new Vector2(0, +style.LineSize / 2);
-                    var v4 = cur + new Vector2(0, -style.LineSize / 2);
-
-                    v1 = RotatePointAroundPivot(v1, prev, angle);
-                    v2 = RotatePointAroundPivot(v2, prev, angle);
-                    v3 = RotatePointAroundPivot(v3, cur, angle);
-                    v4 = RotatePointAroundPivot(v4, cur, angle);
-
-                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[] { v1, v2, v3, v4 }));
+                // Draw handles
+                for (var i = 0; i < curve.length; i++)
+                {
+                    var keyframe = curve[i];
+                    var center = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
+                    if (!temp && color == Color.red)
+                    {
+                        SuperController.LogMessage($"{yRatio} = {height} / ({maxY} - {minY})");
+                        SuperController.LogMessage($"value: {keyframe.value}, offsetY: {offsetY}, center: {center}");
+                        temp = true;
+                    }
+                    var size = 6f;
+                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
+                    {
+                        center - new Vector2(-size, -size),
+                        center - new Vector2(-size, size),
+                        center - new Vector2(size, size),
+                        center - new Vector2(size, -size)
+                    }));
                 }
             }
         }
-
-        // TODO: Move to utility class
-        public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
-            => Quaternion.Euler(angles) * (point - pivot) + pivot;
-        public static Vector2 RotatePointAroundPivot(Vector2 point, Vector2 pivot, float angle)
-            => RotatePointAroundPivot(point, pivot, angle * Vector3.forward);
     }
 }

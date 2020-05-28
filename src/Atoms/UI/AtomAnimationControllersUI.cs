@@ -81,7 +81,7 @@ namespace VamTimeline
             if (_curves == null) return;
             var targets = Current.GetAllOrSelectedControllerTargets();
             if (targets.Count == 1)
-                _curves.Bind(targets[0].Curves);
+                _curves.Bind(targets[0]);
             else
                 _curves.Bind(null);
         }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -86,12 +84,17 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(List<AnimationCurve> curves)
+        public void Bind(FreeControllerAnimationTarget target)
         {
-            _noCurves.SetActive(curves == null);
-            // TODO: Assign target instead to drive colors
+            _noCurves.SetActive(target == null);
             // TODO: Update when the curve is changed (event)
-            _lines.curves = curves?.Select(c => new KeyValuePair<Color, AnimationCurve>(Color.black, c)).ToList();
+            _lines.ClearCurves();
+            if (target != null)
+            {
+                _lines.AddCurve(Color.red, target.X);
+                _lines.AddCurve(Color.green, target.Y);
+                _lines.AddCurve(Color.blue, target.Z);
+            }
         }
     }
 }
