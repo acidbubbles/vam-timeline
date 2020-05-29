@@ -69,9 +69,9 @@ namespace VamTimeline
             {
                 var changeTo = screen;
                 var btn = UnityEngine.Object.Instantiate(_plugin.Manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
                 btn.label = changeTo;
 
-                btn.gameObject.transform.SetParent(group.transform, false);
                 btn.button.onClick.AddListener(() =>
                 {
                     ChangeScreen(changeTo);

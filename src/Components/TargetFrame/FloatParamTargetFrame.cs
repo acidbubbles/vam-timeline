@@ -19,7 +19,8 @@ namespace VamTimeline
             var time = Plugin.Animation.Time.Snap();
             if (time.IsSameFrame(0f) || time.IsSameFrame(Clip.AnimationLength))
             {
-                // TODO: Cancel
+                if (!enable)
+                    Toggle.toggle.isOn = true;
                 return;
             }
             if (enable)

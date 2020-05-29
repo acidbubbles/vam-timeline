@@ -9,7 +9,7 @@ namespace VamTimeline
     public interface ITargetFrame
     {
         UIDynamic Container { get; }
-        void SetTime(float time);
+        void SetTime(float time, bool stopped);
         void ToggleKeyframe(bool enable);
     }
 }

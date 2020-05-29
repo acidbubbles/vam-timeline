@@ -21,9 +21,9 @@ namespace VamTimeline
             public ITargetFrame Component;
             public IAnimationTargetWithCurves Target;
 
-            public virtual void UpdateValue(float time)
+            public virtual void UpdateValue(float time, bool stopped)
             {
-                Component.SetTime(time);
+                Component.SetTime(time, stopped);
             }
 
             public virtual void Remove(IAtomPlugin plugin)
@@ -41,9 +41,9 @@ namespace VamTimeline
             public JSONStorableFloat FloatParamProxyJSON;
             public UIDynamicSlider SliderUI;
 
-            public override void UpdateValue(float time)
+            public override void UpdateValue(float time, bool stopped)
             {
-                base.UpdateValue(time);
+                base.UpdateValue(time, stopped);
                 FloatParamProxyJSON.valNoCallback = ((FloatParamAnimationTarget)Target).FloatParam.val;
             }
 
@@ -126,14 +126,14 @@ namespace VamTimeline
         public override void UpdatePlaying()
         {
             base.UpdatePlaying();
-            UpdateValues();
+            UpdateValues(false);
             _curves?.SetScrubberPosition(Plugin.Animation.Time);
         }
 
         public override void AnimationFrameUpdated()
         {
             base.AnimationFrameUpdated();
-            UpdateValues();
+            UpdateValues(true);
             UpdateCurrentCurveType();
             _curves?.SetScrubberPosition(Plugin.Animation.Time);
         }
@@ -196,12 +196,12 @@ namespace VamTimeline
                 _curveTypeJSON.valNoCallback = "(" + string.Join("/", curveTypes.ToArray()) + ")";
         }
 
-        private void UpdateValues()
+        private void UpdateValues(bool stopped)
         {
             var time = Plugin.Animation.Time;
             foreach (var targetRef in _targets)
             {
-                targetRef.UpdateValue(time);
+                targetRef.UpdateValue(time, stopped);
             }
         }
 
@@ -214,8 +214,10 @@ namespace VamTimeline
             foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var keyframeUI = Plugin.CreateSpacer(true);
+                keyframeUI.height = 50f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
+                component.SetTime(time, true);
                 _targets.Add(new ControllerTargetRef
                 {
                     Component = component,
@@ -225,10 +227,12 @@ namespace VamTimeline
 
             foreach (var target in Current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
-                var sourceFloatParamJSON = target.FloatParam;
                 var keyframeUI = Plugin.CreateSpacer(true);
+                keyframeUI.height = 50f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
+                component.SetTime(time, true);
+                var sourceFloatParamJSON = target.FloatParam;
                 var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{sourceFloatParamJSON.name}", sourceFloatParamJSON.defaultVal, (float val) => SetFloatParamValue(target, val), sourceFloatParamJSON.min, sourceFloatParamJSON.max, sourceFloatParamJSON.constrained, true)
                 {
                     isStorable = false,

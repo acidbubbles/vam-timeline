@@ -16,6 +16,7 @@ namespace VamTimeline
         protected IAtomPlugin Plugin;
         protected AtomAnimationClip Clip;
         protected T Target;
+        protected UIDynamicToggle Toggle;
 
         public bool interactable { get; set; }
         public UIDynamic Container => gameObject.GetComponent<UIDynamic>();
@@ -36,10 +37,6 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
 
-            var image = go.AddComponent<Image>();
-            image.color = Style.BackgroundColor;
-            image.raycastTarget = false;
-
             return go;
         }
 
@@ -48,11 +45,29 @@ namespace VamTimeline
             Plugin = plugin;
             Clip = clip;
             Target = target;
+
+            var ui = Instantiate(plugin.Manager.configurableTogglePrefab.transform);
+            ui.SetParent(transform, false);
+            Toggle = ui.GetComponent<UIDynamicToggle>();
+            Toggle.label = target.Name;
+            var rect = ui.gameObject.GetComponent<RectTransform>();
+            rect.StretchParent();
+            ui.gameObject.SetActive(true);
+
+            Toggle.toggle.onValueChanged.AddListener(ToggleKeyframe);
         }
 
-        public void SetTime(float time)
+        public void SetTime(float time, bool stopped)
         {
-            var on = Target.GetLeadCurve().KeyframeBinarySearch(time);
+            if (stopped)
+            {
+                Toggle.toggle.interactable = true;
+                Toggle.toggle.isOn = Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
+            }
+            else
+            {
+                Toggle.toggle.interactable = false;
+            }
         }
 
         public abstract void ToggleKeyframe(bool enable);
