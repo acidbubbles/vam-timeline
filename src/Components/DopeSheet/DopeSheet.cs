@@ -174,7 +174,7 @@ namespace VamTimeline
             {
                 var child = _layout.transform.GetChild(0);
                 child.transform.SetParent(null, false);
-                Destroy(child);
+                Destroy(child.gameObject);
             }
         }
 
