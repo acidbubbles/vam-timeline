@@ -130,7 +130,7 @@ namespace VamTimeline
                         if (!morph.animatable)
                             morph.animatable = true;
                     }
-                    var storable = _atom.containingAtom.GetStorableByID(storableId);
+                    var storable = _atom.GetStorableByID(storableId);
                     if (storable == null)
                     {
                         SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a storable '{storableId}'");
@@ -361,7 +361,7 @@ namespace VamTimeline
             {
                 var paramJSON = new JSONClass
                     {
-                        { "Storable", target.Storable.name },
+                        { "Storable", target.Storable.storeId },
                         { "Name", target.FloatParam.name },
                         { "Value", SerializeCurve(target.Value) },
                     };
