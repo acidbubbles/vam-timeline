@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public abstract class StyleBase
+    public class StyleBase
     {
         // Global
         public Font Font { get; }

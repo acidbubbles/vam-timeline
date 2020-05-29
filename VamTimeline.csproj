@@ -70,6 +70,11 @@
     <Compile Include="src/Components/Scrubber/ScrubberMarkers.cs" />
     <Compile Include="src/Components/Scrubber/ScrubberStyle.cs" />
 
+    <Compile Include="src/Components/TargetFrame/ITargetFrame.cs" />
+    <Compile Include="src/Components/TargetFrame/TargetFrameBase.cs" />
+    <Compile Include="src/Components/TargetFrame/ControllerTargetFrame.cs" />
+    <Compile Include="src/Components/TargetFrame/FloatParamTargetFrame.cs" />
+
     <Compile Include="src/Components/Curves/Curves.cs" />
     <Compile Include="src/Components/Curves/CurvesLines.cs" />
     <Compile Include="src/Components/Curves/CurvesStyle.cs" />
