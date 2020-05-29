@@ -25,18 +25,6 @@ namespace VamTimeline
 
         public TargetFrameBase()
         {
-            CreateBackground();
-        }
-
-        private GameObject CreateBackground()
-        {
-            var go = new GameObject();
-            go.transform.SetParent(transform, false);
-
-            var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent();
-
-            return go;
         }
 
         public void Bind(IAtomPlugin plugin, AtomAnimationClip clip, T target)
@@ -47,6 +35,8 @@ namespace VamTimeline
 
             CreateToggle(plugin);
             Toggle.label = target.Name;
+
+            CreateCustom();
 
             ValueText = CreateValueText();
         }
@@ -63,9 +53,12 @@ namespace VamTimeline
             var rect = ui.gameObject.GetComponent<RectTransform>();
             rect.StretchParent();
 
-            var label = Toggle.labelText.gameObject;
-            Toggle.labelText.fontSize = 26;
-            Toggle.labelText.alignment = TextAnchor.UpperLeft;
+            Toggle.backgroundImage.raycastTarget = false;
+
+            var label = Toggle.labelText;
+            label.fontSize = 26;
+            label.alignment = TextAnchor.UpperLeft;
+            label.raycastTarget = false;
             var labelRect = label.GetComponent<RectTransform>();
             labelRect.offsetMin += new Vector2(-3f, 0f);
             labelRect.offsetMax += new Vector2(0f, -5f);
@@ -95,6 +88,7 @@ namespace VamTimeline
             text.fontSize = 20;
             text.font = Style.Font;
             text.color = Style.FontColor;
+            text.raycastTarget = false;
 
             return text;
         }
@@ -115,6 +109,7 @@ namespace VamTimeline
             }
         }
 
+        protected abstract void CreateCustom();
         public abstract void ToggleKeyframe(bool enable);
     }
 }

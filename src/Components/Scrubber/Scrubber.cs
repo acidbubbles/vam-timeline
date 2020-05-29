@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class Scrubber : MonoBehaviour, IPointerDownHandler, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class Scrubber : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private readonly ScrubberStyle _style = new ScrubberStyle();
         private readonly RectTransform _scrubberRect;
@@ -131,11 +131,7 @@ namespace VamTimeline
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            UpdateScrubberFromView(eventData);
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
+            eventData.useDragThreshold = false;
             UpdateScrubberFromView(eventData);
         }
 

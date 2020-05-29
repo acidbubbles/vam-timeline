@@ -16,6 +16,10 @@ namespace VamTimeline
         {
         }
 
+        protected override void CreateCustom()
+        {
+        }
+
         public override void SetTime(float time, bool stopped)
         {
             base.SetTime(time, stopped);

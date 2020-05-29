@@ -21,6 +21,7 @@ src/Components/TargetFrame/ITargetFrame.cs
 src/Components/TargetFrame/TargetFrameBase.cs
 src/Components/TargetFrame/ControllerTargetFrame.cs
 src/Components/TargetFrame/FloatParamTargetFrame.cs
+src/Components/TargetFrame/SimpleSlider.cs
 src/Components/Curves/Curves.cs
 src/Components/Curves/CurvesLines.cs
 src/Components/Curves/CurvesStyle.cs

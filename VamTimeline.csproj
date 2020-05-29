@@ -74,6 +74,7 @@
     <Compile Include="src/Components/TargetFrame/TargetFrameBase.cs" />
     <Compile Include="src/Components/TargetFrame/ControllerTargetFrame.cs" />
     <Compile Include="src/Components/TargetFrame/FloatParamTargetFrame.cs" />
+    <Compile Include="src/Components/TargetFrame/SimpleSlider.cs" />
 
     <Compile Include="src/Components/Curves/Curves.cs" />
     <Compile Include="src/Components/Curves/CurvesLines.cs" />
