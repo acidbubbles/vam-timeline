@@ -13,6 +13,16 @@ namespace VamTimeline
         {
         }
 
+        public override void SetTime(float time, bool stopped)
+        {
+            base.SetTime(time, stopped);
+
+            if (stopped)
+            {
+                ValueText.text = Target.FloatParam.val.ToString("0.00");
+            }
+        }
+
         public override void ToggleKeyframe(bool enable)
         {
             if (Plugin.Animation.IsPlaying()) return;

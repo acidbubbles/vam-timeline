@@ -121,6 +121,31 @@ namespace VamTimeline
                 if (target is FreeControllerAnimationTarget)
                 {
                     var targetController = (FreeControllerAnimationTarget)target;
+
+                    var rotVX = new Keyframe[targetController.RotX.length];
+                    var rotVY = new Keyframe[targetController.RotY.length];
+                    var rotVZ = new Keyframe[targetController.RotZ.length];
+                    for (var t = 0; t < targetController.RotW.length; t++)
+                    {
+                        Keyframe keyX = targetController.RotX[t];
+                        Keyframe keyY = targetController.RotY[t];
+                        Keyframe keyZ = targetController.RotZ[t];
+                        Keyframe keyW = targetController.RotW[t];
+                        var rot = new Quaternion(
+                            keyX.value,
+                            keyY.value,
+                            keyZ.value,
+                            keyW.value
+                        );
+                        var eulerAngles = rot.eulerAngles;
+                        rotVX[t] = new Keyframe(keyW.time, eulerAngles.x);
+                        rotVY[t] = new Keyframe(keyW.time, eulerAngles.y);
+                        rotVZ[t] = new Keyframe(keyW.time, eulerAngles.z);
+                    }
+                    _lines.AddCurve(new Color(1.0f, 0.8f, 0.8f), new AnimationCurve(rotVX));
+                    _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), new AnimationCurve(rotVY));
+                    _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), new AnimationCurve(rotVZ));
+
                     _lines.AddCurve(Color.red, targetController.X);
                     _lines.AddCurve(Color.green, targetController.Y);
                     _lines.AddCurve(Color.blue, targetController.Z);

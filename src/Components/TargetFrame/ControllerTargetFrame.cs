@@ -1,3 +1,6 @@
+using UnityEngine;
+using UnityEngine.UI;
+
 namespace VamTimeline
 {
     /// <summary>
@@ -11,6 +14,17 @@ namespace VamTimeline
         public ControllerTargetFrame()
             : base()
         {
+        }
+
+        public override void SetTime(float time, bool stopped)
+        {
+            base.SetTime(time, stopped);
+
+            if (stopped)
+            {
+                var pos = Target.Controller.transform.position;
+                ValueText.text = $"{pos.x:0.000}, {pos.y:0.000}, {pos.z:0.000}";
+            }
         }
 
         public override void ToggleKeyframe(bool enable)

@@ -214,7 +214,7 @@ namespace VamTimeline
             foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var keyframeUI = Plugin.CreateSpacer(true);
-                keyframeUI.height = 50f;
+                keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
                 component.SetTime(time, true);
@@ -228,7 +228,7 @@ namespace VamTimeline
             foreach (var target in Current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 var keyframeUI = Plugin.CreateSpacer(true);
-                keyframeUI.height = 50f;
+                keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
                 component.SetTime(time, true);
