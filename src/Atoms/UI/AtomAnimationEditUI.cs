@@ -16,42 +16,19 @@ namespace VamTimeline
         public const string ScreenName = "Edit";
         public override string Name => ScreenName;
 
-        private abstract class TargetRef
+        private class TargetRef
         {
             public ITargetFrame Component;
             public IAnimationTargetWithCurves Target;
 
-            public virtual void UpdateValue(float time, bool stopped)
+            public void UpdateValue(float time, bool stopped)
             {
                 Component.SetTime(time, stopped);
             }
 
-            public virtual void Remove(IAtomPlugin plugin)
+            public void Remove(IAtomPlugin plugin)
             {
                 plugin.RemoveSpacer(Component.Container);
-            }
-        }
-
-        private class ControllerTargetRef : TargetRef
-        {
-        }
-
-        private class FloatParamTargetRef : TargetRef
-        {
-            public JSONStorableFloat FloatParamProxyJSON;
-            public UIDynamicSlider SliderUI;
-
-            public override void UpdateValue(float time, bool stopped)
-            {
-                base.UpdateValue(time, stopped);
-                FloatParamProxyJSON.valNoCallback = ((FloatParamAnimationTarget)Target).FloatParam.val;
-            }
-
-            public override void Remove(IAtomPlugin plugin)
-            {
-                base.Remove(plugin);
-                plugin.RemoveSlider(FloatParamProxyJSON);
-                plugin.RemoveSlider(SliderUI);
             }
         }
 
@@ -218,7 +195,7 @@ namespace VamTimeline
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
                 component.SetTime(time, true);
-                _targets.Add(new ControllerTargetRef
+                _targets.Add(new TargetRef
                 {
                     Component = component,
                     Target = target
@@ -232,19 +209,10 @@ namespace VamTimeline
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
                 component.SetTime(time, true);
-                var sourceFloatParamJSON = target.FloatParam;
-                var jsfJSONProxy = new JSONStorableFloat($"{target.Storable.name}/{sourceFloatParamJSON.name}", sourceFloatParamJSON.defaultVal, (float val) => SetFloatParamValue(target, val), sourceFloatParamJSON.min, sourceFloatParamJSON.max, sourceFloatParamJSON.constrained, true)
-                {
-                    isStorable = false,
-                    valNoCallback = sourceFloatParamJSON.val
-                };
-                var sliderUI = Plugin.CreateSlider(jsfJSONProxy, true);
-                _targets.Add(new FloatParamTargetRef
+                _targets.Add(new TargetRef
                 {
                     Component = component,
                     Target = target,
-                    FloatParamProxyJSON = jsfJSONProxy,
-                    SliderUI = sliderUI
                 });
             }
         }
@@ -287,19 +255,6 @@ namespace VamTimeline
             Current.ChangeCurve(time, curveType);
             Plugin.Animation.RebuildAnimation();
             Plugin.AnimationModified();
-        }
-
-        private void SetFloatParamValue(FloatParamAnimationTarget target, float val)
-        {
-            if (Plugin.Animation.IsPlaying()) return;
-            target.FloatParam.val = val;
-            var time = Plugin.Animation.Time;
-            Plugin.Animation.SetKeyframe(target, time, val);
-            // NOTE: We don't call AnimationModified for performance reasons. This could be improved by using more specific events.
-            Plugin.Animation.RebuildAnimation();
-            if (target.Selected) RefreshCurves();
-            var targetRef = _targets.FirstOrDefault(j => j.Target == target);
-            targetRef.Component.ToggleKeyframe(true);
         }
     }
 }

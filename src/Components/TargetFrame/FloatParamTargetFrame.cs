@@ -21,18 +21,34 @@ namespace VamTimeline
 
         protected override void CreateCustom()
         {
+            var slider = new GameObject();
+            slider.transform.SetParent(transform, false);
+
+            {
+                var rect = slider.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0f, 0f);
+                rect.anchorMax = new Vector2(1f, 1f);
+                rect.sizeDelta = new Vector2(-62f, -6f);
+                rect.anchoredPosition += new Vector2(26f, 0f);
+
+                var image = slider.AddComponent<Image>();
+                image.color = new Color(0f, 0f, 0f, 0f);
+                image.raycastTarget = true;
+            }
+
             var sliderBackground = new GameObject();
-            sliderBackground.transform.SetParent(transform, false);
+            sliderBackground.transform.SetParent(slider.transform, false);
 
             {
                 var rect = sliderBackground.AddComponent<RectTransform>();
                 rect.anchorMin = new Vector2(0f, 0f);
                 rect.anchorMax = new Vector2(1f, 0f);
-                rect.sizeDelta = new Vector2(-64f, 20f);
-                rect.anchoredPosition += new Vector2(26f, 16f);
+                rect.sizeDelta = new Vector2(0f, 20f);
+                rect.anchoredPosition += new Vector2(0f, 13f);
 
                 var image = sliderBackground.AddComponent<Image>();
                 image.color = new Color(0.7f, 0.7f, 0.7f);
+                image.raycastTarget = false;
             }
 
             var sliderFill = new GameObject();
@@ -47,13 +63,19 @@ namespace VamTimeline
 
                 var image = sliderFill.AddComponent<Image>();
                 image.color = Color.white;
+                image.raycastTarget = false;
             }
 
-            var slider = sliderBackground.AddComponent<SimpleSlider>();
-            slider.OnChange.AddListener((float val) =>
+            var interactions = slider.AddComponent<SimpleSlider>();
+            interactions.OnChange.AddListener((float val) =>
             {
                 Target.FloatParam.val = Target.FloatParam.min + val * (Target.FloatParam.max - Target.FloatParam.min);
+                Plugin.Animation.SetKeyframe(Target, Plugin.Animation.Time, Target.FloatParam.val);
+                Plugin.Animation.RebuildAnimation();
+                // TODO: Curves won't refresh. Replace with event.
+                Plugin.AnimationModified();
                 SetTime(-1, true);
+                ToggleKeyframe(true);
             });
         }
 
