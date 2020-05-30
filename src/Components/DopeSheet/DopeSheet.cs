@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -156,16 +155,19 @@ namespace VamTimeline
             Unbind();
 
             _clip = clip;
+            var any = false;
             foreach (var group in _clip.GetTargetGroups())
             {
                 if (group.Count > 0)
                 {
+                    any = true;
                     CreateHeader(group);
 
                     foreach (var target in group.GetTargets())
                         CreateRow(target);
                 }
             }
+            _scrubberRect.gameObject.SetActive(any);
         }
 
         private void Unbind()

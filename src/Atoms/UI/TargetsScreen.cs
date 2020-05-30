@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationTargetsUI : AtomAnimationBaseUI
+    public class TargetsScreen : ScreenBase
     {
         public const string ScreenName = "Targets";
         public override string Name => ScreenName;
@@ -25,7 +25,7 @@ namespace VamTimeline
         private UIDynamicPopup _addParamListUI;
         private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
-        public AtomAnimationTargetsUI(IAtomPlugin plugin)
+        public TargetsScreen(IAtomPlugin plugin)
             : base(plugin)
         {
 
@@ -208,7 +208,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(AddAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(AddAnimatedController)}: " + exc);
             }
         }
 
@@ -241,7 +241,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(AddAnimatedFloatParam)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
             }
         }
 
@@ -255,7 +255,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(RemoveAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 
@@ -268,7 +268,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationSettingsUI)}.{nameof(RemoveAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 

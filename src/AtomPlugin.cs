@@ -53,7 +53,7 @@ namespace VamTimeline
         public JSONStorableFloat SpeedJSON { get; private set; }
 
         // UI
-        private AtomAnimationUIManager _ui;
+        private ScreensManager _ui;
         private AnimationControlPanel _controlPanel;
 
         #region Init
@@ -63,7 +63,7 @@ namespace VamTimeline
             try
             {
                 Serializer = new AtomAnimationSerializer(containingAtom);
-                _ui = new AtomAnimationUIManager(this);
+                _ui = new ScreensManager(this);
                 InitStorables();
                 _ui.Init();
                 StartCoroutine(DeferredInit());

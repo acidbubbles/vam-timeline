@@ -24,14 +24,15 @@ namespace VamTimeline
         {
             _plugin = plugin;
 
+            // TODO: Integrate play/stop inside scrubber
             _scrubber = InitScrubber(plugin.ScrubberJSON);
             InitSpacer();
-            // TODO: Integrate play/stop inside scrubber
+            InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
+            InitSpacer();
             InitPlaybackButtons(plugin.Manager.configurableButtonPrefab, plugin.PlayJSON, plugin.StopJSON);
             InitSpacer();
             _dopeSheet = InitDopeSheet();
             InitSpacer();
-            InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
         }
 
         private Scrubber InitScrubber(JSONStorableFloat scrubberJSON)

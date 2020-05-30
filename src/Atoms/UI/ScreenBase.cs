@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public abstract class AtomAnimationBaseUI : IDisposable
+    public abstract class ScreenBase : IDisposable
     {
         public abstract string Name { get; }
 
@@ -20,7 +20,7 @@ namespace VamTimeline
         protected AtomAnimationClip Current;
         protected bool _disposing;
 
-        protected AtomAnimationBaseUI(IAtomPlugin plugin)
+        protected ScreenBase(IAtomPlugin plugin)
         {
             Plugin = plugin;
         }

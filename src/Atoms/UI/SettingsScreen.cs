@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationSettingsUI : AtomAnimationBaseUI
+    public class SettingsScreen : ScreenBase
     {
         public const string ScreenName = "Settings";
         public override string Name => ScreenName;
@@ -38,7 +38,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private float _lengthWhenLengthModeChanged;
 
-        public AtomAnimationSettingsUI(IAtomPlugin plugin)
+        public SettingsScreen(IAtomPlugin plugin)
             : base(plugin)
         {
 

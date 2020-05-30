@@ -16,7 +16,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationAdvancedUI : AtomAnimationBaseUI
+    public class AdvancedScreen : ScreenBase
     {
         private const string _saveExt = "json";
         private const string _saveFolder = "Saves\\animations";
@@ -30,7 +30,7 @@ namespace VamTimeline
 
         public override string Name => ScreenName;
 
-        public AtomAnimationAdvancedUI(IAtomPlugin plugin)
+        public AdvancedScreen(IAtomPlugin plugin)
             : base(plugin)
         {
 
@@ -183,7 +183,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(EnableAllTargets)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(EnableAllTargets)}: {exc}");
             }
         }
 
@@ -213,7 +213,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(DeleteAnimation)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(DeleteAnimation)}: {exc}");
             }
         }
 
@@ -248,7 +248,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReverseAnimation)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReverseAnimation)}: {exc}");
             }
         }
 
@@ -266,7 +266,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReorderAnimationMoveUp)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReorderAnimationMoveUp)}: {exc}");
             }
         }
 
@@ -284,7 +284,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ReorderAnimationMoveDown)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReorderAnimationMoveDown)}: {exc}");
             }
         }
 
@@ -404,7 +404,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
             }
         }
 
@@ -432,7 +432,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(KeyframeCurrentPose)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(KeyframeCurrentPose)}: {exc}");
             }
         }
 
@@ -454,7 +454,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(Bake)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(Bake)}: {exc}");
             }
         }
 
@@ -470,7 +470,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
             }
         }
 
@@ -536,7 +536,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Init]: {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportRecordedCoroutine)}[Init]: {exc}");
                     yield break;
                 }
 
@@ -623,7 +623,7 @@ namespace VamTimeline
                         }
                         catch (Exception exc)
                         {
-                            SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ExtractFramesWithReductionTechnique)}[Step]: {exc}");
+                            SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ExtractFramesWithReductionTechnique)}[Step]: {exc}");
                             yield break;
                         }
 
@@ -670,7 +670,7 @@ namespace VamTimeline
                     }
                     catch (Exception exc)
                     {
-                        SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ExtractFramesWithReductionTechnique)}[Apply]: {exc}");
+                        SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ExtractFramesWithReductionTechnique)}[Apply]: {exc}");
                         yield break;
                     }
                 }
@@ -749,7 +749,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationAdvancedUI)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
                     yield break;
                 }
 

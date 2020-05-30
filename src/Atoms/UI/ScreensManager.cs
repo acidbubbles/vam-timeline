@@ -13,10 +13,10 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationUIManager : IDisposable
+    public class ScreensManager : IDisposable
     {
         protected IAtomPlugin _plugin;
-        private AtomAnimationBaseUI _current;
+        private ScreenBase _current;
         private AnimationControlPanel _controlPanel;
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
@@ -25,7 +25,7 @@ namespace VamTimeline
         private string _currentScreen;
         private readonly UnityEvent _screenChanged = new UnityEvent();
 
-        public AtomAnimationUIManager(IAtomPlugin plugin)
+        public ScreensManager(IAtomPlugin plugin)
         {
             _plugin = plugin;
         }
@@ -46,12 +46,12 @@ namespace VamTimeline
         private void InitTabs()
         {
             var screens = new[]{
-                AtomAnimationSettingsUI.ScreenName,
-                AtomAnimationTargetsUI.ScreenName,
-                AtomAnimationEditUI.ScreenName,
-                AtomAnimationBulkUI.ScreenName,
-                AtomAnimationAdvancedUI.ScreenName,
-                AtomAnimationLockedUI.ScreenName
+                SettingsScreen.ScreenName,
+                TargetsScreen.ScreenName,
+                EditScreen.ScreenName,
+                BulkScreen.ScreenName,
+                AdvancedScreen.ScreenName,
+                PerformanceScreen.ScreenName
             };
 
             // TODO: Extract in a component
@@ -87,7 +87,7 @@ namespace VamTimeline
         private void ChangeScreen(string screen)
         {
             _currentScreen = screen;
-            _plugin.LockedJSON.valNoCallback = screen == AtomAnimationLockedUI.ScreenName;
+            _plugin.LockedJSON.valNoCallback = screen == PerformanceScreen.ScreenName;
             _screenChanged.Invoke();
             RefreshCurrentUI(false);
             // TODO: Highlight button
@@ -118,19 +118,19 @@ namespace VamTimeline
         public string GetDefaultScreen()
         {
             if (_plugin.Animation == null || _plugin.LockedJSON.val)
-                return AtomAnimationLockedUI.ScreenName;
+                return PerformanceScreen.ScreenName;
             else if (_plugin.Animation.IsEmpty())
-                return AtomAnimationTargetsUI.ScreenName;
+                return WelcomeScreen.ScreenName;
             else
-                return AtomAnimationEditUI.ScreenName;
+                return EditScreen.ScreenName;
         }
 
         public void AnimationModified()
         {
             if (_plugin.Animation == null) return;
-            if (_plugin.LockedJSON.val && _currentScreen != AtomAnimationLockedUI.ScreenName)
-                ChangeScreen(AtomAnimationLockedUI.ScreenName);
-            if (!_plugin.LockedJSON.val && _currentScreen == AtomAnimationLockedUI.ScreenName)
+            if (_plugin.LockedJSON.val && _currentScreen != PerformanceScreen.ScreenName)
+                ChangeScreen(PerformanceScreen.ScreenName);
+            if (!_plugin.LockedJSON.val && _currentScreen == PerformanceScreen.ScreenName)
                 ChangeScreen(GetDefaultScreen());
 
             RefreshCurrentUI(true);
@@ -188,7 +188,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while refreshing existing {_current.Name}): {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while refreshing existing {_current.Name}): {exc}");
                 }
                 yield break;
             }
@@ -205,7 +205,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.Name}): {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.Name}): {exc}");
                 }
 
                 _current = null;
@@ -216,23 +216,26 @@ namespace VamTimeline
             // Create new screen
             switch (screen)
             {
-                case AtomAnimationSettingsUI.ScreenName:
-                    _current = new AtomAnimationSettingsUI(_plugin);
+                case SettingsScreen.ScreenName:
+                    _current = new SettingsScreen(_plugin);
                     break;
-                case AtomAnimationTargetsUI.ScreenName:
-                    _current = new AtomAnimationTargetsUI(_plugin);
+                case TargetsScreen.ScreenName:
+                    _current = new TargetsScreen(_plugin);
                     break;
-                case AtomAnimationEditUI.ScreenName:
-                    _current = new AtomAnimationEditUI(_plugin);
+                case EditScreen.ScreenName:
+                    _current = new EditScreen(_plugin);
                     break;
-                case AtomAnimationBulkUI.ScreenName:
-                    _current = new AtomAnimationBulkUI(_plugin);
+                case BulkScreen.ScreenName:
+                    _current = new BulkScreen(_plugin);
                     break;
-                case AtomAnimationAdvancedUI.ScreenName:
-                    _current = new AtomAnimationAdvancedUI(_plugin);
+                case AdvancedScreen.ScreenName:
+                    _current = new AdvancedScreen(_plugin);
                     break;
-                case AtomAnimationLockedUI.ScreenName:
-                    _current = new AtomAnimationLockedUI(_plugin);
+                case PerformanceScreen.ScreenName:
+                    _current = new PerformanceScreen(_plugin);
+                    break;
+                case WelcomeScreen.ScreenName:
+                    _current = new WelcomeScreen(_plugin);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");
@@ -244,7 +247,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
             }
 
             try
@@ -253,7 +256,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimationUIManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
             }
 
             yield return 0;

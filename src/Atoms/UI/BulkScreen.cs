@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationBulkUI : AtomAnimationBaseUI
+    public class BulkScreen : ScreenBase
     {
         public const string ScreenName = "Bulk";
         public override string Name => ScreenName;
@@ -20,7 +20,7 @@ namespace VamTimeline
         private float _selectionEnd = 0;
         private JSONStorableStringChooser _changeCurveJSON;
 
-        public AtomAnimationBulkUI(IAtomPlugin plugin)
+        public BulkScreen(IAtomPlugin plugin)
             : base(plugin)
         {
 
