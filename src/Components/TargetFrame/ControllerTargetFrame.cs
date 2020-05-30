@@ -27,7 +27,7 @@ namespace VamTimeline
             if (stopped)
             {
                 var pos = Target.Controller.transform.position;
-                ValueText.text = $"{pos.x:0.000}, {pos.y:0.000}, {pos.z:0.000}";
+                ValueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
             }
         }
 
