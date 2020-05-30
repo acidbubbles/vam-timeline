@@ -16,6 +16,8 @@ namespace VamTimeline
         private readonly GameObject _noCurves;
         private readonly CurvesLines _lines;
         private float _animationLength;
+        private AtomAnimation _animation;
+        private float _time;
 
         public Curves()
         {
@@ -110,9 +112,11 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(IAnimationTargetWithCurves target)
+        public void Bind(AtomAnimation animation, IAnimationTargetWithCurves target)
         {
+            // TODO: Unbind?
             // TODO: Update when the curve is changed (event)
+            _animation = animation;
             _lines.ClearCurves();
             if (target != null)
             {
@@ -166,9 +170,12 @@ namespace VamTimeline
             }
         }
 
-        public void SetScrubberPosition(float val)
+        public void Update()
         {
-            var ratio = Mathf.Clamp01(val / _animationLength);
+            if (_animation.Time == _time) return;
+
+            _time = _animation.Time;
+            var ratio = Mathf.Clamp01(_animation.Time / _animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
         }

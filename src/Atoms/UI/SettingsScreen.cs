@@ -63,6 +63,7 @@ namespace VamTimeline
             InitAnimationPatternLinkUI(true);
 
             _lengthWhenLengthModeChanged = Current?.AnimationLength ?? 0;
+            UpdateValues();
         }
 
         private void InitAnimationSettingsUI(bool rightSide)
@@ -562,10 +563,15 @@ namespace VamTimeline
 
         #region Events
 
-        public override void AnimationModified()
+        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            base.AnimationModified();
+            base.OnCurrentAnimationChanged(args);
 
+            UpdateValues();
+        }
+
+        private void UpdateValues()
+        {
             _animationNameJSON.valNoCallback = Current.AnimationName;
             _lengthJSON.valNoCallback = Current.AnimationLength;
             _blendDurationJSON.valNoCallback = Current.BlendDuration;

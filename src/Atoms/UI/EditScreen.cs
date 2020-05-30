@@ -21,11 +21,6 @@ namespace VamTimeline
             public ITargetFrame Component;
             public IAnimationTargetWithCurves Target;
 
-            public void UpdateValue(float time, bool stopped)
-            {
-                Component.SetTime(time, stopped);
-            }
-
             public void Remove(IAtomPlugin plugin)
             {
                 plugin.RemoveSpacer(Component.Container);
@@ -91,42 +86,20 @@ namespace VamTimeline
 
         private void RefreshCurves()
         {
+            // TODO: Listen internally
             if (_curves == null) return;
             var targets = Current.GetAllOrSelectedTargets().ToList();
             if (targets.Count == 1)
-                _curves.Bind(targets[0]);
+                _curves.Bind(Plugin.Animation, targets[0]);
             else
-                _curves.Bind(null);
-            _curves?.SetScrubberPosition(Plugin.Animation.Time);
+                _curves.Bind(Plugin.Animation, null);
         }
 
-        public override void UpdatePlaying()
+        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            base.UpdatePlaying();
-            UpdateValues(false);
-            _curves?.SetScrubberPosition(Plugin.Animation.Time);
-        }
-
-        public override void AnimationFrameUpdated()
-        {
-            base.AnimationFrameUpdated();
-            UpdateValues(true);
-            UpdateCurrentCurveType();
-            _curves?.SetScrubberPosition(Plugin.Animation.Time);
-        }
-
-        public override void AnimationModified()
-        {
-            base.AnimationModified();
-            UpdateCurrentCurveType();
-            RefreshCurves();
-        }
-
-        protected override void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
-        {
-            base.AnimationChanged(before, after);
-            before.TargetsSelectionChanged.RemoveListener(SelectionChanged);
-            after.TargetsSelectionChanged.AddListener(SelectionChanged);
+            base.OnCurrentAnimationChanged(args);
+            args.Before.TargetsSelectionChanged.RemoveListener(SelectionChanged);
+            args.After.TargetsSelectionChanged.AddListener(SelectionChanged);
             RefreshTargetsList();
         }
 
@@ -171,15 +144,6 @@ namespace VamTimeline
                 _curveTypeJSON.valNoCallback = curveTypes.First().ToString();
             else
                 _curveTypeJSON.valNoCallback = "(" + string.Join("/", curveTypes.ToArray()) + ")";
-        }
-
-        private void UpdateValues(bool stopped)
-        {
-            var time = Plugin.Animation.Time;
-            foreach (var targetRef in _targets)
-            {
-                targetRef.UpdateValue(time, stopped);
-            }
         }
 
         private void RefreshTargetsList()

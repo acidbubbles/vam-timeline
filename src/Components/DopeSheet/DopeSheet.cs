@@ -156,7 +156,8 @@ namespace VamTimeline
             _animation = animation;
             _animation.TimeChanged.AddListener(OnTimeChanged);
             _animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            Bind(_animation.Current);
+            BindClip(_animation.Current);
+            SetScrubberPosition(_animation.Time, true);
         }
 
         private void UnbindAnimation()
@@ -170,6 +171,12 @@ namespace VamTimeline
             UnbindClip();
         }
 
+        public void Update()
+        {
+            if (_animation != null && _animation.IsPlaying())
+                SetScrubberPosition(_animation.Time, false);
+        }
+
         private void OnTimeChanged(float time)
         {
             SetScrubberPosition(time, true);
@@ -181,12 +188,11 @@ namespace VamTimeline
             // TODO: If the current clip doesn't change, do not rebind
             UnbindClip();
 
-            Bind(args.After);
+            BindClip(args.After);
         }
 
-        private void Bind(IAtomAnimationClip clip)
+        private void BindClip(IAtomAnimationClip clip)
         {
-            // TODO: Listen to targets list changed and rebuild only when needed
             _clip = clip;
             var any = false;
             foreach (var group in _clip.GetTargetGroups())
@@ -201,10 +207,21 @@ namespace VamTimeline
                 }
             }
             _scrubberRect.gameObject.SetActive(any);
+            _clip.TargetsListChanged.AddListener(OnAnimationModified);
+            _clip.AnimationModified.AddListener(OnAnimationModified);
+        }
+
+        private void OnAnimationModified()
+        {
+            var clip = _clip;
+            UnbindClip();
+            BindClip(clip);
         }
 
         private void UnbindClip()
         {
+            _clip.TargetsListChanged.RemoveListener(OnAnimationModified);
+            _clip.AnimationModified.RemoveListener(OnAnimationModified);
             _keyframesRows.Clear();
             while (_layout.transform.childCount > 0)
             {
@@ -380,16 +397,15 @@ namespace VamTimeline
             _animation.Time = time;
         }
 
-        [Obsolete]
-        public void SetScrubberPosition(float val, bool stopped)
+        public void SetScrubberPosition(float time, bool stopped)
         {
             if (_clip == null) return; // TODO: Delete this line after events conversion
-            var ratio = Mathf.Clamp01(val / _clip.AnimationLength);
+            var ratio = Mathf.Clamp01(time / _clip.AnimationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             if (stopped)
             {
-                var ms = val.ToMilliseconds();
+                var ms = time.ToMilliseconds();
                 foreach (var keyframe in _keyframesRows) keyframe.SetTime(ms);
             }
         }

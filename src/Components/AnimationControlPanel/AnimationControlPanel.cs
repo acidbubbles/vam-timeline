@@ -121,11 +121,5 @@ namespace VamTimeline
         {
             _dopeSheet.Bind(animation);
         }
-
-        [Obsolete]
-        public void SetScrubberPosition(float time, bool stopped)
-        {
-            _dopeSheet.SetScrubberPosition(time, stopped);
-        }
     }
 }

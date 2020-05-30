@@ -25,13 +25,16 @@ namespace VamTimeline
 
         private void InitExplanation()
         {
-            var textJSON = new JSONStorableString("Help", @"<b>Performance Mode</b>
+            var textJSON = new JSONStorableString("Help", @"
+<b>Performance Mode</b>
 
 This mode is optimized to reduce the runtime cost of Timeline to a strict minimum.
 
-Use this mode before saving and publishing a scene.");
+Use this mode before saving and publishing a scene.
+");
             RegisterStorable(textJSON);
             var textUI = Plugin.CreateTextField(textJSON, true);
+            textUI.height = 350f;
             RegisterComponent(textUI);
         }
     }

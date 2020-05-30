@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,6 +40,9 @@ namespace VamTimeline
             CreateCustom();
 
             ValueText = CreateValueText();
+
+            Plugin.Animation.TimeChanged.AddListener(OnTimeChanged);
+            OnTimeChanged(Plugin.Animation.Time);
         }
 
         private void CreateToggle(IAtomPlugin plugin)
@@ -93,6 +97,17 @@ namespace VamTimeline
             return text;
         }
 
+        public void Update()
+        {
+            if (Plugin.Animation.IsPlaying())
+                SetTime(Plugin.Animation.Time, false);
+        }
+
+        private void OnTimeChanged(float time)
+        {
+            SetTime(time, true);
+        }
+
         public virtual void SetTime(float time, bool stopped)
         {
             if (stopped)
@@ -111,5 +126,10 @@ namespace VamTimeline
 
         protected abstract void CreateCustom();
         public abstract void ToggleKeyframe(bool enable);
+
+        public void OnDestroy()
+        {
+            Plugin.Animation.TimeChanged.RemoveListener(OnTimeChanged);
+        }
     }
 }

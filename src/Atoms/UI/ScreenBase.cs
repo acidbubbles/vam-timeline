@@ -27,32 +27,13 @@ namespace VamTimeline
 
         public virtual void Init()
         {
+            Plugin.Animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             Current = Plugin.Animation?.Current;
         }
 
-        [Obsolete]
-        public virtual void UpdatePlaying()
+        protected virtual void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-        }
-
-        [Obsolete]
-        public virtual void AnimationModified()
-        {
-            if (Plugin.Animation.Current != Current)
-            {
-                AnimationChanged(Current, Current);
-                Current = Plugin.Animation.Current;
-            }
-        }
-
-        [Obsolete]
-        protected virtual void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
-        {
-        }
-
-        [Obsolete]
-        public virtual void AnimationFrameUpdated()
-        {
+            Current = Plugin.Animation?.Current;
         }
 
         protected void InitClipboardUI(bool rightSide)
@@ -120,6 +101,8 @@ namespace VamTimeline
 
         public virtual void Dispose()
         {
+            Plugin.Animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+
             _disposing = true;
             foreach (var component in _storables)
             {

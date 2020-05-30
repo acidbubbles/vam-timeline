@@ -21,7 +21,6 @@ namespace VamTimeline
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
-        private bool _uiRefreshInvokeAnimationModified;
         private string _currentScreen;
         private readonly UnityEvent _screenChanged = new UnityEvent();
 
@@ -39,8 +38,6 @@ namespace VamTimeline
 
             // Right side
             InitTabs();
-
-            ChangeScreen(GetDefaultScreen());
         }
 
         private void InitTabs()
@@ -77,7 +74,8 @@ namespace VamTimeline
                     ChangeScreen(changeTo);
                 });
 
-                _screenChanged.AddListener(() => {
+                _screenChanged.AddListener(() =>
+                {
                     var selected = _currentScreen == changeTo;
                     btn.button.interactable = !selected;
                 });
@@ -89,8 +87,7 @@ namespace VamTimeline
             _currentScreen = screen;
             _plugin.LockedJSON.valNoCallback = screen == PerformanceScreen.ScreenName;
             _screenChanged.Invoke();
-            RefreshCurrentUI(false);
-            // TODO: Highlight button
+            RefreshCurrentUI();
         }
 
         protected void InitAnimationSelectorUI(bool rightSide)
@@ -105,7 +102,15 @@ namespace VamTimeline
             var controlPanelContainer = _plugin.CreateSpacer(rightSide);
             controlPanelContainer.height = 500f;
             _controlPanel = controlPanelContainer.gameObject.AddComponent<AnimationControlPanel>();
+            // TODO: This should be a single bind (we should not bind to the plugin)
             _controlPanel.Bind(_plugin);
+        }
+
+        public void Bind(AtomAnimation animation)
+        {
+            _controlPanel.Bind(animation);
+            ChangeScreen(GetDefaultScreen());
+            // TODO: Do not load a screen before that, and remove all null checks.
         }
 
         private List<string> ListAvailableScreens()
@@ -125,32 +130,17 @@ namespace VamTimeline
                 return EditScreen.ScreenName;
         }
 
-        public void AnimationModified()
+        public void UpdateLocked(bool isLocked)
         {
-            if (_plugin.Animation == null) return;
-            if (_plugin.LockedJSON.val && _currentScreen != PerformanceScreen.ScreenName)
+            if (isLocked && _currentScreen != PerformanceScreen.ScreenName)
                 ChangeScreen(PerformanceScreen.ScreenName);
-            if (!_plugin.LockedJSON.val && _currentScreen == PerformanceScreen.ScreenName)
+            if (!isLocked && _currentScreen == PerformanceScreen.ScreenName)
                 ChangeScreen(GetDefaultScreen());
-
-            RefreshCurrentUI(true);
-
-            _controlPanel.Bind(_plugin.Animation);
-            _controlPanel.SetScrubberPosition(_plugin.Animation.Time, true);
         }
 
-        public void AnimationFrameUpdated()
-        {
-            RefreshCurrentUI(false);
-
-            _controlPanel.SetScrubberPosition(_plugin.Animation.Time, true);
-        }
-
-        public void RefreshCurrentUI(bool animationModified)
+        public void RefreshCurrentUI()
         {
             if (_plugin.Animation == null) return;
-
-            if (animationModified) _uiRefreshInvokeAnimationModified = true;
 
             if (_uiRefreshInProgress)
                 _uiRefreshInvalidated = true;
@@ -174,22 +164,6 @@ namespace VamTimeline
             // Same UI, just refresh
             if (_current != null && _current.Name == screen)
             {
-                try
-                {
-                    if (_uiRefreshInvokeAnimationModified)
-                    {
-                        _uiRefreshInvokeAnimationModified = false;
-                        _current.AnimationModified();
-                    }
-                    else
-                    {
-                        _current.AnimationFrameUpdated();
-                    }
-                }
-                catch (Exception exc)
-                {
-                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while refreshing existing {_current.Name}): {exc}");
-                }
                 yield break;
             }
 
@@ -250,15 +224,6 @@ namespace VamTimeline
                 SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
             }
 
-            try
-            {
-                _current.AnimationModified();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while triggering modified event on {_current.Name}): {exc}");
-            }
-
             yield return 0;
 
             _uiRefreshInProgress = false;
@@ -269,14 +234,6 @@ namespace VamTimeline
                 _uiRefreshScheduled = true;
                 _plugin.StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
-        }
-
-        public void UpdatePlaying()
-        {
-            if (_current == null) return;
-            _current.UpdatePlaying();
-            if (!_plugin.LockedJSON.val)
-                _controlPanel.SetScrubberPosition(_plugin.Animation.Time, false);
         }
 
         public void Dispose()

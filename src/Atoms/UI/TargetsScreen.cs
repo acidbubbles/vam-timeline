@@ -54,7 +54,7 @@ namespace VamTimeline
 
         private void InitControllersUI()
         {
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", GetEligibleFreeControllers().ToList(), GetEligibleFreeControllers().FirstOrDefault(), "Animate controller", (string name) => AnimationModified())
+            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", GetEligibleFreeControllers().ToList(), GetEligibleFreeControllers().FirstOrDefault(), "Animate controller", (string name) => GenerateRemoveToggles())
             {
                 isStorable = false
             };
@@ -92,7 +92,7 @@ namespace VamTimeline
             _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
             RegisterComponent(_addFloatParamListUI);
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param", (string name) => AnimationModified())
+            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param", (string name) => GenerateRemoveToggles())
             {
                 isStorable = false
             };
@@ -269,15 +269,17 @@ namespace VamTimeline
 
         #region Events
 
-        public override void AnimationModified()
+        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            base.AnimationModified();
+            base.OnCurrentAnimationChanged(args);
+
             GenerateRemoveToggles();
         }
 
         public override void Dispose()
         {
             ClearRemoveToggles();
+
             base.Dispose();
         }
 

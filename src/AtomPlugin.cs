@@ -92,10 +92,6 @@ namespace VamTimeline
                         ScrubberJSON.valNoCallback = time;
                     if (AnimationJSON.val != Animation.Current.AnimationName)
                         AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                    if (_controlPanel != null && !LockedJSON.val)
-                        _controlPanel.SetScrubberPosition(time, false);
-
-                    _ui.UpdatePlaying();
 
                     if (SuperController.singleton.freezeAnimation)
                     {
@@ -359,7 +355,10 @@ namespace VamTimeline
             PasteJSON = new JSONStorableAction("Paste", () => Paste());
 
             // TODO: We just want to set a screen here.
-            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => OnAnimationParametersChanged());
+            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
+            {
+                _ui.UpdateLocked(val);
+            });
             RegisterBool(LockedJSON);
 
             AutoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
@@ -501,12 +500,13 @@ namespace VamTimeline
 
             OnAnimationParametersChanged();
             Animation.Sample();
+
+            _ui.Bind(Animation);
         }
 
         private void OnTimeChanged(float time)
         {
             // TODO: We lost the snap feature. Bring it back (if not snapped, snap and set again)
-            SuperController.LogMessage("Time");
             if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
             // TODO: Got a null reference error, not sure why. Happened in a Rebuild loop, when reloading the plugin.
             try
@@ -517,11 +517,6 @@ namespace VamTimeline
                 SpeedJSON.valNoCallback = Animation.Speed;
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
-
-                _ui.AnimationFrameUpdated();
-
-                if (_controlPanel != null)
-                    _controlPanel.SetScrubberPosition(time, true);
 
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
@@ -584,9 +579,6 @@ namespace VamTimeline
                 AnimationDisplayJSON.choices = AnimationJSON.choices;
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
-
-                // UI
-                _ui.AnimationModified();
 
                 // Dispatch to VamTimelineController
                 var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");

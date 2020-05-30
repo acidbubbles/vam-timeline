@@ -45,7 +45,8 @@ namespace VamTimeline
 
             _selectionStart = 0f;
             _selectionEnd = Current.AnimationLength;
-            AnimationFrameUpdated();
+            Current.TargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            OnTargetsSelectionChanged();
         }
 
         protected void InitBulkClipboardUI(bool rightSide)
@@ -193,10 +194,8 @@ namespace VamTimeline
 
         #endregion
 
-        public override void AnimationFrameUpdated()
+        public void OnTargetsSelectionChanged()
         {
-            base.AnimationFrameUpdated();
-
             var selectedControllers = string.Join(",", Current.GetAllOrSelectedTargets().Select(t => t.Name).ToArray());
             if (_selectedControllers != selectedControllers)
             {
@@ -205,16 +204,27 @@ namespace VamTimeline
             }
         }
 
-        public override void AnimationModified()
+        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            base.AnimationModified();
+            base.OnCurrentAnimationChanged(args);
+
+            args.Before.TargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            args.After.TargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
 
             if (Current.AnimationLength < _selectionEnd)
             {
                 _selectionEnd = Current.AnimationLength;
                 if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
             }
+
             SelectionModified();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            Current.TargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }
     }
 }
