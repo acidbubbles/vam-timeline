@@ -132,6 +132,7 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchTop();
+            rect.pivot = new Vector2(0, 1);
 
             var layout = go.AddComponent<VerticalLayoutGroup>();
             layout.spacing = _style.RowSpacing;
