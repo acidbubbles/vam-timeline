@@ -240,6 +240,7 @@ namespace VamTimeline
             layout.preferredHeight = _style.RowHeight;
 
             DopeSheetKeyframes keyframes = null;
+            GradientImage labelBackgroundImage = null;
 
             {
                 var child = new GameObject();
@@ -250,35 +251,20 @@ namespace VamTimeline
                 rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
 
-                var image = child.AddComponent<GradientImage>();
-                image.top = _style.LabelBackgroundColorTop;
-                image.bottom = _style.LabelBackgroundColorBottom;
-                image.raycastTarget = true;
+                labelBackgroundImage = child.AddComponent<GradientImage>();
+                labelBackgroundImage.top = _style.LabelBackgroundColorTop;
+                labelBackgroundImage.bottom = _style.LabelBackgroundColorBottom;
+                labelBackgroundImage.raycastTarget = true;
 
                 var listener = child.AddComponent<Listener>();
                 listener.Bind(
                     target.SelectedChanged,
-                    () =>
-                    {
-                        if (target.Selected)
-                        {
-                            keyframes.selected = true;
-                            image.top = _style.LabelBackgroundColorTopSelected;
-                            image.bottom = _style.LabelBackgroundColorBottomSelected;
-                        }
-                        else
-                        {
-                            keyframes.selected = false;
-                            image.top = _style.LabelBackgroundColorTop;
-                            image.bottom = _style.LabelBackgroundColorBottom;
-                        }
-                    }
+                    () => UpdateSelected(target, keyframes, labelBackgroundImage)
                 );
 
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(_ =>
                 {
-                    // TODO: Also select time based on nearest time with keyframe (clicking close)
                     target.Selected = !target.Selected;
                 });
             }
@@ -326,6 +312,24 @@ namespace VamTimeline
                     var click = go.AddComponent<Clickable>();
                     click.onClick.AddListener(eventData => OnClick(targetWithCurves, rect, eventData));
                 }
+            }
+
+            UpdateSelected(target, keyframes, labelBackgroundImage);
+        }
+
+        private void UpdateSelected(IAtomAnimationTarget target, DopeSheetKeyframes keyframes, GradientImage image)
+        {
+            if (target.Selected)
+            {
+                keyframes.selected = true;
+                image.top = _style.LabelBackgroundColorTopSelected;
+                image.bottom = _style.LabelBackgroundColorBottomSelected;
+            }
+            else
+            {
+                keyframes.selected = false;
+                image.top = _style.LabelBackgroundColorTop;
+                image.bottom = _style.LabelBackgroundColorBottom;
             }
         }
 
