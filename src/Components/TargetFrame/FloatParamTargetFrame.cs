@@ -46,8 +46,9 @@ namespace VamTimeline
                 rect.sizeDelta = new Vector2(0f, 20f);
                 rect.anchoredPosition += new Vector2(0f, 13f);
 
-                var image = sliderBackground.AddComponent<Image>();
-                image.color = new Color(0.7f, 0.7f, 0.7f);
+                var image = sliderBackground.AddComponent<GradientImage>();
+                image.top = new Color(0.7f, 0.7f, 0.7f);
+                image.bottom = new Color(0.8f, 0.8f, 0.8f);
                 image.raycastTarget = false;
             }
 
@@ -61,8 +62,9 @@ namespace VamTimeline
                 rect.sizeDelta = Vector2.zero;
                 _sliderFillRect = rect;
 
-                var image = sliderFill.AddComponent<Image>();
-                image.color = Color.white;
+                var image = sliderFill.AddComponent<GradientImage>();
+                image.top = new Color(1.0f, 1.0f, 1.0f);
+                image.bottom = new Color(0.9f, 0.9f, 0.9f);
                 image.raycastTarget = false;
             }
 
