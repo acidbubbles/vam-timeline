@@ -27,8 +27,8 @@ namespace VamTimeline
             var width = rectTransform.rect.width;
             var height = rectTransform.rect.height;
             var yMin = -height / 2f;
-            var yMax = 0f;
-            var yMaxSmall = -height / 4f;
+            var yMax = -2f;
+            var yMaxSmall = -8f;
 
             var offsetX = -width / 2f;
             var ratio = width / _length;

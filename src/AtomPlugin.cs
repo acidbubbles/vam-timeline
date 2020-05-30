@@ -198,6 +198,7 @@ namespace VamTimeline
             try
             {
                 Animation?.Stop();
+                Animation.Time = Animation.Time.Snap(SnapJSON.val);
                 _ui.Dispose();
                 DestroyControllerPanel();
             }
@@ -321,7 +322,7 @@ namespace VamTimeline
                 {
                     _resumePlayOnUnfreeze = false;
                     Animation.Stop();
-                    Animation.Time = Animation.Time.Snap();
+                    Animation.Time = Animation.Time.Snap(SnapJSON.val);
                     IsPlayingJSON.valNoCallback = false;
                 }
                 else
@@ -336,7 +337,7 @@ namespace VamTimeline
             {
                 if (!Animation.IsPlaying()) return;
                 Animation.Stop();
-                Animation.Time = Animation.Time.Snap();
+                Animation.Time = Animation.Time.Snap(SnapJSON.val);
                 IsPlayingJSON.valNoCallback = false;
             });
             RegisterAction(StopIfPlayingJSON);
@@ -417,6 +418,7 @@ namespace VamTimeline
             try
             {
                 Animation.Stop();
+                Animation.Time = Animation.Time.Snap(SnapJSON.val);
             }
             catch (Exception exc)
             {
