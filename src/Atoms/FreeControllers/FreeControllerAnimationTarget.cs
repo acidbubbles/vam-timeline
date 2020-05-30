@@ -277,7 +277,7 @@ namespace VamTimeline
             };
         }
 
-        public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot)
+        public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot, bool dirty = true)
         {
             X.SetKeySnapshot(time, snapshot.X);
             Y.SetKeySnapshot(time, snapshot.Y);
@@ -287,7 +287,7 @@ namespace VamTimeline
             RotZ.SetKeySnapshot(time, snapshot.RotZ);
             RotW.SetKeySnapshot(time, snapshot.RotW);
             UpdateSetting(time, snapshot.CurveType, true);
-            Dirty = true;
+            if (dirty) Dirty = true;
         }
 
         private void UpdateSetting(float time, string curveType, bool create)

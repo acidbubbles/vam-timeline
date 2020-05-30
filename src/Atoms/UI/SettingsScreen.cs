@@ -280,9 +280,8 @@ namespace VamTimeline
                 newTarget.Value.keys = origTarget.Value.keys.ToArray();
                 newTarget.Dirty = true;
             }
-            Plugin.Animation.RebuildAnimation();
+            // TODO: The animation was built before, now it's built after. Make this this works.
             Plugin.Animation.ChangeAnimation(clip.AnimationName);
-            Plugin.AnimationModified();
         }
 
         private void AddAnimationFromCurrentFrame()
@@ -307,7 +306,6 @@ namespace VamTimeline
                 newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
             }
             Plugin.Animation.ChangeAnimation(clip.AnimationName);
-            Plugin.AnimationModified();
         }
 
         private void UpdateAnimationName(string val)
@@ -329,8 +327,6 @@ namespace VamTimeline
                 if (clip.NextAnimationName == previousAnimationName)
                     clip.NextAnimationName = val;
             }
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
 
         private void UpdateAnimationLength(float newLength)
@@ -447,9 +443,7 @@ namespace VamTimeline
 
             Current.DirtyAll();
 
-            Plugin.Animation.RebuildAnimation();
             UpdateForcedNextAnimationTime();
-            Plugin.AnimationModified();
             Plugin.Animation.Time = Math.Max(time, newLength);
         }
 
@@ -462,7 +456,6 @@ namespace VamTimeline
                 _blendDurationJSON.valNoCallback = v = (Current.AnimationLength - 0.001f).Snap();
             Current.BlendDuration = v;
             UpdateForcedNextAnimationTime();
-            Plugin.AnimationModified();
         }
 
         private void ChangeLoop(bool val)
@@ -495,8 +488,6 @@ namespace VamTimeline
                 Current.Transition = false;
             }
             Current.DirtyAll();
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
 
         private void ChangeTransition(bool val)
@@ -504,19 +495,12 @@ namespace VamTimeline
             if (Current.Loop) _loop.val = false;
             Current.Transition = val;
             Current.DirtyAll();
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
-            Plugin.Animation.Sample();
+            // TODO: There was a .Sample here, is it necessary?
         }
 
         private void SetEnsureQuaternionContinuity(bool val)
         {
             Current.EnsureQuaternionContinuity = val;
-
-            Current.DirtyAll();
-
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
 
         private void ChangeNextAnimation(string val)
@@ -527,7 +511,6 @@ namespace VamTimeline
                 ? Current.NextAnimationTime = Current.AnimationLength - Current.BlendDuration
                 : Current.NextAnimationTime
             );
-            Plugin.AnimationModified();
         }
 
         private void SetNextAnimationTime(float nextTime)
@@ -550,7 +533,6 @@ namespace VamTimeline
 
             _nextAnimationTimeJSON.valNoCallback = nextTime;
             Current.NextAnimationTime = nextTime;
-            Plugin.AnimationModified();
         }
 
         private void LinkAnimationPattern(string uid)
@@ -573,7 +555,7 @@ namespace VamTimeline
             animationPattern.SetBoolParamValue("loopOnce", false);
             animationPattern.SetFloatParamValue("speed", Plugin.Animation.Speed);
             animationPattern.ResetAnimation();
-            Plugin.AnimationModified();
+            Plugin.Animation.AnimationSettingsChanged.Invoke(); // TODO: Necessary?
         }
 
         #endregion

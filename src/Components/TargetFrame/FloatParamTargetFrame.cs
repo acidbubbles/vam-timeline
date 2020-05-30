@@ -73,9 +73,6 @@ namespace VamTimeline
             {
                 Target.FloatParam.val = Target.FloatParam.min + val * (Target.FloatParam.max - Target.FloatParam.min);
                 Plugin.Animation.SetKeyframe(Target, Plugin.Animation.Time, Target.FloatParam.val);
-                Plugin.Animation.RebuildAnimation();
-                // TODO: Curves won't refresh. Replace with event.
-                Plugin.AnimationModified();
                 SetTime(-1, true);
                 ToggleKeyframe(true);
             });
@@ -111,8 +108,6 @@ namespace VamTimeline
             {
                 Target.DeleteFrame(time);
             }
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
 
         public void OnPointerDown(PointerEventData eventData)

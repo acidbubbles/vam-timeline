@@ -65,8 +65,6 @@ namespace VamTimeline
                     Target.DeleteFrame(time);
                 }
             }
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
 
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)

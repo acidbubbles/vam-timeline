@@ -178,8 +178,6 @@ namespace VamTimeline
                     }
                     clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
                 }
-
-                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
@@ -198,8 +196,7 @@ namespace VamTimeline
                     SuperController.LogError("VamTimeline: Cannot delete the only animation.");
                     return;
                 }
-                Plugin.Animation.Clips.Remove(anim);
-                anim.Dispose();
+                Plugin.Animation.RemoveClip(anim);
                 foreach (var clip in Plugin.Animation.Clips)
                 {
                     if (clip.NextAnimationName == anim.AnimationName)
@@ -208,8 +205,7 @@ namespace VamTimeline
                         clip.NextAnimationTime = 0;
                     }
                 }
-                Plugin.Animation.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
-                Plugin.AnimationModified();
+                Plugin.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
             }
             catch (Exception exc)
             {
@@ -229,7 +225,6 @@ namespace VamTimeline
                     {
                         curve.Reverse();
                     }
-                    target.Dirty = true;
 
                     var controllerTarget = target as FreeControllerAnimationTarget;
                     if (controllerTarget != null)
@@ -242,9 +237,9 @@ namespace VamTimeline
                             controllerTarget.Settings.Add(length - setting.Key, setting.Value);
                         }
                     }
+
+                    target.Dirty = true;
                 }
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
@@ -262,7 +257,7 @@ namespace VamTimeline
                 if (idx <= 0) return;
                 Plugin.Animation.Clips.RemoveAt(idx);
                 Plugin.Animation.Clips.Insert(idx - 1, anim);
-                Plugin.AnimationModified();
+                Plugin.Animation.ClipsListChanged.Invoke();
             }
             catch (Exception exc)
             {
@@ -280,7 +275,7 @@ namespace VamTimeline
                 if (idx >= Plugin.Animation.Clips.Count - 1) return;
                 Plugin.Animation.Clips.RemoveAt(idx);
                 Plugin.Animation.Clips.Insert(idx + 1, anim);
-                Plugin.AnimationModified();
+                Plugin.Animation.ClipsListChanged.Invoke();
             }
             catch (Exception exc)
             {
@@ -427,8 +422,6 @@ namespace VamTimeline
                     }
                     Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
                 }
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
@@ -521,7 +514,7 @@ namespace VamTimeline
 
             foreach (var mot in containingAtom.motionAnimationControls)
             {
-                FreeControllerAnimationTarget target;
+                FreeControllerAnimationTarget target = null;
                 FreeControllerV3 ctrl;
 
                 try
@@ -531,12 +524,14 @@ namespace VamTimeline
                     ctrl = mot.controller;
                     Current.Remove(ctrl);
                     target = Plugin.Animation.Add(ctrl);
+                    target.StartBulkUpdates();
                     if (mot.clip.clipLength > Current.AnimationLength)
                         Current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
                 }
                 catch (Exception exc)
                 {
                     SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportRecordedCoroutine)}[Init]: {exc}");
+                    target?.EndBulkUpdates();
                     yield break;
                 }
 
@@ -544,16 +539,10 @@ namespace VamTimeline
                     foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, Current, target, totalStopwatch, ctrl)) yield return x;
                 else
                     foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameLength, Current, target, totalStopwatch, ctrl)) yield return x;
+
+                // TODO: An error here will permanently break the animation.
+                target.EndBulkUpdates();
             }
-
-            yield return 0;
-
-            Plugin.Animation.RebuildAnimation();
-
-            yield return 0;
-
-            Plugin.AnimationModified();
-
             _importRecordedUI.buttonText.text = "Import Recorded Animation (Mocap)";
         }
 

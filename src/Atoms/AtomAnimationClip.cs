@@ -19,6 +19,12 @@ namespace VamTimeline
 
         private bool _loop = true;
         private string _nextAnimationName;
+        private float _animationLength = DefaultAnimationLength;
+        private bool _transition;
+        private float _blendDuration = DefaultBlendDuration;
+        private float _nextAnimationTime;
+        private string _animationName;
+        private bool _ensureQuaternionContinuity = true;
 
         public UnityEvent TargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent TargetsListChanged { get; } = new UnityEvent();
@@ -29,9 +35,43 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> TargetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { Label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> TargetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { Label = "Float Params" };
         public IEnumerable<IAnimationTargetWithCurves> AllTargets => TargetControllers.Cast<IAnimationTargetWithCurves>().Concat(TargetFloatParams.Cast<IAnimationTargetWithCurves>());
-        public bool EnsureQuaternionContinuity { get; set; } = true;
-        public string AnimationName { get; set; }
-        public float AnimationLength { get; set; } = DefaultAnimationLength;
+        public bool EnsureQuaternionContinuity
+        {
+            get
+            {
+                return _ensureQuaternionContinuity;
+            }
+            set
+            {
+                // TODO: Verify if we can SEE the different in the curve viewer. If not, some refresh may be missing.
+                _ensureQuaternionContinuity = value;
+                AnimationModified.Invoke();
+            }
+        }
+        public string AnimationName
+        {
+            get
+            {
+                return _animationName;
+            }
+            set
+            {
+                _animationName = value;
+                AnimationModified.Invoke();
+            }
+        }
+        public float AnimationLength
+        {
+            get
+            {
+                return _animationLength;
+            }
+            set
+            {
+                _animationLength = value;
+                AnimationModified.Invoke();
+            }
+        }
         public bool AutoPlay { get; set; } = false;
         public bool Loop
         {
@@ -43,10 +83,33 @@ namespace VamTimeline
             {
                 _loop = value;
                 Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
+                AnimationModified.Invoke();
             }
         }
-        public bool Transition { get; set; }
-        public float BlendDuration { get; set; } = DefaultBlendDuration;
+        public bool Transition
+        {
+            get
+            {
+                return _transition;
+            }
+            set
+            {
+                _transition = value;
+                AnimationModified.Invoke();
+            }
+        }
+        public float BlendDuration
+        {
+            get
+            {
+                return _blendDuration;
+            }
+            set
+            {
+                _blendDuration = value;
+                AnimationModified.Invoke();
+            }
+        }
         public string NextAnimationName
         {
             get
@@ -56,9 +119,21 @@ namespace VamTimeline
             set
             {
                 _nextAnimationName = value == "" ? null : value;
+                AnimationModified.Invoke();
             }
         }
-        public float NextAnimationTime { get; set; }
+        public float NextAnimationTime
+        {
+            get
+            {
+                return _nextAnimationTime;
+            }
+            set
+            {
+                _nextAnimationTime = value;
+                AnimationModified.Invoke();
+            }
+        }
         public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
 
         public AtomAnimationClip(string animationName)

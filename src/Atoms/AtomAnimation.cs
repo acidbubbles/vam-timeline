@@ -45,6 +45,7 @@ namespace VamTimeline
         public UnityEvent AnimationRebuildRequested = new UnityEvent();
         public CurrentAnimationChangedEvent CurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent AnimationSettingsChanged = new UnityEvent();
+        public UnityEvent ClipsListChanged = new UnityEvent();
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
         public AtomAnimationClip Current
         {
@@ -103,6 +104,7 @@ namespace VamTimeline
                     if (clip.AnimationPattern != null)
                         clip.AnimationPattern.SetFloatParamValue("speed", value);
                 }
+                AnimationSettingsChanged.Invoke();
             }
         }
 
@@ -120,6 +122,7 @@ namespace VamTimeline
                 AddClip(new AtomAnimationClip("Anim 1"));
             if (Current == null)
                 Current = Clips.First();
+            RebuildAnimation();
         }
 
         public void AddClip(AtomAnimationClip clip)
@@ -127,12 +130,14 @@ namespace VamTimeline
             clip.AnimationModified.AddListener(OnAnimationModified);
             clip.TargetsListChanged.AddListener(OnAnimationModified);
             Clips.Add(clip);
+            ClipsListChanged.Invoke();
         }
 
         public void RemoveClip(AtomAnimationClip clip)
         {
             Clips.Remove(clip);
             clip.Dispose();
+            ClipsListChanged.Invoke();
             OnAnimationModified();
         }
 
@@ -490,7 +495,7 @@ namespace VamTimeline
                     target.Validate();
 
                     if (clip.Loop)
-                        target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f));
+                        target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f), false);
 
                     target.ReapplyCurveTypes();
 
@@ -511,7 +516,7 @@ namespace VamTimeline
                     target.Dirty = false;
                     if (clip.Loop)
                     {
-                        target.SetKeyframe(clip.AnimationLength, target.Value[0].value);
+                        target.Value.SetKeyframe(clip.AnimationLength, target.Value[0].value);
                     }
                     target.Value.FlatAllFrames();
                 }
@@ -556,20 +561,28 @@ namespace VamTimeline
                 _blendingTimeLeft = _blendingDuration = Current.BlendDuration;
             }
 
+            var previous = Current;
             Current = clip;
             _animState = targetAnim;
 
             if (_isPlaying)
             {
                 DetermineNextAnimation(_playTime);
+
+                if (Current.AnimationPattern != null)
+                {
+                    Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
+                    Current.AnimationPattern.ResetAndPlay();
+                }
             }
             else
-                Time = 0f;
-
-            if (_isPlaying && Current.AnimationPattern != null)
             {
-                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
-                Current.AnimationPattern.ResetAndPlay();
+                Time = 0f;
+                CurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
+                {
+                    Before = previous,
+                    After = Current
+                });
             }
         }
 

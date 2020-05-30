@@ -13,6 +13,8 @@ namespace VamTimeline
     {
         bool Dirty { get; set; }
 
+        void StartBulkUpdates();
+        void EndBulkUpdates();
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
         void DeleteFrame(float time);

@@ -94,7 +94,6 @@ namespace VamTimeline
         void Load(JSONNode animationJSON);
         JSONClass GetAnimationJSON(string animationName = null);
 
-        void AnimationModified();
         void ChangeAnimation(string animationName);
 
         UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false);

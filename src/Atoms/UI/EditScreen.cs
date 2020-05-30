@@ -253,8 +253,6 @@ namespace VamTimeline
                 return;
             }
             Current.ChangeCurve(time, curveType);
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
     }
 }

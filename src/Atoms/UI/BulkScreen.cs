@@ -137,27 +137,30 @@ namespace VamTimeline
             Plugin.Clipboard.Time = _selectionStart;
             foreach (var target in Current.GetAllOrSelectedTargets())
             {
-                var leadCurve = target.GetLeadCurve();
-                for (var key = leadCurve.length - 1; key >= 0; key--)
+                target.StartBulkUpdates();
+                try
                 {
-                    var keyTime = leadCurve[key].time;
-                    if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                    var leadCurve = target.GetLeadCurve();
+                    for (var key = leadCurve.length - 1; key >= 0; key--)
                     {
-                        if (copy)
+                        var keyTime = leadCurve[key].time;
+                        if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
                         {
-                            Plugin.Clipboard.Entries.Insert(0, Current.Copy(keyTime));
-                        }
-                        if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Current.AnimationLength))
-                        {
-                            target.DeleteFrameByKey(key);
+                            if (copy)
+                            {
+                                Plugin.Clipboard.Entries.Insert(0, Current.Copy(keyTime));
+                            }
+                            if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Current.AnimationLength))
+                            {
+                                target.DeleteFrameByKey(key);
+                            }
                         }
                     }
                 }
-            }
-            if (delete)
-            {
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
+                finally
+                {
+                    target.EndBulkUpdates();
+                }
             }
         }
 
@@ -168,18 +171,24 @@ namespace VamTimeline
 
             foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
-                var leadCurve = target.GetLeadCurve();
-                for (var key = leadCurve.length - 2; key > 0; key--)
+                target.StartBulkUpdates();
+                try
                 {
-                    var keyTime = leadCurve[key].time;
-                    if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                    var leadCurve = target.GetLeadCurve();
+                    for (var key = leadCurve.length - 2; key > 0; key--)
                     {
-                        target.ChangeCurve(keyTime, val);
+                        var keyTime = leadCurve[key].time;
+                        if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                        {
+                            target.ChangeCurve(keyTime, val);
+                        }
                     }
                 }
+                finally
+                {
+                    target.EndBulkUpdates();
+                }
             }
-            Plugin.Animation.RebuildAnimation();
-            Plugin.AnimationModified();
         }
 
         #endregion

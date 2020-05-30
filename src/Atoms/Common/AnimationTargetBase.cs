@@ -15,6 +15,9 @@ namespace VamTimeline
         public UnityEvent AnimationCurveModified { get; } = new UnityEvent();
 
         private bool _selected;
+        private bool _bulk;
+        private bool _dirty = true;
+
         public bool Selected
         {
             get { return _selected; }
@@ -25,7 +28,32 @@ namespace VamTimeline
                 SelectedChanged.Invoke();
             }
         }
-        public bool Dirty { get; set; } = true;
+        // TODO: Instead of MarkDirty, just use a setter??
+        public bool Dirty
+        {
+            get
+            {
+                return _dirty;
+            }
+            set
+            {
+                if(value == true && stuff) throw new Exception("Hey");
+                _dirty = value;
+                if (value && !_bulk)
+                    AnimationCurveModified.Invoke();
+            }
+        }
+        public static bool stuff = false;
+
+        public void StartBulkUpdates()
+        {
+            _bulk = true;
+        }
+        public void EndBulkUpdates()
+        {
+            _bulk = false;
+            if (Dirty) AnimationCurveModified.Invoke();
+        }
 
         public void Dispose()
         {

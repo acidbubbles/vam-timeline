@@ -202,13 +202,11 @@ namespace VamTimeline
 
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
-                var target = Plugin.Animation.Add(controller);
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
+                Plugin.Animation.Add(controller);
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(AddAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(AddAnimatedController)}: " + exc);
             }
         }
 
@@ -236,12 +234,10 @@ namespace VamTimeline
                 }
 
                 Plugin.Animation.Add(storable, sourceFloatParam);
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
             }
         }
 
@@ -250,12 +246,10 @@ namespace VamTimeline
             try
             {
                 Current.Remove(target.Controller);
-                Plugin.Animation.RebuildAnimation();
-                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 
@@ -264,11 +258,10 @@ namespace VamTimeline
             try
             {
                 Current.Remove(target);
-                Plugin.AnimationModified();
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(SettingsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 

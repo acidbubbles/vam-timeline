@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -17,7 +16,6 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
-        private const int _maxDisplayedFrames = 500;
         private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
         // State
@@ -173,8 +171,6 @@ namespace VamTimeline
             Animation.SetKeyframeToCurrentTransform(target, time);
             if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
                 Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
-            Animation.RebuildAnimation();
-            AnimationModified();
         }
 
         #endregion
@@ -362,7 +358,8 @@ namespace VamTimeline
             CopyJSON = new JSONStorableAction("Copy", () => Copy());
             PasteJSON = new JSONStorableAction("Paste", () => Paste());
 
-            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => AnimationModified());
+            // TODO: We just want to set a screen here.
+            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) => OnAnimationParametersChanged());
             RegisterBool(LockedJSON);
 
             AutoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
@@ -393,7 +390,6 @@ namespace VamTimeline
             Animation = new AtomAnimation(containingAtom);
             Animation.Initialize();
             BindAnimation();
-            AnimationModified();
         }
 
         private void StartAutoPlay()
@@ -477,13 +473,9 @@ namespace VamTimeline
                 if (Animation != null) Animation.Dispose();
 
                 Animation = Serializer.DeserializeAnimation(Animation, animationJSON.AsObject);
-                BindAnimation();
                 if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
-
                 Animation.Initialize();
-                Animation.RebuildAnimation();
-                AnimationModified();
-                UpdateTime(0f, false);
+                BindAnimation();
             }
             catch (Exception exc)
             {
@@ -505,8 +497,10 @@ namespace VamTimeline
             Animation.AnimationRebuildRequested.AddListener(OnAnimationRebuildRequested);
             Animation.AnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             Animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            Animation.ClipsListChanged.AddListener(OnAnimationParametersChanged);
 
             OnAnimationParametersChanged();
+            Animation.Sample();
         }
 
         private void OnTimeChanged(float time)
@@ -514,6 +508,7 @@ namespace VamTimeline
             // TODO: We lost the snap feature. Bring it back (if not snapped, snap and set again)
             SuperController.LogMessage("Time");
             if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
+            // TODO: Got a null reference error, not sure why. Happened in a Rebuild loop, when reloading the plugin.
             try
             {
                 // Update UI
@@ -549,9 +544,9 @@ namespace VamTimeline
         private bool _animationRebuildRequestPending;
         private void OnAnimationRebuildRequested()
         {
-            SuperController.LogMessage("Rebuild");
             if (_animationRebuildRequestPending) return;
             _animationRebuildRequestPending = true;
+            SuperController.LogMessage("Rebuild");
             StartCoroutine(ProcessAnimationRebuildRequest());
         }
         private IEnumerator ProcessAnimationRebuildRequest()
@@ -609,7 +604,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(AnimationModified)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnAnimationParametersChanged)}: " + exc);
             }
         }
 
@@ -635,8 +630,6 @@ namespace VamTimeline
                 else
                 {
                     Animation.ChangeAnimation(animationName);
-                    UpdateTime(0f, false);
-                    AnimationModified();
                 }
             }
             catch (Exception exc)
@@ -681,8 +674,6 @@ namespace VamTimeline
                 var time = Animation.Time.Snap();
                 if (time.IsSameFrame(0f) || time.IsSameFrame(Animation.Current.AnimationLength)) return;
                 Animation.Current.DeleteFrame(time);
-                Animation.RebuildAnimation();
-                AnimationModified();
             }
             catch (Exception exc)
             {
@@ -723,10 +714,7 @@ namespace VamTimeline
                 {
                     Animation.Current.Paste(Animation.Time + entry.Time - timeOffset, entry);
                 }
-                Animation.RebuildAnimation();
-                // Sample animation now
-                UpdateTime(time, false);
-                AnimationModified();
+                Animation.Sample();
             }
             catch (Exception exc)
             {
@@ -738,17 +726,6 @@ namespace VamTimeline
         {
             if (v < 0) SpeedJSON.valNoCallback = v = 0f;
             Animation.Speed = v;
-            AnimationModified();
-        }
-
-        #endregion
-
-        #region Updates
-
-        public void AnimationModified()
-        {
-            if (Animation == null || Animation.Current == null) return;
-
         }
 
         #endregion
@@ -773,8 +750,6 @@ namespace VamTimeline
 
         public void VamTimelineRequestControlPanelInjection(GameObject container)
         {
-            AnimationModified();
-
             _controlPanel = container.GetComponent<AnimationControlPanel>();
             if (_controlPanel == null)
             {
