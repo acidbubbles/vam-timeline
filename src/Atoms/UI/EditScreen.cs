@@ -59,7 +59,7 @@ namespace VamTimeline
 
             // Right side
 
-            Current.SelectedChanged.AddListener(SelectionChanged);
+            Current.TargetsSelectionChanged.AddListener(SelectionChanged);
 
             SelectionChanged();
         }
@@ -125,8 +125,8 @@ namespace VamTimeline
         protected override void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
         {
             base.AnimationChanged(before, after);
-            before.SelectedChanged.RemoveListener(SelectionChanged);
-            after.SelectedChanged.AddListener(SelectionChanged);
+            before.TargetsSelectionChanged.RemoveListener(SelectionChanged);
+            after.TargetsSelectionChanged.AddListener(SelectionChanged);
             RefreshTargetsList();
         }
 
@@ -219,7 +219,7 @@ namespace VamTimeline
 
         public override void Dispose()
         {
-            Current.SelectedChanged.RemoveListener(SelectionChanged);
+            Current.TargetsSelectionChanged.RemoveListener(SelectionChanged);
             RemoveTargets();
             base.Dispose();
         }

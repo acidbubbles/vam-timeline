@@ -16,9 +16,14 @@ namespace VamTimeline
     {
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
+
         private bool _loop = true;
         private string _nextAnimationName;
 
+        public UnityEvent TargetsSelectionChanged { get; } = new UnityEvent();
+        public UnityEvent TargetsListChanged { get; } = new UnityEvent();
+        // TODO: We want to deprecate this (this includes everything except changing the targets list)
+        public UnityEvent AnimationModified { get; } = new UnityEvent();
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> TargetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { Label = "Controllers" };
@@ -55,7 +60,6 @@ namespace VamTimeline
         }
         public float NextAnimationTime { get; set; }
         public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
-        public UnityEvent SelectedChanged { get; } = new UnityEvent();
 
         public AtomAnimationClip(string animationName)
         {
@@ -88,8 +92,9 @@ namespace VamTimeline
         {
             TargetControllers.Add(target);
             TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
-            target.SelectedChanged.AddListener(TargetSelectionChanged);
-            TargetSelectionChanged();
+            target.SelectedChanged.AddListener(OnTargetSelectionChanged);
+            target.AnimationCurveModified.AddListener(OnAnimationModified);
+            TargetsListChanged.Invoke();
         }
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
@@ -105,29 +110,35 @@ namespace VamTimeline
             if (target == null) throw new NullReferenceException(nameof(target));
             TargetFloatParams.Add(target);
             TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
-            target.SelectedChanged.AddListener(TargetSelectionChanged);
-            TargetSelectionChanged();
+            target.SelectedChanged.AddListener(OnTargetSelectionChanged);
+            target.AnimationCurveModified.AddListener(OnAnimationModified);
+            TargetsListChanged.Invoke();
         }
 
-        private void TargetSelectionChanged()
+        private void OnTargetSelectionChanged()
         {
-            SelectedChanged.Invoke();
+            TargetsSelectionChanged.Invoke();
+        }
+
+        private void OnAnimationModified()
+        {
+            AnimationModified.Invoke();
         }
 
         public void Remove(FreeControllerV3 controller)
         {
-            var existing = TargetControllers.FirstOrDefault(c => c.Controller == controller);
-            if (existing == null) return;
-            TargetControllers.Remove(existing);
-            existing.Dispose();
-            TargetSelectionChanged();
+            var target = TargetControllers.FirstOrDefault(c => c.Controller == controller);
+            if (target == null) return;
+            TargetControllers.Remove(target);
+            target.Dispose();
+            TargetsListChanged.Invoke();
         }
 
         public void Remove(FloatParamAnimationTarget target)
         {
             TargetFloatParams.Remove(target);
             target.Dispose();
-            TargetSelectionChanged();
+            TargetsListChanged.Invoke();
         }
 
         public void ChangeCurve(float time, string curveType)
@@ -387,7 +398,8 @@ namespace VamTimeline
 
         public void Dispose()
         {
-            SelectedChanged.RemoveAllListeners();
+            TargetsSelectionChanged.RemoveAllListeners();
+            AnimationModified.RemoveAllListeners();
             foreach (var target in AllTargets)
             {
                 target.Dispose();

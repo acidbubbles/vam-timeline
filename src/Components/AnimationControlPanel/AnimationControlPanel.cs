@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,9 +12,7 @@ namespace VamTimeline
     /// </summary>
     public class AnimationControlPanel : MonoBehaviour
     {
-        private IAtomPlugin _plugin;
         private DopeSheet _dopeSheet;
-        private Scrubber _scrubber;
 
         public AnimationControlPanel()
         {
@@ -22,11 +21,11 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
-            _plugin = plugin;
-
             // TODO: Integrate play/stop inside scrubber
-            _scrubber = InitScrubber(plugin.ScrubberJSON);
+            // TODO: Use the scrubber events instead
+            InitScrubber(plugin.ScrubberJSON);
             InitSpacer();
+            // TODO: Make the JSON use animation features instead of the other way around
             InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
             InitSpacer();
             InitPlaybackButtons(plugin.Manager.configurableButtonPrefab, plugin.PlayJSON, plugin.StopJSON);
@@ -107,8 +106,6 @@ namespace VamTimeline
 
             var dopeSheet = go.AddComponent<DopeSheet>();
 
-            dopeSheet.SetTime.AddListener(time => _plugin.TimeJSON.val = time);
-
             return dopeSheet;
         }
 
@@ -120,11 +117,12 @@ namespace VamTimeline
             go.AddComponent<LayoutElement>().preferredHeight = 10f;
         }
 
-        public void Bind(AtomAnimationClip current)
+        public void Bind(AtomAnimation animation)
         {
-            _dopeSheet.Bind(current);
+            _dopeSheet.Bind(animation);
         }
 
+        [Obsolete]
         public void SetScrubberPosition(float time, bool stopped)
         {
             _dopeSheet.SetScrubberPosition(time, stopped);

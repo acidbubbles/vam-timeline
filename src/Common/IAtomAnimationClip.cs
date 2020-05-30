@@ -14,7 +14,7 @@ namespace VamTimeline
     {
         bool Loop { get; }
         float AnimationLength { get; }
-        UnityEvent SelectedChanged { get; }
+        UnityEvent TargetsSelectionChanged { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

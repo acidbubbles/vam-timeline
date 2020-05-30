@@ -135,7 +135,7 @@ namespace VamTimeline
 
             RefreshCurrentUI(true);
 
-            _controlPanel.Bind(_plugin.Animation.Current);
+            _controlPanel.Bind(_plugin.Animation);
             _controlPanel.SetScrubberPosition(_plugin.Animation.Time, true);
         }
 

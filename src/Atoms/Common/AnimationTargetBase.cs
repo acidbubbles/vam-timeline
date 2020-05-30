@@ -11,6 +11,9 @@ namespace VamTimeline
     /// </summary>
     public abstract class AnimationTargetBase : IDisposable
     {
+        public UnityEvent SelectedChanged { get; } = new UnityEvent();
+        public UnityEvent AnimationCurveModified { get; } = new UnityEvent();
+
         private bool _selected;
         public bool Selected
         {
@@ -22,8 +25,6 @@ namespace VamTimeline
                 SelectedChanged.Invoke();
             }
         }
-
-        public UnityEvent SelectedChanged { get; } = new UnityEvent();
         public bool Dirty { get; set; } = true;
 
         public void Dispose()

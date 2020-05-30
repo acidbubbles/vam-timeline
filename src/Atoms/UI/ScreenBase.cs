@@ -30,10 +30,12 @@ namespace VamTimeline
             Current = Plugin.Animation?.Current;
         }
 
+        [Obsolete]
         public virtual void UpdatePlaying()
         {
         }
 
+        [Obsolete]
         public virtual void AnimationModified()
         {
             if (Plugin.Animation.Current != Current)
@@ -43,10 +45,12 @@ namespace VamTimeline
             }
         }
 
+        [Obsolete]
         protected virtual void AnimationChanged(AtomAnimationClip before, AtomAnimationClip after)
         {
         }
 
+        [Obsolete]
         public virtual void AnimationFrameUpdated()
         {
         }

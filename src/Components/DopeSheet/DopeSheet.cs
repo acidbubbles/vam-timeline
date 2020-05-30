@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -22,9 +23,8 @@ namespace VamTimeline
         private readonly RectTransform _scrubberRect;
         private readonly ScrollRect _scrollRect;
         private readonly VerticalLayoutGroup _layout;
+        private AtomAnimation _animation;
         private IAtomAnimationClip _clip;
-
-        public SetTimeEvent SetTime = new SetTimeEvent();
 
         public DopeSheet()
         {
@@ -51,7 +51,7 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            Unbind();
+            UnbindClip();
         }
 
         private GameObject CreateBackground(GameObject parent, Color color)
@@ -148,12 +148,45 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(IAtomAnimationClip clip)
+        public void Bind(AtomAnimation animation)
+        {
+            UnbindAnimation();
+
+            // TODO: Unbind the events on destroy and re-bind to a new animation (load)
+            _animation = animation;
+            _animation.TimeChanged.AddListener(OnTimeChanged);
+            _animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            Bind(_animation.Current);
+        }
+
+        private void UnbindAnimation()
+        {
+            if (_animation == null) return;
+
+            _animation.TimeChanged.RemoveListener(OnTimeChanged);
+            _animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            _animation = null;
+
+            UnbindClip();
+        }
+
+        private void OnTimeChanged(float time)
+        {
+            SetScrubberPosition(time, true);
+        }
+
+        private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             // TODO: Instead of destroying children, try updating them (dirty + index)
             // TODO: If the current clip doesn't change, do not rebind
-            Unbind();
+            UnbindClip();
 
+            Bind(args.After);
+        }
+
+        private void Bind(IAtomAnimationClip clip)
+        {
+            // TODO: Listen to targets list changed and rebuild only when needed
             _clip = clip;
             var any = false;
             foreach (var group in _clip.GetTargetGroups())
@@ -170,7 +203,7 @@ namespace VamTimeline
             _scrubberRect.gameObject.SetActive(any);
         }
 
-        private void Unbind()
+        private void UnbindClip()
         {
             _keyframesRows.Clear();
             while (_layout.transform.childCount > 0)
@@ -179,6 +212,7 @@ namespace VamTimeline
                 child.transform.SetParent(null, false);
                 Destroy(child.gameObject);
             }
+            _clip = null;
         }
 
         private void CreateHeader(IAtomAnimationTargetsList group)
@@ -343,11 +377,13 @@ namespace VamTimeline
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
             var closest = curve.KeyframeBinarySearch(ratio * _clip.AnimationLength, true);
             var time = curve[closest].time;
-            SetTime.Invoke(time);
+            _animation.Time = time;
         }
 
+        [Obsolete]
         public void SetScrubberPosition(float val, bool stopped)
         {
+            if (_clip == null) return; // TODO: Delete this line after events conversion
             var ratio = Mathf.Clamp01(val / _clip.AnimationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);

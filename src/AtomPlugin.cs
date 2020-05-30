@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -112,7 +113,6 @@ namespace VamTimeline
                         _resumePlayOnUnfreeze = false;
                         Animation.Play();
                         IsPlayingJSON.valNoCallback = true;
-                        AnimationFrameUpdated();
                     }
                     else if (LockedJSON != null && !LockedJSON.val)
                     {
@@ -281,7 +281,6 @@ namespace VamTimeline
                 }
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
-                AnimationFrameUpdated();
             });
             RegisterAction(PlayJSON);
 
@@ -300,7 +299,6 @@ namespace VamTimeline
                 if (Animation.IsPlaying()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
-                AnimationFrameUpdated();
             });
             RegisterAction(PlayIfNotPlayingJSON);
 
@@ -329,7 +327,6 @@ namespace VamTimeline
                 {
                     Animation.Time = 0f;
                 }
-                AnimationFrameUpdated();
             });
             RegisterAction(StopJSON);
 
@@ -395,8 +392,8 @@ namespace VamTimeline
             }
             Animation = new AtomAnimation(containingAtom);
             Animation.Initialize();
+            BindAnimation();
             AnimationModified();
-            AnimationFrameUpdated();
         }
 
         private void StartAutoPlay()
@@ -480,12 +477,12 @@ namespace VamTimeline
                 if (Animation != null) Animation.Dispose();
 
                 Animation = Serializer.DeserializeAnimation(Animation, animationJSON.AsObject);
+                BindAnimation();
                 if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
 
                 Animation.Initialize();
                 Animation.RebuildAnimation();
                 AnimationModified();
-                AnimationFrameUpdated();
                 UpdateTime(0f, false);
             }
             catch (Exception exc)
@@ -495,6 +492,124 @@ namespace VamTimeline
             finally
             {
                 _restoring = false;
+            }
+        }
+
+        #endregion
+
+        #region Animation Events
+
+        private void BindAnimation()
+        {
+            Animation.TimeChanged.AddListener(OnTimeChanged);
+            Animation.AnimationRebuildRequested.AddListener(OnAnimationRebuildRequested);
+            Animation.AnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
+            Animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+
+            OnAnimationParametersChanged();
+        }
+
+        private void OnTimeChanged(float time)
+        {
+            // TODO: We lost the snap feature. Bring it back (if not snapped, snap and set again)
+            SuperController.LogMessage("Time");
+            if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
+            try
+            {
+                // Update UI
+                ScrubberJSON.valNoCallback = time;
+                TimeJSON.valNoCallback = time;
+                SpeedJSON.valNoCallback = Animation.Speed;
+                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+                AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
+
+                _ui.AnimationFrameUpdated();
+
+                if (_controlPanel != null)
+                    _controlPanel.SetScrubberPosition(time, true);
+
+                // Dispatch to VamTimelineController
+                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
+                foreach (var controller in externalControllers)
+                {
+                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
+                    if (pluginId != null)
+                    {
+                        var plugin = controller.GetStorableByID(pluginId);
+                        controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationFrameUpdated), containingAtom.uid);
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnTimeChanged)}: " + exc);
+            }
+        }
+
+        private bool _animationRebuildRequestPending;
+        private void OnAnimationRebuildRequested()
+        {
+            SuperController.LogMessage("Rebuild");
+            if (_animationRebuildRequestPending) return;
+            _animationRebuildRequestPending = true;
+            StartCoroutine(ProcessAnimationRebuildRequest());
+        }
+        private IEnumerator ProcessAnimationRebuildRequest()
+        {
+            yield return new WaitForEndOfFrame();
+            _animationRebuildRequestPending = false;
+            try
+            {
+                Animation.RebuildAnimation();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ProcessAnimationRebuildRequest)}: " + exc);
+            }
+        }
+
+        private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        {
+            OnAnimationParametersChanged();
+        }
+
+        private void OnAnimationParametersChanged()
+        {
+            SuperController.LogMessage("Parameters");
+            if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
+            try
+            {
+                // Update UI
+                ScrubberJSON.max = Animation.Current.AnimationLength;
+                ScrubberJSON.valNoCallback = Animation.Time;
+                TimeJSON.max = Animation.Current.AnimationLength;
+                TimeJSON.valNoCallback = Animation.Time;
+                SpeedJSON.valNoCallback = Animation.Speed;
+                AnimationJSON.choices = Animation.GetAnimationNames().ToList();
+                AnimationDisplayJSON.choices = AnimationJSON.choices;
+                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+                AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
+
+                // UI
+                _ui.AnimationModified();
+
+                // Dispatch to VamTimelineController
+                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
+                foreach (var controller in externalControllers)
+                {
+                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
+                    if (pluginId != null)
+                    {
+                        var plugin = controller.GetStorableByID(pluginId);
+                        plugin.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
+                    }
+                }
+
+                OnTimeChanged(Animation.Time);
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(AnimationModified)}: " + exc);
             }
         }
 
@@ -540,8 +655,6 @@ namespace VamTimeline
             Animation.Time = time;
             if (Animation.Current.AnimationPattern != null)
                 Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
-
-            AnimationFrameUpdated();
         }
 
         private void NextFrame()
@@ -549,14 +662,12 @@ namespace VamTimeline
             var originalTime = Animation.Time;
             var time = Animation.Current.GetNextFrame(Animation.Time);
             UpdateTime(time, false);
-            AnimationFrameUpdated();
         }
 
         private void PreviousFrame()
         {
             var time = Animation.Current.GetPreviousFrame(Animation.Time);
             UpdateTime(time, false);
-            AnimationFrameUpdated();
         }
 
         private void Cut()
@@ -638,76 +749,6 @@ namespace VamTimeline
         {
             if (Animation == null || Animation.Current == null) return;
 
-            try
-            {
-                // Update UI
-                ScrubberJSON.max = Animation.Current.AnimationLength;
-                ScrubberJSON.valNoCallback = Animation.Time;
-                TimeJSON.max = Animation.Current.AnimationLength;
-                TimeJSON.valNoCallback = Animation.Time;
-                SpeedJSON.valNoCallback = Animation.Speed;
-                AnimationJSON.choices = Animation.GetAnimationNames().ToList();
-                AnimationDisplayJSON.choices = AnimationJSON.choices;
-                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
-
-                // UI
-                _ui.AnimationModified();
-
-                // Dispatch to VamTimelineController
-                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
-                foreach (var controller in externalControllers)
-                {
-                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
-                    if (pluginId != null)
-                    {
-                        var plugin = controller.GetStorableByID(pluginId);
-                        plugin.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
-                    }
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(AnimationModified)}: " + exc);
-            }
-        }
-
-        private void AnimationFrameUpdated()
-        {
-            if (Animation == null || Animation.Current == null) return;
-
-            try
-            {
-                var time = Animation.Time;
-
-                // Update UI
-                ScrubberJSON.valNoCallback = time;
-                TimeJSON.valNoCallback = time;
-                SpeedJSON.valNoCallback = Animation.Speed;
-                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
-
-                _ui.AnimationFrameUpdated();
-
-                if (_controlPanel != null)
-                    _controlPanel.SetScrubberPosition(time, true);
-
-                // Dispatch to VamTimelineController
-                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
-                foreach (var controller in externalControllers)
-                {
-                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
-                    if (pluginId != null)
-                    {
-                        var plugin = controller.GetStorableByID(pluginId);
-                        controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationFrameUpdated), containingAtom.uid);
-                    }
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(AnimationFrameUpdated)}: " + exc);
-            }
         }
 
         #endregion
@@ -740,7 +781,7 @@ namespace VamTimeline
                 _controlPanel = container.AddComponent<AnimationControlPanel>();
                 _controlPanel.Bind(this);
             }
-            _controlPanel.Bind(Animation.Current);
+            _controlPanel.Bind(Animation);
         }
 
         private void DestroyControllerPanel()

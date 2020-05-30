@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 namespace VamTimeline
@@ -14,11 +15,15 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimation : IDisposable
     {
+        public class TimeChangedEvent : UnityEvent<float> { }
+        public class CurrentAnimationChangedEventArgs { public AtomAnimationClip Before; public AtomAnimationClip After; }
+        public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const float InterpolationMaxDistanceDelta = 3.0f;
         public const float InterpolationMaxAngleDelta = 180.0f;
         public const string RandomizeAnimationName = "(Randomize)";
         public const string RandomizeGroupSuffix = "/*";
+
         private readonly Atom _atom;
         private readonly Animation _animation;
         private AnimationState _animState;
@@ -27,6 +32,7 @@ namespace VamTimeline
         private bool _playQueuedAfterInterpolation;
         private float _playTime;
         private AtomAnimationClip _previousClip;
+        private AtomAnimationClip _current;
         private float _blendingTimeLeft;
         private float _blendingDuration;
         private string _nextAnimation;
@@ -35,8 +41,24 @@ namespace VamTimeline
         // TODO: If we can either get a global counter or infer this from the plugin number, it would be better.
         private readonly int _layer = Random.Range(0, int.MaxValue);
 
+        public TimeChangedEvent TimeChanged = new TimeChangedEvent();
+        public UnityEvent AnimationRebuildRequested = new UnityEvent();
+        public CurrentAnimationChangedEvent CurrentAnimationChanged = new CurrentAnimationChangedEvent();
+        public UnityEvent AnimationSettingsChanged = new UnityEvent();
         public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
-        public AtomAnimationClip Current { get; set; }
+        public AtomAnimationClip Current
+        {
+            get
+            {
+                return _current;
+            }
+            set
+            {
+                var previous = _current;
+                _current = value;
+                CurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { Before = previous, After = _current });
+            }
+        }
         public string PlayedAnimation { get; private set; }
         public float InterpolationSpeed { get; set; } = 1f;
         public float InterpolationTimeout { get; set; } = 0.25f;
@@ -51,6 +73,7 @@ namespace VamTimeline
             }
             set
             {
+                if (_playTime == value) return;
                 _playTime = value;
                 if (Current == null) return;
                 SampleParamsAnimation();
@@ -58,6 +81,7 @@ namespace VamTimeline
                     _animState.time = value;
                 if (!_isPlaying)
                     _interpolateUntil = UnityEngine.Time.time + InterpolationTimeout;
+                TimeChanged.Invoke(value);
             }
         }
 
@@ -100,7 +124,21 @@ namespace VamTimeline
 
         public void AddClip(AtomAnimationClip clip)
         {
+            clip.AnimationModified.AddListener(OnAnimationModified);
+            clip.TargetsListChanged.AddListener(OnAnimationModified);
             Clips.Add(clip);
+        }
+
+        public void RemoveClip(AtomAnimationClip clip)
+        {
+            Clips.Remove(clip);
+            clip.Dispose();
+            OnAnimationModified();
+        }
+
+        private void OnAnimationModified()
+        {
+            AnimationRebuildRequested.Invoke();
         }
 
         public bool IsEmpty()
@@ -537,7 +575,11 @@ namespace VamTimeline
 
         public void Dispose()
         {
-            foreach(var clip in Clips)
+            TimeChanged.RemoveAllListeners();
+            AnimationRebuildRequested.RemoveAllListeners();
+            CurrentAnimationChanged.RemoveAllListeners();
+            AnimationSettingsChanged.RemoveAllListeners();
+            foreach (var clip in Clips)
             {
                 clip.Dispose();
             }
