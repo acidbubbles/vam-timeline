@@ -505,9 +505,14 @@ namespace VamTimeline
 
         private void OnTimeChanged(float time)
         {
-            // TODO: We lost the snap feature. Bring it back (if not snapped, snap and set again)
             try
             {
+                var snapped = time.Snap(SnapJSON.val);
+                if (snapped != time)
+                {
+                    Animation.Time = snapped;
+                    return;
+                }
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
                 TimeJSON.valNoCallback = time;

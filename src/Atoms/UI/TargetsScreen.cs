@@ -153,10 +153,12 @@ namespace VamTimeline
 
         private void GenerateRemoveToggles()
         {
+            // TODO: Remove this, it's not useful.
             if (string.Join(",", Current.AllTargets.Select(tc => tc.Name).OrderBy(n => n).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).OrderBy(n => n).ToArray()))
                 return;
 
             ClearRemoveToggles();
+            // TODO: Replace those toggle by a clearer "delete" setting.
             foreach (var target in Current.TargetControllers)
             {
                 var jsb = new JSONStorableBool(target.Name, true, (bool val) =>

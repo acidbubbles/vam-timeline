@@ -50,6 +50,9 @@ namespace VamTimeline
         {
             base.Init();
 
+            // TODO: Separate the global settings (auto play, speed) from animation settings (length) from animation options (tools, etc)
+            // TODO: Idea: Replace animations drop down by custom control, which would have a small "settings" button, and a previous/next animation button.
+
             // Left side
 
             InitAnimationSettingsUI(false);
