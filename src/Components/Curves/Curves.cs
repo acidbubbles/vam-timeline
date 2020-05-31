@@ -137,6 +137,7 @@ namespace VamTimeline
 
         private void DrawCurveLines()
         {
+            _lines.ClearCurves();
             var lead = _target.GetLeadCurve();
             _animationLength = lead[lead.length - 1].time;
             if (_target is FreeControllerAnimationTarget)
