@@ -44,7 +44,6 @@ namespace VamTimeline
             }
             set
             {
-                // TODO: Verify if we can SEE the different in the curve viewer. If not, some refresh may be missing.
                 _ensureQuaternionContinuity = value;
                 AnimationSettingsModified.Invoke();
             }

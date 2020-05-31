@@ -354,7 +354,6 @@ namespace VamTimeline
             CopyJSON = new JSONStorableAction("Copy", () => Copy());
             PasteJSON = new JSONStorableAction("Paste", () => Paste());
 
-            // TODO: We just want to set a screen here.
             LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
             {
                 _ui.UpdateLocked(val);
@@ -507,8 +506,6 @@ namespace VamTimeline
         private void OnTimeChanged(float time)
         {
             // TODO: We lost the snap feature. Bring it back (if not snapped, snap and set again)
-            if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
-            // TODO: Got a null reference error, not sure why. Happened in a Rebuild loop, when reloading the plugin.
             try
             {
                 // Update UI
@@ -578,7 +575,6 @@ namespace VamTimeline
 
         private void OnAnimationParametersChanged()
         {
-            if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
             try
             {
                 // Update UI

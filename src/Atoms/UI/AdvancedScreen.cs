@@ -59,12 +59,6 @@ namespace VamTimeline
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
 
-            var enableAllTargetsUI = Plugin.CreateButton("Enable Miss. Targets On All Anims", true);
-            enableAllTargetsUI.button.onClick.AddListener(() => EnableAllTargets());
-            RegisterComponent(enableAllTargetsUI);
-
-            CreateSpacer(true);
-
             var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
             RegisterComponent(keyframeCurrentPoseUI);
@@ -132,57 +126,6 @@ namespace VamTimeline
             RegisterComponent(interpolationTimeoutUI);
 
             // TODO: Keyframe all animatable morphs
-        }
-
-        private class FloatParamRef
-        {
-            public JSONStorable Storable { get; set; }
-            public JSONStorableFloat FloatParam { get; set; }
-        }
-
-        private void EnableAllTargets()
-        {
-            try
-            {
-                var allControllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.Controller).Distinct().ToList();
-                var h = new HashSet<JSONStorableFloat>();
-                var allFloatParams = Plugin.Animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.FloatParam)).Select(t => new FloatParamRef { Storable = t.Storable, FloatParam = t.FloatParam }).ToList();
-
-                foreach (var clip in Plugin.Animation.Clips)
-                {
-                    foreach (var controller in allControllers)
-                    {
-                        if (!clip.TargetControllers.Any(t => t.Controller == controller))
-                        {
-                            var target = clip.Add(controller);
-                            if (target != null)
-                            {
-                                target.SetKeyframeToCurrentTransform(0f);
-                                target.SetKeyframeToCurrentTransform(clip.AnimationLength);
-                            }
-                        }
-                    }
-                    clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
-
-                    foreach (var floatParamRef in allFloatParams)
-                    {
-                        if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
-                        {
-                            var target = clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
-                            if (target != null)
-                            {
-                                target.SetKeyframe(0f, floatParamRef.FloatParam.val);
-                                target.SetKeyframe(clip.AnimationLength, floatParamRef.FloatParam.val);
-                            }
-                        }
-                    }
-                    clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(EnableAllTargets)}: {exc}");
-            }
         }
 
         private void DeleteAnimation()

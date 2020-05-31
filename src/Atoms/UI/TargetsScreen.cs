@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -41,6 +42,8 @@ namespace VamTimeline
 
             // Right side
 
+            CreateSpacer(true);
+
             InitControllersUI();
 
             CreateSpacer(true);
@@ -48,6 +51,18 @@ namespace VamTimeline
             InitFloatParamsUI();
 
             CreateSpacer(true);
+
+            if (Plugin.Animation.Clips.Count > 1)
+            {
+                // TODO: Show/hide this button if we do have a problem.
+                // TODO: We can also simply make sure to ALWAYS add targets for every animation clip.
+                var enableAllTargetsUI = Plugin.CreateButton("Add All Other Animations' Targets", true);
+                enableAllTargetsUI.button.onClick.AddListener(() => EnableAllTargets());
+                enableAllTargetsUI.buttonColor = Color.yellow;
+                RegisterComponent(enableAllTargetsUI);
+
+                CreateSpacer(true);
+            }
 
             GenerateRemoveToggles();
         }
@@ -115,7 +130,7 @@ namespace VamTimeline
                 if (storableId.StartsWith("hairTool")) continue;
                 var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
                 if (storable == null) continue;
-                if (Object.ReferenceEquals(storable, Plugin)) continue;
+                if (UnityEngine.Object.ReferenceEquals(storable, Plugin)) continue;
                 if ((storable.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
             }
@@ -184,6 +199,57 @@ namespace VamTimeline
         #endregion
 
         #region Callbacks
+
+        private class FloatParamRef
+        {
+            public JSONStorable Storable { get; set; }
+            public JSONStorableFloat FloatParam { get; set; }
+        }
+
+        private void EnableAllTargets()
+        {
+            try
+            {
+                var allControllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.Controller).Distinct().ToList();
+                var h = new HashSet<JSONStorableFloat>();
+                var allFloatParams = Plugin.Animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.FloatParam)).Select(t => new FloatParamRef { Storable = t.Storable, FloatParam = t.FloatParam }).ToList();
+
+                foreach (var clip in Plugin.Animation.Clips)
+                {
+                    foreach (var controller in allControllers)
+                    {
+                        if (!clip.TargetControllers.Any(t => t.Controller == controller))
+                        {
+                            var target = clip.Add(controller);
+                            if (target != null)
+                            {
+                                target.SetKeyframeToCurrentTransform(0f);
+                                target.SetKeyframeToCurrentTransform(clip.AnimationLength);
+                            }
+                        }
+                    }
+                    clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+
+                    foreach (var floatParamRef in allFloatParams)
+                    {
+                        if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
+                        {
+                            var target = clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
+                            if (target != null)
+                            {
+                                target.SetKeyframe(0f, floatParamRef.FloatParam.val);
+                                target.SetKeyframe(clip.AnimationLength, floatParamRef.FloatParam.val);
+                            }
+                        }
+                    }
+                    clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(EnableAllTargets)}: {exc}");
+            }
+        }
 
         private void AddAnimatedController()
         {
