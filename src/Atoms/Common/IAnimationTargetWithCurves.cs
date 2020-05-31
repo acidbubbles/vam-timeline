@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -11,6 +12,8 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimationTargetWithCurves : IAtomAnimationTarget
     {
+        UnityEvent AnimationCurveModified { get; }
+
         bool Dirty { get; set; }
 
         void StartBulkUpdates();
