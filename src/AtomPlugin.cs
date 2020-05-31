@@ -545,7 +545,6 @@ namespace VamTimeline
             if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             if (_animationRebuildRequestPending) return;
             _animationRebuildRequestPending = true;
-            SuperController.LogMessage("Rebuild");
             StartCoroutine(ProcessAnimationRebuildRequest());
         }
         private IEnumerator ProcessAnimationRebuildRequest()
@@ -579,7 +578,6 @@ namespace VamTimeline
 
         private void OnAnimationParametersChanged()
         {
-            SuperController.LogMessage("Parameters");
             if (Animation == null || Animation.Current == null) return; // TODO: We should not need that. Investigate.
             try
             {
