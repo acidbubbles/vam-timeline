@@ -38,10 +38,10 @@ namespace VamTimeline
             return new[] { Value };
         }
 
-        public void SetKeyframe(float time, float value)
+        public void SetKeyframe(float time, float value, bool dirty = true)
         {
             Value.SetKeyframe(time, value);
-            Dirty = true;
+            if (dirty) Dirty = true;
         }
 
         public void DeleteFrame(float time)

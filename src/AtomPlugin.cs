@@ -537,8 +537,10 @@ namespace VamTimeline
         }
 
         private bool _animationRebuildRequestPending;
+        private bool _animationRebuildInProgress;
         private void OnAnimationRebuildRequested()
         {
+            if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             if (_animationRebuildRequestPending) return;
             _animationRebuildRequestPending = true;
             SuperController.LogMessage("Rebuild");
@@ -550,11 +552,16 @@ namespace VamTimeline
             _animationRebuildRequestPending = false;
             try
             {
+                _animationRebuildInProgress = true;
                 Animation.RebuildAnimation();
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ProcessAnimationRebuildRequest)}: " + exc);
+            }
+            finally
+            {
+                _animationRebuildInProgress = false;
             }
         }
 

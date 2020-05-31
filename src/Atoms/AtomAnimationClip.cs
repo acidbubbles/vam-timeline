@@ -424,7 +424,7 @@ namespace VamTimeline
             }
         }
 
-        public void Paste(float time, AtomClipboardEntry clipboard)
+        public void Paste(float time, AtomClipboardEntry clipboard, bool dirty = true)
         {
             if (Loop && time >= AnimationLength - float.Epsilon)
                 time = 0f;
@@ -436,14 +436,14 @@ namespace VamTimeline
                 var target = TargetControllers.FirstOrDefault(c => c.Controller == entry.Controller);
                 if (target == null)
                     target = Add(entry.Controller);
-                target.SetCurveSnapshot(time, entry.Snapshot);
+                target.SetCurveSnapshot(time, entry.Snapshot, dirty);
             }
             foreach (var entry in clipboard.FloatParams)
             {
                 var target = TargetFloatParams.FirstOrDefault(c => c.FloatParam == entry.FloatParam);
                 if (target == null)
                     target = Add(entry.Storable, entry.FloatParam);
-                target.SetKeyframe(time, entry.Snapshot.value);
+                target.SetKeyframe(time, entry.Snapshot.value, dirty);
             }
         }
 
