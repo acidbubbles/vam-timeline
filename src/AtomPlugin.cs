@@ -502,13 +502,12 @@ namespace VamTimeline
 
             _ui.Bind(Animation);
 
-            DispatchToControllers(nameof(IAnimationController.VamTimelineAnimationReady));
+            BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationReady));
         }
 
         private void OnTimeChanged(float time)
         {
-            // TODO: Who calls this that early? It crashes sometimes when reloading.
-            if (Animation == null || Animation.Current == null || this == null) return;
+            if (containingAtom == null) return; // Plugin destroyed
             try
             {
                 // Update UI
@@ -518,7 +517,7 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
-                DispatchToControllers(nameof(IAnimationController.VamTimelineAnimationFrameUpdated));
+                BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationFrameUpdated));
             }
             catch (Exception exc)
             {
@@ -581,7 +580,7 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
-                DispatchToControllers(nameof(IAnimationController.VamTimelineAnimationModified));
+                BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationModified));
 
                 OnTimeChanged(Animation.Time);
             }
@@ -591,7 +590,7 @@ namespace VamTimeline
             }
         }
 
-        private void DispatchToControllers(string methodName)
+        private void BroadcastToControllers(string methodName)
         {
             var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
             foreach (var controller in externalControllers)

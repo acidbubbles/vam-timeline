@@ -25,6 +25,7 @@ namespace VamTimeline
         private readonly VerticalLayoutGroup _layout;
         private AtomAnimation _animation;
         private IAtomAnimationClip _clip;
+        private int _ms;
 
         public DopeSheet()
         {
@@ -355,22 +356,26 @@ namespace VamTimeline
                 rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
+                _keyframesRows.Add(keyframes);
                 // TODO: Bind on a curve instead, we don't need ALL frames. Also, refresh the curve when modified (keyframe.RefreshCurve())
                 keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
-                keyframes.SetTime(0);
+                keyframes.SetTime(_ms);
                 keyframes.style = _style;
                 keyframes.raycastTarget = true;
-                _keyframesRows.Add(keyframes);
+
+                var listener = go.AddComponent<Listener>();
+                listener.Bind(
+                    target.AnimationKeyframesModified,
+                    () =>
+                    {
+                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
+                        keyframes.SetTime(_ms);
+                    }
+                );
 
                 var targetWithCurves = target as IAnimationTargetWithCurves;
                 if (targetWithCurves != null)
                 {
-                    var listener = go.AddComponent<Listener>();
-                    listener.Bind(
-                        targetWithCurves.AnimationCurveModified,
-                        () => keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop)
-                    );
-
                     var click = go.AddComponent<Clickable>();
                     click.onClick.AddListener(eventData => OnClick(targetWithCurves, rect, eventData));
                 }
@@ -415,8 +420,8 @@ namespace VamTimeline
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             if (stopped)
             {
-                var ms = time.ToMilliseconds();
-                foreach (var keyframe in _keyframesRows) keyframe.SetTime(ms);
+                _ms = time.ToMilliseconds();
+                foreach (var keyframe in _keyframesRows) keyframe.SetTime(_ms);
             }
         }
     }

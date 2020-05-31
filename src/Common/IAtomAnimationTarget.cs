@@ -11,6 +11,7 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomAnimationTarget : IDisposable
     {
+        UnityEvent AnimationKeyframesModified { get; }
         UnityEvent SelectedChanged { get; }
         bool Selected { get; set; }
         string Name { get; }

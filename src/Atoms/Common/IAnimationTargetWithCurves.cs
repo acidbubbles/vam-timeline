@@ -12,8 +12,6 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimationTargetWithCurves : IAtomAnimationTarget
     {
-        UnityEvent AnimationCurveModified { get; }
-
         bool Dirty { get; set; }
 
         void StartBulkUpdates();

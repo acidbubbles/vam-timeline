@@ -168,7 +168,7 @@ namespace VamTimeline
             TargetControllers.Add(target);
             TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
             target.SelectedChanged.AddListener(OnTargetSelectionChanged);
-            target.AnimationCurveModified.AddListener(OnAnimationModified);
+            target.AnimationKeyframesModified.AddListener(OnAnimationModified);
             TargetsListChanged.Invoke();
         }
 
@@ -186,7 +186,7 @@ namespace VamTimeline
             TargetFloatParams.Add(target);
             TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
             target.SelectedChanged.AddListener(OnTargetSelectionChanged);
-            target.AnimationCurveModified.AddListener(OnAnimationModified);
+            target.AnimationKeyframesModified.AddListener(OnAnimationModified);
             TargetsListChanged.Invoke();
         }
 

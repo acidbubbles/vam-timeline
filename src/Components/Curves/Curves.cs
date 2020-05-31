@@ -122,7 +122,7 @@ namespace VamTimeline
             if (target != null)
             {
                 _target = target;
-                _target.AnimationCurveModified.AddListener(OnAnimationCurveModified);
+                _target.AnimationKeyframesModified.AddListener(OnAnimationCurveModified);
                 BindCurves();
                 _noCurves.SetActive(false);
                 _scrubberRect.gameObject.SetActive(true);
@@ -215,7 +215,7 @@ namespace VamTimeline
             if (_target != null)
             {
                 _lines.ClearCurves();
-                _target.AnimationCurveModified.RemoveListener(OnAnimationCurveModified);
+                _target.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
                 _animation = null;
                 _target = null;
                 _lines.SetVerticesDirty();
@@ -249,7 +249,7 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            _target?.AnimationCurveModified.RemoveListener(OnAnimationCurveModified);
+            _target?.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
         }
     }
 }
