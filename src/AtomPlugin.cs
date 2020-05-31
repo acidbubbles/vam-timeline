@@ -148,6 +148,7 @@ namespace VamTimeline
                     return;
                 }
                 // TODO: This should be done by the controller (updating the animation resets the time)
+                if (Animation.Current.Transition) _sampleAfterRebuild = true;
                 var time = Animation.Time.Snap();
                 if (AutoKeyframeAllControllersJSON.val)
                 {
@@ -158,7 +159,6 @@ namespace VamTimeline
                 {
                     SetControllerKeyframe(time, grabbedController);
                 }
-                if (Animation.Current.Transition) Animation.Sample();
             }
         }
 
@@ -538,6 +538,8 @@ namespace VamTimeline
 
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
+        private bool _sampleAfterRebuild;
+
         private void OnAnimationRebuildRequested()
         {
             if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
@@ -554,6 +556,11 @@ namespace VamTimeline
             {
                 _animationRebuildInProgress = true;
                 Animation.RebuildAnimation();
+                if (_sampleAfterRebuild)
+                {
+                    _sampleAfterRebuild = false;
+                    Animation.Sample();
+                }
             }
             catch (Exception exc)
             {

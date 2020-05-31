@@ -184,8 +184,6 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            // TODO: Instead of destroying children, try updating them (dirty + index)
-            // TODO: If the current clip doesn't change, do not rebind
             UnbindClip();
 
             BindClip(args.After);
