@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -102,42 +101,13 @@ namespace VamTimeline
             }
             if (enable)
             {
+                // TODO: This will create the keyframe but will not show up in the dope sheet nor check the toggle
                 Plugin.Animation.SetKeyframe(Target, time, Target.FloatParam.val);
             }
             else
             {
                 Target.DeleteFrame(time);
             }
-        }
-
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            eventData.useDragThreshold = false;
-            UpdateScrubberFromView(eventData);
-        }
-
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            UpdateScrubberFromView(eventData);
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            UpdateScrubberFromView(eventData);
-        }
-
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            UpdateScrubberFromView(eventData);
-        }
-
-        private void UpdateScrubberFromView(PointerEventData eventData)
-        {
-            Vector2 localPosition;
-            var rect = GetComponent<RectTransform>();
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
-                return;
-            var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
         }
     }
 }

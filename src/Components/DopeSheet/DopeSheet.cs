@@ -217,6 +217,7 @@ namespace VamTimeline
 
         private void OnAnimationModified()
         {
+            // TODO: This doesn't work
             foreach (var keyframe in _keyframesRows)
                 keyframe.SetVerticesDirty();
         }
@@ -354,6 +355,7 @@ namespace VamTimeline
                 rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
+                // TODO: Bind on a curve instead, we don't need ALL frames. Also, refresh the curve when modified (keyframe.RefreshCurve())
                 keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
                 keyframes.SetTime(0);
                 keyframes.style = _style;
@@ -363,6 +365,12 @@ namespace VamTimeline
                 var targetWithCurves = target as IAnimationTargetWithCurves;
                 if (targetWithCurves != null)
                 {
+                    var listener = go.AddComponent<Listener>();
+                    listener.Bind(
+                        targetWithCurves.AnimationCurveModified,
+                        () => keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop)
+                    );
+
                     var click = go.AddComponent<Clickable>();
                     click.onClick.AddListener(eventData => OnClick(targetWithCurves, rect, eventData));
                 }

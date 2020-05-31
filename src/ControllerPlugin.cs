@@ -14,7 +14,7 @@ namespace VamTimeline
     /// </summary>
     public class ControllerPlugin : MVRScript, IAnimationController
     {
-        private const string AtomSeparator = ";";
+        private const string _atomSeparator = ";";
         private Atom _atom;
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
@@ -239,17 +239,10 @@ namespace VamTimeline
             {
                 var x = 0f;
                 var y = -0.37f;
-                // const float baseWidth = 1160f;
                 _ui = new SimpleSignUI(_atom, this);
                 _ui.CreateUIToggleInCanvas(_lockedJSON, x, y + 0.1f);
                 _ui.CreateUIPopupInCanvas(_atomsJSON, x, y + 0.355f);
                 _ui.CreateUIPopupInCanvas(_animationJSON, x, y + 0.425f);
-                // _ui.CreateUISliderInCanvas(_scrubberJSON, x, y + 0.14f);
-                // _ui.CreateUIButtonInCanvas("\u25B6 Play", x - 0.105f, y + 0.60f, 810f, 100f).button.onClick.AddListener(() => Play());
-                // _ui.CreateUIButtonInCanvas("\u25A0 Stop", x + 0.257f, y + 0.60f, 300f, 100f).button.onClick.AddListener(() => Stop());
-                // _ui.CreateUIPopupInCanvas(_targetJSON, x, y + 0.655f);
-                // _ui.CreateUIButtonInCanvas("\u2190 Previous Frame", x - 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => PreviousFrame());
-                // _ui.CreateUIButtonInCanvas("Next Frame \u2192", x + 0.182f, y + 0.82f, 550f, 100f).button.onClick.AddListener(() => NextFrame());
                 _controlPanelSpacer = _ui.CreateUISpacerInCanvas(x, y + 0.375f, 780f);
             }
             catch (Exception exc)
@@ -298,9 +291,9 @@ namespace VamTimeline
         {
             try
             {
-                if (uid.IndexOf(AtomSeparator) > -1)
+                if (uid.IndexOf(_atomSeparator) > -1)
                 {
-                    SuperController.LogError($"VamTimeline: Atom '{uid}' cannot contain '{AtomSeparator}'.");
+                    SuperController.LogError($"VamTimeline: Atom '{uid}' cannot contain '{_atomSeparator}'.");
                     return;
                 }
                 if (_linkedAnimations.Any(la => la.Atom.uid == uid)) return;
@@ -320,7 +313,7 @@ namespace VamTimeline
                 {
                     SelectCurrentAtom(link.Label);
                 }
-                _savedAtomsJSON.val = string.Join(AtomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
+                _savedAtomsJSON.val = string.Join(_atomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
                 _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
                 _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
             }
@@ -393,6 +386,14 @@ namespace VamTimeline
             finally
             {
                 _ignoreVamTimelineAnimationFrameUpdated = false;
+            }
+        }
+
+        public void VamTimelineAnimationReady(string uid)
+        {
+            if (_mainLinkedAnimation?.Atom.uid == uid)
+            {
+                RequestControlPanelInjection();
             }
         }
 

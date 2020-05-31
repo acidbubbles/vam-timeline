@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace VamTimeline
 {
     /// <summary>
@@ -13,5 +10,6 @@ namespace VamTimeline
     {
         void VamTimelineAnimationModified(string uid);
         void VamTimelineAnimationFrameUpdated(string uid);
+        void VamTimelineAnimationReady(string uid);
     }
 }

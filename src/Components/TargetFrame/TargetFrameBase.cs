@@ -39,6 +39,7 @@ namespace VamTimeline
 
             CreateToggle(plugin);
             Toggle.label = target.Name;
+            // TODO: Bind AnimationModified and update toggle status
 
             CreateCustom();
 

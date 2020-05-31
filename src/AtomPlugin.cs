@@ -501,6 +501,8 @@ namespace VamTimeline
             Animation.Sample();
 
             _ui.Bind(Animation);
+
+            DispatchToControllers(nameof(IAnimationController.VamTimelineAnimationReady));
         }
 
         private void OnTimeChanged(float time)
@@ -516,17 +518,7 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
-                // Dispatch to VamTimelineController
-                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
-                foreach (var controller in externalControllers)
-                {
-                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
-                    if (pluginId != null)
-                    {
-                        var plugin = controller.GetStorableByID(pluginId);
-                        controller.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationFrameUpdated), containingAtom.uid);
-                    }
-                }
+                DispatchToControllers(nameof(IAnimationController.VamTimelineAnimationFrameUpdated));
             }
             catch (Exception exc)
             {
@@ -589,23 +581,27 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
-                // Dispatch to VamTimelineController
-                var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
-                foreach (var controller in externalControllers)
-                {
-                    var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
-                    if (pluginId != null)
-                    {
-                        var plugin = controller.GetStorableByID(pluginId);
-                        plugin.BroadcastMessage(nameof(IAnimationController.VamTimelineAnimationModified), containingAtom.uid);
-                    }
-                }
+                DispatchToControllers(nameof(IAnimationController.VamTimelineAnimationModified));
 
                 OnTimeChanged(Animation.Time);
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnAnimationParametersChanged)}: " + exc);
+            }
+        }
+
+        private void DispatchToControllers(string methodName)
+        {
+            var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
+            foreach (var controller in externalControllers)
+            {
+                var pluginId = controller.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.ControllerPlugin"));
+                if (pluginId != null)
+                {
+                    var plugin = controller.GetStorableByID(pluginId);
+                    plugin.BroadcastMessage(methodName, containingAtom.uid);
+                }
             }
         }
 
