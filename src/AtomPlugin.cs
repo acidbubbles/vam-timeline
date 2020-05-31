@@ -505,14 +505,10 @@ namespace VamTimeline
 
         private void OnTimeChanged(float time)
         {
+            // TODO: Who calls this that early? It crashes sometimes when reloading.
+            if (Animation == null || Animation.Current == null || this == null) return;
             try
             {
-                var snapped = time.Snap(SnapJSON.val);
-                if (snapped != time)
-                {
-                    Animation.Time = snapped;
-                    return;
-                }
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
                 TimeJSON.valNoCallback = time;

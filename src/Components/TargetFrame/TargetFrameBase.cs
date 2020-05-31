@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +14,8 @@ namespace VamTimeline
     public abstract class TargetFrameBase<T> : MonoBehaviour, ITargetFrame
         where T : IAnimationTargetWithCurves
     {
+        private int _ignoreNextToggleEvent;
+
         protected readonly StyleBase Style = new StyleBase();
         protected IAtomPlugin Plugin;
         protected AtomAnimationClip Clip;
@@ -73,7 +76,13 @@ namespace VamTimeline
 
             ui.gameObject.SetActive(true);
 
-            Toggle.toggle.onValueChanged.AddListener(ToggleKeyframe);
+            Toggle.toggle.onValueChanged.AddListener(ToggleKeyframeInternal);
+        }
+
+        private void ToggleKeyframeInternal(bool on)
+        {
+            if (_ignoreNextToggleEvent > 0) return;
+            ToggleKeyframe(on);
         }
 
         protected Text CreateValueText()
@@ -112,8 +121,9 @@ namespace VamTimeline
         {
             if (stopped)
             {
-                Toggle.toggle.interactable = true;
-                Toggle.toggle.isOn = Target.GetLeadCurve().KeyframeBinarySearch(time) != -1;
+                if (!Toggle.toggle.interactable)
+                    Toggle.toggle.interactable = true;
+                SetToggle(Target.GetLeadCurve().KeyframeBinarySearch(time) != -1);
             }
             else
             {
@@ -121,6 +131,20 @@ namespace VamTimeline
                     Toggle.toggle.interactable = false;
                 if (ValueText.text != "")
                     ValueText.text = "";
+            }
+        }
+
+        protected void SetToggle(bool on)
+        {
+            if (Toggle.toggle.isOn == on) return;
+            Interlocked.Increment(ref _ignoreNextToggleEvent);
+            try
+            {
+                Toggle.toggle.isOn = on;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _ignoreNextToggleEvent);
             }
         }
 

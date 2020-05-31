@@ -22,7 +22,7 @@ namespace VamTimeline
         public void Bind(IAtomPlugin plugin)
         {
             // TODO: Integrate play/stop inside scrubber
-            InitScrubber(plugin.ScrubberJSON);
+            InitScrubber(plugin.ScrubberJSON, plugin.SnapJSON);
             InitSpacer();
             // TODO: Make the JSON use animation features instead of the other way around
             InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
@@ -33,7 +33,7 @@ namespace VamTimeline
             InitSpacer();
         }
 
-        private Scrubber InitScrubber(JSONStorableFloat scrubberJSON)
+        private Scrubber InitScrubber(JSONStorableFloat scrubberJSON, JSONStorableFloat snapJSON)
         {
             var go = new GameObject();
             go.transform.SetParent(transform, false);
@@ -41,7 +41,8 @@ namespace VamTimeline
             go.AddComponent<LayoutElement>().preferredHeight = 60f;
 
             var scrubber = go.AddComponent<Scrubber>();
-            scrubber.jsf = scrubberJSON;
+            scrubber.scrubberJSON = scrubberJSON;
+            scrubber.snapJSON = snapJSON;
 
             return scrubber;
         }

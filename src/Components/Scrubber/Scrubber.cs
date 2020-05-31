@@ -20,7 +20,8 @@ namespace VamTimeline
         private float _previousMax = -1f;
         private ScrubberMarkers _markers;
 
-        public JSONStorableFloat jsf { get; set; }
+        public JSONStorableFloat snapJSON { get; set; }
+        public JSONStorableFloat scrubberJSON { get; set; }
 
         public Scrubber()
         {
@@ -112,22 +113,22 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (_previousMax != jsf.max)
+            if (_previousMax != scrubberJSON.max)
             {
-                _previousMax = jsf.max;
+                _previousMax = scrubberJSON.max;
                 _previousTime = -1f;
-                _markers.length = jsf.max;
+                _markers.length = scrubberJSON.max;
             }
 
-            if (_previousTime == jsf.val) return;
+            if (_previousTime == scrubberJSON.val) return;
 
-            _previousTime = jsf.val;
-            _previousMax = jsf.max;
-            var ratio = Mathf.Clamp01(jsf.val / jsf.max);
+            _previousTime = scrubberJSON.val;
+            _previousMax = scrubberJSON.max;
+            var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
 
-            _timeText.text = $"{jsf.val:0.000}s / {jsf.max:0.000}s";
+            _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -158,7 +159,7 @@ namespace VamTimeline
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
-            jsf.val = jsf.max * ratio;
+            scrubberJSON.val = (scrubberJSON.max * ratio).Snap(snapJSON.val);
         }
     }
 }

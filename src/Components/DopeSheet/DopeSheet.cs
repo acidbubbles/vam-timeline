@@ -204,20 +204,26 @@ namespace VamTimeline
                 }
             }
             _scrubberRect.gameObject.SetActive(any);
-            _clip.TargetsListChanged.AddListener(OnAnimationModified);
+            _clip.TargetsListChanged.AddListener(OnTargetsListChanged);
             _clip.AnimationModified.AddListener(OnAnimationModified);
         }
 
-        private void OnAnimationModified()
+        private void OnTargetsListChanged()
         {
             var clip = _clip;
             UnbindClip();
             BindClip(clip);
         }
 
+        private void OnAnimationModified()
+        {
+            foreach (var keyframe in _keyframesRows)
+                keyframe.SetVerticesDirty();
+        }
+
         private void UnbindClip()
         {
-            _clip.TargetsListChanged.RemoveListener(OnAnimationModified);
+            _clip.TargetsListChanged.RemoveListener(OnTargetsListChanged);
             _clip.AnimationModified.RemoveListener(OnAnimationModified);
             _keyframesRows.Clear();
             while (_layout.transform.childCount > 0)

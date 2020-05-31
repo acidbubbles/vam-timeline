@@ -97,7 +97,7 @@ namespace VamTimeline
             if (time.IsSameFrame(0f) || time.IsSameFrame(Clip.AnimationLength))
             {
                 if (!enable)
-                    Toggle.toggle.isOn = true;
+                    SetToggle(true);
                 return;
             }
             if (enable)
