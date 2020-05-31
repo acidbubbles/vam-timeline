@@ -30,6 +30,7 @@ namespace VamTimeline
         public UnityEvent TargetsListChanged { get; } = new UnityEvent();
         // TODO: We want to deprecate this (this includes everything except changing the targets list)
         public UnityEvent AnimationModified { get; } = new UnityEvent();
+        public UnityEvent AnimationSettingsModified { get; } = new UnityEvent();
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern { get; set; }
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> TargetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { Label = "Controllers" };
@@ -45,7 +46,7 @@ namespace VamTimeline
             {
                 // TODO: Verify if we can SEE the different in the curve viewer. If not, some refresh may be missing.
                 _ensureQuaternionContinuity = value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public string AnimationName
@@ -57,7 +58,7 @@ namespace VamTimeline
             set
             {
                 _animationName = value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public float AnimationLength
@@ -69,7 +70,7 @@ namespace VamTimeline
             set
             {
                 _animationLength = value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public bool AutoPlay { get; set; } = false;
@@ -83,7 +84,7 @@ namespace VamTimeline
             {
                 _loop = value;
                 Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public bool Transition
@@ -95,7 +96,7 @@ namespace VamTimeline
             set
             {
                 _transition = value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public float BlendDuration
@@ -107,7 +108,7 @@ namespace VamTimeline
             set
             {
                 _blendDuration = value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public string NextAnimationName
@@ -119,7 +120,7 @@ namespace VamTimeline
             set
             {
                 _nextAnimationName = value == "" ? null : value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public float NextAnimationTime
@@ -131,7 +132,7 @@ namespace VamTimeline
             set
             {
                 _nextAnimationTime = value;
-                AnimationModified.Invoke();
+                AnimationSettingsModified.Invoke();
             }
         }
         public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
@@ -475,6 +476,7 @@ namespace VamTimeline
         {
             TargetsSelectionChanged.RemoveAllListeners();
             AnimationModified.RemoveAllListeners();
+            AnimationSettingsModified.RemoveAllListeners();
             foreach (var target in AllTargets)
             {
                 target.Dispose();

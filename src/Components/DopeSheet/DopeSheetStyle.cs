@@ -29,7 +29,7 @@ namespace VamTimeline
         public Color KeyframeColorCurrentFront { get; set; } = new Color(0.350f, 0.320f, 0.320f);
         public Color KeyframeColorSelectedBack { get; set; } = new Color(0.050f, 0.020f, 0.020f);
         public Color KeyframeColorSelectedFront { get; set; } = new Color(0.950f, 0.820f, 0.920f);
-        public float KeyframeSize { get; set; } = 7f;
+        public float KeyframeSize { get; set; } = 6f;
         public float KeyframeSizeSelectedBack { get; set; } = 11f;
         public float KeyframeSizeSelectedFront { get; set; } = 5f;
         public float KeyframesRowPadding { get; set; } = 16f;

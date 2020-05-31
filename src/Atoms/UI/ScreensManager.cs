@@ -32,6 +32,7 @@ namespace VamTimeline
         public void Init()
         {
             // Left side
+            // TODO: This should be in the control panel
             InitAnimationSelectorUI(false);
 
             InitControlPanelUI(false);
@@ -51,7 +52,6 @@ namespace VamTimeline
                 PerformanceScreen.ScreenName
             };
 
-            // TODO: Extract in a component
             var tabsContainer = _plugin.CreateSpacer(true);
             tabsContainer.height = 100f;
 
@@ -102,7 +102,6 @@ namespace VamTimeline
             var controlPanelContainer = _plugin.CreateSpacer(rightSide);
             controlPanelContainer.height = 500f;
             _controlPanel = controlPanelContainer.gameObject.AddComponent<AnimationControlPanel>();
-            // TODO: This should be a single bind (we should not bind to the plugin)
             _controlPanel.Bind(_plugin);
         }
 
@@ -110,7 +109,6 @@ namespace VamTimeline
         {
             _controlPanel.Bind(animation);
             ChangeScreen(GetDefaultScreen());
-            // TODO: Do not load a screen before that, and remove all null checks.
         }
 
         private List<string> ListAvailableScreens()

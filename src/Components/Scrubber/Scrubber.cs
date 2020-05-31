@@ -126,6 +126,7 @@ namespace VamTimeline
             var ratio = Mathf.Clamp01(jsf.val / jsf.max);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
+
             _timeText.text = $"{jsf.val:0.000}s / {jsf.max:0.000}s";
         }
 

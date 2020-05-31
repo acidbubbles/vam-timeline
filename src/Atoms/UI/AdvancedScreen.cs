@@ -535,15 +535,39 @@ namespace VamTimeline
                     yield break;
                 }
 
-                if (_importRecordedOptionsJSON.val == "Keyframe Reduction")
-                    foreach (var x in ExtractFramesWithReductionTechnique(mot.clip, Current, target, totalStopwatch, ctrl)) yield return x;
-                else
-                    foreach (var x in ExtractFramesWithFpsTechnique(mot.clip, frameLength, Current, target, totalStopwatch, ctrl)) yield return x;
+                IEnumerator enumerator;
+                try
+                {
+                    if (_importRecordedOptionsJSON.val == "Keyframe Reduction")
+                        enumerator = ExtractFramesWithReductionTechnique(mot.clip, Current, target, totalStopwatch, ctrl).GetEnumerator();
+                    else
+                        enumerator = ExtractFramesWithFpsTechnique(mot.clip, frameLength, Current, target, totalStopwatch, ctrl).GetEnumerator();
+                }
+                catch
+                {
+                    target.EndBulkUpdates();
+                    throw;
+                }
 
-                // TODO: An error here will permanently break the animation.
+                while (TryMoveNext(enumerator, target))
+                    yield return enumerator.Current;
+
                 target.EndBulkUpdates();
             }
             _importRecordedUI.buttonText.text = "Import Recorded Animation (Mocap)";
+        }
+
+        private bool TryMoveNext(IEnumerator enumerator, FreeControllerAnimationTarget target)
+        {
+            try
+            {
+                return enumerator.MoveNext();
+            }
+            catch
+            {
+                target.EndBulkUpdates();
+                throw;
+            }
         }
 
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)

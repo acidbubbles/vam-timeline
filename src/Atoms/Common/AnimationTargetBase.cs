@@ -28,7 +28,7 @@ namespace VamTimeline
                 SelectedChanged.Invoke();
             }
         }
-        // TODO: Instead of MarkDirty, just use a setter??
+
         public bool Dirty
         {
             get

@@ -152,7 +152,6 @@ namespace VamTimeline
         {
             UnbindAnimation();
 
-            // TODO: Unbind the events on destroy and re-bind to a new animation (load)
             _animation = animation;
             _animation.TimeChanged.AddListener(OnTimeChanged);
             _animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
@@ -397,7 +396,6 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float time, bool stopped)
         {
-            if (_clip == null) return; // TODO: Delete this line after events conversion
             var ratio = Mathf.Clamp01(time / _clip.AnimationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
