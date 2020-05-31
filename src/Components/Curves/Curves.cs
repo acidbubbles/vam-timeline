@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,11 +35,10 @@ namespace VamTimeline
 
             CreateBackground(_style.BackgroundColor);
 
-            _scrubberRect = CreateScrubber();
-
             _noCurves = CreateNoCurvesText();
 
             _lines = CreateCurvesLines();
+            _scrubberRect = CreateScrubber();
         }
 
         private GameObject CreateBackground(Color color)
@@ -123,9 +123,10 @@ namespace VamTimeline
             {
                 _target = target;
                 _target.AnimationCurveModified.AddListener(OnAnimationCurveModified);
-                DrawCurveLines();
+                BindCurves();
                 _noCurves.SetActive(false);
                 _scrubberRect.gameObject.SetActive(true);
+                _time = -1f;
             }
             else
             {
@@ -137,6 +138,11 @@ namespace VamTimeline
 
         private void DrawCurveLines()
         {
+            _lines.SetVerticesDirty();
+        }
+
+        private void BindCurves()
+        {
             _lines.ClearCurves();
             var lead = _target.GetLeadCurve();
             _animationLength = lead[lead.length - 1].time;
@@ -144,30 +150,32 @@ namespace VamTimeline
             {
                 var targetController = (FreeControllerAnimationTarget)_target;
 
-                var rotVX = new Keyframe[targetController.RotX.length];
-                var rotVY = new Keyframe[targetController.RotY.length];
-                var rotVZ = new Keyframe[targetController.RotZ.length];
-                for (var t = 0; t < targetController.RotW.length; t++)
-                {
-                    Keyframe keyX = targetController.RotX[t];
-                    Keyframe keyY = targetController.RotY[t];
-                    Keyframe keyZ = targetController.RotZ[t];
-                    Keyframe keyW = targetController.RotW[t];
-                    var rot = new Quaternion(
-                        keyX.value,
-                        keyY.value,
-                        keyZ.value,
-                        keyW.value
-                    );
-                    var eulerAngles = rot.eulerAngles;
-                    rotVX[t] = new Keyframe(keyW.time, eulerAngles.x);
-                    rotVY[t] = new Keyframe(keyW.time, eulerAngles.y);
-                    rotVZ[t] = new Keyframe(keyW.time, eulerAngles.z);
-                }
-                _lines.AddCurve(new Color(1.0f, 0.8f, 0.8f), new AnimationCurve(rotVX));
-                _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), new AnimationCurve(rotVY));
-                _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), new AnimationCurve(rotVZ));
+                // To display rotation, we have to build custom curves. But it's not that useful.
+                // var rotVX = new Keyframe[targetController.RotX.length];
+                // var rotVY = new Keyframe[targetController.RotY.length];
+                // var rotVZ = new Keyframe[targetController.RotZ.length];
+                // for (var t = 0; t < targetController.RotW.length; t++)
+                // {
+                //     Keyframe keyX = targetController.RotX[t];
+                //     Keyframe keyY = targetController.RotY[t];
+                //     Keyframe keyZ = targetController.RotZ[t];
+                //     Keyframe keyW = targetController.RotW[t];
+                //     var rot = new Quaternion(
+                //         keyX.value,
+                //         keyY.value,
+                //         keyZ.value,
+                //         keyW.value
+                //     );
+                //     var eulerAngles = rot.eulerAngles;
+                //     rotVX[t] = new Keyframe(keyW.time, eulerAngles.x);
+                //     rotVY[t] = new Keyframe(keyW.time, eulerAngles.y);
+                //     rotVZ[t] = new Keyframe(keyW.time, eulerAngles.z);
+                // }
+                // _lines.AddCurve(new Color(1.0f, 0.8f, 0.8f), new AnimationCurve(rotVX));
+                // _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), new AnimationCurve(rotVY));
+                // _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), new AnimationCurve(rotVZ));
 
+                _lines.range = EstimateRange(targetController.X, targetController.Y, targetController.Z);
                 _lines.AddCurve(Color.red, targetController.X);
                 _lines.AddCurve(Color.green, targetController.Y);
                 _lines.AddCurve(Color.blue, targetController.Z);
@@ -175,8 +183,31 @@ namespace VamTimeline
             else if (_target is FloatParamAnimationTarget)
             {
                 var targetParam = (FloatParamAnimationTarget)_target;
+                _lines.range = EstimateRange(targetParam.Value);
                 _lines.AddCurve(Color.white, targetParam.Value);
             }
+
+            _lines.SetVerticesDirty();
+        }
+
+        private Vector2 EstimateRange(params AnimationCurve[] curves)
+        {
+            var boundsEvalPrecision = 20f; // Check how many points to detect highest value
+            var minY = float.MaxValue;
+            var maxY = float.MinValue;
+            var maxX = curves[0][curves.Length - 1].time;
+            var boundsTestStep = maxX / boundsEvalPrecision;
+            foreach (var curve in curves)
+            {
+                if (curve.length == 0) continue;
+                for (var time = 0f; time < maxX; time += boundsTestStep)
+                {
+                    var value = curve.Evaluate(time);
+                    minY = Mathf.Min(minY, value);
+                    maxY = Mathf.Max(maxY, value);
+                }
+            }
+            return new Vector2(minY, maxY);
         }
 
         private void Unbind()
@@ -187,12 +218,22 @@ namespace VamTimeline
                 _target.AnimationCurveModified.RemoveListener(OnAnimationCurveModified);
                 _animation = null;
                 _target = null;
+                _lines.SetVerticesDirty();
             }
         }
 
         private void OnAnimationCurveModified()
         {
-            DrawCurveLines();
+            StartCoroutine(DelayedUpdate());
+        }
+
+        private IEnumerator DelayedUpdate()
+        {
+            // Allow curve refresh;
+            yield return 0;
+            yield return 0;
+            if (_target != null)
+                DrawCurveLines();
         }
 
         public void Update()

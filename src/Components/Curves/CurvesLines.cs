@@ -13,59 +13,76 @@ namespace VamTimeline
     public class CurvesLines : MaskableGraphic
     {
         public CurvesStyle style;
+        internal Vector2 range;
         private readonly List<KeyValuePair<Color, AnimationCurve>> _curves = new List<KeyValuePair<Color, AnimationCurve>>();
 
         public void ClearCurves()
         {
             _curves.Clear();
-            SetVerticesDirty();
         }
 
         public void AddCurve(Color color, AnimationCurve curve)
         {
+            if (curve.length == 0) return;
             _curves.Add(new KeyValuePair<Color, AnimationCurve>(color, curve));
-            SetVerticesDirty();
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
-            if (style == null) return;
+            if (style == null || _curves.Count == 0) return;
+
+            // General
             var margin = 20f;
             var width = rectTransform.rect.width;
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
             var precision = 2f; // Draw at every N pixels
-            var boundsEvalPrecision = 20f; // Check how many points to detect highest value
             var minVertexDelta = 1.5f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
 
+            // X ratio
+            var lastCurve = _curves[_curves.Count - 1];
+            var maxX = lastCurve.Value[lastCurve.Value.length - 1].time;
+            var xRatio = width / maxX;
+
+            // Y ratio
+            var minY = range.x;
+            var maxY = range.y;
+            var yRatio = height / (maxY - minY);
+            var offsetY = (-minY - (maxY - minY) / 2f) * yRatio;
+            if (float.IsInfinity(yRatio))
+            {
+                yRatio = 1f;
+                offsetY = 0f;
+            }
+
+            // Zero line
+            vh.DrawLine(new[]
+            {
+                new Vector2(0, offsetY),
+                new Vector2(width, offsetY)
+            }, style.ZeroLineSize, style.ZeroLineColor);
+
+            // Seconds
+            var radius = rectTransform.rect.height / 2;
+            for (var t = 0f; t <= maxX; t += 1f)
+            {
+                var x = offsetX + t * xRatio;
+                vh.DrawLine(new[]
+                {
+                    new Vector2(x, radius),
+                    new Vector2(x, -radius)
+                }, style.SecondLineSize, style.SecondLineColor);
+            }
+
+            // Curves
             foreach (var curveInfo in _curves)
             {
                 // Common
                 var curve = curveInfo.Value;
                 var color = curveInfo.Key;
                 var last = curve[curve.length - 1];
-                var maxX = last.time;
-                var xRatio = width / maxX;
-
-                // Detect y bounds, offset and ratio
-                var minY = float.MaxValue;
-                var maxY = float.MinValue;
-                var boundsTestStep = maxX / boundsEvalPrecision;
-                for (var time = 0f; time < maxX; time += boundsTestStep)
-                {
-                    var value = curve.Evaluate(time);
-                    minY = Mathf.Min(minY, value);
-                    maxY = Mathf.Max(maxY, value);
-                }
-                var yRatio = height / (maxY - minY);
-                var offsetY = (-minY - (maxY - minY) / 2f) * yRatio;
-                if (float.IsInfinity(yRatio))
-                {
-                    yRatio = 1f;
-                    offsetY = 0f;
-                }
 
                 // Draw line
                 var step = maxX / width * precision;
@@ -81,7 +98,7 @@ namespace VamTimeline
                     points.Add(cur);
                 }
                 points.Add(new Vector2(offsetX + last.time * xRatio, offsetY + last.value * yRatio));
-                vh.DrawLine(points, style.LineSize, color);
+                vh.DrawLine(points, style.CurveLineSize, color);
 
                 // Draw handles
                 for (var i = 0; i < curve.length; i++)
