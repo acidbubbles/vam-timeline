@@ -39,7 +39,6 @@ namespace VamTimeline
 
             CreateToggle(plugin);
             Toggle.label = target.Name;
-            // TODO: Bind AnimationModified and update toggle status
 
             CreateCustom();
 
@@ -47,6 +46,15 @@ namespace VamTimeline
 
             Plugin.Animation.TimeChanged.AddListener(OnTimeChanged);
             OnTimeChanged(Plugin.Animation.Time);
+
+            target.AnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
+
+            OnAnimationKeyframesModified();
+        }
+
+        private void OnAnimationKeyframesModified()
+        {
+            SetTime(Plugin.Animation.Time, true);
         }
 
         private void CreateToggle(IAtomPlugin plugin)
@@ -155,6 +163,7 @@ namespace VamTimeline
         public void OnDestroy()
         {
             Plugin.Animation.TimeChanged.RemoveListener(OnTimeChanged);
+            Target.AnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
         }
     }
 }

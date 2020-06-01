@@ -158,7 +158,6 @@ namespace VamTimeline
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
-                component.SetTime(time, true);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -172,7 +171,6 @@ namespace VamTimeline
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(Plugin, Plugin.Animation.Current, target);
-                component.SetTime(time, true);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
