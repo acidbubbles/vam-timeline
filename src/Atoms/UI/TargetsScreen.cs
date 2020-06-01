@@ -69,7 +69,7 @@ namespace VamTimeline
 
         private void InitControllersUI()
         {
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", GetEligibleFreeControllers().ToList(), GetEligibleFreeControllers().FirstOrDefault(), "Animate controller", (string name) => GenerateRemoveToggles())
+            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", GetEligibleFreeControllers().ToList(), GetEligibleFreeControllers().FirstOrDefault(), "Animate controller")
             {
                 isStorable = false
             };
@@ -107,7 +107,7 @@ namespace VamTimeline
             _addFloatParamListUI.popup.onOpenPopupHandlers += () => _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
             RegisterComponent(_addFloatParamListUI);
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param", (string name) => GenerateRemoveToggles())
+            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param")
             {
                 isStorable = false
             };
@@ -153,31 +153,38 @@ namespace VamTimeline
 
         private void GenerateRemoveToggles()
         {
-            // TODO: Remove this, it's not useful.
-            if (string.Join(",", Current.AllTargets.Select(tc => tc.Name).OrderBy(n => n).ToArray()) == string.Join(",", _removeToggles.Select(ct => ct.name).OrderBy(n => n).ToArray()))
-                return;
-
             ClearRemoveToggles();
+
             // TODO: Replace those toggle by a clearer "delete" setting.
             foreach (var target in Current.TargetControllers)
             {
-                var jsb = new JSONStorableBool(target.Name, true, (bool val) =>
+                UIDynamicToggle jsbUI = null;
+                JSONStorableBool jsb = null;
+                jsb = new JSONStorableBool(target.Name, true, (bool val) =>
                 {
                     _addControllerListJSON.val = target.Name;
                     RemoveAnimatedController(target);
+                    Plugin.RemoveToggle(jsb);
+                    Plugin.RemoveToggle(jsbUI);
+                    _removeToggles.Remove(jsb);
                 });
-                var jsbUI = Plugin.CreateToggle(jsb, true);
+                jsbUI = Plugin.CreateToggle(jsb, true);
                 _removeToggles.Add(jsb);
             }
             foreach (var target in Current.TargetFloatParams)
             {
-                var jsb = new JSONStorableBool(target.Name, true, (bool val) =>
+                UIDynamicToggle jsbUI = null;
+                JSONStorableBool jsb = null;
+                jsb = new JSONStorableBool(target.Name, true, (bool val) =>
                 {
                     _addStorableListJSON.val = target.Storable.name;
                     _addParamListJSON.val = target.FloatParam.name;
                     RemoveFloatParam(target);
+                    Plugin.RemoveToggle(jsb);
+                    Plugin.RemoveToggle(jsbUI);
+                    _removeToggles.Remove(jsb);
                 });
-                var jsbUI = Plugin.CreateToggle(jsb, true);
+                jsbUI = Plugin.CreateToggle(jsb, true);
                 _removeToggles.Add(jsb);
             }
             // Ensures shows on top
@@ -329,7 +336,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(RemoveFloatParam)}: " + exc);
             }
         }
 
