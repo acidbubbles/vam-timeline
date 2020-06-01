@@ -10,11 +10,12 @@ namespace VamTimeline
         }
 
         // Global
+        public Color LabelsBackgroundColor { get; set; } = new Color(0.600f, 0.580f, 0.620f);
         public Color BackgroundColorSelected { get; set; } = new Color(0.751f, 0.712f, 0.771f);
         public Color GroupBackgroundColorTop { get; set; } = new Color(0.874f, 0.870f, 0.870f);
         public Color GroupBackgroundColorBottom { get; set; } = new Color(0.704f, 0.700f, 0.700f);
-        public Color LabelBackgroundColorTop { get; set; } = new Color(0.974f, 0.970f, 0.970f);
-        public Color LabelBackgroundColorBottom { get; set; } = new Color(0.824f, 0.820f, 0.820f);
+        public Color LabelBackgroundColorTop { get; set; } = new Color(0.924f, 0.920f, 0.920f);
+        public Color LabelBackgroundColorBottom { get; set; } = new Color(0.724f, 0.720f, 0.720f);
         public Color LabelBackgroundColorTopSelected { get; set; } = new Color(0.924f, 0.920f, 0.920f);
         public Color LabelBackgroundColorBottomSelected { get; set; } = new Color(1, 1, 1);
         public float RowHeight { get; set; } = 30f;

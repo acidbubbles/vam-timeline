@@ -33,6 +33,7 @@ namespace VamTimeline
             gameObject.AddComponent<GraphicRaycaster>();
 
             CreateBackground(gameObject, _style.BackgroundColor);
+            CreateLabelsBackground();
 
             _scrubberRect = CreateScrubber(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
 
@@ -65,6 +66,24 @@ namespace VamTimeline
 
             var image = go.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = false;
+
+            return go;
+        }
+
+        private GameObject CreateLabelsBackground()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = new Vector2(0, 1);
+            rect.pivot = Vector2.zero;
+            rect.sizeDelta = new Vector2(_style.LabelWidth, 0);
+
+            var image = go.AddComponent<Image>();
+            image.color = _style.LabelsBackgroundColor;
             image.raycastTarget = false;
 
             return go;
