@@ -97,5 +97,6 @@ namespace VamTimeline
         void ChangeAnimation(string animationName);
 
         UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false);
+        void SampleAfterRebuild();
     }
 }

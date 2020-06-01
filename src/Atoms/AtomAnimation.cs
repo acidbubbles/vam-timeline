@@ -592,6 +592,7 @@ namespace VamTimeline
             else
             {
                 Time = 0f;
+                Sample();
                 CurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
                 {
                     Before = previous,

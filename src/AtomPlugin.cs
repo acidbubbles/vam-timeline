@@ -28,6 +28,9 @@ namespace VamTimeline
         private FreeControllerAnimationTarget _grabbedController;
         private bool _cancelNextGrabbedControllerRelease;
         private bool _resumePlayOnUnfreeze;
+        private bool _animationRebuildRequestPending;
+        private bool _animationRebuildInProgress;
+        private bool _sampleAfterRebuild;
 
         // Storables
         public JSONStorableStringChooser AnimationJSON { get; private set; }
@@ -147,7 +150,8 @@ namespace VamTimeline
                     return;
                 }
                 // TODO: This should be done by the controller (updating the animation resets the time)
-                if (Animation.Current.Transition) _sampleAfterRebuild = true;
+                if (Animation.Current.Transition)
+                    SampleAfterRebuild();
                 var time = Animation.Time.Snap();
                 if (AutoKeyframeAllControllersJSON.val)
                 {
@@ -527,9 +531,10 @@ namespace VamTimeline
             }
         }
 
-        private bool _animationRebuildRequestPending;
-        private bool _animationRebuildInProgress;
-        private bool _sampleAfterRebuild;
+        public void SampleAfterRebuild()
+        {
+            _sampleAfterRebuild = true;
+        }
 
         private void OnAnimationRebuildRequested()
         {

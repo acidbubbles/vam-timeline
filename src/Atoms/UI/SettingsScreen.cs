@@ -499,7 +499,7 @@ namespace VamTimeline
             if (Current.Loop) _loop.val = false;
             Current.Transition = val;
             Current.DirtyAll();
-            // TODO: There was a .Sample here, is it necessary?
+            Plugin.SampleAfterRebuild();
         }
 
         private void SetEnsureQuaternionContinuity(bool val)
