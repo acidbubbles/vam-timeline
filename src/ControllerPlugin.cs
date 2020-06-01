@@ -35,6 +35,7 @@ namespace VamTimeline
         private UIDynamic _controlPanelSpacer;
         private GameObject _controlPanelContainer;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
+        private bool _ready = false;
 
         #region Initialization
 
@@ -144,20 +145,23 @@ namespace VamTimeline
             while (SuperController.singleton.isLoading)
                 yield return 0;
 
+            _ready = true;
+
             yield return 0;
 
             if (string.IsNullOrEmpty(_savedAtomsJSON.val)) yield break;
+
             RestoreAtomsLink(_savedAtomsJSON.val);
+
+            RequestControlPanelInjection();
 
             while (SuperController.singleton.freezeAnimation)
                 yield return 0;
 
-            RequestControlPanelInjection();
-
             yield return 0;
 
             if (_autoPlayJSON.val && _mainLinkedAnimation != null)
-                AutoPlay();
+                PlayIfNotPlaying();
         }
 
         private void Hide(bool val)
@@ -184,6 +188,8 @@ namespace VamTimeline
 
         private void RestoreAtomsLink(string savedAtoms)
         {
+            if (!_ready) return;
+
             if (!string.IsNullOrEmpty(savedAtoms))
             {
                 foreach (var atomUid in savedAtoms.Split(';'))
@@ -194,11 +200,6 @@ namespace VamTimeline
 
             if (_mainLinkedAnimation == null && _linkedAnimations.Count > 0)
                 SelectCurrentAtom(_linkedAnimations[0].Label);
-        }
-
-        public void AutoPlay()
-        {
-            PlayIfNotPlaying();
         }
 
         private void InitCustomUI()
@@ -308,7 +309,11 @@ namespace VamTimeline
                 }
 
                 var link = LinkedAnimation.TryCreate(atom);
-                if (link == null) return;
+                if (link == null)
+                {
+                    SuperController.LogError($"VamTimeline: Atom '{uid}' did not have the Timeline plugin. Add the plugin and re-link the atom to fix.");
+                    return;
+                }
                 _linkedAnimations.Add(link);
                 _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
                 if (_mainLinkedAnimation == null)
@@ -527,6 +532,8 @@ namespace VamTimeline
             if (_controlPanelSpacer == null) return;
 
             DestroyControlPanelContainer();
+
+            if (_mainLinkedAnimation == null) return;
 
             _controlPanelContainer = new GameObject();
             _controlPanelContainer.transform.SetParent(_controlPanelSpacer.transform, false);
