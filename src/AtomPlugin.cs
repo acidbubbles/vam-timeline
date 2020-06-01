@@ -96,7 +96,6 @@ namespace VamTimeline
                     if (SuperController.singleton.freezeAnimation)
                     {
                         Animation.Stop();
-                        Animation.Time = Animation.Time.Snap();
                         _resumePlayOnUnfreeze = true;
                     }
                 }
@@ -190,8 +189,7 @@ namespace VamTimeline
             try
             {
                 Animation?.Stop();
-                Animation.Time = Animation.Time.Snap(SnapJSON.val);
-                _ui.Dispose();
+                _ui?.Dispose();
                 DestroyControllerPanel();
             }
             catch (Exception exc)

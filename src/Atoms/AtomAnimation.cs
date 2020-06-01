@@ -420,13 +420,21 @@ namespace VamTimeline
             _previousClip = null;
             _nextAnimation = null;
             _nextAnimationTime = 0;
-            SampleParamsAnimation();
             if (PlayedAnimation != null && PlayedAnimation != Current.AnimationName)
             {
                 if (Clips.Any(c => c.AnimationName == PlayedAnimation))
                     ChangeAnimation(PlayedAnimation);
                 PlayedAnimation = null;
             }
+            if (Time > Current.AnimationLength - 0.001f)
+            {
+                Time = Current.Loop ? 0f : Current.AnimationLength;
+            }
+            else
+            {
+                Time = Time.Snap();
+            }
+            Sample();
         }
 
         public bool IsPlaying()

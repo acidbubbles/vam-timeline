@@ -20,6 +20,7 @@ namespace VamTimeline
         private float _previousMax = -1f;
         private ScrubberMarkers _markers;
 
+        public AtomAnimation animation;
         public JSONStorableFloat snapJSON { get; set; }
         public JSONStorableFloat scrubberJSON { get; set; }
 
@@ -154,12 +155,21 @@ namespace VamTimeline
 
         private void UpdateScrubberFromView(PointerEventData eventData)
         {
+            if (animation == null) return;
             Vector2 localPosition;
             var rect = GetComponent<RectTransform>();
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
-            scrubberJSON.val = (scrubberJSON.max * ratio).Snap(snapJSON.val);
+            var time = (scrubberJSON.max * ratio).Snap(snapJSON.val);
+            if (time >= animation.Current.AnimationLength - 0.001f)
+            {
+                if (animation.Current.Loop)
+                    time = 0f;
+                else
+                    time = animation.Current.AnimationLength;
+            }
+            scrubberJSON.val = time;
         }
     }
 }

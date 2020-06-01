@@ -552,14 +552,13 @@ namespace VamTimeline
                 SuperController.LogError($"VamTimeline: Could not find Animation Pattern '{uid}'");
                 return;
             }
-            Current.AnimationPattern = animationPattern;
             animationPattern.SetBoolParamValue("autoPlay", false);
             animationPattern.SetBoolParamValue("pause", false);
             animationPattern.SetBoolParamValue("loop", false);
             animationPattern.SetBoolParamValue("loopOnce", false);
             animationPattern.SetFloatParamValue("speed", Plugin.Animation.Speed);
             animationPattern.ResetAnimation();
-            Plugin.Animation.AnimationSettingsChanged.Invoke(); // TODO: Necessary?
+            Current.AnimationPattern = animationPattern;
         }
 
         #endregion

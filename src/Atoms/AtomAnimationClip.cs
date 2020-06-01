@@ -25,6 +25,7 @@ namespace VamTimeline
         private float _nextAnimationTime;
         private string _animationName;
         private bool _ensureQuaternionContinuity = true;
+        private AnimationPattern _animationPattern;
 
         public UnityEvent TargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent TargetsListChanged { get; } = new UnityEvent();
@@ -32,7 +33,18 @@ namespace VamTimeline
         public UnityEvent AnimationModified { get; } = new UnityEvent();
         public UnityEvent AnimationSettingsModified { get; } = new UnityEvent();
         public AnimationClip Clip { get; }
-        public AnimationPattern AnimationPattern { get; set; }
+        public AnimationPattern AnimationPattern
+        {
+            get
+            {
+                return _animationPattern;
+            }
+            set
+            {
+                _animationPattern = value;
+                AnimationSettingsModified.Invoke();
+            }
+        }
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> TargetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { Label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> TargetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { Label = "Float Params" };
         public IEnumerable<IAnimationTargetWithCurves> AllTargets => TargetControllers.Cast<IAnimationTargetWithCurves>().Concat(TargetFloatParams.Cast<IAnimationTargetWithCurves>());
