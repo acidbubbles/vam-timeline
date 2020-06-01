@@ -33,7 +33,7 @@ namespace VamTimeline
             if (style == null || _curves.Count == 0) return;
 
             // General
-            var margin = 20f;
+            var margin = 60f;
             var width = rectTransform.rect.width;
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
@@ -58,21 +58,22 @@ namespace VamTimeline
             }
 
             // Zero line
+            var halfWidth = rectTransform.rect.width / 2;
             vh.DrawLine(new[]
             {
-                new Vector2(0, offsetY),
-                new Vector2(width, offsetY)
+                new Vector2(-halfWidth, offsetY),
+                new Vector2(halfWidth, offsetY)
             }, style.ZeroLineSize, style.ZeroLineColor);
 
             // Seconds
-            var radius = rectTransform.rect.height / 2;
+            var halfHeight = rectTransform.rect.height / 2;
             for (var t = 0f; t <= maxX; t += 1f)
             {
                 var x = offsetX + t * xRatio;
                 vh.DrawLine(new[]
                 {
-                    new Vector2(x, radius),
-                    new Vector2(x, -radius)
+                    new Vector2(x, halfHeight),
+                    new Vector2(x, -halfHeight)
                 }, style.SecondLineSize, style.SecondLineColor);
             }
 

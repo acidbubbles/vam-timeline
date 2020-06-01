@@ -145,6 +145,7 @@ namespace VamTimeline
         {
             _lines.ClearCurves();
             var lead = _target.GetLeadCurve();
+            if (lead.length < 2) return;
             _animationLength = lead[lead.length - 1].time;
             if (_target is FreeControllerAnimationTarget)
             {
@@ -195,7 +196,8 @@ namespace VamTimeline
             var boundsEvalPrecision = 20f; // Check how many points to detect highest value
             var minY = float.MaxValue;
             var maxY = float.MinValue;
-            var maxX = curves[0][curves.Length - 1].time;
+            var lead = curves[0];
+            var maxX = lead[lead.length - 1].time;
             var boundsTestStep = maxX / boundsEvalPrecision;
             foreach (var curve in curves)
             {
