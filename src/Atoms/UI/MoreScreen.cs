@@ -29,6 +29,10 @@ namespace VamTimeline
             CreateChangeScreenButton("Edit Animation...", AnimationScreen.ScreenName, true);
             CreateChangeScreenButton("Settings...", SettingsScreen.ScreenName, true);
             CreateChangeScreenButton("Advanced...", AdvancedScreen.ScreenName, true);
+
+            CreateSpacer(true);
+
+            CreateChangeScreenButton("Help", HelpScreen.ScreenName, true);
         }
 
         private void InitSpeedUI(bool rightSide)

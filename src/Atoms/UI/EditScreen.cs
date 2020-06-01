@@ -58,6 +58,8 @@ namespace VamTimeline
             Current.TargetsSelectionChanged.AddListener(SelectionChanged);
 
             SelectionChanged();
+
+            if (Plugin.Animation.IsEmpty()) InitExplanation();
         }
 
         private void InitChangeCurveTypeUI(bool rightSide)
@@ -83,6 +85,28 @@ namespace VamTimeline
             RegisterComponent(spacerUI);
 
             _curves = spacerUI.gameObject.AddComponent<Curves>();
+        }
+
+        private void InitExplanation()
+        {
+            var textJSON = new JSONStorableString("Help", @"
+<b>Welcome to Timeline!</b>
+
+This plugin allows for advanced keyframe-based editing.
+
+Documentation available at:
+github.com/acidbubbles/vam-timeline
+
+<b>The basics</b>
+
+- Select what to animate <i>(Targets)</i>
+- Select a time <i>(Scrubber)</i>
+- Move controllers <i>(Edit)</i>
+");
+            RegisterStorable(textJSON);
+            var textUI = Plugin.CreateTextField(textJSON, true);
+            textUI.height = 600;
+            RegisterComponent(textUI);
         }
 
         private void RefreshCurves()

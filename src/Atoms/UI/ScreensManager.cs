@@ -120,8 +120,6 @@ namespace VamTimeline
         {
             if (_plugin.Animation == null || _plugin.LockedJSON.val)
                 return PerformanceScreen.ScreenName;
-            else if (_plugin.Animation.IsEmpty())
-                return WelcomeScreen.ScreenName;
             else
                 return EditScreen.ScreenName;
         }
@@ -210,8 +208,8 @@ namespace VamTimeline
                 case PerformanceScreen.ScreenName:
                     _current = new PerformanceScreen(_plugin);
                     break;
-                case WelcomeScreen.ScreenName:
-                    _current = new WelcomeScreen(_plugin);
+                case HelpScreen.ScreenName:
+                    _current = new HelpScreen(_plugin);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");
