@@ -43,6 +43,7 @@ src/Atoms/UI/TargetsScreen.cs
 src/Atoms/UI/EditScreen.cs
 src/Atoms/UI/BulkScreen.cs
 src/Atoms/UI/AdvancedScreen.cs
+src/Atoms/UI/MoreScreen.cs
 src/Atoms/UI/WelcomeScreen.cs
 src/Atoms/UI/ScreensManager.cs
 src/Atoms/AtomAnimationClip.cs

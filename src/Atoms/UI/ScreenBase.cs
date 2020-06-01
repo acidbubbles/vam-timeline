@@ -65,6 +65,14 @@ namespace VamTimeline
             RegisterComponent(spacerUI);
         }
 
+        protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide, bool register = true)
+        {
+            var ui = Plugin.CreateButton(label, rightSide);
+            RegisterComponent(ui);
+            ui.button.onClick.AddListener(() => OnScreenChangeRequested.Invoke(screenName));
+            return ui;
+        }
+
         protected T RegisterStorable<T>(T v)
             where T : JSONStorableParam
         {

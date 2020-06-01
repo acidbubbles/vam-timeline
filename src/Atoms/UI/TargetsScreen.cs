@@ -42,7 +42,7 @@ namespace VamTimeline
 
             // Right side
 
-            CreateBackButton();
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", EditScreen.ScreenName, true);
 
             CreateSpacer(true);
 
@@ -69,12 +69,6 @@ namespace VamTimeline
             GenerateRemoveToggles();
         }
 
-        private void CreateBackButton()
-        {
-            var backUI = Plugin.CreateButton("<b><</b> <i>Back</i>", true);
-            RegisterComponent(backUI);
-            backUI.button.onClick.AddListener(() => OnScreenChangeRequested.Invoke(EditScreen.ScreenName));
-        }
 
         private void InitControllersUI()
         {

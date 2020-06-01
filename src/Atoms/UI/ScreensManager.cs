@@ -44,21 +44,20 @@ namespace VamTimeline
         private void InitTabs()
         {
             var screens = new[]{
-                SettingsScreen.ScreenName,
                 EditScreen.ScreenName,
                 BulkScreen.ScreenName,
-                AdvancedScreen.ScreenName,
+                MoreScreen.ScreenName,
                 PerformanceScreen.ScreenName
             };
 
             var tabsContainer = _plugin.CreateSpacer(true);
-            tabsContainer.height = 100f;
+            tabsContainer.height = 60f;
 
             var group = tabsContainer.gameObject.AddComponent<GridLayoutGroup>();
             group.constraint = GridLayoutGroup.Constraint.Flexible;
             group.constraintCount = screens.Length;
             group.spacing = Vector2.zero;
-            group.cellSize = new Vector2(512f / 3f, 50f);
+            group.cellSize = new Vector2(512f / 4f, 50f);
             group.childAlignment = TextAnchor.MiddleCenter;
 
             foreach (var screen in screens)
@@ -201,6 +200,9 @@ namespace VamTimeline
                     break;
                 case AdvancedScreen.ScreenName:
                     _current = new AdvancedScreen(_plugin);
+                    break;
+                case MoreScreen.ScreenName:
+                    _current = new MoreScreen(_plugin);
                     break;
                 case PerformanceScreen.ScreenName:
                     _current = new PerformanceScreen(_plugin);

@@ -8,7 +8,7 @@ namespace VamTimeline
     /// </summary>
     public class PerformanceScreen : ScreenBase
     {
-        public const string ScreenName = "Locked";
+        public const string ScreenName = "Lock";
         public override string Name => ScreenName;
 
         public PerformanceScreen(IAtomPlugin plugin)

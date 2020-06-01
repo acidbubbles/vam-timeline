@@ -179,13 +179,11 @@ namespace VamTimeline
                     Target = target,
                 });
             }
-
-            _manageTargetsUI = Plugin.CreateButton("<b>[+/-]</b> Add/Remove Targets", true);
+            _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName, true, false);
             if (Current.AllTargetsCount == 0)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
                 _manageTargetsUI.buttonColor = new Color(0.8f, 0.7f, 0.8f);
-            _manageTargetsUI.button.onClick.AddListener(() => OnScreenChangeRequested.Invoke(TargetsScreen.ScreenName));
         }
 
         public override void Dispose()
