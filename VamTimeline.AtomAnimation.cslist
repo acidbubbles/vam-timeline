@@ -39,7 +39,8 @@ src/Atoms/Params/FloatParamAnimationTarget.cs
 src/Atoms/UI/ScreenBase.cs
 src/Atoms/UI/PerformanceScreen.cs
 src/Atoms/UI/SettingsScreen.cs
-src/Atoms/UI/AnimationScreen.cs
+src/Atoms/UI/EditAnimationScreen.cs
+src/Atoms/UI/ManageAnimationsScreen.cs
 src/Atoms/UI/TargetsScreen.cs
 src/Atoms/UI/EditScreen.cs
 src/Atoms/UI/BulkScreen.cs

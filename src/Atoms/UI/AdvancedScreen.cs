@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MVR.FileManagementSecure;
-using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
@@ -18,13 +16,9 @@ namespace VamTimeline
     /// </summary>
     public class AdvancedScreen : ScreenBase
     {
-        private const string _saveExt = "json";
-        private const string _saveFolder = "Saves\\animations";
-        private static readonly Regex _sanitizeRE = new Regex("[^a-zA-Z0-9 _-]", RegexOptions.Compiled);
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
 
         public const string ScreenName = "Advanced";
-        private JSONStorableStringChooser _exportAnimationsJSON;
         private UIDynamicButton _importRecordedUI;
         private JSONStorableStringChooser _importRecordedOptionsJSON;
 
@@ -39,29 +33,11 @@ namespace VamTimeline
         {
             base.Init();
 
-            // Left side
-
-            CreateSpacer(false);
-
-            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
-            {
-                isStorable = false
-            };
-            RegisterStorable(_exportAnimationsJSON);
-            var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, false);
-            RegisterComponent(exportAnimationsUI);
-
-            var exportUI = Plugin.CreateButton("Export animation", false);
-            exportUI.button.onClick.AddListener(() => Export());
-            RegisterComponent(exportUI);
-
-            var importUI = Plugin.CreateButton("Import animation", false);
-            importUI.button.onClick.AddListener(() => Import());
-            RegisterComponent(importUI);
-
             // Right side
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
+
+            CreateSpacer(true);
 
             var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
@@ -95,53 +71,11 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            var moveAnimUpUI = Plugin.CreateButton("Reorder Animation (Move Up)", true);
-            moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
-            RegisterComponent(moveAnimUpUI);
-
-            var moveAnimDownUI = Plugin.CreateButton("Reorder Animation (Move Down)", true);
-            moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveDown());
-            RegisterComponent(moveAnimDownUI);
-
-            var deleteAnimationUI = Plugin.CreateButton("Delete Animation", true);
-            deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
-            RegisterComponent(deleteAnimationUI);
-
             var reverseAnimationUI = Plugin.CreateButton("Reverse Animation", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
 
-            CreateSpacer(true);
-
             // TODO: Keyframe all animatable morphs
-        }
-
-        private void DeleteAnimation()
-        {
-            try
-            {
-                var anim = Current;
-                if (anim == null) return;
-                if (Plugin.Animation.Clips.Count == 1)
-                {
-                    SuperController.LogError("VamTimeline: Cannot delete the only animation.");
-                    return;
-                }
-                Plugin.Animation.RemoveClip(anim);
-                foreach (var clip in Plugin.Animation.Clips)
-                {
-                    if (clip.NextAnimationName == anim.AnimationName)
-                    {
-                        clip.NextAnimationName = null;
-                        clip.NextAnimationTime = 0;
-                    }
-                }
-                Plugin.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(DeleteAnimation)}: {exc}");
-            }
         }
 
         private void ReverseAnimation()
@@ -175,162 +109,6 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReverseAnimation)}: {exc}");
-            }
-        }
-
-        private void ReorderAnimationMoveUp()
-        {
-            try
-            {
-                var anim = Current;
-                if (anim == null) return;
-                var idx = Plugin.Animation.Clips.IndexOf(anim);
-                if (idx <= 0) return;
-                Plugin.Animation.Clips.RemoveAt(idx);
-                Plugin.Animation.Clips.Insert(idx - 1, anim);
-                Plugin.Animation.ClipsListChanged.Invoke();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReorderAnimationMoveUp)}: {exc}");
-            }
-        }
-
-        private void ReorderAnimationMoveDown()
-        {
-            try
-            {
-                var anim = Current;
-                if (anim == null) return;
-                var idx = Plugin.Animation.Clips.IndexOf(anim);
-                if (idx >= Plugin.Animation.Clips.Count - 1) return;
-                Plugin.Animation.Clips.RemoveAt(idx);
-                Plugin.Animation.Clips.Insert(idx + 1, anim);
-                Plugin.Animation.ClipsListChanged.Invoke();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReorderAnimationMoveDown)}: {exc}");
-            }
-        }
-
-        private void Export()
-        {
-            try
-            {
-                FileManagerSecure.CreateDirectory(_saveFolder);
-                var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.SetTitle("Save animation");
-                fileBrowserUI.fileRemovePrefix = null;
-                fileBrowserUI.hideExtension = false;
-                fileBrowserUI.keepOpen = false;
-                fileBrowserUI.fileFormat = _saveExt;
-                fileBrowserUI.defaultPath = _saveFolder;
-                fileBrowserUI.showDirs = true;
-                fileBrowserUI.shortCuts = null;
-                fileBrowserUI.browseVarFilesAsDirectories = false;
-                fileBrowserUI.SetTextEntry(true);
-                fileBrowserUI.Show(ExportFileSelected);
-                fileBrowserUI.ActivateFileNameField();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline: Failed to save file dialog: {exc}");
-            }
-        }
-
-        private void ExportFileSelected(string path)
-        {
-            if (string.IsNullOrEmpty(path)) return;
-            if (!path.ToLower().EndsWith($".{_saveExt}")) path += $".{_saveExt}";
-
-            try
-            {
-                var jc = Plugin.GetAnimationJSON(_exportAnimationsJSON.val == "(All)" ? null : _exportAnimationsJSON.val);
-                jc["AtomType"] = Plugin.ContainingAtom.type;
-                var atomState = new JSONClass();
-                var allTargets = new HashSet<FreeControllerV3>(
-                    Plugin.Animation.Clips
-                        .Where(c => _exportAnimationsJSON.val == "(All)" || c.AnimationName == _exportAnimationsJSON.val)
-                        .SelectMany(c => c.TargetControllers)
-                        .Select(t => t.Controller)
-                        .Distinct());
-                foreach (var fc in Plugin.ContainingAtom.freeControllers)
-                {
-                    if (fc.name == "control") continue;
-                    if (!fc.name.EndsWith("Control")) continue;
-                    atomState[fc.name] = new JSONClass
-                    {
-                        {"currentPositionState", ((int)fc.currentPositionState).ToString()},
-                        {"localPosition", AtomAnimationSerializer.SerializeVector3(fc.transform.localPosition)},
-                        {"currentRotationState", ((int)fc.currentRotationState).ToString()},
-                        {"localRotation", AtomAnimationSerializer.SerializeQuaternion(fc.transform.localRotation)}
-                    };
-                }
-                jc["ControllersState"] = atomState;
-                SuperController.singleton.SaveJSON(jc, path);
-                SuperController.singleton.DoSaveScreenshot(path);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline: Failed to export animation: {exc}");
-            }
-        }
-
-        private void Import()
-        {
-            try
-            {
-                FileManagerSecure.CreateDirectory(_saveFolder);
-                var shortcuts = FileManagerSecure.GetShortCutsForDirectory(_saveFolder);
-                SuperController.singleton.GetMediaPathDialog(ImportFileSelected, _saveExt, _saveFolder, false, true, false, null, false, shortcuts);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline: Failed to open file dialog: {exc}");
-            }
-        }
-
-        private void ImportFileSelected(string path)
-        {
-            if (string.IsNullOrEmpty(path)) return;
-
-            try
-            {
-                var json = SuperController.singleton.LoadJSON(path);
-                if (json["AtomType"]?.Value != Plugin.ContainingAtom.type)
-                {
-                    SuperController.LogError($"VamTimeline: Loaded animation for {json["AtomType"]} but current atom type is {Plugin.ContainingAtom.type}");
-                    return;
-                }
-
-                var jc = json.AsObject;
-                if (jc.HasKey("ControllersState"))
-                {
-                    var controllersState = jc["ControllersState"].AsObject;
-                    foreach (var k in controllersState.Keys)
-                    {
-                        var fc = Plugin.ContainingAtom.freeControllers.FirstOrDefault(x => x.name == k);
-                        if (fc == null)
-                        {
-                            SuperController.LogError($"VamTimeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
-                            continue;
-                        }
-                        var state = controllersState[k];
-                        fc.currentPositionState = (FreeControllerV3.PositionState)state["currentPositionState"].AsInt;
-                        fc.transform.localPosition = AtomAnimationSerializer.DeserializeVector3(state["localPosition"].AsObject);
-                        fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
-                        fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
-                    }
-                }
-
-                Plugin.Load(jc);
-                Plugin.ChangeAnimation(jc["Clips"][0]["AnimationName"].Value);
-                Plugin.Animation.Stop();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
             }
         }
 

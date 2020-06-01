@@ -29,6 +29,8 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
+            CreateSpacer(true);
+
             CreateSnap(true);
 
             CreateInterpolation(true);
