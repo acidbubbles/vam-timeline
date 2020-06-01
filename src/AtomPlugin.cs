@@ -108,6 +108,7 @@ namespace VamTimeline
                     {
                         _resumePlayOnUnfreeze = false;
                         Animation.Play();
+                        BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
                         IsPlayingJSON.valNoCallback = true;
                     }
                     else if (LockedJSON != null && !LockedJSON.val)
@@ -182,7 +183,7 @@ namespace VamTimeline
             {
                 _ui?.Enable();
                 if (_controllerInjectedControlerPanel == null && Animation != null && containingAtom != null)
-                    BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationReady));
+                    BroadcastToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
             }
             catch (Exception exc)
             {
@@ -279,6 +280,7 @@ namespace VamTimeline
                 }
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
+                BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
             RegisterAction(PlayJSON);
 
@@ -297,6 +299,7 @@ namespace VamTimeline
                 if (Animation.IsPlaying()) return;
                 Animation.Play();
                 IsPlayingJSON.valNoCallback = true;
+                BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
             RegisterAction(PlayIfNotPlayingJSON);
 
@@ -320,6 +323,7 @@ namespace VamTimeline
                     Animation.Stop();
                     Animation.Time = Animation.Time.Snap(SnapJSON.val);
                     IsPlayingJSON.valNoCallback = false;
+                    BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
                 }
                 else
                 {
@@ -334,6 +338,7 @@ namespace VamTimeline
                 Animation.Stop();
                 Animation.Time = Animation.Time.Snap(SnapJSON.val);
                 IsPlayingJSON.valNoCallback = false;
+                BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
             RegisterAction(StopIfPlayingJSON);
 
@@ -508,7 +513,7 @@ namespace VamTimeline
 
             _ui.Bind(Animation);
 
-            BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationReady));
+            BroadcastToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
         }
 
         private void OnTimeChanged(float time)
@@ -523,7 +528,7 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
-                BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationFrameUpdated));
+                BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             }
             catch (Exception exc)
             {
@@ -587,7 +592,7 @@ namespace VamTimeline
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
                 AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
-                BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationModified));
+                BroadcastToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
 
                 OnTimeChanged(Animation.Time);
             }

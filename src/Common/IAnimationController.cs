@@ -8,8 +8,8 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimationController
     {
-        void VamTimelineAnimationModified(string uid);
-        void VamTimelineAnimationFrameUpdated(string uid);
-        void VamTimelineAnimationReady(string uid);
+        void OnTimelineAnimationParametersChanged(string uid);
+        void OnTimelineTimeChanged(string uid);
+        void OnTimelineAnimationReady(string uid);
     }
 }

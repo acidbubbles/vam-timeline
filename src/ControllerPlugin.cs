@@ -286,7 +286,7 @@ namespace VamTimeline
                 scrubber.val = v;
                 foreach (var link in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
                     link.Time.val = scrubber.val;
-                VamTimelineAnimationFrameUpdated(_mainLinkedAnimation.Atom.uid);
+                OnTimelineTimeChanged(_mainLinkedAnimation.Atom.uid);
             }
         }
 
@@ -330,21 +330,22 @@ namespace VamTimeline
             }
         }
 
-        public void VamTimelineAnimationModified(string uid)
+        public void OnTimelineAnimationParametersChanged(string uid)
         {
-            VamTimelineAnimationFrameUpdated(uid);
+            OnTimelineTimeChanged(uid);
 
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
 
-            if (_scrubberJSON.slider != null) _scrubberJSON.slider.interactable = true;
-            _scrubberJSON.valNoCallback = _mainLinkedAnimation.Scrubber.val;
+            var remoteScrubber = _mainLinkedAnimation.Scrubber;
+            _scrubberJSON.max = remoteScrubber.max;
+            _scrubberJSON.valNoCallback = remoteScrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
             _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
-            _lockedJSON.val = _mainLinkedAnimation.Locked.val;
+            _lockedJSON.valNoCallback = _mainLinkedAnimation.Locked.val;
         }
 
-        public void VamTimelineAnimationFrameUpdated(string uid)
+        public void OnTimelineTimeChanged(string uid)
         {
             if (_ignoreVamTimelineAnimationFrameUpdated) return;
             _ignoreVamTimelineAnimationFrameUpdated = true;
@@ -354,40 +355,26 @@ namespace VamTimeline
                 if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                     return;
 
-                var linkedScrubber = _mainLinkedAnimation.Scrubber;
-                _scrubberJSON.max = linkedScrubber.max;
+                _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
 
-                var updated = _linkedAnimations.FirstOrDefault(la => la.Atom.uid == uid);
-                if (updated == null)
-                    return;
-
-                var animationName = updated.Animation.val;
-                var isPlaying = updated.IsPlaying.val;
-                var time = updated.Time.val;
+                var animationName = _mainLinkedAnimation.Animation.val;
+                var isPlaying = _mainLinkedAnimation.IsPlaying.val;
+                var time = _mainLinkedAnimation.Time.val;
                 _animationJSON.valNoCallback = isPlaying ? StorableNames.PlayingAnimationName : animationName;
 
-                foreach (var other in _linkedAnimations.Where(la => la != updated))
+                foreach (var slave in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
                 {
-                    if (other.Animation.val != animationName)
-                        other.ChangeAnimation(animationName);
+                    if (slave.Animation.val != animationName)
+                        slave.ChangeAnimation(animationName);
 
                     if (isPlaying)
-                        other.PlayIfNotPlaying();
+                        slave.PlayIfNotPlaying();
                     else
-                        other.StopIfPlaying();
+                        slave.StopIfPlaying();
 
-                    var setTime = other.Time;
-                    var setTimeValue = setTime.val;
-                    if (setTimeValue < time - 0.0005f || setTimeValue > time + 0.0005f)
-                        setTime.val = time;
-                }
-
-                if (!isPlaying)
-                {
-                    if (_linkedAnimations.Where(la => la != updated).All(la => la.Animation.val == animationName))
-                        _animationJSON.valNoCallback = animationName;
-                    else
-                        _animationJSON.valNoCallback = $"(Multiple animations: {string.Join(", ", _linkedAnimations.Select(la => la.Animation.val).ToArray())})";
+                    var slaveTime = slave.Time;
+                    if (slaveTime.val < time - 0.0005f || slaveTime.val > time + 0.0005f)
+                        slaveTime.val = time;
                 }
             }
             finally
@@ -396,7 +383,7 @@ namespace VamTimeline
             }
         }
 
-        public void VamTimelineAnimationReady(string uid)
+        public void OnTimelineAnimationReady(string uid)
         {
             if (_mainLinkedAnimation?.Atom.uid == uid)
             {
@@ -523,7 +510,7 @@ namespace VamTimeline
         private IEnumerator InitializeMainAtom(string uid)
         {
             yield return 0;
-            VamTimelineAnimationModified(uid);
+            OnTimelineAnimationParametersChanged(uid);
             RequestControlPanelInjection();
         }
 
