@@ -32,6 +32,7 @@ namespace VamTimeline
         private Curves _curves;
         private UIDynamicPopup _curveTypeUI;
         private bool _selectionChangedPending;
+        private UIDynamicButton _manageTargetsUI;
 
         public EditScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -150,6 +151,7 @@ namespace VamTimeline
         {
             if (Plugin.Animation == null) return;
             RemoveTargets();
+            Plugin.RemoveButton(_manageTargetsUI);
             var time = Plugin.Animation.Time;
 
             foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
@@ -177,11 +179,19 @@ namespace VamTimeline
                     Target = target,
                 });
             }
+
+            _manageTargetsUI = Plugin.CreateButton("<b>[+/-]</b> Add/Remove Targets", true);
+            if (Current.AllTargetsCount == 0)
+                _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
+            else
+                _manageTargetsUI.buttonColor = new Color(0.8f, 0.7f, 0.8f);
+            _manageTargetsUI.button.onClick.AddListener(() => OnScreenChangeRequested.Invoke(TargetsScreen.ScreenName));
         }
 
         public override void Dispose()
         {
             Current.TargetsSelectionChanged.RemoveListener(SelectionChanged);
+            Plugin.RemoveButton(_manageTargetsUI);
             RemoveTargets();
             base.Dispose();
         }

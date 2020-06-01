@@ -45,8 +45,6 @@ namespace VamTimeline
         {
             var screens = new[]{
                 SettingsScreen.ScreenName,
-                // TODO: Move this inside the "Edit" menu (and make Edit go to that screen when empty)
-                TargetsScreen.ScreenName,
                 EditScreen.ScreenName,
                 BulkScreen.ScreenName,
                 AdvancedScreen.ScreenName,
@@ -216,6 +214,7 @@ namespace VamTimeline
 
             try
             {
+                _current.OnScreenChangeRequested.AddListener(ChangeScreen);
                 _current.Init();
             }
             catch (Exception exc)

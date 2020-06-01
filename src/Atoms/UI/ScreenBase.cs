@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -12,6 +13,10 @@ namespace VamTimeline
     /// </summary>
     public abstract class ScreenBase : IDisposable
     {
+        public class ScreenChangeRequestedEvent : UnityEvent<string> { }
+
+
+        public ScreenChangeRequestedEvent OnScreenChangeRequested = new ScreenChangeRequestedEvent();
         public abstract string Name { get; }
 
         private readonly List<UIDynamic> _components = new List<UIDynamic>();
@@ -101,6 +106,7 @@ namespace VamTimeline
 
         public virtual void Dispose()
         {
+            OnScreenChangeRequested.RemoveAllListeners();
             Plugin.Animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
 
             _disposing = true;
