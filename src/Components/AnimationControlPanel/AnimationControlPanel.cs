@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -13,6 +14,7 @@ namespace VamTimeline
     {
         private DopeSheet _dopeSheet;
         private Scrubber _scrubber;
+        private AtomAnimation _animation;
 
         public AnimationControlPanel()
         {
@@ -35,6 +37,7 @@ namespace VamTimeline
 
         public void Bind(AtomAnimation animation)
         {
+            _animation = animation;
             _scrubber.animation = animation;
             _dopeSheet.Bind(animation);
         }
@@ -84,23 +87,60 @@ namespace VamTimeline
             container.transform.SetParent(transform, false);
 
             var gridLayout = container.AddComponent<HorizontalLayoutGroup>();
-            gridLayout.spacing = 4f;
+            gridLayout.spacing = 2f;
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            var previousFrame = Instantiate(buttonPrefab);
-            previousFrame.SetParent(container.transform, false);
-            previousFrame.GetComponent<UIDynamicButton>().label = "\u2190 Previous Frame";
-            previousFrame.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => previousFrameJSON.actionCallback());
-            previousFrame.GetComponent<LayoutElement>().preferredWidth = 0;
-            previousFrame.GetComponent<LayoutElement>().flexibleWidth = 50;
+            CreateSmallButton(buttonPrefab, container.transform, "\u00AB", () => previousFrameJSON.actionCallback());
 
-            var nextFrame = Instantiate(buttonPrefab);
-            nextFrame.SetParent(container.transform, false);
-            nextFrame.GetComponent<UIDynamicButton>().label = "Next Frame \u2192";
-            nextFrame.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => nextFrameJSON.actionCallback());
-            nextFrame.GetComponent<LayoutElement>().preferredWidth = 0;
-            nextFrame.GetComponent<LayoutElement>().flexibleWidth = 50;
+            CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
+            {
+                var time = _animation.Time - 1f;
+                if (time < 0) time = 0;
+                _animation.Time = time;
+            });
+
+            CreateSmallButton(buttonPrefab, container.transform, "-.1s", () =>
+            {
+                var time = _animation.Time - 0.1f;
+                if (time < 0) time = 0;
+                _animation.Time = time;
+            });
+
+            CreateSmallButton(buttonPrefab, container.transform, ">|<", () =>
+            {
+                _animation.Time = _animation.Time.Snap(1f);
+            });
+
+            CreateSmallButton(buttonPrefab, container.transform, "+.1s", () =>
+            {
+                var time = _animation.Time + 0.1f;
+                if (time >= _animation.Current.AnimationLength - 0.001f) time = _animation.Current.Loop ? _animation.Current.AnimationLength - 0.1f : _animation.Current.AnimationLength;
+                _animation.Time = time;
+            });
+
+            CreateSmallButton(buttonPrefab, container.transform, "+1s", () =>
+            {
+                var time = _animation.Time + 1f;
+                if (time >= _animation.Current.AnimationLength - 0.001f) time = _animation.Current.Loop ? _animation.Current.AnimationLength - 1f : _animation.Current.AnimationLength;
+                _animation.Time = time;
+            });
+
+            CreateSmallButton(buttonPrefab, container.transform, "\u00BB", () => nextFrameJSON.actionCallback());
+        }
+
+        private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction callback)
+        {
+            var btn = Instantiate(buttonPrefab);
+            btn.SetParent(parent, false);
+            var ui = btn.GetComponent<UIDynamicButton>();
+            ui.label = label;
+            ui.buttonText.fontSize = 27;
+            ui.button.onClick.AddListener(callback);
+            var layoutElement = btn.GetComponent<LayoutElement>();
+            layoutElement.preferredWidth = 0;
+            layoutElement.flexibleWidth = 20;
+            layoutElement.minWidth = 20;
         }
 
         private DopeSheet InitDopeSheet()
