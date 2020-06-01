@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -26,12 +25,24 @@ namespace VamTimeline
         private AtomAnimation _animation;
         private IAtomAnimationClip _clip;
         private int _ms;
+        private bool _locked;
+
+        public bool locked
+        {
+            get
+            {
+                return _locked;
+            }
+            set
+            {
+                _locked = value;
+                _layout.gameObject.SetActive(!value);
+                _scrubberRect.gameObject.SetActive(!value);
+            }
+        }
 
         public DopeSheet()
         {
-            gameObject.AddComponent<Canvas>();
-            gameObject.AddComponent<GraphicRaycaster>();
-
             CreateBackground(gameObject, _style.BackgroundColor);
             CreateLabelsBackground();
 
@@ -421,6 +432,8 @@ namespace VamTimeline
 
         private void OnClick(IAnimationTargetWithCurves target, RectTransform rect, PointerEventData eventData)
         {
+            if(_locked) return;
+
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
@@ -434,6 +447,8 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float time, bool stopped)
         {
+            if(_locked) return;
+
             var ratio = Mathf.Clamp01(time / _clip.AnimationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);

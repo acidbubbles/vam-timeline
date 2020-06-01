@@ -16,6 +16,18 @@ namespace VamTimeline
         private Scrubber _scrubber;
         private AtomAnimation _animation;
 
+        public bool locked
+        {
+            get
+            {
+                return _dopeSheet.enabled;
+            }
+            set
+            {
+                _dopeSheet.locked = value;
+            }
+        }
+
         public AnimationControlPanel()
         {
             gameObject.AddComponent<VerticalLayoutGroup>();

@@ -83,7 +83,7 @@ namespace VamTimeline
         private void ChangeScreen(string screen)
         {
             _currentScreen = screen;
-            _plugin.LockedJSON.valNoCallback = screen == PerformanceScreen.ScreenName;
+            _plugin.LockedJSON.val = screen == PerformanceScreen.ScreenName;
             _screenChanged.Invoke();
             RefreshCurrentUI();
         }
@@ -126,10 +126,17 @@ namespace VamTimeline
 
         public void UpdateLocked(bool isLocked)
         {
-            if (isLocked && _currentScreen != PerformanceScreen.ScreenName)
-                ChangeScreen(PerformanceScreen.ScreenName);
-            if (!isLocked && _currentScreen == PerformanceScreen.ScreenName)
-                ChangeScreen(GetDefaultScreen());
+            if (isLocked)
+            {
+                if (_currentScreen != PerformanceScreen.ScreenName)
+                    ChangeScreen(PerformanceScreen.ScreenName);
+            }
+            else
+            {
+                if (_currentScreen == PerformanceScreen.ScreenName)
+                    ChangeScreen(GetDefaultScreen());
+            }
+            _controlPanel.locked = isLocked;
         }
 
         public void RefreshCurrentUI()

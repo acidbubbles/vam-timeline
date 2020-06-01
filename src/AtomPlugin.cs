@@ -361,6 +361,8 @@ namespace VamTimeline
             LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
             {
                 _ui.UpdateLocked(val);
+                if (_controllerInjectedControlerPanel != null)
+                    _controllerInjectedControlerPanel.locked = val;
             });
             RegisterBool(LockedJSON);
 
