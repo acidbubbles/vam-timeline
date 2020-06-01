@@ -235,6 +235,18 @@ namespace VamTimeline
             }
         }
 
+        public void Enable()
+        {
+            ChangeScreen(GetDefaultScreen());
+        }
+
+        public void Disable()
+        {
+            _current?.Dispose();
+            _current = null;
+            _currentScreen = null;
+        }
+
         public void Dispose()
         {
             _screenChanged.RemoveAllListeners();

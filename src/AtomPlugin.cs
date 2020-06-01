@@ -53,7 +53,7 @@ namespace VamTimeline
 
         // UI
         private ScreensManager _ui;
-        private AnimationControlPanel _controlPanel;
+        private AnimationControlPanel _controllerInjectedControlerPanel;
 
         #region Init
 
@@ -176,7 +176,9 @@ namespace VamTimeline
         {
             try
             {
-                // TODO: Won't re-attach controller panel after disable
+                _ui?.Enable();
+                if (_controllerInjectedControlerPanel == null && Animation != null && containingAtom != null)
+                    BroadcastToControllers(nameof(IAnimationController.VamTimelineAnimationReady));
             }
             catch (Exception exc)
             {
@@ -189,7 +191,7 @@ namespace VamTimeline
             try
             {
                 Animation?.Stop();
-                _ui?.Dispose();
+                _ui?.Disable();
                 DestroyControllerPanel();
             }
             catch (Exception exc)
@@ -203,6 +205,8 @@ namespace VamTimeline
             try
             {
                 Animation?.Dispose();
+                _ui?.Dispose();
+                DestroyControllerPanel();
             }
             catch (Exception exc)
             {
@@ -744,21 +748,21 @@ namespace VamTimeline
 
         public void VamTimelineRequestControlPanelInjection(GameObject container)
         {
-            _controlPanel = container.GetComponent<AnimationControlPanel>();
-            if (_controlPanel == null)
+            _controllerInjectedControlerPanel = container.GetComponent<AnimationControlPanel>();
+            if (_controllerInjectedControlerPanel == null)
             {
-                _controlPanel = container.AddComponent<AnimationControlPanel>();
-                _controlPanel.Bind(this);
+                _controllerInjectedControlerPanel = container.AddComponent<AnimationControlPanel>();
+                _controllerInjectedControlerPanel.Bind(this);
             }
-            _controlPanel.Bind(Animation);
+            _controllerInjectedControlerPanel.Bind(Animation);
         }
 
         private void DestroyControllerPanel()
         {
-            if (_controlPanel == null) return;
-            _controlPanel.gameObject.transform.SetParent(null, false);
-            Destroy(_controlPanel.gameObject);
-            _controlPanel = null;
+            if (_controllerInjectedControlerPanel == null) return;
+            _controllerInjectedControlerPanel.gameObject.transform.SetParent(null, false);
+            Destroy(_controllerInjectedControlerPanel.gameObject);
+            _controllerInjectedControlerPanel = null;
         }
 
         #endregion
