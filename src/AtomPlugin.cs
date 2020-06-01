@@ -34,7 +34,6 @@ namespace VamTimeline
 
         // Storables
         public JSONStorableStringChooser AnimationJSON { get; private set; }
-        public JSONStorableStringChooser AnimationDisplayJSON { get; private set; }
         public JSONStorableAction NextAnimationJSON { get; private set; }
         public JSONStorableAction PreviousAnimationJSON { get; private set; }
         public JSONStorableFloat ScrubberJSON { get; private set; }
@@ -226,12 +225,6 @@ namespace VamTimeline
 
         public void InitStorables()
         {
-            AnimationDisplayJSON = new JSONStorableStringChooser(StorableNames.AnimationDisplay, new List<string>(), "", "Animation", val => ChangeAnimation(val))
-            {
-                isStorable = false
-            };
-            RegisterStringChooser(AnimationDisplayJSON);
-
             AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
             {
                 isStorable = false
@@ -524,9 +517,6 @@ namespace VamTimeline
                 // Update UI
                 ScrubberJSON.valNoCallback = time;
                 TimeJSON.valNoCallback = time;
-                SpeedJSON.valNoCallback = Animation.Speed;
-                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
                 BroadcastToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             }
@@ -574,6 +564,7 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
+            AnimationJSON.valNoCallback = Animation.Current.AnimationName;
             OnAnimationParametersChanged();
         }
 
@@ -587,10 +578,8 @@ namespace VamTimeline
                 TimeJSON.max = Animation.Current.AnimationLength;
                 TimeJSON.valNoCallback = Animation.Time;
                 SpeedJSON.valNoCallback = Animation.Speed;
-                AnimationJSON.choices = Animation.GetAnimationNames().ToList();
-                AnimationDisplayJSON.choices = AnimationJSON.choices;
+                AnimationJSON.choices = Animation.GetAnimationNames();
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                AnimationDisplayJSON.valNoCallback = Animation.IsPlaying() ? StorableNames.PlayingAnimationName : Animation.Current.AnimationName;
 
                 BroadcastToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
 
@@ -627,15 +616,7 @@ namespace VamTimeline
             try
             {
                 AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                if (Animation.IsPlaying())
-                {
-                    AnimationDisplayJSON.valNoCallback = StorableNames.PlayingAnimationName;
-                    if (Animation.Current.AnimationName != animationName)
-                    {
-                        Animation.ChangeAnimation(animationName);
-                    }
-                }
-                else
+                if (Animation.Current.AnimationName != animationName)
                 {
                     Animation.ChangeAnimation(animationName);
                 }

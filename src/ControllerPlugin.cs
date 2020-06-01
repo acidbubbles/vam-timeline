@@ -332,16 +332,16 @@ namespace VamTimeline
 
         public void OnTimelineAnimationParametersChanged(string uid)
         {
-            OnTimelineTimeChanged(uid);
-
             if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                 return;
+
+            OnTimelineTimeChanged(uid);
 
             var remoteScrubber = _mainLinkedAnimation.Scrubber;
             _scrubberJSON.max = remoteScrubber.max;
             _scrubberJSON.valNoCallback = remoteScrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
-            _animationJSON.valNoCallback = _mainLinkedAnimation.AnimationDisplay.val;
+            _animationJSON.valNoCallback = _mainLinkedAnimation.Animation.val;
             _lockedJSON.valNoCallback = _mainLinkedAnimation.Locked.val;
         }
 
@@ -355,12 +355,9 @@ namespace VamTimeline
                 if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
                     return;
 
-                _scrubberJSON.max = _mainLinkedAnimation.Scrubber.max;
-
                 var animationName = _mainLinkedAnimation.Animation.val;
                 var isPlaying = _mainLinkedAnimation.IsPlaying.val;
                 var time = _mainLinkedAnimation.Time.val;
-                _animationJSON.valNoCallback = isPlaying ? StorableNames.PlayingAnimationName : animationName;
 
                 foreach (var slave in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
                 {

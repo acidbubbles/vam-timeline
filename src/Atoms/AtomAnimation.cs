@@ -159,9 +159,12 @@ namespace VamTimeline
             return false;
         }
 
-        public IEnumerable<string> GetAnimationNames()
+        public List<string> GetAnimationNames()
         {
-            return Clips.Select(c => c.AnimationName);
+            var clipNames = new List<string>(Clips.Count);
+            for (var i = 0; i < Clips.Count; i++)
+                clipNames.Add(Clips[i].AnimationName);
+            return clipNames;
         }
 
         protected string GetNewAnimationName()

@@ -90,7 +90,7 @@ namespace VamTimeline
 
         protected void InitAnimationSelectorUI(bool rightSide)
         {
-            var animationUI = _plugin.CreateScrollablePopup(_plugin.AnimationDisplayJSON, rightSide);
+            var animationUI = _plugin.CreateScrollablePopup(_plugin.AnimationJSON, rightSide);
             animationUI.label = "Animation";
             animationUI.popupPanelHeight = 800f;
         }

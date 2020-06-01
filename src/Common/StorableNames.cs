@@ -9,7 +9,6 @@ namespace VamTimeline
     public static class StorableNames
     {
         public const string AllTargets = "(All)";
-        public const string PlayingAnimationName = "(Playing...)";
 
         // Animation
         public const string Animation = "Animation";
