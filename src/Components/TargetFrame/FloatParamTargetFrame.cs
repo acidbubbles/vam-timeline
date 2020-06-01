@@ -72,7 +72,7 @@ namespace VamTimeline
             {
                 Target.FloatParam.val = Target.FloatParam.min + val * (Target.FloatParam.max - Target.FloatParam.min);
                 Plugin.Animation.SetKeyframe(Target, Plugin.Animation.Time, Target.FloatParam.val);
-                SetTime(-1, true);
+                SetTime(Plugin.Animation.Time, true);
                 ToggleKeyframe(true);
             });
         }
@@ -86,7 +86,7 @@ namespace VamTimeline
                 ValueText.text = Target.FloatParam.val.ToString("0.00");
             }
 
-            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((Target.FloatParam.min + Target.FloatParam.val) / (Target.FloatParam.max - Target.FloatParam.min)), 1f);
+            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-Target.FloatParam.min + Target.FloatParam.val) / (Target.FloatParam.max - Target.FloatParam.min)), 1f);
         }
 
         public override void ToggleKeyframe(bool enable)
