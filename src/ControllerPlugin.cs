@@ -244,6 +244,8 @@ namespace VamTimeline
                 _ui.CreateUIPopupInCanvas(_atomsJSON, x, y + 0.355f);
                 _ui.CreateUIPopupInCanvas(_animationJSON, x, y + 0.425f);
                 _controlPanelSpacer = _ui.CreateUISpacerInCanvas(x, y + 0.375f, 780f);
+                if (_mainLinkedAnimation != null)
+                    RequestControlPanelInjection();
             }
             catch (Exception exc)
             {
