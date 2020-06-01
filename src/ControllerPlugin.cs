@@ -525,7 +525,7 @@ namespace VamTimeline
             var rect = _controlPanelContainer.AddComponent<RectTransform>();
             rect.StretchParent();
 
-            _mainLinkedAnimation.Storable.gameObject.BroadcastMessage(nameof(IAnimatedAtom.VamTimelineRequestControlPanelInjection), _controlPanelContainer);
+            _mainLinkedAnimation.Storable.SendMessage(nameof(IAnimatedAtom.VamTimelineRequestControlPanelInjection), _controlPanelContainer);
         }
 
         private void DestroyControlPanelContainer()
