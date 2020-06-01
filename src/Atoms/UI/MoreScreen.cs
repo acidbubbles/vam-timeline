@@ -20,8 +20,23 @@ namespace VamTimeline
         {
             base.Init();
 
+            // Right side
+
+            InitSpeedUI(true);
+
+            CreateSpacer(true);
+
+            CreateChangeScreenButton("Edit Animation...", SettingsScreen.ScreenName, true);
             CreateChangeScreenButton("Settings...", SettingsScreen.ScreenName, true);
             CreateChangeScreenButton("Advanced...", AdvancedScreen.ScreenName, true);
+        }
+
+        private void InitSpeedUI(bool rightSide)
+        {
+            RegisterStorable(Plugin.SpeedJSON);
+            var speedUI = Plugin.CreateSlider(Plugin.SpeedJSON, rightSide);
+            speedUI.valueFormat = "F3";
+            RegisterComponent(speedUI);
         }
     }
 }

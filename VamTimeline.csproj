@@ -111,6 +111,7 @@
     <Compile Include="src/Atoms/UI/ScreenBase.cs" />
     <Compile Include="src/Atoms/UI/PerformanceScreen.cs" />
     <Compile Include="src/Atoms/UI/SettingsScreen.cs" />
+    <Compile Include="src/Atoms/UI/AnimationScreen.cs" />
     <Compile Include="src/Atoms/UI/TargetsScreen.cs" />
     <Compile Include="src/Atoms/UI/EditScreen.cs" />
     <Compile Include="src/Atoms/UI/BulkScreen.cs" />

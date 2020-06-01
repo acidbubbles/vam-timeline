@@ -204,6 +204,9 @@ namespace VamTimeline
                 case MoreScreen.ScreenName:
                     _current = new MoreScreen(_plugin);
                     break;
+                case AnimationScreen.ScreenName:
+                    _current = new AnimationScreen(_plugin);
+                    break;
                 case PerformanceScreen.ScreenName:
                     _current = new PerformanceScreen(_plugin);
                     break;

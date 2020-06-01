@@ -23,6 +23,8 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\EditScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\PerformanceScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\SettingsScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\AnimationScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\MoreScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\TargetsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\WelcomeScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\ScreensManager.cs",
