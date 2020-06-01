@@ -101,7 +101,6 @@ namespace VamTimeline
             }
             if (enable)
             {
-                // TODO: This will create the keyframe but will not show up in the dope sheet nor check the toggle
                 Plugin.Animation.SetKeyframe(Target, time, Target.FloatParam.val);
             }
             else

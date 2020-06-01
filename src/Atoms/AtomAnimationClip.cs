@@ -29,8 +29,7 @@ namespace VamTimeline
 
         public UnityEvent TargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent TargetsListChanged { get; } = new UnityEvent();
-        // TODO: We want to deprecate this (this includes everything except changing the targets list)
-        public UnityEvent AnimationModified { get; } = new UnityEvent();
+        public UnityEvent AnimationKeyframesModified { get; } = new UnityEvent();
         public UnityEvent AnimationSettingsModified { get; } = new UnityEvent();
         public AnimationClip Clip { get; }
         public AnimationPattern AnimationPattern
@@ -209,7 +208,7 @@ namespace VamTimeline
 
         private void OnAnimationModified()
         {
-            AnimationModified.Invoke();
+            AnimationKeyframesModified.Invoke();
         }
 
         public void Remove(FreeControllerV3 controller)
@@ -488,7 +487,7 @@ namespace VamTimeline
         public void Dispose()
         {
             TargetsSelectionChanged.RemoveAllListeners();
-            AnimationModified.RemoveAllListeners();
+            AnimationKeyframesModified.RemoveAllListeners();
             AnimationSettingsModified.RemoveAllListeners();
             foreach (var target in AllTargets)
             {

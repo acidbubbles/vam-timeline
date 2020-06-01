@@ -128,7 +128,7 @@ namespace VamTimeline
         public void AddClip(AtomAnimationClip clip)
         {
             clip.AnimationSettingsModified.AddListener(OnAnimationSettingsModified);
-            clip.AnimationModified.AddListener(OnAnimationModified);
+            clip.AnimationKeyframesModified.AddListener(OnAnimationModified);
             clip.TargetsListChanged.AddListener(OnAnimationModified);
             Clips.Add(clip);
             ClipsListChanged.Invoke();

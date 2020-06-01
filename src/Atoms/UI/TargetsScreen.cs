@@ -205,7 +205,6 @@ namespace VamTimeline
         {
             ClearRemoveToggles();
 
-            // TODO: Replace those toggle by a clearer "delete" setting.
             foreach (var target in Current.TargetControllers)
             {
                 UIDynamicToggle jsbUI = null;

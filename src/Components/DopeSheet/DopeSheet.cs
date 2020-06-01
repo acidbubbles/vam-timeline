@@ -236,7 +236,7 @@ namespace VamTimeline
             }
             _scrubberRect.gameObject.SetActive(any);
             _clip.TargetsListChanged.AddListener(OnTargetsListChanged);
-            _clip.AnimationModified.AddListener(OnAnimationModified);
+            _clip.AnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
         }
 
         private void OnTargetsListChanged()
@@ -246,9 +246,8 @@ namespace VamTimeline
             BindClip(clip);
         }
 
-        private void OnAnimationModified()
+        private void OnAnimationKeyframesModified()
         {
-            // TODO: This doesn't work
             foreach (var keyframe in _keyframesRows)
                 keyframe.SetVerticesDirty();
         }
@@ -256,7 +255,7 @@ namespace VamTimeline
         private void UnbindClip()
         {
             _clip.TargetsListChanged.RemoveListener(OnTargetsListChanged);
-            _clip.AnimationModified.RemoveListener(OnAnimationModified);
+            _clip.AnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
             _keyframesRows.Clear();
             while (_layout.transform.childCount > 0)
             {
@@ -387,7 +386,7 @@ namespace VamTimeline
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
                 _keyframesRows.Add(keyframes);
-                // TODO: Bind on a curve instead, we don't need ALL frames. Also, refresh the curve when modified (keyframe.RefreshCurve())
+                // TODO: We could optimize here by using the AnimationCurve directly, avoiding a copy.
                 keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
                 keyframes.SetTime(_ms);
                 keyframes.style = _style;

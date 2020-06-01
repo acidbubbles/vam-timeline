@@ -111,7 +111,6 @@ github.com/acidbubbles/vam-timeline
 
         private void RefreshCurves()
         {
-            // TODO: Listen internally
             if (_curves == null) return;
             var targets = Current.GetAllOrSelectedTargets().ToList();
             if (targets.Count == 1)
