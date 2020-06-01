@@ -58,11 +58,12 @@ namespace VamTimeline
             var text = pasteUI.GetComponentInChildren<Text>();
         }
 
-        protected void CreateSpacer(bool rightSide)
+        protected UIDynamic CreateSpacer(bool rightSide)
         {
             var spacerUI = Plugin.CreateSpacer(rightSide);
             spacerUI.height = 30f;
             RegisterComponent(spacerUI);
+            return spacerUI;
         }
 
         protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide, bool register = true)

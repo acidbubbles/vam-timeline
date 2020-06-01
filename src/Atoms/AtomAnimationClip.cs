@@ -221,8 +221,10 @@ namespace VamTimeline
             TargetsListChanged.Invoke();
         }
 
-        public void Remove(FloatParamAnimationTarget target)
+        public void Remove(JSONStorable storable, JSONStorableFloat jsf)
         {
+            var target = TargetFloatParams.FirstOrDefault(c => c.Storable == storable && c.FloatParam == jsf);
+            if (target == null) return;
             TargetFloatParams.Remove(target);
             target.Dispose();
             TargetsListChanged.Invoke();

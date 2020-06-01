@@ -349,7 +349,7 @@ namespace VamTimeline
                     if (target == null)
                     {
                         if (!all) continue;
-                        target = Plugin.Animation.Add(fc);
+                        target = Plugin.Animation.Current.Add(fc);
                     }
                     Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
                 }
@@ -454,7 +454,7 @@ namespace VamTimeline
                     if (mot.clip.clipLength <= 0.001) continue;
                     ctrl = mot.controller;
                     Current.Remove(ctrl);
-                    target = Plugin.Animation.Add(ctrl);
+                    target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(t => t.Controller == ctrl) ?? Plugin.Animation.Current.Add(ctrl);
                     target.StartBulkUpdates();
                     if (mot.clip.clipLength > Current.AnimationLength)
                         Current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());

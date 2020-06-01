@@ -54,21 +54,34 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            if (Plugin.Animation.Clips.Count > 1)
-            {
-                // TODO: Show/hide this button if we do have a problem.
-                // TODO: We can also simply make sure to ALWAYS add targets for every animation clip.
-                var enableAllTargetsUI = Plugin.CreateButton("Add All Other Animations' Targets", true);
-                enableAllTargetsUI.button.onClick.AddListener(() => EnableAllTargets());
-                enableAllTargetsUI.buttonColor = Color.yellow;
-                RegisterComponent(enableAllTargetsUI);
-
-                CreateSpacer(true);
-            }
+            InitFixMissingUI();
 
             GenerateRemoveToggles();
         }
 
+        private void InitFixMissingUI()
+        {
+            if (Plugin.Animation.Clips.Count <= 1) return;
+
+            var clipList = Current.AllTargets.Select(t => t.Name).OrderBy(x => x);
+            var otherList = Plugin.Animation.Clips.Where(c => c != Current).SelectMany(c => c.AllTargets).Select(t => t.Name).OrderBy(x => x).Distinct();
+            var ok = clipList.SequenceEqual(otherList);
+            if (ok) return;
+
+            UIDynamicButton enableAllTargetsUI = null;
+            UIDynamic spacerUI = null;
+            enableAllTargetsUI = Plugin.CreateButton("Add All Other Animations' Targets", true);
+            enableAllTargetsUI.button.onClick.AddListener(() =>
+            {
+                EnableAllTargets();
+                Plugin.RemoveButton(enableAllTargetsUI);
+                Plugin.RemoveSpacer(spacerUI);
+            });
+            enableAllTargetsUI.buttonColor = Color.yellow;
+            RegisterComponent(enableAllTargetsUI);
+
+            spacerUI = CreateSpacer(true);
+        }
 
         private void InitControllersUI()
         {
@@ -163,7 +176,7 @@ namespace VamTimeline
             {
                 UIDynamicToggle jsbUI = null;
                 JSONStorableBool jsb = null;
-                jsb = new JSONStorableBool(target.Name, true, (bool val) =>
+                jsb = new JSONStorableBool($"Remove {target.Name}", true, (bool val) =>
                 {
                     _addControllerListJSON.val = target.Name;
                     RemoveAnimatedController(target);
@@ -172,13 +185,15 @@ namespace VamTimeline
                     _removeToggles.Remove(jsb);
                 });
                 jsbUI = Plugin.CreateToggle(jsb, true);
+                jsbUI.backgroundColor = Color.red;
+                jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
             }
             foreach (var target in Current.TargetFloatParams)
             {
                 UIDynamicToggle jsbUI = null;
                 JSONStorableBool jsb = null;
-                jsb = new JSONStorableBool(target.Name, true, (bool val) =>
+                jsb = new JSONStorableBool($"Remove {target.Name}", true, (bool val) =>
                 {
                     _addStorableListJSON.val = target.Storable.name;
                     _addParamListJSON.val = target.FloatParam.name;
@@ -188,6 +203,8 @@ namespace VamTimeline
                     _removeToggles.Remove(jsb);
                 });
                 jsbUI = Plugin.CreateToggle(jsb, true);
+                jsbUI.backgroundColor = Color.red;
+                jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
             }
             // Ensures shows on top
@@ -280,7 +297,18 @@ namespace VamTimeline
 
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
-                Plugin.Animation.Add(controller);
+
+                foreach (var clip in Plugin.Animation.Clips)
+                {
+                    var added = clip.Add(controller);
+                    if (added != null)
+                    {
+                        added.SetKeyframeToCurrentTransform(0f);
+                        added.SetKeyframeToCurrentTransform(clip.AnimationLength);
+                        if (!clip.Loop)
+                            added.ChangeCurve(clip.AnimationLength, CurveTypeValues.CopyPrevious);
+                    }
+                }
             }
             catch (Exception exc)
             {
@@ -311,7 +339,15 @@ namespace VamTimeline
                     return;
                 }
 
-                Plugin.Animation.Add(storable, sourceFloatParam);
+                foreach (var clip in Plugin.Animation.Clips)
+                {
+                    var added = clip.Add(storable, sourceFloatParam);
+                    if (added != null)
+                    {
+                        added.SetKeyframe(0f, sourceFloatParam.val);
+                        added.SetKeyframe(clip.AnimationLength, sourceFloatParam.val);
+                    }
+                }
             }
             catch (Exception exc)
             {
@@ -323,7 +359,8 @@ namespace VamTimeline
         {
             try
             {
-                Current.Remove(target.Controller);
+                foreach (var clip in Plugin.Animation.Clips)
+                    clip.Remove(target.Controller);
             }
             catch (Exception exc)
             {
@@ -335,7 +372,8 @@ namespace VamTimeline
         {
             try
             {
-                Current.Remove(target);
+                foreach (var clip in Plugin.Animation.Clips)
+                    clip.Remove(target.Storable, target.FloatParam);
             }
             catch (Exception exc)
             {

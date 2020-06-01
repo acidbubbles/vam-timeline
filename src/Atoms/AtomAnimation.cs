@@ -174,30 +174,6 @@ namespace VamTimeline
             return Guid.NewGuid().ToString();
         }
 
-        public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
-        {
-            var added = Current.Add(controller);
-            if (added != null)
-            {
-                added.SetKeyframeToCurrentTransform(0f);
-                added.SetKeyframeToCurrentTransform(Current.AnimationLength);
-                if (!Current.Loop)
-                    added.ChangeCurve(Current.AnimationLength, CurveTypeValues.CopyPrevious);
-            }
-            return added;
-        }
-
-        public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
-        {
-            var added = Current.Add(storable, jsf);
-            if (added != null)
-            {
-                added.SetKeyframe(0f, jsf.val);
-                added.SetKeyframe(Current.AnimationLength, jsf.val);
-            }
-            return added;
-        }
-
         public void SetKeyframe(FloatParamAnimationTarget target, float time, float val)
         {
             time = time.Snap();
