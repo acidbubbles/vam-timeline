@@ -1,3 +1,5 @@
+using System;
+
 namespace VamTimeline
 {
     /// <summary>
@@ -27,7 +29,17 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
+            CreateSnap(true);
+
             CreateInterpolation(true);
+        }
+
+        private void CreateSnap(bool rightSide)
+        {
+            RegisterStorable(Plugin.SnapJSON);
+            var snapUI = Plugin.CreateSlider(Plugin.SnapJSON, rightSide);
+            snapUI.valueFormat = "F3";
+            RegisterComponent(snapUI);
         }
 
         private void CreateInterpolation(bool v)

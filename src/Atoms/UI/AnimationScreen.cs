@@ -93,10 +93,6 @@ namespace VamTimeline
             var lengthUI = Plugin.CreateSlider(_lengthJSON, rightSide);
             lengthUI.valueFormat = "F3";
             RegisterComponent(lengthUI);
-            RegisterStorable(Plugin.SnapJSON);
-            var snapUI = Plugin.CreateSlider(Plugin.SnapJSON);
-            snapUI.valueFormat = "F3";
-            RegisterComponent(snapUI);
 
             var addAnimationFromCurrentFrameUI = Plugin.CreateButton("Create Animation From Current Frame", rightSide);
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());

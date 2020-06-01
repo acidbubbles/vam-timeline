@@ -26,7 +26,7 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            CreateChangeScreenButton("Edit Animation...", SettingsScreen.ScreenName, true);
+            CreateChangeScreenButton("Edit Animation...", AnimationScreen.ScreenName, true);
             CreateChangeScreenButton("Settings...", SettingsScreen.ScreenName, true);
             CreateChangeScreenButton("Advanced...", AdvancedScreen.ScreenName, true);
         }
