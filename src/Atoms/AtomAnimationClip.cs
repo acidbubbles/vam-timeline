@@ -311,6 +311,14 @@ namespace VamTimeline
             return result.Count > 0 ? result : AllTargets;
         }
 
+        public IEnumerable<IAnimationTargetWithCurves> GetSelectedTargets()
+        {
+            return AllTargets
+                .Where(t => t.Selected)
+                .Cast<IAnimationTargetWithCurves>()
+                .ToList();
+        }
+
         public void StretchLength(float value)
         {
             if (value == AnimationLength)

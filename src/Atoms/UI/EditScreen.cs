@@ -49,9 +49,9 @@ namespace VamTimeline
 
             // Left side
 
-            InitCurvesUI(false);
-
             InitChangeCurveTypeUI(false);
+
+            InitCurvesUI(false);
 
             InitClipboardUI(false);
 
@@ -72,7 +72,7 @@ namespace VamTimeline
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
             _curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
-            _curveTypeUI.popupPanelHeight = 310f;
+            _curveTypeUI.popupPanelHeight = 500f;
             RegisterComponent(_curveTypeUI);
         }
 
@@ -104,11 +104,7 @@ namespace VamTimeline
         private void RefreshCurves()
         {
             if (_curves == null) return;
-            var targets = Current.GetAllOrSelectedTargets().ToList();
-            if (targets.Count == 1)
-                _curves.Bind(Plugin.Animation, targets[0]);
-            else
-                _curves.Bind(Plugin.Animation, null);
+            _curves.Bind(Plugin.Animation, Current.GetSelectedTargets().ToList());
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +20,7 @@ namespace VamTimeline
         private readonly CurvesLines _lines;
         private float _animationLength;
         private AtomAnimation _animation;
-        private IAnimationTargetWithCurves _target;
+        private IList<IAnimationTargetWithCurves> _targets;
         private float _time;
 
         public Curves()
@@ -114,22 +115,28 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(AtomAnimation animation, IAnimationTargetWithCurves target)
+        public void Bind(AtomAnimation animation, IList<IAnimationTargetWithCurves> targets)
         {
             Unbind();
 
             _animation = animation;
-            if (target != null)
+            if ((targets?.Count ?? 0) > 0)
             {
-                _target = target;
-                _target.AnimationKeyframesModified.AddListener(OnAnimationCurveModified);
-                BindCurves();
+                _targets = targets;
+                _lines.ClearCurves();
+                foreach (var target in targets)
+                {
+                    target.AnimationKeyframesModified.AddListener(OnAnimationCurveModified);
+                    BindCurves(target);
+                }
+                _lines.SetVerticesDirty();
                 _noCurves.SetActive(false);
                 _scrubberRect.gameObject.SetActive(true);
                 _time = -1f;
             }
             else
             {
+                _targets = null;
                 _animationLength = 0f;
                 _noCurves.SetActive(true);
                 _scrubberRect.gameObject.SetActive(false);
@@ -141,15 +148,14 @@ namespace VamTimeline
             _lines.SetVerticesDirty();
         }
 
-        private void BindCurves()
+        private void BindCurves(IAnimationTargetWithCurves target)
         {
-            _lines.ClearCurves();
-            var lead = _target.GetLeadCurve();
+            var lead = target.GetLeadCurve();
             if (lead.length < 2) return;
             _animationLength = lead[lead.length - 1].time;
-            if (_target is FreeControllerAnimationTarget)
+            if (target is FreeControllerAnimationTarget)
             {
-                var targetController = (FreeControllerAnimationTarget)_target;
+                var targetController = (FreeControllerAnimationTarget)target;
 
                 // To display rotation, we have to build custom curves. But it's not that useful.
                 // var rotVX = new Keyframe[targetController.RotX.length];
@@ -176,19 +182,19 @@ namespace VamTimeline
                 // _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), new AnimationCurve(rotVY));
                 // _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), new AnimationCurve(rotVZ));
 
-                _lines.range = EstimateRange(targetController.X, targetController.Y, targetController.Z);
+                var range = EstimateRange(targetController.X, targetController.Y, targetController.Z);
+                _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
                 _lines.AddCurve(Color.red, targetController.X);
                 _lines.AddCurve(Color.green, targetController.Y);
                 _lines.AddCurve(Color.blue, targetController.Z);
             }
-            else if (_target is FloatParamAnimationTarget)
+            else if (target is FloatParamAnimationTarget)
             {
-                var targetParam = (FloatParamAnimationTarget)_target;
-                _lines.range = EstimateRange(targetParam.Value);
+                var targetParam = (FloatParamAnimationTarget)target;
+                var range = EstimateRange(targetParam.Value);
+                _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
                 _lines.AddCurve(Color.white, targetParam.Value);
             }
-
-            _lines.SetVerticesDirty();
         }
 
         private Vector2 EstimateRange(params AnimationCurve[] curves)
@@ -214,12 +220,13 @@ namespace VamTimeline
 
         private void Unbind()
         {
-            if (_target != null)
+            if (_targets != null)
             {
                 _lines.ClearCurves();
-                _target.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+                foreach (var target in _targets)
+                    target.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
                 _animation = null;
-                _target = null;
+                _targets = null;
                 _lines.SetVerticesDirty();
             }
         }
@@ -234,7 +241,7 @@ namespace VamTimeline
             // Allow curve refresh;
             yield return 0;
             yield return 0;
-            if (_target != null)
+            if (_targets != null)
                 DrawCurveLines();
         }
 
@@ -251,7 +258,11 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            _target?.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+            if (_targets != null)
+            {
+                foreach (var target in _targets)
+                    target.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+            }
         }
     }
 }

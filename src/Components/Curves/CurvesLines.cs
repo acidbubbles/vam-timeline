@@ -20,6 +20,7 @@ namespace VamTimeline
         public void ClearCurves()
         {
             _curves.Clear();
+            range = Vector2.zero;
         }
 
         public void AddCurve(Color color, AnimationCurve curve)
