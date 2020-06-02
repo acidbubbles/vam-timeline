@@ -15,6 +15,9 @@ namespace VamTimeline
     public class EditScreen : ScreenBase
     {
         public const string ScreenName = "Edit";
+        private const string _noKeyframeCurveType = "(No Keyframe)";
+        private const string _loopCurveType = "(Loop)";
+
         public override string Name => ScreenName;
 
         private class TargetRef
@@ -146,7 +149,7 @@ namespace VamTimeline
             var time = Plugin.Animation.Time.Snap();
             if (Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Current.AnimationLength)))
             {
-                _curveTypeJSON.valNoCallback = "(Loop)";
+                _curveTypeJSON.valNoCallback = _loopCurveType;
                 return;
             }
             var ms = time.ToMilliseconds();
@@ -158,7 +161,7 @@ namespace VamTimeline
                 curveTypes.Add(v.CurveType);
             }
             if (curveTypes.Count == 0)
-                _curveTypeJSON.valNoCallback = "(No Keyframe)";
+                _curveTypeJSON.valNoCallback = _noKeyframeCurveType;
             else if (curveTypes.Count == 1)
                 _curveTypeJSON.valNoCallback = curveTypes.First().ToString();
             else
@@ -242,6 +245,7 @@ namespace VamTimeline
                 return;
             }
             Current.ChangeCurve(time, curveType);
+            RefreshCurrentCurveType();
         }
     }
 }

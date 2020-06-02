@@ -37,13 +37,11 @@ namespace VamTimeline
             }
             set
             {
-                if(value == true && stuff) throw new Exception("Hey");
                 _dirty = value;
                 if (value && !_bulk)
                     AnimationKeyframesModified.Invoke();
             }
         }
-        public static bool stuff = false;
 
         public void StartBulkUpdates()
         {
