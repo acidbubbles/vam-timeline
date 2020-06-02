@@ -20,7 +20,7 @@ namespace VamTimeline
         private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _addStorableListJSON;
         private JSONStorableStringChooser _addParamListJSON;
-        private UIDynamicPopup _addFloatParamListUI;
+        private UIDynamicPopup _addStorableListUI;
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
@@ -149,9 +149,10 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addStorableListJSON);
-            _addFloatParamListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
-            _addFloatParamListUI.popupPanelHeight = 700f;
-            RegisterComponent(_addFloatParamListUI);
+            _addStorableListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
+            _addStorableListUI.popupPanelHeight = 700f;
+            _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
+            RegisterComponent(_addStorableListUI);
 
             _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param")
             {
@@ -169,6 +170,11 @@ namespace VamTimeline
 
             RefreshStorableFloatsList();
             _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
+        }
+
+        private void RefreshStorablesList()
+        {
+            _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
         }
 
         private IEnumerable<string> GetStorablesWithFloatParams()
