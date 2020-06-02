@@ -504,7 +504,7 @@ namespace VamTimeline
             Animation.ClipsListChanged.AddListener(OnAnimationParametersChanged);
 
             OnAnimationParametersChanged();
-            Animation.Sample();
+            SampleAfterRebuild();
 
             _ui.Bind(Animation);
 
@@ -705,7 +705,7 @@ namespace VamTimeline
                 {
                     Animation.Current.Paste(Animation.Time + entry.Time - timeOffset, entry);
                 }
-                Animation.Sample();
+                SampleAfterRebuild();
             }
             catch (Exception exc)
             {
