@@ -65,6 +65,7 @@ namespace VamTimeline
         {
             RefreshControllersList();
             RefreshStorableFloatsList();
+            _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
             GenerateRemoveToggles();
         }
 
@@ -139,7 +140,11 @@ namespace VamTimeline
         private void InitFloatParamsUI()
         {
             var storables = GetStorablesWithFloatParams().ToList();
-            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) => RefreshStorableFloatsList())
+            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) =>
+            {
+                RefreshStorableFloatsList();
+                _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
+            })
             {
                 isStorable = false
             };
@@ -154,6 +159,7 @@ namespace VamTimeline
             };
             RegisterStorable(_addParamListJSON);
             _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
+            _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
             RegisterComponent(_addParamListUI);
 
@@ -162,6 +168,7 @@ namespace VamTimeline
             RegisterComponent(_toggleFloatParamUI);
 
             RefreshStorableFloatsList();
+            _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
         }
 
         private IEnumerable<string> GetStorablesWithFloatParams()
@@ -183,7 +190,6 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(_addStorableListJSON.val))
             {
                 _addParamListJSON.choices = new List<string>();
-                _addParamListJSON.valNoCallback = "";
                 return;
             }
 
@@ -192,13 +198,11 @@ namespace VamTimeline
             if (storable == null)
             {
                 _addParamListJSON.choices = new List<string>();
-                _addParamListJSON.valNoCallback = "";
                 return;
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
             _addParamListJSON.choices = values.Where(v => !Current.TargetFloatParams.Any(t => t.Storable == storable && t.FloatParam.name == v)).OrderBy(v => v).ToList();
-            _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
         }
 
         private void GenerateRemoveToggles()
@@ -436,6 +440,7 @@ namespace VamTimeline
 
         public override void Dispose()
         {
+            if (_addParamListUI != null) _addParamListUI.popup.onOpenPopupHandlers -= RefreshStorableFloatsList;
             Current.TargetsListChanged.RemoveListener(OnTargetsListChanged);
             ClearRemoveToggles();
             base.Dispose();
