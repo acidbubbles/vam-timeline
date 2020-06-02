@@ -332,6 +332,13 @@ namespace VamTimeline
 
         #endregion
 
+        public bool TargetsSameAs(IAnimationTargetWithCurves target)
+        {
+            var t = target as FreeControllerAnimationTarget;
+            if (t == null) return false;
+            return t.Controller == Controller;
+        }
+
         public class Comparer : IComparer<FreeControllerAnimationTarget>
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)

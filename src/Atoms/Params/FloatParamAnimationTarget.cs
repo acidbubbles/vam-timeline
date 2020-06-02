@@ -66,6 +66,13 @@ namespace VamTimeline
             return keyframes;
         }
 
+        public bool TargetsSameAs(IAnimationTargetWithCurves target)
+        {
+            var t = target as FloatParamAnimationTarget;
+            if (t == null) return false;
+            return t.Storable == Storable && t.FloatParam == FloatParam;
+        }
+
         public class Comparer : IComparer<FloatParamAnimationTarget>
         {
             public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)

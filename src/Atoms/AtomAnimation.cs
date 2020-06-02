@@ -130,8 +130,22 @@ namespace VamTimeline
             clip.AnimationSettingsModified.AddListener(OnAnimationSettingsModified);
             clip.AnimationKeyframesModified.AddListener(OnAnimationModified);
             clip.TargetsListChanged.AddListener(OnAnimationModified);
+            clip.TargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             Clips.Add(clip);
             ClipsListChanged.Invoke();
+        }
+
+        private void OnTargetsSelectionChanged()
+        {
+            foreach (var target in Current.AllTargets)
+            {
+                foreach (var clip in Clips.Where(c => c != Current))
+                {
+                    var t = clip.AllTargets.FirstOrDefault(x => x.TargetsSameAs(target));
+                    if (t == null) continue;
+                    t.Selected = target.Selected;
+                }
+            }
         }
 
         public void RemoveClip(AtomAnimationClip clip)
