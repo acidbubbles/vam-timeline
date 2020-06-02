@@ -103,7 +103,7 @@ namespace VamTimeline
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            CreateSmallButton(buttonPrefab, container.transform, "\u00AB", () => previousFrameJSON.actionCallback());
+            CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () => previousFrameJSON.actionCallback());
 
             CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
             {
@@ -138,7 +138,7 @@ namespace VamTimeline
                 _animation.Time = time;
             });
 
-            CreateSmallButton(buttonPrefab, container.transform, "\u00BB", () => nextFrameJSON.actionCallback());
+            CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () => nextFrameJSON.actionCallback());
         }
 
         private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction callback)
