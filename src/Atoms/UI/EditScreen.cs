@@ -89,23 +89,10 @@ namespace VamTimeline
 
         private void InitExplanation()
         {
-            var textJSON = new JSONStorableString("Help", @"
-<b>Welcome to Timeline!</b>
-
-This plugin allows for advanced keyframe-based editing.
-
-Documentation available at:
-github.com/acidbubbles/vam-timeline
-
-<b>The basics</b>
-
-- Select what to animate <i>(Targets)</i>
-- Select a time <i>(Scrubber)</i>
-- Move controllers <i>(Edit)</i>
-");
+            var textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
             RegisterStorable(textJSON);
             var textUI = Plugin.CreateTextField(textJSON, true);
-            textUI.height = 600;
+            textUI.height = 900;
             RegisterComponent(textUI);
         }
 
