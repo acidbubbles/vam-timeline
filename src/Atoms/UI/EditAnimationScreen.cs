@@ -37,6 +37,7 @@ namespace VamTimeline
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private float _lengthWhenLengthModeChanged;
+        private UIDynamicToggle _transitionUI;
 
         public EditAnimationScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -143,8 +144,9 @@ namespace VamTimeline
 
             _transitionJSON = new JSONStorableBool("Transition (Sync First/Last Frames)", false, (bool val) => ChangeTransition(val));
             RegisterStorable(_transitionJSON);
-            var transitionUI = Plugin.CreateToggle(_transitionJSON, rightSide);
-            RegisterComponent(transitionUI);
+            _transitionUI = Plugin.CreateToggle(_transitionJSON, rightSide);
+            RegisterComponent(_transitionUI);
+            RefreshTransitionUI();
 
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
             RegisterStorable(_ensureQuaternionContinuity);
@@ -163,6 +165,25 @@ namespace VamTimeline
             RegisterStorable(_autoPlayJSON);
             var autoPlayUI = Plugin.CreateToggle(_autoPlayJSON, rightSide);
             RegisterComponent(autoPlayUI);
+        }
+
+        private void RefreshTransitionUI()
+        {
+            var clipsPointingToHere = Plugin.Animation.Clips.Where(c => c != Current && c.NextAnimationName == Current.AnimationName).ToList();
+            var targetClip = Plugin.Animation.Clips.FirstOrDefault(c => c != Current && c.AnimationName == Current.NextAnimationName);
+            if (clipsPointingToHere.Count == 0 || targetClip == null)
+            {
+                _transitionUI.toggle.interactable = false;
+                return;
+            }
+
+            if (clipsPointingToHere.Any(c => c.Transition) || targetClip?.Transition == true)
+            {
+                _transitionUI.toggle.interactable = false;
+                return;
+            }
+
+            _transitionUI.toggle.interactable = true;
         }
 
         private void UpdateForcedNextAnimationTime()
@@ -446,6 +467,7 @@ namespace VamTimeline
                 ? Current.NextAnimationTime = Current.AnimationLength - Current.BlendDuration
                 : Current.NextAnimationTime
             );
+            RefreshTransitionUI();
         }
 
         private void SetNextAnimationTime(float nextTime)
@@ -516,6 +538,7 @@ namespace VamTimeline
             _nextAnimationTimeJSON.valNoCallback = Current.NextAnimationTime;
             _autoPlayJSON.valNoCallback = Current.AutoPlay;
             _linkedAnimationPatternJSON.valNoCallback = Current.AnimationPattern?.containingAtom.uid ?? "";
+            RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }
 
