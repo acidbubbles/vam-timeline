@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,9 +56,10 @@ namespace VamTimeline
 
             // Right side
 
-            Current.TargetsSelectionChanged.AddListener(SelectionChanged);
+            Current.TargetsSelectionChanged.AddListener(OnSelectionChanged);
+            Plugin.Animation.TimeChanged.AddListener(OnTimeChanged);
 
-            SelectionChanged();
+            OnSelectionChanged();
 
             if (Plugin.Animation.IsEmpty()) InitExplanation();
         }
@@ -67,7 +69,7 @@ namespace VamTimeline
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
             _curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
-            _curveTypeUI.popupPanelHeight = 340f;
+            _curveTypeUI.popupPanelHeight = 310f;
             RegisterComponent(_curveTypeUI);
         }
 
@@ -109,12 +111,17 @@ namespace VamTimeline
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-            args.Before.TargetsSelectionChanged.RemoveListener(SelectionChanged);
-            args.After.TargetsSelectionChanged.AddListener(SelectionChanged);
+            args.Before.TargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            args.After.TargetsSelectionChanged.AddListener(OnSelectionChanged);
             RefreshTargetsList();
         }
 
-        private void SelectionChanged()
+        private void OnTimeChanged(float arg0)
+        {
+            RefreshCurrentCurveType();
+        }
+
+        private void OnSelectionChanged()
         {
             if (_selectionChangedPending) return;
             _selectionChangedPending = true;
@@ -126,12 +133,13 @@ namespace VamTimeline
             yield return new WaitForEndOfFrame();
             _selectionChangedPending = false;
             if (_disposing) yield break;
+            RefreshCurrentCurveType();
             RefreshCurves();
             RefreshTargetsList();
             _curveTypeUI.popup.topButton.interactable = Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
         }
 
-        private void UpdateCurrentCurveType()
+        private void RefreshCurrentCurveType()
         {
             if (_curveTypeJSON == null) return;
 
@@ -198,7 +206,8 @@ namespace VamTimeline
 
         public override void Dispose()
         {
-            Current.TargetsSelectionChanged.RemoveListener(SelectionChanged);
+            Current.TargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            Plugin.Animation.TimeChanged.RemoveListener(OnTimeChanged);
             Plugin.RemoveButton(_manageTargetsUI);
             RemoveTargets();
             base.Dispose();
@@ -217,19 +226,19 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("("))
             {
-                UpdateCurrentCurveType();
+                RefreshCurrentCurveType();
                 return;
             }
             float time = Plugin.Animation.Time.Snap();
             if (time.IsSameFrame(0) && curveType == CurveTypeValues.CopyPrevious)
             {
-                UpdateCurrentCurveType();
+                RefreshCurrentCurveType();
                 return;
             }
             if (Plugin.Animation.IsPlaying()) return;
             if (Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Current.AnimationLength)))
             {
-                UpdateCurrentCurveType();
+                RefreshCurrentCurveType();
                 return;
             }
             Current.ChangeCurve(time, curveType);
