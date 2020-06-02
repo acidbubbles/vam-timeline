@@ -25,6 +25,7 @@ namespace VamTimeline
         private float _nextAnimationTime;
         private string _animationName;
         private bool _ensureQuaternionContinuity = true;
+        private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
 
         public UnityEvent TargetsSelectionChanged { get; } = new UnityEvent();
@@ -55,6 +56,7 @@ namespace VamTimeline
             }
             set
             {
+                if (_ensureQuaternionContinuity == value) return;
                 _ensureQuaternionContinuity = value;
                 AnimationSettingsModified.Invoke();
             }
@@ -67,6 +69,7 @@ namespace VamTimeline
             }
             set
             {
+                if (_animationName == value) return;
                 _animationName = value;
                 AnimationSettingsModified.Invoke();
             }
@@ -79,7 +82,9 @@ namespace VamTimeline
             }
             set
             {
+                if (_animationLength == value) return;
                 _animationLength = value;
+                UpdateForcedNextAnimationTime();
                 AnimationSettingsModified.Invoke();
             }
         }
@@ -92,9 +97,37 @@ namespace VamTimeline
             }
             set
             {
+                if (_loop == value) return;
                 _loop = value;
                 Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
-                AnimationSettingsModified.Invoke();
+                _skipNextAnimationSettingsModified = true;
+                try
+                {
+                    if (value)
+                    {
+                        foreach (var target in TargetControllers)
+                        {
+                            if (target.Settings.Count == 2)
+                                target.Settings[AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.LeaveAsIs;
+                        }
+                        Transition = false;
+                    }
+                    else
+                    {
+                        foreach (var target in TargetControllers)
+                        {
+                            if (target.Settings.Count == 2)
+                                target.Settings[AnimationLength.ToMilliseconds()].CurveType = CurveTypeValues.CopyPrevious;
+                        }
+                    }
+                }
+                finally
+                {
+                    _skipNextAnimationSettingsModified = false;
+                }
+                UpdateForcedNextAnimationTime();
+                if (!_skipNextAnimationSettingsModified) AnimationSettingsModified.Invoke();
+                DirtyAll();
             }
         }
         public bool Transition
@@ -105,8 +138,19 @@ namespace VamTimeline
             }
             set
             {
+                if (_transition == value) return;
                 _transition = value;
-                AnimationSettingsModified.Invoke();
+                _skipNextAnimationSettingsModified = true;
+                try
+                {
+                    if (Loop) Loop = false;
+                }
+                finally
+                {
+                    _skipNextAnimationSettingsModified = false;
+                }
+                if (!_skipNextAnimationSettingsModified) AnimationSettingsModified.Invoke();
+                DirtyAll();
             }
         }
         public float BlendDuration
@@ -117,7 +161,9 @@ namespace VamTimeline
             }
             set
             {
+                if (_blendDuration == value) return;
                 _blendDuration = value;
+                UpdateForcedNextAnimationTime();
                 AnimationSettingsModified.Invoke();
             }
         }
@@ -129,7 +175,9 @@ namespace VamTimeline
             }
             set
             {
+                if (_nextAnimationName == value) return;
                 _nextAnimationName = value == "" ? null : value;
+                UpdateForcedNextAnimationTime();
                 AnimationSettingsModified.Invoke();
             }
         }
@@ -141,8 +189,9 @@ namespace VamTimeline
             }
             set
             {
+                if (_nextAnimationTime == value) return;
                 _nextAnimationTime = value;
-                AnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) AnimationSettingsModified.Invoke();
             }
         }
         public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
@@ -490,6 +539,24 @@ namespace VamTimeline
         {
             yield return TargetControllers;
             yield return TargetFloatParams;
+        }
+
+        public void UpdateForcedNextAnimationTime()
+        {
+            _skipNextAnimationSettingsModified = true;
+            try
+            {
+                if (Loop) return;
+                if (NextAnimationName == null)
+                {
+                    NextAnimationTime = 0;
+                }
+                NextAnimationTime = (AnimationLength - BlendDuration).Snap();
+            }
+            finally
+            {
+                _skipNextAnimationSettingsModified = false;
+            }
         }
 
         public void Dispose()

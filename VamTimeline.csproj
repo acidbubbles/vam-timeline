@@ -112,7 +112,9 @@
     <Compile Include="src/Atoms/UI/PerformanceScreen.cs" />
     <Compile Include="src/Atoms/UI/SettingsScreen.cs" />
     <Compile Include="src/Atoms/UI/EditAnimationScreen.cs" />
+    <Compile Include="src/Atoms/UI/EditSequenceScreen.cs" />
     <Compile Include="src/Atoms/UI/ManageAnimationsScreen.cs" />
+    <Compile Include="src/Atoms/UI/AddAnimationScreen.cs" />
     <Compile Include="src/Atoms/UI/TargetsScreen.cs" />
     <Compile Include="src/Atoms/UI/EditScreen.cs" />
     <Compile Include="src/Atoms/UI/BulkScreen.cs" />

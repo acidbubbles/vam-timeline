@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace VamTimeline
@@ -14,7 +14,10 @@ namespace VamTimeline
     public class ManageAnimationsScreen : ScreenBase
     {
         public const string ScreenName = "Manage Animations";
+        private JSONStorableString _animationsListJSON;
+
         public override string Name => ScreenName;
+
 
         public ManageAnimationsScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -28,13 +31,13 @@ namespace VamTimeline
         {
             base.Init();
 
+            // Left side
+
+            InitAnimationsListUI(false);
+
             // Right side
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
-
-            CreateSpacer(true);
-
-            InitCreateAnimationUI(true);
 
             CreateSpacer(true);
 
@@ -43,17 +46,22 @@ namespace VamTimeline
             CreateSpacer(true);
 
             InitDeleteAnimationsUI(true);
+
+            CreateSpacer(true);
+
+            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
+
+            RefreshAnimationsList();
+
+            Plugin.Animation.ClipsListChanged.AddListener(RefreshAnimationsList);
         }
 
-        private void InitCreateAnimationUI(bool rightSide)
+        private void InitAnimationsListUI(bool rightSide)
         {
-            var addAnimationFromCurrentFrameUI = Plugin.CreateButton("Create Animation From Current Frame", rightSide);
-            addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
-            RegisterComponent(addAnimationFromCurrentFrameUI);
-
-            var addAnimationAsCopyUI = Plugin.CreateButton("Create Copy Of Current Animation", rightSide);
-            addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
-            RegisterComponent(addAnimationAsCopyUI);
+            _animationsListJSON = new JSONStorableString("Animations List", "");
+            RegisterStorable(_animationsListJSON);
+            var animationsListUI = Plugin.CreateTextField(_animationsListJSON, rightSide);
+            RegisterComponent(animationsListUI);
         }
 
         private void InitReorderAnimationsUI(bool rightSide)
@@ -79,62 +87,6 @@ namespace VamTimeline
         #endregion
 
         #region Callbacks
-
-        private void AddAnimationAsCopy()
-        {
-            var clip = Plugin.Animation.AddAnimation();
-            clip.Loop = Current.Loop;
-            clip.NextAnimationName = Current.NextAnimationName;
-            clip.NextAnimationTime = Current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = Current.EnsureQuaternionContinuity;
-            clip.BlendDuration = Current.BlendDuration;
-            clip.CropOrExtendLengthEnd(Current.AnimationLength);
-            foreach (var origTarget in Current.TargetControllers)
-            {
-                var newTarget = clip.Add(origTarget.Controller);
-                for (var i = 0; i < origTarget.Curves.Count; i++)
-                {
-                    newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
-                }
-                foreach (var kvp in origTarget.Settings)
-                {
-                    newTarget.Settings[kvp.Key] = new KeyframeSettings { CurveType = kvp.Value.CurveType };
-                }
-                newTarget.Dirty = true;
-            }
-            foreach (var origTarget in Current.TargetFloatParams)
-            {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.Value.keys = origTarget.Value.keys.ToArray();
-                newTarget.Dirty = true;
-            }
-            // TODO: The animation was built before, now it's built after. Make this this works.
-            Plugin.Animation.ChangeAnimation(clip.AnimationName);
-        }
-
-        private void AddAnimationFromCurrentFrame()
-        {
-            var clip = Plugin.Animation.AddAnimation();
-            clip.Loop = Current.Loop;
-            clip.NextAnimationName = Current.NextAnimationName;
-            clip.NextAnimationTime = Current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = Current.EnsureQuaternionContinuity;
-            clip.BlendDuration = Current.BlendDuration;
-            clip.CropOrExtendLengthEnd(Current.AnimationLength);
-            foreach (var origTarget in Current.TargetControllers)
-            {
-                var newTarget = clip.Add(origTarget.Controller);
-                newTarget.SetKeyframeToCurrentTransform(0f);
-                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
-            }
-            foreach (var origTarget in Current.TargetFloatParams)
-            {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
-                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
-            }
-            Plugin.Animation.ChangeAnimation(clip.AnimationName);
-        }
 
         private void ReorderAnimationMoveUp()
         {
@@ -198,6 +150,39 @@ namespace VamTimeline
             {
                 SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(DeleteAnimation)}: {exc}");
             }
+        }
+
+        #endregion
+
+        #region Events
+
+        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        {
+            base.OnCurrentAnimationChanged(args);
+
+            RefreshAnimationsList();
+        }
+
+        private void RefreshAnimationsList()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var clip in Plugin.Animation.Clips)
+            {
+                if (clip == Current)
+                    sb.Append("> ");
+                else
+                    sb.Append("  ");
+                sb.AppendLine(clip.AnimationName);
+            }
+
+            _animationsListJSON.val = sb.ToString();
+        }
+
+        public override void Dispose()
+        {
+            Plugin.Animation.ClipsListChanged.RemoveListener(RefreshAnimationsList);
+            base.Dispose();
         }
 
         #endregion

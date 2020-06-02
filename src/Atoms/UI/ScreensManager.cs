@@ -212,6 +212,12 @@ namespace VamTimeline
                 case EditAnimationScreen.ScreenName:
                     _current = new EditAnimationScreen(_plugin);
                     break;
+                case EditSequenceScreen.ScreenName:
+                    _current = new EditSequenceScreen(_plugin);
+                    break;
+                case AddAnimationScreen.ScreenName:
+                    _current = new AddAnimationScreen(_plugin);
+                    break;
                 case ManageAnimationsScreen.ScreenName:
                     _current = new ManageAnimationsScreen(_plugin);
                     break;
