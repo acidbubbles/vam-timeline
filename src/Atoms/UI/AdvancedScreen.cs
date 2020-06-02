@@ -71,7 +71,7 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            var reverseAnimationUI = Plugin.CreateButton("Reverse Animation", true);
+            var reverseAnimationUI = Plugin.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
 

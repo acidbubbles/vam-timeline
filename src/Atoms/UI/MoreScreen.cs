@@ -41,7 +41,10 @@ namespace VamTimeline
             CreateChangeScreenButton("<b>Sequence</b> animations...", EditSequenceScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Add</b> a new animation...", AddAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Reorder</b> and <b>delete</b> animations...", ManageAnimationsScreen.ScreenName, true);
-            CreateChangeScreenButton("Advanced keyframe tools...", AdvancedScreen.ScreenName, true);
+            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedScreen.ScreenName, true);
+
+            CreateSpacer(true);
+
             CreateChangeScreenButton("Options...", SettingsScreen.ScreenName, true);
 
             CreateSpacer(true);

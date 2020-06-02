@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -39,7 +38,11 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            InitOperationsUI(true);
+            InitChangeCurveUI(true);
+
+            CreateSpacer(true);
+
+            InitDeleteUI(true);
 
             // Init
 
@@ -83,17 +86,20 @@ namespace VamTimeline
             RegisterComponent(markSelectionEndUI);
         }
 
-        private void InitOperationsUI(bool rightSide)
+        private void InitChangeCurveUI(bool rightSide)
+        {
+            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
+            RegisterStorable(_changeCurveJSON);
+            var curveTypeUI = Plugin.CreateScrollablePopup(_changeCurveJSON, rightSide);
+            curveTypeUI.popupPanelHeight = 340f;
+            RegisterComponent(curveTypeUI);
+        }
+
+        private void InitDeleteUI(bool rightSide)
         {
             var deleteSelectedUI = Plugin.CreateButton("Delete Selected", rightSide);
             deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
             RegisterComponent(deleteSelectedUI);
-
-            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
-            RegisterStorable(_changeCurveJSON);
-            var curveTypeUI = Plugin.CreateScrollablePopup(_changeCurveJSON, true);
-            curveTypeUI.popupPanelHeight = 340f;
-            RegisterComponent(curveTypeUI);
         }
 
         #region Callbacks
