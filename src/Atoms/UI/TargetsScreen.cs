@@ -42,7 +42,7 @@ namespace VamTimeline
 
             // Right side
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", EditScreen.ScreenName, true);
+            CreateChangeScreenButton("<b><</b> <i>Back to Edit</i>", EditScreen.ScreenName, true);
 
             CreateSpacer(true);
 
