@@ -105,7 +105,7 @@ namespace VamTimeline
             rect.offsetMax = new Vector2(-20f, 0);
 
             var text = go.AddComponent<Text>();
-            text.text = "Select a single target in the dope sheet to see the curves";
+            text.text = "Select targets in the dope sheet to see their curves";
             text.font = _style.Font;
             text.fontSize = 28;
             text.color = _style.FontColor;
@@ -184,16 +184,16 @@ namespace VamTimeline
 
                 var range = EstimateRange(targetController.X, targetController.Y, targetController.Z);
                 _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
-                _lines.AddCurve(Color.red, targetController.X);
-                _lines.AddCurve(Color.green, targetController.Y);
-                _lines.AddCurve(Color.blue, targetController.Z);
+                _lines.AddCurve(_style.CurveLineColorX, targetController.X);
+                _lines.AddCurve(_style.CurveLineColorY, targetController.Y);
+                _lines.AddCurve(_style.CurveLineColorZ, targetController.Z);
             }
             else if (target is FloatParamAnimationTarget)
             {
                 var targetParam = (FloatParamAnimationTarget)target;
                 var range = EstimateRange(targetParam.Value);
                 _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
-                _lines.AddCurve(Color.white, targetParam.Value);
+                _lines.AddCurve(_style.CurveLineColorFloat, targetParam.Value);
             }
         }
 
