@@ -175,6 +175,7 @@ namespace VamTimeline
             if (character != null)
             {
                 var makeMorphsAnimatableUI = Plugin.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
+                RegisterComponent(makeMorphsAnimatableUI);
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
                     var selector = Plugin.ContainingAtom.gameObject.GetComponentInChildren<UITabSelector>();
