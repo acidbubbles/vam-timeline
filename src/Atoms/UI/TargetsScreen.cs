@@ -50,7 +50,7 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            InitFloatParamsUI();
+            InitFloatParamsUI(true);
 
             CreateSpacer(true);
 
@@ -137,7 +137,7 @@ namespace VamTimeline
             }
         }
 
-        private void InitFloatParamsUI()
+        private void InitFloatParamsUI(bool rightSide)
         {
             var storables = GetStorablesWithFloatParams().ToList();
             _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) =>
@@ -149,7 +149,7 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addStorableListJSON);
-            _addStorableListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, true);
+            _addStorableListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, rightSide);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
             RegisterComponent(_addStorableListUI);
@@ -159,17 +159,31 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addParamListJSON);
-            _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, true);
+            _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, rightSide);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
             RegisterComponent(_addParamListUI);
 
-            _toggleFloatParamUI = Plugin.CreateButton("Add Param", true);
+            _toggleFloatParamUI = Plugin.CreateButton("Add Param", rightSide);
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
             RegisterComponent(_toggleFloatParamUI);
 
             RefreshStorableFloatsList();
             _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
+
+            var character = Plugin.ContainingAtom.GetComponentInChildren<DAZCharacterSelector>();
+            if (character != null)
+            {
+                var makeMorphsAnimatableUI = Plugin.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
+                makeMorphsAnimatableUI.button.onClick.AddListener(() =>
+                {
+                    var selector = Plugin.ContainingAtom.gameObject.GetComponentInChildren<UITabSelector>();
+                    if (character.selectedCharacter.isMale)
+                        selector.SetActiveTab("Male Morphs");
+                    else
+                        selector.SetActiveTab("Female Morphs");
+                });
+            }
         }
 
         private void RefreshStorablesList()
