@@ -446,6 +446,8 @@ namespace VamTimeline
             var time = Time.Snap();
             foreach (var clip in Clips)
             {
+                clip.Validate();
+                PrepareClipCurves(clip);
                 if (clip.Transition)
                 {
                     var previous = Clips.FirstOrDefault(c => c.NextAnimationName == clip.AnimationName);
@@ -455,8 +457,7 @@ namespace VamTimeline
                     if (next != null)
                         clip.Paste(clip.AnimationLength, next.Copy(0f, true), false);
                 }
-                clip.Validate();
-                RebuildClipCurve(clip);
+                ReapplyClipCurve(clip);
                 _unityAnimation.AddClip(clip.Clip, clip.AnimationName);
                 var animState = _unityAnimation[clip.AnimationName];
                 if (animState != null)
@@ -489,10 +490,8 @@ namespace VamTimeline
             }
         }
 
-        private void RebuildClipCurve(AtomAnimationClip clip)
+        private void PrepareClipCurves(AtomAnimationClip clip)
         {
-            clip.Clip.ClearCurves();
-
             foreach (var target in clip.TargetControllers)
             {
                 if (target.Dirty)
@@ -512,8 +511,6 @@ namespace VamTimeline
                     if (clip.EnsureQuaternionContinuity)
                         clip.EnsureQuaternionContinuityAndRecalculateSlope();
                 }
-
-                target.ReapplyCurvesToClip(clip.Clip);
             }
 
             foreach (var target in clip.TargetFloatParams)
@@ -527,6 +524,16 @@ namespace VamTimeline
                     }
                     target.Value.FlatAllFrames();
                 }
+            }
+        }
+
+        private void ReapplyClipCurve(AtomAnimationClip clip)
+        {
+            clip.Clip.ClearCurves();
+
+            foreach (var target in clip.TargetControllers)
+            {
+                target.ReapplyCurvesToClip(clip.Clip);
             }
         }
 
