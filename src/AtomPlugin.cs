@@ -194,7 +194,8 @@ namespace VamTimeline
         {
             try
             {
-                Animation?.Stop();
+                if (Animation?.IsPlaying() ?? false)
+                    Animation.Stop();
                 _ui?.Disable();
                 DestroyControllerPanel();
             }
