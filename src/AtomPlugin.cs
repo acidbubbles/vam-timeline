@@ -475,7 +475,11 @@ namespace VamTimeline
             _restoring = true;
             try
             {
-                if (Animation != null) Animation.Dispose();
+                if (Animation != null)
+                {
+                    Animation.Dispose();
+                    Animation = null;
+                }
 
                 Animation = Serializer.DeserializeAnimation(Animation, animationJSON.AsObject);
                 if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
