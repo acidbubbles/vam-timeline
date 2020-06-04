@@ -18,6 +18,7 @@ namespace VamTimeline
 
         public static void StretchLength(this AnimationCurve curve, float newLength)
         {
+            if (curve.length < 2) return;
             int lastKey = curve.length - 1;
             var curveLength = curve[lastKey].time;
             if (newLength == curveLength) return;
@@ -61,6 +62,7 @@ namespace VamTimeline
 
         public static void CropOrExtendLengthEnd(this AnimationCurve curve, float newLength)
         {
+            if (curve.length < 2) return;
             float currentLength = curve[curve.length - 1].time;
             if (newLength < currentLength)
             {
@@ -83,6 +85,7 @@ namespace VamTimeline
 
         public static void CropOrExtendLengthBegin(this AnimationCurve curve, float newLength)
         {
+            if (curve.length < 2) return;
             var currentLength = curve[curve.length - 1].time;
             var lengthDiff = newLength - currentLength;
 
@@ -129,6 +132,7 @@ namespace VamTimeline
 
         public static void CropOrExtendLengthAtTime(this AnimationCurve curve, float newLength, float time)
         {
+            if (curve.length < 2) return;
             var lengthDiff = newLength - curve[curve.length - 1].time;
 
             var keys = curve.keys.ToList();
@@ -149,6 +153,7 @@ namespace VamTimeline
 
         public static void Reverse(this AnimationCurve curve)
         {
+            if (curve.length < 2) return;
             var currentLength = curve[curve.length - 1].time;
 
             var keys = curve.keys.ToList();

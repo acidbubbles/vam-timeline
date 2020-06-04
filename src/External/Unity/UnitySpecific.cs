@@ -32,6 +32,7 @@ public static class UnitySpecific
     public static void EnsureQuaternionContinuityAndRecalculateSlope(AnimationCurve x, AnimationCurve y, AnimationCurve z, AnimationCurve w)
     {
         var keyCount = x.length;
+        if (keyCount < 2) return;
         var last = GetValue(x, y, z, w, keyCount - 1);
         for (int i = 0; i < keyCount; i++)
         {

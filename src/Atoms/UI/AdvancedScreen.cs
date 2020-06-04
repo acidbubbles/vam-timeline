@@ -234,6 +234,8 @@ namespace VamTimeline
                     Current.Remove(ctrl);
                     target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(t => t.Controller == ctrl) ?? Plugin.Animation.Current.Add(ctrl);
                     target.StartBulkUpdates();
+                    target.SetKeyframeToCurrentTransform(0);
+                    target.SetKeyframeToCurrentTransform(Plugin.Animation.Current.AnimationLength);
                     if (mot.clip.clipLength > Current.AnimationLength)
                         Current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
                 }
