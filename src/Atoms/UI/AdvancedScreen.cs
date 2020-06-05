@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace VamTimeline
@@ -74,6 +73,10 @@ namespace VamTimeline
             var reverseAnimationUI = Plugin.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
+
+            var reduceKeyframesUI = Plugin.CreateButton("Reduce keyframes", true);
+            reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
+            RegisterComponent(reduceKeyframesUI);
 
             // TODO: Keyframe all animatable morphs
         }
@@ -496,6 +499,107 @@ namespace VamTimeline
                 localPosition,
                 locationRotation
             );
+        }
+
+        private void ReduceKeyframes()
+        {
+            foreach (var target in Current.TargetFloatParams)
+            {
+                target.StartBulkUpdates();
+                try
+                {
+                    ReduceKeyframes(target.Value);
+                }
+                finally
+                {
+                    target.Dirty = true;
+                    target.EndBulkUpdates();
+                }
+            }
+        }
+
+        private void ReduceKeyframes(AnimationCurve source)
+        {
+            var minPositionDistance = 0.06f;
+            var minFrameDistance = 0.1f;
+            var clipLength = source[source.length - 1].time;
+            var maxIterations = (int)Math.Floor(Math.Sqrt(clipLength * 10));
+
+            var containingAtom = Plugin.ContainingAtom;
+            var simplify = new HashSet<float>();
+            var segmentKeyframes = new List<int> { 0, source.length - 1 };
+            var skipKeyframes = new HashSet<int>();
+            var target = new AnimationCurve();
+            target.AddKey(0, source[0].value);
+            target.AddKey(0, source[source.length - 1].value);
+
+            for (var iteration = 0; iteration < maxIterations; iteration++)
+            {
+                var splits = 0;
+                for (var segmentIndex = 0; segmentIndex < segmentKeyframes.Count - 1; segmentIndex++)
+                {
+                    int firstIndex = segmentKeyframes[segmentIndex];
+                    if (skipKeyframes.Contains(firstIndex)) continue;
+                    var first = source[firstIndex];
+                    int lastIndex = segmentKeyframes[segmentIndex + 1] - 1;
+                    var last = source[lastIndex];
+                    if (last.time - first.time < minFrameDistance)
+                    {
+                        skipKeyframes.Add(firstIndex);
+                        continue;
+                    }
+
+                    var largestDelta = 0f;
+                    var largestDeltaIndex = -1;
+                    for (var stepIndex = firstIndex + 1; stepIndex < lastIndex - 1; stepIndex++)
+                    {
+                        try
+                        {
+                            var step = source[stepIndex];
+                            var curveValue = target.Evaluate(step.time);
+                            var actualDelta = Mathf.Abs(step.value - curveValue);
+                            if (actualDelta > largestDelta)
+                            {
+                                largestDelta = actualDelta;
+                                largestDeltaIndex = stepIndex;
+                            }
+                        }
+                        catch (Exception exc)
+                        {
+                            SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ExtractFramesWithReductionTechnique)}[Step]: {exc}");
+                            return;
+                        }
+                    }
+                    try
+                    {
+                        if (largestDelta > minPositionDistance)
+                        {
+                            segmentKeyframes.Insert(++segmentIndex, largestDeltaIndex);
+                            var largestDeltaStep = source[largestDeltaIndex];
+
+                            target.AddKey(largestDeltaStep.time, largestDeltaStep.value);
+
+                            splits++;
+                        }
+                        else
+                        {
+                            skipKeyframes.Add(firstIndex);
+                        }
+
+                        if (splits == 0)
+                        {
+                            break;
+                        }
+                    }
+                    catch (Exception exc)
+                    {
+                        SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ExtractFramesWithReductionTechnique)}[Apply]: {exc}");
+                        return;
+                    }
+                }
+            }
+
+            source.keys = target.keys;
         }
 
         public override void Dispose()
