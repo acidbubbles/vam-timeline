@@ -20,6 +20,10 @@ namespace VamTimeline
         public const string ScreenName = "Advanced";
         private UIDynamicButton _importRecordedUI;
         private JSONStorableStringChooser _importRecordedOptionsJSON;
+        private UIDynamicButton _reduceKeyframesUI;
+        private JSONStorableFloat _reduceMinPosDistanceJSON;
+        private JSONStorableFloat _reduceMinKeyframeTimeDeltaJSON;
+        private JSONStorableFloat _reduceIterationsLengthMultipleJSON;
 
         public override string Name => ScreenName;
 
@@ -52,9 +56,11 @@ namespace VamTimeline
             bakeUI.button.onClick.AddListener(() => Bake());
             RegisterComponent(bakeUI);
 
+            CreateSpacer(true);
+
             _importRecordedOptionsJSON = new JSONStorableStringChooser(
                 "Import Recorded Animation Options",
-                 new List<string> { "Keyframe Reduction", "1 fps", "2 fps", "10 fps" },
+                 new List<string> { "Keyframe Reduction", "1 fps", "2 fps", "4 fps", "10 fps" },
                  "Keyframe Reduction",
                  "Import Recorded Animation Options")
             {
@@ -64,19 +70,34 @@ namespace VamTimeline
             var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
             RegisterComponent(importRecordedOptionsUI);
 
+            _reduceMinPosDistanceJSON = new JSONStorableFloat("Reduce Min Pos Distance", 0.06f, 0.001f, 0.1f, true);
+            RegisterStorable(_reduceMinPosDistanceJSON);
+            var reduceMinPosDistanceUI = Plugin.CreateSlider(_reduceMinPosDistanceJSON, true);
+            RegisterComponent(reduceMinPosDistanceUI);
+
+            _reduceMinKeyframeTimeDeltaJSON = new JSONStorableFloat("Reduce Min Frame Time Delta", 0.1f, 0.01f, 1f, true);
+            RegisterStorable(_reduceMinKeyframeTimeDeltaJSON);
+            var reduceMinKeyframeTimeDeltaUI = Plugin.CreateSlider(_reduceMinKeyframeTimeDeltaJSON, true);
+            RegisterComponent(reduceMinKeyframeTimeDeltaUI);
+
+            _reduceIterationsLengthMultipleJSON = new JSONStorableFloat("Reduce Max Iterations Length Multiple", 10, 1f, 100f, true);
+            RegisterStorable(_reduceIterationsLengthMultipleJSON);
+            var reduceMaxIterationsUI = Plugin.CreateSlider(_reduceIterationsLengthMultipleJSON, true);
+            RegisterComponent(reduceMaxIterationsUI);
+
             _importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
             RegisterComponent(_importRecordedUI);
+
+            _reduceKeyframesUI = Plugin.CreateButton("Reduce Float Params Keyframes", true);
+            _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
+            RegisterComponent(_reduceKeyframesUI);
 
             CreateSpacer(true);
 
             var reverseAnimationUI = Plugin.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
-
-            var reduceKeyframesUI = Plugin.CreateButton("Reduce keyframes", true);
-            reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
-            RegisterComponent(reduceKeyframesUI);
 
             // TODO: Keyframe all animatable morphs
         }
@@ -214,6 +235,9 @@ namespace VamTimeline
                 case "2 fps":
                     frameLength = 0.5f;
                     break;
+                case "4 fps":
+                    frameLength = 0.25f;
+                    break;
                 case "10 fps":
                     frameLength = 0.1f;
                     break;
@@ -237,10 +261,9 @@ namespace VamTimeline
                     Current.Remove(ctrl);
                     target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(t => t.Controller == ctrl) ?? Plugin.Animation.Current.Add(ctrl);
                     target.StartBulkUpdates();
+                    Current.AnimationLength = mot.clip.clipLength.Snap();
                     target.SetKeyframeToCurrentTransform(0);
                     target.SetKeyframeToCurrentTransform(Plugin.Animation.Current.AnimationLength);
-                    if (mot.clip.clipLength > Current.AnimationLength)
-                        Current.CropOrExtendLengthEnd(mot.clip.clipLength.Snap());
                 }
                 catch (Exception exc)
                 {
@@ -286,10 +309,10 @@ namespace VamTimeline
 
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
         {
-            var minPositionDistance = 0.06f;
+            var minPositionDistance = _reduceMinPosDistanceJSON.val;
+            var minFrameDistance = _reduceMinKeyframeTimeDeltaJSON.val;
+            var maxIterations = (int)Math.Floor(Math.Sqrt(clip.clipLength * _reduceIterationsLengthMultipleJSON.val));
             var minPositionDistanceForFlat = 0.02f;
-            var minFrameDistance = 0.1f;
-            var maxIterations = (int)Math.Floor(Math.Sqrt(clip.clipLength * 10));
 
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
@@ -503,7 +526,29 @@ namespace VamTimeline
 
         private void ReduceKeyframes()
         {
-            foreach (var target in Current.TargetFloatParams)
+            _reduceKeyframesUI.buttonText.text = "Optimizing, please wait...";
+
+            Plugin.StartCoroutine(ReduceKeyframesCoroutine());
+        }
+
+        private IEnumerator ReduceKeyframesCoroutine()
+        {
+            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            {
+                target.StartBulkUpdates();
+                try
+                {
+                    // ReduceKeyframes(target.X, target.Y, target.Z, target.RotX, target.RotY, target.RotZ, target.RotW);
+                }
+                finally
+                {
+                    target.Dirty = true;
+                    target.EndBulkUpdates();
+                }
+                yield return 0;
+            }
+
+            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
@@ -515,15 +560,18 @@ namespace VamTimeline
                     target.Dirty = true;
                     target.EndBulkUpdates();
                 }
+                yield return 0;
             }
+
+            _reduceKeyframesUI.buttonText.text = "Reduce keyframes";
         }
 
         private void ReduceKeyframes(AnimationCurve source)
         {
-            var minPositionDistance = 0.06f;
-            var minFrameDistance = 0.1f;
-            var clipLength = source[source.length - 1].time;
-            var maxIterations = (int)Math.Floor(Math.Sqrt(clipLength * 10));
+            var minPositionDistance = _reduceMinPosDistanceJSON.val;
+            var minFrameDistance = _reduceMinKeyframeTimeDeltaJSON.val;
+            var animLength = source[source.length - 1].time;
+            var maxIterations = (int)Math.Floor(Math.Sqrt(Current.AnimationLength * _reduceIterationsLengthMultipleJSON.val));
 
             var containingAtom = Plugin.ContainingAtom;
             var simplify = new HashSet<float>();
@@ -566,7 +614,7 @@ namespace VamTimeline
                         }
                         catch (Exception exc)
                         {
-                            SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ExtractFramesWithReductionTechnique)}[Step]: {exc}");
+                            SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReduceKeyframes)}[Step]: {exc}");
                             return;
                         }
                     }
@@ -593,7 +641,7 @@ namespace VamTimeline
                     }
                     catch (Exception exc)
                     {
-                        SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ExtractFramesWithReductionTechnique)}[Apply]: {exc}");
+                        SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReduceKeyframes)}[Apply]: {exc}");
                         return;
                     }
                 }
