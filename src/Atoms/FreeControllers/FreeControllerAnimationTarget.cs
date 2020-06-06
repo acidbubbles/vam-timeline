@@ -199,14 +199,14 @@ namespace VamTimeline
 
         #region Keyframes control
 
-        public void SetKeyframeToCurrentTransform(float time)
+        public int SetKeyframeToCurrentTransform(float time)
         {
-            SetKeyframe(time, Controller.transform.localPosition, Controller.transform.localRotation);
+            return SetKeyframe(time, Controller.transform.localPosition, Controller.transform.localRotation);
         }
 
-        public void SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
+        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
-            X.SetKeyframe(time, localPosition.x);
+            var key = X.SetKeyframe(time, localPosition.x);
             Y.SetKeyframe(time, localPosition.y);
             Z.SetKeyframe(time, localPosition.z);
             RotX.SetKeyframe(time, locationRotation.x);
@@ -217,6 +217,7 @@ namespace VamTimeline
             if (!Settings.ContainsKey(ms))
                 Settings[ms] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
             Dirty = true;
+            return key;
         }
 
         public void DeleteFrame(float time)
@@ -346,6 +347,22 @@ namespace VamTimeline
                 return t1.Controller.name.CompareTo(t2.Controller.name);
 
             }
+        }
+
+        internal void SmoothNeighbors(int key)
+        {
+            if (key == -1) return;
+            X.SmoothTangents(key, 1f);
+            if (key > 0) X.SmoothTangents(key - 1, 1f);
+            if (key < X.length - 1) X.SmoothTangents(key + 1, 1f);
+
+            Y.SmoothTangents(key, 1f);
+            if (key > 0) Y.SmoothTangents(key - 1, 1f);
+            if (key < Y.length - 1) Y.SmoothTangents(key + 1, 1f);
+
+            Z.SmoothTangents(key, 1f);
+            if (key > 0) Z.SmoothTangents(key - 1, 1f);
+            if (key < Z.length - 1) Z.SmoothTangents(key + 1, 1f);
         }
     }
 }

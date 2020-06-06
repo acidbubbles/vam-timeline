@@ -172,17 +172,18 @@ namespace VamTimeline
 
         #region Keyframes control
 
-        public static void SetKeyframe(this AnimationCurve curve, float time, float value)
+        public static int SetKeyframe(this AnimationCurve curve, float time, float value)
         {
             var key = curve.AddKey(time, value);
             if (key != -1)
-                return;
+                return key;
 
             key = curve.KeyframeBinarySearch(time);
             if (key == -1) throw new InvalidOperationException($"Cannot find keyframe at time {time}, no keys exist at this position. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
             var keyframe = curve[key];
             keyframe.value = value;
             curve.MoveKey(key, keyframe);
+            return key;
         }
 
         #endregion
