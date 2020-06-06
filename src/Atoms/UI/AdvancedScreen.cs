@@ -70,17 +70,17 @@ namespace VamTimeline
             var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
             RegisterComponent(importRecordedOptionsUI);
 
-            _reduceMinPosDistanceJSON = new JSONStorableFloat("Reduce Min Pos Distance", 0.06f, 0.001f, 0.1f, true);
+            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Value Delta", 0.04f, 0.001f, 0.1f, true);
             RegisterStorable(_reduceMinPosDistanceJSON);
             var reduceMinPosDistanceUI = Plugin.CreateSlider(_reduceMinPosDistanceJSON, true);
             RegisterComponent(reduceMinPosDistanceUI);
 
-            _reduceMinKeyframeTimeDeltaJSON = new JSONStorableFloat("Reduce Min Frame Time Delta", 0.1f, 0.01f, 1f, true);
+            _reduceMinKeyframeTimeDeltaJSON = new JSONStorableFloat("Minimum Time Dist Between Frames", 0.1f, 0.01f, 1f, true);
             RegisterStorable(_reduceMinKeyframeTimeDeltaJSON);
             var reduceMinKeyframeTimeDeltaUI = Plugin.CreateSlider(_reduceMinKeyframeTimeDeltaJSON, true);
             RegisterComponent(reduceMinKeyframeTimeDeltaUI);
 
-            _reduceIterationsLengthMultipleJSON = new JSONStorableFloat("Reduce Max Iterations Length Multiple", 10, 1f, 100f, true);
+            _reduceIterationsLengthMultipleJSON = new JSONStorableFloat("Max Iterations per Second", 4f, 1f, 10f, true);
             RegisterStorable(_reduceIterationsLengthMultipleJSON);
             var reduceMaxIterationsUI = Plugin.CreateSlider(_reduceIterationsLengthMultipleJSON, true);
             RegisterComponent(reduceMaxIterationsUI);
@@ -276,7 +276,7 @@ namespace VamTimeline
                 try
                 {
                     if (_importRecordedOptionsJSON.val == "Keyframe Reduction")
-                        enumerator = ExtractFramesWithReductionTechnique(mot.clip, Current, target, totalStopwatch, ctrl).GetEnumerator();
+                        enumerator = ExtractFramesWithReductionTechnique2(mot.clip, Current, target, totalStopwatch, ctrl).GetEnumerator();
                     else
                         enumerator = ExtractFramesWithFpsTechnique(mot.clip, frameLength, Current, target, totalStopwatch, ctrl).GetEnumerator();
                 }
@@ -305,6 +305,119 @@ namespace VamTimeline
                 target.EndBulkUpdates();
                 throw;
             }
+        }
+
+        private IEnumerable ExtractFramesWithReductionTechnique2(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
+        {
+            var sw = Stopwatch.StartNew();
+            var minPositionDistance = _reduceMinPosDistanceJSON.val;
+            var minFrameDistance = _reduceMinKeyframeTimeDeltaJSON.val;
+            var maxIterations = clip.clipLength * _reduceIterationsLengthMultipleJSON.val;
+
+            var batchStopwatch = Stopwatch.StartNew();
+            var containingAtom = Plugin.ContainingAtom;
+            var simplify = new HashSet<float>();
+            var steps = clip.steps.Where(s =>
+            {
+                var timeStep = s.timeStep.Snap(0.01f);
+                if (simplify.Contains(timeStep)) return false;
+                simplify.Add(timeStep);
+                return true;
+            }).ToList();
+
+            var curveX = new AnimationCurve();
+            curveX.AddKey(0, steps[0].position.x);
+            curveX.AddKey(steps[steps.Count - 1].timeStep, steps[steps.Count - 1].position.x);
+            var curveY = new AnimationCurve();
+            curveY.AddKey(0, steps[0].position.y);
+            curveY.AddKey(steps[steps.Count - 1].timeStep, steps[steps.Count - 1].position.y);
+            var curveZ = new AnimationCurve();
+            curveZ.AddKey(0, steps[0].position.z);
+            curveZ.AddKey(steps[steps.Count - 1].timeStep, steps[steps.Count - 1].position.z);
+
+            SetKeyframeFromStep(target, ctrl, containingAtom, steps[0], steps[0].timeStep.Snap());
+            SetKeyframeFromStep(target, ctrl, containingAtom, steps[steps.Count - 1], steps[steps.Count - 1].timeStep.Snap());
+
+            for (var iteration = 0; iteration < maxIterations; iteration++)
+            {
+                var largestFrame = -1;
+                var largestDiff = 0f;
+                for (var i = 1; i < steps.Count - 1; i++)
+                {
+                    var diff = Math.Max(
+                        Math.Abs(curveX.Evaluate(steps[i].timeStep) - steps[i].position.x),
+                        Math.Max(
+                        Math.Abs(curveY.Evaluate(steps[i].timeStep) - steps[i].position.y),
+                        Math.Abs(curveZ.Evaluate(steps[i].timeStep) - steps[i].position.z)
+                        )
+                    );
+                    if (diff > largestDiff)
+                    {
+                        largestDiff = diff;
+                        largestFrame = i;
+                    }
+                }
+                if (largestFrame != 0)
+                {
+                    if (largestDiff < minPositionDistance) break;
+                    var step = steps[largestFrame];
+                    steps.RemoveAt(largestFrame);
+                    var time = step.timeStep.Snap();
+                    {
+                        var i = largestFrame - 1;
+                        var min = time - _reduceMinKeyframeTimeDeltaJSON.val;
+                        while (i > 0)
+                        {
+                            var previousStep = steps[i];
+                            if (previousStep.timeStep.Snap() > min)
+                            {
+                                steps.RemoveAt(i);
+                                i--;
+                            }
+                            break;
+                        }
+                    }
+                    {
+                        var i = largestFrame + 1;
+                        var max = time + _reduceMinKeyframeTimeDeltaJSON.val;
+                        while (i < steps.Count)
+                        {
+                            var nextStep = steps[i];
+                            if (nextStep.timeStep.Snap() < max)
+                            {
+                                steps.RemoveAt(i);
+                            }
+                            break;
+                        }
+                    }
+                    var keyX = curveX.AddKey(time, step.position.x);
+                    if (keyX > -1)
+                    {
+                        curveX.SmoothTangents(keyX, 1f);
+                        curveX.SmoothTangents(keyX - 1, 1f);
+                        curveX.SmoothTangents(keyX + 1, 1f);
+                    }
+                    var keyY = curveY.AddKey(time, step.position.y);
+                    if (keyY > -1)
+                    {
+                        curveY.SmoothTangents(keyY, 1f);
+                        curveY.SmoothTangents(keyY - 1, 1f);
+                        curveY.SmoothTangents(keyY + 1, 1f);
+                    }
+                    var keyZ = curveZ.AddKey(time, step.position.z);
+                    if (keyZ > -1)
+                    {
+                        curveZ.SmoothTangents(keyZ, 1f);
+                        curveZ.SmoothTangents(keyZ - 1, 1f);
+                        curveZ.SmoothTangents(keyZ + 1, 1f);
+                    }
+                    SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
+                }
+
+                yield return 0;
+            }
+
+            SuperController.LogMessage($"Imported {clip.steps.Count} steps for {target.Name}, reduced to {curveX.length} keyframes in {sw.Elapsed}");
         }
 
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, AtomAnimationClip current, FreeControllerAnimationTarget target, Stopwatch totalStopwatch, FreeControllerV3 ctrl)
