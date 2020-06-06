@@ -486,10 +486,16 @@ namespace VamTimeline
             };
         }
 
+        public bool IsDirty()
+        {
+            return AllTargets.Any(t => t.Dirty);
+        }
+
         public void Validate()
         {
             foreach (var target in TargetControllers)
             {
+                if (!target.Dirty) continue;
                 target.Validate();
             }
         }
@@ -514,18 +520,6 @@ namespace VamTimeline
                 if (target == null)
                     target = Add(entry.Storable, entry.FloatParam);
                 target.SetKeyframe(time, entry.Snapshot.value, dirty);
-            }
-        }
-
-        public void EnsureQuaternionContinuityAndRecalculateSlope()
-        {
-            foreach (var target in TargetControllers)
-            {
-                UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
-                    target.RotX,
-                    target.RotY,
-                    target.RotZ,
-                    target.RotW);
             }
         }
 

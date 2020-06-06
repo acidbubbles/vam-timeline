@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -444,6 +445,7 @@ namespace VamTimeline
         {
             if (Current == null) throw new NullReferenceException("No current animation set");
             var time = Time.Snap();
+            var sw = Stopwatch.StartNew();
             foreach (var clip in Clips)
             {
                 clip.Validate();
@@ -451,10 +453,10 @@ namespace VamTimeline
                 if (clip.Transition)
                 {
                     var previous = Clips.FirstOrDefault(c => c.NextAnimationName == clip.AnimationName);
-                    if (previous != null)
+                    if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                         clip.Paste(0f, previous.Copy(previous.AnimationLength, true), false);
                     var next = Clips.FirstOrDefault(c => c.AnimationName == clip.NextAnimationName);
-                    if (next != null)
+                    if (next != null && (next.IsDirty() || clip.IsDirty()))
                         clip.Paste(clip.AnimationLength, next.Copy(0f, true), false);
                 }
                 ReapplyClipCurve(clip);
@@ -488,42 +490,48 @@ namespace VamTimeline
             {
                 _animState = null;
             }
+            if (sw.ElapsedMilliseconds > 1000)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Suspciously long animation rebuild ({sw.Elapsed})");
+            }
         }
 
         private void PrepareClipCurves(AtomAnimationClip clip)
         {
             foreach (var target in clip.TargetControllers)
             {
-                if (target.Dirty)
+                if (!target.Dirty) continue;
+
+                target.Dirty = false;
+
+                if (clip.Loop)
+                    target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f), false);
+
+                target.ReapplyCurveTypes();
+
+                if (clip.Loop)
+                    target.SmoothLoop();
+
+                if (clip.EnsureQuaternionContinuity)
                 {
-                    target.Dirty = false;
-
-                    target.Validate();
-
-                    if (clip.Loop)
-                        target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f), false);
-
-                    target.ReapplyCurveTypes();
-
-                    if (clip.Loop)
-                        target.SmoothLoop();
-
-                    if (clip.EnsureQuaternionContinuity)
-                        clip.EnsureQuaternionContinuityAndRecalculateSlope();
+                    UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
+                        target.RotX,
+                        target.RotY,
+                        target.RotZ,
+                        target.RotW);
                 }
             }
 
             foreach (var target in clip.TargetFloatParams)
             {
-                if (target.Dirty)
-                {
-                    target.Dirty = false;
-                    if (clip.Loop)
-                    {
-                        target.Value.SetKeyframe(clip.AnimationLength, target.Value[0].value);
-                    }
-                    target.Value.FlatAllFrames();
-                }
+                if (!target.Dirty) continue;
+
+                target.Dirty = false;
+
+                if (clip.Loop)
+                    target.Value.SetKeyframe(clip.AnimationLength, target.Value[0].value);
+
+                target.Value.FlatAllFrames();
             }
         }
 
