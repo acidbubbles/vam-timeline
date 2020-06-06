@@ -307,6 +307,25 @@ namespace VamTimeline
             }
         }
 
+        private struct ControllerKeyframe
+        {
+            public float time;
+            public Vector3 position;
+            public Quaternion rotation;
+
+            public static ControllerKeyframe FromStep(MotionAnimationStep s, Atom containingAtom, FreeControllerV3 ctrl)
+            {
+                var localPosition = s.positionOn ? s.position - containingAtom.transform.position : ctrl.transform.localPosition;
+                var locationRotation = s.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * s.rotation : ctrl.transform.localRotation;
+                return new ControllerKeyframe
+                {
+                    time = s.timeStep.Snap(),
+                    position = localPosition,
+                    rotation = locationRotation
+                };
+            }
+        }
+
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var sw = Stopwatch.StartNew();
@@ -317,16 +336,20 @@ namespace VamTimeline
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
             var simplify = new HashSet<float>();
-            var steps = clip.steps.Where(s =>
-            {
-                var timeStep = s.timeStep.Snap(0.01f);
-                if (simplify.Contains(timeStep)) return false;
-                simplify.Add(timeStep);
-                return true;
-            }).ToList();
+            var steps = clip.steps
+                .Where(s =>
+                {
+                    if (!s.positionOn && !s.rotationOn) return false;
+                    var time = s.timeStep.Snap(0.01f);
+                    if (simplify.Contains(time)) return false;
+                    simplify.Add(time);
+                    return true;
+                })
+                .Select(s => ControllerKeyframe.FromStep(s, containingAtom, ctrl))
+                .ToList();
 
-            SetKeyframeFromStep(target, ctrl, containingAtom, steps[0], steps[0].timeStep.Snap());
-            SetKeyframeFromStep(target, ctrl, containingAtom, steps[steps.Count - 1], steps[steps.Count - 1].timeStep.Snap());
+            target.SetKeyframe(0, steps[0].position, steps[0].rotation);
+            target.SetKeyframe(clip.clipLength, steps[steps.Count].position, steps[steps.Count].rotation);
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
@@ -335,10 +358,10 @@ namespace VamTimeline
                 for (var i = 1; i < steps.Count - 1; i++)
                 {
                     var diff = Math.Max(
-                        Math.Abs(target.X.Evaluate(steps[i].timeStep) - steps[i].position.x),
+                        Math.Abs(target.X.Evaluate(steps[i].time) - steps[i].position.x),
                         Math.Max(
-                        Math.Abs(target.Y.Evaluate(steps[i].timeStep) - steps[i].position.y),
-                        Math.Abs(target.Z.Evaluate(steps[i].timeStep) - steps[i].position.z)
+                        Math.Abs(target.Y.Evaluate(steps[i].time) - steps[i].position.y),
+                        Math.Abs(target.Z.Evaluate(steps[i].time) - steps[i].position.z)
                         )
                     );
                     if (diff > largestDiff)
@@ -352,14 +375,13 @@ namespace VamTimeline
                     if (largestDiff < minPositionDistance) break;
                     var step = steps[largestFrame];
                     steps.RemoveAt(largestFrame);
-                    var time = step.timeStep.Snap();
                     {
                         var i = largestFrame - 1;
-                        var min = time - _reduceMinKeyframeTimeDeltaJSON.val;
+                        var min = step.time - _reduceMinKeyframeTimeDeltaJSON.val;
                         while (i > 0)
                         {
                             var previousStep = steps[i];
-                            if (previousStep.timeStep.Snap() > min)
+                            if (previousStep.time > min)
                             {
                                 steps.RemoveAt(i);
                                 i--;
@@ -370,11 +392,11 @@ namespace VamTimeline
                     }
                     {
                         var i = largestFrame + 1;
-                        var max = time + _reduceMinKeyframeTimeDeltaJSON.val;
+                        var max = step.time + _reduceMinKeyframeTimeDeltaJSON.val;
                         while (i < steps.Count)
                         {
                             var nextStep = steps[i];
-                            if (nextStep.timeStep.Snap() < max)
+                            if (nextStep.time < max)
                             {
                                 steps.RemoveAt(i);
                                 continue;
@@ -382,7 +404,7 @@ namespace VamTimeline
                             break;
                         }
                     }
-                    var key = SetKeyframeFromStep(target, ctrl, containingAtom, step, step.timeStep.Snap());
+                    var key = target.SetKeyframe(step.time, step.position, step.rotation);
                     target.SmoothNeighbors(key);
                 }
 
@@ -407,7 +429,8 @@ namespace VamTimeline
                     var step = clip.steps[stepIndex];
                     var frame = step.timeStep.Snap();
                     if (frame - lastRecordedFrame < frameLength) continue;
-                    SetKeyframeFromStep(target, ctrl, containingAtom, step, frame);
+                    var k = ControllerKeyframe.FromStep(step, containingAtom, ctrl);
+                    target.SetKeyframe(k.time, k.position, k.rotation);
                     if (previousStep != null && (target.Controller.name == "lFootControl" || target.Controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                     {
                         KeyframeSettings settings;
@@ -430,18 +453,6 @@ namespace VamTimeline
                     batchStopwatch.Start();
                 }
             }
-        }
-
-        private static int SetKeyframeFromStep(FreeControllerAnimationTarget target, FreeControllerV3 ctrl, Atom containingAtom, MotionAnimationStep step, float frame)
-        {
-            if (!step.positionOn && !step.rotationOn) return -1;
-            var localPosition = step.positionOn ? step.position - containingAtom.transform.position : ctrl.transform.localPosition;
-            var locationRotation = step.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * step.rotation : ctrl.transform.localRotation;
-            return target.SetKeyframe(
-                frame,
-                localPosition,
-                locationRotation
-            );
         }
 
         private void ReduceKeyframes()
