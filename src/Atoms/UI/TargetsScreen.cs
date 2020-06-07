@@ -334,7 +334,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(EnableAllTargets)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(TargetsScreen)}.{nameof(EnableAllTargets)}: {exc}");
             }
         }
 
