@@ -383,7 +383,6 @@ namespace VamTimeline
 
                 var step = steps[keyToApply];
                 steps.RemoveAt(keyToApply);
-                SuperController.LogMessage("" + step.time);
                 var key = target.SetKeyframe(step.time, step.position, step.rotation);
                 target.SmoothNeighbors(key);
 
