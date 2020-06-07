@@ -22,8 +22,8 @@ namespace VamTimeline
         private JSONStorableStringChooser _importRecordedOptionsJSON;
         private UIDynamicButton _reduceKeyframesUI;
         private JSONStorableFloat _reduceMinPosDistanceJSON;
-        private JSONStorableFloat _reduceMinKeyframeTimeDeltaJSON;
-        private JSONStorableFloat _importMaxKeyframesPerSecondJSON;
+        private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
+        private JSONStorableFloat _reduceMinRotationJSON;
 
         public override string Name => ScreenName;
 
@@ -60,7 +60,7 @@ namespace VamTimeline
 
             _importRecordedOptionsJSON = new JSONStorableStringChooser(
                 "Import Recorded Animation Options",
-                 new List<string> { "Keyframe Reduction", "1 fps", "2 fps", "4 fps", "10 fps" },
+                 new List<string> { "Keyframe Reduction", "Fixed Frames per Second" },
                  "Keyframe Reduction",
                  "Import Recorded Animation Options")
             {
@@ -70,20 +70,20 @@ namespace VamTimeline
             var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
             RegisterComponent(importRecordedOptionsUI);
 
-            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Value Delta", 0.04f, 0.001f, 0.1f, true);
+            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Distance Between Frames", 0.04f, 0.001f, 0.5f, true);
             RegisterStorable(_reduceMinPosDistanceJSON);
             var reduceMinPosDistanceUI = Plugin.CreateSlider(_reduceMinPosDistanceJSON, true);
             RegisterComponent(reduceMinPosDistanceUI);
 
-            _reduceMinKeyframeTimeDeltaJSON = new JSONStorableFloat("Minimum Time Dist Between Frames", 0.1f, 0.01f, 1f, true);
-            RegisterStorable(_reduceMinKeyframeTimeDeltaJSON);
-            var reduceMinKeyframeTimeDeltaUI = Plugin.CreateSlider(_reduceMinKeyframeTimeDeltaJSON, true);
-            RegisterComponent(reduceMinKeyframeTimeDeltaUI);
+            _reduceMinRotationJSON = new JSONStorableFloat("Minimum Rotation Between Frames", 10f, 0.1f, 90f, true);
+            RegisterStorable(_reduceMinRotationJSON);
+            var reduceMinRotationUI = Plugin.CreateSlider(_reduceMinRotationJSON, true);
+            RegisterComponent(reduceMinRotationUI);
 
-            _importMaxKeyframesPerSecondJSON = new JSONStorableFloat("Max Keyframes per Second", 4f, 1f, 10f, true);
-            RegisterStorable(_importMaxKeyframesPerSecondJSON);
-            var importMaxKeyframesPerSecondUI = Plugin.CreateSlider(_importMaxKeyframesPerSecondJSON, true);
-            RegisterComponent(importMaxKeyframesPerSecondUI);
+            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max Frames per Second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
+            RegisterStorable(_reduceMaxFramesPerSecondJSON);
+            var maxFramesPerSecondUI = Plugin.CreateSlider(_reduceMaxFramesPerSecondJSON, true);
+            RegisterComponent(maxFramesPerSecondUI);
 
             _importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
@@ -223,29 +223,6 @@ namespace VamTimeline
 
             Current.Loop = SuperController.singleton.motionAnimationMaster.loop;
 
-            float frameLength;
-            switch (_importRecordedOptionsJSON.val)
-            {
-                case "Keyframe Reduction":
-                    frameLength = 0f;
-                    break;
-                case "1 fps":
-                    frameLength = 1f;
-                    break;
-                case "2 fps":
-                    frameLength = 0.5f;
-                    break;
-                case "4 fps":
-                    frameLength = 0.25f;
-                    break;
-                case "10 fps":
-                    frameLength = 0.1f;
-                    break;
-                default:
-                    SuperController.LogError($"Unknown import option {_importRecordedOptionsJSON.val}");
-                    yield break;
-            }
-
             yield return 0;
 
             foreach (var mot in containingAtom.motionAnimationControls)
@@ -278,7 +255,7 @@ namespace VamTimeline
                     if (_importRecordedOptionsJSON.val == "Keyframe Reduction")
                         enumerator = ExtractFramesWithReductionTechnique(mot.clip, target, ctrl).GetEnumerator();
                     else
-                        enumerator = ExtractFramesWithFpsTechnique(mot.clip, frameLength, target, ctrl).GetEnumerator();
+                        enumerator = ExtractFramesWithFpsTechnique(mot.clip, target, ctrl).GetEnumerator();
                 }
                 catch
                 {
@@ -313,13 +290,13 @@ namespace VamTimeline
             public Vector3 position;
             public Quaternion rotation;
 
-            public static ControllerKeyframe FromStep(MotionAnimationStep s, Atom containingAtom, FreeControllerV3 ctrl)
+            public static ControllerKeyframe FromStep(float time, MotionAnimationStep s, Atom containingAtom, FreeControllerV3 ctrl)
             {
                 var localPosition = s.positionOn ? s.position - containingAtom.transform.position : ctrl.transform.localPosition;
                 var locationRotation = s.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * s.rotation : ctrl.transform.localRotation;
                 return new ControllerKeyframe
                 {
-                    time = s.timeStep.Snap(),
+                    time = time,
                     position = localPosition,
                     rotation = locationRotation
                 };
@@ -329,96 +306,91 @@ namespace VamTimeline
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var sw = Stopwatch.StartNew();
-            var minPositionDistance = _reduceMinPosDistanceJSON.val;
-            var minFrameDistance = _reduceMinKeyframeTimeDeltaJSON.val;
-            var maxIterations = clip.clipLength * _importMaxKeyframesPerSecondJSON.val;
+            var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
+            var maxIterations = (int)(clip.clipLength * 10);
 
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
-            var simplify = new HashSet<float>();
             var steps = clip.steps
-                .Where(s =>
+                .Where(s => s.positionOn || s.rotationOn)
+                .GroupBy(s => s.timeStep.Snap(minFrameDistance))
+                .Select(g =>
                 {
-                    if (!s.positionOn && !s.rotationOn) return false;
-                    var time = s.timeStep.Snap(0.01f);
-                    if (simplify.Contains(time)) return false;
-                    simplify.Add(time);
-                    return true;
+                    var step = g.OrderBy(s => Math.Abs(g.Key - s.timeStep)).First();
+                    return ControllerKeyframe.FromStep(g.Key, step, containingAtom, ctrl);
                 })
-                .Select(s => ControllerKeyframe.FromStep(s, containingAtom, ctrl))
                 .ToList();
 
             target.SetKeyframe(0, steps[0].position, steps[0].rotation);
-            target.SetKeyframe(clip.clipLength, steps[steps.Count].position, steps[steps.Count].rotation);
+            target.SetKeyframe(Current.AnimationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation);
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
-                var largestFrame = -1;
-                var largestDiff = 0f;
+                // Scan for largest difference with curve
+                // TODO: When we add a keyframe, we only need to rescan between the keyframe before and after. We could optimize by building a list of buckets in which the max deltas are known, and avoid re-scanning if the dirty bucket does not have the largest delta.
+                var keyWithLargestPositionDistance = -1;
+                var largestPositionDistance = 0f;
+                var keyWithLargestRotationAngle = -1;
+                var largestRotationAngle = 0f;
                 for (var i = 1; i < steps.Count - 1; i++)
                 {
-                    var diff = Math.Max(
-                        Math.Abs(target.X.Evaluate(steps[i].time) - steps[i].position.x),
-                        Math.Max(
-                        Math.Abs(target.Y.Evaluate(steps[i].time) - steps[i].position.y),
-                        Math.Abs(target.Z.Evaluate(steps[i].time) - steps[i].position.z)
-                        )
+                    var positionDiff = Vector3.Distance(
+                        new Vector3(
+                            target.X.Evaluate(steps[i].time),
+                            target.Y.Evaluate(steps[i].time),
+                            target.Z.Evaluate(steps[i].time)
+                        ),
+                        steps[i].position
                     );
-                    if (diff > largestDiff)
+                    if (positionDiff > largestPositionDistance)
                     {
-                        largestDiff = diff;
-                        largestFrame = i;
+                        largestPositionDistance = positionDiff;
+                        keyWithLargestPositionDistance = i;
+                    }
+
+                    var rotationAngle = Vector3.Angle(
+                        new Quaternion(
+                            target.RotX.Evaluate(steps[i].time),
+                            target.RotY.Evaluate(steps[i].time),
+                            target.RotZ.Evaluate(steps[i].time),
+                            target.RotW.Evaluate(steps[i].time)
+                        ).eulerAngles,
+                        steps[i].rotation.eulerAngles
+                        );
+                    if (rotationAngle > largestRotationAngle)
+                    {
+                        largestRotationAngle = rotationAngle;
+                        keyWithLargestRotationAngle = i;
                     }
                 }
-                if (largestFrame != 0)
-                {
-                    if (largestDiff < minPositionDistance) break;
-                    var step = steps[largestFrame];
-                    steps.RemoveAt(largestFrame);
-                    {
-                        var i = largestFrame - 1;
-                        var min = step.time - _reduceMinKeyframeTimeDeltaJSON.val;
-                        while (i > 0)
-                        {
-                            var previousStep = steps[i];
-                            if (previousStep.time > min)
-                            {
-                                steps.RemoveAt(i);
-                                i--;
-                                continue;
-                            }
-                            break;
-                        }
-                    }
-                    {
-                        var i = largestFrame + 1;
-                        var max = step.time + _reduceMinKeyframeTimeDeltaJSON.val;
-                        while (i < steps.Count)
-                        {
-                            var nextStep = steps[i];
-                            if (nextStep.time < max)
-                            {
-                                steps.RemoveAt(i);
-                                continue;
-                            }
-                            break;
-                        }
-                    }
-                    var key = target.SetKeyframe(step.time, step.position, step.rotation);
-                    target.SmoothNeighbors(key);
-                }
+
+                // Cannot find large enough diffs, exit
+                if (keyWithLargestRotationAngle == -1 || keyWithLargestPositionDistance == -1) break;
+                var posInRange = largestPositionDistance >= _reduceMinPosDistanceJSON.val;
+                var rotInRange = largestRotationAngle >= _reduceMinRotationJSON.val;
+                if (!posInRange && !rotInRange) break;
+
+                // This is an attempt to compare translations and rotations
+                var normalizedPositionDistance = largestPositionDistance / 0.4f;
+                var normalizedRotationAngle = largestRotationAngle / 180f;
+                var selectPosOverRot = (normalizedPositionDistance > normalizedRotationAngle) && posInRange;
+                var keyToApply = selectPosOverRot ? keyWithLargestPositionDistance : keyWithLargestRotationAngle;
+
+                var step = steps[keyToApply];
+                steps.RemoveAt(keyToApply);
+                var key = target.SetKeyframe(step.time, step.position, step.rotation);
+                target.SmoothNeighbors(key);
 
                 yield return 0;
             }
-
-            SuperController.LogMessage($"Imported {clip.steps.Count} steps for {target.Name}, reduced to {target.GetLeadCurve().length} keyframes in {sw.Elapsed}");
         }
 
-        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, float frameLength, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
+        private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var minPositionDistanceForFlat = 0.01f;
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
+            var frameLength = 1f / _reduceMaxFramesPerSecondJSON.val;
 
             var lastRecordedFrame = float.MinValue;
             MotionAnimationStep previousStep = null;
@@ -427,17 +399,17 @@ namespace VamTimeline
                 try
                 {
                     var step = clip.steps[stepIndex];
-                    var frame = step.timeStep.Snap();
-                    if (frame - lastRecordedFrame < frameLength) continue;
-                    var k = ControllerKeyframe.FromStep(step, containingAtom, ctrl);
-                    target.SetKeyframe(k.time, k.position, k.rotation);
+                    var time = step.timeStep.Snap(0.01f);
+                    if (time - lastRecordedFrame < frameLength) continue;
+                    var k = ControllerKeyframe.FromStep(time, step, containingAtom, ctrl);
+                    target.SetKeyframe(time, k.position, k.rotation);
                     if (previousStep != null && (target.Controller.name == "lFootControl" || target.Controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                     {
                         KeyframeSettings settings;
                         if (target.Settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
                             target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);
                     }
-                    lastRecordedFrame = frame;
+                    lastRecordedFrame = time;
                     previousStep = step;
                 }
                 catch (Exception exc)
@@ -515,76 +487,55 @@ namespace VamTimeline
 
         private void ReduceKeyframes(AnimationCurve source)
         {
-            var minPositionDistance = _reduceMinPosDistanceJSON.val;
-            var minFrameDistance = _reduceMinKeyframeTimeDeltaJSON.val;
-            var maxIterations = source[source.length].time * _importMaxKeyframesPerSecondJSON.val;
+            var sw = Stopwatch.StartNew();
+            var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
+            var maxIterations = (int)(source[source.length - 1].time * 10);
 
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
-            var steps = new List<Keyframe>(source.keys);
+            var steps = source.keys
+                .GroupBy(s => s.time.Snap(minFrameDistance))
+                .Select(g =>
+                {
+                    var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
+                    return new Keyframe(g.Key, keyframe.value, 0, 0);
+                })
+                .ToList();
 
             var target = new AnimationCurve();
-            target.AddKey(0, source[0].value);
-            target.AddKey(source[source.length - 1].time, source[source.length - 1].value);
+            target.FlatFrame(target.AddKey(0, source[0].value));
+            target.FlatFrame(target.AddKey(source[source.length - 1].time, source[source.length - 1].value));
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
-                var largestFrame = -1;
+                // Scan for largest difference with curve
+                // TODO: When we add a keyframe, we only need to rescan between the keyframe before and after. We could optimize by building a list of buckets in which the max deltas are known, and avoid re-scanning if the dirty bucket does not have the largest delta.
+                var keyWithLargestDiff = -1;
                 var largestDiff = 0f;
                 for (var i = 1; i < steps.Count - 1; i++)
                 {
-                    var diff = Math.Abs(target.Evaluate(steps[i].time) - steps[i].value);
+                    var diff = Mathf.Abs(target.Evaluate(steps[i].time) - steps[i].value);
+
                     if (diff > largestDiff)
                     {
                         largestDiff = diff;
-                        largestFrame = i;
+                        keyWithLargestDiff = i;
                     }
                 }
-                if (largestFrame != 0)
-                {
-                    if (largestDiff < minPositionDistance) break;
-                    var step = steps[largestFrame];
-                    steps.RemoveAt(largestFrame);
-                    {
-                        var i = largestFrame - 1;
-                        var min = step.time - _reduceMinKeyframeTimeDeltaJSON.val;
-                        while (i > 0)
-                        {
-                            var previousStep = steps[i];
-                            if (previousStep.time.Snap() > min)
-                            {
-                                steps.RemoveAt(i);
-                                i--;
-                                continue;
-                            }
-                            break;
-                        }
-                    }
-                    {
-                        var i = largestFrame + 1;
-                        var max = step.time + _reduceMinKeyframeTimeDeltaJSON.val;
-                        while (i < steps.Count)
-                        {
-                            var nextStep = steps[i];
-                            if (nextStep.time.Snap() < max)
-                            {
-                                steps.RemoveAt(i);
-                                continue;
-                            }
-                            break;
-                        }
-                    }
-                    var key = target.AddKey(step.time, step.value);
-                    if (key > -1)
-                    {
-                        target.SmoothTangents(key, 1f);
-                        target.SmoothTangents(key - 1, 1f);
-                        target.SmoothTangents(key + 1, 1f);
-                    }
-                }
-            }
 
-            SuperController.LogMessage($"Reduced {source.length} keyframes to {target.length} keyframes");
+                // Cannot find large enough diffs, exit
+                if (keyWithLargestDiff == -1) break;
+                var inRange = largestDiff >= _reduceMinPosDistanceJSON.val;
+                if (!inRange) break;
+
+                // This is an attempt to compare translations and rotations
+                var keyToApply = keyWithLargestDiff;
+
+                var step = steps[keyToApply];
+                steps.RemoveAt(keyToApply);
+                var key = target.SetKeyframe(step.time, step.value);
+                target.FlatFrame(key);
+            }
 
             source.keys = target.keys;
         }

@@ -268,15 +268,22 @@ namespace VamTimeline
 
         public static void FlatAllFrames(this AnimationCurve curve)
         {
-            for (int k = 1; k < curve.length; k++)
+            for (int k = 0; k < curve.length; k++)
             {
-                var keyframe = curve[k];
-                keyframe.inTangent = 0f;
-                keyframe.outTangent = 0f;
-                keyframe.inWeight = 0.33f;
-                keyframe.outWeight = 0.33f;
-                curve.MoveKey(k, keyframe);
+                FlatFrame(curve, k);
             }
+        }
+
+        public static void FlatFrame(this AnimationCurve curve, int key)
+        {
+            if (key == -1) return;
+
+            var keyframe = curve[key];
+            keyframe.inTangent = 0f;
+            keyframe.outTangent = 0f;
+            keyframe.inWeight = 0.33f;
+            keyframe.outWeight = 0.33f;
+            curve.MoveKey(key, keyframe);
         }
 
         public static void SmoothLoop(this AnimationCurve curve)
