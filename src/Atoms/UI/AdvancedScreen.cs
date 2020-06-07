@@ -210,8 +210,8 @@ namespace VamTimeline
             }
 
             if (_importRecordedUI == null) return;
-            if (_importRecordedUI.buttonText.text == "Importing, please wait...") return;
             _importRecordedUI.buttonText.text = "Importing, please wait...";
+            _importRecordedUI.button.interactable = false;
 
             Plugin.StartCoroutine(ImportRecordedCoroutine());
         }
@@ -222,25 +222,28 @@ namespace VamTimeline
             var totalStopwatch = Stopwatch.StartNew();
 
             Current.Loop = SuperController.singleton.motionAnimationMaster.loop;
+            Current.AnimationLength = containingAtom.motionAnimationControls[0].clip.clipLength.Snap(0.01f);
 
             yield return 0;
 
+            var controlCounter = 0;
             foreach (var mot in containingAtom.motionAnimationControls)
             {
                 FreeControllerAnimationTarget target = null;
                 FreeControllerV3 ctrl;
 
+                _importRecordedUI.buttonText.text = $"Importing, please wait... ({++controlCounter} / {containingAtom.motionAnimationControls.Length})";
+
                 try
                 {
                     if (mot == null || mot.clip == null) continue;
-                    if (mot.clip.clipLength <= 0.001) continue;
+                    if (mot.clip.clipLength <= 0.1) continue;
                     ctrl = mot.controller;
                     Current.Remove(ctrl);
-                    target = Plugin.Animation.Current.TargetControllers.FirstOrDefault(t => t.Controller == ctrl) ?? Plugin.Animation.Current.Add(ctrl);
+                    target = Current.Add(ctrl);
                     target.StartBulkUpdates();
-                    Current.AnimationLength = mot.clip.clipLength.Snap();
                     target.SetKeyframeToCurrentTransform(0);
-                    target.SetKeyframeToCurrentTransform(Plugin.Animation.Current.AnimationLength);
+                    target.SetKeyframeToCurrentTransform(Current.AnimationLength);
                 }
                 catch (Exception exc)
                 {
@@ -268,7 +271,9 @@ namespace VamTimeline
 
                 target.EndBulkUpdates();
             }
+
             _importRecordedUI.buttonText.text = "Import Recorded Animation (Mocap)";
+            _importRecordedUI.button.interactable = true;
         }
 
         private bool TryMoveNext(IEnumerator enumerator, FreeControllerAnimationTarget target)
@@ -313,11 +318,11 @@ namespace VamTimeline
             var containingAtom = Plugin.ContainingAtom;
             var steps = clip.steps
                 .Where(s => s.positionOn || s.rotationOn)
-                .GroupBy(s => s.timeStep.Snap(minFrameDistance))
+                .GroupBy(s => s.timeStep.Snap(minFrameDistance).ToMilliseconds())
                 .Select(g =>
                 {
                     var step = g.OrderBy(s => Math.Abs(g.Key - s.timeStep)).First();
-                    return ControllerKeyframe.FromStep(g.Key, step, containingAtom, ctrl);
+                    return ControllerKeyframe.FromStep((g.Key / 1000f).Snap(), step, containingAtom, ctrl);
                 })
                 .ToList();
 
@@ -378,6 +383,7 @@ namespace VamTimeline
 
                 var step = steps[keyToApply];
                 steps.RemoveAt(keyToApply);
+                SuperController.LogMessage("" + step.time);
                 var key = target.SetKeyframe(step.time, step.position, step.rotation);
                 target.SmoothNeighbors(key);
 
@@ -494,11 +500,11 @@ namespace VamTimeline
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
             var steps = source.keys
-                .GroupBy(s => s.time.Snap(minFrameDistance))
+                .GroupBy(s => s.time.Snap(minFrameDistance).ToMilliseconds())
                 .Select(g =>
                 {
                     var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
-                    return new Keyframe(g.Key, keyframe.value, 0, 0);
+                    return new Keyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0);
                 })
                 .ToList();
 
