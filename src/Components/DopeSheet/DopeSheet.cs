@@ -186,6 +186,7 @@ namespace VamTimeline
             _animation = animation;
             _animation.TimeChanged.AddListener(OnTimeChanged);
             _animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            _animation.AnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             BindClip(_animation.Current);
             SetScrubberPosition(_animation.Time, true);
         }
@@ -215,8 +216,13 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             UnbindClip();
-
             BindClip(args.After);
+        }
+
+        private void OnAnimationSettingsChanged()
+        {
+            UnbindClip();
+            BindClip(_animation.Current);
         }
 
         private void BindClip(IAtomAnimationClip clip)
