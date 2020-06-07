@@ -86,9 +86,18 @@ namespace VamTimeline
         {
             if (SuperController.singleton.motionAnimationMaster == null || Plugin.ContainingAtom.motionAnimationControls == null)
             {
-                SuperController.LogError("Missing motion animation controls");
+                SuperController.LogError("VamTimeline: Missing motion animation controls");
                 return;
             }
+
+            Current.Loop = SuperController.singleton.motionAnimationMaster.loop;
+            var length = Plugin.ContainingAtom.motionAnimationControls.Select(m => m.clip.clipLength).Max().Snap(0.01f);
+            if (length < 0.001f)
+            {
+                SuperController.LogError("VamTimeline: No motion animation to import.");
+                return;
+            }
+            Current.AnimationLength = length;
 
             if (_importRecordedUI == null) return;
             _importRecordedUI.buttonText.text = "Importing, please wait...";
@@ -101,9 +110,6 @@ namespace VamTimeline
         {
             var containingAtom = Plugin.ContainingAtom;
             var totalStopwatch = Stopwatch.StartNew();
-
-            Current.Loop = SuperController.singleton.motionAnimationMaster.loop;
-            Current.AnimationLength = containingAtom.motionAnimationControls[0].clip.clipLength.Snap(0.01f);
 
             yield return 0;
 
@@ -191,11 +197,9 @@ namespace VamTimeline
 
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
-            var sw = Stopwatch.StartNew();
             var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
             var maxIterations = (int)(clip.clipLength * 10);
 
-            var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = Plugin.ContainingAtom;
             var steps = clip.steps
                 .Where(s => s.positionOn || s.rotationOn)
