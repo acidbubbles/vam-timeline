@@ -195,6 +195,16 @@ namespace VamTimeline
             }
         }
 
+        public class ReducerBucket
+        {
+            public int from;
+            public int to;
+            public int keyWithLargestPositionDistance = -1;
+            public float largestPositionDistance;
+            public int keyWithLargestRotationAngle = -1;
+            public float largestRotationAngle;
+        }
+
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
@@ -211,46 +221,39 @@ namespace VamTimeline
                 })
                 .ToList();
 
+            if (steps.Count < 2) yield break;
+
             target.SetKeyframe(0, steps[0].position, steps[0].rotation);
             target.SetKeyframe(Current.AnimationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation);
+
+            var buckets = new List<ReducerBucket>
+            {
+                Scan(steps, target, 1, steps.Count - 2)
+            };
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
                 // Scan for largest difference with curve
-                // TODO: When we add a keyframe, we only need to rescan between the keyframe before and after. We could optimize by building a list of buckets in which the max deltas are known, and avoid re-scanning if the dirty bucket does not have the largest delta.
+                var bucketWithLargestPositionDistance = -1;
                 var keyWithLargestPositionDistance = -1;
                 var largestPositionDistance = 0f;
+                var bucketWithLargestRotationAngle = -1;
                 var keyWithLargestRotationAngle = -1;
                 var largestRotationAngle = 0f;
-                for (var i = 1; i < steps.Count - 1; i++)
+                for (var bucketIndex = 0; bucketIndex < buckets.Count; bucketIndex++)
                 {
-                    var positionDiff = Vector3.Distance(
-                        new Vector3(
-                            target.X.Evaluate(steps[i].time),
-                            target.Y.Evaluate(steps[i].time),
-                            target.Z.Evaluate(steps[i].time)
-                        ),
-                        steps[i].position
-                    );
-                    if (positionDiff > largestPositionDistance)
+                    var bucket = buckets[bucketIndex];
+                    if (bucket.largestPositionDistance > largestPositionDistance)
                     {
-                        largestPositionDistance = positionDiff;
-                        keyWithLargestPositionDistance = i;
+                        largestPositionDistance = bucket.largestPositionDistance;
+                        keyWithLargestPositionDistance = bucket.keyWithLargestPositionDistance;
+                        bucketWithLargestPositionDistance = bucketIndex;
                     }
-
-                    var rotationAngle = Vector3.Angle(
-                        new Quaternion(
-                            target.RotX.Evaluate(steps[i].time),
-                            target.RotY.Evaluate(steps[i].time),
-                            target.RotZ.Evaluate(steps[i].time),
-                            target.RotW.Evaluate(steps[i].time)
-                        ).eulerAngles,
-                        steps[i].rotation.eulerAngles
-                        );
-                    if (rotationAngle > largestRotationAngle)
+                    if (bucket.largestRotationAngle > largestRotationAngle)
                     {
-                        largestRotationAngle = rotationAngle;
-                        keyWithLargestRotationAngle = i;
+                        largestRotationAngle = bucket.largestRotationAngle;
+                        keyWithLargestRotationAngle = bucket.keyWithLargestRotationAngle;
+                        bucketWithLargestRotationAngle = bucketIndex;
                     }
                 }
 
@@ -267,12 +270,70 @@ namespace VamTimeline
                 var keyToApply = selectPosOverRot ? keyWithLargestPositionDistance : keyWithLargestRotationAngle;
 
                 var step = steps[keyToApply];
-                steps.RemoveAt(keyToApply);
                 var key = target.SetKeyframe(step.time, step.position, step.rotation);
                 target.SmoothNeighbors(key);
 
+                int bucketToSplitIndex;
+                if (selectPosOverRot)
+                    bucketToSplitIndex = bucketWithLargestPositionDistance;
+                else
+                    bucketToSplitIndex = bucketWithLargestRotationAngle;
+
+                if (bucketToSplitIndex > -1)
+                {
+                    // Split buckets and exclude the scanned keyframe, we never have to scan it again.
+                    var bucketToSplit = buckets[bucketToSplitIndex];
+                    buckets.RemoveAt(bucketToSplitIndex);
+                    if (bucketToSplit.to - keyToApply + 1 > 2)
+                        buckets.Insert(bucketToSplitIndex, Scan(steps, target, keyToApply + 1, bucketToSplit.to));
+                    if (keyToApply - 1 - bucketToSplit.from > 2)
+                        buckets.Insert(bucketToSplitIndex, Scan(steps, target, bucketToSplit.from, keyToApply - 1));
+                }
+
                 yield return 0;
             }
+        }
+
+        private ReducerBucket Scan(List<ControllerKeyframe> steps, FreeControllerAnimationTarget target, int from, int to)
+        {
+            var bucket = new ReducerBucket
+            {
+                from = from,
+                to = to
+            };
+            for (var i = from; i <= to; i++)
+            {
+                var step = steps[i];
+                var positionDiff = Vector3.Distance(
+                    new Vector3(
+                        target.X.Evaluate(step.time),
+                        target.Y.Evaluate(step.time),
+                        target.Z.Evaluate(step.time)
+                    ),
+                    step.position
+                );
+                if (positionDiff > bucket.largestPositionDistance)
+                {
+                    bucket.largestPositionDistance = positionDiff;
+                    bucket.keyWithLargestPositionDistance = i;
+                }
+
+                var rotationAngle = Vector3.Angle(
+                    new Quaternion(
+                        target.RotX.Evaluate(step.time),
+                        target.RotY.Evaluate(step.time),
+                        target.RotZ.Evaluate(step.time),
+                        target.RotW.Evaluate(step.time)
+                    ).eulerAngles,
+                    step.rotation.eulerAngles
+                    );
+                if (rotationAngle > bucket.largestRotationAngle)
+                {
+                    bucket.largestRotationAngle = rotationAngle;
+                    bucket.keyWithLargestRotationAngle = i;
+                }
+            }
+            return bucket;
         }
 
         private IEnumerable ExtractFramesWithFpsTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
