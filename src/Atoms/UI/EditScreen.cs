@@ -73,7 +73,7 @@ namespace VamTimeline
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
             _curveTypeUI = plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
-            _curveTypeUI.popupPanelHeight = 500f;
+            _curveTypeUI.popupPanelHeight = 450f;
             RegisterComponent(_curveTypeUI);
         }
 
@@ -87,7 +87,7 @@ namespace VamTimeline
         private void InitCurvesUI(bool rightSide)
         {
             var spacerUI = plugin.CreateSpacer(rightSide);
-            spacerUI.height = 200f;
+            spacerUI.height = 300f;
             RegisterComponent(spacerUI);
 
             _curves = spacerUI.gameObject.AddComponent<Curves>();

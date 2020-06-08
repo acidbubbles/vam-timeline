@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -42,19 +43,37 @@ namespace VamTimeline
 
         protected void InitClipboardUI(bool rightSide)
         {
-            var cutUI = plugin.CreateButton("Cut / Delete Frame", rightSide);
-            cutUI.button.onClick.AddListener(() => plugin.cutJSON.actionCallback());
-            RegisterComponent(cutUI);
+            var container = plugin.CreateSpacer(rightSide);
+            RegisterComponent(container);
+            container.height = 60f;
 
-            var copyUI = plugin.CreateButton("Copy Frame", rightSide);
-            copyUI.button.onClick.AddListener(() => plugin.copyJSON.actionCallback());
-            RegisterComponent(copyUI);
+            var group = container.gameObject.AddComponent<GridLayoutGroup>();
+            group.constraint = GridLayoutGroup.Constraint.Flexible;
+            group.constraintCount = 3;
+            group.spacing = Vector2.zero;
+            group.cellSize = new Vector2(512f / 3f, 50f);
+            group.childAlignment = TextAnchor.MiddleCenter;
 
-            var pasteUI = plugin.CreateButton("Paste Frame", rightSide);
-            pasteUI.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
-            RegisterComponent(pasteUI);
+            {
+                var btn = UnityEngine.Object.Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Cut";
+                btn.button.onClick.AddListener(() => plugin.cutJSON.actionCallback());
+            }
 
-            var text = pasteUI.GetComponentInChildren<Text>();
+            {
+                var btn = UnityEngine.Object.Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Copy";
+                btn.button.onClick.AddListener(() => plugin.copyJSON.actionCallback());
+            }
+
+            {
+                var btn = UnityEngine.Object.Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Paste";
+                btn.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
+            }
         }
 
         protected UIDynamic CreateSpacer(bool rightSide)
