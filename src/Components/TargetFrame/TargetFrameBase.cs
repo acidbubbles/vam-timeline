@@ -16,15 +16,13 @@ namespace VamTimeline
     {
         private int _ignoreNextToggleEvent;
 
-        protected readonly StyleBase Style = new StyleBase();
-        protected IAtomPlugin Plugin;
-        protected AtomAnimationClip Clip;
-        protected T Target;
-        protected UIDynamicToggle Toggle;
-        protected Text ValueText;
+        protected readonly StyleBase style = new StyleBase();
+        protected IAtomPlugin plugin;
+        protected AtomAnimationClip clip;
+        protected T target;
+        protected UIDynamicToggle toggle;
+        protected Text valueText;
 
-
-        public bool interactable { get; set; }
         public UIDynamic Container => gameObject.GetComponent<UIDynamic>();
 
         public TargetFrameBase()
@@ -33,19 +31,19 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin, AtomAnimationClip clip, T target)
         {
-            Plugin = plugin;
-            Clip = clip;
-            Target = target;
+            this.plugin = plugin;
+            this.clip = clip;
+            this.target = target;
 
             CreateToggle(plugin);
-            Toggle.label = target.name;
+            toggle.label = target.name;
 
             CreateCustom();
 
-            ValueText = CreateValueText();
+            valueText = CreateValueText();
 
-            Plugin.animation.TimeChanged.AddListener(OnTimeChanged);
-            OnTimeChanged(Plugin.animation.Time);
+            this.plugin.animation.TimeChanged.AddListener(this.OnTimeChanged);
+            OnTimeChanged(this.plugin.animation.Time);
 
             target.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
 
@@ -54,24 +52,24 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesModified()
         {
-            SetTime(Plugin.animation.Time, true);
+            SetTime(plugin.animation.Time, true);
         }
 
         private void CreateToggle(IAtomPlugin plugin)
         {
-            if (Toggle != null) return;
+            if (toggle != null) return;
 
             var ui = Instantiate(plugin.manager.configurableTogglePrefab.transform);
             ui.SetParent(transform, false);
 
-            Toggle = ui.GetComponent<UIDynamicToggle>();
+            toggle = ui.GetComponent<UIDynamicToggle>();
 
             var rect = ui.gameObject.GetComponent<RectTransform>();
             rect.StretchParent();
 
-            Toggle.backgroundImage.raycastTarget = false;
+            toggle.backgroundImage.raycastTarget = false;
 
-            var label = Toggle.labelText;
+            var label = toggle.labelText;
             label.fontSize = 26;
             label.alignment = TextAnchor.UpperLeft;
             label.raycastTarget = false;
@@ -79,13 +77,13 @@ namespace VamTimeline
             labelRect.offsetMin += new Vector2(-3f, 0f);
             labelRect.offsetMax += new Vector2(0f, -5f);
 
-            var checkbox = Toggle.toggle.image.gameObject;
+            var checkbox = toggle.toggle.image.gameObject;
             var toggleRect = checkbox.GetComponent<RectTransform>();
             toggleRect.anchoredPosition += new Vector2(3f, 0f);
 
             ui.gameObject.SetActive(true);
 
-            Toggle.toggle.onValueChanged.AddListener(ToggleKeyframeInternal);
+            toggle.toggle.onValueChanged.AddListener(ToggleKeyframeInternal);
         }
 
         private void ToggleKeyframeInternal(bool on)
@@ -108,8 +106,8 @@ namespace VamTimeline
             var text = go.AddComponent<Text>();
             text.alignment = TextAnchor.LowerRight;
             text.fontSize = 20;
-            text.font = Style.Font;
-            text.color = Style.FontColor;
+            text.font = style.Font;
+            text.color = style.FontColor;
             text.raycastTarget = false;
 
             return text;
@@ -117,8 +115,8 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (Plugin.animation.IsPlaying())
-                SetTime(Plugin.animation.Time, false);
+            if (plugin.animation.IsPlaying())
+                SetTime(plugin.animation.Time, false);
         }
 
         private void OnTimeChanged(float time)
@@ -130,26 +128,24 @@ namespace VamTimeline
         {
             if (stopped)
             {
-                if (!Toggle.toggle.interactable)
-                    Toggle.toggle.interactable = true;
-                SetToggle(Target.GetLeadCurve().KeyframeBinarySearch(time) != -1);
+                toggle.toggle.interactable = time > 0 && time < clip.animationLength;
+                SetToggle(target.GetLeadCurve().KeyframeBinarySearch(time) != -1);
             }
             else
             {
-                if (Toggle.toggle.interactable)
-                    Toggle.toggle.interactable = false;
-                if (ValueText.text != "")
-                    ValueText.text = "";
+                toggle.toggle.interactable = false;
+                if (valueText.text != "")
+                    valueText.text = "";
             }
         }
 
         protected void SetToggle(bool on)
         {
-            if (Toggle.toggle.isOn == on) return;
+            if (toggle.toggle.isOn == on) return;
             Interlocked.Increment(ref _ignoreNextToggleEvent);
             try
             {
-                Toggle.toggle.isOn = on;
+                toggle.toggle.isOn = on;
             }
             finally
             {
@@ -162,8 +158,8 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            Plugin.animation.TimeChanged.RemoveListener(OnTimeChanged);
-            Target.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
+            plugin.animation.TimeChanged.RemoveListener(OnTimeChanged);
+            target.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
         }
     }
 }

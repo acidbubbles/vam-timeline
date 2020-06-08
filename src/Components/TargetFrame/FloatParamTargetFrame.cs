@@ -70,9 +70,9 @@ namespace VamTimeline
             var interactions = slider.AddComponent<SimpleSlider>();
             interactions.OnChange.AddListener((float val) =>
             {
-                Target.floatParam.val = Target.floatParam.min + val * (Target.floatParam.max - Target.floatParam.min);
-                Plugin.animation.SetKeyframe(Target, Plugin.animation.Time, Target.floatParam.val);
-                SetTime(Plugin.animation.Time, true);
+                target.floatParam.val = target.floatParam.min + val * (target.floatParam.max - target.floatParam.min);
+                plugin.animation.SetKeyframe(target, plugin.animation.Time, target.floatParam.val);
+                SetTime(plugin.animation.Time, true);
                 ToggleKeyframe(true);
             });
         }
@@ -83,17 +83,17 @@ namespace VamTimeline
 
             if (stopped)
             {
-                ValueText.text = Target.floatParam.val.ToString("0.00");
+                valueText.text = target.floatParam.val.ToString("0.00");
             }
 
-            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-Target.floatParam.min + Target.floatParam.val) / (Target.floatParam.max - Target.floatParam.min)), 1f);
+            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-target.floatParam.min + target.floatParam.val) / (target.floatParam.max - target.floatParam.min)), 1f);
         }
 
         public override void ToggleKeyframe(bool enable)
         {
-            if (Plugin.animation.IsPlaying()) return;
-            var time = Plugin.animation.Time.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(Clip.animationLength))
+            if (plugin.animation.IsPlaying()) return;
+            var time = plugin.animation.Time.Snap();
+            if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {
                 if (!enable)
                     SetToggle(true);
@@ -101,11 +101,11 @@ namespace VamTimeline
             }
             if (enable)
             {
-                Plugin.animation.SetKeyframe(Target, time, Target.floatParam.val);
+                plugin.animation.SetKeyframe(target, time, target.floatParam.val);
             }
             else
             {
-                Target.DeleteFrame(time);
+                target.DeleteFrame(time);
             }
         }
     }

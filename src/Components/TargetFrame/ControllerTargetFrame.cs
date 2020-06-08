@@ -26,16 +26,16 @@ namespace VamTimeline
 
             if (stopped)
             {
-                var pos = Target.controller.transform.position;
-                ValueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
+                var pos = target.controller.transform.position;
+                valueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
             }
         }
 
         public override void ToggleKeyframe(bool enable)
         {
-            if (Plugin.animation.IsPlaying()) return;
-            var time = Plugin.animation.Time.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(Clip.animationLength))
+            if (plugin.animation.IsPlaying()) return;
+            var time = plugin.animation.Time.Snap();
+            if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {
                 if (!enable)
                     SetToggle(true);
@@ -43,35 +43,35 @@ namespace VamTimeline
             }
             if (enable)
             {
-                if (Plugin.autoKeyframeAllControllersJSON.val)
+                if (plugin.autoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target1 in Clip.TargetControllers)
+                    foreach (var target1 in clip.TargetControllers)
                         SetControllerKeyframe(time, target1);
                 }
                 else
                 {
-                    SetControllerKeyframe(time, Target);
+                    SetControllerKeyframe(time, target);
                 }
             }
             else
             {
-                if (Plugin.autoKeyframeAllControllersJSON.val)
+                if (plugin.autoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target1 in Clip.TargetControllers)
+                    foreach (var target1 in clip.TargetControllers)
                         target1.DeleteFrame(time);
                 }
                 else
                 {
-                    Target.DeleteFrame(time);
+                    target.DeleteFrame(time);
                 }
             }
         }
 
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
-            Plugin.animation.SetKeyframeToCurrentTransform(target, time);
+            plugin.animation.SetKeyframeToCurrentTransform(target, time);
             if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
-                Clip.ChangeCurve(time, CurveTypeValues.Smooth);
+                clip.ChangeCurve(time, CurveTypeValues.Smooth);
         }
     }
 }
