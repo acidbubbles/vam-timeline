@@ -83,8 +83,9 @@ namespace VamTimeline
                 newTarget.value.keys = origTarget.value.keys.ToArray();
                 newTarget.dirty = true;
             }
-            // TODO: The animation was built before, now it's built after. Make this this works.
+
             plugin.animation.ChangeAnimation(clip.AnimationName);
+            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
         private void AddAnimationFromCurrentFrame()
@@ -108,7 +109,9 @@ namespace VamTimeline
                 newTarget.SetKeyframe(0f, origTarget.floatParam.val);
                 newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);
             }
+
             plugin.animation.ChangeAnimation(clip.AnimationName);
+            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
         #endregion
