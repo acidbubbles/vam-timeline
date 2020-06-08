@@ -1,13 +1,7 @@
-src/Common/FloatExtensions.cs
-src/Common/ListExtensions.cs
 src/Common/RectTransformExtensions.cs
 src/Common/IAnimatedAtom.cs
 src/Common/IAnimationController.cs
-src/Common/IAtomAnimationClip.cs
-src/Common/IAtomAnimationTarget.cs
-src/Common/IAtomAnimationTargetsList.cs
 src/Common/StorableNames.cs
-src/Common/AnimationCurveExtensions.cs
 src/Controller/LinkedAnimation.cs
 src/Controller/SimpleSignUI.cs
 src/ControllerPlugin.cs
