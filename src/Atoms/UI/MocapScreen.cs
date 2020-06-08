@@ -460,7 +460,7 @@ namespace VamTimeline
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
                 // Scan for largest difference with curve
-                // TODO: When we add a keyframe, we only need to rescan between the keyframe before and after. We could optimize by building a list of buckets in which the max deltas are known, and avoid re-scanning if the dirty bucket does not have the largest delta.
+                // TODO: Use the buckets strategy
                 var keyWithLargestDiff = -1;
                 var largestDiff = 0f;
                 for (var i = 1; i < steps.Count - 1; i++)

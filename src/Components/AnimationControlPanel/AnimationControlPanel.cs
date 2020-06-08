@@ -35,7 +35,6 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
-            // TODO: Integrate play/stop inside scrubber
             _scrubber = InitScrubber(plugin.scrubberJSON, plugin.snapJSON);
             InitSpacer();
             // TODO: Make the JSON use animation features instead of the other way around

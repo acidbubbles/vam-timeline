@@ -147,7 +147,6 @@ namespace VamTimeline
                     _cancelNextGrabbedControllerRelease = false;
                     return;
                 }
-                // TODO: This should be done by the controller (updating the animation resets the time)
                 if (animation.Current.Transition)
                     SampleAfterRebuild();
                 var time = animation.Time.Snap();

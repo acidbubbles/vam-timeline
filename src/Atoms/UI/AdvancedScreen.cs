@@ -51,8 +51,6 @@ namespace VamTimeline
             var reverseAnimationUI = plugin.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
-
-            // TODO: Keyframe all animatable morphs
         }
 
         private void ReverseAnimation()

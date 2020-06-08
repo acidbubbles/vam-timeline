@@ -38,7 +38,6 @@ namespace VamTimeline
             CreateBackground(gameObject, _style.BackgroundColor);
             CreateMarkers();
             _scrubberRect = CreateLine(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
-            // TODO: Add keyframe markers (only for filtered targets)
             _timeText = CreateTime();
         }
 

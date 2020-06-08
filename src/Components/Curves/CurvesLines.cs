@@ -12,7 +12,6 @@ namespace VamTimeline
     /// </summary>
     public class CurvesLines : MaskableGraphic
     {
-        // TODO: Allow dragging float params vertically
         public CurvesStyle style;
         internal Vector2 range;
         private readonly List<KeyValuePair<Color, AnimationCurve>> _curves = new List<KeyValuePair<Color, AnimationCurve>>();
