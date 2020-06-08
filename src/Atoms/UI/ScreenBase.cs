@@ -66,7 +66,7 @@ namespace VamTimeline
             return spacerUI;
         }
 
-        protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide, bool register = true)
+        protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide)
         {
             var ui = Plugin.CreateButton(label, rightSide);
             RegisterComponent(ui);
