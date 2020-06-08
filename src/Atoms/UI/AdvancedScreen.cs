@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -15,11 +13,9 @@ namespace VamTimeline
     /// </summary>
     public class AdvancedScreen : ScreenBase
     {
-        private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
-
         public const string ScreenName = "Advanced";
 
-        public override string Name => ScreenName;
+        public override string name => ScreenName;
 
         public AdvancedScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -36,23 +32,23 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            var keyframeCurrentPoseUI = Plugin.CreateButton("Keyframe Pose (All On)", true);
+            var keyframeCurrentPoseUI = plugin.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
             RegisterComponent(keyframeCurrentPoseUI);
 
-            var keyframeCurrentPoseTrackedUI = Plugin.CreateButton("Keyframe Pose (Animated)", true);
+            var keyframeCurrentPoseTrackedUI = plugin.CreateButton("Keyframe Pose (Animated)", true);
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
             RegisterComponent(keyframeCurrentPoseTrackedUI);
 
             CreateSpacer(true);
 
-            var bakeUI = Plugin.CreateButton("Bake Animation (Arm & Record)", true);
+            var bakeUI = plugin.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
             RegisterComponent(bakeUI);
 
             CreateSpacer(true);
 
-            var reverseAnimationUI = Plugin.CreateButton("Reverse Animation Keyframes", true);
+            var reverseAnimationUI = plugin.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
 
@@ -63,7 +59,7 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Current;
+                var anim = current;
                 if (anim == null) throw new NullReferenceException("No current animation to reverse");
                 foreach (var target in anim.GetAllOrSelectedTargets())
                 {
@@ -75,16 +71,16 @@ namespace VamTimeline
                     var controllerTarget = target as FreeControllerAnimationTarget;
                     if (controllerTarget != null)
                     {
-                        var settings = controllerTarget.Settings.ToList();
+                        var settings = controllerTarget.settings.ToList();
                         var length = settings.Last().Key;
-                        controllerTarget.Settings.Clear();
+                        controllerTarget.settings.Clear();
                         foreach (var setting in settings)
                         {
-                            controllerTarget.Settings.Add(length - setting.Key, setting.Value);
+                            controllerTarget.settings.Add(length - setting.Key, setting.Value);
                         }
                     }
 
-                    target.Dirty = true;
+                    target.dirty = true;
                 }
             }
             catch (Exception exc)
@@ -97,20 +93,20 @@ namespace VamTimeline
         {
             try
             {
-                var time = Plugin.Animation.Time;
-                foreach (var fc in Plugin.ContainingAtom.freeControllers)
+                var time = plugin.animation.Time;
+                foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (!fc.name.EndsWith("Control")) continue;
                     if (fc.currentPositionState != FreeControllerV3.PositionState.On) continue;
                     if (fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
 
-                    var target = Current.TargetControllers.FirstOrDefault(tc => tc.Controller == fc);
+                    var target = current.TargetControllers.FirstOrDefault(tc => tc.controller == fc);
                     if (target == null)
                     {
                         if (!all) continue;
-                        target = Plugin.Animation.Current.Add(fc);
+                        target = plugin.animation.Current.Add(fc);
                     }
-                    Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
+                    plugin.animation.SetKeyframeToCurrentTransform(target, time);
                 }
             }
             catch (Exception exc)
@@ -123,17 +119,17 @@ namespace VamTimeline
         {
             try
             {
-                var controllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(c => c.Controller).Distinct().ToList();
-                foreach (var mac in Plugin.ContainingAtom.motionAnimationControls)
+                var controllers = plugin.animation.Clips.SelectMany(c => c.TargetControllers).Select(c => c.controller).Distinct().ToList();
+                foreach (var mac in plugin.containingAtom.motionAnimationControls)
                 {
                     if (!controllers.Contains(mac.controller)) continue;
                     mac.armedForRecord = true;
                 }
 
-                Plugin.Animation.Play();
+                plugin.animation.Play();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
 
-                Plugin.StartCoroutine(StopWhenPlaybackIsComplete());
+                plugin.StartCoroutine(StopWhenPlaybackIsComplete());
             }
             catch (Exception exc)
             {
@@ -143,13 +139,13 @@ namespace VamTimeline
 
         private IEnumerator StopWhenPlaybackIsComplete()
         {
-            var waitFor = Plugin.Animation.Clips.Sum(c => c.NextAnimationTime.IsSameFrame(0) ? c.AnimationLength : c.NextAnimationTime);
+            var waitFor = plugin.animation.Clips.Sum(c => c.NextAnimationTime.IsSameFrame(0) ? c.animationLength : c.NextAnimationTime);
             yield return new WaitForSeconds(waitFor);
 
             try
             {
                 SuperController.singleton.motionAnimationMaster.StopRecord();
-                Plugin.Animation.Stop();
+                plugin.animation.Stop();
             }
             catch (Exception exc)
             {

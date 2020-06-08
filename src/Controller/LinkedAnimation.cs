@@ -18,14 +18,15 @@ namespace VamTimeline
             return atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
         }
 
-        public Atom Atom;
-        public string Label => Atom.uid;
+        public Atom atom;
+        public string label => atom.uid;
+
         private JSONStorable _storable;
         private JSONStorableFloat _scrubber;
 
         public LinkedAnimation(Atom atom)
         {
-            Atom = atom;
+            this.atom = atom;
         }
 
         public JSONStorable Storable
@@ -45,14 +46,14 @@ namespace VamTimeline
                 }
                 var storableId = GetStorableId();
                 if (storableId == null) return null;
-                _storable = Atom.GetStorableByID(storableId);
+                _storable = atom.GetStorableByID(storableId);
                 return _storable;
             }
         }
 
         private string GetStorableId()
         {
-            return GetStorableId(Atom);
+            return GetStorableId(atom);
         }
 
         public JSONStorableFloat Scrubber

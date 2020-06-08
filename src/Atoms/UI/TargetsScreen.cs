@@ -14,8 +14,10 @@ namespace VamTimeline
     public class TargetsScreen : ScreenBase
     {
         public const string ScreenName = "Targets";
-        public override string Name => ScreenName;
 
+        public override string name => ScreenName;
+
+        private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
         private JSONStorableStringChooser _addControllerListJSON;
         private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _addStorableListJSON;
@@ -24,7 +26,6 @@ namespace VamTimeline
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
-        private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
 
         public TargetsScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -58,7 +59,7 @@ namespace VamTimeline
 
             GenerateRemoveToggles();
 
-            Current.TargetsListChanged.AddListener(OnTargetsListChanged);
+            current.onTargetsListChanged.AddListener(OnTargetsListChanged);
         }
 
         private void OnTargetsListChanged()
@@ -71,21 +72,21 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            if (Plugin.Animation.Clips.Count <= 1) return;
+            if (plugin.animation.Clips.Count <= 1) return;
 
-            var clipList = Current.AllTargets.Select(t => t.Name).OrderBy(x => x);
-            var otherList = Plugin.Animation.Clips.Where(c => c != Current).SelectMany(c => c.AllTargets).Select(t => t.Name).OrderBy(x => x).Distinct();
+            var clipList = current.AllTargets.Select(t => t.name).OrderBy(x => x);
+            var otherList = plugin.animation.Clips.Where(c => c != current).SelectMany(c => c.AllTargets).Select(t => t.name).OrderBy(x => x).Distinct();
             var ok = clipList.SequenceEqual(otherList);
             if (ok) return;
 
             UIDynamicButton enableAllTargetsUI = null;
             UIDynamic spacerUI = null;
-            enableAllTargetsUI = Plugin.CreateButton("Add All Other Animations' Targets", true);
+            enableAllTargetsUI = plugin.CreateButton("Add All Other Animations' Targets", true);
             enableAllTargetsUI.button.onClick.AddListener(() =>
             {
                 EnableAllTargets();
-                Plugin.RemoveButton(enableAllTargetsUI);
-                Plugin.RemoveSpacer(spacerUI);
+                plugin.RemoveButton(enableAllTargetsUI);
+                plugin.RemoveSpacer(spacerUI);
             });
             enableAllTargetsUI.buttonColor = Color.yellow;
             RegisterComponent(enableAllTargetsUI);
@@ -100,11 +101,11 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addControllerListJSON);
-            _addControllerUI = Plugin.CreateScrollablePopup(_addControllerListJSON, true);
+            _addControllerUI = plugin.CreateScrollablePopup(_addControllerListJSON, true);
             _addControllerUI.popupPanelHeight = 900f;
             RegisterComponent(_addControllerUI);
 
-            _toggleControllerUI = Plugin.CreateButton("Add Controller", true);
+            _toggleControllerUI = plugin.CreateButton("Add Controller", true);
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
             RegisterComponent(_toggleControllerUI);
 
@@ -114,11 +115,11 @@ namespace VamTimeline
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
-            foreach (var fc in Plugin.ContainingAtom.freeControllers)
+            foreach (var fc in plugin.containingAtom.freeControllers)
             {
                 if (fc.name == "control") yield return fc.name;
                 if (!fc.name.EndsWith("Control")) continue;
-                if (Current.TargetControllers.Any(c => c.Controller == fc)) continue;
+                if (current.TargetControllers.Any(c => c.controller == fc)) continue;
                 yield return fc.name;
             }
         }
@@ -149,7 +150,7 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addStorableListJSON);
-            _addStorableListUI = Plugin.CreateScrollablePopup(_addStorableListJSON, rightSide);
+            _addStorableListUI = plugin.CreateScrollablePopup(_addStorableListJSON, rightSide);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
             RegisterComponent(_addStorableListUI);
@@ -159,26 +160,26 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addParamListJSON);
-            _addParamListUI = Plugin.CreateScrollablePopup(_addParamListJSON, rightSide);
+            _addParamListUI = plugin.CreateScrollablePopup(_addParamListJSON, rightSide);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
             RegisterComponent(_addParamListUI);
 
-            _toggleFloatParamUI = Plugin.CreateButton("Add Param", rightSide);
+            _toggleFloatParamUI = plugin.CreateButton("Add Param", rightSide);
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
             RegisterComponent(_toggleFloatParamUI);
 
             RefreshStorableFloatsList();
             _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
 
-            var character = Plugin.ContainingAtom.GetComponentInChildren<DAZCharacterSelector>();
+            var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                var makeMorphsAnimatableUI = Plugin.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
+                var makeMorphsAnimatableUI = plugin.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
                 RegisterComponent(makeMorphsAnimatableUI);
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
-                    var selector = Plugin.ContainingAtom.gameObject.GetComponentInChildren<UITabSelector>();
+                    var selector = plugin.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
                     if (character.selectedCharacter.isMale)
                         selector.SetActiveTab("Male Morphs");
                     else
@@ -195,12 +196,12 @@ namespace VamTimeline
         private IEnumerable<string> GetStorablesWithFloatParams()
         {
             yield return "";
-            foreach (var storableId in Plugin.ContainingAtom.GetStorableIDs().OrderBy(s => s))
+            foreach (var storableId in plugin.containingAtom.GetStorableIDs().OrderBy(s => s))
             {
                 if (storableId.StartsWith("hairTool")) continue;
-                var storable = Plugin.ContainingAtom.GetStorableByID(storableId);
+                var storable = plugin.containingAtom.GetStorableByID(storableId);
                 if (storable == null) continue;
-                if (UnityEngine.Object.ReferenceEquals(storable, Plugin)) continue;
+                if (UnityEngine.Object.ReferenceEquals(storable, plugin)) continue;
                 if ((storable.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
             }
@@ -214,7 +215,7 @@ namespace VamTimeline
                 return;
             }
 
-            var storable = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val);
+            var storable = plugin.containingAtom.GetStorableByID(_addStorableListJSON.val);
 
             if (storable == null)
             {
@@ -223,44 +224,44 @@ namespace VamTimeline
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
-            _addParamListJSON.choices = values.Where(v => !Current.TargetFloatParams.Any(t => t.Storable == storable && t.FloatParam.name == v)).OrderBy(v => v).ToList();
+            _addParamListJSON.choices = values.Where(v => !current.TargetFloatParams.Any(t => t.storable == storable && t.floatParam.name == v)).OrderBy(v => v).ToList();
         }
 
         private void GenerateRemoveToggles()
         {
             ClearRemoveToggles();
 
-            foreach (var target in Current.TargetControllers)
+            foreach (var target in current.TargetControllers)
             {
                 UIDynamicToggle jsbUI = null;
                 JSONStorableBool jsb = null;
-                jsb = new JSONStorableBool($"Remove {target.Name}", true, (bool val) =>
+                jsb = new JSONStorableBool($"Remove {target.name}", true, (bool val) =>
                 {
-                    _addControllerListJSON.val = target.Name;
+                    _addControllerListJSON.val = target.name;
                     RemoveAnimatedController(target);
-                    Plugin.RemoveToggle(jsb);
-                    Plugin.RemoveToggle(jsbUI);
+                    plugin.RemoveToggle(jsb);
+                    plugin.RemoveToggle(jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = Plugin.CreateToggle(jsb, true);
+                jsbUI = plugin.CreateToggle(jsb, true);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
             }
-            foreach (var target in Current.TargetFloatParams)
+            foreach (var target in current.TargetFloatParams)
             {
                 UIDynamicToggle jsbUI = null;
                 JSONStorableBool jsb = null;
-                jsb = new JSONStorableBool($"Remove {target.Name}", true, (bool val) =>
+                jsb = new JSONStorableBool($"Remove {target.name}", true, (bool val) =>
                 {
-                    _addStorableListJSON.val = target.Storable.name;
-                    _addParamListJSON.val = target.FloatParam.name;
+                    _addStorableListJSON.val = target.storable.name;
+                    _addParamListJSON.val = target.floatParam.name;
                     RemoveFloatParam(target);
-                    Plugin.RemoveToggle(jsb);
-                    Plugin.RemoveToggle(jsbUI);
+                    plugin.RemoveToggle(jsb);
+                    plugin.RemoveToggle(jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = Plugin.CreateToggle(jsb, true);
+                jsbUI = plugin.CreateToggle(jsb, true);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
@@ -279,7 +280,7 @@ namespace VamTimeline
             if (_removeToggles == null) return;
             foreach (var toggleJSON in _removeToggles)
             {
-                Plugin.RemoveToggle(toggleJSON);
+                plugin.RemoveToggle(toggleJSON);
             }
         }
 
@@ -297,21 +298,21 @@ namespace VamTimeline
         {
             try
             {
-                var allControllers = Plugin.Animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.Controller).Distinct().ToList();
+                var allControllers = plugin.animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.controller).Distinct().ToList();
                 var h = new HashSet<JSONStorableFloat>();
-                var allFloatParams = Plugin.Animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.FloatParam)).Select(t => new FloatParamRef { Storable = t.Storable, FloatParam = t.FloatParam }).ToList();
+                var allFloatParams = plugin.animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.floatParam)).Select(t => new FloatParamRef { Storable = t.storable, FloatParam = t.floatParam }).ToList();
 
-                foreach (var clip in Plugin.Animation.Clips)
+                foreach (var clip in plugin.animation.Clips)
                 {
                     foreach (var controller in allControllers)
                     {
-                        if (!clip.TargetControllers.Any(t => t.Controller == controller))
+                        if (!clip.TargetControllers.Any(t => t.controller == controller))
                         {
                             var target = clip.Add(controller);
                             if (target != null)
                             {
                                 target.SetKeyframeToCurrentTransform(0f);
-                                target.SetKeyframeToCurrentTransform(clip.AnimationLength);
+                                target.SetKeyframeToCurrentTransform(clip.animationLength);
                             }
                         }
                     }
@@ -319,13 +320,13 @@ namespace VamTimeline
 
                     foreach (var floatParamRef in allFloatParams)
                     {
-                        if (!clip.TargetFloatParams.Any(t => t.FloatParam == floatParamRef.FloatParam))
+                        if (!clip.TargetFloatParams.Any(t => t.floatParam == floatParamRef.FloatParam))
                         {
                             var target = clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
                             if (target != null)
                             {
                                 target.SetKeyframe(0f, floatParamRef.FloatParam.val);
-                                target.SetKeyframe(clip.AnimationLength, floatParamRef.FloatParam.val);
+                                target.SetKeyframe(clip.animationLength, floatParamRef.FloatParam.val);
                             }
                         }
                     }
@@ -344,30 +345,30 @@ namespace VamTimeline
             {
                 var uid = _addControllerListJSON.val;
                 if (string.IsNullOrEmpty(uid)) return;
-                var controller = Plugin.ContainingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
+                var controller = plugin.containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
-                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {Plugin.ContainingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
                 _addControllerListJSON.valNoCallback = "";
 
-                if (Current.TargetControllers.Any(c => c.Controller == controller))
+                if (current.TargetControllers.Any(c => c.controller == controller))
                     return;
 
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
 
-                foreach (var clip in Plugin.Animation.Clips)
+                foreach (var clip in plugin.animation.Clips)
                 {
                     var added = clip.Add(controller);
                     if (added != null)
                     {
                         added.SetKeyframeToCurrentTransform(0f);
-                        added.SetKeyframeToCurrentTransform(clip.AnimationLength);
-                        if (!clip.Loop)
-                            added.ChangeCurve(clip.AnimationLength, CurveTypeValues.CopyPrevious);
+                        added.SetKeyframeToCurrentTransform(clip.animationLength);
+                        if (!clip.loop)
+                            added.ChangeCurve(clip.animationLength, CurveTypeValues.CopyPrevious);
                     }
                 }
             }
@@ -384,32 +385,32 @@ namespace VamTimeline
                 if (string.IsNullOrEmpty(_addStorableListJSON.val)) return;
                 if (string.IsNullOrEmpty(_addParamListJSON.val)) return;
 
-                var storable = Plugin.ContainingAtom.GetStorableByID(_addStorableListJSON.val);
+                var storable = plugin.containingAtom.GetStorableByID(_addStorableListJSON.val);
                 if (storable == null)
                 {
-                    SuperController.LogError($"VamTimeline: Storable {_addStorableListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Storable {_addStorableListJSON.val} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
                 var sourceFloatParam = storable.GetFloatJSONParam(_addParamListJSON.val);
                 if (sourceFloatParam == null)
                 {
-                    SuperController.LogError($"VamTimeline: Param {_addParamListJSON.val} in atom {Plugin.ContainingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Param {_addParamListJSON.val} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
                 _addParamListJSON.valNoCallback = "";
 
-                if (Current.TargetFloatParams.Any(c => c.FloatParam == sourceFloatParam))
+                if (current.TargetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
 
-                foreach (var clip in Plugin.Animation.Clips)
+                foreach (var clip in plugin.animation.Clips)
                 {
                     var added = clip.Add(storable, sourceFloatParam);
                     if (added != null)
                     {
                         added.SetKeyframe(0f, sourceFloatParam.val);
-                        added.SetKeyframe(clip.AnimationLength, sourceFloatParam.val);
+                        added.SetKeyframe(clip.animationLength, sourceFloatParam.val);
                     }
                 }
             }
@@ -423,8 +424,8 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in Plugin.Animation.Clips)
-                    clip.Remove(target.Controller);
+                foreach (var clip in plugin.animation.Clips)
+                    clip.Remove(target.controller);
             }
             catch (Exception exc)
             {
@@ -436,8 +437,8 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in Plugin.Animation.Clips)
-                    clip.Remove(target.Storable, target.FloatParam);
+                foreach (var clip in plugin.animation.Clips)
+                    clip.Remove(target.storable, target.floatParam);
             }
             catch (Exception exc)
             {
@@ -451,8 +452,8 @@ namespace VamTimeline
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            args.Before.TargetsListChanged.RemoveListener(OnTargetsListChanged);
-            args.After.TargetsListChanged.AddListener(OnTargetsListChanged);
+            args.Before.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
+            args.After.onTargetsListChanged.AddListener(OnTargetsListChanged);
 
             base.OnCurrentAnimationChanged(args);
 
@@ -462,7 +463,7 @@ namespace VamTimeline
         public override void Dispose()
         {
             if (_addParamListUI != null) _addParamListUI.popup.onOpenPopupHandlers -= RefreshStorableFloatsList;
-            Current.TargetsListChanged.RemoveListener(OnTargetsListChanged);
+            current.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
             ClearRemoveToggles();
             base.Dispose();
         }

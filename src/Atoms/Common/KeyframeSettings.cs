@@ -8,6 +8,6 @@ namespace VamTimeline
     /// </summary>
     public class KeyframeSettings
     {
-        public string CurveType { get; set; } = CurveTypeValues.LeaveAsIs;
+        public string curveType { get; set; } = CurveTypeValues.LeaveAsIs;
     }
 }

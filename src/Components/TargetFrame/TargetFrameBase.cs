@@ -38,30 +38,30 @@ namespace VamTimeline
             Target = target;
 
             CreateToggle(plugin);
-            Toggle.label = target.Name;
+            Toggle.label = target.name;
 
             CreateCustom();
 
             ValueText = CreateValueText();
 
-            Plugin.Animation.TimeChanged.AddListener(OnTimeChanged);
-            OnTimeChanged(Plugin.Animation.Time);
+            Plugin.animation.TimeChanged.AddListener(OnTimeChanged);
+            OnTimeChanged(Plugin.animation.Time);
 
-            target.AnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
+            target.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
 
             OnAnimationKeyframesModified();
         }
 
         private void OnAnimationKeyframesModified()
         {
-            SetTime(Plugin.Animation.Time, true);
+            SetTime(Plugin.animation.Time, true);
         }
 
         private void CreateToggle(IAtomPlugin plugin)
         {
             if (Toggle != null) return;
 
-            var ui = Instantiate(plugin.Manager.configurableTogglePrefab.transform);
+            var ui = Instantiate(plugin.manager.configurableTogglePrefab.transform);
             ui.SetParent(transform, false);
 
             Toggle = ui.GetComponent<UIDynamicToggle>();
@@ -117,8 +117,8 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (Plugin.Animation.IsPlaying())
-                SetTime(Plugin.Animation.Time, false);
+            if (Plugin.animation.IsPlaying())
+                SetTime(Plugin.animation.Time, false);
         }
 
         private void OnTimeChanged(float time)
@@ -162,8 +162,8 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            Plugin.Animation.TimeChanged.RemoveListener(OnTimeChanged);
-            Target.AnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
+            Plugin.animation.TimeChanged.RemoveListener(OnTimeChanged);
+            Target.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
         }
     }
 }

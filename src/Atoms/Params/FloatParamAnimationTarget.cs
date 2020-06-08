@@ -11,55 +11,55 @@ namespace VamTimeline
     /// </summary>
     public class FloatParamAnimationTarget : AnimationTargetBase, IAnimationTargetWithCurves
     {
-        public JSONStorable Storable { get; }
-        public JSONStorableFloat FloatParam { get; }
-        public AnimationCurve Value { get; } = new AnimationCurve();
+        public readonly JSONStorable storable;
+        public readonly JSONStorableFloat floatParam;
+        public readonly AnimationCurve value = new AnimationCurve();
 
-        public string Name => Storable != null ? $"{Storable.name}/{FloatParam.name}" : FloatParam.name;
+        public string name => storable != null ? $"{storable.name}/{floatParam.name}" : floatParam.name;
 
-        public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat jsf)
+        public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat floatParam)
         {
-            Storable = storable;
-            FloatParam = jsf;
+            this.storable = storable;
+            this.floatParam = floatParam;
         }
 
         public string GetShortName()
         {
-            return FloatParam.name;
+            return floatParam.name;
         }
 
         public AnimationCurve GetLeadCurve()
         {
-            return Value;
+            return value;
         }
 
         public IEnumerable<AnimationCurve> GetCurves()
         {
-            return new[] { Value };
+            return new[] { value };
         }
 
         public void SetKeyframe(float time, float value, bool dirty = true)
         {
-            Value.SetKeyframe(time, value);
-            if (dirty) Dirty = true;
+            this.value.SetKeyframe(time, value);
+            if (dirty) base.dirty = true;
         }
 
         public void DeleteFrame(float time)
         {
-            var key = Value.KeyframeBinarySearch(time);
+            var key = value.KeyframeBinarySearch(time);
             if (key == -1) return;
             DeleteFrameByKey(key);
         }
 
         public void DeleteFrameByKey(int key)
         {
-            Value.RemoveKey(key);
-            Dirty = true;
+            value.RemoveKey(key);
+            dirty = true;
         }
 
         public float[] GetAllKeyframesTime()
         {
-            var curve = Value;
+            var curve = value;
             var keyframes = new float[curve.length];
             for (var i = 0; i < curve.length; i++)
                 keyframes[i] = curve[i].time;
@@ -70,14 +70,14 @@ namespace VamTimeline
         {
             var t = target as FloatParamAnimationTarget;
             if (t == null) return false;
-            return t.Storable == Storable && t.FloatParam == FloatParam;
+            return t.storable == storable && t.floatParam == floatParam;
         }
 
         public class Comparer : IComparer<FloatParamAnimationTarget>
         {
             public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)
             {
-                return t1.Name.CompareTo(t2.Name);
+                return t1.name.CompareTo(t2.name);
 
             }
         }

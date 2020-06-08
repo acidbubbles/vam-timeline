@@ -12,7 +12,7 @@ namespace VamTimeline
     public class AtomAnimationTargetsList<T> : List<T>, IAtomAnimationTargetsList
         where T : IAnimationTargetWithCurves
     {
-        public string Label { get; set; }
+        public string label { get; set; }
 
         public IEnumerable<IAtomAnimationTarget> GetTargets()
         {

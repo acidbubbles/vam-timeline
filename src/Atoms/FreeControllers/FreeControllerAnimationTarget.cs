@@ -13,44 +13,44 @@ namespace VamTimeline
     /// </summary>
     public class FreeControllerAnimationTarget : AnimationTargetBase, IAnimationTargetWithCurves
     {
-        public FreeControllerV3 Controller;
-        public SortedDictionary<int, KeyframeSettings> Settings = new SortedDictionary<int, KeyframeSettings>();
-        public AnimationCurve X { get; } = new AnimationCurve();
-        public AnimationCurve Y { get; } = new AnimationCurve();
-        public AnimationCurve Z { get; } = new AnimationCurve();
-        public AnimationCurve RotX { get; } = new AnimationCurve();
-        public AnimationCurve RotY { get; } = new AnimationCurve();
-        public AnimationCurve RotZ { get; } = new AnimationCurve();
-        public AnimationCurve RotW { get; } = new AnimationCurve();
-        public List<AnimationCurve> Curves;
+        public readonly FreeControllerV3 controller;
+        public readonly SortedDictionary<int, KeyframeSettings> settings = new SortedDictionary<int, KeyframeSettings>();
+        public readonly AnimationCurve x = new AnimationCurve();
+        public readonly AnimationCurve y = new AnimationCurve();
+        public readonly AnimationCurve z = new AnimationCurve();
+        public readonly AnimationCurve rotX = new AnimationCurve();
+        public readonly AnimationCurve rotY = new AnimationCurve();
+        public readonly AnimationCurve rotZ = new AnimationCurve();
+        public readonly AnimationCurve rotW = new AnimationCurve();
+        public readonly List<AnimationCurve> curves;
 
-        public string Name => Controller.name;
+        public string name => controller.name;
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
-            Curves = new List<AnimationCurve> {
-                X, Y, Z, RotX, RotY, RotZ, RotW
+            curves = new List<AnimationCurve> {
+                x, y, z, rotX, rotY, rotZ, rotW
             };
-            Controller = controller;
+            this.controller = controller;
         }
 
         public string GetShortName()
         {
-            if (Name.EndsWith("Control"))
-                return Name.Substring(0, Name.Length - "Control".Length);
-            return Name;
+            if (name.EndsWith("Control"))
+                return name.Substring(0, name.Length - "Control".Length);
+            return name;
         }
 
         #region Control
 
         public AnimationCurve GetLeadCurve()
         {
-            return X;
+            return x;
         }
 
         public IEnumerable<AnimationCurve> GetCurves()
         {
-            return Curves;
+            return curves;
         }
 
         public void Validate()
@@ -58,29 +58,29 @@ namespace VamTimeline
             var leadCurve = GetLeadCurve();
             if (leadCurve.length < 2)
             {
-                SuperController.LogError($"Target {Name} has {leadCurve.length} frames");
+                SuperController.LogError($"Target {name} has {leadCurve.length} frames");
                 return;
             }
-            if (Settings.Count > leadCurve.length)
+            if (this.settings.Count > leadCurve.length)
             {
                 var curveKeys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToList();
-                var extraneousKeys = Settings.Keys.Except(curveKeys);
-                SuperController.LogError($"Target {Name} has {leadCurve.length} frames but {Settings.Count} settings. Attempting auto-repair.");
+                var extraneousKeys = this.settings.Keys.Except(curveKeys);
+                SuperController.LogError($"Target {name} has {leadCurve.length} frames but {this.settings.Count} settings. Attempting auto-repair.");
                 foreach (var extraneousKey in extraneousKeys)
-                    Settings.Remove(extraneousKey);
+                    this.settings.Remove(extraneousKey);
             }
-            if (Settings.Count != leadCurve.length)
+            if (this.settings.Count != leadCurve.length)
             {
-                SuperController.LogError($"Target {Name} has {leadCurve.length} frames but {Settings.Count} settings");
+                SuperController.LogError($"Target {name} has {leadCurve.length} frames but {this.settings.Count} settings");
                 SuperController.LogError($"  Target  : {string.Join(", ", leadCurve.keys.Select(k => k.time.ToString()).ToArray())}");
-                SuperController.LogError($"  Settings: {string.Join(", ", Settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
+                SuperController.LogError($"  Settings: {string.Join(", ", this.settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
                 return;
             }
-            var settings = Settings.Select(s => s.Key);
+            var settings = this.settings.Select(s => s.Key);
             var keys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToArray();
             if (!settings.SequenceEqual(keys))
             {
-                SuperController.LogError($"Target {Name} has different times for settings and keyframes");
+                SuperController.LogError($"Target {name} has different times for settings and keyframes");
                 SuperController.LogError($"Settings: {string.Join(", ", settings.Select(s => s.ToString()).ToArray())}");
                 SuperController.LogError($"Keyframes: {string.Join(", ", keys.Select(k => k.ToString()).ToArray())}");
                 return;
@@ -89,17 +89,17 @@ namespace VamTimeline
 
         public void ReapplyCurveTypes()
         {
-            if (X.length < 2) return;
+            if (x.length < 2) return;
 
-            foreach (var setting in Settings)
+            foreach (var setting in settings)
             {
-                if (setting.Value.CurveType == CurveTypeValues.LeaveAsIs)
+                if (setting.Value.curveType == CurveTypeValues.LeaveAsIs)
                     continue;
 
                 var time = (setting.Key / 1000f).Snap();
-                foreach (var curve in Curves)
+                foreach (var curve in curves)
                 {
-                    ApplyCurve(curve, time, setting.Value.CurveType);
+                    ApplyCurve(curve, time, setting.Value.curveType);
                 }
             }
         }
@@ -162,18 +162,18 @@ namespace VamTimeline
         public void ReapplyCurvesToClip(AnimationClip clip)
         {
             var path = GetRelativePath();
-            clip.SetCurve(path, typeof(Transform), "localPosition.x", X);
-            clip.SetCurve(path, typeof(Transform), "localPosition.y", Y);
-            clip.SetCurve(path, typeof(Transform), "localPosition.z", Z);
-            clip.SetCurve(path, typeof(Transform), "localRotation.x", RotX);
-            clip.SetCurve(path, typeof(Transform), "localRotation.y", RotY);
-            clip.SetCurve(path, typeof(Transform), "localRotation.z", RotZ);
-            clip.SetCurve(path, typeof(Transform), "localRotation.w", RotW);
+            clip.SetCurve(path, typeof(Transform), "localPosition.x", x);
+            clip.SetCurve(path, typeof(Transform), "localPosition.y", y);
+            clip.SetCurve(path, typeof(Transform), "localPosition.z", z);
+            clip.SetCurve(path, typeof(Transform), "localRotation.x", rotX);
+            clip.SetCurve(path, typeof(Transform), "localRotation.y", rotY);
+            clip.SetCurve(path, typeof(Transform), "localRotation.z", rotZ);
+            clip.SetCurve(path, typeof(Transform), "localRotation.w", rotW);
         }
 
         public void SmoothLoop()
         {
-            foreach (var curve in Curves)
+            foreach (var curve in curves)
             {
                 curve.SmoothLoop();
             }
@@ -182,8 +182,8 @@ namespace VamTimeline
         private string GetRelativePath()
         {
             // TODO: This is probably what breaks animations with parenting
-            var root = Controller.containingAtom.transform;
-            var target = Controller.transform;
+            var root = controller.containingAtom.transform;
+            var target = controller.transform;
             var parts = new List<string>();
             Transform t = target;
             while (t != root && t != t.root)
@@ -201,22 +201,22 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrentTransform(float time)
         {
-            return SetKeyframe(time, Controller.transform.localPosition, Controller.transform.localRotation);
+            return SetKeyframe(time, controller.transform.localPosition, controller.transform.localRotation);
         }
 
         public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
-            var key = X.SetKeyframe(time, localPosition.x);
-            Y.SetKeyframe(time, localPosition.y);
-            Z.SetKeyframe(time, localPosition.z);
-            RotX.SetKeyframe(time, locationRotation.x);
-            RotY.SetKeyframe(time, locationRotation.y);
-            RotZ.SetKeyframe(time, locationRotation.z);
-            RotW.SetKeyframe(time, locationRotation.w);
+            var key = x.SetKeyframe(time, localPosition.x);
+            y.SetKeyframe(time, localPosition.y);
+            z.SetKeyframe(time, localPosition.z);
+            rotX.SetKeyframe(time, locationRotation.x);
+            rotY.SetKeyframe(time, locationRotation.y);
+            rotZ.SetKeyframe(time, locationRotation.z);
+            rotW.SetKeyframe(time, locationRotation.w);
             var ms = time.ToMilliseconds();
-            if (!Settings.ContainsKey(ms))
-                Settings[ms] = new KeyframeSettings { CurveType = CurveTypeValues.Smooth };
-            Dirty = true;
+            if (!settings.ContainsKey(ms))
+                settings[ms] = new KeyframeSettings { curveType = CurveTypeValues.Smooth };
+            dirty = true;
             return key;
         }
 
@@ -228,17 +228,17 @@ namespace VamTimeline
 
         public void DeleteFrameByKey(int key)
         {
-            var settingIndex = Settings.Remove(GetLeadCurve()[key].time.ToMilliseconds());
-            foreach (var curve in Curves)
+            var settingIndex = settings.Remove(GetLeadCurve()[key].time.ToMilliseconds());
+            foreach (var curve in curves)
             {
                 curve.RemoveKey(key);
             }
-            Dirty = true;
+            dirty = true;
         }
 
         public float[] GetAllKeyframesTime()
         {
-            var curve = X;
+            var curve = x;
             var keyframes = new float[curve.length];
             for (var i = 0; i < curve.length; i++)
                 keyframes[i] = curve[i].time;
@@ -254,7 +254,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(curveType)) return;
 
             UpdateSetting(time, curveType, false);
-            Dirty = true;
+            dirty = true;
         }
 
         #endregion
@@ -263,41 +263,41 @@ namespace VamTimeline
 
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
-            if (X.KeyframeBinarySearch(time) == -1) return null;
+            if (x.KeyframeBinarySearch(time) == -1) return null;
             KeyframeSettings setting;
             return new FreeControllerV3Snapshot
             {
-                X = X[X.KeyframeBinarySearch(time)],
-                Y = Y[Y.KeyframeBinarySearch(time)],
-                Z = Z[Z.KeyframeBinarySearch(time)],
-                RotX = RotX[RotX.KeyframeBinarySearch(time)],
-                RotY = RotY[RotY.KeyframeBinarySearch(time)],
-                RotZ = RotZ[RotZ.KeyframeBinarySearch(time)],
-                RotW = RotW[RotW.KeyframeBinarySearch(time)],
-                CurveType = Settings.TryGetValue(time.ToMilliseconds(), out setting) ? setting.CurveType : CurveTypeValues.LeaveAsIs
+                x = x[x.KeyframeBinarySearch(time)],
+                y = y[y.KeyframeBinarySearch(time)],
+                z = z[z.KeyframeBinarySearch(time)],
+                rotX = rotX[rotX.KeyframeBinarySearch(time)],
+                rotY = rotY[rotY.KeyframeBinarySearch(time)],
+                rotZ = rotZ[rotZ.KeyframeBinarySearch(time)],
+                rotW = rotW[rotW.KeyframeBinarySearch(time)],
+                curveType = settings.TryGetValue(time.ToMilliseconds(), out setting) ? setting.curveType : CurveTypeValues.LeaveAsIs
             };
         }
 
         public void SetCurveSnapshot(float time, FreeControllerV3Snapshot snapshot, bool dirty = true)
         {
-            X.SetKeySnapshot(time, snapshot.X);
-            Y.SetKeySnapshot(time, snapshot.Y);
-            Z.SetKeySnapshot(time, snapshot.Z);
-            RotX.SetKeySnapshot(time, snapshot.RotX);
-            RotY.SetKeySnapshot(time, snapshot.RotY);
-            RotZ.SetKeySnapshot(time, snapshot.RotZ);
-            RotW.SetKeySnapshot(time, snapshot.RotW);
-            UpdateSetting(time, snapshot.CurveType, true);
-            if (dirty) Dirty = true;
+            x.SetKeySnapshot(time, snapshot.x);
+            y.SetKeySnapshot(time, snapshot.y);
+            z.SetKeySnapshot(time, snapshot.z);
+            rotX.SetKeySnapshot(time, snapshot.rotX);
+            rotY.SetKeySnapshot(time, snapshot.rotY);
+            rotZ.SetKeySnapshot(time, snapshot.rotZ);
+            rotW.SetKeySnapshot(time, snapshot.rotW);
+            UpdateSetting(time, snapshot.curveType, true);
+            if (dirty) base.dirty = true;
         }
 
         private void UpdateSetting(float time, string curveType, bool create)
         {
             var ms = time.ToMilliseconds();
-            if (Settings.ContainsKey(ms))
-                Settings[ms].CurveType = curveType;
+            if (settings.ContainsKey(ms))
+                settings[ms].curveType = curveType;
             else if (create)
-                Settings.Add(ms, new KeyframeSettings { CurveType = curveType });
+                settings.Add(ms, new KeyframeSettings { curveType = curveType });
         }
 
         #endregion
@@ -309,23 +309,23 @@ namespace VamTimeline
         {
             var targetLocalPosition = new Vector3
             {
-                x = X.Evaluate(playTime),
-                y = Y.Evaluate(playTime),
-                z = Z.Evaluate(playTime)
+                x = x.Evaluate(playTime),
+                y = y.Evaluate(playTime),
+                z = z.Evaluate(playTime)
             };
 
             var targetLocalRotation = new Quaternion
             {
-                x = RotX.Evaluate(playTime),
-                y = RotY.Evaluate(playTime),
-                z = RotZ.Evaluate(playTime),
-                w = RotW.Evaluate(playTime)
+                x = rotX.Evaluate(playTime),
+                y = rotY.Evaluate(playTime),
+                z = rotZ.Evaluate(playTime),
+                w = rotW.Evaluate(playTime)
             };
 
-            Controller.transform.localPosition = Vector3.MoveTowards(Controller.transform.localPosition, targetLocalPosition, maxDistanceDelta);
-            Controller.transform.localRotation = Quaternion.RotateTowards(Controller.transform.localRotation, targetLocalRotation, maxRadiansDelta);
+            controller.transform.localPosition = Vector3.MoveTowards(controller.transform.localPosition, targetLocalPosition, maxDistanceDelta);
+            controller.transform.localRotation = Quaternion.RotateTowards(controller.transform.localRotation, targetLocalRotation, maxRadiansDelta);
 
-            var posDistance = Vector3.Distance(Controller.transform.localPosition, targetLocalPosition);
+            var posDistance = Vector3.Distance(controller.transform.localPosition, targetLocalPosition);
             // NOTE: We skip checking for rotation reached because in some cases we just never get even near the target rotation.
             // var rotDistance = Quaternion.Dot(Controller.transform.localRotation, targetLocalRotation);
             return posDistance < 0.01f;
@@ -337,14 +337,14 @@ namespace VamTimeline
         {
             var t = target as FreeControllerAnimationTarget;
             if (t == null) return false;
-            return t.Controller == Controller;
+            return t.controller == controller;
         }
 
         public class Comparer : IComparer<FreeControllerAnimationTarget>
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
             {
-                return t1.Controller.name.CompareTo(t2.Controller.name);
+                return t1.controller.name.CompareTo(t2.controller.name);
 
             }
         }
@@ -352,17 +352,17 @@ namespace VamTimeline
         internal void SmoothNeighbors(int key)
         {
             if (key == -1) return;
-            X.SmoothTangents(key, 1f);
-            if (key > 0) X.SmoothTangents(key - 1, 1f);
-            if (key < X.length - 1) X.SmoothTangents(key + 1, 1f);
+            x.SmoothTangents(key, 1f);
+            if (key > 0) x.SmoothTangents(key - 1, 1f);
+            if (key < x.length - 1) x.SmoothTangents(key + 1, 1f);
 
-            Y.SmoothTangents(key, 1f);
-            if (key > 0) Y.SmoothTangents(key - 1, 1f);
-            if (key < Y.length - 1) Y.SmoothTangents(key + 1, 1f);
+            y.SmoothTangents(key, 1f);
+            if (key > 0) y.SmoothTangents(key - 1, 1f);
+            if (key < y.length - 1) y.SmoothTangents(key + 1, 1f);
 
-            Z.SmoothTangents(key, 1f);
-            if (key > 0) Z.SmoothTangents(key - 1, 1f);
-            if (key < Z.length - 1) Z.SmoothTangents(key + 1, 1f);
+            z.SmoothTangents(key, 1f);
+            if (key > 0) z.SmoothTangents(key - 1, 1f);
+            if (key < z.length - 1) z.SmoothTangents(key + 1, 1f);
         }
     }
 }

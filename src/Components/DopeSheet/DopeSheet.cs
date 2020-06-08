@@ -241,8 +241,8 @@ namespace VamTimeline
                 }
             }
             _scrubberRect.gameObject.SetActive(any);
-            _clip.TargetsListChanged.AddListener(OnTargetsListChanged);
-            _clip.AnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
+            _clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
+            _clip.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
         }
 
         private void OnTargetsListChanged()
@@ -260,8 +260,8 @@ namespace VamTimeline
 
         private void UnbindClip()
         {
-            _clip.TargetsListChanged.RemoveListener(OnTargetsListChanged);
-            _clip.AnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
+            _clip.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
+            _clip.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
             _keyframesRows.Clear();
             while (_layout.transform.childCount > 0)
             {
@@ -303,7 +303,7 @@ namespace VamTimeline
                 rect.offsetMax = new Vector2(-6f, 0);
 
                 var text = child.AddComponent<Text>();
-                text.text = group.Label;
+                text.text = group.label;
                 text.font = _style.Font;
                 text.fontSize = 24;
                 text.color = _style.FontColor;
@@ -315,9 +315,9 @@ namespace VamTimeline
                 click.onClick.AddListener(_ =>
                 {
                     var targets = group.GetTargets().ToList();
-                    var selected = !targets.Any(t => t.Selected);
+                    var selected = !targets.Any(t => t.selected);
                     foreach (var target in targets)
-                        target.Selected = selected;
+                        target.selected = selected;
                 });
             }
         }
@@ -349,14 +349,14 @@ namespace VamTimeline
 
                 var listener = child.AddComponent<Listener>();
                 listener.Bind(
-                    target.SelectedChanged,
+                    target.onSelectedChanged,
                     () => UpdateSelected(target, keyframes, labelBackgroundImage)
                 );
 
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(_ =>
                 {
-                    target.Selected = !target.Selected;
+                    target.selected = !target.selected;
                 });
             }
 
@@ -393,17 +393,17 @@ namespace VamTimeline
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
                 _keyframesRows.Add(keyframes);
                 // TODO: We could optimize here by using the AnimationCurve directly, avoiding a copy.
-                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
+                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
                 keyframes.SetTime(_ms);
                 keyframes.style = _style;
                 keyframes.raycastTarget = true;
 
                 var listener = go.AddComponent<Listener>();
                 listener.Bind(
-                    target.AnimationKeyframesModified,
+                    target.onAnimationKeyframesModified,
                     () =>
                     {
-                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.Loop);
+                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
                         keyframes.SetTime(_ms);
                     }
                 );
@@ -421,7 +421,7 @@ namespace VamTimeline
 
         private void UpdateSelected(IAtomAnimationTarget target, DopeSheetKeyframes keyframes, GradientImage image)
         {
-            if (target.Selected)
+            if (target.selected)
             {
                 keyframes.selected = true;
                 image.top = _style.LabelBackgroundColorTopSelected;
@@ -445,7 +445,7 @@ namespace VamTimeline
             var curve = target.GetLeadCurve();
             var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
-            var closest = curve.KeyframeBinarySearch(ratio * _clip.AnimationLength, true);
+            var closest = curve.KeyframeBinarySearch(ratio * _clip.animationLength, true);
             var time = curve[closest].time;
             _animation.Time = time;
         }
@@ -454,7 +454,7 @@ namespace VamTimeline
         {
             if(_locked) return;
 
-            var ratio = Mathf.Clamp01(time / _clip.AnimationLength);
+            var ratio = Mathf.Clamp01(time / _clip.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             if (stopped)

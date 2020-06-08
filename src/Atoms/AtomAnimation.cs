@@ -70,7 +70,7 @@ namespace VamTimeline
             get
             {
                 var time = _animState != null && _animState.enabled ? _animState.time : _playTime;
-                if (Current.Loop) return time % Current.AnimationLength;
+                if (Current.loop) return time % Current.animationLength;
                 return time;
             }
             set
@@ -129,9 +129,9 @@ namespace VamTimeline
         public void AddClip(AtomAnimationClip clip)
         {
             clip.AnimationSettingsModified.AddListener(OnAnimationSettingsModified);
-            clip.AnimationKeyframesModified.AddListener(OnAnimationModified);
-            clip.TargetsListChanged.AddListener(OnAnimationModified);
-            clip.TargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            clip.onAnimationKeyframesModified.AddListener(OnAnimationModified);
+            clip.onTargetsListChanged.AddListener(OnAnimationModified);
+            clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             Clips.Add(clip);
             ClipsListChanged.Invoke();
         }
@@ -144,7 +144,7 @@ namespace VamTimeline
                 {
                     var t = clip.AllTargets.FirstOrDefault(x => x.TargetsSameAs(target));
                     if (t == null) continue;
-                    t.Selected = target.Selected;
+                    t.selected = target.selected;
                 }
             }
         }
@@ -195,16 +195,16 @@ namespace VamTimeline
         public void SetKeyframe(FloatParamAnimationTarget target, float time, float val)
         {
             time = time.Snap();
-            if (time > Current.AnimationLength)
-                time = Current.AnimationLength;
+            if (time > Current.animationLength)
+                time = Current.animationLength;
             target.SetKeyframe(time, val);
         }
 
         public void SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
         {
             time = time.Snap();
-            if (time > Current.AnimationLength)
-                time = Current.AnimationLength;
+            if (time > Current.animationLength)
+                time = Current.animationLength;
             target.SetKeyframeToCurrentTransform(time);
         }
 
@@ -273,22 +273,22 @@ namespace VamTimeline
             var weight = _blendingTimeLeft / _blendingDuration;
             foreach (var morph in Current.TargetFloatParams)
             {
-                var val = morph.Value.Evaluate(time);
+                var val = morph.value.Evaluate(time);
                 if (_previousClip != null)
                 {
-                    var blendingTarget = _previousClip.TargetFloatParams.FirstOrDefault(t => t.FloatParam == morph.FloatParam);
+                    var blendingTarget = _previousClip.TargetFloatParams.FirstOrDefault(t => t.floatParam == morph.floatParam);
                     if (blendingTarget != null)
                     {
-                        morph.FloatParam.val = (blendingTarget.Value.Evaluate(_playTime) * weight) + (val * (1 - weight));
+                        morph.floatParam.val = (blendingTarget.value.Evaluate(_playTime) * weight) + (val * (1 - weight));
                     }
                     else
                     {
-                        morph.FloatParam.val = val;
+                        morph.floatParam.val = val;
                     }
                 }
                 else
                 {
-                    morph.FloatParam.val = val;
+                    morph.floatParam.val = val;
                 }
             }
         }
@@ -420,9 +420,9 @@ namespace VamTimeline
                     ChangeAnimation(PlayedAnimation);
                 PlayedAnimation = null;
             }
-            if (Time > Current.AnimationLength - 0.001f)
+            if (Time > Current.animationLength - 0.001f)
             {
-                Time = Current.Loop ? 0f : Current.AnimationLength;
+                Time = Current.loop ? 0f : Current.animationLength;
             }
             else
             {
@@ -454,10 +454,10 @@ namespace VamTimeline
                 {
                     var previous = Clips.FirstOrDefault(c => c.NextAnimationName == clip.AnimationName);
                     if (previous != null && (previous.IsDirty() || clip.IsDirty()))
-                        clip.Paste(0f, previous.Copy(previous.AnimationLength, true), false);
+                        clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
                     var next = Clips.FirstOrDefault(c => c.AnimationName == clip.NextAnimationName);
                     if (next != null && (next.IsDirty() || clip.IsDirty()))
-                        clip.Paste(clip.AnimationLength, next.Copy(0f, true), false);
+                        clip.Paste(clip.animationLength, next.Copy(0f, true), false);
                 }
                 ReapplyClipCurve(clip);
                 _unityAnimation.AddClip(clip.Clip, clip.AnimationName);
@@ -466,7 +466,7 @@ namespace VamTimeline
                 {
                     animState.layer = _layer;
                     animState.weight = 1;
-                    animState.wrapMode = clip.Loop ? WrapMode.Loop : WrapMode.Once;
+                    animState.wrapMode = clip.loop ? WrapMode.Loop : WrapMode.Once;
                     animState.speed = _speed;
                 }
             }
@@ -500,38 +500,38 @@ namespace VamTimeline
         {
             foreach (var target in clip.TargetControllers)
             {
-                if (!target.Dirty) continue;
+                if (!target.dirty) continue;
 
-                target.Dirty = false;
+                target.dirty = false;
 
-                if (clip.Loop)
-                    target.SetCurveSnapshot(clip.AnimationLength, target.GetCurveSnapshot(0f), false);
+                if (clip.loop)
+                    target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
 
                 target.ReapplyCurveTypes();
 
-                if (clip.Loop)
+                if (clip.loop)
                     target.SmoothLoop();
 
                 if (clip.EnsureQuaternionContinuity)
                 {
                     UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
-                        target.RotX,
-                        target.RotY,
-                        target.RotZ,
-                        target.RotW);
+                        target.rotX,
+                        target.rotY,
+                        target.rotZ,
+                        target.rotW);
                 }
             }
 
             foreach (var target in clip.TargetFloatParams)
             {
-                if (!target.Dirty) continue;
+                if (!target.dirty) continue;
 
-                target.Dirty = false;
+                target.dirty = false;
 
-                if (clip.Loop)
-                    target.Value.SetKeyframe(clip.AnimationLength, target.Value[0].value);
+                if (clip.loop)
+                    target.value.SetKeyframe(clip.animationLength, target.value[0].value);
 
-                target.Value.FlatAllFrames();
+                target.value.FlatAllFrames();
             }
         }
 

@@ -12,7 +12,9 @@ namespace VamTimeline
     public class BulkScreen : ScreenBase
     {
         public const string ScreenName = "Bulk";
-        public override string Name => ScreenName;
+
+        public override string name => ScreenName;
+
         private JSONStorableString _selectionJSON;
         private string _selectedControllers;
         private float _selectionStart = 0;
@@ -47,23 +49,23 @@ namespace VamTimeline
             // Init
 
             _selectionStart = 0f;
-            _selectionEnd = Current.AnimationLength;
-            Current.TargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            _selectionEnd = current.animationLength;
+            current.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
 
         protected void InitBulkClipboardUI(bool rightSide)
         {
-            var cutUI = Plugin.CreateButton("Cut / Delete Frame(s)", rightSide);
+            var cutUI = plugin.CreateButton("Cut / Delete Frame(s)", rightSide);
             cutUI.button.onClick.AddListener(() => CopyDeleteSelected(true, true));
             RegisterComponent(cutUI);
 
-            var copyUI = Plugin.CreateButton("Copy Frame(s)", rightSide);
+            var copyUI = plugin.CreateButton("Copy Frame(s)", rightSide);
             copyUI.button.onClick.AddListener(() => CopyDeleteSelected(true, false));
             RegisterComponent(copyUI);
 
-            var pasteUI = Plugin.CreateButton("Paste Frame(s)", rightSide);
-            pasteUI.button.onClick.AddListener(() => Plugin.PasteJSON.actionCallback());
+            var pasteUI = plugin.CreateButton("Paste Frame(s)", rightSide);
+            pasteUI.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
             RegisterComponent(pasteUI);
         }
 
@@ -74,14 +76,14 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_selectionJSON);
-            var selectionUI = Plugin.CreateTextField(_selectionJSON, rightSide);
+            var selectionUI = plugin.CreateTextField(_selectionJSON, rightSide);
             RegisterComponent(selectionUI);
 
-            var markSelectionStartUI = Plugin.CreateButton("Mark Selection Start", rightSide);
+            var markSelectionStartUI = plugin.CreateButton("Mark Selection Start", rightSide);
             markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
             RegisterComponent(markSelectionStartUI);
 
-            var markSelectionEndUI = Plugin.CreateButton("Mark Selection End", rightSide);
+            var markSelectionEndUI = plugin.CreateButton("Mark Selection End", rightSide);
             markSelectionEndUI.button.onClick.AddListener(MarkSelectionEnd);
             RegisterComponent(markSelectionEndUI);
         }
@@ -90,14 +92,14 @@ namespace VamTimeline
         {
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_changeCurveJSON);
-            var curveTypeUI = Plugin.CreateScrollablePopup(_changeCurveJSON, rightSide);
+            var curveTypeUI = plugin.CreateScrollablePopup(_changeCurveJSON, rightSide);
             curveTypeUI.popupPanelHeight = 340f;
             RegisterComponent(curveTypeUI);
         }
 
         private void InitDeleteUI(bool rightSide)
         {
-            var deleteSelectedUI = Plugin.CreateButton("Delete Selected", rightSide);
+            var deleteSelectedUI = plugin.CreateButton("Delete Selected", rightSide);
             deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
             RegisterComponent(deleteSelectedUI);
         }
@@ -106,14 +108,14 @@ namespace VamTimeline
 
         private void MarkSelectionStart()
         {
-            _selectionStart = Plugin.Animation.Time;
+            _selectionStart = plugin.animation.Time;
             if (_selectionEnd < _selectionStart) _selectionEnd = _selectionStart;
             SelectionModified();
         }
 
         private void MarkSelectionEnd()
         {
-            _selectionEnd = Plugin.Animation.Time;
+            _selectionEnd = plugin.animation.Time;
             if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
             SelectionModified();
         }
@@ -121,9 +123,9 @@ namespace VamTimeline
         private void SelectionModified()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {Current.AnimationLength:0.000}s");
+            sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {current.animationLength:0.000}s");
             var involvedKeyframes = 0;
-            foreach (var target in Current.GetAllOrSelectedTargets())
+            foreach (var target in current.GetAllOrSelectedTargets())
             {
                 var leadCurve = target.GetLeadCurve();
                 for (var key = 0; key < leadCurve.length; key++)
@@ -133,16 +135,16 @@ namespace VamTimeline
                         involvedKeyframes++;
                 }
                 if (involvedKeyframes > 0)
-                    sb.AppendLine($"- {target.Name}: {involvedKeyframes} keyframes");
+                    sb.AppendLine($"- {target.name}: {involvedKeyframes} keyframes");
             }
             _selectionJSON.val = sb.ToString();
         }
 
         public void CopyDeleteSelected(bool copy, bool delete)
         {
-            Plugin.Clipboard.Clear();
-            Plugin.Clipboard.Time = _selectionStart;
-            foreach (var target in Current.GetAllOrSelectedTargets())
+            plugin.clipboard.Clear();
+            plugin.clipboard.time = _selectionStart;
+            foreach (var target in current.GetAllOrSelectedTargets())
             {
                 target.StartBulkUpdates();
                 try
@@ -155,9 +157,9 @@ namespace VamTimeline
                         {
                             if (copy)
                             {
-                                Plugin.Clipboard.Entries.Insert(0, Current.Copy(keyTime));
+                                plugin.clipboard.entries.Insert(0, current.Copy(keyTime));
                             }
-                            if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(Current.AnimationLength))
+                            if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
                             {
                                 target.DeleteFrameByKey(key);
                             }
@@ -176,7 +178,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(val)) return;
             _changeCurveJSON.valNoCallback = "";
 
-            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
@@ -202,7 +204,7 @@ namespace VamTimeline
 
         public void OnTargetsSelectionChanged()
         {
-            var selectedControllers = string.Join(",", Current.GetAllOrSelectedTargets().Select(t => t.Name).ToArray());
+            var selectedControllers = string.Join(",", current.GetAllOrSelectedTargets().Select(t => t.name).ToArray());
             if (_selectedControllers != selectedControllers)
             {
                 SelectionModified();
@@ -214,12 +216,12 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
-            args.Before.TargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
-            args.After.TargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            args.Before.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            args.After.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
 
-            if (Current.AnimationLength < _selectionEnd)
+            if (current.animationLength < _selectionEnd)
             {
-                _selectionEnd = Current.AnimationLength;
+                _selectionEnd = current.animationLength;
                 if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
             }
 
@@ -230,7 +232,7 @@ namespace VamTimeline
         {
             base.Dispose();
 
-            Current.TargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            current.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }
     }
 }

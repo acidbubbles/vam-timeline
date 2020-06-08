@@ -15,44 +15,43 @@ namespace VamTimeline
     {
         public class ScreenChangeRequestedEvent : UnityEvent<string> { }
 
-
-        public ScreenChangeRequestedEvent OnScreenChangeRequested = new ScreenChangeRequestedEvent();
-        public abstract string Name { get; }
+        public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
+        public abstract string name { get; }
 
         private readonly List<UIDynamic> _components = new List<UIDynamic>();
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
-        protected IAtomPlugin Plugin;
-        protected AtomAnimationClip Current;
+        protected IAtomPlugin plugin;
+        protected AtomAnimationClip current;
         protected bool _disposing;
 
         protected ScreenBase(IAtomPlugin plugin)
         {
-            Plugin = plugin;
+            this.plugin = plugin;
         }
 
         public virtual void Init()
         {
-            Plugin.Animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            Current = Plugin.Animation?.Current;
+            plugin.animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            current = plugin.animation?.Current;
         }
 
         protected virtual void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            Current = Plugin.Animation?.Current;
+            current = plugin.animation?.Current;
         }
 
         protected void InitClipboardUI(bool rightSide)
         {
-            var cutUI = Plugin.CreateButton("Cut / Delete Frame", rightSide);
-            cutUI.button.onClick.AddListener(() => Plugin.CutJSON.actionCallback());
+            var cutUI = plugin.CreateButton("Cut / Delete Frame", rightSide);
+            cutUI.button.onClick.AddListener(() => plugin.cutJSON.actionCallback());
             RegisterComponent(cutUI);
 
-            var copyUI = Plugin.CreateButton("Copy Frame", rightSide);
-            copyUI.button.onClick.AddListener(() => Plugin.CopyJSON.actionCallback());
+            var copyUI = plugin.CreateButton("Copy Frame", rightSide);
+            copyUI.button.onClick.AddListener(() => plugin.copyJSON.actionCallback());
             RegisterComponent(copyUI);
 
-            var pasteUI = Plugin.CreateButton("Paste Frame", rightSide);
-            pasteUI.button.onClick.AddListener(() => Plugin.PasteJSON.actionCallback());
+            var pasteUI = plugin.CreateButton("Paste Frame", rightSide);
+            pasteUI.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
             RegisterComponent(pasteUI);
 
             var text = pasteUI.GetComponentInChildren<Text>();
@@ -60,7 +59,7 @@ namespace VamTimeline
 
         protected UIDynamic CreateSpacer(bool rightSide)
         {
-            var spacerUI = Plugin.CreateSpacer(rightSide);
+            var spacerUI = plugin.CreateSpacer(rightSide);
             spacerUI.height = 30f;
             RegisterComponent(spacerUI);
             return spacerUI;
@@ -68,9 +67,9 @@ namespace VamTimeline
 
         protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide)
         {
-            var ui = Plugin.CreateButton(label, rightSide);
+            var ui = plugin.CreateButton(label, rightSide);
             RegisterComponent(ui);
-            ui.button.onClick.AddListener(() => OnScreenChangeRequested.Invoke(screenName));
+            ui.button.onClick.AddListener(() => onScreenChangeRequested.Invoke(screenName));
             return ui;
         }
 
@@ -87,22 +86,22 @@ namespace VamTimeline
             if (v is JSONStorableStringChooser)
             {
                 if (((JSONStorableStringChooser)v).popup != null)
-                    SuperController.LogError($"Storable {v.name} of atom {Plugin.ContainingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
             }
             else if (v is JSONStorableFloat)
             {
                 if (((JSONStorableFloat)v).slider != null)
-                    SuperController.LogError($"Storable {v.name} of atom {Plugin.ContainingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
             }
             else if (v is JSONStorableString)
             {
                 if (((JSONStorableString)v).inputField != null)
-                    SuperController.LogError($"Storable {v.name} of atom {Plugin.ContainingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
             }
             else if (v is JSONStorableBool)
             {
                 if (((JSONStorableBool)v).toggle != null)
-                    SuperController.LogError($"Storable {v.name} of atom {Plugin.ContainingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
             }
         }
 
@@ -115,8 +114,8 @@ namespace VamTimeline
 
         public virtual void Dispose()
         {
-            OnScreenChangeRequested.RemoveAllListeners();
-            Plugin.Animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            onScreenChangeRequested.RemoveAllListeners();
+            plugin.animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
 
             _disposing = true;
             foreach (var component in _storables)
@@ -124,13 +123,13 @@ namespace VamTimeline
                 if (component == null) continue;
 
                 if (component is JSONStorableStringChooser)
-                    Plugin.RemovePopup((JSONStorableStringChooser)component);
+                    plugin.RemovePopup((JSONStorableStringChooser)component);
                 else if (component is JSONStorableFloat)
-                    Plugin.RemoveSlider((JSONStorableFloat)component);
+                    plugin.RemoveSlider((JSONStorableFloat)component);
                 else if (component is JSONStorableString)
-                    Plugin.RemoveTextField((JSONStorableString)component);
+                    plugin.RemoveTextField((JSONStorableString)component);
                 else if (component is JSONStorableBool)
-                    Plugin.RemoveToggle((JSONStorableBool)component);
+                    plugin.RemoveToggle((JSONStorableBool)component);
                 else
                     SuperController.LogError($"VamTimeline: Cannot remove component {component}");
             }
@@ -139,17 +138,17 @@ namespace VamTimeline
             foreach (var component in _components)
             {
                 if (component is UIDynamicButton)
-                    Plugin.RemoveButton((UIDynamicButton)component);
+                    plugin.RemoveButton((UIDynamicButton)component);
                 else if (component is UIDynamicPopup)
-                    Plugin.RemovePopup((UIDynamicPopup)component);
+                    plugin.RemovePopup((UIDynamicPopup)component);
                 else if (component is UIDynamicSlider)
-                    Plugin.RemoveSlider((UIDynamicSlider)component);
+                    plugin.RemoveSlider((UIDynamicSlider)component);
                 else if (component is UIDynamicTextField)
-                    Plugin.RemoveTextField((UIDynamicTextField)component);
+                    plugin.RemoveTextField((UIDynamicTextField)component);
                 else if (component is UIDynamicToggle)
-                    Plugin.RemoveToggle((UIDynamicToggle)component);
+                    plugin.RemoveToggle((UIDynamicToggle)component);
                 else
-                    Plugin.RemoveSpacer(component);
+                    plugin.RemoveSpacer(component);
             }
             _components.Clear();
         }

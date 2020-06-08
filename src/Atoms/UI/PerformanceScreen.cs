@@ -9,7 +9,8 @@ namespace VamTimeline
     public class PerformanceScreen : ScreenBase
     {
         public const string ScreenName = "Lock";
-        public override string Name => ScreenName;
+
+        public override string name => ScreenName;
 
         public PerformanceScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -33,7 +34,7 @@ This mode is optimized to reduce the runtime cost of Timeline to a strict minimu
 Use this mode before saving and publishing a scene.
 ");
             RegisterStorable(textJSON);
-            var textUI = Plugin.CreateTextField(textJSON, true);
+            var textUI = plugin.CreateTextField(textJSON, true);
             textUI.height = 350f;
             RegisterComponent(textUI);
         }

@@ -126,7 +126,7 @@ namespace VamTimeline
                 _lines.ClearCurves();
                 foreach (var target in targets)
                 {
-                    target.AnimationKeyframesModified.AddListener(OnAnimationCurveModified);
+                    target.onAnimationKeyframesModified.AddListener(OnAnimationCurveModified);
                     BindCurves(target);
                 }
                 _lines.SetVerticesDirty();
@@ -182,18 +182,18 @@ namespace VamTimeline
                 // _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), new AnimationCurve(rotVY));
                 // _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), new AnimationCurve(rotVZ));
 
-                var range = EstimateRange(targetController.X, targetController.Y, targetController.Z);
+                var range = EstimateRange(targetController.x, targetController.y, targetController.z);
                 _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
-                _lines.AddCurve(_style.CurveLineColorX, targetController.X);
-                _lines.AddCurve(_style.CurveLineColorY, targetController.Y);
-                _lines.AddCurve(_style.CurveLineColorZ, targetController.Z);
+                _lines.AddCurve(_style.CurveLineColorX, targetController.x);
+                _lines.AddCurve(_style.CurveLineColorY, targetController.y);
+                _lines.AddCurve(_style.CurveLineColorZ, targetController.z);
             }
             else if (target is FloatParamAnimationTarget)
             {
                 var targetParam = (FloatParamAnimationTarget)target;
-                var range = EstimateRange(targetParam.Value);
+                var range = EstimateRange(targetParam.value);
                 _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
-                _lines.AddCurve(_style.CurveLineColorFloat, targetParam.Value);
+                _lines.AddCurve(_style.CurveLineColorFloat, targetParam.value);
             }
         }
 
@@ -224,7 +224,7 @@ namespace VamTimeline
             {
                 _lines.ClearCurves();
                 foreach (var target in _targets)
-                    target.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+                    target.onAnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
                 _animation = null;
                 _targets = null;
                 _lines.SetVerticesDirty();
@@ -261,7 +261,7 @@ namespace VamTimeline
             if (_targets != null)
             {
                 foreach (var target in _targets)
-                    target.AnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+                    target.onAnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
             }
         }
     }

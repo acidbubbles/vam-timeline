@@ -26,16 +26,16 @@ namespace VamTimeline
 
             if (stopped)
             {
-                var pos = Target.Controller.transform.position;
+                var pos = Target.controller.transform.position;
                 ValueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
             }
         }
 
         public override void ToggleKeyframe(bool enable)
         {
-            if (Plugin.Animation.IsPlaying()) return;
-            var time = Plugin.Animation.Time.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(Clip.AnimationLength))
+            if (Plugin.animation.IsPlaying()) return;
+            var time = Plugin.animation.Time.Snap();
+            if (time.IsSameFrame(0f) || time.IsSameFrame(Clip.animationLength))
             {
                 if (!enable)
                     SetToggle(true);
@@ -43,7 +43,7 @@ namespace VamTimeline
             }
             if (enable)
             {
-                if (Plugin.AutoKeyframeAllControllersJSON.val)
+                if (Plugin.autoKeyframeAllControllersJSON.val)
                 {
                     foreach (var target1 in Clip.TargetControllers)
                         SetControllerKeyframe(time, target1);
@@ -55,7 +55,7 @@ namespace VamTimeline
             }
             else
             {
-                if (Plugin.AutoKeyframeAllControllersJSON.val)
+                if (Plugin.autoKeyframeAllControllersJSON.val)
                 {
                     foreach (var target1 in Clip.TargetControllers)
                         target1.DeleteFrame(time);
@@ -69,8 +69,8 @@ namespace VamTimeline
 
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
-            Plugin.Animation.SetKeyframeToCurrentTransform(target, time);
-            if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
+            Plugin.animation.SetKeyframeToCurrentTransform(target, time);
+            if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
                 Clip.ChangeCurve(time, CurveTypeValues.Smooth);
         }
     }

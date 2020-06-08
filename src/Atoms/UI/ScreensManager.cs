@@ -15,7 +15,8 @@ namespace VamTimeline
     /// </summary>
     public class ScreensManager : IDisposable
     {
-        protected IAtomPlugin _plugin;
+        private readonly UnityEvent _screenChanged = new UnityEvent();
+        private readonly IAtomPlugin _plugin;
         private ScreenBase _current;
         private AnimationControlPanel _controlPanel;
         private bool _uiRefreshScheduled;
@@ -23,7 +24,6 @@ namespace VamTimeline
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
         private UIDynamicPopup _animationUI;
-        private readonly UnityEvent _screenChanged = new UnityEvent();
 
         public ScreensManager(IAtomPlugin plugin)
         {
@@ -64,7 +64,7 @@ namespace VamTimeline
             foreach (var screen in screens)
             {
                 var changeTo = screen;
-                var btn = UnityEngine.Object.Instantiate(_plugin.Manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                var btn = UnityEngine.Object.Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
                 btn.gameObject.transform.SetParent(group.transform, false);
                 btn.label = changeTo;
 
@@ -84,14 +84,14 @@ namespace VamTimeline
         private void ChangeScreen(string screen)
         {
             _currentScreen = screen;
-            _plugin.LockedJSON.val = screen == PerformanceScreen.ScreenName;
+            _plugin.lockedJSON.val = screen == PerformanceScreen.ScreenName;
             _screenChanged.Invoke();
             RefreshCurrentUI();
         }
 
         protected void InitAnimationSelectorUI(bool rightSide)
         {
-            _animationUI = _plugin.CreateScrollablePopup(_plugin.AnimationJSON, rightSide);
+            _animationUI = _plugin.CreateScrollablePopup(_plugin.animationJSON, rightSide);
             _animationUI.label = "Animation";
             _animationUI.popupPanelHeight = 800f;
         }
@@ -113,13 +113,13 @@ namespace VamTimeline
         private List<string> ListAvailableScreens()
         {
             var list = new List<string>();
-            if (_plugin.Animation == null || _plugin.Animation.Current == null) return list;
+            if (_plugin.animation == null || _plugin.animation.Current == null) return list;
             return list;
         }
 
         public string GetDefaultScreen()
         {
-            if (_plugin.Animation == null || _plugin.LockedJSON.val)
+            if (_plugin.animation == null || _plugin.lockedJSON.val)
                 return PerformanceScreen.ScreenName;
             else
                 return EditScreen.ScreenName;
@@ -142,7 +142,7 @@ namespace VamTimeline
 
         public void RefreshCurrentUI()
         {
-            if (_plugin.Animation == null) return;
+            if (_plugin.animation == null) return;
 
             if (_uiRefreshInProgress)
                 _uiRefreshInvalidated = true;
@@ -161,10 +161,10 @@ namespace VamTimeline
             _uiRefreshScheduled = false;
 
             // Cannot proceed
-            if (_plugin == null || _plugin.Animation == null || _plugin.Animation.Current == null) yield break;
+            if (_plugin == null || _plugin.animation == null || _plugin.animation.Current == null) yield break;
 
             // Same UI, just refresh
-            if (_current != null && _current.Name == screen)
+            if (_current != null && _current.name == screen)
             {
                 yield break;
             }
@@ -181,7 +181,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.Name}): {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.name}): {exc}");
                 }
 
                 _current = null;
@@ -237,12 +237,12 @@ namespace VamTimeline
 
             try
             {
-                _current.OnScreenChangeRequested.AddListener(ChangeScreen);
+                _current.onScreenChangeRequested.AddListener(ChangeScreen);
                 _current.Init();
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.Name}): {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.name}): {exc}");
             }
 
             yield return 0;

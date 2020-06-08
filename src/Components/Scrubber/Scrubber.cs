@@ -162,12 +162,12 @@ namespace VamTimeline
                 return;
             var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
             var time = (scrubberJSON.max * ratio).Snap(snapJSON.val);
-            if (time >= animation.Current.AnimationLength - 0.001f)
+            if (time >= animation.Current.animationLength - 0.001f)
             {
-                if (animation.Current.Loop)
+                if (animation.Current.loop)
                     time = 0f;
                 else
-                    time = animation.Current.AnimationLength;
+                    time = animation.Current.animationLength;
             }
             scrubberJSON.val = time;
         }

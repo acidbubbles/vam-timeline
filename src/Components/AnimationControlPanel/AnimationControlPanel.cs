@@ -36,12 +36,12 @@ namespace VamTimeline
         public void Bind(IAtomPlugin plugin)
         {
             // TODO: Integrate play/stop inside scrubber
-            _scrubber = InitScrubber(plugin.ScrubberJSON, plugin.SnapJSON);
+            _scrubber = InitScrubber(plugin.scrubberJSON, plugin.snapJSON);
             InitSpacer();
             // TODO: Make the JSON use animation features instead of the other way around
-            InitFrameNav(plugin.Manager.configurableButtonPrefab, plugin.PreviousFrameJSON, plugin.NextFrameJSON);
+            InitFrameNav(plugin.manager.configurableButtonPrefab, plugin.previousFrameJSON, plugin.nextFrameJSON);
             InitSpacer();
-            InitPlaybackButtons(plugin.Manager.configurableButtonPrefab, plugin.PlayJSON, plugin.StopJSON);
+            InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.stopJSON);
             InitSpacer();
             _dopeSheet = InitDopeSheet();
             InitSpacer();
@@ -127,14 +127,14 @@ namespace VamTimeline
             CreateSmallButton(buttonPrefab, container.transform, "+.1s", () =>
             {
                 var time = _animation.Time + 0.1f;
-                if (time >= _animation.Current.AnimationLength - 0.001f) time = _animation.Current.Loop ? _animation.Current.AnimationLength - 0.1f : _animation.Current.AnimationLength;
+                if (time >= _animation.Current.animationLength - 0.001f) time = _animation.Current.loop ? _animation.Current.animationLength - 0.1f : _animation.Current.animationLength;
                 _animation.Time = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+1s", () =>
             {
                 var time = _animation.Time + 1f;
-                if (time >= _animation.Current.AnimationLength - 0.001f) time = _animation.Current.Loop ? _animation.Current.AnimationLength - 1f : _animation.Current.AnimationLength;
+                if (time >= _animation.Current.animationLength - 0.001f) time = _animation.Current.loop ? _animation.Current.animationLength - 1f : _animation.Current.animationLength;
                 _animation.Time = time;
             });
 

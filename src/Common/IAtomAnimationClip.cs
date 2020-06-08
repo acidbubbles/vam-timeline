@@ -12,11 +12,11 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomAnimationClip : IDisposable
     {
-        bool Loop { get; }
-        float AnimationLength { get; }
-        UnityEvent TargetsSelectionChanged { get; }
-        UnityEvent TargetsListChanged { get; }
-        UnityEvent AnimationKeyframesModified { get; }
+        bool loop { get; }
+        float animationLength { get; }
+        UnityEvent onTargetsSelectionChanged { get; }
+        UnityEvent onTargetsListChanged { get; }
+        UnityEvent onAnimationKeyframesModified { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

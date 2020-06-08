@@ -15,6 +15,7 @@ namespace VamTimeline
     public class ControllerPlugin : MVRScript, IAnimationController
     {
         private const string _atomSeparator = ";";
+
         private Atom _atom;
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
@@ -179,7 +180,7 @@ namespace VamTimeline
             {
                 if (atom.GetStorableIDs().Any(id => id.EndsWith("VamTimeline.AtomPlugin")))
                 {
-                    if (_linkedAnimations.Any(la => la.Atom.uid == atom.uid)) continue;
+                    if (_linkedAnimations.Any(la => la.atom.uid == atom.uid)) continue;
 
                     yield return atom.uid;
                 }
@@ -199,7 +200,7 @@ namespace VamTimeline
             }
 
             if (_mainLinkedAnimation == null && _linkedAnimations.Count > 0)
-                SelectCurrentAtom(_linkedAnimations[0].Label);
+                SelectCurrentAtom(_linkedAnimations[0].label);
         }
 
         private void InitCustomUI()
@@ -286,7 +287,7 @@ namespace VamTimeline
                 scrubber.val = v;
                 foreach (var link in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
                     link.Time.val = scrubber.val;
-                OnTimelineTimeChanged(_mainLinkedAnimation.Atom.uid);
+                OnTimelineTimeChanged(_mainLinkedAnimation.atom.uid);
             }
         }
 
@@ -299,7 +300,7 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Atom '{uid}' cannot contain '{_atomSeparator}'.");
                     return;
                 }
-                if (_linkedAnimations.Any(la => la.Atom.uid == uid)) return;
+                if (_linkedAnimations.Any(la => la.atom.uid == uid)) return;
 
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null)
@@ -315,12 +316,12 @@ namespace VamTimeline
                     return;
                 }
                 _linkedAnimations.Add(link);
-                _atomsJSON.choices = _linkedAnimations.Select(la => la.Label).ToList();
+                _atomsJSON.choices = _linkedAnimations.Select(la => la.label).ToList();
                 if (_mainLinkedAnimation == null)
                 {
-                    SelectCurrentAtom(link.Label);
+                    SelectCurrentAtom(link.label);
                 }
-                _savedAtomsJSON.val = string.Join(_atomSeparator, _linkedAnimations.Select(la => la.Atom.uid).Distinct().ToArray());
+                _savedAtomsJSON.val = string.Join(_atomSeparator, _linkedAnimations.Select(la => la.atom.uid).Distinct().ToArray());
                 _atomsToLink.choices = GetAtomsWithVamTimelinePlugin().ToList();
                 _atomsToLink.val = _atomsToLink.choices.FirstOrDefault() ?? "";
             }
@@ -332,7 +333,7 @@ namespace VamTimeline
 
         public void OnTimelineAnimationParametersChanged(string uid)
         {
-            if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
+            if (_mainLinkedAnimation == null || _mainLinkedAnimation.atom.uid != uid)
                 return;
 
             OnTimelineTimeChanged(uid);
@@ -352,7 +353,7 @@ namespace VamTimeline
 
             try
             {
-                if (_mainLinkedAnimation == null || _mainLinkedAnimation.Atom.uid != uid)
+                if (_mainLinkedAnimation == null || _mainLinkedAnimation.atom.uid != uid)
                     return;
 
                 var animationName = _mainLinkedAnimation.Animation.val;
@@ -382,7 +383,7 @@ namespace VamTimeline
 
         public void OnTimelineAnimationReady(string uid)
         {
-            if (_mainLinkedAnimation?.Atom.uid == uid)
+            if (_mainLinkedAnimation?.atom.uid == uid)
             {
                 RequestControlPanelInjection();
             }
@@ -496,12 +497,12 @@ namespace VamTimeline
                 _mainLinkedAnimation = null;
                 return;
             }
-            var mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.Label == label);
+            var mainLinkedAnimation = _linkedAnimations.FirstOrDefault(la => la.label == label);
             if (_mainLinkedAnimation == mainLinkedAnimation) return;
             _mainLinkedAnimation = mainLinkedAnimation;
             if (_mainLinkedAnimation == null) return;
-            _atomsJSON.valNoCallback = _mainLinkedAnimation.Label;
-            StartCoroutine(InitializeMainAtom(_mainLinkedAnimation.Atom.uid));
+            _atomsJSON.valNoCallback = _mainLinkedAnimation.label;
+            StartCoroutine(InitializeMainAtom(_mainLinkedAnimation.atom.uid));
         }
 
         private IEnumerator InitializeMainAtom(string uid)

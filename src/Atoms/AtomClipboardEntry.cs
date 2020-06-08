@@ -11,13 +11,13 @@ namespace VamTimeline
     /// </summary>
     public class AtomClipboard
     {
-        public float Time;
-        public readonly IList<AtomClipboardEntry> Entries = new List<AtomClipboardEntry>();
+        public float time;
+        public readonly IList<AtomClipboardEntry> entries = new List<AtomClipboardEntry>();
 
         public void Clear()
         {
-            Time = 0f;
-            Entries.Clear();
+            time = 0f;
+            entries.Clear();
         }
     }
 
@@ -29,9 +29,9 @@ namespace VamTimeline
     /// </summary>
     public class AtomClipboardEntry
     {
-        public float Time;
-        public List<FreeControllerV3ClipboardEntry> Controllers;
-        public List<FloatParamValClipboardEntry> FloatParams;
+        public float time;
+        public List<FreeControllerV3ClipboardEntry> controllers;
+        public List<FloatParamValClipboardEntry> floatParams;
     }
 
     /// <summary>
@@ -42,9 +42,9 @@ namespace VamTimeline
     /// </summary>
     public class FloatParamValClipboardEntry
     {
-        public JSONStorable Storable;
-        public JSONStorableFloat FloatParam;
-        public Keyframe Snapshot;
+        public JSONStorable storable;
+        public JSONStorableFloat floatParam;
+        public Keyframe snapshot;
     }
 
     /// <summary>
@@ -55,8 +55,8 @@ namespace VamTimeline
     /// </summary>
     public class FreeControllerV3ClipboardEntry
     {
-        public FreeControllerV3 Controller;
-        public FreeControllerV3Snapshot Snapshot;
+        public FreeControllerV3 controller;
+        public FreeControllerV3Snapshot snapshot;
     }
 
     /// <summary>
@@ -67,14 +67,14 @@ namespace VamTimeline
     /// </summary>
     public class FreeControllerV3Snapshot
     {
-        public Keyframe X;
-        public Keyframe Y;
-        public Keyframe Z;
-        public Keyframe RotX;
-        public Keyframe RotY;
-        public Keyframe RotZ;
-        public Keyframe RotW;
+        public Keyframe x;
+        public Keyframe y;
+        public Keyframe z;
+        public Keyframe rotX;
+        public Keyframe rotY;
+        public Keyframe rotZ;
+        public Keyframe rotW;
 
-        public string CurveType;
+        public string curveType;
     }
 }

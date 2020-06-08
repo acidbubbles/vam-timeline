@@ -9,7 +9,8 @@ namespace VamTimeline
     public class HelpScreen : ScreenBase
     {
         public const string ScreenName = "Help";
-        internal static readonly string HelpText = @"
+
+        public const string HelpText = @"
 <b>Welcome to Timeline!</b>
 
 This plugin allows for advanced keyframe-based editing.
@@ -46,7 +47,7 @@ Now, rewind, and play. You'll see the hand move back and forth between the two p
 Check the wiki for resouces and videos. There's a ton of things you can do! Now have fun!
 ";
 
-        public override string Name => ScreenName;
+        public override string name => ScreenName;
 
         public HelpScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -64,7 +65,7 @@ Check the wiki for resouces and videos. There's a ton of things you can do! Now 
         {
             var textJSON = new JSONStorableString("Help", HelpText);
             RegisterStorable(textJSON);
-            var textUI = Plugin.CreateTextField(textJSON, true);
+            var textUI = plugin.CreateTextField(textJSON, true);
             textUI.height = 1100;
             RegisterComponent(textUI);
         }

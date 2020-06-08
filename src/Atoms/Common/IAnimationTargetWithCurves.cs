@@ -12,7 +12,7 @@ namespace VamTimeline
     /// </summary>
     public interface IAnimationTargetWithCurves : IAtomAnimationTarget
     {
-        bool Dirty { get; set; }
+        bool dirty { get; set; }
 
         void StartBulkUpdates();
         void EndBulkUpdates();

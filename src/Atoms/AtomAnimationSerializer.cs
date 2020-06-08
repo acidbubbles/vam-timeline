@@ -50,14 +50,14 @@ namespace VamTimeline
                 var clip = new AtomAnimationClip(animationName)
                 {
                     BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
-                    Loop = DeserializeBool(clipJSON["Loop"], true),
+                    loop = DeserializeBool(clipJSON["Loop"], true),
                     Transition = DeserializeBool(clipJSON["Transition"], false),
                     EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                     NextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     NextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
                     AutoPlay = DeserializeBool(clipJSON["AutoPlay"], false)
                 };
-                clip.AnimationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
+                clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
                 DeserializeClip(clip, clipJSON);
                 animation.AddClip(clip);
             }
@@ -92,20 +92,20 @@ namespace VamTimeline
                     }
                     var target = new FreeControllerAnimationTarget(controller);
                     clip.Add(target);
-                    DeserializeCurve(target.X, controllerJSON["X"], clip.AnimationLength, target.Settings);
-                    DeserializeCurve(target.Y, controllerJSON["Y"], clip.AnimationLength);
-                    DeserializeCurve(target.Z, controllerJSON["Z"], clip.AnimationLength);
-                    DeserializeCurve(target.RotX, controllerJSON["RotX"], clip.AnimationLength);
-                    DeserializeCurve(target.RotY, controllerJSON["RotY"], clip.AnimationLength);
-                    DeserializeCurve(target.RotZ, controllerJSON["RotZ"], clip.AnimationLength);
-                    DeserializeCurve(target.RotW, controllerJSON["RotW"], clip.AnimationLength);
+                    DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength, target.settings);
+                    DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength);
+                    DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength);
+                    DeserializeCurve(target.rotX, controllerJSON["RotX"], clip.animationLength);
+                    DeserializeCurve(target.rotY, controllerJSON["RotY"], clip.animationLength);
+                    DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength);
+                    DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength);
                     AnimationCurve leadCurve = target.GetLeadCurve();
                     for (var key = 0; key < leadCurve.length; key++)
                     {
                         var time = leadCurve[key].time;
                         var ms = time.ToMilliseconds();
-                        if (!target.Settings.ContainsKey(ms))
-                            target.Settings.Add(ms, new KeyframeSettings { CurveType = CurveTypeValues.LeaveAsIs });
+                        if (!target.settings.ContainsKey(ms))
+                            target.settings.Add(ms, new KeyframeSettings { curveType = CurveTypeValues.LeaveAsIs });
                     }
                 }
             }
@@ -144,7 +144,7 @@ namespace VamTimeline
                     }
                     var target = new FloatParamAnimationTarget(storable, jsf);
                     clip.Add(target);
-                    DeserializeCurve(target.Value, paramJSON["Value"], clip.AnimationLength);
+                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength);
                 }
             }
         }
@@ -187,8 +187,8 @@ namespace VamTimeline
                 if (keyframeSettings != null)
                 {
                     keyframeSettings.Clear();
-                    keyframeSettings.Add(0, new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
-                    keyframeSettings.Add(length.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.Smooth });
+                    keyframeSettings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+                    keyframeSettings.Add(length.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.Smooth });
                 }
             }
         }
@@ -214,7 +214,7 @@ namespace VamTimeline
                         outTangent = DeserializeFloat(keyframeJSON["to"])
                     });
                     if (keyframeSettings != null)
-                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.FromInt(int.Parse(keyframeJSON["c"])) });
+                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.FromInt(int.Parse(keyframeJSON["c"])) });
                 }
                 catch (IndexOutOfRangeException exc)
                 {
@@ -246,7 +246,7 @@ namespace VamTimeline
                         outTangent = DeserializeFloat(parts[4])
                     });
                     if (keyframeSettings != null)
-                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { CurveType = CurveTypeValues.FromInt(int.Parse(parts[2])) });
+                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.FromInt(int.Parse(parts[2])) });
                 }
                 catch (IndexOutOfRangeException exc)
                 {
@@ -313,9 +313,9 @@ namespace VamTimeline
                 var clipJSON = new JSONClass
                 {
                     { "AnimationName", clip.AnimationName },
-                    { "AnimationLength", clip.AnimationLength.ToString(CultureInfo.InvariantCulture) },
+                    { "AnimationLength", clip.animationLength.ToString(CultureInfo.InvariantCulture) },
                     { "BlendDuration", clip.BlendDuration.ToString(CultureInfo.InvariantCulture) },
-                    { "Loop", clip.Loop ? "1" : "0" },
+                    { "Loop", clip.loop ? "1" : "0" },
                     { "Transition", clip.Transition ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity ? "1" : "0" }
                 };
@@ -343,14 +343,14 @@ namespace VamTimeline
             {
                 var controllerJSON = new JSONClass
                     {
-                        { "Controller", controller.Controller.name },
-                        { "X", SerializeCurve(controller.X, controller.Settings) },
-                        { "Y", SerializeCurve(controller.Y, controller.Settings) },
-                        { "Z", SerializeCurve(controller.Z, controller.Settings) },
-                        { "RotX", SerializeCurve(controller.RotX, controller.Settings) },
-                        { "RotY", SerializeCurve(controller.RotY, controller.Settings) },
-                        { "RotZ", SerializeCurve(controller.RotZ, controller.Settings) },
-                        { "RotW", SerializeCurve(controller.RotW, controller.Settings) }
+                        { "Controller", controller.controller.name },
+                        { "X", SerializeCurve(controller.x, controller.settings) },
+                        { "Y", SerializeCurve(controller.y, controller.settings) },
+                        { "Z", SerializeCurve(controller.z, controller.settings) },
+                        { "RotX", SerializeCurve(controller.rotX, controller.settings) },
+                        { "RotY", SerializeCurve(controller.rotY, controller.settings) },
+                        { "RotZ", SerializeCurve(controller.rotZ, controller.settings) },
+                        { "RotW", SerializeCurve(controller.rotW, controller.settings) }
                     };
                 controllersJSON.Add(controllerJSON);
             }
@@ -361,9 +361,9 @@ namespace VamTimeline
             {
                 var paramJSON = new JSONClass
                     {
-                        { "Storable", target.Storable.storeId },
-                        { "Name", target.FloatParam.name },
-                        { "Value", SerializeCurve(target.Value) },
+                        { "Storable", target.storable.storeId },
+                        { "Name", target.floatParam.name },
+                        { "Value", SerializeCurve(target.value) },
                     };
                 paramsJSON.Add(paramJSON);
             }
@@ -381,7 +381,7 @@ namespace VamTimeline
                 {
                     ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
                     ["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture),
-                    ["c"] = settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].CurveType).ToString() : "0"),
+                    ["c"] = settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].curveType).ToString() : "0"),
                     ["ti"] = keyframe.inTangent.ToString(CultureInfo.InvariantCulture),
                     ["to"] = keyframe.outTangent.ToString(CultureInfo.InvariantCulture)
                 };

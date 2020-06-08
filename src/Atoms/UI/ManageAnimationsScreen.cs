@@ -14,10 +14,10 @@ namespace VamTimeline
     public class ManageAnimationsScreen : ScreenBase
     {
         public const string ScreenName = "Manage Animations";
+
+        public override string name => ScreenName;
+
         private JSONStorableString _animationsListJSON;
-
-        public override string Name => ScreenName;
-
 
         public ManageAnimationsScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -53,31 +53,31 @@ namespace VamTimeline
 
             RefreshAnimationsList();
 
-            Plugin.Animation.ClipsListChanged.AddListener(RefreshAnimationsList);
+            plugin.animation.ClipsListChanged.AddListener(RefreshAnimationsList);
         }
 
         private void InitAnimationsListUI(bool rightSide)
         {
             _animationsListJSON = new JSONStorableString("Animations List", "");
             RegisterStorable(_animationsListJSON);
-            var animationsListUI = Plugin.CreateTextField(_animationsListJSON, rightSide);
+            var animationsListUI = plugin.CreateTextField(_animationsListJSON, rightSide);
             RegisterComponent(animationsListUI);
         }
 
         private void InitReorderAnimationsUI(bool rightSide)
         {
-            var moveAnimUpUI = Plugin.CreateButton("Reorder Animation (Move Up)", rightSide);
+            var moveAnimUpUI = plugin.CreateButton("Reorder Animation (Move Up)", rightSide);
             moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
             RegisterComponent(moveAnimUpUI);
 
-            var moveAnimDownUI = Plugin.CreateButton("Reorder Animation (Move Down)", rightSide);
+            var moveAnimDownUI = plugin.CreateButton("Reorder Animation (Move Down)", rightSide);
             moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveDown());
             RegisterComponent(moveAnimDownUI);
         }
 
         private void InitDeleteAnimationsUI(bool rightSide)
         {
-            var deleteAnimationUI = Plugin.CreateButton("Delete Animation", rightSide);
+            var deleteAnimationUI = plugin.CreateButton("Delete Animation", rightSide);
             deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
             deleteAnimationUI.buttonColor = Color.red;
             deleteAnimationUI.textColor = Color.white;
@@ -92,13 +92,13 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Current;
+                var anim = current;
                 if (anim == null) return;
-                var idx = Plugin.Animation.Clips.IndexOf(anim);
+                var idx = plugin.animation.Clips.IndexOf(anim);
                 if (idx <= 0) return;
-                Plugin.Animation.Clips.RemoveAt(idx);
-                Plugin.Animation.Clips.Insert(idx - 1, anim);
-                Plugin.Animation.ClipsListChanged.Invoke();
+                plugin.animation.Clips.RemoveAt(idx);
+                plugin.animation.Clips.Insert(idx - 1, anim);
+                plugin.animation.ClipsListChanged.Invoke();
             }
             catch (Exception exc)
             {
@@ -110,13 +110,13 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Current;
+                var anim = current;
                 if (anim == null) return;
-                var idx = Plugin.Animation.Clips.IndexOf(anim);
-                if (idx >= Plugin.Animation.Clips.Count - 1) return;
-                Plugin.Animation.Clips.RemoveAt(idx);
-                Plugin.Animation.Clips.Insert(idx + 1, anim);
-                Plugin.Animation.ClipsListChanged.Invoke();
+                var idx = plugin.animation.Clips.IndexOf(anim);
+                if (idx >= plugin.animation.Clips.Count - 1) return;
+                plugin.animation.Clips.RemoveAt(idx);
+                plugin.animation.Clips.Insert(idx + 1, anim);
+                plugin.animation.ClipsListChanged.Invoke();
             }
             catch (Exception exc)
             {
@@ -128,15 +128,15 @@ namespace VamTimeline
         {
             try
             {
-                var anim = Current;
+                var anim = current;
                 if (anim == null) return;
-                if (Plugin.Animation.Clips.Count == 1)
+                if (plugin.animation.Clips.Count == 1)
                 {
                     SuperController.LogError("VamTimeline: Cannot delete the only animation.");
                     return;
                 }
-                Plugin.Animation.RemoveClip(anim);
-                foreach (var clip in Plugin.Animation.Clips)
+                plugin.animation.RemoveClip(anim);
+                foreach (var clip in plugin.animation.Clips)
                 {
                     if (clip.NextAnimationName == anim.AnimationName)
                     {
@@ -144,7 +144,7 @@ namespace VamTimeline
                         clip.NextAnimationTime = 0;
                     }
                 }
-                Plugin.ChangeAnimation(Plugin.Animation.Clips[0].AnimationName);
+                plugin.ChangeAnimation(plugin.animation.Clips[0].AnimationName);
             }
             catch (Exception exc)
             {
@@ -167,9 +167,9 @@ namespace VamTimeline
         {
             var sb = new StringBuilder();
 
-            foreach (var clip in Plugin.Animation.Clips)
+            foreach (var clip in plugin.animation.Clips)
             {
-                if (clip == Current)
+                if (clip == current)
                     sb.Append("> ");
                 else
                     sb.Append("  ");
@@ -181,7 +181,7 @@ namespace VamTimeline
 
         public override void Dispose()
         {
-            Plugin.Animation.ClipsListChanged.RemoveListener(RefreshAnimationsList);
+            plugin.animation.ClipsListChanged.RemoveListener(RefreshAnimationsList);
             base.Dispose();
         }
 

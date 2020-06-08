@@ -15,10 +15,11 @@ namespace VamTimeline
     public class EditScreen : ScreenBase
     {
         public const string ScreenName = "Edit";
+
+        public override string name => ScreenName;
+
         private const string _noKeyframeCurveType = "(No Keyframe)";
         private const string _loopCurveType = "(Loop)";
-
-        public override string Name => ScreenName;
 
         private class TargetRef
         {
@@ -59,33 +60,33 @@ namespace VamTimeline
 
             // Right side
 
-            Current.TargetsSelectionChanged.AddListener(OnSelectionChanged);
-            Plugin.Animation.TimeChanged.AddListener(OnTimeChanged);
+            current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
+            plugin.animation.TimeChanged.AddListener(OnTimeChanged);
 
             OnSelectionChanged();
 
-            if (Plugin.Animation.IsEmpty()) InitExplanation();
+            if (plugin.animation.IsEmpty()) InitExplanation();
         }
 
         private void InitChangeCurveTypeUI(bool rightSide)
         {
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
-            _curveTypeUI = Plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
+            _curveTypeUI = plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
             _curveTypeUI.popupPanelHeight = 500f;
             RegisterComponent(_curveTypeUI);
         }
 
         private void InitAutoKeyframeUI()
         {
-            RegisterStorable(Plugin.AutoKeyframeAllControllersJSON);
-            var autoKeyframeAllControllersUI = Plugin.CreateToggle(Plugin.AutoKeyframeAllControllersJSON, false);
+            RegisterStorable(plugin.autoKeyframeAllControllersJSON);
+            var autoKeyframeAllControllersUI = plugin.CreateToggle(plugin.autoKeyframeAllControllersJSON, false);
             RegisterComponent(autoKeyframeAllControllersUI);
         }
 
         private void InitCurvesUI(bool rightSide)
         {
-            var spacerUI = Plugin.CreateSpacer(rightSide);
+            var spacerUI = plugin.CreateSpacer(rightSide);
             spacerUI.height = 200f;
             RegisterComponent(spacerUI);
 
@@ -96,7 +97,7 @@ namespace VamTimeline
         {
             var textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
             RegisterStorable(textJSON);
-            var textUI = Plugin.CreateTextField(textJSON, true);
+            var textUI = plugin.CreateTextField(textJSON, true);
             textUI.height = 900;
             RegisterComponent(textUI);
         }
@@ -104,14 +105,14 @@ namespace VamTimeline
         private void RefreshCurves()
         {
             if (_curves == null) return;
-            _curves.Bind(Plugin.Animation, Current.GetSelectedTargets().ToList());
+            _curves.Bind(plugin.animation, current.GetSelectedTargets().ToList());
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-            args.Before.TargetsSelectionChanged.RemoveListener(OnSelectionChanged);
-            args.After.TargetsSelectionChanged.AddListener(OnSelectionChanged);
+            args.Before.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            args.After.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
             RefreshTargetsList();
         }
 
@@ -124,7 +125,7 @@ namespace VamTimeline
         {
             if (_selectionChangedPending) return;
             _selectionChangedPending = true;
-            Plugin.StartCoroutine(SelectionChangedDeferred());
+            plugin.StartCoroutine(SelectionChangedDeferred());
         }
 
         private IEnumerator SelectionChangedDeferred()
@@ -135,26 +136,26 @@ namespace VamTimeline
             RefreshCurrentCurveType();
             RefreshCurves();
             RefreshTargetsList();
-            _curveTypeUI.popup.topButton.interactable = Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
+            _curveTypeUI.popup.topButton.interactable = current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
         }
 
         private void RefreshCurrentCurveType()
         {
             if (_curveTypeJSON == null) return;
 
-            var time = Plugin.Animation.Time.Snap();
-            if (Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Current.AnimationLength)))
+            var time = plugin.animation.Time.Snap();
+            if (current.loop && (time.IsSameFrame(0) || time.IsSameFrame(current.animationLength)))
             {
                 _curveTypeJSON.valNoCallback = _loopCurveType;
                 return;
             }
             var ms = time.ToMilliseconds();
             var curveTypes = new HashSet<string>();
-            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 KeyframeSettings v;
-                if (!target.Settings.TryGetValue(ms, out v)) continue;
-                curveTypes.Add(v.CurveType);
+                if (!target.settings.TryGetValue(ms, out v)) continue;
+                curveTypes.Add(v.curveType);
             }
             if (curveTypes.Count == 0)
                 _curveTypeJSON.valNoCallback = _noKeyframeCurveType;
@@ -166,17 +167,17 @@ namespace VamTimeline
 
         private void RefreshTargetsList()
         {
-            if (Plugin.Animation == null) return;
+            if (plugin.animation == null) return;
             RemoveTargets();
-            Plugin.RemoveButton(_manageTargetsUI);
-            var time = Plugin.Animation.Time;
+            plugin.RemoveButton(_manageTargetsUI);
+            var time = plugin.animation.Time;
 
-            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
-                var keyframeUI = Plugin.CreateSpacer(true);
+                var keyframeUI = plugin.CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
-                component.Bind(Plugin, Plugin.Animation.Current, target);
+                component.Bind(plugin, plugin.animation.Current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -184,20 +185,20 @@ namespace VamTimeline
                 });
             }
 
-            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
-                var keyframeUI = Plugin.CreateSpacer(true);
+                var keyframeUI = plugin.CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
-                component.Bind(Plugin, Plugin.Animation.Current, target);
+                component.Bind(plugin, plugin.animation.Current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
                     Target = target,
                 });
             }
-            _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName, true, false);
-            if (Current.AllTargetsCount == 0)
+            _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName, true);
+            if (current.AllTargetsCount == 0)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
                 _manageTargetsUI.buttonColor = new Color(0.8f, 0.7f, 0.8f);
@@ -205,9 +206,9 @@ namespace VamTimeline
 
         public override void Dispose()
         {
-            Current.TargetsSelectionChanged.RemoveListener(OnSelectionChanged);
-            Plugin.Animation.TimeChanged.RemoveListener(OnTimeChanged);
-            Plugin.RemoveButton(_manageTargetsUI);
+            current.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            plugin.animation.TimeChanged.RemoveListener(OnTimeChanged);
+            plugin.RemoveButton(_manageTargetsUI);
             RemoveTargets();
             base.Dispose();
         }
@@ -216,7 +217,7 @@ namespace VamTimeline
         {
             foreach (var targetRef in _targets)
             {
-                targetRef.Remove(Plugin);
+                targetRef.Remove(plugin);
             }
             _targets.Clear();
         }
@@ -228,19 +229,19 @@ namespace VamTimeline
                 RefreshCurrentCurveType();
                 return;
             }
-            float time = Plugin.Animation.Time.Snap();
+            float time = plugin.animation.Time.Snap();
             if (time.IsSameFrame(0) && curveType == CurveTypeValues.CopyPrevious)
             {
                 RefreshCurrentCurveType();
                 return;
             }
-            if (Plugin.Animation.IsPlaying()) return;
-            if (Current.Loop && (time.IsSameFrame(0) || time.IsSameFrame(Current.AnimationLength)))
+            if (plugin.animation.IsPlaying()) return;
+            if (current.loop && (time.IsSameFrame(0) || time.IsSameFrame(current.animationLength)))
             {
                 RefreshCurrentCurveType();
                 return;
             }
-            Current.ChangeCurve(time, curveType);
+            current.ChangeCurve(time, curveType);
             RefreshCurrentCurveType();
         }
     }

@@ -11,7 +11,7 @@ namespace VamTimeline
     public interface IAtomAnimationTargetsList
     {
         int Count { get; }
-        string Label { get; }
+        string label { get; }
 
         IEnumerable<IAtomAnimationTarget> GetTargets();
     }

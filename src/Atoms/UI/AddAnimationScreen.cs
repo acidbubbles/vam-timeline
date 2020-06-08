@@ -11,7 +11,8 @@ namespace VamTimeline
     public class AddAnimationScreen : ScreenBase
     {
         public const string ScreenName = "Add Animation";
-        public override string Name => ScreenName;
+
+        public override string name => ScreenName;
 
         public AddAnimationScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -41,11 +42,11 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI(bool rightSide)
         {
-            var addAnimationFromCurrentFrameUI = Plugin.CreateButton("Create Animation From Current Frame", rightSide);
+            var addAnimationFromCurrentFrameUI = plugin.CreateButton("Create Animation From Current Frame", rightSide);
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
             RegisterComponent(addAnimationFromCurrentFrameUI);
 
-            var addAnimationAsCopyUI = Plugin.CreateButton("Create Copy Of Current Animation", rightSide);
+            var addAnimationAsCopyUI = plugin.CreateButton("Create Copy Of Current Animation", rightSide);
             addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
             RegisterComponent(addAnimationAsCopyUI);
         }
@@ -56,58 +57,58 @@ namespace VamTimeline
 
         private void AddAnimationAsCopy()
         {
-            var clip = Plugin.Animation.AddAnimation();
-            clip.Loop = Current.Loop;
-            clip.NextAnimationName = Current.NextAnimationName;
-            clip.NextAnimationTime = Current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = Current.EnsureQuaternionContinuity;
-            clip.BlendDuration = Current.BlendDuration;
-            clip.CropOrExtendLengthEnd(Current.AnimationLength);
-            foreach (var origTarget in Current.TargetControllers)
+            var clip = plugin.animation.AddAnimation();
+            clip.loop = current.loop;
+            clip.NextAnimationName = current.NextAnimationName;
+            clip.NextAnimationTime = current.NextAnimationTime;
+            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
+            clip.BlendDuration = current.BlendDuration;
+            clip.CropOrExtendLengthEnd(current.animationLength);
+            foreach (var origTarget in current.TargetControllers)
             {
-                var newTarget = clip.Add(origTarget.Controller);
-                for (var i = 0; i < origTarget.Curves.Count; i++)
+                var newTarget = clip.Add(origTarget.controller);
+                for (var i = 0; i < origTarget.curves.Count; i++)
                 {
-                    newTarget.Curves[i].keys = origTarget.Curves[i].keys.ToArray();
+                    newTarget.curves[i].keys = origTarget.curves[i].keys.ToArray();
                 }
-                foreach (var kvp in origTarget.Settings)
+                foreach (var kvp in origTarget.settings)
                 {
-                    newTarget.Settings[kvp.Key] = new KeyframeSettings { CurveType = kvp.Value.CurveType };
+                    newTarget.settings[kvp.Key] = new KeyframeSettings { curveType = kvp.Value.curveType };
                 }
-                newTarget.Dirty = true;
+                newTarget.dirty = true;
             }
-            foreach (var origTarget in Current.TargetFloatParams)
+            foreach (var origTarget in current.TargetFloatParams)
             {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.Value.keys = origTarget.Value.keys.ToArray();
-                newTarget.Dirty = true;
+                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
+                newTarget.value.keys = origTarget.value.keys.ToArray();
+                newTarget.dirty = true;
             }
             // TODO: The animation was built before, now it's built after. Make this this works.
-            Plugin.Animation.ChangeAnimation(clip.AnimationName);
+            plugin.animation.ChangeAnimation(clip.AnimationName);
         }
 
         private void AddAnimationFromCurrentFrame()
         {
-            var clip = Plugin.Animation.AddAnimation();
-            clip.Loop = Current.Loop;
-            clip.NextAnimationName = Current.NextAnimationName;
-            clip.NextAnimationTime = Current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = Current.EnsureQuaternionContinuity;
-            clip.BlendDuration = Current.BlendDuration;
-            clip.CropOrExtendLengthEnd(Current.AnimationLength);
-            foreach (var origTarget in Current.TargetControllers)
+            var clip = plugin.animation.AddAnimation();
+            clip.loop = current.loop;
+            clip.NextAnimationName = current.NextAnimationName;
+            clip.NextAnimationTime = current.NextAnimationTime;
+            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
+            clip.BlendDuration = current.BlendDuration;
+            clip.CropOrExtendLengthEnd(current.animationLength);
+            foreach (var origTarget in current.TargetControllers)
             {
-                var newTarget = clip.Add(origTarget.Controller);
+                var newTarget = clip.Add(origTarget.controller);
                 newTarget.SetKeyframeToCurrentTransform(0f);
-                newTarget.SetKeyframeToCurrentTransform(clip.AnimationLength);
+                newTarget.SetKeyframeToCurrentTransform(clip.animationLength);
             }
-            foreach (var origTarget in Current.TargetFloatParams)
+            foreach (var origTarget in current.TargetFloatParams)
             {
-                var newTarget = clip.Add(origTarget.Storable, origTarget.FloatParam);
-                newTarget.SetKeyframe(0f, origTarget.FloatParam.val);
-                newTarget.SetKeyframe(clip.AnimationLength, origTarget.FloatParam.val);
+                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
+                newTarget.SetKeyframe(0f, origTarget.floatParam.val);
+                newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);
             }
-            Plugin.Animation.ChangeAnimation(clip.AnimationName);
+            plugin.animation.ChangeAnimation(clip.AnimationName);
         }
 
         #endregion

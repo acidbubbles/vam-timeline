@@ -39,7 +39,9 @@ namespace VamTimeline
     /// </summary>
     public interface IMVRScript : IJSONStorable
     {
-        MVRPluginManager Manager { get; }
+        Atom containingAtom { get; }
+        MVRPluginManager manager { get; }
+
         UIDynamic CreateSpacer(bool rightSide = false);
         void RemoveSpacer(UIDynamic spacer);
         UIDynamicSlider CreateSlider(JSONStorableFloat jsf, bool rightSide = false);
@@ -67,34 +69,31 @@ namespace VamTimeline
     /// </summary>
     public interface IAtomPlugin : IMVRScript, IAnimatedAtom
     {
-        Atom ContainingAtom { get; }
-        AtomAnimation Animation { get; }
-        AtomAnimationSerializer Serializer { get; }
-        AtomClipboard Clipboard { get; }
+        AtomAnimation animation { get; }
+        AtomAnimationSerializer serializer { get; }
+        AtomClipboard clipboard { get; }
 
-        JSONStorableStringChooser AnimationJSON { get; }
-        JSONStorableFloat ScrubberJSON { get; }
-        JSONStorableFloat TimeJSON { get; }
-        JSONStorableAction PlayJSON { get; }
-        JSONStorableAction PlayIfNotPlayingJSON { get; }
-        JSONStorableBool IsPlayingJSON { get; }
-        JSONStorableAction StopJSON { get; }
-        JSONStorableAction StopIfPlayingJSON { get; }
-        JSONStorableAction NextFrameJSON { get; }
-        JSONStorableAction PreviousFrameJSON { get; }
-        JSONStorableFloat SnapJSON { get; }
-        JSONStorableAction CutJSON { get; }
-        JSONStorableAction CopyJSON { get; }
-        JSONStorableAction PasteJSON { get; }
-        JSONStorableBool LockedJSON { get; }
-        JSONStorableBool AutoKeyframeAllControllersJSON { get; }
-        JSONStorableFloat SpeedJSON { get; }
+        JSONStorableStringChooser animationJSON { get; }
+        JSONStorableFloat scrubberJSON { get; }
+        JSONStorableFloat timeJSON { get; }
+        JSONStorableAction playJSON { get; }
+        JSONStorableAction playIfNotPlayingJSON { get; }
+        JSONStorableBool isPlayingJSON { get; }
+        JSONStorableAction stopJSON { get; }
+        JSONStorableAction stopIfPlayingJSON { get; }
+        JSONStorableAction nextFrameJSON { get; }
+        JSONStorableAction previousFrameJSON { get; }
+        JSONStorableFloat snapJSON { get; }
+        JSONStorableAction cutJSON { get; }
+        JSONStorableAction copyJSON { get; }
+        JSONStorableAction pasteJSON { get; }
+        JSONStorableBool lockedJSON { get; }
+        JSONStorableBool autoKeyframeAllControllersJSON { get; }
+        JSONStorableFloat speedJSON { get; }
 
         void Load(JSONNode animationJSON);
         JSONClass GetAnimationJSON(string animationName = null);
-
         void ChangeAnimation(string animationName);
-
         UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false);
         void SampleAfterRebuild();
     }

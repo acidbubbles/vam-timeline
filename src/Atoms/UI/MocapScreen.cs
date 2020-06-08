@@ -15,17 +15,17 @@ namespace VamTimeline
     /// </summary>
     public class MocapScreen : ScreenBase
     {
+        public const string ScreenName = "Mocap";
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
 
-        public const string ScreenName = "Mocap";
+        public override string name => ScreenName;
+
         private UIDynamicButton _importRecordedUI;
         private JSONStorableStringChooser _importRecordedOptionsJSON;
         private UIDynamicButton _reduceKeyframesUI;
         private JSONStorableFloat _reduceMinPosDistanceJSON;
         private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private JSONStorableFloat _reduceMinRotationJSON;
-
-        public override string Name => ScreenName;
 
         public MocapScreen(IAtomPlugin plugin)
             : base(plugin)
@@ -51,64 +51,64 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_importRecordedOptionsJSON);
-            var importRecordedOptionsUI = Plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
+            var importRecordedOptionsUI = plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
             RegisterComponent(importRecordedOptionsUI);
 
             _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Distance Between Frames", 0.04f, 0.001f, 0.5f, true);
             RegisterStorable(_reduceMinPosDistanceJSON);
-            var reduceMinPosDistanceUI = Plugin.CreateSlider(_reduceMinPosDistanceJSON, true);
+            var reduceMinPosDistanceUI = plugin.CreateSlider(_reduceMinPosDistanceJSON, true);
             RegisterComponent(reduceMinPosDistanceUI);
 
             _reduceMinRotationJSON = new JSONStorableFloat("Minimum Rotation Between Frames", 10f, 0.1f, 90f, true);
             RegisterStorable(_reduceMinRotationJSON);
-            var reduceMinRotationUI = Plugin.CreateSlider(_reduceMinRotationJSON, true);
+            var reduceMinRotationUI = plugin.CreateSlider(_reduceMinRotationJSON, true);
             RegisterComponent(reduceMinRotationUI);
 
             _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max Frames per Second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
             RegisterStorable(_reduceMaxFramesPerSecondJSON);
-            var maxFramesPerSecondUI = Plugin.CreateSlider(_reduceMaxFramesPerSecondJSON, true);
+            var maxFramesPerSecondUI = plugin.CreateSlider(_reduceMaxFramesPerSecondJSON, true);
             RegisterComponent(maxFramesPerSecondUI);
 
             CreateSpacer(true);
 
-            _importRecordedUI = Plugin.CreateButton("Import Recorded Animation (Mocap)", true);
+            _importRecordedUI = plugin.CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
             RegisterComponent(_importRecordedUI);
 
             CreateSpacer(true);
 
-            _reduceKeyframesUI = Plugin.CreateButton("Reduce Float Params Keyframes", true);
+            _reduceKeyframesUI = plugin.CreateButton("Reduce Float Params Keyframes", true);
             _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
             RegisterComponent(_reduceKeyframesUI);
         }
 
         private void ImportRecorded()
         {
-            if (SuperController.singleton.motionAnimationMaster == null || Plugin.ContainingAtom.motionAnimationControls == null)
+            if (SuperController.singleton.motionAnimationMaster == null || plugin.containingAtom.motionAnimationControls == null)
             {
                 SuperController.LogError("VamTimeline: Missing motion animation controls");
                 return;
             }
 
-            Current.Loop = SuperController.singleton.motionAnimationMaster.loop;
-            var length = Plugin.ContainingAtom.motionAnimationControls.Select(m => m.clip.clipLength).Max().Snap(0.01f);
+            current.loop = SuperController.singleton.motionAnimationMaster.loop;
+            var length = plugin.containingAtom.motionAnimationControls.Select(m => m.clip.clipLength).Max().Snap(0.01f);
             if (length < 0.001f)
             {
                 SuperController.LogError("VamTimeline: No motion animation to import.");
                 return;
             }
-            Current.AnimationLength = length;
+            current.animationLength = length;
 
             if (_importRecordedUI == null) return;
             _importRecordedUI.buttonText.text = "Importing, please wait...";
             _importRecordedUI.button.interactable = false;
 
-            Plugin.StartCoroutine(ImportRecordedCoroutine());
+            plugin.StartCoroutine(ImportRecordedCoroutine());
         }
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            var containingAtom = Plugin.ContainingAtom;
+            var containingAtom = plugin.containingAtom;
             var totalStopwatch = Stopwatch.StartNew();
 
             yield return 0;
@@ -126,11 +126,11 @@ namespace VamTimeline
                     if (mot == null || mot.clip == null) continue;
                     if (mot.clip.clipLength <= 0.1) continue;
                     ctrl = mot.controller;
-                    Current.Remove(ctrl);
-                    target = Current.Add(ctrl);
+                    current.Remove(ctrl);
+                    target = current.Add(ctrl);
                     target.StartBulkUpdates();
                     target.SetKeyframeToCurrentTransform(0);
-                    target.SetKeyframeToCurrentTransform(Current.AnimationLength);
+                    target.SetKeyframeToCurrentTransform(current.animationLength);
                 }
                 catch (Exception exc)
                 {
@@ -210,7 +210,7 @@ namespace VamTimeline
             var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
             var maxIterations = (int)(clip.clipLength * 10);
 
-            var containingAtom = Plugin.ContainingAtom;
+            var containingAtom = plugin.containingAtom;
             var steps = clip.steps
                 .Where(s => s.positionOn || s.rotationOn)
                 .GroupBy(s => s.timeStep.Snap(minFrameDistance).ToMilliseconds())
@@ -224,7 +224,7 @@ namespace VamTimeline
             if (steps.Count < 2) yield break;
 
             target.SetKeyframe(0, steps[0].position, steps[0].rotation);
-            target.SetKeyframe(Current.AnimationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation);
+            target.SetKeyframe(current.animationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation);
 
             var buckets = new List<ReducerBucket>
             {
@@ -306,9 +306,9 @@ namespace VamTimeline
                 var step = steps[i];
                 var positionDiff = Vector3.Distance(
                     new Vector3(
-                        target.X.Evaluate(step.time),
-                        target.Y.Evaluate(step.time),
-                        target.Z.Evaluate(step.time)
+                        target.x.Evaluate(step.time),
+                        target.y.Evaluate(step.time),
+                        target.z.Evaluate(step.time)
                     ),
                     step.position
                 );
@@ -320,10 +320,10 @@ namespace VamTimeline
 
                 var rotationAngle = Vector3.Angle(
                     new Quaternion(
-                        target.RotX.Evaluate(step.time),
-                        target.RotY.Evaluate(step.time),
-                        target.RotZ.Evaluate(step.time),
-                        target.RotW.Evaluate(step.time)
+                        target.rotX.Evaluate(step.time),
+                        target.rotY.Evaluate(step.time),
+                        target.rotZ.Evaluate(step.time),
+                        target.rotW.Evaluate(step.time)
                     ).eulerAngles,
                     step.rotation.eulerAngles
                     );
@@ -340,12 +340,12 @@ namespace VamTimeline
         {
             var minPositionDistanceForFlat = 0.01f;
             var batchStopwatch = Stopwatch.StartNew();
-            var containingAtom = Plugin.ContainingAtom;
+            var containingAtom = plugin.containingAtom;
             var frameLength = 1f / _reduceMaxFramesPerSecondJSON.val;
 
             var lastRecordedFrame = float.MinValue;
             MotionAnimationStep previousStep = null;
-            for (var stepIndex = 0; stepIndex < (clip.steps.Count - (Current.Loop ? 1 : 0)); stepIndex++)
+            for (var stepIndex = 0; stepIndex < (clip.steps.Count - (current.loop ? 1 : 0)); stepIndex++)
             {
                 try
                 {
@@ -354,10 +354,10 @@ namespace VamTimeline
                     if (time - lastRecordedFrame < frameLength) continue;
                     var k = ControllerKeyframe.FromStep(time, step, containingAtom, ctrl);
                     target.SetKeyframe(time, k.position, k.rotation);
-                    if (previousStep != null && (target.Controller.name == "lFootControl" || target.Controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
+                    if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                     {
                         KeyframeSettings settings;
-                        if (target.Settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
+                        if (target.settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
                             target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);
                     }
                     lastRecordedFrame = time;
@@ -383,12 +383,12 @@ namespace VamTimeline
             _reduceKeyframesUI.buttonText.text = "Optimizing, please wait...";
             _reduceKeyframesUI.button.interactable = false;
 
-            Plugin.StartCoroutine(ReduceKeyframesCoroutine());
+            plugin.StartCoroutine(ReduceKeyframesCoroutine());
         }
 
         private IEnumerator ReduceKeyframesCoroutine()
         {
-            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
@@ -404,18 +404,18 @@ namespace VamTimeline
                 }
                 finally
                 {
-                    target.Dirty = true;
+                    target.dirty = true;
                     target.EndBulkUpdates();
                 }
                 yield return 0;
             }
 
-            foreach (var target in Current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
                 {
-                    ReduceKeyframes(target.Value);
+                    ReduceKeyframes(target.value);
                 }
                 catch (Exception exc)
                 {
@@ -426,7 +426,7 @@ namespace VamTimeline
                 }
                 finally
                 {
-                    target.Dirty = true;
+                    target.dirty = true;
                     target.EndBulkUpdates();
                 }
                 yield return 0;
@@ -443,7 +443,7 @@ namespace VamTimeline
             var maxIterations = (int)(source[source.length - 1].time * 10);
 
             var batchStopwatch = Stopwatch.StartNew();
-            var containingAtom = Plugin.ContainingAtom;
+            var containingAtom = plugin.containingAtom;
             var steps = source.keys
                 .GroupBy(s => s.time.Snap(minFrameDistance).ToMilliseconds())
                 .Select(g =>

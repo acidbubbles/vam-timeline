@@ -18,44 +18,42 @@ namespace VamTimeline
     {
         private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 
-        // State
-        public AtomAnimation Animation { get; private set; }
-        public Atom ContainingAtom => containingAtom;
-        public MVRPluginManager Manager => manager;
-        public AtomAnimationSerializer Serializer { get; private set; }
-        private bool _restoring;
-        public AtomClipboard Clipboard { get; } = new AtomClipboard();
+        public AtomAnimation animation { get; private set; }
+        public new Atom containingAtom => base.containingAtom;
+        public new MVRPluginManager manager => base.manager;
+        public AtomAnimationSerializer serializer { get; private set; }
+        public AtomClipboard clipboard { get; } = new AtomClipboard();
+
+        public JSONStorableStringChooser animationJSON { get; private set; }
+        public JSONStorableAction nextAnimationJSON { get; private set; }
+        public JSONStorableAction previousAnimationJSON { get; private set; }
+        public JSONStorableFloat scrubberJSON { get; private set; }
+        public JSONStorableFloat timeJSON { get; private set; }
+        public JSONStorableAction playJSON { get; private set; }
+        public JSONStorableBool isPlayingJSON { get; private set; }
+        public JSONStorableAction playIfNotPlayingJSON { get; private set; }
+        public JSONStorableAction stopJSON { get; private set; }
+        public JSONStorableAction stopIfPlayingJSON { get; private set; }
+        public JSONStorableAction nextFrameJSON { get; private set; }
+        public JSONStorableAction previousFrameJSON { get; private set; }
+        public JSONStorableFloat snapJSON { get; private set; }
+        public JSONStorableAction cutJSON { get; private set; }
+        public JSONStorableAction copyJSON { get; private set; }
+        public JSONStorableAction pasteJSON { get; private set; }
+        public JSONStorableBool lockedJSON { get; private set; }
+        public JSONStorableBool autoKeyframeAllControllersJSON { get; private set; }
+        public JSONStorableFloat speedJSON { get; private set; }
+
         private FreeControllerAnimationTarget _grabbedController;
         private bool _cancelNextGrabbedControllerRelease;
         private bool _resumePlayOnUnfreeze;
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
         private bool _sampleAfterRebuild;
-
-        // Storables
-        public JSONStorableStringChooser AnimationJSON { get; private set; }
-        public JSONStorableAction NextAnimationJSON { get; private set; }
-        public JSONStorableAction PreviousAnimationJSON { get; private set; }
-        public JSONStorableFloat ScrubberJSON { get; private set; }
-        public JSONStorableFloat TimeJSON { get; private set; }
-        public JSONStorableAction PlayJSON { get; private set; }
-        public JSONStorableBool IsPlayingJSON { get; private set; }
-        public JSONStorableAction PlayIfNotPlayingJSON { get; private set; }
-        public JSONStorableAction StopJSON { get; private set; }
-        public JSONStorableAction StopIfPlayingJSON { get; private set; }
-        public JSONStorableAction NextFrameJSON { get; private set; }
-        public JSONStorableAction PreviousFrameJSON { get; private set; }
-        public JSONStorableFloat SnapJSON { get; private set; }
-        public JSONStorableAction CutJSON { get; private set; }
-        public JSONStorableAction CopyJSON { get; private set; }
-        public JSONStorableAction PasteJSON { get; private set; }
-        public JSONStorableBool LockedJSON { get; private set; }
-        public JSONStorableBool AutoKeyframeAllControllersJSON { get; private set; }
-        public JSONStorableFloat SpeedJSON { get; private set; }
-
-        // UI
+        private bool _restoring;
         private ScreensManager _ui;
         private AnimationControlPanel _controllerInjectedControlerPanel;
+
 
         #region Init
 
@@ -63,7 +61,7 @@ namespace VamTimeline
         {
             try
             {
-                Serializer = new AtomAnimationSerializer(containingAtom);
+                serializer = new AtomAnimationSerializer(base.containingAtom);
                 _ui = new ScreensManager(this);
                 InitStorables();
                 _ui.Init();
@@ -81,23 +79,23 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (Animation == null) return;
+            if (animation == null) return;
 
             try
             {
-                Animation.Update();
+                animation.Update();
 
-                if (Animation.IsPlaying())
+                if (animation.IsPlaying())
                 {
-                    var time = Animation.Time;
-                    if (time != ScrubberJSON.val)
-                        ScrubberJSON.valNoCallback = time;
-                    if (AnimationJSON.val != Animation.Current.AnimationName)
-                        AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+                    var time = animation.Time;
+                    if (time != scrubberJSON.val)
+                        scrubberJSON.valNoCallback = time;
+                    if (animationJSON.val != animation.Current.AnimationName)
+                        animationJSON.valNoCallback = animation.Current.AnimationName;
 
                     if (SuperController.singleton.freezeAnimation)
                     {
-                        Animation.Stop();
+                        animation.Stop();
                         _resumePlayOnUnfreeze = true;
                     }
                 }
@@ -106,11 +104,11 @@ namespace VamTimeline
                     if (_resumePlayOnUnfreeze && !SuperController.singleton.freezeAnimation)
                     {
                         _resumePlayOnUnfreeze = false;
-                        Animation.Play();
+                        animation.Play();
                         SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
-                        IsPlayingJSON.valNoCallback = true;
+                        isPlayingJSON.valNoCallback = true;
                     }
-                    else if (LockedJSON != null && !LockedJSON.val)
+                    else if (lockedJSON != null && !lockedJSON.val)
                     {
                         UpdateNotPlaying();
                     }
@@ -126,14 +124,14 @@ namespace VamTimeline
         {
             var sc = SuperController.singleton;
             var grabbing = sc.RightGrabbedController ?? sc.LeftGrabbedController ?? sc.RightFullGrabbedController ?? sc.LeftFullGrabbedController;
-            if (grabbing != null && grabbing.containingAtom != containingAtom)
+            if (grabbing != null && grabbing.containingAtom != base.containingAtom)
                 grabbing = null;
             else if (Input.GetMouseButton(0) && grabbing == null)
-                grabbing = containingAtom.freeControllers.FirstOrDefault(c => _grabbingControllers.Contains(c.linkToRB?.gameObject.name));
+                grabbing = base.containingAtom.freeControllers.FirstOrDefault(c => _grabbingControllers.Contains(c.linkToRB?.gameObject.name));
 
             if (_grabbedController == null && grabbing != null)
             {
-                _grabbedController = Animation.Current.TargetControllers.FirstOrDefault(c => c.Controller == grabbing);
+                _grabbedController = animation.Current.TargetControllers.FirstOrDefault(c => c.controller == grabbing);
             }
             if (_grabbedController != null && grabbing != null)
             {
@@ -150,12 +148,12 @@ namespace VamTimeline
                     return;
                 }
                 // TODO: This should be done by the controller (updating the animation resets the time)
-                if (Animation.Current.Transition)
+                if (animation.Current.Transition)
                     SampleAfterRebuild();
-                var time = Animation.Time.Snap();
-                if (AutoKeyframeAllControllersJSON.val)
+                var time = animation.Time.Snap();
+                if (autoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target in Animation.Current.TargetControllers)
+                    foreach (var target in animation.Current.TargetControllers)
                         SetControllerKeyframe(time, target);
                 }
                 else
@@ -167,9 +165,9 @@ namespace VamTimeline
 
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
-            Animation.SetKeyframeToCurrentTransform(target, time);
-            if (target.Settings[time.ToMilliseconds()]?.CurveType == CurveTypeValues.CopyPrevious)
-                Animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
+            animation.SetKeyframeToCurrentTransform(target, time);
+            if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
+                animation.Current.ChangeCurve(time, CurveTypeValues.Smooth);
         }
 
         #endregion
@@ -181,7 +179,7 @@ namespace VamTimeline
             try
             {
                 _ui?.Enable();
-                if (_controllerInjectedControlerPanel == null && Animation != null && containingAtom != null)
+                if (_controllerInjectedControlerPanel == null && animation != null && base.containingAtom != null)
                     SendToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
             }
             catch (Exception exc)
@@ -194,8 +192,8 @@ namespace VamTimeline
         {
             try
             {
-                if (Animation?.IsPlaying() ?? false)
-                    Animation.Stop();
+                if (animation?.IsPlaying() ?? false)
+                    animation.Stop();
                 _ui?.Disable();
                 DestroyControllerPanel();
             }
@@ -209,7 +207,7 @@ namespace VamTimeline
         {
             try
             {
-                Animation?.Dispose();
+                animation?.Dispose();
                 _ui?.Dispose();
                 DestroyControllerPanel();
             }
@@ -226,43 +224,43 @@ namespace VamTimeline
 
         public void InitStorables()
         {
-            AnimationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
+            animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
             {
                 isStorable = false
             };
-            RegisterStringChooser(AnimationJSON);
+            RegisterStringChooser(animationJSON);
 
-            NextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
+            nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
-                var i = AnimationJSON.choices.IndexOf(AnimationJSON.val);
-                if (i < 0 || i > AnimationJSON.choices.Count - 2) return;
-                AnimationJSON.val = AnimationJSON.choices[i + 1];
+                var i = animationJSON.choices.IndexOf(animationJSON.val);
+                if (i < 0 || i > animationJSON.choices.Count - 2) return;
+                animationJSON.val = animationJSON.choices[i + 1];
             });
-            RegisterAction(NextAnimationJSON);
+            RegisterAction(nextAnimationJSON);
 
-            PreviousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
+            previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
-                var i = AnimationJSON.choices.IndexOf(AnimationJSON.val);
-                if (i < 1 || i > AnimationJSON.choices.Count - 1) return;
-                AnimationJSON.val = AnimationJSON.choices[i - 1];
+                var i = animationJSON.choices.IndexOf(animationJSON.val);
+                if (i < 1 || i > animationJSON.choices.Count - 1) return;
+                animationJSON.val = animationJSON.choices[i - 1];
             });
-            RegisterAction(PreviousAnimationJSON);
+            RegisterAction(previousAnimationJSON);
 
-            ScrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => UpdateTime(v, true), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => UpdateTime(v, true), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
-            RegisterFloat(ScrubberJSON);
+            RegisterFloat(scrubberJSON);
 
-            TimeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v, false), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v, false), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
-            RegisterFloat(TimeJSON);
+            RegisterFloat(timeJSON);
 
-            PlayJSON = new JSONStorableAction(StorableNames.Play, () =>
+            playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                if (Animation?.Current == null)
+                if (animation?.Current == null)
                 {
                     SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
                     return;
@@ -272,15 +270,15 @@ namespace VamTimeline
                     _resumePlayOnUnfreeze = true;
                     return;
                 }
-                Animation.Play();
-                IsPlayingJSON.valNoCallback = true;
+                animation.Play();
+                isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
-            RegisterAction(PlayJSON);
+            RegisterAction(playJSON);
 
-            PlayIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
+            playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (Animation?.Current == null)
+                if (animation?.Current == null)
                 {
                     SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
                     return;
@@ -290,120 +288,120 @@ namespace VamTimeline
                     _resumePlayOnUnfreeze = true;
                     return;
                 }
-                if (Animation.IsPlaying()) return;
-                Animation.Play();
-                IsPlayingJSON.valNoCallback = true;
+                if (animation.IsPlaying()) return;
+                animation.Play();
+                isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
-            RegisterAction(PlayIfNotPlayingJSON);
+            RegisterAction(playIfNotPlayingJSON);
 
-            IsPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, (bool val) =>
+            isPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, (bool val) =>
             {
                 if (val)
-                    PlayIfNotPlayingJSON.actionCallback();
+                    playIfNotPlayingJSON.actionCallback();
                 else
-                    StopJSON.actionCallback();
+                    stopJSON.actionCallback();
             })
             {
                 isStorable = false
             };
-            RegisterBool(IsPlayingJSON);
+            RegisterBool(isPlayingJSON);
 
-            StopJSON = new JSONStorableAction(StorableNames.Stop, () =>
+            stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
-                if (Animation.IsPlaying())
+                if (animation.IsPlaying())
                 {
                     _resumePlayOnUnfreeze = false;
-                    Animation.Stop();
-                    Animation.Time = Animation.Time.Snap(SnapJSON.val);
-                    IsPlayingJSON.valNoCallback = false;
+                    animation.Stop();
+                    animation.Time = animation.Time.Snap(snapJSON.val);
+                    isPlayingJSON.valNoCallback = false;
                     SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
                 }
                 else
                 {
-                    Animation.Time = 0f;
+                    animation.Time = 0f;
                 }
             });
-            RegisterAction(StopJSON);
+            RegisterAction(stopJSON);
 
-            StopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
+            stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
-                if (!Animation.IsPlaying()) return;
-                Animation.Stop();
-                Animation.Time = Animation.Time.Snap(SnapJSON.val);
-                IsPlayingJSON.valNoCallback = false;
+                if (!animation.IsPlaying()) return;
+                animation.Stop();
+                animation.Time = animation.Time.Snap(snapJSON.val);
+                isPlayingJSON.valNoCallback = false;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
-            RegisterAction(StopIfPlayingJSON);
+            RegisterAction(stopIfPlayingJSON);
 
-            NextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => NextFrame());
-            RegisterAction(NextFrameJSON);
+            nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => NextFrame());
+            RegisterAction(nextFrameJSON);
 
-            PreviousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
-            RegisterAction(PreviousFrameJSON);
+            previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
+            RegisterAction(previousFrameJSON);
 
-            SnapJSON = new JSONStorableFloat(StorableNames.Snap, 0.01f, (float val) =>
+            snapJSON = new JSONStorableFloat(StorableNames.Snap, 0.01f, (float val) =>
             {
                 var rounded = val.Snap();
                 if (val != rounded)
-                    SnapJSON.valNoCallback = rounded;
-                if (Animation != null && Animation.Time % rounded != 0)
-                    UpdateTime(Animation.Time, true);
+                    snapJSON.valNoCallback = rounded;
+                if (animation != null && animation.Time % rounded != 0)
+                    UpdateTime(animation.Time, true);
             }, 0.001f, 1f, true)
             {
                 isStorable = true
             };
-            RegisterFloat(SnapJSON);
+            RegisterFloat(snapJSON);
 
-            CutJSON = new JSONStorableAction("Cut", () => Cut());
-            CopyJSON = new JSONStorableAction("Copy", () => Copy());
-            PasteJSON = new JSONStorableAction("Paste", () => Paste());
+            cutJSON = new JSONStorableAction("Cut", () => Cut());
+            copyJSON = new JSONStorableAction("Copy", () => Copy());
+            pasteJSON = new JSONStorableAction("Paste", () => Paste());
 
-            LockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
+            lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
             {
                 _ui.UpdateLocked(val);
                 if (_controllerInjectedControlerPanel != null)
                     _controllerInjectedControlerPanel.locked = val;
             });
-            RegisterBool(LockedJSON);
+            RegisterBool(lockedJSON);
 
-            AutoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
+            autoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
             {
                 isStorable = false
             };
 
-            SpeedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
+            speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
             {
                 isStorable = false
             };
-            RegisterFloat(SpeedJSON);
+            RegisterFloat(speedJSON);
         }
 
         private IEnumerator DeferredInit()
         {
             yield return new WaitForEndOfFrame();
-            if (Animation != null)
+            if (animation != null)
             {
                 StartAutoPlay();
                 yield break;
             }
-            containingAtom.RestoreFromLast(this);
-            if (Animation != null)
+            base.containingAtom.RestoreFromLast(this);
+            if (animation != null)
             {
                 yield break;
             }
-            Animation = new AtomAnimation(containingAtom);
-            Animation.Initialize();
+            animation = new AtomAnimation(base.containingAtom);
+            animation.Initialize();
             BindAnimation();
         }
 
         private void StartAutoPlay()
         {
-            var autoPlayClip = Animation.Clips.FirstOrDefault(c => c.AutoPlay);
+            var autoPlayClip = animation.Clips.FirstOrDefault(c => c.AutoPlay);
             if (autoPlayClip != null)
             {
                 ChangeAnimation(autoPlayClip.AnimationName);
-                PlayIfNotPlayingJSON.actionCallback();
+                playIfNotPlayingJSON.actionCallback();
             }
         }
 
@@ -415,8 +413,8 @@ namespace VamTimeline
         {
             try
             {
-                Animation.Stop();
-                Animation.Time = Animation.Time.Snap(SnapJSON.val);
+                animation.Stop();
+                animation.Time = animation.Time.Snap(snapJSON.val);
             }
             catch (Exception exc)
             {
@@ -440,7 +438,7 @@ namespace VamTimeline
 
         public JSONClass GetAnimationJSON(string animationName = null)
         {
-            return Serializer.SerializeAnimation(Animation, animationName);
+            return serializer.SerializeAnimation(animation, animationName);
         }
 
         public override void RestoreFromJSON(JSONClass jc, bool restorePhysical = true, bool restoreAppearance = true, JSONArray presetAtoms = null, bool setMissingToDefault = true)
@@ -475,15 +473,15 @@ namespace VamTimeline
             _restoring = true;
             try
             {
-                if (Animation != null)
+                if (animation != null)
                 {
-                    Animation.Dispose();
-                    Animation = null;
+                    animation.Dispose();
+                    animation = null;
                 }
 
-                Animation = Serializer.DeserializeAnimation(Animation, animationJSON.AsObject);
-                if (Animation == null) throw new NullReferenceException("Animation deserialized to null");
-                Animation.Initialize();
+                animation = serializer.DeserializeAnimation(animation, animationJSON.AsObject);
+                if (animation == null) throw new NullReferenceException("Animation deserialized to null");
+                animation.Initialize();
                 BindAnimation();
             }
             catch (Exception exc)
@@ -502,28 +500,28 @@ namespace VamTimeline
 
         private void BindAnimation()
         {
-            Animation.TimeChanged.AddListener(OnTimeChanged);
-            Animation.AnimationRebuildRequested.AddListener(OnAnimationRebuildRequested);
-            Animation.AnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
-            Animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            Animation.ClipsListChanged.AddListener(OnAnimationParametersChanged);
+            animation.TimeChanged.AddListener(OnTimeChanged);
+            animation.AnimationRebuildRequested.AddListener(OnAnimationRebuildRequested);
+            animation.AnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
+            animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            animation.ClipsListChanged.AddListener(OnAnimationParametersChanged);
 
             OnAnimationParametersChanged();
             SampleAfterRebuild();
 
-            _ui.Bind(Animation);
+            _ui.Bind(animation);
 
             SendToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
         }
 
         private void OnTimeChanged(float time)
         {
-            if (containingAtom == null) return; // Plugin destroyed
+            if (base.containingAtom == null) return; // Plugin destroyed
             try
             {
                 // Update UI
-                ScrubberJSON.valNoCallback = time;
-                TimeJSON.valNoCallback = time;
+                scrubberJSON.valNoCallback = time;
+                timeJSON.valNoCallback = time;
 
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             }
@@ -552,11 +550,11 @@ namespace VamTimeline
             try
             {
                 _animationRebuildInProgress = true;
-                Animation.RebuildAnimation();
+                animation.RebuildAnimation();
                 if (_sampleAfterRebuild)
                 {
                     _sampleAfterRebuild = false;
-                    Animation.Sample();
+                    animation.Sample();
                 }
             }
             catch (Exception exc)
@@ -571,7 +569,7 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+            animationJSON.valNoCallback = animation.Current.AnimationName;
             OnAnimationParametersChanged();
         }
 
@@ -580,17 +578,17 @@ namespace VamTimeline
             try
             {
                 // Update UI
-                ScrubberJSON.max = Animation.Current.AnimationLength;
-                ScrubberJSON.valNoCallback = Animation.Time;
-                TimeJSON.max = Animation.Current.AnimationLength;
-                TimeJSON.valNoCallback = Animation.Time;
-                SpeedJSON.valNoCallback = Animation.Speed;
-                AnimationJSON.choices = Animation.GetAnimationNames();
-                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
+                scrubberJSON.max = animation.Current.animationLength;
+                scrubberJSON.valNoCallback = animation.Time;
+                timeJSON.max = animation.Current.animationLength;
+                timeJSON.valNoCallback = animation.Time;
+                speedJSON.valNoCallback = animation.Speed;
+                animationJSON.choices = animation.GetAnimationNames();
+                animationJSON.valNoCallback = animation.Current.AnimationName;
 
                 SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
 
-                OnTimeChanged(Animation.Time);
+                OnTimeChanged(animation.Time);
             }
             catch (Exception exc)
             {
@@ -607,7 +605,7 @@ namespace VamTimeline
                 if (pluginId != null)
                 {
                     var plugin = controller.GetStorableByID(pluginId);
-                    plugin.SendMessage(methodName, containingAtom.uid);
+                    plugin.SendMessage(methodName, base.containingAtom.uid);
                 }
             }
         }
@@ -622,10 +620,10 @@ namespace VamTimeline
 
             try
             {
-                AnimationJSON.valNoCallback = Animation.Current.AnimationName;
-                if (Animation.Current.AnimationName != animationName)
+                animationJSON.valNoCallback = animation.Current.AnimationName;
+                if (animation.Current.AnimationName != animationName)
                 {
-                    Animation.ChangeAnimation(animationName);
+                    animation.ChangeAnimation(animationName);
                 }
             }
             catch (Exception exc)
@@ -636,26 +634,26 @@ namespace VamTimeline
 
         private void UpdateTime(float time, bool snap)
         {
-            time = time.Snap(snap ? SnapJSON.val : 0f);
+            time = time.Snap(snap ? snapJSON.val : 0f);
 
-            if (Animation.Current.Loop && time >= Animation.Current.AnimationLength - float.Epsilon)
+            if (animation.Current.loop && time >= animation.Current.animationLength - float.Epsilon)
                 time = 0f;
 
-            Animation.Time = time;
-            if (Animation.Current.AnimationPattern != null)
-                Animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
+            animation.Time = time;
+            if (animation.Current.AnimationPattern != null)
+                animation.Current.AnimationPattern.SetFloatParamValue("currentTime", time);
         }
 
         private void NextFrame()
         {
-            var originalTime = Animation.Time;
-            var time = Animation.Current.GetNextFrame(Animation.Time);
+            var originalTime = animation.Time;
+            var time = animation.Current.GetNextFrame(animation.Time);
             UpdateTime(time, false);
         }
 
         private void PreviousFrame()
         {
-            var time = Animation.Current.GetPreviousFrame(Animation.Time);
+            var time = animation.Current.GetPreviousFrame(animation.Time);
             UpdateTime(time, false);
         }
 
@@ -663,13 +661,13 @@ namespace VamTimeline
         {
             try
             {
-                if (Animation.IsPlaying()) return;
-                Clipboard.Clear();
-                Clipboard.Time = Animation.Time.Snap();
-                Clipboard.Entries.Add(Animation.Current.Copy(Clipboard.Time));
-                var time = Animation.Time.Snap();
-                if (time.IsSameFrame(0f) || time.IsSameFrame(Animation.Current.AnimationLength)) return;
-                Animation.Current.DeleteFrame(time);
+                if (animation.IsPlaying()) return;
+                clipboard.Clear();
+                clipboard.time = animation.Time.Snap();
+                clipboard.entries.Add(animation.Current.Copy(clipboard.time));
+                var time = animation.Time.Snap();
+                if (time.IsSameFrame(0f) || time.IsSameFrame(animation.Current.animationLength)) return;
+                animation.Current.DeleteFrame(time);
             }
             catch (Exception exc)
             {
@@ -681,11 +679,11 @@ namespace VamTimeline
         {
             try
             {
-                if (Animation.IsPlaying()) return;
+                if (animation.IsPlaying()) return;
 
-                Clipboard.Clear();
-                Clipboard.Time = Animation.Time.Snap();
-                Clipboard.Entries.Add(Animation.Current.Copy(Clipboard.Time));
+                clipboard.Clear();
+                clipboard.time = animation.Time.Snap();
+                clipboard.entries.Add(animation.Current.Copy(clipboard.time));
             }
             catch (Exception exc)
             {
@@ -697,18 +695,18 @@ namespace VamTimeline
         {
             try
             {
-                if (Animation.IsPlaying()) return;
+                if (animation.IsPlaying()) return;
 
-                if (Clipboard.Entries.Count == 0)
+                if (clipboard.entries.Count == 0)
                 {
                     SuperController.LogMessage("VamTimeline: Clipboard is empty");
                     return;
                 }
-                var time = Animation.Time;
-                var timeOffset = Clipboard.Time;
-                foreach (var entry in Clipboard.Entries)
+                var time = animation.Time;
+                var timeOffset = clipboard.time;
+                foreach (var entry in clipboard.entries)
                 {
-                    Animation.Current.Paste(Animation.Time + entry.Time - timeOffset, entry);
+                    animation.Current.Paste(animation.Time + entry.time - timeOffset, entry);
                 }
                 SampleAfterRebuild();
             }
@@ -720,8 +718,8 @@ namespace VamTimeline
 
         private void UpdateAnimationSpeed(float v)
         {
-            if (v < 0) SpeedJSON.valNoCallback = v = 0f;
-            Animation.Speed = v;
+            if (v < 0) speedJSON.valNoCallback = v = 0f;
+            animation.Speed = v;
         }
 
         #endregion
@@ -752,7 +750,7 @@ namespace VamTimeline
                 _controllerInjectedControlerPanel = container.AddComponent<AnimationControlPanel>();
                 _controllerInjectedControlerPanel.Bind(this);
             }
-            _controllerInjectedControlerPanel.Bind(Animation);
+            _controllerInjectedControlerPanel.Bind(animation);
         }
 
         private void DestroyControllerPanel()

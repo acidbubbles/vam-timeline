@@ -18,7 +18,8 @@ namespace VamTimeline
         private const string _saveFolder = "Saves\\animations";
 
         public const string ScreenName = "More...";
-        public override string Name => ScreenName;
+
+        public override string name => ScreenName;
 
         private JSONStorableStringChooser _exportAnimationsJSON;
 
@@ -59,27 +60,27 @@ namespace VamTimeline
 
         private void InitImportExportUI(bool rightSide)
         {
-            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(Plugin.Animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
+            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(plugin.animation.GetAnimationNames()).ToList(), "(All)", "Export Animation")
             {
                 isStorable = false
             };
             RegisterStorable(_exportAnimationsJSON);
-            var exportAnimationsUI = Plugin.CreateScrollablePopup(_exportAnimationsJSON, rightSide);
+            var exportAnimationsUI = plugin.CreateScrollablePopup(_exportAnimationsJSON, rightSide);
             RegisterComponent(exportAnimationsUI);
 
-            var exportUI = Plugin.CreateButton("Export animation", rightSide);
+            var exportUI = plugin.CreateButton("Export animation", rightSide);
             exportUI.button.onClick.AddListener(() => Export());
             RegisterComponent(exportUI);
 
-            var importUI = Plugin.CreateButton("Import animation", rightSide);
+            var importUI = plugin.CreateButton("Import animation", rightSide);
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
         }
 
         private void InitSpeedUI(bool rightSide)
         {
-            RegisterStorable(Plugin.SpeedJSON);
-            var speedUI = Plugin.CreateSlider(Plugin.SpeedJSON, rightSide);
+            RegisterStorable(plugin.speedJSON);
+            var speedUI = plugin.CreateSlider(plugin.speedJSON, rightSide);
             speedUI.valueFormat = "F3";
             RegisterComponent(speedUI);
         }
@@ -116,16 +117,16 @@ namespace VamTimeline
 
             try
             {
-                var jc = Plugin.GetAnimationJSON(_exportAnimationsJSON.val == "(All)" ? null : _exportAnimationsJSON.val);
-                jc["AtomType"] = Plugin.ContainingAtom.type;
+                var jc = plugin.GetAnimationJSON(_exportAnimationsJSON.val == "(All)" ? null : _exportAnimationsJSON.val);
+                jc["AtomType"] = plugin.containingAtom.type;
                 var atomState = new JSONClass();
                 var allTargets = new HashSet<FreeControllerV3>(
-                    Plugin.Animation.Clips
+                    plugin.animation.Clips
                         .Where(c => _exportAnimationsJSON.val == "(All)" || c.AnimationName == _exportAnimationsJSON.val)
                         .SelectMany(c => c.TargetControllers)
-                        .Select(t => t.Controller)
+                        .Select(t => t.controller)
                         .Distinct());
-                foreach (var fc in Plugin.ContainingAtom.freeControllers)
+                foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (fc.name == "control") continue;
                     if (!fc.name.EndsWith("Control")) continue;
@@ -168,9 +169,9 @@ namespace VamTimeline
             try
             {
                 var json = SuperController.singleton.LoadJSON(path);
-                if (json["AtomType"]?.Value != Plugin.ContainingAtom.type)
+                if (json["AtomType"]?.Value != plugin.containingAtom.type)
                 {
-                    SuperController.LogError($"VamTimeline: Loaded animation for {json["AtomType"]} but current atom type is {Plugin.ContainingAtom.type}");
+                    SuperController.LogError($"VamTimeline: Loaded animation for {json["AtomType"]} but current atom type is {plugin.containingAtom.type}");
                     return;
                 }
 
@@ -180,7 +181,7 @@ namespace VamTimeline
                     var controllersState = jc["ControllersState"].AsObject;
                     foreach (var k in controllersState.Keys)
                     {
-                        var fc = Plugin.ContainingAtom.freeControllers.FirstOrDefault(x => x.name == k);
+                        var fc = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == k);
                         if (fc == null)
                         {
                             SuperController.LogError($"VamTimeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
@@ -194,9 +195,9 @@ namespace VamTimeline
                     }
                 }
 
-                Plugin.Load(jc);
-                Plugin.ChangeAnimation(jc["Clips"][0]["AnimationName"].Value);
-                Plugin.Animation.Stop();
+                plugin.Load(jc);
+                plugin.ChangeAnimation(jc["Clips"][0]["AnimationName"].Value);
+                plugin.animation.Stop();
             }
             catch (Exception exc)
             {
