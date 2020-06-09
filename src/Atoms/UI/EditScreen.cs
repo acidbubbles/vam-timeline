@@ -104,7 +104,7 @@ namespace VamTimeline
         private void RefreshCurves()
         {
             if (_curves == null) return;
-            _curves.Bind(plugin.animation, current.GetSelectedTargets().ToList());
+            _curves.Bind(plugin.animation, current.AllTargetsCount == 1 ? current.AllTargets.ToList() : current.GetSelectedTargets().ToList());
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
