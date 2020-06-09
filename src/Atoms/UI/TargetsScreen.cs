@@ -128,14 +128,20 @@ namespace VamTimeline
         {
             var controllers = GetEligibleFreeControllers().ToList();
             _addControllerListJSON.choices = controllers;
-            if (string.IsNullOrEmpty(_addControllerListJSON.val))
+            if (!string.IsNullOrEmpty(_addControllerListJSON.val))
+                return;
+
+            if (controllers.Count == 1)
             {
-                var preferredSelection = new[] { "headControl", "lHandControl", "rHandControl", "hipControl", "chestControl" };
-                _addControllerListJSON.val = preferredSelection
-                    .FirstOrDefault(pref => controllers.Contains(pref)) ?? controllers
-                    .Where(c => c != "control" && c != "")
-                    .FirstOrDefault();
+                _addControllerListJSON.val = controllers[0];
+                return;
             }
+
+            var preferredSelection = new[] { "headControl", "lHandControl", "rHandControl", "hipControl", "chestControl" };
+            _addControllerListJSON.val = preferredSelection
+                .FirstOrDefault(pref => controllers.Contains(pref)) ?? controllers
+                .Where(c => c != "control" && c != "")
+                .FirstOrDefault();
         }
 
         private void InitFloatParamsUI(bool rightSide)

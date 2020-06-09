@@ -20,52 +20,9 @@ namespace VamTimeline
 
         protected override void CreateCustom()
         {
-            var slider = new GameObject();
-            slider.transform.SetParent(transform, false);
-
-            {
-                var rect = slider.AddComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0f, 0f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.sizeDelta = new Vector2(-62f, -6f);
-                rect.anchoredPosition += new Vector2(26f, 0f);
-
-                var image = slider.AddComponent<Image>();
-                image.color = new Color(0f, 0f, 0f, 0f);
-                image.raycastTarget = true;
-            }
-
-            var sliderBackground = new GameObject();
-            sliderBackground.transform.SetParent(slider.transform, false);
-
-            {
-                var rect = sliderBackground.AddComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0f, 0f);
-                rect.anchorMax = new Vector2(1f, 0f);
-                rect.sizeDelta = new Vector2(0f, 20f);
-                rect.anchoredPosition += new Vector2(0f, 13f);
-
-                var image = sliderBackground.AddComponent<GradientImage>();
-                image.top = new Color(0.7f, 0.7f, 0.7f);
-                image.bottom = new Color(0.8f, 0.8f, 0.8f);
-                image.raycastTarget = false;
-            }
-
-            var sliderFill = new GameObject();
-            sliderFill.transform.SetParent(sliderBackground.transform, false);
-
-            {
-                var rect = sliderFill.AddComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0f, 0f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.sizeDelta = Vector2.zero;
-                _sliderFillRect = rect;
-
-                var image = sliderFill.AddComponent<GradientImage>();
-                image.top = new Color(1.0f, 1.0f, 1.0f);
-                image.bottom = new Color(0.9f, 0.9f, 0.9f);
-                image.raycastTarget = false;
-            }
+            var slider = CreateSlider();
+            var sliderBackground = CreateSliderBackground(slider);
+            CreateSliderFill(sliderBackground);
 
             var interactions = slider.AddComponent<SimpleSlider>();
             interactions.OnChange.AddListener((float val) =>
@@ -75,6 +32,60 @@ namespace VamTimeline
                 SetTime(plugin.animation.Time, true);
                 ToggleKeyframe(true);
             });
+        }
+
+        private GameObject CreateSlider()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(-100f, -6f);
+            rect.anchoredPosition += new Vector2(8f, 0f);
+
+            var image = go.AddComponent<Image>();
+            image.color = new Color(0f, 0f, 0f, 0f);
+            image.raycastTarget = true;
+
+            return go;
+        }
+
+        private static GameObject CreateSliderBackground(GameObject slider)
+        {
+            var go = new GameObject();
+            go.transform.SetParent(slider.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(0f, 18f);
+            rect.anchoredPosition += new Vector2(0f, -40f);
+
+            var image = go.AddComponent<GradientImage>();
+            image.top = new Color(0.7f, 0.7f, 0.7f);
+            image.bottom = new Color(0.8f, 0.8f, 0.8f);
+            image.raycastTarget = false;
+
+            return go;
+        }
+
+        private void CreateSliderFill(GameObject sliderBackground)
+        {
+            var go = new GameObject();
+            go.transform.SetParent(sliderBackground.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.sizeDelta = Vector2.zero;
+            _sliderFillRect = rect;
+
+            var image = go.AddComponent<GradientImage>();
+            image.top = new Color(1.0f, 1.0f, 1.0f);
+            image.bottom = new Color(0.9f, 0.9f, 0.9f);
+            image.raycastTarget = false;
         }
 
         public override void SetTime(float time, bool stopped)

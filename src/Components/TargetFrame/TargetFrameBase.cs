@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,14 +13,16 @@ namespace VamTimeline
     public abstract class TargetFrameBase<T> : MonoBehaviour, ITargetFrame
         where T : IAnimationTargetWithCurves
     {
-        private int _ignoreNextToggleEvent;
-
         protected readonly StyleBase style = new StyleBase();
         protected IAtomPlugin plugin;
         protected AtomAnimationClip clip;
         protected T target;
         protected UIDynamicToggle toggle;
         protected Text valueText;
+        private GameObject _expand;
+        private int _ignoreNextToggleEvent;
+        private bool _expanded;
+        private float _originalHeight;
 
         public UIDynamic Container => gameObject.GetComponent<UIDynamic>();
 
@@ -42,12 +43,34 @@ namespace VamTimeline
 
             valueText = CreateValueText();
 
+            _expand = CreateExpand();
+            var expandListener = _expand.AddComponent<Clickable>();
+            expandListener.onClick.AddListener(pointerEvent => ToggleExpanded());
+
             this.plugin.animation.TimeChanged.AddListener(this.OnTimeChanged);
             OnTimeChanged(this.plugin.animation.Time);
 
             target.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
 
             OnAnimationKeyframesModified();
+        }
+
+        private void ToggleExpanded()
+        {
+            var ui = GetComponent<UIDynamic>();
+            var expandSize = 100f;
+            if (!_expanded)
+            {
+                ui.height += expandSize;
+                _expanded = true;
+                _expand.GetComponent<Text>().text = "\u02C5";
+            }
+            else
+            {
+                ui.height -= expandSize;
+                _expanded = false;
+                _expand.GetComponent<Text>().text = "\u02C3";
+            }
         }
 
         private void OnAnimationKeyframesModified()
@@ -79,7 +102,9 @@ namespace VamTimeline
 
             var checkbox = toggle.toggle.image.gameObject;
             var toggleRect = checkbox.GetComponent<RectTransform>();
-            toggleRect.anchoredPosition += new Vector2(3f, 0f);
+            toggleRect.anchorMin = new Vector2(0, 1);
+            toggleRect.anchorMax = new Vector2(0, 1);
+            toggleRect.anchoredPosition = new Vector2(29f, -30f);
 
             ui.gameObject.SetActive(true);
 
@@ -98,10 +123,10 @@ namespace VamTimeline
             go.transform.SetParent(transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(1, 0);
-            rect.anchorMax = new Vector2(1, 0);
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
             rect.sizeDelta = new Vector2(300f, 40f);
-            rect.anchoredPosition = new Vector2(-150f - 5f, 20f + 3f);
+            rect.anchoredPosition = new Vector2(-150f - 48f, 20f - 54f);
 
             var text = go.AddComponent<Text>();
             text.alignment = TextAnchor.LowerRight;
@@ -111,6 +136,35 @@ namespace VamTimeline
             text.raycastTarget = false;
 
             return text;
+        }
+
+        private GameObject CreateExpand()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(30f, 52f);
+            rect.anchoredPosition += new Vector2(-22f, -30f);
+
+            // var image = go.AddComponent<Image>();
+            // image.color = new Color(0.95f, 0.95f, 0.98f);
+            // image.raycastTarget = true;
+
+            // var child = new GameObject();
+            // child.transform.SetParent(go.transform, false);
+            // child.AddComponent<RectTransform>().StretchParent();
+
+            var text = go.AddComponent<Text>();
+            text.font = style.Font;
+            text.color = new Color(0.6f, 0.6f, 0.7f);
+            text.text = "\u02C3";
+            text.alignment = TextAnchor.MiddleCenter;
+            text.fontSize = 40;
+
+            return go;
         }
 
         public void Update()
