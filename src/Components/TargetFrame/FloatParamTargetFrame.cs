@@ -27,10 +27,7 @@ namespace VamTimeline
             var interactions = slider.AddComponent<SimpleSlider>();
             interactions.OnChange.AddListener((float val) =>
             {
-                target.floatParam.val = target.floatParam.min + val * (target.floatParam.max - target.floatParam.min);
-                plugin.animation.SetKeyframe(target, plugin.animation.Time, target.floatParam.val);
-                SetTime(plugin.animation.Time, true);
-                ToggleKeyframe(true);
+                SetValue(target.floatParam.min + val * (target.floatParam.max - target.floatParam.min));
             });
         }
 
@@ -86,6 +83,47 @@ namespace VamTimeline
             image.top = new Color(1.0f, 1.0f, 1.0f);
             image.bottom = new Color(0.9f, 0.9f, 0.9f);
             image.raycastTarget = false;
+        }
+
+        protected override void CreateExpandPanel(RectTransform container)
+        {
+            var group = container.gameObject.AddComponent<HorizontalLayoutGroup>();
+            group.spacing = 4f;
+            group.padding = new RectOffset(8, 8, 8, 8);
+            group.childAlignment = TextAnchor.MiddleCenter;
+
+            {
+                var btn = Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Default";
+                btn.button.onClick.AddListener(() =>
+                {
+                    SetValue(target.floatParam.defaultVal);
+                });
+                btn.GetComponent<LayoutElement>().preferredWidth = 40f;
+            }
+
+            {
+                var btn = Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "+ Range";
+                // TODO: Morphs are not _really_ constrained but their float params are. We need to detect morphs here.
+                btn.button.interactable = !target.floatParam.constrained;
+                btn.button.onClick.AddListener(() =>
+                {
+                    target.floatParam.min -= 1f;
+                    target.floatParam.max += 1f;
+                    SetTime(plugin.animation.Time, true);
+                });
+            }
+        }
+
+        private void SetValue(float val)
+        {
+            target.floatParam.val = val;
+            plugin.animation.SetKeyframe(target, plugin.animation.Time, target.floatParam.val);
+            SetTime(plugin.animation.Time, true);
+            ToggleKeyframe(true);
         }
 
         public override void SetTime(float time, bool stopped)

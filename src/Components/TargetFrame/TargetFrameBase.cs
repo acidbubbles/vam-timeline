@@ -21,8 +21,7 @@ namespace VamTimeline
         protected Text valueText;
         private GameObject _expand;
         private int _ignoreNextToggleEvent;
-        private bool _expanded;
-        private float _originalHeight;
+        private RectTransform _expanded;
 
         public UIDynamic Container => gameObject.GetComponent<UIDynamic>();
 
@@ -58,19 +57,38 @@ namespace VamTimeline
         private void ToggleExpanded()
         {
             var ui = GetComponent<UIDynamic>();
-            var expandSize = 100f;
-            if (!_expanded)
+            var expandSize = 80f;
+            if (_expanded == null)
             {
                 ui.height += expandSize;
-                _expanded = true;
+                _expanded = CreateExpandContainer();
+                CreateExpandPanel(_expanded);
                 _expand.GetComponent<Text>().text = "\u02C5";
             }
             else
             {
                 ui.height -= expandSize;
-                _expanded = false;
+                Destroy(_expanded.gameObject);
+                _expanded = null;
                 _expand.GetComponent<Text>().text = "\u02C3";
             }
+        }
+
+        private RectTransform CreateExpandContainer()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+            rect.offsetMin = new Vector2(8f, 8f);
+            rect.offsetMax = new Vector2(-8f, -60f);
+
+            var image = go.AddComponent<Image>();
+            image.raycastTarget = false;
+            image.color = new Color(0.75f, 0.70f, 0.82f);
+
+            return rect;
         }
 
         private void OnAnimationKeyframesModified()
@@ -126,7 +144,7 @@ namespace VamTimeline
             rect.anchorMin = new Vector2(1f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.sizeDelta = new Vector2(300f, 40f);
-            rect.anchoredPosition = new Vector2(-150f - 48f, 20f - 54f);
+            rect.anchoredPosition = new Vector2(-150f - 48f, 20f - 55f);
 
             var text = go.AddComponent<Text>();
             text.alignment = TextAnchor.LowerRight;
@@ -148,14 +166,6 @@ namespace VamTimeline
             rect.anchorMax = new Vector2(1f, 1f);
             rect.sizeDelta = new Vector2(30f, 52f);
             rect.anchoredPosition += new Vector2(-22f, -30f);
-
-            // var image = go.AddComponent<Image>();
-            // image.color = new Color(0.95f, 0.95f, 0.98f);
-            // image.raycastTarget = true;
-
-            // var child = new GameObject();
-            // child.transform.SetParent(go.transform, false);
-            // child.AddComponent<RectTransform>().StretchParent();
 
             var text = go.AddComponent<Text>();
             text.font = style.Font;
@@ -208,6 +218,7 @@ namespace VamTimeline
         }
 
         protected abstract void CreateCustom();
+        protected abstract void CreateExpandPanel(RectTransform container);
         public abstract void ToggleKeyframe(bool enable);
 
         public void OnDestroy()

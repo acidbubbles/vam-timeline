@@ -20,6 +20,10 @@ namespace VamTimeline
         {
         }
 
+        protected override void CreateExpandPanel(RectTransform container)
+        {
+        }
+
         public override void SetTime(float time, bool stopped)
         {
             base.SetTime(time, stopped);
