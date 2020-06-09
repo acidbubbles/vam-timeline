@@ -34,9 +34,9 @@ dotnet_naming_rule.private_members_with_underscore.severity     = suggestion
 
 # Public Properties
 
-dotnet_naming_symbols.constant_fields.applicable_kinds           = field, property
-dotnet_naming_symbols.constant_fields.applicable_accessibilities = public, protected
+dotnet_naming_symbols.public_fields.applicable_kinds           = field, property
+dotnet_naming_symbols.public_fields.applicable_accessibilities = public, protected
 
-dotnet_naming_rule.public_camel_case.symbols                     = constant_fields
+dotnet_naming_rule.public_camel_case.symbols                     = public_fields
 dotnet_naming_rule.public_camel_case.capitalization              = camel_case
 dotnet_naming_rule.public_camel_case.severity                    = suggestion
