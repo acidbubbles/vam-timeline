@@ -128,8 +128,10 @@ namespace VamTimeline
                     curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.Bounce:
-                    keyframe.inTangent = AnimationCurveExtensions.CalculateLinearTangent(before, keyframe);
-                    keyframe.outTangent = -keyframe.inTangent;
+                    // Increasing kinetic energy
+                    keyframe.inTangent = AnimationCurveExtensions.CalculateLinearTangent(before, keyframe) * 2f;
+                    // Lower coefficient of restitution
+                    keyframe.outTangent = -keyframe.inTangent * 0.8f;
                     curve.MoveKey(key, keyframe);
                     break;
                 case CurveTypeValues.Smooth:
