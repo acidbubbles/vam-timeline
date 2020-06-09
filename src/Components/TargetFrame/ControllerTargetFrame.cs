@@ -22,6 +22,12 @@ namespace VamTimeline
 
         protected override void CreateExpandPanel(RectTransform container)
         {
+            var group = container.gameObject.AddComponent<HorizontalLayoutGroup>();
+            group.spacing = 4f;
+            group.padding = new RectOffset(8, 8, 8, 8);
+            group.childAlignment = TextAnchor.MiddleCenter;
+
+            CreateExpandButton(group.transform, "Select", () => SuperController.singleton.SelectController(target.controller));
         }
 
         public override void SetTime(float time, bool stopped)
