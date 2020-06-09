@@ -1,5 +1,6 @@
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -19,7 +20,7 @@ namespace VamTimeline
         protected T target;
         protected UIDynamicToggle toggle;
         protected Text valueText;
-        private GameObject _expand;
+        private GameObject _expandButton;
         private int _ignoreNextToggleEvent;
         private RectTransform _expanded;
 
@@ -42,8 +43,8 @@ namespace VamTimeline
 
             valueText = CreateValueText();
 
-            _expand = CreateExpand();
-            var expandListener = _expand.AddComponent<Clickable>();
+            _expandButton = CreateExpandButton();
+            var expandListener = _expandButton.AddComponent<Clickable>();
             expandListener.onClick.AddListener(pointerEvent => ToggleExpanded());
 
             this.plugin.animation.TimeChanged.AddListener(this.OnTimeChanged);
@@ -57,20 +58,20 @@ namespace VamTimeline
         private void ToggleExpanded()
         {
             var ui = GetComponent<UIDynamic>();
-            var expandSize = 80f;
+            var expandSize = 70f;
             if (_expanded == null)
             {
                 ui.height += expandSize;
                 _expanded = CreateExpandContainer();
                 CreateExpandPanel(_expanded);
-                _expand.GetComponent<Text>().text = "\u02C5";
+                _expandButton.GetComponent<Text>().text = "\u02C5";
             }
             else
             {
                 ui.height -= expandSize;
                 Destroy(_expanded.gameObject);
                 _expanded = null;
-                _expand.GetComponent<Text>().text = "\u02C3";
+                _expandButton.GetComponent<Text>().text = "\u02C3";
             }
         }
 
@@ -156,7 +157,7 @@ namespace VamTimeline
             return text;
         }
 
-        private GameObject CreateExpand()
+        private GameObject CreateExpandButton()
         {
             var go = new GameObject();
             go.transform.SetParent(transform, false);
@@ -215,6 +216,22 @@ namespace VamTimeline
             {
                 Interlocked.Decrement(ref _ignoreNextToggleEvent);
             }
+        }
+
+        protected UIDynamicButton CreateExpandButton(Transform parent, string label, UnityAction callback)
+        {
+            var btn = Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+            btn.gameObject.transform.SetParent(parent, false);
+
+            btn.label = label;
+            btn.button.onClick.AddListener(callback);
+            btn.buttonText.fontSize = 24;
+
+            var layout = btn.GetComponent<LayoutElement>();
+            layout.minHeight = 20f;
+            layout.preferredHeight = 20f;
+
+            return btn;
         }
 
         protected abstract void CreateCustom();

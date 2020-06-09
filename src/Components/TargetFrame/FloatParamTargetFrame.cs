@@ -92,27 +92,39 @@ namespace VamTimeline
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
 
-            {
-                var btn = Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
-                btn.gameObject.transform.SetParent(group.transform, false);
-                btn.label = "Default";
-                btn.button.onClick.AddListener(() =>
-                {
-                    SetValue(target.floatParam.defaultVal);
-                });
-                btn.GetComponent<LayoutElement>().preferredWidth = 40f;
-            }
+            var morph = (target.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(target.floatParam.name);
 
+            CreateExpandButton(group.transform, "Default", () => SetValue(target.floatParam.defaultVal));
+
+            if (morph == null)
             {
-                var btn = Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
-                btn.gameObject.transform.SetParent(group.transform, false);
-                btn.label = "+ Range";
-                // TODO: Morphs are not _really_ constrained but their float params are. We need to detect morphs here.
-                btn.button.interactable = !target.floatParam.constrained;
-                btn.button.onClick.AddListener(() =>
+                CreateExpandButton(group.transform, "Range .1X", () =>
                 {
-                    target.floatParam.min -= 1f;
-                    target.floatParam.max += 1f;
+                    target.floatParam.min *= 0.1f;
+                    target.floatParam.max *= 0.1f;
+                    SetTime(plugin.animation.Time, true);
+                }).button.interactable = !target.floatParam.constrained;
+
+                CreateExpandButton(group.transform, "Range 10X", () =>
+                {
+                    target.floatParam.min *= 10f;
+                    target.floatParam.max *= 10f;
+                    SetTime(plugin.animation.Time, true);
+                }).button.interactable = !target.floatParam.constrained;
+            }
+            else
+            {
+                CreateExpandButton(group.transform, "Reset Range", () =>
+                {
+                    morph.ResetRange();
+                    if (target.floatParam.val < target.floatParam.min) SetValue(target.floatParam.min);
+                    if (target.floatParam.val > target.floatParam.max) SetValue(target.floatParam.max);
+                    SetTime(plugin.animation.Time, true);
+                });
+
+                CreateExpandButton(group.transform, "+ Range", () =>
+                {
+                    morph.IncreaseRange();
                     SetTime(plugin.animation.Time, true);
                 });
             }
