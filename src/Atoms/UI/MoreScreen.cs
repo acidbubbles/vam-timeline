@@ -75,6 +75,10 @@ namespace VamTimeline
             var importUI = plugin.CreateButton("Import animation", rightSide);
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
+
+            var mergeUI = plugin.CreateButton("Merge animation", rightSide);
+            mergeUI.button.onClick.AddListener(() => Merge());
+            RegisterComponent(mergeUI);
         }
 
         private void InitSpeedUI(bool rightSide)
@@ -202,6 +206,43 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
+            }
+        }
+
+        private void Merge() {
+            try
+            {
+                FileManagerSecure.CreateDirectory(_saveFolder);
+                var shortcuts = FileManagerSecure.GetShortCutsForDirectory(_saveFolder);
+                SuperController.singleton.GetMediaPathDialog(MergeFileSelected, _saveExt, _saveFolder, false, true, false, null, false, shortcuts);
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline: Failed to merge file dialog: {exc}");
+            }
+        }
+        private void MergeFileSelected(string path)
+
+        {
+            if (string.IsNullOrEmpty(path)) return;
+
+            try
+            {
+                var json = SuperController.singleton.LoadJSON(path);
+                if (json["AtomType"]?.Value != plugin.containingAtom.type)
+                {
+                    SuperController.LogError($"VamTimeline: Loaded animation for {json["AtomType"]} but current atom type is {plugin.containingAtom.type}");
+                    return;
+                }
+
+                // TODO: consider allowing the user to pick whether they want to overwrite clips or not
+                plugin.serializer.DeserializeAnimation(plugin.animation, json.AsObject, overwriteClips: false);
+                plugin.ChangeAnimation(plugin.animation.Clips.Select(c => c.AnimationName).LastOrDefault());
+                plugin.animation.Stop();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(MergeFileSelected)}: Failed to merge animation: {exc}");
             }
         }
     }
