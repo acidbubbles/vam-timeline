@@ -209,7 +209,8 @@ namespace VamTimeline
             }
         }
 
-        private void Merge() {
+        private void Merge()
+        {
             try
             {
                 FileManagerSecure.CreateDirectory(_saveFolder);

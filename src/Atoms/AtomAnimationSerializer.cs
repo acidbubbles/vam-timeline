@@ -42,18 +42,22 @@ namespace VamTimeline
                 string animationName = clipJSON["AnimationName"].Value;
                 if (animation.Clips.Any(c => c.AnimationName == animationName))
                 {
-                    if(overwriteClips) {
+                    if (overwriteClips)
+                    {
                         SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be overwritten");
                         var clipToRemove = animation.Clips.First(c => c.AnimationName == animationName);
                         animation.Clips.Remove(clipToRemove);
                         clipToRemove.Dispose();
                     }
-                    else {
+                    else
+                    {
                         // generate a new name since we don't want to overwrite in this case
                         var i = 1;
-                        while(true) {
+                        while (true)
+                        {
                             var newAnimationName = $"{animationName} ({i})";
-                            if(!animation.Clips.Any(c => c.AnimationName == newAnimationName)) {
+                            if (!animation.Clips.Any(c => c.AnimationName == newAnimationName))
+                            {
                                 SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be imported with the name {newAnimationName}");
                                 animationName = newAnimationName;
                                 break;
