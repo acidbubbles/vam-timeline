@@ -99,13 +99,11 @@ namespace VamTimeline
                 _speed = value;
                 foreach (var clip in Clips)
                 {
-                    var animState = _unityAnimation[clip.AnimationName];
-                    if (animState != null)
-                        animState.speed = _speed;
+                    if (_animState != null)
+                        _animState.speed = _speed;
                     if (clip.AnimationPattern != null)
                         clip.AnimationPattern.SetFloatParamValue("speed", value);
                 }
-                AnimationSettingsChanged.Invoke();
             }
         }
 
