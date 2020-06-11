@@ -54,7 +54,6 @@ namespace VamTimeline
         private ScreensManager _ui;
         private AnimationControlPanel _controllerInjectedControlerPanel;
 
-
         #region Init
 
         public override void Init()
@@ -232,7 +231,6 @@ namespace VamTimeline
         }
 
         #endregion
-
 
         #region Initialization
 

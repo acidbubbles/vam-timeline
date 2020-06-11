@@ -306,7 +306,6 @@ namespace VamTimeline
 
         #region Interpolation
 
-
         public bool Interpolate(float playTime, float maxDistanceDelta, float maxRadiansDelta)
         {
             var targetLocalPosition = new Vector3

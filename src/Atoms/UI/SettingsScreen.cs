@@ -66,7 +66,6 @@ namespace VamTimeline
 
         #endregion
 
-
         public override void Dispose()
         {
             base.Dispose();
