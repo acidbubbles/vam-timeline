@@ -196,7 +196,12 @@ namespace VamTimeline
                 }
 
                 plugin.serializer.DeserializeAnimation(plugin.animation, json.AsObject);
-                plugin.ChangeAnimation(plugin.animation.Clips.Select(c => c.AnimationName).LastOrDefault());
+                var lastAnimation = plugin.animation.Clips.Select(c => c.AnimationName).LastOrDefault();
+                // NOTE: Because the animation instance changes, we'll end up with the _old_ "current" not being updated.
+                if (lastAnimation != plugin.animation.Current.AnimationName)
+                    plugin.ChangeAnimation(lastAnimation);
+                else
+                    plugin.animation.ChangeAnimation(lastAnimation);
                 plugin.animation.Stop();
             }
             catch (Exception exc)
