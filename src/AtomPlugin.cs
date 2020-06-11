@@ -59,17 +59,32 @@ namespace VamTimeline
 
         public override void Init()
         {
+            base.Init();
+
             try
             {
                 serializer = new AtomAnimationSerializer(base.containingAtom);
                 _ui = new ScreensManager(this);
                 InitStorables();
-                _ui.Init();
                 StartCoroutine(DeferredInit());
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Init)}: " + exc);
+            }
+        }
+
+        public override void InitUI()
+        {
+            base.InitUI();
+
+            try
+            {
+                _ui?.Init();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(InitUI)}: " + exc);
             }
         }
 
