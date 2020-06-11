@@ -5,10 +5,9 @@ using UnityEngine.UI;
 namespace VamTimeline
 {
     /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
+    /// Vertex Helper
+    /// By Yoooi, modified by Acidbubbles
+    /// Source: https://github.com/acidbubbles/vam-curve-editor
     /// </summary>
     public static class UIVertexHelper
     {
