@@ -24,7 +24,7 @@ namespace VamTimeline
 
         #region Deserialize JSON
 
-        public AtomAnimation DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON, bool overwriteClips = true)
+        public AtomAnimation DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON)
         {
             if (animation == null)
             {
@@ -40,30 +40,20 @@ namespace VamTimeline
             foreach (JSONClass clipJSON in clipsJSON)
             {
                 string animationName = clipJSON["AnimationName"].Value;
-                if (animation.Clips.Any(c => c.AnimationName == animationName))
+                var existingClip = animation.Clips.FirstOrDefault(c => c.AnimationName == animationName);
+                if (existingClip != null)
                 {
-                    if (overwriteClips)
+                    if (existingClip.IsEmpty())
                     {
-                        SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be overwritten");
                         var clipToRemove = animation.Clips.First(c => c.AnimationName == animationName);
                         animation.Clips.Remove(clipToRemove);
                         clipToRemove.Dispose();
                     }
                     else
                     {
-                        // generate a new name since we don't want to overwrite in this case
-                        var i = 1;
-                        while (true)
-                        {
-                            var newAnimationName = $"{animationName} ({i})";
-                            if (!animation.Clips.Any(c => c.AnimationName == newAnimationName))
-                            {
-                                SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be imported with the name {newAnimationName}");
-                                animationName = newAnimationName;
-                                break;
-                            }
-                            i++;
-                        }
+                        var newAnimationName = GenerateUniqueAnimationName(animation, animationName);
+                        SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be imported with the name {newAnimationName}");
+                        animationName = newAnimationName;
                     }
                 }
                 var clip = new AtomAnimationClip(animationName)
@@ -83,6 +73,18 @@ namespace VamTimeline
             animation.Initialize();
             animation.RebuildAnimation();
             return animation;
+        }
+
+        private static string GenerateUniqueAnimationName(AtomAnimation animation, string animationName)
+        {
+            var i = 1;
+            while (true)
+            {
+                var newAnimationName = $"{animationName} ({i})";
+                if (!animation.Clips.Any(c => c.AnimationName == newAnimationName))
+                    return newAnimationName;
+                i++;
+            }
         }
 
         private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
