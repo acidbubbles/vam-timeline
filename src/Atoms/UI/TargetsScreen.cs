@@ -117,8 +117,7 @@ namespace VamTimeline
             yield return "";
             foreach (var fc in plugin.containingAtom.freeControllers)
             {
-                if (fc.name == "control") yield return fc.name;
-                if (!fc.name.EndsWith("Control")) continue;
+                if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
                 if (current.TargetControllers.Any(c => c.controller == fc)) continue;
                 yield return fc.name;
             }
@@ -131,17 +130,16 @@ namespace VamTimeline
             if (!string.IsNullOrEmpty(_addControllerListJSON.val))
                 return;
 
-            if (controllers.Count == 1)
+            if (controllers.Count == 2)
             {
-                _addControllerListJSON.val = controllers[0];
+                _addControllerListJSON.val = controllers[1];
                 return;
             }
 
             var preferredSelection = new[] { "headControl", "lHandControl", "rHandControl", "hipControl", "chestControl" };
-            _addControllerListJSON.val = preferredSelection
-                .FirstOrDefault(pref => controllers.Contains(pref)) ?? controllers
-                .Where(c => c != "control" && c != "")
-                .FirstOrDefault();
+            _addControllerListJSON.val =
+                preferredSelection.FirstOrDefault(pref => controllers.Contains(pref))
+                ?? controllers.Where(c => c != "control" && c != "").FirstOrDefault();
         }
 
         private void InitFloatParamsUI(bool rightSide)
@@ -207,7 +205,7 @@ namespace VamTimeline
                 if (storableId.StartsWith("hairTool")) continue;
                 var storable = plugin.containingAtom.GetStorableByID(storableId);
                 if (storable == null) continue;
-                if (UnityEngine.Object.ReferenceEquals(storable, plugin)) continue;
+                if (ReferenceEquals(storable, plugin)) continue;
                 if ((storable.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
             }
