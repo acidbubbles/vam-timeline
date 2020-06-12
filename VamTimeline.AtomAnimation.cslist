@@ -12,6 +12,7 @@ src/Common/AnimationCurveExtensions.cs
 src/Components/Clickable.cs
 src/Components/Listener.cs
 src/Components/UIVertexHelper.cs
+src/Components/UIPerformance.cs
 src/Components/GradientImage.cs
 src/Components/Styling/StyleBase.cs
 src/Components/Scrubber/Scrubber.cs

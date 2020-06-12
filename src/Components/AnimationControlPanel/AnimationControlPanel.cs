@@ -25,6 +25,7 @@ namespace VamTimeline
             set
             {
                 _dopeSheet.locked = value;
+                _scrubber.enabled = !value;
             }
         }
 
@@ -35,6 +36,8 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
+            var animationSelector = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab, plugin.animationJSON);
+            InitSpacer();
             _scrubber = InitScrubber(plugin.scrubberJSON, plugin.snapJSON);
             InitSpacer();
             // TODO: Make the JSON use animation features instead of the other way around
@@ -43,19 +46,32 @@ namespace VamTimeline
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.stopJSON);
             InitSpacer();
             _dopeSheet = InitDopeSheet();
-            InitSpacer();
         }
 
         public void Bind(AtomAnimation animation)
         {
             _animation = animation;
-            _scrubber.animation = animation;
-            _dopeSheet.Bind(animation);
+            if (_scrubber != null) _scrubber.animation = animation;
+            if (_dopeSheet != null) _dopeSheet.Bind(animation);
+        }
+
+        private UIDynamicPopup InitAnimationSelectorUI(Transform configurableScrollablePopupPrefab, JSONStorableStringChooser jsc)
+        {
+            var popup = Instantiate(configurableScrollablePopupPrefab);
+            popup.SetParent(transform, false);
+
+            var ui = popup.GetComponent<UIDynamicPopup>();
+            ui.label = "Play";
+            ui.popupPanelHeight = GetComponent<UIDynamic>()?.height ?? 500;
+
+            jsc.popup = ui.popup;
+
+            return ui;
         }
 
         private Scrubber InitScrubber(JSONStorableFloat scrubberJSON, JSONStorableFloat snapJSON)
         {
-            var go = new GameObject();
+            var go = new GameObject("Scrubber");
             go.transform.SetParent(transform, false);
 
             go.AddComponent<LayoutElement>().preferredHeight = 60f;
@@ -69,7 +85,7 @@ namespace VamTimeline
 
         private void InitPlaybackButtons(Transform buttonPrefab, JSONStorableAction playJSON, JSONStorableAction stopJSON)
         {
-            var container = new GameObject();
+            var container = new GameObject("Playback");
             container.transform.SetParent(transform, false);
 
             var gridLayout = container.AddComponent<HorizontalLayoutGroup>();
@@ -94,7 +110,7 @@ namespace VamTimeline
 
         private void InitFrameNav(Transform buttonPrefab, JSONStorableAction previousFrameJSON, JSONStorableAction nextFrameJSON)
         {
-            var container = new GameObject();
+            var container = new GameObject("Frame Nav");
             container.transform.SetParent(transform, false);
 
             var gridLayout = container.AddComponent<HorizontalLayoutGroup>();
@@ -156,7 +172,7 @@ namespace VamTimeline
 
         private DopeSheet InitDopeSheet()
         {
-            var go = new GameObject();
+            var go = new GameObject("Dope Sheet");
             go.transform.SetParent(transform, false);
 
             go.AddComponent<LayoutElement>().flexibleHeight = 260f;
@@ -168,7 +184,7 @@ namespace VamTimeline
 
         private void InitSpacer()
         {
-            var go = new GameObject();
+            var go = new GameObject("Spacer");
             go.transform.SetParent(transform, false);
 
             go.AddComponent<LayoutElement>().preferredHeight = 10f;

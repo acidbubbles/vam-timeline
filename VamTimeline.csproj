@@ -62,6 +62,7 @@
     <Compile Include="src/Components/Clickable.cs" />
     <Compile Include="src/Components/Listener.cs" />
     <Compile Include="src/Components/UIVertexHelper.cs" />
+    <Compile Include="src/Components/UIPerformance.cs" />
     <Compile Include="src/Components/GradientImage.cs" />
 
     <Compile Include="src/Components/Styling/StyleBase.cs" />

@@ -254,6 +254,7 @@ namespace VamTimeline
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
             }
+
             foreach (var target in current.TargetFloatParams)
             {
                 UIDynamicToggle jsbUI = null;
@@ -272,13 +273,14 @@ namespace VamTimeline
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
             }
+
             // Ensures shows on top
-            _addControllerListJSON.popup.Toggle();
-            _addControllerListJSON.popup.Toggle();
-            _addStorableListJSON.popup.Toggle();
-            _addStorableListJSON.popup.Toggle();
-            _addParamListJSON.popup.Toggle();
-            _addParamListJSON.popup.Toggle();
+            _addControllerListJSON.popup.visible = true;
+            _addControllerListJSON.popup.visible = false;
+            _addStorableListJSON.popup.visible = true;
+            _addStorableListJSON.popup.visible = false;
+            _addParamListJSON.popup.visible = true;
+            _addParamListJSON.popup.visible = false;
         }
 
         private void ClearRemoveToggles()

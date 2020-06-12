@@ -204,8 +204,11 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (_animation != null && _animation.IsPlaying())
-                SetScrubberPosition(_animation.Time, false);
+            if (_animation == null) return;
+            if (!_animation.IsPlaying()) return;
+            if (UIPerformance.ShouldSkip()) return;
+
+            SetScrubberPosition(_animation.Time, false);
         }
 
         private void OnTimeChanged(float time)
@@ -437,7 +440,7 @@ namespace VamTimeline
 
         private void OnClick(IAnimationTargetWithCurves target, RectTransform rect, PointerEventData eventData)
         {
-            if(_locked) return;
+            if (_locked) return;
 
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
@@ -452,7 +455,7 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float time, bool stopped)
         {
-            if(_locked) return;
+            if (_locked) return;
 
             var ratio = Mathf.Clamp01(time / _clip.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);

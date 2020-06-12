@@ -23,7 +23,6 @@ namespace VamTimeline
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
-        private UIDynamicPopup _animationUI;
 
         public ScreensManager(IAtomPlugin plugin)
         {
@@ -33,9 +32,6 @@ namespace VamTimeline
         public void Init()
         {
             // Left side
-            // TODO: This should be in the control panel
-            InitAnimationSelectorUI(false);
-
             InitControlPanelUI(false);
 
             // Right side
@@ -89,17 +85,10 @@ namespace VamTimeline
             RefreshCurrentUI();
         }
 
-        protected void InitAnimationSelectorUI(bool rightSide)
-        {
-            _animationUI = _plugin.CreateScrollablePopup(_plugin.animationJSON, rightSide);
-            _animationUI.label = "Animation";
-            _animationUI.popupPanelHeight = 800f;
-        }
-
         private void InitControlPanelUI(bool rightSide)
         {
             var controlPanelContainer = _plugin.CreateSpacer(rightSide);
-            controlPanelContainer.height = 500f;
+            controlPanelContainer.height = 600f;
             _controlPanel = controlPanelContainer.gameObject.AddComponent<AnimationControlPanel>();
             _controlPanel.Bind(_plugin);
         }
@@ -254,12 +243,6 @@ namespace VamTimeline
                 _uiRefreshInvalidated = false;
                 _uiRefreshScheduled = true;
                 _plugin.StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
-            }
-
-            if (_animationUI.popup.visible)
-            {
-                // Fix for when the popup is open, it becomes hidden by newer components
-                _animationUI.popup.visible = false;
             }
         }
 

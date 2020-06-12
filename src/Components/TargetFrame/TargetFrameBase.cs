@@ -180,8 +180,10 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (plugin.animation.IsPlaying())
-                SetTime(plugin.animation.Time, false);
+            if (UIPerformance.ShouldSkip()) return;
+            if (!plugin.animation.IsPlaying()) return;
+
+            SetTime(plugin.animation.Time, false);
         }
 
         private void OnTimeChanged(float time)

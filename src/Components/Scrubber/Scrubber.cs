@@ -26,9 +26,6 @@ namespace VamTimeline
 
         public Scrubber()
         {
-            gameObject.AddComponent<Canvas>();
-            gameObject.AddComponent<GraphicRaycaster>();
-
             var image = gameObject.AddComponent<Image>();
             image.raycastTarget = false;
 
@@ -113,6 +110,8 @@ namespace VamTimeline
 
         public void Update()
         {
+            if (UIPerformance.ShouldSkip()) return;
+
             if (_previousMax != scrubberJSON.max)
             {
                 _previousMax = scrubberJSON.max;
@@ -128,6 +127,25 @@ namespace VamTimeline
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
 
+            if (Time.frameCount % 4 != 0) return;
+
+            _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+        }
+
+        public void OnDisable()
+        {
+            _scrubberRect.anchorMin = new Vector2(0, 0);
+            _scrubberRect.anchorMax = new Vector2(0, 1);
+            _timeText.text = $"Locked";
+        }
+
+        public void OnEnable()
+        {
+            if (scrubberJSON == null) return;
+
+            var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
+            _scrubberRect.anchorMin = new Vector2(ratio, 0);
+            _scrubberRect.anchorMax = new Vector2(ratio, 1);
             _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
         }
 
