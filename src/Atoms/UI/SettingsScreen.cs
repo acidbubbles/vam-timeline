@@ -33,8 +33,6 @@ namespace VamTimeline
             CreateSpacer(true);
 
             CreateSnap(true);
-
-            CreateInterpolation(true);
         }
 
         private void CreateSnap(bool rightSide)
@@ -43,25 +41,6 @@ namespace VamTimeline
             var snapUI = plugin.CreateSlider(plugin.snapJSON, rightSide);
             snapUI.valueFormat = "F3";
             RegisterComponent(snapUI);
-        }
-
-        private void CreateInterpolation(bool rightSide)
-        {
-            var interpolationSpeedJSON = new JSONStorableFloat("Interpolation Speed", 1f, (float val) => plugin.animation.interpolationSpeed = val, 0.1f, 4f, true)
-            {
-                valNoCallback = plugin.animation.interpolationSpeed
-            };
-            RegisterStorable(interpolationSpeedJSON);
-            var interpolationSpeedUI = plugin.CreateSlider(interpolationSpeedJSON, rightSide);
-            RegisterComponent(interpolationSpeedUI);
-
-            var interpolationTimeoutJSON = new JSONStorableFloat("Interpolation Timeout", 1f, (float val) => plugin.animation.interpolationTimeout = val, 0f, 10f, true)
-            {
-                valNoCallback = plugin.animation.interpolationTimeout
-            };
-            RegisterStorable(interpolationTimeoutJSON);
-            var interpolationTimeoutUI = plugin.CreateSlider(interpolationTimeoutJSON, rightSide);
-            RegisterComponent(interpolationTimeoutUI);
         }
 
         #endregion
