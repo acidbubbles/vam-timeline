@@ -239,13 +239,10 @@ namespace VamTimeline
 
             try
             {
-                var x = 0f;
-                var y = -0.37f;
                 _ui = new SimpleSignUI(_atom, this);
-                _ui.CreateUIToggleInCanvas(_lockedJSON, x, y + 0.1f);
-                _ui.CreateUIPopupInCanvas(_atomsJSON, x, y + 0.355f);
-                _ui.CreateUIPopupInCanvas(_animationJSON, x, y + 0.425f);
-                _controlPanelSpacer = _ui.CreateUISpacerInCanvas(x, y + 0.375f, 780f);
+                _ui.CreateUIToggleInCanvas(_lockedJSON);
+                _ui.CreateUIPopupInCanvas(_atomsJSON);
+                _controlPanelSpacer = _ui.CreateUISpacerInCanvas(980f);
                 if (_mainLinkedAnimation != null)
                     RequestControlPanelInjection();
             }
