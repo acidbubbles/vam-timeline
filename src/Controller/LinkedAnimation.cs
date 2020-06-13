@@ -63,7 +63,7 @@ namespace VamTimeline
                 var previous = _storable;
                 if (_scrubber != null && Storable == previous) return _scrubber;
                 _scrubber = Storable?.GetFloatJSONParam(StorableNames.Scrubber);
-                if(_scrubber == null) throw new NullReferenceException($"Scrubber of atom '{_storable?.containingAtom.name}' is null.");
+                // if(_scrubber == null) throw new NullReferenceException($"Scrubber of atom '{_storable?.containingAtom.name}' is null.");
                 return _scrubber;
             }
         }

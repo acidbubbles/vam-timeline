@@ -20,6 +20,8 @@ namespace VamTimeline
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableBool _hideJSON;
+        private JSONStorableBool _enableKeyboardShortcuts;
+        private JSONStorableBool _ignoreMissingAtom;
         private JSONStorableBool _lockedJSON;
         private JSONStorableStringChooser _atomsJSON;
         private JSONStorableStringChooser _animationJSON;
@@ -32,7 +34,6 @@ namespace VamTimeline
         private JSONStorableString _savedAtomsJSON;
         private UIDynamicButton _linkButton;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
-        private JSONStorableBool _enableKeyboardShortcuts;
         private UIDynamic _controlPanelSpacer;
         private GameObject _controlPanelContainer;
         private readonly List<LinkedAnimation> _linkedAnimations = new List<LinkedAnimation>();
@@ -80,6 +81,9 @@ namespace VamTimeline
 
             _enableKeyboardShortcuts = new JSONStorableBool("Enable Keyboard Shortcuts", false);
             RegisterBool(_enableKeyboardShortcuts);
+
+            _ignoreMissingAtom = new JSONStorableBool("Ignore missing atoms", false);
+            RegisterBool(_ignoreMissingAtom);
 
             _lockedJSON = new JSONStorableBool("Locked (Performance)", false, (bool val) => Lock(val))
             {
@@ -227,6 +231,8 @@ namespace VamTimeline
             CreateToggle(_hideJSON, true);
 
             CreateToggle(_enableKeyboardShortcuts, true);
+
+            CreateToggle(_ignoreMissingAtom, true);
         }
 
         #endregion
@@ -281,6 +287,7 @@ namespace VamTimeline
             {
                 if (_mainLinkedAnimation == null) return;
                 var scrubber = _mainLinkedAnimation.Scrubber;
+                if (scrubber == null) return;
                 scrubber.val = v;
                 foreach (var link in _linkedAnimations.Where(la => la != _mainLinkedAnimation))
                     link.Time.val = scrubber.val;
@@ -302,14 +309,16 @@ namespace VamTimeline
                 var atom = SuperController.singleton.GetAtomByUid(uid);
                 if (atom == null)
                 {
-                    SuperController.LogError($"VamTimeline: Atom '{uid}' cannot be found. Re-link the atom to fix.");
+                    if (!_ignoreMissingAtom.val)
+                        SuperController.LogError($"VamTimeline: Atom '{uid}' cannot be found. Re-link the atom to fix.");
                     return;
                 }
 
                 var link = LinkedAnimation.TryCreate(atom);
                 if (link == null)
                 {
-                    SuperController.LogError($"VamTimeline: Atom '{uid}' did not have the Timeline plugin. Add the plugin and re-link the atom to fix.");
+                    if (!_ignoreMissingAtom.val)
+                        SuperController.LogError($"VamTimeline: Atom '{uid}' did not have the Timeline plugin. Add the plugin and re-link the atom to fix.");
                     return;
                 }
                 _linkedAnimations.Add(link);
@@ -336,6 +345,7 @@ namespace VamTimeline
             OnTimelineTimeChanged(uid);
 
             var remoteScrubber = _mainLinkedAnimation.Scrubber;
+            if (remoteScrubber == null) return;
             _scrubberJSON.max = remoteScrubber.max;
             _scrubberJSON.valNoCallback = remoteScrubber.val;
             _animationJSON.choices = _mainLinkedAnimation.Animation.choices;
