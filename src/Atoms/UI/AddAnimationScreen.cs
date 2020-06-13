@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -11,6 +13,7 @@ namespace VamTimeline
     public class AddAnimationScreen : ScreenBase
     {
         public const string ScreenName = "Add Animation";
+        private UIDynamicButton _addAnimationTransitionUI;
 
         public override string name => ScreenName;
 
@@ -38,6 +41,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Reorder</b> and <b>delete</b> animations...</i>", ManageAnimationsScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName, true);
         }
 
         private void InitCreateAnimationUI(bool rightSide)
@@ -50,9 +54,11 @@ namespace VamTimeline
             addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
             RegisterComponent(addAnimationAsCopyUI);
 
-            var addAnimationTransitionUI = plugin.CreateButton($"Create Transition (Current -> Next)", rightSide);
-            addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
-            RegisterComponent(addAnimationTransitionUI);
+            _addAnimationTransitionUI = plugin.CreateButton($"Create Transition (Current -> Next)", rightSide);
+            _addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
+            RegisterComponent(_addAnimationTransitionUI);
+
+            RefreshButtons();
         }
 
         #endregion
@@ -120,26 +126,28 @@ namespace VamTimeline
 
         private void AddTransitionAnimation()
         {
-            var next = current.nextAnimationName != null
-                ? plugin.animation.clips.First(c => c.animationName == current.nextAnimationName)
-                : plugin.animation.clips.ElementAtOrDefault(plugin.animation.clips.IndexOf(current));
+            var next = plugin.animation.GetClip(current.nextAnimationName);
             if (next == null)
             {
                 SuperController.LogError("There is no animation to transition to");
                 return;
             }
+
             var clip = plugin.animation.AddAnimation();
+            clip.animationName = $"{current.animationName} > {next.animationName}";
             clip.loop = false;
             clip.transition = true;
             clip.nextAnimationName = current.nextAnimationName;
             clip.blendDuration = AtomAnimationClip.DefaultBlendDuration;
             clip.nextAnimationTime = clip.animationLength - clip.blendDuration;
             clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
-            clip.CropOrExtendLengthEnd(current.animationLength);
+
             foreach (var origTarget in current.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
+                newTarget.SetKeyframe(0f, Vector3.zero, Quaternion.identity);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(current.animationLength));
+                newTarget.SetKeyframe(clip.animationLength, Vector3.zero, Quaternion.identity);
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.controller == origTarget.controller).GetCurveSnapshot(0f));
             }
             foreach (var origTarget in current.targetFloatParams)
@@ -148,6 +156,11 @@ namespace VamTimeline
                 newTarget.SetKeyframe(0f, origTarget.value.Evaluate(current.animationLength));
                 newTarget.SetKeyframe(clip.animationLength, next.targetFloatParams.First(t => ReferenceEquals(t.floatParam, origTarget.floatParam)).value.Evaluate(0f));
             }
+
+            plugin.animation.clips.Remove(clip);
+            plugin.animation.clips.Insert(plugin.animation.clips.IndexOf(current) + 1, clip);
+
+            current.nextAnimationName = clip.animationName;
 
             plugin.animation.ChangeAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
@@ -160,6 +173,21 @@ namespace VamTimeline
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
+
+            RefreshButtons();
+        }
+
+        private void RefreshButtons()
+        {
+            bool hasNext = current.nextAnimationName != null;
+            bool nextIsTransition = hasNext && plugin.animation.GetClip(current.nextAnimationName).transition;
+            _addAnimationTransitionUI.button.interactable = hasNext && !nextIsTransition;
+            if (!hasNext)
+                _addAnimationTransitionUI.label = $"Create Transition (No sequence)";
+            else if (nextIsTransition)
+                _addAnimationTransitionUI.label = $"Create Transition (Already transition)";
+            else
+                _addAnimationTransitionUI.label = $"Create Transition (Current -> Next)";
         }
 
         #endregion

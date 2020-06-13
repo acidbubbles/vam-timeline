@@ -206,6 +206,11 @@ namespace VamTimeline
             target.SetKeyframeToCurrentTransform(time);
         }
 
+        public AtomAnimationClip GetClip(string name)
+        {
+            return clips.FirstOrDefault(c => c.animationName == name);
+        }
+
         public void Play()
         {
             if (current == null)
@@ -450,10 +455,10 @@ namespace VamTimeline
                 PrepareClipCurves(clip);
                 if (clip.transition)
                 {
-                    var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
+                    var previous = GetClip(clip.animationName);
                     if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                         clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
-                    var next = clips.FirstOrDefault(c => c.animationName == clip.nextAnimationName);
+                    var next = GetClip(clip.nextAnimationName);
                     if (next != null && (next.IsDirty() || clip.IsDirty()))
                         clip.Paste(clip.animationLength, next.Copy(0f, true), false);
                 }
@@ -558,7 +563,7 @@ namespace VamTimeline
 
         public void ChangeAnimation(string animationName)
         {
-            var clip = clips.FirstOrDefault(c => c.animationName == animationName);
+            var clip = GetClip(animationName);
             if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
             var targetAnim = _unityAnimation[animationName];
             var time = this.time;

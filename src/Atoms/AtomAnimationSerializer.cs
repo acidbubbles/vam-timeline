@@ -40,12 +40,12 @@ namespace VamTimeline
             foreach (JSONClass clipJSON in clipsJSON)
             {
                 string animationName = clipJSON["AnimationName"].Value;
-                var existingClip = animation.clips.FirstOrDefault(c => c.animationName == animationName);
+                var existingClip = animation.GetClip(animationName);
                 if (existingClip != null)
                 {
                     if (existingClip.IsEmpty())
                     {
-                        var clipToRemove = animation.clips.First(c => c.animationName == animationName);
+                        var clipToRemove = animation.GetClip(animationName);
                         animation.clips.Remove(clipToRemove);
                         clipToRemove.Dispose();
                     }

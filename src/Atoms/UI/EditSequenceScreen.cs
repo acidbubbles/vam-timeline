@@ -55,6 +55,11 @@ namespace VamTimeline
 
             InitLoopUI(true);
 
+            CreateSpacer(true);
+
+            CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
+
             UpdateValues();
         }
 
@@ -125,26 +130,29 @@ namespace VamTimeline
 
         private void RefreshTransitionUI()
         {
-            if (current.loop)
+            if (!current.transition)
             {
-                _transitionUI.toggle.interactable = false;
-                _loopUI.toggle.interactable = true;
-                return;
-            }
-            var clipsPointingToHere = plugin.animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
-            var targetClip = plugin.animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
-            if (clipsPointingToHere.Count == 0 || targetClip == null)
-            {
-                _transitionUI.toggle.interactable = false;
-                _loopUI.toggle.interactable = true;
-                return;
-            }
+                if (current.loop)
+                {
+                    _transitionUI.toggle.interactable = false;
+                    _loopUI.toggle.interactable = true;
+                    return;
+                }
+                var clipsPointingToHere = plugin.animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
+                var targetClip = plugin.animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
+                if (clipsPointingToHere.Count == 0 || targetClip == null)
+                {
+                    _transitionUI.toggle.interactable = false;
+                    _loopUI.toggle.interactable = true;
+                    return;
+                }
 
-            if (clipsPointingToHere.Any(c => c.transition) || targetClip?.transition == true)
-            {
-                _transitionUI.toggle.interactable = false;
-                _loopUI.toggle.interactable = true;
-                return;
+                if (clipsPointingToHere.Any(c => c.transition) || targetClip?.transition == true)
+                {
+                    _transitionUI.toggle.interactable = false;
+                    _loopUI.toggle.interactable = true;
+                    return;
+                }
             }
 
             _transitionUI.toggle.interactable = true;

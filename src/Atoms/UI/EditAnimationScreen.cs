@@ -65,6 +65,10 @@ namespace VamTimeline
 
             InitAnimationPatternLinkUI(true);
 
+            CreateSpacer(true);
+
+            CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName, true);
+
             _lengthWhenLengthModeChanged = current?.animationLength ?? 0;
             UpdateValues();
         }
