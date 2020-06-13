@@ -108,14 +108,14 @@ namespace VamTimeline
 
         private void MarkSelectionStart()
         {
-            _selectionStart = plugin.animation.Time;
+            _selectionStart = plugin.animation.time;
             if (_selectionEnd < _selectionStart) _selectionEnd = _selectionStart;
             SelectionModified();
         }
 
         private void MarkSelectionEnd()
         {
-            _selectionEnd = plugin.animation.Time;
+            _selectionEnd = plugin.animation.time;
             if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
             SelectionModified();
         }

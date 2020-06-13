@@ -91,7 +91,7 @@ namespace VamTimeline
                 layout.minHeight = 50f;
                 animationNameUI.height = 50;
 
-                _animationNameJSON.valNoCallback = current.AnimationName;
+                _animationNameJSON.valNoCallback = current.animationName;
             }
         }
 
@@ -144,9 +144,9 @@ namespace VamTimeline
 
             _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
             {
-                foreach (var c in plugin.animation.Clips)
-                    c.AutoPlay = false;
-                current.AutoPlay = true;
+                foreach (var c in plugin.animation.clips)
+                    c.autoPlay = false;
+                current.autoPlay = true;
             })
             {
                 isStorable = false
@@ -175,22 +175,22 @@ namespace VamTimeline
 
         private void UpdateAnimationName(string val)
         {
-            var previousAnimationName = current.AnimationName;
+            var previousAnimationName = current.animationName;
             if (string.IsNullOrEmpty(val))
             {
                 _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
-            if (plugin.animation.Clips.Any(c => c.AnimationName == val))
+            if (plugin.animation.clips.Any(c => c.animationName == val))
             {
                 _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
-            current.AnimationName = val;
-            foreach (var clip in plugin.animation.Clips)
+            current.animationName = val;
+            foreach (var clip in plugin.animation.clips)
             {
-                if (clip.NextAnimationName == previousAnimationName)
-                    clip.NextAnimationName = val;
+                if (clip.nextAnimationName == previousAnimationName)
+                    clip.nextAnimationName = val;
             }
         }
 
@@ -200,7 +200,7 @@ namespace VamTimeline
 
             newLength = newLength.Snap(plugin.snapJSON.val);
             if (newLength < 0.1f) newLength = 0.1f;
-            var time = plugin.animation.Time.Snap();
+            var time = plugin.animation.time.Snap();
 
             switch (_lengthModeJSON.val)
             {
@@ -223,8 +223,8 @@ namespace VamTimeline
                             _lengthJSON.valNoCallback = current.animationLength;
                             return;
                         }
-                        var previousKeyframe = current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
-                        var nextKeyframe = current.AllTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
+                        var previousKeyframe = current.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
+                        var nextKeyframe = current.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
 
                         var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
 
@@ -270,8 +270,8 @@ namespace VamTimeline
                             return;
                         }
                         var frames = current
-                            .TargetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
-                            .Concat(current.TargetFloatParams.SelectMany(t => t.value.keys.Select(k => k.time)))
+                            .targetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
+                            .Concat(current.targetFloatParams.SelectMany(t => t.value.keys.Select(k => k.time)))
                             .Select(t => t.Snap())
                             .Where(t => t < _lengthWhenLengthModeChanged)
                             .Distinct()
@@ -303,7 +303,7 @@ namespace VamTimeline
 
             current.DirtyAll();
 
-            plugin.animation.Time = Math.Max(time, newLength);
+            plugin.animation.time = Math.Max(time, newLength);
         }
 
         private void ChangeLoop(bool val)
@@ -313,14 +313,14 @@ namespace VamTimeline
 
         private void SetEnsureQuaternionContinuity(bool val)
         {
-            current.EnsureQuaternionContinuity = val;
+            current.ensureQuaternionContinuity = val;
         }
 
         private void LinkAnimationPattern(string uid)
         {
             if (string.IsNullOrEmpty(uid))
             {
-                current.AnimationPattern = null;
+                current.animationPattern = null;
                 return;
             }
             var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
@@ -333,9 +333,9 @@ namespace VamTimeline
             animationPattern.SetBoolParamValue("pause", false);
             animationPattern.SetBoolParamValue("loop", false);
             animationPattern.SetBoolParamValue("loopOnce", false);
-            animationPattern.SetFloatParamValue("speed", plugin.animation.Speed);
+            animationPattern.SetFloatParamValue("speed", plugin.animation.speed);
             animationPattern.ResetAnimation();
-            current.AnimationPattern = animationPattern;
+            current.animationPattern = animationPattern;
         }
 
         #endregion
@@ -352,11 +352,11 @@ namespace VamTimeline
         private void UpdateValues()
         {
             _lengthJSON.valNoCallback = current.animationLength;
-            _animationNameJSON.valNoCallback = current.AnimationName;
+            _animationNameJSON.valNoCallback = current.animationName;
             _loop.valNoCallback = current.loop;
-            _ensureQuaternionContinuity.valNoCallback = current.EnsureQuaternionContinuity;
-            _autoPlayJSON.valNoCallback = current.AutoPlay;
-            _linkedAnimationPatternJSON.valNoCallback = current.AnimationPattern?.containingAtom.uid ?? "";
+            _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
+            _autoPlayJSON.valNoCallback = current.autoPlay;
+            _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
         }
 
         public override void Dispose()

@@ -30,9 +30,9 @@ namespace VamTimeline
             {
                 animation = new AtomAnimation(_atom)
                 {
-                    Speed = DeserializeFloat(animationJSON["Speed"], 1f),
-                    InterpolationTimeout = DeserializeFloat(animationJSON["InterpolationTimeout"], 0.25f),
-                    InterpolationSpeed = DeserializeFloat(animationJSON["InterpolationSpeed"], 1f),
+                    speed = DeserializeFloat(animationJSON["Speed"], 1f),
+                    interpolationTimeout = DeserializeFloat(animationJSON["InterpolationTimeout"], 0.25f),
+                    interpolationSpeed = DeserializeFloat(animationJSON["InterpolationSpeed"], 1f),
                 };
             }
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
@@ -40,13 +40,13 @@ namespace VamTimeline
             foreach (JSONClass clipJSON in clipsJSON)
             {
                 string animationName = clipJSON["AnimationName"].Value;
-                var existingClip = animation.Clips.FirstOrDefault(c => c.AnimationName == animationName);
+                var existingClip = animation.clips.FirstOrDefault(c => c.animationName == animationName);
                 if (existingClip != null)
                 {
                     if (existingClip.IsEmpty())
                     {
-                        var clipToRemove = animation.Clips.First(c => c.AnimationName == animationName);
-                        animation.Clips.Remove(clipToRemove);
+                        var clipToRemove = animation.clips.First(c => c.animationName == animationName);
+                        animation.clips.Remove(clipToRemove);
                         clipToRemove.Dispose();
                     }
                     else
@@ -58,13 +58,13 @@ namespace VamTimeline
                 }
                 var clip = new AtomAnimationClip(animationName)
                 {
-                    BlendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
+                    blendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                     loop = DeserializeBool(clipJSON["Loop"], true),
-                    Transition = DeserializeBool(clipJSON["Transition"], false),
-                    EnsureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
-                    NextAnimationName = clipJSON["NextAnimationName"]?.Value,
-                    NextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
-                    AutoPlay = DeserializeBool(clipJSON["AutoPlay"], false)
+                    transition = DeserializeBool(clipJSON["Transition"], false),
+                    ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
+                    nextAnimationName = clipJSON["NextAnimationName"]?.Value,
+                    nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
+                    autoPlay = DeserializeBool(clipJSON["AutoPlay"], false)
                 };
                 clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
                 DeserializeClip(clip, clipJSON);
@@ -81,7 +81,7 @@ namespace VamTimeline
             while (true)
             {
                 var newAnimationName = $"{animationName} ({i})";
-                if (!animation.Clips.Any(c => c.AnimationName == newAnimationName))
+                if (!animation.clips.Any(c => c.animationName == newAnimationName))
                     return newAnimationName;
                 i++;
             }
@@ -94,9 +94,9 @@ namespace VamTimeline
             {
                 var animationPattern = SuperController.singleton.GetAtomByUid(animationPatternUID)?.GetComponentInChildren<AnimationPattern>();
                 if (animationPattern == null)
-                    SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.AnimationName}' of atom '{_atom.uid}' was not found in scene");
+                    SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.animationName}' of atom '{_atom.uid}' was not found in scene");
                 else
-                    clip.AnimationPattern = animationPattern;
+                    clip.animationPattern = animationPattern;
             }
 
             JSONArray controllersJSON = clipJSON["Controllers"].AsArray;
@@ -323,28 +323,28 @@ namespace VamTimeline
         {
             var animationJSON = new JSONClass
             {
-                { "Speed", animation.Speed.ToString(CultureInfo.InvariantCulture) },
-                { "InterpolationTimeout", animation.InterpolationTimeout.ToString(CultureInfo.InvariantCulture) },
-                { "InterpolationSpeed", animation.InterpolationSpeed.ToString(CultureInfo.InvariantCulture) }
+                { "Speed", animation.speed.ToString(CultureInfo.InvariantCulture) },
+                { "InterpolationTimeout", animation.interpolationTimeout.ToString(CultureInfo.InvariantCulture) },
+                { "InterpolationSpeed", animation.interpolationSpeed.ToString(CultureInfo.InvariantCulture) }
             };
             var clipsJSON = new JSONArray();
             animationJSON.Add("Clips", clipsJSON);
-            foreach (var clip in animation.Clips.Where(c => animationNameFilter == null || c.AnimationName == animationNameFilter))
+            foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))
             {
                 var clipJSON = new JSONClass
                 {
-                    { "AnimationName", clip.AnimationName },
+                    { "AnimationName", clip.animationName },
                     { "AnimationLength", clip.animationLength.ToString(CultureInfo.InvariantCulture) },
-                    { "BlendDuration", clip.BlendDuration.ToString(CultureInfo.InvariantCulture) },
+                    { "BlendDuration", clip.blendDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.loop ? "1" : "0" },
-                    { "Transition", clip.Transition ? "1" : "0" },
-                    { "EnsureQuaternionContinuity", clip.EnsureQuaternionContinuity ? "1" : "0" }
+                    { "Transition", clip.transition ? "1" : "0" },
+                    { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" }
                 };
-                if (clip.NextAnimationName != null)
-                    clipJSON["NextAnimationName"] = clip.NextAnimationName;
-                if (clip.NextAnimationTime != 0)
-                    clipJSON["NextAnimationTime"] = clip.NextAnimationTime.ToString(CultureInfo.InvariantCulture);
-                if (clip.AutoPlay)
+                if (clip.nextAnimationName != null)
+                    clipJSON["NextAnimationName"] = clip.nextAnimationName;
+                if (clip.nextAnimationTime != 0)
+                    clipJSON["NextAnimationTime"] = clip.nextAnimationTime.ToString(CultureInfo.InvariantCulture);
+                if (clip.autoPlay)
                     clipJSON["AutoPlay"] = "1";
 
                 SerializeClip(clip, clipJSON);
@@ -355,12 +355,12 @@ namespace VamTimeline
 
         private void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
-            if (clip.AnimationPattern != null)
-                clipJSON.Add("AnimationPattern", clip.AnimationPattern.containingAtom.uid);
+            if (clip.animationPattern != null)
+                clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
 
             var controllersJSON = new JSONArray();
             clipJSON.Add("Controllers", controllersJSON);
-            foreach (var controller in clip.TargetControllers)
+            foreach (var controller in clip.targetControllers)
             {
                 var controllerJSON = new JSONClass
                     {
@@ -378,7 +378,7 @@ namespace VamTimeline
 
             var paramsJSON = new JSONArray();
             clipJSON.Add("FloatParams", paramsJSON);
-            foreach (var target in clip.TargetFloatParams)
+            foreach (var target in clip.targetFloatParams)
             {
                 var paramJSON = new JSONClass
                     {

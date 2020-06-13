@@ -91,18 +91,18 @@ namespace VamTimeline
         {
             try
             {
-                var time = plugin.animation.Time;
+                var time = plugin.animation.time;
                 foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (!fc.name.EndsWith("Control")) continue;
                     if (fc.currentPositionState != FreeControllerV3.PositionState.On) continue;
                     if (fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
 
-                    var target = current.TargetControllers.FirstOrDefault(tc => tc.controller == fc);
+                    var target = current.targetControllers.FirstOrDefault(tc => tc.controller == fc);
                     if (target == null)
                     {
                         if (!all) continue;
-                        target = plugin.animation.Current.Add(fc);
+                        target = plugin.animation.current.Add(fc);
                     }
                     plugin.animation.SetKeyframeToCurrentTransform(target, time);
                 }
@@ -117,7 +117,7 @@ namespace VamTimeline
         {
             try
             {
-                var controllers = plugin.animation.Clips.SelectMany(c => c.TargetControllers).Select(c => c.controller).Distinct().ToList();
+                var controllers = plugin.animation.clips.SelectMany(c => c.targetControllers).Select(c => c.controller).Distinct().ToList();
                 foreach (var mac in plugin.containingAtom.motionAnimationControls)
                 {
                     if (!controllers.Contains(mac.controller)) continue;
@@ -137,7 +137,7 @@ namespace VamTimeline
 
         private IEnumerator StopWhenPlaybackIsComplete()
         {
-            var waitFor = plugin.animation.Clips.Sum(c => c.NextAnimationTime.IsSameFrame(0) ? c.animationLength : c.NextAnimationTime);
+            var waitFor = plugin.animation.clips.Sum(c => c.nextAnimationTime.IsSameFrame(0) ? c.animationLength : c.nextAnimationTime);
             yield return new WaitForSeconds(waitFor);
 
             try

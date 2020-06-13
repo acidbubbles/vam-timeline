@@ -102,7 +102,7 @@ namespace VamTimeline
         private List<string> ListAvailableScreens()
         {
             var list = new List<string>();
-            if (_plugin.animation == null || _plugin.animation.Current == null) return list;
+            if (_plugin.animation == null || _plugin.animation.current == null) return list;
             return list;
         }
 
@@ -150,7 +150,7 @@ namespace VamTimeline
             _uiRefreshScheduled = false;
 
             // Cannot proceed
-            if (_plugin == null || _plugin.animation == null || _plugin.animation.Current == null) yield break;
+            if (_plugin == null || _plugin.animation == null || _plugin.animation.current == null) yield break;
 
             // Same UI, just refresh
             if (_current != null && _current.name == screen)

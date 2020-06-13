@@ -42,13 +42,13 @@ namespace VamTimeline
         // TODO: If we can either get a global counter or infer this from the plugin number, it would be better.
         private readonly int _layer = Random.Range(0, int.MaxValue);
 
-        public TimeChangedEvent TimeChanged = new TimeChangedEvent();
-        public UnityEvent AnimationRebuildRequested = new UnityEvent();
-        public CurrentAnimationChangedEvent CurrentAnimationChanged = new CurrentAnimationChangedEvent();
-        public UnityEvent AnimationSettingsChanged = new UnityEvent();
-        public UnityEvent ClipsListChanged = new UnityEvent();
-        public List<AtomAnimationClip> Clips { get; } = new List<AtomAnimationClip>();
-        public AtomAnimationClip Current
+        public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
+        public UnityEvent onAnimationRebuildRequested = new UnityEvent();
+        public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
+        public UnityEvent onAnimationSettingsChanged = new UnityEvent();
+        public UnityEvent onClipsListChanged = new UnityEvent();
+        public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
+        public AtomAnimationClip current
         {
             get
             {
@@ -58,36 +58,36 @@ namespace VamTimeline
             {
                 var previous = _current;
                 _current = value;
-                CurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { Before = previous, After = _current });
+                onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { Before = previous, After = _current });
             }
         }
-        public string PlayedAnimation { get; private set; }
-        public float InterpolationSpeed { get; set; } = 1f;
-        public float InterpolationTimeout { get; set; } = 0.25f;
+        public string playedAnimation { get; private set; }
+        public float interpolationSpeed { get; set; } = 1f;
+        public float interpolationTimeout { get; set; } = 0.25f;
 
-        public float Time
+        public float time
         {
             get
             {
                 var time = _animState != null && _animState.enabled ? _animState.time : _playTime;
-                if (Current.loop) return time % Current.animationLength;
+                if (current.loop) return time % current.animationLength;
                 return time;
             }
             set
             {
                 if (_playTime == value) return;
                 _playTime = value;
-                if (Current == null) return;
+                if (current == null) return;
                 SampleParamsAnimation();
                 if (_animState != null)
                     _animState.time = value;
                 if (!_isPlaying)
-                    _interpolateUntil = UnityEngine.Time.time + InterpolationTimeout;
-                TimeChanged.Invoke(value);
+                    _interpolateUntil = UnityEngine.Time.time + interpolationTimeout;
+                onTimeChanged.Invoke(value);
             }
         }
 
-        public float Speed
+        public float speed
         {
             get
             {
@@ -97,12 +97,12 @@ namespace VamTimeline
             set
             {
                 _speed = value;
-                foreach (var clip in Clips)
+                foreach (var clip in clips)
                 {
                     if (_animState != null)
                         _animState.speed = _speed;
-                    if (clip.AnimationPattern != null)
-                        clip.AnimationPattern.SetFloatParamValue("speed", value);
+                    if (clip.animationPattern != null)
+                        clip.animationPattern.SetFloatParamValue("speed", value);
                 }
             }
         }
@@ -117,30 +117,30 @@ namespace VamTimeline
 
         public void Initialize()
         {
-            if (Clips.Count == 0)
+            if (clips.Count == 0)
                 AddClip(new AtomAnimationClip("Anim 1"));
-            if (Current == null)
-                Current = Clips.First();
+            if (current == null)
+                current = clips.First();
             RebuildAnimation();
         }
 
         public void AddClip(AtomAnimationClip clip)
         {
-            clip.AnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+            clip.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
             clip.onAnimationKeyframesModified.AddListener(OnAnimationModified);
             clip.onTargetsListChanged.AddListener(OnAnimationModified);
             clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
-            Clips.Add(clip);
-            ClipsListChanged.Invoke();
+            clips.Add(clip);
+            onClipsListChanged.Invoke();
         }
 
         private void OnTargetsSelectionChanged()
         {
-            foreach (var target in Current.AllTargets)
+            foreach (var target in current.allTargets)
             {
-                foreach (var clip in Clips.Where(c => c != Current))
+                foreach (var clip in clips.Where(c => c != current))
                 {
-                    var t = clip.AllTargets.FirstOrDefault(x => x.TargetsSameAs(target));
+                    var t = clip.allTargets.FirstOrDefault(x => x.TargetsSameAs(target));
                     if (t == null) continue;
                     t.selected = target.selected;
                 }
@@ -149,43 +149,43 @@ namespace VamTimeline
 
         public void RemoveClip(AtomAnimationClip clip)
         {
-            Clips.Remove(clip);
+            clips.Remove(clip);
             clip.Dispose();
-            ClipsListChanged.Invoke();
+            onClipsListChanged.Invoke();
             OnAnimationModified();
         }
 
         private void OnAnimationSettingsModified()
         {
-            AnimationSettingsChanged.Invoke();
+            onAnimationSettingsChanged.Invoke();
         }
 
         private void OnAnimationModified()
         {
-            AnimationRebuildRequested.Invoke();
+            onAnimationRebuildRequested.Invoke();
         }
 
         public bool IsEmpty()
         {
-            if (Clips.Count == 0) return true;
-            if (Clips.Count == 1 && Clips[0].IsEmpty()) return true;
+            if (clips.Count == 0) return true;
+            if (clips.Count == 1 && clips[0].IsEmpty()) return true;
             return false;
         }
 
         public List<string> GetAnimationNames()
         {
-            var clipNames = new List<string>(Clips.Count);
-            for (var i = 0; i < Clips.Count; i++)
-                clipNames.Add(Clips[i].AnimationName);
+            var clipNames = new List<string>(clips.Count);
+            for (var i = 0; i < clips.Count; i++)
+                clipNames.Add(clips[i].animationName);
             return clipNames;
         }
 
         protected string GetNewAnimationName()
         {
-            for (var i = Clips.Count + 1; i < 999; i++)
+            for (var i = clips.Count + 1; i < 999; i++)
             {
                 var animationName = "Anim " + i;
-                if (!Clips.Any(c => c.AnimationName == animationName)) return animationName;
+                if (!clips.Any(c => c.animationName == animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();
         }
@@ -193,22 +193,22 @@ namespace VamTimeline
         public void SetKeyframe(FloatParamAnimationTarget target, float time, float val)
         {
             time = time.Snap();
-            if (time > Current.animationLength)
-                time = Current.animationLength;
+            if (time > current.animationLength)
+                time = current.animationLength;
             target.SetKeyframe(time, val);
         }
 
         public void SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
         {
             time = time.Snap();
-            if (time > Current.animationLength)
-                time = Current.animationLength;
+            if (time > current.animationLength)
+                time = current.animationLength;
             target.SetKeyframeToCurrentTransform(time);
         }
 
         public void Play()
         {
-            if (Current == null)
+            if (current == null)
             {
                 SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
                 return;
@@ -218,14 +218,14 @@ namespace VamTimeline
                 _playQueuedAfterInterpolation = true;
                 return;
             }
-            PlayedAnimation = Current.AnimationName;
+            playedAnimation = current.animationName;
             _isPlaying = true;
             if (_animState != null)
-                _unityAnimation.Play(Current.AnimationName);
-            if (Current.AnimationPattern)
+                _unityAnimation.Play(current.animationName);
+            if (current.animationPattern)
             {
-                Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
-                Current.AnimationPattern.ResetAndPlay();
+                current.animationPattern.SetBoolParamValue("loopOnce", false);
+                current.animationPattern.ResetAndPlay();
             }
             DetermineNextAnimation(_playTime);
         }
@@ -235,46 +235,46 @@ namespace VamTimeline
             _nextAnimation = null;
             _nextAnimationTime = 0;
 
-            if (Current.NextAnimationName == null) return;
-            if (Clips.Count == 1) return;
+            if (current.nextAnimationName == null) return;
+            if (clips.Count == 1) return;
 
-            if (Current.NextAnimationTime > 0 + float.Epsilon)
-                _nextAnimationTime = (time + Current.NextAnimationTime).Snap();
+            if (current.nextAnimationTime > 0 + float.Epsilon)
+                _nextAnimationTime = (time + current.nextAnimationTime).Snap();
             else
                 return;
 
-            if (Current.NextAnimationName == RandomizeAnimationName)
+            if (current.nextAnimationName == RandomizeAnimationName)
             {
-                var idx = Random.Range(0, Clips.Count - 1);
-                if (idx >= Clips.IndexOf(Current)) idx += 1;
-                _nextAnimation = Clips[idx].AnimationName;
+                var idx = Random.Range(0, clips.Count - 1);
+                if (idx >= clips.IndexOf(current)) idx += 1;
+                _nextAnimation = clips[idx].animationName;
             }
-            else if (Current.NextAnimationName.EndsWith(RandomizeGroupSuffix))
+            else if (current.nextAnimationName.EndsWith(RandomizeGroupSuffix))
             {
-                var prefix = Current.NextAnimationName.Substring(0, Current.NextAnimationName.Length - RandomizeGroupSuffix.Length);
-                var group = Clips
-                    .Where(c => c.AnimationName != Current.AnimationName)
-                    .Where(c => c.AnimationName.StartsWith(prefix))
+                var prefix = current.nextAnimationName.Substring(0, current.nextAnimationName.Length - RandomizeGroupSuffix.Length);
+                var group = clips
+                    .Where(c => c.animationName != current.animationName)
+                    .Where(c => c.animationName.StartsWith(prefix))
                     .ToList();
                 var idx = Random.Range(0, group.Count);
-                _nextAnimation = group[idx].AnimationName;
+                _nextAnimation = group[idx].animationName;
             }
             else
             {
-                _nextAnimation = Current.NextAnimationName;
+                _nextAnimation = current.nextAnimationName;
             }
         }
 
         private void SampleParamsAnimation()
         {
-            var time = Time;
+            var time = this.time;
             var weight = _blendingTimeLeft / _blendingDuration;
-            foreach (var morph in Current.TargetFloatParams)
+            foreach (var morph in current.targetFloatParams)
             {
                 var val = morph.value.Evaluate(time);
                 if (_previousClip != null)
                 {
-                    var blendingTarget = _previousClip.TargetFloatParams.FirstOrDefault(t => t.floatParam == morph.floatParam);
+                    var blendingTarget = _previousClip.targetFloatParams.FirstOrDefault(t => t.floatParam == morph.floatParam);
                     if (blendingTarget != null)
                     {
                         morph.floatParam.val = (blendingTarget.value.Evaluate(_playTime) * weight) + (val * (1 - weight));
@@ -327,7 +327,7 @@ namespace VamTimeline
                 }
                 */
 
-                _playTime += UnityEngine.Time.deltaTime * Speed;
+                _playTime += UnityEngine.Time.deltaTime * speed;
 
                 if (_previousClip != null)
                 {
@@ -353,9 +353,9 @@ namespace VamTimeline
             else if (_interpolateUntil > 0)
             {
                 var allControllersReached = true;
-                foreach (var target in Current.TargetControllers)
+                foreach (var target in current.targetControllers)
                 {
-                    var controllerReached = target.Interpolate(_playTime, InterpolationMaxDistanceDelta * InterpolationSpeed * UnityEngine.Time.deltaTime, InterpolationMaxAngleDelta * InterpolationSpeed * UnityEngine.Time.deltaTime);
+                    var controllerReached = target.Interpolate(_playTime, InterpolationMaxDistanceDelta * interpolationSpeed * UnityEngine.Time.deltaTime, InterpolationMaxAngleDelta * interpolationSpeed * UnityEngine.Time.deltaTime);
                     if (!controllerReached) allControllersReached = false;
                 }
 
@@ -398,13 +398,13 @@ namespace VamTimeline
         {
             _playQueuedAfterInterpolation = false;
             _isPlaying = false;
-            if (Current == null) return;
+            if (current == null) return;
             _unityAnimation.Stop();
-            foreach (var clip in Clips)
+            foreach (var clip in clips)
             {
-                if (clip.AnimationPattern)
+                if (clip.animationPattern)
                 {
-                    clip.AnimationPattern.SetBoolParamValue("loopOnce", true);
+                    clip.animationPattern.SetBoolParamValue("loopOnce", true);
                 }
             }
             _blendingTimeLeft = 0;
@@ -412,19 +412,19 @@ namespace VamTimeline
             _previousClip = null;
             _nextAnimation = null;
             _nextAnimationTime = 0;
-            if (PlayedAnimation != null && PlayedAnimation != Current.AnimationName)
+            if (playedAnimation != null && playedAnimation != current.animationName)
             {
-                if (Clips.Any(c => c.AnimationName == PlayedAnimation))
-                    ChangeAnimation(PlayedAnimation);
-                PlayedAnimation = null;
+                if (clips.Any(c => c.animationName == playedAnimation))
+                    ChangeAnimation(playedAnimation);
+                playedAnimation = null;
             }
-            if (Time > Current.animationLength - 0.001f)
+            if (time > current.animationLength - 0.001f)
             {
-                Time = Current.loop ? 0f : Current.animationLength;
+                time = current.loop ? 0f : current.animationLength;
             }
             else
             {
-                Time = Time.Snap();
+                time = time.Snap();
             }
             Sample();
         }
@@ -441,25 +441,25 @@ namespace VamTimeline
 
         public void RebuildAnimation()
         {
-            if (Current == null) throw new NullReferenceException("No current animation set");
-            var time = Time.Snap();
+            if (current == null) throw new NullReferenceException("No current animation set");
+            var time = this.time.Snap();
             var sw = Stopwatch.StartNew();
-            foreach (var clip in Clips)
+            foreach (var clip in clips)
             {
                 clip.Validate();
                 PrepareClipCurves(clip);
-                if (clip.Transition)
+                if (clip.transition)
                 {
-                    var previous = Clips.FirstOrDefault(c => c.NextAnimationName == clip.AnimationName);
+                    var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
                     if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                         clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
-                    var next = Clips.FirstOrDefault(c => c.AnimationName == clip.NextAnimationName);
+                    var next = clips.FirstOrDefault(c => c.animationName == clip.nextAnimationName);
                     if (next != null && (next.IsDirty() || clip.IsDirty()))
                         clip.Paste(clip.animationLength, next.Copy(0f, true), false);
                 }
                 ReapplyClipCurve(clip);
-                _unityAnimation.AddClip(clip.Clip, clip.AnimationName);
-                var animState = _unityAnimation[clip.AnimationName];
+                _unityAnimation.AddClip(clip.alip, clip.animationName);
+                var animState = _unityAnimation[clip.animationName];
                 if (animState != null)
                 {
                     animState.layer = _layer;
@@ -471,17 +471,17 @@ namespace VamTimeline
             if (HasAnimatableControllers())
             {
                 // This is a ugly hack, otherwise the scrubber won't work after modifying a frame
-                _unityAnimation.Play(Current.AnimationName);
+                _unityAnimation.Play(current.animationName);
                 if (!_isPlaying)
-                    _unityAnimation.Stop(Current.AnimationName);
-                _animState = _unityAnimation[Current.AnimationName];
+                    _unityAnimation.Stop(current.animationName);
+                _animState = _unityAnimation[current.animationName];
                 if (_animState != null)
                 {
                     _animState.time = time;
                 }
                 else
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Could not find animation {Current.AnimationName}");
+                    SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Could not find animation {current.animationName}");
                 }
             }
             else
@@ -496,7 +496,7 @@ namespace VamTimeline
 
         private void PrepareClipCurves(AtomAnimationClip clip)
         {
-            foreach (var target in clip.TargetControllers)
+            foreach (var target in clip.targetControllers)
             {
                 if (!target.dirty) continue;
 
@@ -510,7 +510,7 @@ namespace VamTimeline
                 if (clip.loop)
                     target.SmoothLoop();
 
-                if (clip.EnsureQuaternionContinuity)
+                if (clip.ensureQuaternionContinuity)
                 {
                     UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
                         target.rotX,
@@ -520,7 +520,7 @@ namespace VamTimeline
                 }
             }
 
-            foreach (var target in clip.TargetFloatParams)
+            foreach (var target in clip.targetFloatParams)
             {
                 if (!target.dirty) continue;
 
@@ -535,17 +535,17 @@ namespace VamTimeline
 
         private void ReapplyClipCurve(AtomAnimationClip clip)
         {
-            clip.Clip.ClearCurves();
+            clip.alip.ClearCurves();
 
-            foreach (var target in clip.TargetControllers)
+            foreach (var target in clip.targetControllers)
             {
-                target.ReapplyCurvesToClip(clip.Clip);
+                target.ReapplyCurvesToClip(clip.alip);
             }
         }
 
         private bool HasAnimatableControllers()
         {
-            return Current.TargetControllers.Count > 0;
+            return current.targetControllers.Count > 0;
         }
 
         public AtomAnimationClip AddAnimation()
@@ -558,10 +558,10 @@ namespace VamTimeline
 
         public void ChangeAnimation(string animationName)
         {
-            var clip = Clips.FirstOrDefault(c => c.AnimationName == animationName);
-            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", Clips.Select(c => c.AnimationName).ToArray())}'.");
+            var clip = clips.FirstOrDefault(c => c.animationName == animationName);
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
             var targetAnim = _unityAnimation[animationName];
-            var time = Time;
+            var time = this.time;
             if (_isPlaying)
             {
                 if (HasAnimatableControllers())
@@ -569,51 +569,51 @@ namespace VamTimeline
                     targetAnim.time = 0f;
                     targetAnim.enabled = true;
                     targetAnim.weight = 0f;
-                    _unityAnimation.Blend(Current.AnimationName, 0f, Current.BlendDuration);
-                    _unityAnimation.Blend(animationName, 1f, Current.BlendDuration);
+                    _unityAnimation.Blend(current.animationName, 0f, current.blendDuration);
+                    _unityAnimation.Blend(animationName, 1f, current.blendDuration);
                 }
-                if (Current.AnimationPattern != null)
+                if (current.animationPattern != null)
                 {
                     // Let the loop finish during the transition
-                    Current.AnimationPattern.SetBoolParamValue("loopOnce", true);
+                    current.animationPattern.SetBoolParamValue("loopOnce", true);
                 }
-                _previousClip = Current;
-                _blendingTimeLeft = _blendingDuration = Current.BlendDuration;
+                _previousClip = current;
+                _blendingTimeLeft = _blendingDuration = current.blendDuration;
             }
 
-            var previous = Current;
-            Current = clip;
+            var previous = current;
+            current = clip;
             _animState = targetAnim;
 
             if (_isPlaying)
             {
                 DetermineNextAnimation(_playTime);
 
-                if (Current.AnimationPattern != null)
+                if (current.animationPattern != null)
                 {
-                    Current.AnimationPattern.SetBoolParamValue("loopOnce", false);
-                    Current.AnimationPattern.ResetAndPlay();
+                    current.animationPattern.SetBoolParamValue("loopOnce", false);
+                    current.animationPattern.ResetAndPlay();
                 }
             }
             else
             {
-                Time = 0f;
+                this.time = 0f;
                 Sample();
-                CurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
+                onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
                 {
                     Before = previous,
-                    After = Current
+                    After = current
                 });
             }
         }
 
         public void Dispose()
         {
-            TimeChanged.RemoveAllListeners();
-            AnimationRebuildRequested.RemoveAllListeners();
-            CurrentAnimationChanged.RemoveAllListeners();
-            AnimationSettingsChanged.RemoveAllListeners();
-            foreach (var clip in Clips)
+            onTimeChanged.RemoveAllListeners();
+            onAnimationRebuildRequested.RemoveAllListeners();
+            onCurrentAnimationChanged.RemoveAllListeners();
+            onAnimationSettingsChanged.RemoveAllListeners();
+            foreach (var clip in clips)
             {
                 clip.Dispose();
             }

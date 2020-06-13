@@ -32,13 +32,13 @@ namespace VamTimeline
 
         public virtual void Init()
         {
-            plugin.animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            current = plugin.animation?.Current;
+            plugin.animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            current = plugin.animation?.current;
         }
 
         protected virtual void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            current = plugin.animation?.Current;
+            current = plugin.animation?.current;
         }
 
         protected void InitClipboardUI(bool rightSide)
@@ -134,7 +134,7 @@ namespace VamTimeline
         public virtual void Dispose()
         {
             onScreenChangeRequested.RemoveAllListeners();
-            plugin.animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            plugin.animation.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
 
             _disposing = true;
             foreach (var component in _storables)

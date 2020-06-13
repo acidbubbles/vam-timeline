@@ -184,19 +184,19 @@ namespace VamTimeline
             UnbindAnimation();
 
             _animation = animation;
-            _animation.TimeChanged.AddListener(OnTimeChanged);
-            _animation.CurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            _animation.AnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
-            BindClip(_animation.Current);
-            SetScrubberPosition(_animation.Time, true);
+            _animation.onTimeChanged.AddListener(OnTimeChanged);
+            _animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            _animation.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            BindClip(_animation.current);
+            SetScrubberPosition(_animation.time, true);
         }
 
         private void UnbindAnimation()
         {
             if (_animation == null) return;
 
-            _animation.TimeChanged.RemoveListener(OnTimeChanged);
-            _animation.CurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            _animation.onTimeChanged.RemoveListener(OnTimeChanged);
+            _animation.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
             _animation = null;
 
             UnbindClip();
@@ -208,7 +208,7 @@ namespace VamTimeline
             if (!_animation.IsPlaying()) return;
             if (UIPerformance.ShouldSkip()) return;
 
-            SetScrubberPosition(_animation.Time, false);
+            SetScrubberPosition(_animation.time, false);
         }
 
         private void OnTimeChanged(float time)
@@ -225,7 +225,7 @@ namespace VamTimeline
         private void OnAnimationSettingsChanged()
         {
             UnbindClip();
-            BindClip(_animation.Current);
+            BindClip(_animation.current);
         }
 
         private void BindClip(IAtomAnimationClip clip)
@@ -450,7 +450,7 @@ namespace VamTimeline
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
             var closest = curve.KeyframeBinarySearch(ratio * _clip.animationLength, true);
             var time = curve[closest].time;
-            _animation.Time = time;
+            _animation.time = time;
         }
 
         public void SetScrubberPosition(float time, bool stopped)

@@ -102,14 +102,14 @@ namespace VamTimeline
                 {
                     target.floatParam.min *= 0.1f;
                     target.floatParam.max *= 0.1f;
-                    SetTime(plugin.animation.Time, true);
+                    SetTime(plugin.animation.time, true);
                 }).button.interactable = !target.floatParam.constrained;
 
                 CreateExpandButton(group.transform, "Range 10X", () =>
                 {
                     target.floatParam.min *= 10f;
                     target.floatParam.max *= 10f;
-                    SetTime(plugin.animation.Time, true);
+                    SetTime(plugin.animation.time, true);
                 }).button.interactable = !target.floatParam.constrained;
             }
             else
@@ -119,13 +119,13 @@ namespace VamTimeline
                     morph.ResetRange();
                     if (target.floatParam.val < target.floatParam.min) SetValue(target.floatParam.min);
                     if (target.floatParam.val > target.floatParam.max) SetValue(target.floatParam.max);
-                    SetTime(plugin.animation.Time, true);
+                    SetTime(plugin.animation.time, true);
                 });
 
                 CreateExpandButton(group.transform, "+ Range", () =>
                 {
                     morph.IncreaseRange();
-                    SetTime(plugin.animation.Time, true);
+                    SetTime(plugin.animation.time, true);
                 });
             }
         }
@@ -133,8 +133,8 @@ namespace VamTimeline
         private void SetValue(float val)
         {
             target.floatParam.val = val;
-            plugin.animation.SetKeyframe(target, plugin.animation.Time, target.floatParam.val);
-            SetTime(plugin.animation.Time, true);
+            plugin.animation.SetKeyframe(target, plugin.animation.time, target.floatParam.val);
+            SetTime(plugin.animation.time, true);
             ToggleKeyframe(true);
         }
 
@@ -153,7 +153,7 @@ namespace VamTimeline
         public override void ToggleKeyframe(bool enable)
         {
             if (plugin.animation.IsPlaying()) return;
-            var time = plugin.animation.Time.Snap();
+            var time = plugin.animation.time.Snap();
             if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {
                 if (!enable)

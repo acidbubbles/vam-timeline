@@ -68,7 +68,7 @@ namespace VamTimeline
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {
-                valNoCallback = current.NextAnimationTime
+                valNoCallback = current.nextAnimationTime
             };
             RegisterStorable(_nextAnimationTimeJSON);
             var nextAnimationTimeUI = plugin.CreateSlider(_nextAnimationTimeJSON, rightSide);
@@ -131,8 +131,8 @@ namespace VamTimeline
                 _loopUI.toggle.interactable = true;
                 return;
             }
-            var clipsPointingToHere = plugin.animation.Clips.Where(c => c != current && c.NextAnimationName == current.AnimationName).ToList();
-            var targetClip = plugin.animation.Clips.FirstOrDefault(c => c != current && c.AnimationName == current.NextAnimationName);
+            var clipsPointingToHere = plugin.animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
+            var targetClip = plugin.animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
             if (clipsPointingToHere.Count == 0 || targetClip == null)
             {
                 _transitionUI.toggle.interactable = false;
@@ -140,7 +140,7 @@ namespace VamTimeline
                 return;
             }
 
-            if (clipsPointingToHere.Any(c => c.Transition) || targetClip?.Transition == true)
+            if (clipsPointingToHere.Any(c => c.transition) || targetClip?.transition == true)
             {
                 _transitionUI.toggle.interactable = false;
                 _loopUI.toggle.interactable = true;
@@ -153,7 +153,7 @@ namespace VamTimeline
 
         private void UpdateNextAnimationPreview()
         {
-            if (current.NextAnimationName == null)
+            if (current.nextAnimationName == null)
             {
                 _nextAnimationPreviewJSON.val = "No next animation configured";
                 return;
@@ -161,7 +161,7 @@ namespace VamTimeline
 
             if (!current.loop)
             {
-                _nextAnimationPreviewJSON.val = $"Will play once and blend at {current.NextAnimationTime}s";
+                _nextAnimationPreviewJSON.val = $"Will play once and blend at {current.nextAnimationTime}s";
                 return;
             }
 
@@ -171,7 +171,7 @@ namespace VamTimeline
             }
             else
             {
-                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.NextAnimationTime + current.BlendDuration) / current.animationLength, 2)} times including blending";
+                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.nextAnimationTime + current.blendDuration) / current.animationLength, 2)} times including blending";
             }
         }
 
@@ -186,7 +186,7 @@ namespace VamTimeline
                 });
             return new[] { "" }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Where(n => n != current.AnimationName)
+                .Where(n => n != current.animationName)
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
         }
@@ -211,39 +211,39 @@ namespace VamTimeline
             v = v.Snap();
             if (!current.loop && v >= (current.animationLength - 0.001f))
                 _blendDurationJSON.valNoCallback = v = (current.animationLength - 0.001f).Snap();
-            current.BlendDuration = v;
+            current.blendDuration = v;
         }
 
         private void ChangeTransition(bool val)
         {
-            current.Transition = val;
+            current.transition = val;
             RefreshTransitionUI();
             plugin.SampleAfterRebuild();
         }
 
         private void ChangeNextAnimation(string val)
         {
-            current.NextAnimationName = val;
+            current.nextAnimationName = val;
             SetNextAnimationTime(
-                current.NextAnimationTime == 0
-                ? current.NextAnimationTime = current.animationLength - current.BlendDuration
-                : current.NextAnimationTime
+                current.nextAnimationTime == 0
+                ? current.nextAnimationTime = current.animationLength - current.blendDuration
+                : current.nextAnimationTime
             );
             RefreshTransitionUI();
         }
 
         private void SetNextAnimationTime(float nextTime)
         {
-            if (current.NextAnimationName == null)
+            if (current.nextAnimationName == null)
             {
                 _nextAnimationTimeJSON.valNoCallback = 0f;
-                current.NextAnimationTime = 0f;
+                current.nextAnimationTime = 0f;
                 return;
             }
             else if (!current.loop)
             {
-                nextTime = (current.animationLength - current.BlendDuration).Snap();
-                current.NextAnimationTime = nextTime;
+                nextTime = (current.animationLength - current.blendDuration).Snap();
+                current.nextAnimationTime = nextTime;
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
                 return;
             }
@@ -251,7 +251,7 @@ namespace VamTimeline
             nextTime = nextTime.Snap();
 
             _nextAnimationTimeJSON.valNoCallback = nextTime;
-            current.NextAnimationTime = nextTime;
+            current.nextAnimationTime = nextTime;
         }
 
         #endregion
@@ -267,12 +267,12 @@ namespace VamTimeline
 
         private void UpdateValues()
         {
-            _blendDurationJSON.valNoCallback = current.BlendDuration;
+            _blendDurationJSON.valNoCallback = current.blendDuration;
             _loop.valNoCallback = current.loop;
-            _transitionJSON.valNoCallback = current.Transition;
-            _nextAnimationJSON.valNoCallback = current.NextAnimationName;
+            _transitionJSON.valNoCallback = current.transition;
+            _nextAnimationJSON.valNoCallback = current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
-            _nextAnimationTimeJSON.valNoCallback = current.NextAnimationTime;
+            _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }

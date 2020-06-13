@@ -47,8 +47,8 @@ namespace VamTimeline
             var expandListener = _expandButton.AddComponent<Clickable>();
             expandListener.onClick.AddListener(pointerEvent => ToggleExpanded());
 
-            this.plugin.animation.TimeChanged.AddListener(this.OnTimeChanged);
-            OnTimeChanged(this.plugin.animation.Time);
+            this.plugin.animation.onTimeChanged.AddListener(this.OnTimeChanged);
+            OnTimeChanged(this.plugin.animation.time);
 
             target.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
 
@@ -94,7 +94,7 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesModified()
         {
-            SetTime(plugin.animation.Time, true);
+            SetTime(plugin.animation.time, true);
         }
 
         private void CreateToggle(IAtomPlugin plugin)
@@ -183,7 +183,7 @@ namespace VamTimeline
             if (UIPerformance.ShouldSkip()) return;
             if (!plugin.animation.IsPlaying()) return;
 
-            SetTime(plugin.animation.Time, false);
+            SetTime(plugin.animation.time, false);
         }
 
         private void OnTimeChanged(float time)
@@ -242,7 +242,7 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            plugin.animation.TimeChanged.RemoveListener(OnTimeChanged);
+            plugin.animation.onTimeChanged.RemoveListener(OnTimeChanged);
             target.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
         }
     }

@@ -248,10 +248,10 @@ namespace VamTimeline
         public void Update()
         {
             if (_animation == null) return;
-            if (_animation.Time == _time) return;
+            if (_animation.time == _time) return;
 
-            _time = _animation.Time;
-            var ratio = Mathf.Clamp01(_animation.Time / _animationLength);
+            _time = _animation.time;
+            var ratio = Mathf.Clamp01(_animation.time / _animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
         }

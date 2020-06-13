@@ -72,10 +72,10 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            if (plugin.animation.Clips.Count <= 1) return;
+            if (plugin.animation.clips.Count <= 1) return;
 
-            var clipList = current.AllTargets.Select(t => t.name).OrderBy(x => x);
-            var otherList = plugin.animation.Clips.Where(c => c != current).SelectMany(c => c.AllTargets).Select(t => t.name).OrderBy(x => x).Distinct();
+            var clipList = current.allTargets.Select(t => t.name).OrderBy(x => x);
+            var otherList = plugin.animation.clips.Where(c => c != current).SelectMany(c => c.allTargets).Select(t => t.name).OrderBy(x => x).Distinct();
             var ok = clipList.SequenceEqual(otherList);
             if (ok) return;
 
@@ -118,7 +118,7 @@ namespace VamTimeline
             foreach (var fc in plugin.containingAtom.freeControllers)
             {
                 if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
-                if (current.TargetControllers.Any(c => c.controller == fc)) continue;
+                if (current.targetControllers.Any(c => c.controller == fc)) continue;
                 yield return fc.name;
             }
         }
@@ -228,14 +228,14 @@ namespace VamTimeline
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
-            _addParamListJSON.choices = values.Where(v => !current.TargetFloatParams.Any(t => t.storable == storable && t.floatParam.name == v)).OrderBy(v => v).ToList();
+            _addParamListJSON.choices = values.Where(v => !current.targetFloatParams.Any(t => t.storable == storable && t.floatParam.name == v)).OrderBy(v => v).ToList();
         }
 
         private void GenerateRemoveToggles()
         {
             ClearRemoveToggles();
 
-            foreach (var target in current.TargetControllers)
+            foreach (var target in current.targetControllers)
             {
                 UIDynamicToggle jsbUI = null;
                 JSONStorableBool jsb = null;
@@ -253,7 +253,7 @@ namespace VamTimeline
                 _removeToggles.Add(jsb);
             }
 
-            foreach (var target in current.TargetFloatParams)
+            foreach (var target in current.targetFloatParams)
             {
                 UIDynamicToggle jsbUI = null;
                 JSONStorableBool jsb = null;
@@ -304,15 +304,15 @@ namespace VamTimeline
         {
             try
             {
-                var allControllers = plugin.animation.Clips.SelectMany(c => c.TargetControllers).Select(t => t.controller).Distinct().ToList();
+                var allControllers = plugin.animation.clips.SelectMany(c => c.targetControllers).Select(t => t.controller).Distinct().ToList();
                 var h = new HashSet<JSONStorableFloat>();
-                var allFloatParams = plugin.animation.Clips.SelectMany(c => c.TargetFloatParams).Where(t => h.Add(t.floatParam)).Select(t => new FloatParamRef { Storable = t.storable, FloatParam = t.floatParam }).ToList();
+                var allFloatParams = plugin.animation.clips.SelectMany(c => c.targetFloatParams).Where(t => h.Add(t.floatParam)).Select(t => new FloatParamRef { Storable = t.storable, FloatParam = t.floatParam }).ToList();
 
-                foreach (var clip in plugin.animation.Clips)
+                foreach (var clip in plugin.animation.clips)
                 {
                     foreach (var controller in allControllers)
                     {
-                        if (!clip.TargetControllers.Any(t => t.controller == controller))
+                        if (!clip.targetControllers.Any(t => t.controller == controller))
                         {
                             var target = clip.Add(controller);
                             if (target != null)
@@ -322,11 +322,11 @@ namespace VamTimeline
                             }
                         }
                     }
-                    clip.TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+                    clip.targetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
 
                     foreach (var floatParamRef in allFloatParams)
                     {
-                        if (!clip.TargetFloatParams.Any(t => t.floatParam == floatParamRef.FloatParam))
+                        if (!clip.targetFloatParams.Any(t => t.floatParam == floatParamRef.FloatParam))
                         {
                             var target = clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
                             if (target != null)
@@ -336,7 +336,7 @@ namespace VamTimeline
                             }
                         }
                     }
-                    clip.TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+                    clip.targetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
                 }
             }
             catch (Exception exc)
@@ -360,13 +360,13 @@ namespace VamTimeline
 
                 _addControllerListJSON.valNoCallback = "";
 
-                if (current.TargetControllers.Any(c => c.controller == controller))
+                if (current.targetControllers.Any(c => c.controller == controller))
                     return;
 
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
 
-                foreach (var clip in plugin.animation.Clips)
+                foreach (var clip in plugin.animation.clips)
                 {
                     var added = clip.Add(controller);
                     if (added != null)
@@ -407,10 +407,10 @@ namespace VamTimeline
 
                 _addParamListJSON.valNoCallback = "";
 
-                if (current.TargetFloatParams.Any(c => c.floatParam == sourceFloatParam))
+                if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
 
-                foreach (var clip in plugin.animation.Clips)
+                foreach (var clip in plugin.animation.clips)
                 {
                     var added = clip.Add(storable, sourceFloatParam);
                     if (added != null)
@@ -430,7 +430,7 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in plugin.animation.Clips)
+                foreach (var clip in plugin.animation.clips)
                     clip.Remove(target.controller);
             }
             catch (Exception exc)
@@ -443,7 +443,7 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in plugin.animation.Clips)
+                foreach (var clip in plugin.animation.clips)
                     clip.Remove(target.storable, target.floatParam);
             }
             catch (Exception exc)

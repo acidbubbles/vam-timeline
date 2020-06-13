@@ -44,7 +44,7 @@ namespace VamTimeline
         public override void ToggleKeyframe(bool enable)
         {
             if (plugin.animation.IsPlaying()) return;
-            var time = plugin.animation.Time.Snap();
+            var time = plugin.animation.time.Snap();
             if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {
                 if (!enable)
@@ -55,7 +55,7 @@ namespace VamTimeline
             {
                 if (plugin.autoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target1 in clip.TargetControllers)
+                    foreach (var target1 in clip.targetControllers)
                         SetControllerKeyframe(time, target1);
                 }
                 else
@@ -67,7 +67,7 @@ namespace VamTimeline
             {
                 if (plugin.autoKeyframeAllControllersJSON.val)
                 {
-                    foreach (var target1 in clip.TargetControllers)
+                    foreach (var target1 in clip.targetControllers)
                         target1.DeleteFrame(time);
                 }
                 else

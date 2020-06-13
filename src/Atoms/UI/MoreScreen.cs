@@ -121,9 +121,9 @@ namespace VamTimeline
                 jc["AtomType"] = plugin.containingAtom.type;
                 var atomState = new JSONClass();
                 var allTargets = new HashSet<FreeControllerV3>(
-                    plugin.animation.Clips
-                        .Where(c => _exportAnimationsJSON.val == "(All)" || c.AnimationName == _exportAnimationsJSON.val)
-                        .SelectMany(c => c.TargetControllers)
+                    plugin.animation.clips
+                        .Where(c => _exportAnimationsJSON.val == "(All)" || c.animationName == _exportAnimationsJSON.val)
+                        .SelectMany(c => c.targetControllers)
                         .Select(t => t.controller)
                         .Distinct());
                 foreach (var fc in plugin.containingAtom.freeControllers)
@@ -196,9 +196,9 @@ namespace VamTimeline
                 }
 
                 plugin.serializer.DeserializeAnimation(plugin.animation, json.AsObject);
-                var lastAnimation = plugin.animation.Clips.Select(c => c.AnimationName).LastOrDefault();
+                var lastAnimation = plugin.animation.clips.Select(c => c.animationName).LastOrDefault();
                 // NOTE: Because the animation instance changes, we'll end up with the _old_ "current" not being updated.
-                if (lastAnimation != plugin.animation.Current.AnimationName)
+                if (lastAnimation != plugin.animation.current.animationName)
                     plugin.ChangeAnimation(lastAnimation);
                 else
                     plugin.animation.ChangeAnimation(lastAnimation);

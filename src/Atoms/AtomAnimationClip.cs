@@ -31,9 +31,9 @@ namespace VamTimeline
         public UnityEvent onTargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesModified { get; } = new UnityEvent();
-        public UnityEvent AnimationSettingsModified { get; } = new UnityEvent();
-        public AnimationClip Clip { get; }
-        public AnimationPattern AnimationPattern
+        public UnityEvent onAnimationSettingsModified { get; } = new UnityEvent();
+        public AnimationClip alip { get; }
+        public AnimationPattern animationPattern
         {
             get
             {
@@ -42,13 +42,13 @@ namespace VamTimeline
             set
             {
                 _animationPattern = value;
-                AnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke();
             }
         }
-        public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> TargetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
-        public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> TargetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
-        public IEnumerable<IAnimationTargetWithCurves> AllTargets => TargetControllers.Cast<IAnimationTargetWithCurves>().Concat(TargetFloatParams.Cast<IAnimationTargetWithCurves>());
-        public bool EnsureQuaternionContinuity
+        public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
+        public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
+        public IEnumerable<IAnimationTargetWithCurves> allTargets => targetControllers.Cast<IAnimationTargetWithCurves>().Concat(targetFloatParams.Cast<IAnimationTargetWithCurves>());
+        public bool ensureQuaternionContinuity
         {
             get
             {
@@ -58,10 +58,10 @@ namespace VamTimeline
             {
                 if (_ensureQuaternionContinuity == value) return;
                 _ensureQuaternionContinuity = value;
-                AnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke();
             }
         }
-        public string AnimationName
+        public string animationName
         {
             get
             {
@@ -71,7 +71,7 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
-                AnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke();
             }
         }
         public float animationLength
@@ -85,10 +85,10 @@ namespace VamTimeline
                 if (_animationLength == value) return;
                 _animationLength = value;
                 UpdateForcedNextAnimationTime();
-                AnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke();
             }
         }
-        public bool AutoPlay { get; set; } = false;
+        public bool autoPlay { get; set; } = false;
         public bool loop
         {
             get
@@ -99,22 +99,22 @@ namespace VamTimeline
             {
                 if (_loop == value) return;
                 _loop = value;
-                Clip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
+                alip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
                 _skipNextAnimationSettingsModified = true;
                 try
                 {
                     if (value)
                     {
-                        foreach (var target in TargetControllers)
+                        foreach (var target in targetControllers)
                         {
                             if (target.settings.Count == 2)
                                 target.settings[animationLength.ToMilliseconds()].curveType = CurveTypeValues.LeaveAsIs;
                         }
-                        Transition = false;
+                        transition = false;
                     }
                     else
                     {
-                        foreach (var target in TargetControllers)
+                        foreach (var target in targetControllers)
                         {
                             if (target.settings.Count == 2)
                                 target.settings[animationLength.ToMilliseconds()].curveType = CurveTypeValues.CopyPrevious;
@@ -126,11 +126,11 @@ namespace VamTimeline
                     _skipNextAnimationSettingsModified = false;
                 }
                 UpdateForcedNextAnimationTime();
-                if (!_skipNextAnimationSettingsModified) AnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke();
                 DirtyAll();
             }
         }
-        public bool Transition
+        public bool transition
         {
             get
             {
@@ -149,11 +149,11 @@ namespace VamTimeline
                 {
                     _skipNextAnimationSettingsModified = false;
                 }
-                if (!_skipNextAnimationSettingsModified) AnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke();
                 DirtyAll();
             }
         }
-        public float BlendDuration
+        public float blendDuration
         {
             get
             {
@@ -164,10 +164,10 @@ namespace VamTimeline
                 if (_blendDuration == value) return;
                 _blendDuration = value;
                 UpdateForcedNextAnimationTime();
-                AnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke();
             }
         }
-        public string NextAnimationName
+        public string nextAnimationName
         {
             get
             {
@@ -178,10 +178,10 @@ namespace VamTimeline
                 if (_nextAnimationName == value) return;
                 _nextAnimationName = value == "" ? null : value;
                 UpdateForcedNextAnimationTime();
-                AnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke();
             }
         }
-        public float NextAnimationTime
+        public float nextAnimationTime
         {
             get
             {
@@ -191,15 +191,15 @@ namespace VamTimeline
             {
                 if (_nextAnimationTime == value) return;
                 _nextAnimationTime = value;
-                if (!_skipNextAnimationSettingsModified) AnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke();
             }
         }
-        public int AllTargetsCount => TargetControllers.Count + TargetFloatParams.Count;
+        public int allTargetsCount => targetControllers.Count + targetFloatParams.Count;
 
         public AtomAnimationClip(string animationName)
         {
-            AnimationName = animationName;
-            Clip = new AnimationClip
+            this.animationName = animationName;
+            alip = new AnimationClip
             {
                 legacy = true
             };
@@ -207,17 +207,17 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return AllTargets.Count() == 0;
+            return allTargets.Count() == 0;
         }
 
         public IEnumerable<string> GetTargetsNames()
         {
-            return AllTargets.Select(c => c.name).ToList();
+            return allTargets.Select(c => c.name).ToList();
         }
 
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
-            if (TargetControllers.Any(c => c.controller == controller)) return null;
+            if (targetControllers.Any(c => c.controller == controller)) return null;
             var target = new FreeControllerAnimationTarget(controller);
             Add(target);
             return target;
@@ -225,8 +225,8 @@ namespace VamTimeline
 
         public void Add(FreeControllerAnimationTarget target)
         {
-            TargetControllers.Add(target);
-            TargetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+            targetControllers.Add(target);
+            targetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
             target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
             target.onAnimationKeyframesModified.AddListener(OnAnimationModified);
             onTargetsListChanged.Invoke();
@@ -234,7 +234,7 @@ namespace VamTimeline
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
-            if (TargetFloatParams.Any(s => s.storable.name == storable.name && s.name == jsf.name)) return null;
+            if (targetFloatParams.Any(s => s.storable.name == storable.name && s.name == jsf.name)) return null;
             var target = new FloatParamAnimationTarget(storable, jsf);
             Add(target);
             return target;
@@ -243,8 +243,8 @@ namespace VamTimeline
         public void Add(FloatParamAnimationTarget target)
         {
             if (target == null) throw new NullReferenceException(nameof(target));
-            TargetFloatParams.Add(target);
-            TargetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+            targetFloatParams.Add(target);
+            targetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
             target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
             target.onAnimationKeyframesModified.AddListener(OnAnimationModified);
             onTargetsListChanged.Invoke();
@@ -262,18 +262,18 @@ namespace VamTimeline
 
         public void Remove(FreeControllerV3 controller)
         {
-            var target = TargetControllers.FirstOrDefault(c => c.controller == controller);
+            var target = targetControllers.FirstOrDefault(c => c.controller == controller);
             if (target == null) return;
-            TargetControllers.Remove(target);
+            targetControllers.Remove(target);
             target.Dispose();
             onTargetsListChanged.Invoke();
         }
 
         public void Remove(JSONStorable storable, JSONStorableFloat jsf)
         {
-            var target = TargetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf);
+            var target = targetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf);
             if (target == null) return;
-            TargetFloatParams.Remove(target);
+            targetFloatParams.Remove(target);
             target.Dispose();
             onTargetsListChanged.Invoke();
         }
@@ -353,16 +353,16 @@ namespace VamTimeline
 
         public IEnumerable<IAnimationTargetWithCurves> GetAllOrSelectedTargets()
         {
-            var result = AllTargets
+            var result = allTargets
                 .Where(t => t.selected)
                 .Cast<IAnimationTargetWithCurves>()
                 .ToList();
-            return result.Count > 0 ? result : AllTargets;
+            return result.Count > 0 ? result : allTargets;
         }
 
         public IEnumerable<IAnimationTargetWithCurves> GetSelectedTargets()
         {
-            return AllTargets
+            return allTargets
                 .Where(t => t.selected)
                 .Cast<IAnimationTargetWithCurves>()
                 .ToList();
@@ -373,7 +373,7 @@ namespace VamTimeline
             if (value == animationLength)
                 return;
             animationLength = value;
-            foreach (var target in AllTargets)
+            foreach (var target in allTargets)
             {
                 foreach (var curve in target.GetCurves())
                     curve.StretchLength(value);
@@ -386,7 +386,7 @@ namespace VamTimeline
             if (this.animationLength.IsSameFrame(animationLength))
                 return;
             this.animationLength = animationLength;
-            foreach (var target in AllTargets)
+            foreach (var target in allTargets)
             {
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLengthEnd(animationLength);
@@ -399,7 +399,7 @@ namespace VamTimeline
             if (this.animationLength.IsSameFrame(animationLength))
                 return;
             this.animationLength = animationLength;
-            foreach (var target in AllTargets)
+            foreach (var target in allTargets)
             {
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLengthBegin(animationLength);
@@ -412,7 +412,7 @@ namespace VamTimeline
             if (this.animationLength.IsSameFrame(animationLength))
                 return;
             this.animationLength = animationLength;
-            foreach (var target in AllTargets)
+            foreach (var target in allTargets)
             {
                 foreach (var curve in target.GetCurves())
                     curve.CropOrExtendLengthAtTime(animationLength, time);
@@ -422,7 +422,7 @@ namespace VamTimeline
 
         private void UpdateKeyframeSettingsFromBegin()
         {
-            foreach (var target in TargetControllers)
+            foreach (var target in targetControllers)
             {
                 var settings = target.settings.Values.ToList();
                 target.settings.Clear();
@@ -437,7 +437,7 @@ namespace VamTimeline
 
         private void UpdateKeyframeSettingsFromEnd()
         {
-            foreach (var target in TargetControllers)
+            foreach (var target in targetControllers)
             {
                 var settings = target.settings.Values.ToList();
                 target.settings.Clear();
@@ -456,7 +456,7 @@ namespace VamTimeline
         public AtomClipboardEntry Copy(float time, bool all = false)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
-            foreach (var target in all ? TargetControllers : GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in all ? targetControllers : GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -467,7 +467,7 @@ namespace VamTimeline
                 });
             }
             var floatParams = new List<FloatParamValClipboardEntry>();
-            foreach (var target in all ? TargetFloatParams : GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in all ? targetFloatParams : GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 int key = target.value.KeyframeBinarySearch(time);
                 if (key == -1) continue;
@@ -488,12 +488,12 @@ namespace VamTimeline
 
         public bool IsDirty()
         {
-            return AllTargets.Any(t => t.dirty);
+            return allTargets.Any(t => t.dirty);
         }
 
         public void Validate()
         {
-            foreach (var target in TargetControllers)
+            foreach (var target in targetControllers)
             {
                 if (!target.dirty) continue;
                 target.Validate();
@@ -509,14 +509,14 @@ namespace VamTimeline
 
             foreach (var entry in clipboard.controllers)
             {
-                var target = TargetControllers.FirstOrDefault(c => c.controller == entry.controller);
+                var target = targetControllers.FirstOrDefault(c => c.controller == entry.controller);
                 if (target == null)
                     target = Add(entry.controller);
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = TargetFloatParams.FirstOrDefault(c => c.floatParam == entry.floatParam);
+                var target = targetFloatParams.FirstOrDefault(c => c.floatParam == entry.floatParam);
                 if (target == null)
                     target = Add(entry.storable, entry.floatParam);
                 target.SetKeyframe(time, entry.snapshot.value, dirty);
@@ -525,14 +525,14 @@ namespace VamTimeline
 
         public void DirtyAll()
         {
-            foreach (var s in AllTargets)
+            foreach (var s in allTargets)
                 s.dirty = true;
         }
 
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
         {
-            yield return TargetControllers;
-            yield return TargetFloatParams;
+            yield return targetControllers;
+            yield return targetFloatParams;
         }
 
         public void UpdateForcedNextAnimationTime()
@@ -541,11 +541,11 @@ namespace VamTimeline
             try
             {
                 if (loop) return;
-                if (NextAnimationName == null)
+                if (nextAnimationName == null)
                 {
-                    NextAnimationTime = 0;
+                    nextAnimationTime = 0;
                 }
-                NextAnimationTime = (animationLength - BlendDuration).Snap();
+                nextAnimationTime = (animationLength - blendDuration).Snap();
             }
             finally
             {
@@ -557,8 +557,8 @@ namespace VamTimeline
         {
             onTargetsSelectionChanged.RemoveAllListeners();
             onAnimationKeyframesModified.RemoveAllListeners();
-            AnimationSettingsModified.RemoveAllListeners();
-            foreach (var target in AllTargets)
+            onAnimationSettingsModified.RemoveAllListeners();
+            foreach (var target in allTargets)
             {
                 target.Dispose();
             }

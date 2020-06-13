@@ -49,6 +49,10 @@ namespace VamTimeline
             var addAnimationAsCopyUI = plugin.CreateButton("Create Copy Of Current Animation", rightSide);
             addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
             RegisterComponent(addAnimationAsCopyUI);
+
+            var addAnimationTransitionUI = plugin.CreateButton($"Create Transition (Current -> Next)", rightSide);
+            addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
+            RegisterComponent(addAnimationTransitionUI);
         }
 
         #endregion
@@ -59,12 +63,12 @@ namespace VamTimeline
         {
             var clip = plugin.animation.AddAnimation();
             clip.loop = current.loop;
-            clip.NextAnimationName = current.NextAnimationName;
-            clip.NextAnimationTime = current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
-            clip.BlendDuration = current.BlendDuration;
+            clip.nextAnimationName = current.nextAnimationName;
+            clip.nextAnimationTime = current.nextAnimationTime;
+            clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
+            clip.blendDuration = current.blendDuration;
             clip.CropOrExtendLengthEnd(current.animationLength);
-            foreach (var origTarget in current.TargetControllers)
+            foreach (var origTarget in current.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
                 for (var i = 0; i < origTarget.curves.Count; i++)
@@ -77,14 +81,14 @@ namespace VamTimeline
                 }
                 newTarget.dirty = true;
             }
-            foreach (var origTarget in current.TargetFloatParams)
+            foreach (var origTarget in current.targetFloatParams)
             {
                 var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
                 newTarget.value.keys = origTarget.value.keys.ToArray();
                 newTarget.dirty = true;
             }
 
-            plugin.animation.ChangeAnimation(clip.AnimationName);
+            plugin.animation.ChangeAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
@@ -92,25 +96,60 @@ namespace VamTimeline
         {
             var clip = plugin.animation.AddAnimation();
             clip.loop = current.loop;
-            clip.NextAnimationName = current.NextAnimationName;
-            clip.NextAnimationTime = current.NextAnimationTime;
-            clip.EnsureQuaternionContinuity = current.EnsureQuaternionContinuity;
-            clip.BlendDuration = current.BlendDuration;
+            clip.nextAnimationName = current.nextAnimationName;
+            clip.nextAnimationTime = current.nextAnimationTime;
+            clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
+            clip.blendDuration = current.blendDuration;
             clip.CropOrExtendLengthEnd(current.animationLength);
-            foreach (var origTarget in current.TargetControllers)
+            foreach (var origTarget in current.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
                 newTarget.SetKeyframeToCurrentTransform(0f);
                 newTarget.SetKeyframeToCurrentTransform(clip.animationLength);
             }
-            foreach (var origTarget in current.TargetFloatParams)
+            foreach (var origTarget in current.targetFloatParams)
             {
                 var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
                 newTarget.SetKeyframe(0f, origTarget.floatParam.val);
                 newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);
             }
 
-            plugin.animation.ChangeAnimation(clip.AnimationName);
+            plugin.animation.ChangeAnimation(clip.animationName);
+            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+        }
+
+        private void AddTransitionAnimation()
+        {
+            var next = current.nextAnimationName != null
+                ? plugin.animation.clips.First(c => c.animationName == current.nextAnimationName)
+                : plugin.animation.clips.ElementAtOrDefault(plugin.animation.clips.IndexOf(current));
+            if (next == null)
+            {
+                SuperController.LogError("There is no animation to transition to");
+                return;
+            }
+            var clip = plugin.animation.AddAnimation();
+            clip.loop = false;
+            clip.transition = true;
+            clip.nextAnimationName = current.nextAnimationName;
+            clip.blendDuration = AtomAnimationClip.DefaultBlendDuration;
+            clip.nextAnimationTime = clip.animationLength - clip.blendDuration;
+            clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
+            clip.CropOrExtendLengthEnd(current.animationLength);
+            foreach (var origTarget in current.targetControllers)
+            {
+                var newTarget = clip.Add(origTarget.controller);
+                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(current.animationLength));
+                newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.controller == origTarget.controller).GetCurveSnapshot(0f));
+            }
+            foreach (var origTarget in current.targetFloatParams)
+            {
+                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
+                newTarget.SetKeyframe(0f, origTarget.value.Evaluate(current.animationLength));
+                newTarget.SetKeyframe(clip.animationLength, next.targetFloatParams.First(t => ReferenceEquals(t.floatParam, origTarget.floatParam)).value.Evaluate(0f));
+            }
+
+            plugin.animation.ChangeAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 

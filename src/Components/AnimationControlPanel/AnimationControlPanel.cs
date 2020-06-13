@@ -122,35 +122,35 @@ namespace VamTimeline
 
             CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
             {
-                var time = _animation.Time - 1f;
+                var time = _animation.time - 1f;
                 if (time < 0) time = 0;
-                _animation.Time = time;
+                _animation.time = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "-.1s", () =>
             {
-                var time = _animation.Time - 0.1f;
+                var time = _animation.time - 0.1f;
                 if (time < 0) time = 0;
-                _animation.Time = time;
+                _animation.time = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, ">|<", () =>
             {
-                _animation.Time = _animation.Time.Snap(1f);
+                _animation.time = _animation.time.Snap(1f);
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+.1s", () =>
             {
-                var time = _animation.Time + 0.1f;
-                if (time >= _animation.Current.animationLength - 0.001f) time = _animation.Current.loop ? _animation.Current.animationLength - 0.1f : _animation.Current.animationLength;
-                _animation.Time = time;
+                var time = _animation.time + 0.1f;
+                if (time >= _animation.current.animationLength - 0.001f) time = _animation.current.loop ? _animation.current.animationLength - 0.1f : _animation.current.animationLength;
+                _animation.time = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+1s", () =>
             {
-                var time = _animation.Time + 1f;
-                if (time >= _animation.Current.animationLength - 0.001f) time = _animation.Current.loop ? _animation.Current.animationLength - 1f : _animation.Current.animationLength;
-                _animation.Time = time;
+                var time = _animation.time + 1f;
+                if (time >= _animation.current.animationLength - 0.001f) time = _animation.current.loop ? _animation.current.animationLength - 1f : _animation.current.animationLength;
+                _animation.time = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () => nextFrameJSON.actionCallback());

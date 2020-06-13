@@ -60,7 +60,7 @@ namespace VamTimeline
             // Right side
 
             current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
-            plugin.animation.TimeChanged.AddListener(OnTimeChanged);
+            plugin.animation.onTimeChanged.AddListener(OnTimeChanged);
 
             OnSelectionChanged();
 
@@ -104,7 +104,7 @@ namespace VamTimeline
         private void RefreshCurves()
         {
             if (_curves == null) return;
-            _curves.Bind(plugin.animation, current.AllTargetsCount == 1 ? current.AllTargets.ToList() : current.GetSelectedTargets().ToList());
+            _curves.Bind(plugin.animation, current.allTargetsCount == 1 ? current.allTargets.ToList() : current.GetSelectedTargets().ToList());
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
@@ -142,7 +142,7 @@ namespace VamTimeline
         {
             if (_curveTypeJSON == null) return;
 
-            var time = plugin.animation.Time.Snap();
+            var time = plugin.animation.time.Snap();
             if (current.loop && (time.IsSameFrame(0) || time.IsSameFrame(current.animationLength)))
             {
                 _curveTypeJSON.valNoCallback = _loopCurveType;
@@ -169,14 +169,14 @@ namespace VamTimeline
             if (plugin.animation == null) return;
             RemoveTargets();
             plugin.RemoveButton(_manageTargetsUI);
-            var time = plugin.animation.Time;
+            var time = plugin.animation.time;
 
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var keyframeUI = plugin.CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
-                component.Bind(plugin, plugin.animation.Current, target);
+                component.Bind(plugin, plugin.animation.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -189,7 +189,7 @@ namespace VamTimeline
                 var keyframeUI = plugin.CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
-                component.Bind(plugin, plugin.animation.Current, target);
+                component.Bind(plugin, plugin.animation.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -197,7 +197,7 @@ namespace VamTimeline
                 });
             }
             _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName, true);
-            if (current.AllTargetsCount == 0)
+            if (current.allTargetsCount == 0)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
                 _manageTargetsUI.buttonColor = new Color(0.8f, 0.7f, 0.8f);
@@ -206,7 +206,7 @@ namespace VamTimeline
         public override void Dispose()
         {
             current.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
-            plugin.animation.TimeChanged.RemoveListener(OnTimeChanged);
+            plugin.animation.onTimeChanged.RemoveListener(OnTimeChanged);
             plugin.RemoveButton(_manageTargetsUI);
             RemoveTargets();
             base.Dispose();
@@ -228,7 +228,7 @@ namespace VamTimeline
                 RefreshCurrentCurveType();
                 return;
             }
-            float time = plugin.animation.Time.Snap();
+            float time = plugin.animation.time.Snap();
             if (time.IsSameFrame(0) && curveType == CurveTypeValues.CopyPrevious)
             {
                 RefreshCurrentCurveType();

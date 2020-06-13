@@ -53,7 +53,7 @@ namespace VamTimeline
 
             RefreshAnimationsList();
 
-            plugin.animation.ClipsListChanged.AddListener(RefreshAnimationsList);
+            plugin.animation.onClipsListChanged.AddListener(RefreshAnimationsList);
         }
 
         private void InitAnimationsListUI(bool rightSide)
@@ -94,11 +94,11 @@ namespace VamTimeline
             {
                 var anim = current;
                 if (anim == null) return;
-                var idx = plugin.animation.Clips.IndexOf(anim);
+                var idx = plugin.animation.clips.IndexOf(anim);
                 if (idx <= 0) return;
-                plugin.animation.Clips.RemoveAt(idx);
-                plugin.animation.Clips.Insert(idx - 1, anim);
-                plugin.animation.ClipsListChanged.Invoke();
+                plugin.animation.clips.RemoveAt(idx);
+                plugin.animation.clips.Insert(idx - 1, anim);
+                plugin.animation.onClipsListChanged.Invoke();
             }
             catch (Exception exc)
             {
@@ -112,11 +112,11 @@ namespace VamTimeline
             {
                 var anim = current;
                 if (anim == null) return;
-                var idx = plugin.animation.Clips.IndexOf(anim);
-                if (idx >= plugin.animation.Clips.Count - 1) return;
-                plugin.animation.Clips.RemoveAt(idx);
-                plugin.animation.Clips.Insert(idx + 1, anim);
-                plugin.animation.ClipsListChanged.Invoke();
+                var idx = plugin.animation.clips.IndexOf(anim);
+                if (idx >= plugin.animation.clips.Count - 1) return;
+                plugin.animation.clips.RemoveAt(idx);
+                plugin.animation.clips.Insert(idx + 1, anim);
+                plugin.animation.onClipsListChanged.Invoke();
             }
             catch (Exception exc)
             {
@@ -130,21 +130,21 @@ namespace VamTimeline
             {
                 var anim = current;
                 if (anim == null) return;
-                if (plugin.animation.Clips.Count == 1)
+                if (plugin.animation.clips.Count == 1)
                 {
                     SuperController.LogError("VamTimeline: Cannot delete the only animation.");
                     return;
                 }
                 plugin.animation.RemoveClip(anim);
-                foreach (var clip in plugin.animation.Clips)
+                foreach (var clip in plugin.animation.clips)
                 {
-                    if (clip.NextAnimationName == anim.AnimationName)
+                    if (clip.nextAnimationName == anim.animationName)
                     {
-                        clip.NextAnimationName = null;
-                        clip.NextAnimationTime = 0;
+                        clip.nextAnimationName = null;
+                        clip.nextAnimationTime = 0;
                     }
                 }
-                plugin.ChangeAnimation(plugin.animation.Clips[0].AnimationName);
+                plugin.ChangeAnimation(plugin.animation.clips[0].animationName);
             }
             catch (Exception exc)
             {
@@ -167,13 +167,13 @@ namespace VamTimeline
         {
             var sb = new StringBuilder();
 
-            foreach (var clip in plugin.animation.Clips)
+            foreach (var clip in plugin.animation.clips)
             {
                 if (clip == current)
                     sb.Append("> ");
                 else
                     sb.Append("  ");
-                sb.AppendLine(clip.AnimationName);
+                sb.AppendLine(clip.animationName);
             }
 
             _animationsListJSON.val = sb.ToString();
@@ -181,7 +181,7 @@ namespace VamTimeline
 
         public override void Dispose()
         {
-            plugin.animation.ClipsListChanged.RemoveListener(RefreshAnimationsList);
+            plugin.animation.onClipsListChanged.RemoveListener(RefreshAnimationsList);
             base.Dispose();
         }
 
