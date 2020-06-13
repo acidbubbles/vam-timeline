@@ -16,8 +16,8 @@ namespace VamTimeline
         private readonly RectTransform _scrubberRect;
         private readonly Text _timeText;
 
-        private float _previousTime = -1f;
-        private float _previousMax = -1f;
+        private Vector2 _lastScrubberUpdate = new Vector2(-1, -1);
+        private Vector2 _lastTextUpdate = new Vector2(-1, -1);
         private ScrubberMarkers _markers;
 
         public AtomAnimation animation;
@@ -112,24 +112,24 @@ namespace VamTimeline
         {
             if (UIPerformance.ShouldSkip()) return;
 
-            if (_previousMax != scrubberJSON.max)
+            var currentUpdate = new Vector2(scrubberJSON.val, scrubberJSON.max);
+
+            if (_lastScrubberUpdate != currentUpdate)
             {
-                _previousMax = scrubberJSON.max;
-                _previousTime = -1f;
-                _markers.length = scrubberJSON.max;
+                if (_lastScrubberUpdate.y != currentUpdate.y)
+                    _markers.length = scrubberJSON.max;
+
+                _lastScrubberUpdate = currentUpdate;
+                var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
+                _scrubberRect.anchorMin = new Vector2(ratio, 0);
+                _scrubberRect.anchorMax = new Vector2(ratio, 1);
             }
 
-            if (_previousTime == scrubberJSON.val) return;
-
-            _previousTime = scrubberJSON.val;
-            _previousMax = scrubberJSON.max;
-            var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
-            _scrubberRect.anchorMin = new Vector2(ratio, 0);
-            _scrubberRect.anchorMax = new Vector2(ratio, 1);
-
-            if (Time.frameCount % 4 != 0) return;
-
-            _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+            if (Time.frameCount % 6 == 0 && _lastTextUpdate != currentUpdate)
+            {
+                _lastTextUpdate = currentUpdate;
+                _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+            }
         }
 
         public void OnDisable()
