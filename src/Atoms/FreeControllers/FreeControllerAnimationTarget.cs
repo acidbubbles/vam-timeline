@@ -261,6 +261,29 @@ namespace VamTimeline
 
         #endregion
 
+        #region Evaluate
+
+        internal Vector3 EvaluatePosition(float time)
+        {
+            return new Vector3(
+                x.Evaluate(time),
+                y.Evaluate(time),
+                z.Evaluate(time)
+            );
+        }
+
+        internal Quaternion EvaluateRotation(float time)
+        {
+            return new Quaternion(
+                rotX.Evaluate(time),
+                rotY.Evaluate(time),
+                rotZ.Evaluate(time),
+                rotW.Evaluate(time)
+            );
+        }
+
+        #endregion
+
         #region Snapshots
 
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)

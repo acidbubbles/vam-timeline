@@ -249,6 +249,12 @@ namespace VamTimeline
             }
         }
 
+        public void Sample()
+        {
+            SampleParamsAnimation();
+            SampleControllers();
+        }
+
         private void SampleParamsAnimation()
         {
             var time = this.time;
@@ -272,6 +278,40 @@ namespace VamTimeline
                 {
                     morph.floatParam.val = val;
                 }
+            }
+        }
+
+        private void SampleControllers()
+        {
+            var time = this.time;
+            var weight = _blendingTimeLeft / _blendingDuration;
+            foreach (var t in current.targetControllers)
+            {
+                Vector3 position;
+                Quaternion rotation;
+                if (_previousClip != null)
+                {
+                    var blendingTarget = _previousClip.targetControllers.FirstOrDefault(b => b.controller == t.controller);
+                    if (blendingTarget != null)
+                    {
+                        // TODO: Replace this by state with weight
+                        position = Vector3.Lerp(blendingTarget.EvaluatePosition(time), t.EvaluatePosition(time), weight);
+                        rotation = Quaternion.Slerp(blendingTarget.EvaluateRotation(time), t.EvaluateRotation(time), weight);
+                    }
+                    else
+                    {
+                        position = t.EvaluatePosition(time);
+                        rotation = t.EvaluateRotation(time);
+                    }
+                }
+                else
+                {
+                    position = t.EvaluatePosition(time);
+                    rotation = t.EvaluateRotation(time);
+                }
+                var rb = t.controller.GetComponent<Rigidbody>();
+                rb.MovePosition(rb.transform.parent.position + position);
+                rb.MoveRotation(rb.transform.parent.rotation * rotation);
             }
         }
 
@@ -309,34 +349,6 @@ namespace VamTimeline
                 _playTime += Time.fixedDeltaTime * speed;
 
                 SampleControllers();
-            }
-        }
-
-        public void Sample()
-        {
-            SampleParamsAnimation();
-            SampleControllers();
-        }
-
-        private void SampleControllers()
-        {
-            var time = _playTime % current.animationLength;
-            foreach (var t in current.targetControllers)
-            {
-                var position = new Vector3(
-                    t.x.Evaluate(time),
-                    t.y.Evaluate(time),
-                    t.z.Evaluate(time)
-                );
-                var rotation = new Quaternion(
-                    t.rotX.Evaluate(time),
-                    t.rotY.Evaluate(time),
-                    t.rotZ.Evaluate(time),
-                    t.rotW.Evaluate(time)
-                );
-                var rb = t.controller.GetComponent<Rigidbody>();
-                rb.MovePosition(rb.transform.parent.position + position);
-                rb.MoveRotation(rb.transform.parent.rotation * rotation);
             }
         }
 
