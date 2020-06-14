@@ -98,6 +98,12 @@
     <Compile Include="src/Common/StorableNames.cs" />
     <Compile Include="src/Common/AnimationCurveExtensions.cs" />
 
+    <Compile Include="src/Atoms/AtomAnimationClip.cs" />
+    <Compile Include="src/Atoms/AtomClipboardEntry.cs" />
+    <Compile Include="src/Atoms/AtomAnimation.cs" />
+    <Compile Include="src/Atoms/AtomAnimationTargetsList.cs" />
+    <Compile Include="src/Atoms/AtomAnimationSerializer.cs" />
+    <Compile Include="src/Atoms/AtomPlaybackState.cs" />
     <Compile Include="src/Atoms/IAtomPlugin.cs" />
 
     <Compile Include="src/Atoms/Common/AnimationTargetBase.cs" />
@@ -124,12 +130,6 @@
     <Compile Include="src/Atoms/UI/MoreScreen.cs" />
     <Compile Include="src/Atoms/UI/HelpScreen.cs" />
     <Compile Include="src/Atoms/UI/ScreensManager.cs" />
-
-    <Compile Include="src/Atoms/AtomAnimationClip.cs" />
-    <Compile Include="src/Atoms/AtomClipboardEntry.cs" />
-    <Compile Include="src/Atoms/AtomAnimation.cs" />
-    <Compile Include="src/Atoms/AtomAnimationTargetsList.cs" />
-    <Compile Include="src/Atoms/AtomAnimationSerializer.cs" />
 
     <Compile Include="src/AtomPlugin.cs" />
 

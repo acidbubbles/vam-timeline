@@ -30,6 +30,12 @@ src/Components/DopeSheet/DopeSheet.cs
 src/Components/DopeSheet/DopeSheetKeyframes.cs
 src/Components/DopeSheet/DopeSheetStyle.cs
 src/Components/AnimationControlPanel/AnimationControlPanel.cs
+src/Atoms/AtomAnimationClip.cs
+src/Atoms/AtomClipboardEntry.cs
+src/Atoms/AtomAnimation.cs
+src/Atoms/AtomAnimationTargetsList.cs
+src/Atoms/AtomAnimationSerializer.cs
+src/Atoms/AtomPlaybackState.cs
 src/Atoms/IAtomPlugin.cs
 src/Atoms/Common/AnimationTargetBase.cs
 src/Atoms/Common/CurveTypeValues.cs
@@ -52,9 +58,4 @@ src/Atoms/UI/MocapScreen.cs
 src/Atoms/UI/MoreScreen.cs
 src/Atoms/UI/HelpScreen.cs
 src/Atoms/UI/ScreensManager.cs
-src/Atoms/AtomAnimationClip.cs
-src/Atoms/AtomClipboardEntry.cs
-src/Atoms/AtomAnimation.cs
-src/Atoms/AtomAnimationTargetsList.cs
-src/Atoms/AtomAnimationSerializer.cs
 src/AtomPlugin.cs
