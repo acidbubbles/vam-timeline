@@ -279,43 +279,9 @@ namespace VamTimeline
         {
             if (_isPlaying)
             {
-                /* Diagnostics
-                if (_animState == null)
-                {
-                    SuperController.LogError("VamTimeline: Animation state is null");
-                    _isPlaying = false;
-                    return;
-                }
-                if (!_animState.enabled)
-                {
-                    SuperController.LogError("VamTimeline: Animation has stopped");
-                    _isPlaying = false;
-                    return;
-                }
-                if (_animState.weight == 0)
-                {
-                    SuperController.LogError("VamTimeline: Animation has a weight of 0");
-                    _isPlaying = false;
-                    return;
-                }
-                if (!_animation.IsPlaying(_animState.name))
-                {
-                    SuperController.LogError("VamTimeline: Animation state is enabled but animation is not playing");
-                    _isPlaying = false;
-                    return;
-                }
-                if (_animState.time == 0)
-                {
-                    SuperController.LogError("VamTimeline: Animation state time is 0");
-                    return;
-                }
-                */
-
-                _playTime += UnityEngine.Time.deltaTime * speed;
-
                 if (_previousClip != null)
                 {
-                    _blendingTimeLeft -= UnityEngine.Time.deltaTime;
+                    _blendingTimeLeft -= Time.deltaTime * speed;
                     if (_blendingTimeLeft <= 0)
                     {
                         _blendingTimeLeft = 0;
@@ -325,7 +291,6 @@ namespace VamTimeline
                 }
 
                 SampleParamsAnimation();
-                SampleControllers();
 
                 if (_nextAnimationTime > 0 + float.Epsilon && _playTime >= _nextAnimationTime)
                 {
@@ -339,7 +304,12 @@ namespace VamTimeline
 
         public void FixedUpdate()
         {
+            if (_isPlaying)
+            {
+                _playTime += Time.fixedDeltaTime * speed;
 
+                SampleControllers();
+            }
         }
 
         public void Sample()

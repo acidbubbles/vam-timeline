@@ -134,6 +134,11 @@ namespace VamTimeline
             }
         }
 
+        private void FixedUpdate()
+        {
+            animation.FixedUpdate();
+        }
+
         private void UpdateNotPlaying()
         {
             var sc = SuperController.singleton;
