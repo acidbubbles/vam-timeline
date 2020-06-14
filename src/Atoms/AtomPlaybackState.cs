@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -20,10 +22,6 @@ namespace VamTimeline
         public float nextTime;
         // TODO: Move outside?
         public string originalAnimationName;
-        // TODO: Remove
-        public float blendingTimeLeft;
-        public float blendingDuration;
-        public AtomClipPlaybackState previous;
         // TODO: The goal is to get rid of this
         public AtomClipPlaybackState current;
 
@@ -39,15 +37,33 @@ namespace VamTimeline
                 _time = value;
                 foreach (var clip in clips)
                 {
+                    if (!clip.enabled) continue;
+
                     clip.time += delta;
+                    if (clip.blendRate != 0)
+                    {
+                        // TODO: Smooth Lerp
+                        clip.weight += clip.blendRate * delta;
+                        if (clip.weight >= 1f)
+                        {
+                            clip.blendRate = 0f;
+                            clip.weight = 1f;
+                        }
+                        else if (clip.weight <= 0f)
+                        {
+                            clip.blendRate = 0f;
+                            clip.weight = 0f;
+                            clip.enabled = false;
+                        }
+                    }
                 }
             }
         }
 
-        public void Play(AtomAnimationClip current)
+        public void Play(string animationName)
         {
-            this.current = GetClip(current.animationName);
-            originalAnimationName = current.animationName;
+            current = GetClip(animationName);
+            originalAnimationName = animationName;
             isPlaying = true;
         }
 
@@ -61,6 +77,32 @@ namespace VamTimeline
             next = GetClip(animationName);
             nextTime = time;
         }
+
+        public void Blend(string animationName, float weight, float duration)
+        {
+            var clip = GetClip(animationName);
+            clip.enabled = true;
+            clip.blendRate = (weight - clip.weight) / duration;
+        }
+
+        public void Reset(string animationName)
+        {
+            var current = GetClip(animationName);
+            foreach (var clip in clips)
+            {
+                if (clip == current)
+                {
+                    clip.enabled = true;
+                    clip.weight = 1f;
+                }
+                else
+                {
+                    clip.enabled = false;
+                    clip.weight = 0f;
+                }
+                clip.blendRate = 0f;
+            }
+        }
     }
 
     /// <summary>
@@ -72,9 +114,22 @@ namespace VamTimeline
     public class AtomClipPlaybackState
     {
         public readonly AtomAnimationClip clip;
-        public float time;
+        private float _time;
         public float weight;
         public bool enabled;
+        public float blendRate;
+        public float time
+        {
+            get
+            {
+                return _time;
+            }
+
+            set
+            {
+                _time = Mathf.Abs(clip.loop ? value % clip.animationLength : Mathf.Max(value, clip.animationLength));
+            }
+        }
 
         public AtomClipPlaybackState(AtomAnimationClip clip)
         {
