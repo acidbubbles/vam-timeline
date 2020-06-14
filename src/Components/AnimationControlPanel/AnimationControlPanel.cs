@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -15,6 +17,7 @@ namespace VamTimeline
         private DopeSheet _dopeSheet;
         private Scrubber _scrubber;
         private AtomAnimation _animation;
+        private JSONStorableStringChooser _animationsJSON;
 
         public bool locked
         {
@@ -36,7 +39,7 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
-            var animationSelector = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab, plugin.animationJSON);
+            _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
             InitSpacer();
             _scrubber = InitScrubber(plugin.scrubberJSON, plugin.snapJSON);
             InitSpacer();
@@ -53,10 +56,16 @@ namespace VamTimeline
             _animation = animation;
             if (_scrubber != null) _scrubber.animation = animation;
             if (_dopeSheet != null) _dopeSheet.Bind(animation);
+            _animation.onClipsListChanged.AddListener(OnClipsListChanged);
+            _animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            OnClipsListChanged();
+            OnCurrentAnimationChanged(new AtomAnimation.CurrentAnimationChangedEventArgs { after = animation.current });
         }
 
-        private UIDynamicPopup InitAnimationSelectorUI(Transform configurableScrollablePopupPrefab, JSONStorableStringChooser jsc)
+        private JSONStorableStringChooser InitAnimationSelectorUI(Transform configurableScrollablePopupPrefab)
         {
+            var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) => _animation?.ChangeAnimation(val));
+
             var popup = Instantiate(configurableScrollablePopupPrefab);
             popup.SetParent(transform, false);
 
@@ -66,7 +75,7 @@ namespace VamTimeline
 
             jsc.popup = ui.popup;
 
-            return ui;
+            return jsc;
         }
 
         private Scrubber InitScrubber(JSONStorableFloat scrubberJSON, JSONStorableFloat snapJSON)
@@ -188,6 +197,25 @@ namespace VamTimeline
             go.transform.SetParent(transform, false);
 
             go.AddComponent<LayoutElement>().preferredHeight = 10f;
+        }
+
+        private void OnClipsListChanged()
+        {
+            _animationsJSON.choices = _animation.GetAnimationNames();
+        }
+
+        private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        {
+            _animationsJSON.val = args.after.animationName;
+        }
+
+        public void OnDestroy()
+        {
+            if (_animation != null)
+            {
+                _animation.onClipsListChanged.RemoveListener(OnClipsListChanged);
+                _animation.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            }
         }
     }
 }

@@ -581,7 +581,7 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            animationJSON.valNoCallback = animation.current.animationName;
+            animationJSON.valNoCallback = args.after.animationName;
             OnAnimationParametersChanged();
         }
 

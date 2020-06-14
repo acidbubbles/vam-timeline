@@ -458,8 +458,8 @@ namespace VamTimeline
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            args.Before.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            args.After.onTargetsListChanged.AddListener(OnTargetsListChanged);
+            args.before.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
+            args.after.onTargetsListChanged.AddListener(OnTargetsListChanged);
 
             base.OnCurrentAnimationChanged(args);
 

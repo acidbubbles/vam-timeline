@@ -219,7 +219,7 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             UnbindClip();
-            BindClip(args.After);
+            BindClip(args.after);
         }
 
         private void OnAnimationSettingsChanged()

@@ -17,7 +17,7 @@ namespace VamTimeline
     public class AtomAnimation : IDisposable
     {
         public class TimeChangedEvent : UnityEvent<float> { }
-        public class CurrentAnimationChangedEventArgs { public AtomAnimationClip Before; public AtomAnimationClip After; }
+        public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const float InterpolationMaxDistanceDelta = 3.0f;
@@ -58,7 +58,7 @@ namespace VamTimeline
             {
                 var previous = _current;
                 _current = value;
-                onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { Before = previous, After = _current });
+                onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
             }
         }
         public string playedAnimation { get; private set; }
@@ -606,8 +606,8 @@ namespace VamTimeline
                 Sample();
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
                 {
-                    Before = previous,
-                    After = current
+                    before = previous,
+                    after = current
                 });
             }
         }

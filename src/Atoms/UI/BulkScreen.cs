@@ -216,8 +216,8 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
-            args.Before.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
-            args.After.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            args.before.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            args.after.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
 
             if (current.animationLength < _selectionEnd)
             {
