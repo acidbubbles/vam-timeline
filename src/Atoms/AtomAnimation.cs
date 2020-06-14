@@ -295,8 +295,8 @@ namespace VamTimeline
                     if (blendingTarget != null)
                     {
                         // TODO: Replace this by state with weight
-                        position = Vector3.Lerp(blendingTarget.EvaluatePosition(time), t.EvaluatePosition(time), weight);
-                        rotation = Quaternion.Slerp(blendingTarget.EvaluateRotation(time), t.EvaluateRotation(time), weight);
+                        position = Vector3.Lerp(blendingTarget.EvaluatePosition(time), t.EvaluatePosition(time), 1f - weight);
+                        rotation = Quaternion.Slerp(blendingTarget.EvaluateRotation(time), t.EvaluateRotation(time), 1f - weight);
                     }
                     else
                     {
@@ -309,9 +309,10 @@ namespace VamTimeline
                     position = t.EvaluatePosition(time);
                     rotation = t.EvaluateRotation(time);
                 }
+                // TODO: Store in the target
                 var rb = t.controller.GetComponent<Rigidbody>();
-                rb.MovePosition(rb.transform.parent.position + position);
-                rb.MoveRotation(rb.transform.parent.rotation * rotation);
+                rb.transform.localRotation = rotation;
+                rb.transform.localPosition = position;
             }
         }
 

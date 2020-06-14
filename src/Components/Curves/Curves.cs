@@ -157,16 +157,16 @@ namespace VamTimeline
             {
                 var targetController = (FreeControllerAnimationTarget)target;
 
-                // To display rotation, we have to build custom curves. But it's not that useful.
-                // var rotVX = new Keyframe[targetController.RotX.length];
-                // var rotVY = new Keyframe[targetController.RotY.length];
-                // var rotVZ = new Keyframe[targetController.RotZ.length];
-                // for (var t = 0; t < targetController.RotW.length; t++)
+                // To display rotation as euleur angles, we have to build custom curves. But it's not that useful.
+                // var rotVX = new Keyframe[targetController.rotX.length];
+                // var rotVY = new Keyframe[targetController.rotY.length];
+                // var rotVZ = new Keyframe[targetController.rotZ.length];
+                // for (var t = 0; t < targetController.rotW.length; t++)
                 // {
-                //     Keyframe keyX = targetController.RotX[t];
-                //     Keyframe keyY = targetController.RotY[t];
-                //     Keyframe keyZ = targetController.RotZ[t];
-                //     Keyframe keyW = targetController.RotW[t];
+                //     Keyframe keyX = targetController.rotX[t];
+                //     Keyframe keyY = targetController.rotY[t];
+                //     Keyframe keyZ = targetController.rotZ[t];
+                //     Keyframe keyW = targetController.rotW[t];
                 //     var rot = new Quaternion(
                 //         keyX.value,
                 //         keyY.value,
@@ -178,15 +178,22 @@ namespace VamTimeline
                 //     rotVY[t] = new Keyframe(keyW.time, eulerAngles.y);
                 //     rotVZ[t] = new Keyframe(keyW.time, eulerAngles.z);
                 // }
-                // _lines.AddCurve(new Color(1.0f, 0.8f, 0.8f), new AnimationCurve(rotVX));
-                // _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), new AnimationCurve(rotVY));
-                // _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), new AnimationCurve(rotVZ));
+                // AnimationCurve rotVXCurve = new AnimationCurve(rotVX);
+                // AnimationCurve rotVYCurve = new AnimationCurve(rotVY);
+                // AnimationCurve rotVZCurve = new AnimationCurve(rotVZ);
+                // _lines.AddCurve(new Color(1.0f, 0.8f, 0.8f), rotVXCurve);
+                // _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), rotVYCurve);
+                // _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), rotVZCurve);
 
-                var range = EstimateRange(targetController.x, targetController.y, targetController.z);
+                var range = EstimateRange(targetController.x, targetController.y, targetController.z/*, rotVXCurve, rotVYCurve, rotVZCurve*//*, targetController.rotX, targetController.rotY, targetController.rotZ, targetController.rotW*/);
                 _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
                 _lines.AddCurve(_style.CurveLineColorX, targetController.x);
                 _lines.AddCurve(_style.CurveLineColorY, targetController.y);
                 _lines.AddCurve(_style.CurveLineColorZ, targetController.z);
+                // _lines.AddCurve(_style.CurveLineColorX * 0.5f, targetController.rotX);
+                // _lines.AddCurve(_style.CurveLineColorY * 0.5f, targetController.rotY);
+                // _lines.AddCurve(_style.CurveLineColorZ * 0.5f, targetController.rotZ);
+                // _lines.AddCurve(_style.CurveLineColorFloat * 0.5f, targetController.rotW);
             }
             else if (target is FloatParamAnimationTarget)
             {
