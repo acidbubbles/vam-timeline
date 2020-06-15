@@ -352,7 +352,6 @@ namespace VamTimeline
                     if (next != null && (next.IsDirty() || clip.IsDirty()))
                         clip.Paste(clip.animationLength, next.Copy(0f, true), false);
                 }
-                ReapplyClipCurve(clip);
             }
             if (sw.ElapsedMilliseconds > 1000)
             {
@@ -396,16 +395,6 @@ namespace VamTimeline
                     target.value.SetKeyframe(clip.animationLength, target.value[0].value);
 
                 target.value.FlatAllFrames();
-            }
-        }
-
-        private void ReapplyClipCurve(AtomAnimationClip clip)
-        {
-            clip.alip.ClearCurves();
-
-            foreach (var target in clip.targetControllers)
-            {
-                target.ReapplyCurvesToClip(clip.alip);
             }
         }
 

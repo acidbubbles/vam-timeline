@@ -161,40 +161,12 @@ namespace VamTimeline
             }
         }
 
-        public void ReapplyCurvesToClip(AnimationClip clip)
-        {
-            var path = GetRelativePath();
-            clip.SetCurve(path, typeof(Transform), "localPosition.x", x);
-            clip.SetCurve(path, typeof(Transform), "localPosition.y", y);
-            clip.SetCurve(path, typeof(Transform), "localPosition.z", z);
-            clip.SetCurve(path, typeof(Transform), "localRotation.x", rotX);
-            clip.SetCurve(path, typeof(Transform), "localRotation.y", rotY);
-            clip.SetCurve(path, typeof(Transform), "localRotation.z", rotZ);
-            clip.SetCurve(path, typeof(Transform), "localRotation.w", rotW);
-        }
-
         public void SmoothLoop()
         {
             foreach (var curve in curves)
             {
                 curve.SmoothLoop();
             }
-        }
-
-        private string GetRelativePath()
-        {
-            // TODO: This is probably what breaks animations with parenting
-            var root = controller.containingAtom.transform;
-            var target = controller.transform;
-            var parts = new List<string>();
-            Transform t = target;
-            while (t != root && t != t.root)
-            {
-                parts.Add(t.name);
-                t = t.parent;
-            }
-            parts.Reverse();
-            return string.Join("/", parts.ToArray());
         }
 
         #endregion

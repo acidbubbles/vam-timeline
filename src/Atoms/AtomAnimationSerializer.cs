@@ -62,7 +62,8 @@ namespace VamTimeline
                     ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                     nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
-                    autoPlay = DeserializeBool(clipJSON["AutoPlay"], false)
+                    autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
+                    animationLayer = clipJSON["AnimationLayer"]?.Value,
                 };
                 clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
                 DeserializeClip(clip, clipJSON);
@@ -334,7 +335,8 @@ namespace VamTimeline
                     { "BlendDuration", clip.blendDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.loop ? "1" : "0" },
                     { "Transition", clip.transition ? "1" : "0" },
-                    { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" }
+                    { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" },
+                    { "AnimationLayer", clip.animationLayer },
                 };
                 if (clip.nextAnimationName != null)
                     clipJSON["NextAnimationName"] = clip.nextAnimationName;

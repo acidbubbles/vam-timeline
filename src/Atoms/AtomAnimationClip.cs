@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace VamTimeline
@@ -16,6 +15,7 @@ namespace VamTimeline
     {
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
+        public const string DefaultAnimationLayer = "Default";
 
         private bool _loop = true;
         private string _nextAnimationName;
@@ -32,7 +32,6 @@ namespace VamTimeline
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesModified { get; } = new UnityEvent();
         public UnityEvent onAnimationSettingsModified { get; } = new UnityEvent();
-        public AnimationClip alip { get; }
         public AnimationPattern animationPattern
         {
             get
@@ -99,7 +98,6 @@ namespace VamTimeline
             {
                 if (_loop == value) return;
                 _loop = value;
-                alip.wrapMode = value ? WrapMode.Loop : WrapMode.Once;
                 _skipNextAnimationSettingsModified = true;
                 try
                 {
@@ -195,14 +193,11 @@ namespace VamTimeline
             }
         }
         public int allTargetsCount => targetControllers.Count + targetFloatParams.Count;
+        public string animationLayer = DefaultAnimationLayer;
 
         public AtomAnimationClip(string animationName)
         {
             this.animationName = animationName;
-            alip = new AnimationClip
-            {
-                legacy = true
-            };
         }
 
         public bool IsEmpty()
