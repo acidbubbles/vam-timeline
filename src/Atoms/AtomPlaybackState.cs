@@ -75,13 +75,7 @@ namespace VamTimeline
             if (resetTime) _playTime = 0f;
             foreach (var clip in clips)
             {
-                clip.enabled = false;
-                clip.weight = 0f;
-                clip.blendRate = 0f;
-                clip.sequencing = false;
-                clip.mainInLayer = false;
-                clip.SetNext(null, 0f);
-                if (resetTime) clip.clipTime = 0f;
+                clip.Reset(resetTime);
             }
         }
     }
@@ -127,6 +121,17 @@ namespace VamTimeline
             this.nextAnimationName = nextAnimationName;
             this.nextTime = nextTime;
             sequencing = nextAnimationName != null;
+        }
+
+        public void Reset(bool resetTime)
+        {
+            enabled = false;
+            weight = 0f;
+            blendRate = 0f;
+            sequencing = false;
+            mainInLayer = false;
+            SetNext(null, 0f);
+            if (resetTime) clipTime = 0f;
         }
     }
 }
