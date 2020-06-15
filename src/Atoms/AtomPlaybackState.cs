@@ -79,6 +79,7 @@ namespace VamTimeline
                 clip.weight = 0f;
                 clip.blendRate = 0f;
                 clip.sequencing = false;
+                clip.mainInLayer = false;
                 clip.SetNext(null, 0f);
                 if (resetTime) clip.clipTime = 0f;
             }
@@ -97,6 +98,7 @@ namespace VamTimeline
         private float _clipTime;
         public float weight;
         public bool enabled;
+        public bool mainInLayer;
         public float blendRate;
         public bool sequencing;
         public string nextAnimationName;

@@ -104,11 +104,10 @@ namespace VamTimeline
                 {
                     scrubberJSON.valNoCallback = animation.clipTime;
                     timeJSON.valNoCallback = animation.playTime;
-                    // TODO: This does not belong here and may only cause confusion.
-                    animationJSON.valNoCallback = animation.current.animationName;
 
                     if (SuperController.singleton.freezeAnimation)
                     {
+                        // TODO: Replace this by Pause and the following Play by Resume
                         animation.Stop();
                         _resumePlayOnUnfreeze = true;
                     }
@@ -654,11 +653,8 @@ namespace VamTimeline
 
             try
             {
+                animation.SelectAnimation(animationName);
                 animationJSON.valNoCallback = animation.current.animationName;
-                if (animation.current.animationName != animationName)
-                {
-                    animation.SelectAnimation(animationName);
-                }
             }
             catch (Exception exc)
             {

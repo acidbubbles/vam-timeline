@@ -220,6 +220,7 @@ namespace VamTimeline
             // TODO: Start with 0 weight (but keep current weight if already playing)
             // TODO: All animations should be disabled, and scrubbing should just set the current clip state
             state.Blend(clipState, 1f, PlayBlendDuration);
+            clipState.mainInLayer = true;
             state.isPlaying = true;
             if (clip.animationPattern)
             {
@@ -430,7 +431,9 @@ namespace VamTimeline
             if (to == null) throw new ArgumentNullException(nameof(to));
 
             state.Blend(from, 0f, current.blendDuration);
+            from.mainInLayer = false;
             state.Blend(to, 1f, current.blendDuration);
+            to.mainInLayer = true;
 
             if (from.sequencing)
             {
@@ -460,14 +463,9 @@ namespace VamTimeline
             if (current == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
             if (state.isPlaying)
             {
-                if (current.animationLayer == previous.animationLayer)
-                {
-                    TransitionAnimation(previousClipState, currentClipState);
-                }
-                else
-                {
-                    state.Blend(currentClipState, 1f, PlayBlendDuration);
-                }
+                var previousMain = state.clips.FirstOrDefault(c => c.mainInLayer && c.clip.animationLayer == current.animationLayer);
+                if (previousMain != null)
+                    TransitionAnimation(previousMain, currentClipState);
             }
             else
             {
