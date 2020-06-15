@@ -115,10 +115,15 @@ namespace VamTimeline
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
+            var reservedByOtherLayers = new HashSet<FreeControllerV3>(plugin.animation.clips
+                .Where(c => c.animationLayer != current.animationLayer)
+                .SelectMany(c => c.targetControllers)
+                .Select(t => t.controller));
             foreach (var fc in plugin.containingAtom.freeControllers)
             {
                 if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
                 if (current.targetControllers.Any(c => c.controller == fc)) continue;
+                if (reservedByOtherLayers.Contains(fc)) continue;
                 yield return fc.name;
             }
         }
@@ -228,7 +233,16 @@ namespace VamTimeline
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
-            _addParamListJSON.choices = values.Where(v => !current.targetFloatParams.Any(t => t.storable == storable && t.floatParam.name == v)).OrderBy(v => v).ToList();
+            var reservedByOtherLayers = new HashSet<string>(plugin.animation.clips
+                .Where(c => c.animationLayer != current.animationLayer)
+                .SelectMany(c => c.targetFloatParams)
+                .Where(t => t.storable == storable)
+                .Select(t => t.floatParam.name));
+            _addParamListJSON.choices = values
+                .Where(v => !current.targetFloatParams.Any(t => t.storable == storable && t.floatParam.name == v))
+                .Where(v => !reservedByOtherLayers.Contains(v))
+                .OrderBy(v => v)
+                .ToList();
         }
 
         private void GenerateRemoveToggles()

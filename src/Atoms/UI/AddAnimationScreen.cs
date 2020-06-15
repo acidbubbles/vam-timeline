@@ -39,6 +39,10 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
+            InitCreateLayerUI(true);
+
+            CreateSpacer(true);
+
             CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Reorder</b> and <b>delete</b> animations...</i>", ManageAnimationsScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName, true);
@@ -59,6 +63,13 @@ namespace VamTimeline
             RegisterComponent(_addAnimationTransitionUI);
 
             RefreshButtons();
+        }
+
+        public void InitCreateLayerUI(bool rightSide)
+        {
+            var createLayerUI = plugin.CreateButton("Create New Layer", rightSide);
+            createLayerUI.button.onClick.AddListener(() => AddLayer());
+            RegisterComponent(createLayerUI);
         }
 
         #endregion
@@ -161,6 +172,15 @@ namespace VamTimeline
             plugin.animation.clips.Insert(plugin.animation.clips.IndexOf(current) + 1, clip);
 
             current.nextAnimationName = clip.animationName;
+
+            plugin.animation.ChangeAnimation(clip.animationName);
+            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+        }
+
+        private void AddLayer()
+        {
+            var clip = plugin.animation.AddAnimation();
+            clip.animationLayer = Guid.NewGuid().ToString();
 
             plugin.animation.ChangeAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);

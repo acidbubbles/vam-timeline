@@ -63,7 +63,7 @@ namespace VamTimeline
                     nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
                     autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
-                    animationLayer = clipJSON["AnimationLayer"]?.Value,
+                    animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer),
                 };
                 clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
                 DeserializeClip(clip, clipJSON);
@@ -312,6 +312,13 @@ namespace VamTimeline
             if (node.Value == "0") return false;
             if (node.Value == "1") return true;
             return bool.Parse(node.Value);
+        }
+
+        private string DeserializeString(JSONNode node, string defaultVal)
+        {
+            if (node == null || string.IsNullOrEmpty(node.Value))
+                return defaultVal;
+            return node.Value;
         }
 
         #endregion
