@@ -72,10 +72,10 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            if (plugin.animation.clips.Count <= 1) return;
+            if (animation.clips.Count <= 1) return;
 
             var clipList = current.allTargets.Select(t => t.name).OrderBy(x => x);
-            var otherList = plugin.animation.clips.Where(c => c != current).SelectMany(c => c.allTargets).Select(t => t.name).OrderBy(x => x).Distinct();
+            var otherList = animation.clips.Where(c => c != current).SelectMany(c => c.allTargets).Select(t => t.name).OrderBy(x => x).Distinct();
             var ok = clipList.SequenceEqual(otherList);
             if (ok) return;
 
@@ -115,7 +115,7 @@ namespace VamTimeline
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
-            var reservedByOtherLayers = new HashSet<FreeControllerV3>(plugin.animation.clips
+            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetControllers)
                 .Select(t => t.controller));
@@ -233,7 +233,7 @@ namespace VamTimeline
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
-            var reservedByOtherLayers = new HashSet<string>(plugin.animation.clips
+            var reservedByOtherLayers = new HashSet<string>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetFloatParams)
                 .Where(t => t.storable == storable)
@@ -318,11 +318,11 @@ namespace VamTimeline
         {
             try
             {
-                var allControllers = plugin.animation.clips.SelectMany(c => c.targetControllers).Select(t => t.controller).Distinct().ToList();
+                var allControllers = animation.clips.SelectMany(c => c.targetControllers).Select(t => t.controller).Distinct().ToList();
                 var h = new HashSet<JSONStorableFloat>();
-                var allFloatParams = plugin.animation.clips.SelectMany(c => c.targetFloatParams).Where(t => h.Add(t.floatParam)).Select(t => new FloatParamRef { Storable = t.storable, FloatParam = t.floatParam }).ToList();
+                var allFloatParams = animation.clips.SelectMany(c => c.targetFloatParams).Where(t => h.Add(t.floatParam)).Select(t => new FloatParamRef { Storable = t.storable, FloatParam = t.floatParam }).ToList();
 
-                foreach (var clip in plugin.animation.clips)
+                foreach (var clip in animation.clips)
                 {
                     foreach (var controller in allControllers)
                     {
@@ -380,7 +380,7 @@ namespace VamTimeline
                 controller.currentPositionState = FreeControllerV3.PositionState.On;
                 controller.currentRotationState = FreeControllerV3.RotationState.On;
 
-                foreach (var clip in plugin.animation.clips)
+                foreach (var clip in animation.clips)
                 {
                     var added = clip.Add(controller);
                     if (added != null)
@@ -424,7 +424,7 @@ namespace VamTimeline
                 if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
 
-                foreach (var clip in plugin.animation.clips)
+                foreach (var clip in animation.clips)
                 {
                     var added = clip.Add(storable, sourceFloatParam);
                     if (added != null)
@@ -444,7 +444,7 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in plugin.animation.clips)
+                foreach (var clip in animation.clips)
                     clip.Remove(target.controller);
             }
             catch (Exception exc)
@@ -457,7 +457,7 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in plugin.animation.clips)
+                foreach (var clip in animation.clips)
                     clip.Remove(target.storable, target.floatParam);
             }
             catch (Exception exc)

@@ -37,7 +37,8 @@ namespace VamTimeline
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                string animationName = clipJSON["AnimationName"].Value;
+                var animationName = clipJSON["AnimationName"].Value;
+                var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
                 var existingClip = animation.GetClip(animationName);
                 if (existingClip != null)
                 {
@@ -54,7 +55,7 @@ namespace VamTimeline
                         animationName = newAnimationName;
                     }
                 }
-                var clip = new AtomAnimationClip(animationName)
+                var clip = new AtomAnimationClip(animationName, animationLayer)
                 {
                     blendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                     loop = DeserializeBool(clipJSON["Loop"], true),
@@ -63,7 +64,6 @@ namespace VamTimeline
                     nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
                     autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
-                    animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer),
                 };
                 clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
                 DeserializeClip(clip, clipJSON);

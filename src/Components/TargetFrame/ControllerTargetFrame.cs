@@ -44,7 +44,7 @@ namespace VamTimeline
         public override void ToggleKeyframe(bool enable)
         {
             if (plugin.animation.IsPlaying()) return;
-            var time = plugin.animation.time.Snap();
+            var time = plugin.animation.clipTime.Snap();
             if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {
                 if (!enable)

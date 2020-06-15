@@ -188,7 +188,7 @@ namespace VamTimeline
             _animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             _animation.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             BindClip(_animation.current);
-            SetScrubberPosition(_animation.time, true);
+            SetScrubberPosition(_animation.clipTime, true);
         }
 
         private void UnbindAnimation()
@@ -208,12 +208,12 @@ namespace VamTimeline
             if (!_animation.IsPlaying()) return;
             if (UIPerformance.ShouldSkip()) return;
 
-            SetScrubberPosition(_animation.time, false);
+            SetScrubberPosition(_animation.clipTime, false);
         }
 
-        private void OnTimeChanged(float time)
+        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)
         {
-            SetScrubberPosition(time, true);
+            SetScrubberPosition(args.currentClipTime, true);
         }
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
@@ -450,7 +450,7 @@ namespace VamTimeline
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
             var closest = curve.KeyframeBinarySearch(ratio * _clip.animationLength, true);
             var time = curve[closest].time;
-            _animation.time = time;
+            _animation.clipTime = time;
         }
 
         public void SetScrubberPosition(float time, bool stopped)

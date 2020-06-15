@@ -138,8 +138,8 @@ namespace VamTimeline
                     _loopUI.toggle.interactable = true;
                     return;
                 }
-                var clipsPointingToHere = plugin.animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
-                var targetClip = plugin.animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
+                var clipsPointingToHere = animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
+                var targetClip = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
                 if (clipsPointingToHere.Count == 0 || targetClip == null)
                 {
                     _transitionUI.toggle.interactable = false;
@@ -185,7 +185,7 @@ namespace VamTimeline
 
         private List<string> GetEligibleNextAnimations()
         {
-            var animations = plugin.animation.clips
+            var animations = animation.clips
                 .Where(c => c.animationLayer == current.animationLayer)
                 .Select(c => c.animationName)
                 .GroupBy(x =>

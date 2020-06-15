@@ -21,7 +21,7 @@ namespace VamTimeline
         private float _animationLength;
         private AtomAnimation _animation;
         private IList<IAnimationTargetWithCurves> _targets;
-        private float _time;
+        private float _clipTime;
 
         public Curves()
         {
@@ -132,7 +132,7 @@ namespace VamTimeline
                 _lines.SetVerticesDirty();
                 _noCurves.SetActive(false);
                 _scrubberRect.gameObject.SetActive(true);
-                _time = -1f;
+                _clipTime = -1f;
             }
             else
             {
@@ -255,10 +255,10 @@ namespace VamTimeline
         public void Update()
         {
             if (_animation == null) return;
-            if (_animation.time == _time) return;
+            if (_animation.clipTime == _clipTime) return;
 
-            _time = _animation.time;
-            var ratio = Mathf.Clamp01(_animation.time / _animationLength);
+            _clipTime = _animation.clipTime;
+            var ratio = Mathf.Clamp01(_animation.clipTime / _animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
         }

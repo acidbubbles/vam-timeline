@@ -23,6 +23,7 @@ namespace VamTimeline
         public AtomAnimation animation;
         public JSONStorableFloat snapJSON { get; set; }
         public JSONStorableFloat scrubberJSON { get; set; }
+        public JSONStorableFloat timeJSON { get; set; }
 
         public Scrubber()
         {
@@ -128,7 +129,7 @@ namespace VamTimeline
             if (Time.frameCount % 6 == 0 && _lastTextUpdate != currentUpdate)
             {
                 _lastTextUpdate = currentUpdate;
-                _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+                _timeText.text = $"{timeJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
             }
         }
 
@@ -146,7 +147,7 @@ namespace VamTimeline
             var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-            _timeText.text = $"{scrubberJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+            _timeText.text = $"{timeJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
         }
 
         public void OnPointerDown(PointerEventData eventData)

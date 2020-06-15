@@ -8,13 +8,13 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class LayersScreen : ScreenBase
+    public class ClipsScreen : ScreenBase
     {
-        public const string ScreenName = "Layers";
+        public const string ScreenName = "Clips";
 
         public override string name => ScreenName;
 
-        public LayersScreen(IAtomPlugin plugin)
+        public ClipsScreen(IAtomPlugin plugin)
             : base(plugin)
         {
 
@@ -33,7 +33,7 @@ namespace VamTimeline
         private void InitLayers(bool rightSide)
         {
             // TODO: Replace by a list of all layers, what they are currently playing, and a quick link to play/stop them
-            var layers = new JSONStorableStringChooser("Layer", plugin.animation.clips.Select(c => c.animationLayer).Distinct().ToList(), current.animationLayer, "Layer", ChangeLayer);
+            var layers = new JSONStorableStringChooser("Layer", animation.clips.Select(c => c.animationLayer).Distinct().ToList(), current.animationLayer, "Layer", ChangeLayer);
             RegisterStorable(layers);
             var layersUI = plugin.CreateScrollablePopup(layers, rightSide);
             RegisterComponent(layersUI);
@@ -41,7 +41,7 @@ namespace VamTimeline
 
         private void ChangeLayer(string val)
         {
-            plugin.animation.ChangeAnimation(plugin.animation.clips.First(c => c.animationLayer == val).animationName);
+            animation.SelectAnimation(animation.clips.First(c => c.animationLayer == val).animationName);
         }
     }
 }

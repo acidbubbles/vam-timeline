@@ -19,6 +19,8 @@ namespace VamTimeline
         public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
         public abstract string name { get; }
 
+        protected AtomAnimation animation => plugin.animation;
+
         private readonly List<UIDynamic> _components = new List<UIDynamic>();
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
         protected IAtomPlugin plugin;

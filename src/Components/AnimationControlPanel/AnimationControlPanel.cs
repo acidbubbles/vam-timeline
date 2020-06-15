@@ -42,12 +42,12 @@ namespace VamTimeline
         {
             _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
             InitSpacer();
-            _scrubber = InitScrubber(plugin.scrubberJSON, plugin.snapJSON);
+            _scrubber = InitScrubber(plugin.timeJSON, plugin.scrubberJSON, plugin.snapJSON);
             InitSpacer();
             // TODO: Make the JSON use animation features instead of the other way around
             InitFrameNav(plugin.manager.configurableButtonPrefab, plugin.previousFrameJSON, plugin.nextFrameJSON);
             InitSpacer();
-            InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.stopJSON);
+            InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.playClipJSON, plugin.stopJSON);
             InitSpacer();
             _dopeSheet = InitDopeSheet();
         }
@@ -68,7 +68,7 @@ namespace VamTimeline
             var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) =>
             {
                 if (_ignoreAnimationChange) return;
-                _animation?.ChangeAnimation(val);
+                _animation?.SelectAnimation(val);
             });
 
             var popup = Instantiate(configurableScrollablePopupPrefab);
@@ -83,7 +83,7 @@ namespace VamTimeline
             return jsc;
         }
 
-        private Scrubber InitScrubber(JSONStorableFloat scrubberJSON, JSONStorableFloat snapJSON)
+        private Scrubber InitScrubber(JSONStorableFloat timeJSON, JSONStorableFloat scrubberJSON, JSONStorableFloat snapJSON)
         {
             var go = new GameObject("Scrubber");
             go.transform.SetParent(transform, false);
@@ -92,12 +92,13 @@ namespace VamTimeline
 
             var scrubber = go.AddComponent<Scrubber>();
             scrubber.scrubberJSON = scrubberJSON;
+            scrubber.timeJSON = timeJSON;
             scrubber.snapJSON = snapJSON;
 
             return scrubber;
         }
 
-        private void InitPlaybackButtons(Transform buttonPrefab, JSONStorableAction playJSON, JSONStorableAction stopJSON)
+        private void InitPlaybackButtons(Transform buttonPrefab, JSONStorableAction playJSON, JSONStorableAction playClipJSON, JSONStorableAction stopJSON)
         {
             var container = new GameObject("Playback");
             container.transform.SetParent(transform, false);
@@ -107,12 +108,19 @@ namespace VamTimeline
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            var play = Instantiate(buttonPrefab);
-            play.SetParent(container.transform, false);
-            play.GetComponent<UIDynamicButton>().label = "\u25B6 Play";
-            play.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => playJSON.actionCallback());
-            play.GetComponent<LayoutElement>().preferredWidth = 0;
-            play.GetComponent<LayoutElement>().flexibleWidth = 100;
+            var playAll = Instantiate(buttonPrefab);
+            playAll.SetParent(container.transform, false);
+            playAll.GetComponent<UIDynamicButton>().label = "\u25B6 Seq";
+            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => playJSON.actionCallback());
+            playAll.GetComponent<LayoutElement>().preferredWidth = 0;
+            playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
+
+            var playClip = Instantiate(buttonPrefab);
+            playClip.SetParent(container.transform, false);
+            playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
+            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => playClipJSON.actionCallback());
+            playClip.GetComponent<LayoutElement>().preferredWidth = 0;
+            playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
 
             var stop = Instantiate(buttonPrefab);
             stop.SetParent(container.transform, false);
@@ -136,35 +144,39 @@ namespace VamTimeline
 
             CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
             {
-                var time = _animation.time - 1f;
-                if (time < 0) time = 0;
-                _animation.time = time;
+                var time = _animation.clipTime - 1f;
+                if (time < 0)
+                    time = 0;
+                _animation.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "-.1s", () =>
             {
-                var time = _animation.time - 0.1f;
-                if (time < 0) time = 0;
-                _animation.time = time;
+                var time = _animation.clipTime - 0.1f;
+                if (time < 0)
+                    time = 0;
+                _animation.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, ">|<", () =>
             {
-                _animation.time = _animation.time.Snap(1f);
+                _animation.clipTime = _animation.clipTime.Snap(1f);
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+.1s", () =>
             {
-                var time = _animation.time + 0.1f;
-                if (time >= _animation.current.animationLength - 0.001f) time = _animation.current.loop ? _animation.current.animationLength - 0.1f : _animation.current.animationLength;
-                _animation.time = time;
+                var time = _animation.clipTime + 0.1f;
+                if (time >= _animation.current.animationLength - 0.001f)
+                    time = _animation.current.loop ? _animation.current.animationLength - 0.1f : _animation.current.animationLength;
+                _animation.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+1s", () =>
             {
-                var time = _animation.time + 1f;
-                if (time >= _animation.current.animationLength - 0.001f) time = _animation.current.loop ? _animation.current.animationLength - 1f : _animation.current.animationLength;
-                _animation.time = time;
+                var time = _animation.clipTime + 1f;
+                if (time >= _animation.current.animationLength - 0.001f)
+                    time = _animation.current.loop ? _animation.current.animationLength - 1f : _animation.current.animationLength;
+                _animation.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () => nextFrameJSON.actionCallback());

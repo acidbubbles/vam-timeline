@@ -47,6 +47,7 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
         public IEnumerable<IAnimationTargetWithCurves> allTargets => targetControllers.Cast<IAnimationTargetWithCurves>().Concat(targetFloatParams.Cast<IAnimationTargetWithCurves>());
+        public readonly string animationLayer;
         public bool ensureQuaternionContinuity
         {
             get
@@ -193,11 +194,11 @@ namespace VamTimeline
             }
         }
         public int allTargetsCount => targetControllers.Count + targetFloatParams.Count;
-        public string animationLayer = DefaultAnimationLayer;
 
-        public AtomAnimationClip(string animationName)
+        public AtomAnimationClip(string animationName, string animationLayer)
         {
             this.animationName = animationName;
+            this.animationLayer = animationLayer;
         }
 
         public bool IsEmpty()

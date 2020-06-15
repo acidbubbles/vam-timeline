@@ -301,21 +301,21 @@ namespace VamTimeline
 
         #region Interpolation
 
-        public bool Interpolate(float playTime, float maxDistanceDelta, float maxRadiansDelta)
+        public bool Interpolate(float clipTime, float maxDistanceDelta, float maxRadiansDelta)
         {
             var targetLocalPosition = new Vector3
             {
-                x = x.Evaluate(playTime),
-                y = y.Evaluate(playTime),
-                z = z.Evaluate(playTime)
+                x = x.Evaluate(clipTime),
+                y = y.Evaluate(clipTime),
+                z = z.Evaluate(clipTime)
             };
 
             var targetLocalRotation = new Quaternion
             {
-                x = rotX.Evaluate(playTime),
-                y = rotY.Evaluate(playTime),
-                z = rotZ.Evaluate(playTime),
-                w = rotW.Evaluate(playTime)
+                x = rotX.Evaluate(clipTime),
+                y = rotY.Evaluate(clipTime),
+                z = rotZ.Evaluate(clipTime),
+                w = rotW.Evaluate(clipTime)
             };
 
             controller.transform.localPosition = Vector3.MoveTowards(controller.transform.localPosition, targetLocalPosition, maxDistanceDelta);

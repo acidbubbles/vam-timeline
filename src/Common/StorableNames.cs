@@ -18,6 +18,7 @@ namespace VamTimeline
         public const string Scrubber = "Scrubber";
         public const string Time = "Set Time";
         public const string Play = "Play";
+        public const string PlayClip = "Play Clip";
         public const string PlayIfNotPlaying = "Play If Not Playing";
         public const string IsPlaying = "Is Playing";
         public const string Stop = "Stop";

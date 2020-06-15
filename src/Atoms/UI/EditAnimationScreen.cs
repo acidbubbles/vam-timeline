@@ -148,7 +148,7 @@ namespace VamTimeline
 
             _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
             {
-                foreach (var c in plugin.animation.clips)
+                foreach (var c in animation.clips.Where(c => c != current && c.animationLayer == current.animationLayer))
                     c.autoPlay = false;
                 current.autoPlay = true;
             })
@@ -185,13 +185,13 @@ namespace VamTimeline
                 _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
-            if (plugin.animation.clips.Any(c => c.animationName == val))
+            if (animation.clips.Any(c => c.animationName == val))
             {
                 _animationNameJSON.valNoCallback = previousAnimationName;
                 return;
             }
             current.animationName = val;
-            foreach (var clip in plugin.animation.clips)
+            foreach (var clip in animation.clips)
             {
                 if (clip.nextAnimationName == previousAnimationName)
                     clip.nextAnimationName = val;
@@ -204,7 +204,7 @@ namespace VamTimeline
 
             newLength = newLength.Snap(plugin.snapJSON.val);
             if (newLength < 0.1f) newLength = 0.1f;
-            var time = plugin.animation.time.Snap();
+            var time = animation.clipTime.Snap();
 
             switch (_lengthModeJSON.val)
             {
@@ -222,7 +222,7 @@ namespace VamTimeline
                     break;
                 case ChangeLengthModeCropExtendAtTime:
                     {
-                        if (plugin.animation.IsPlaying())
+                        if (animation.IsPlaying())
                         {
                             _lengthJSON.valNoCallback = current.animationLength;
                             return;
@@ -307,7 +307,7 @@ namespace VamTimeline
 
             current.DirtyAll();
 
-            plugin.animation.time = Math.Max(time, newLength);
+            animation.clipTime = Math.Max(time, newLength);
         }
 
         private void ChangeLoop(bool val)
@@ -337,7 +337,7 @@ namespace VamTimeline
             animationPattern.SetBoolParamValue("pause", false);
             animationPattern.SetBoolParamValue("loop", false);
             animationPattern.SetBoolParamValue("loopOnce", false);
-            animationPattern.SetFloatParamValue("speed", plugin.animation.speed);
+            animationPattern.SetFloatParamValue("speed", animation.speed);
             animationPattern.ResetAnimation();
             current.animationPattern = animationPattern;
         }

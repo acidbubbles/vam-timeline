@@ -13,31 +13,29 @@ namespace VamTimeline
     /// </summary>
     public class AtomPlaybackState
     {
-        private float _time;
+        private float _playTime;
         public List<AtomClipPlaybackState> clips = new List<AtomClipPlaybackState>();
         public bool isPlaying;
+        // This belong in AtomAnimation
         public float speed = 1f;
-        // TODO: Private?
-        public AtomClipPlaybackState next;
-        public float nextTime;
         // TODO: Move outside?
         public string originalAnimationName;
 
-        public float time
+        public float playTime
         {
             get
             {
-                return _time;
+                return _playTime;
             }
             set
             {
-                var delta = value - _time;
-                _time = value;
+                var delta = value - _playTime;
+                _playTime = value;
                 foreach (var clip in clips)
                 {
                     if (!clip.enabled) continue;
 
-                    clip.time += delta;
+                    clip.clipTime += delta;
                     if (clip.blendRate != 0)
                     {
                         // TODO: Smooth Lerp
@@ -60,26 +58,22 @@ namespace VamTimeline
 
         public AtomClipPlaybackState GetClip(string animationName)
         {
+            if (animationName == null) throw new ArgumentNullException(nameof(animationName));
+
             return clips.FirstOrDefault(c => c.clip.animationName == animationName);
         }
 
-        public void SetNext(string animationName, float time)
+        public AtomClipPlaybackState Blend(AtomClipPlaybackState clip, float weight, float duration)
         {
-            next = GetClip(animationName);
-            nextTime = time;
-        }
-
-        public void Blend(string animationName, float weight, float duration)
-        {
-            var clip = GetClip(animationName);
             clip.enabled = true;
             clip.blendRate = (weight - clip.weight) / duration;
+            return clip;
         }
 
         public void Reset(string animationName, bool resetTime)
         {
             var current = GetClip(animationName);
-            if (resetTime) _time = 0f;
+            if (resetTime) _playTime = 0f;
             foreach (var clip in clips)
             {
                 if (clip == current)
@@ -93,7 +87,9 @@ namespace VamTimeline
                     clip.weight = 0f;
                 }
                 clip.blendRate = 0f;
-                if (resetTime) clip.time = 0f;
+                clip.sequencing = false;
+                clip.SetNext(null, 0f);
+                if (resetTime) clip.clipTime = 0f;
             }
         }
     }
@@ -107,26 +103,37 @@ namespace VamTimeline
     public class AtomClipPlaybackState
     {
         public readonly AtomAnimationClip clip;
-        private float _time;
+        private float _clipTime;
         public float weight;
         public bool enabled;
         public float blendRate;
-        public float time
+        public bool sequencing;
+        public string nextAnimationName;
+        public float nextTime;
+
+        public float clipTime
         {
             get
             {
-                return _time;
+                return _clipTime;
             }
 
             set
             {
-                _time = Mathf.Abs(clip.loop ? value % clip.animationLength : Mathf.Max(value, clip.animationLength));
+                _clipTime = Mathf.Abs(clip.loop ? value % clip.animationLength : Mathf.Max(value, clip.animationLength));
             }
         }
 
         public AtomClipPlaybackState(AtomAnimationClip clip)
         {
             this.clip = clip;
+        }
+
+        public void SetNext(string nextAnimationName, float nextTime)
+        {
+            this.nextAnimationName = nextAnimationName;
+            this.nextTime = nextTime;
+            sequencing = nextAnimationName != null;
         }
     }
 }

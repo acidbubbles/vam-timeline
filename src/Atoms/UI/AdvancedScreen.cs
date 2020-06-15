@@ -91,7 +91,7 @@ namespace VamTimeline
         {
             try
             {
-                var time = plugin.animation.time;
+                var time = animation.clipTime;
                 foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (!fc.name.EndsWith("Control")) continue;
@@ -102,9 +102,9 @@ namespace VamTimeline
                     if (target == null)
                     {
                         if (!all) continue;
-                        target = plugin.animation.current.Add(fc);
+                        target = animation.current.Add(fc);
                     }
-                    plugin.animation.SetKeyframeToCurrentTransform(target, time);
+                    animation.SetKeyframeToCurrentTransform(target, time);
                 }
             }
             catch (Exception exc)
@@ -117,14 +117,14 @@ namespace VamTimeline
         {
             try
             {
-                var controllers = plugin.animation.clips.SelectMany(c => c.targetControllers).Select(c => c.controller).Distinct().ToList();
+                var controllers = animation.clips.SelectMany(c => c.targetControllers).Select(c => c.controller).Distinct().ToList();
                 foreach (var mac in plugin.containingAtom.motionAnimationControls)
                 {
                     if (!controllers.Contains(mac.controller)) continue;
                     mac.armedForRecord = true;
                 }
 
-                plugin.animation.Play();
+                animation.Play();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
 
                 plugin.StartCoroutine(StopWhenPlaybackIsComplete());
@@ -137,13 +137,13 @@ namespace VamTimeline
 
         private IEnumerator StopWhenPlaybackIsComplete()
         {
-            var waitFor = plugin.animation.clips.Sum(c => c.nextAnimationTime.IsSameFrame(0) ? c.animationLength : c.nextAnimationTime);
+            var waitFor = animation.clips.Sum(c => c.nextAnimationTime.IsSameFrame(0) ? c.animationLength : c.nextAnimationTime);
             yield return new WaitForSeconds(waitFor);
 
             try
             {
                 SuperController.singleton.motionAnimationMaster.StopRecord();
-                plugin.animation.Stop();
+                animation.Stop();
             }
             catch (Exception exc)
             {

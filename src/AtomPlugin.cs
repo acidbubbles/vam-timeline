@@ -29,6 +29,7 @@ namespace VamTimeline
         public JSONStorableAction previousAnimationJSON { get; private set; }
         public JSONStorableFloat scrubberJSON { get; private set; }
         public JSONStorableFloat timeJSON { get; private set; }
+        public JSONStorableAction playClipJSON { get; private set; }
         public JSONStorableAction playJSON { get; private set; }
         public JSONStorableBool isPlayingJSON { get; private set; }
         public JSONStorableAction playIfNotPlayingJSON { get; private set; }
@@ -101,11 +102,10 @@ namespace VamTimeline
 
                 if (animation.IsPlaying())
                 {
-                    var time = animation.time;
-                    if (time != scrubberJSON.val)
-                        scrubberJSON.valNoCallback = time;
-                    if (animationJSON.val != animation.current.animationName)
-                        animationJSON.valNoCallback = animation.current.animationName;
+                    scrubberJSON.valNoCallback = animation.clipTime;
+                    timeJSON.valNoCallback = animation.playTime;
+                    // TODO: This does not belong here and may only cause confusion.
+                    animationJSON.valNoCallback = animation.current.animationName;
 
                     if (SuperController.singleton.freezeAnimation)
                     {
@@ -168,7 +168,7 @@ namespace VamTimeline
                 }
                 if (animation.current.transition)
                     SampleAfterRebuild();
-                var time = animation.time.Snap();
+                var time = animation.clipTime.Snap();
                 if (autoKeyframeAllControllersJSON.val)
                 {
                     foreach (var target in animation.current.targetControllers)
@@ -263,17 +263,36 @@ namespace VamTimeline
             });
             RegisterAction(previousAnimationJSON);
 
-            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => UpdateTime(v, true), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animation.clipTime = v.Snap(snapJSON.val), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
             RegisterFloat(scrubberJSON);
 
-            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => UpdateTime(v, false), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animation.playTime = v.Snap(), 0f, float.MaxValue, true)
             {
                 isStorable = false
             };
             RegisterFloat(timeJSON);
+
+            playClipJSON = new JSONStorableAction(StorableNames.PlayClip, () =>
+            {
+                if (animation?.current == null)
+                {
+                    SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
+                    return;
+                }
+                if (SuperController.singleton.freezeAnimation)
+                {
+                    _resumePlayOnUnfreeze = true;
+                    return;
+                }
+                animation.Play(null, false);
+                // TODO: PlayClip is not really playing... is it?
+                isPlayingJSON.valNoCallback = true;
+                SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+            });
+            RegisterAction(playClipJSON);
 
             playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
@@ -330,13 +349,13 @@ namespace VamTimeline
                 {
                     _resumePlayOnUnfreeze = false;
                     animation.Stop();
-                    animation.time = animation.time.Snap(snapJSON.val);
+                    animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                     isPlayingJSON.valNoCallback = false;
                     SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
                 }
                 else
                 {
-                    animation.time = 0f;
+                    animation.clipTime = 0f;
                 }
             });
             RegisterAction(stopJSON);
@@ -345,7 +364,7 @@ namespace VamTimeline
             {
                 if (!animation.IsPlaying()) return;
                 animation.Stop();
-                animation.time = animation.time.Snap(snapJSON.val);
+                animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                 isPlayingJSON.valNoCallback = false;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
@@ -362,8 +381,8 @@ namespace VamTimeline
                 var rounded = val.Snap();
                 if (val != rounded)
                     snapJSON.valNoCallback = rounded;
-                if (animation != null && animation.time % rounded != 0)
-                    UpdateTime(animation.time, true);
+                if (animation != null && animation.clipTime % rounded != 0)
+                    animation.clipTime = animation.clipTime.Snap(rounded);
             }, 0.001f, 1f, true)
             {
                 isStorable = true
@@ -414,11 +433,9 @@ namespace VamTimeline
 
         private void StartAutoPlay()
         {
-            var autoPlayClip = animation.clips.FirstOrDefault(c => c.autoPlay);
-            if (autoPlayClip != null)
+            foreach (var autoPlayClip in animation.clips.Where(c => c.autoPlay))
             {
-                ChangeAnimation(autoPlayClip.animationName);
-                playIfNotPlayingJSON.actionCallback();
+                animation.Play(autoPlayClip.animationName);
             }
         }
 
@@ -431,7 +448,7 @@ namespace VamTimeline
             try
             {
                 animation.Stop();
-                animation.time = animation.time.Snap(snapJSON.val);
+                animation.playTime = animation.playTime.Snap(snapJSON.val);
             }
             catch (Exception exc)
             {
@@ -531,14 +548,14 @@ namespace VamTimeline
             SendToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
         }
 
-        private void OnTimeChanged(float time)
+        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
         {
             if (base.containingAtom == null) return; // Plugin destroyed
             try
             {
                 // Update UI
-                scrubberJSON.valNoCallback = time;
-                timeJSON.valNoCallback = time;
+                scrubberJSON.valNoCallback = time.currentClipTime;
+                timeJSON.valNoCallback = time.time;
 
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             }
@@ -596,16 +613,16 @@ namespace VamTimeline
             {
                 // Update UI
                 scrubberJSON.max = animation.current.animationLength;
-                scrubberJSON.valNoCallback = animation.time;
-                timeJSON.max = animation.current.animationLength;
-                timeJSON.valNoCallback = animation.time;
+                scrubberJSON.valNoCallback = animation.clipTime;
+                timeJSON.valNoCallback = animation.playTime;
                 speedJSON.valNoCallback = animation.speed;
                 animationJSON.choices = animation.clips.Where(c => c.animationLayer == animation.current.animationLayer).Select(c => c.animationName).ToList();
                 animationJSON.valNoCallback = animation.current.animationName;
 
                 SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
 
-                OnTimeChanged(animation.time);
+                // TODO: Is this necessary?
+                OnTimeChanged(animation.timeArgs);
             }
             catch (Exception exc)
             {
@@ -640,7 +657,7 @@ namespace VamTimeline
                 animationJSON.valNoCallback = animation.current.animationName;
                 if (animation.current.animationName != animationName)
                 {
-                    animation.ChangeAnimation(animationName);
+                    animation.SelectAnimation(animationName);
                 }
             }
             catch (Exception exc)
@@ -649,29 +666,14 @@ namespace VamTimeline
             }
         }
 
-        private void UpdateTime(float time, bool snap)
-        {
-            time = time.Snap(snap ? snapJSON.val : 0f);
-
-            if (animation.current.loop && time >= animation.current.animationLength - float.Epsilon)
-                time = 0f;
-
-            animation.time = time;
-            if (animation.current.animationPattern != null)
-                animation.current.animationPattern.SetFloatParamValue("currentTime", time);
-        }
-
         private void NextFrame()
         {
-            var originalTime = animation.time;
-            var time = animation.current.GetNextFrame(animation.time);
-            UpdateTime(time, false);
+            animation.clipTime = animation.current.GetNextFrame(animation.clipTime);
         }
 
         private void PreviousFrame()
         {
-            var time = animation.current.GetPreviousFrame(animation.time);
-            UpdateTime(time, false);
+            animation.clipTime = animation.current.GetPreviousFrame(animation.clipTime);
         }
 
         private void Cut()
@@ -680,9 +682,9 @@ namespace VamTimeline
             {
                 if (animation.IsPlaying()) return;
                 clipboard.Clear();
-                clipboard.time = animation.time.Snap();
+                clipboard.time = animation.clipTime.Snap();
                 clipboard.entries.Add(animation.current.Copy(clipboard.time));
-                var time = animation.time.Snap();
+                var time = animation.clipTime.Snap();
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
                 animation.current.DeleteFrame(time);
             }
@@ -699,7 +701,7 @@ namespace VamTimeline
                 if (animation.IsPlaying()) return;
 
                 clipboard.Clear();
-                clipboard.time = animation.time.Snap();
+                clipboard.time = animation.clipTime.Snap();
                 clipboard.entries.Add(animation.current.Copy(clipboard.time));
             }
             catch (Exception exc)
@@ -719,11 +721,11 @@ namespace VamTimeline
                     SuperController.LogMessage("VamTimeline: Clipboard is empty");
                     return;
                 }
-                var time = animation.time;
+                var time = animation.clipTime;
                 var timeOffset = clipboard.time;
                 foreach (var entry in clipboard.entries)
                 {
-                    animation.current.Paste(animation.time + entry.time - timeOffset, entry);
+                    animation.current.Paste(animation.clipTime + entry.time - timeOffset, entry);
                 }
                 SampleAfterRebuild();
             }

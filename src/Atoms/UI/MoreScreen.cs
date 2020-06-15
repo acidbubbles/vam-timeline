@@ -61,7 +61,7 @@ namespace VamTimeline
 
         private void InitImportExportUI(bool rightSide)
         {
-            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(plugin.animation.clips.Select(c => c.animationName)).ToList(), "(All)", "Export Animation")
+            _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(animation.clips.Select(c => c.animationName)).ToList(), "(All)", "Export Animation")
             {
                 isStorable = false
             };
@@ -122,7 +122,7 @@ namespace VamTimeline
                 jc["AtomType"] = plugin.containingAtom.type;
                 var atomState = new JSONClass();
                 var allTargets = new HashSet<FreeControllerV3>(
-                    plugin.animation.clips
+                    animation.clips
                         .Where(c => _exportAnimationsJSON.val == "(All)" || c.animationName == _exportAnimationsJSON.val)
                         .SelectMany(c => c.targetControllers)
                         .Select(t => t.controller)
@@ -196,14 +196,14 @@ namespace VamTimeline
                     }
                 }
 
-                plugin.serializer.DeserializeAnimation(plugin.animation, json.AsObject);
-                var lastAnimation = plugin.animation.clips.Select(c => c.animationName).LastOrDefault();
+                plugin.serializer.DeserializeAnimation(animation, json.AsObject);
+                var lastAnimation = animation.clips.Select(c => c.animationName).LastOrDefault();
                 // NOTE: Because the animation instance changes, we'll end up with the _old_ "current" not being updated.
-                if (lastAnimation != plugin.animation.current.animationName)
+                if (lastAnimation != animation.current.animationName)
                     plugin.ChangeAnimation(lastAnimation);
                 else
-                    plugin.animation.ChangeAnimation(lastAnimation);
-                plugin.animation.Stop();
+                    animation.SelectAnimation(lastAnimation);
+                animation.Stop();
             }
             catch (Exception exc)
             {

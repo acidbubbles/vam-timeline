@@ -79,7 +79,7 @@ namespace VamTimeline
 
         private void AddAnimationAsCopy()
         {
-            var clip = plugin.animation.AddAnimation();
+            var clip = animation.AddAnimation(current.animationLayer);
             clip.loop = current.loop;
             clip.nextAnimationName = current.nextAnimationName;
             clip.nextAnimationTime = current.nextAnimationTime;
@@ -106,13 +106,13 @@ namespace VamTimeline
                 newTarget.dirty = true;
             }
 
-            plugin.animation.ChangeAnimation(clip.animationName);
+            animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
         private void AddAnimationFromCurrentFrame()
         {
-            var clip = plugin.animation.AddAnimation();
+            var clip = animation.AddAnimation(current.animationLayer);
             clip.loop = current.loop;
             clip.nextAnimationName = current.nextAnimationName;
             clip.nextAnimationTime = current.nextAnimationTime;
@@ -132,20 +132,20 @@ namespace VamTimeline
                 newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);
             }
 
-            plugin.animation.ChangeAnimation(clip.animationName);
+            animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
         private void AddTransitionAnimation()
         {
-            var next = plugin.animation.GetClip(current.nextAnimationName);
+            var next = animation.GetClip(current.nextAnimationName);
             if (next == null)
             {
                 SuperController.LogError("There is no animation to transition to");
                 return;
             }
 
-            var clip = plugin.animation.AddAnimation();
+            var clip = animation.AddAnimation(current.animationLayer);
             clip.animationName = $"{current.animationName} > {next.animationName}";
             clip.loop = false;
             clip.transition = true;
@@ -169,27 +169,26 @@ namespace VamTimeline
                 newTarget.SetKeyframe(clip.animationLength, next.targetFloatParams.First(t => ReferenceEquals(t.floatParam, origTarget.floatParam)).value.Evaluate(0f));
             }
 
-            plugin.animation.clips.Remove(clip);
-            plugin.animation.clips.Insert(plugin.animation.clips.IndexOf(current) + 1, clip);
+            animation.clips.Remove(clip);
+            animation.clips.Insert(animation.clips.IndexOf(current) + 1, clip);
 
             current.nextAnimationName = clip.animationName;
 
-            plugin.animation.ChangeAnimation(clip.animationName);
+            animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
         private void AddLayer()
         {
-            var clip = plugin.animation.AddAnimation();
-            clip.animationLayer = GetNewLayerName();
+            var clip = animation.AddAnimation(GetNewLayerName());
 
-            plugin.animation.ChangeAnimation(clip.animationName);
+            animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
         }
 
         protected string GetNewLayerName()
         {
-            var layers = new HashSet<string>(plugin.animation.clips.Select(c => c.animationLayer));
+            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
             for (var i = 1; i < 999; i++)
             {
                 var layerName = "Layer " + i;
@@ -212,7 +211,7 @@ namespace VamTimeline
         private void RefreshButtons()
         {
             bool hasNext = current.nextAnimationName != null;
-            bool nextIsTransition = hasNext && plugin.animation.GetClip(current.nextAnimationName).transition;
+            bool nextIsTransition = hasNext && animation.GetClip(current.nextAnimationName).transition;
             _addAnimationTransitionUI.button.interactable = hasNext && !nextIsTransition;
             if (!hasNext)
                 _addAnimationTransitionUI.label = $"Create Transition (No sequence)";

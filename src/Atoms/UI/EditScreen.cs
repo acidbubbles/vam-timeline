@@ -60,11 +60,11 @@ namespace VamTimeline
             // Right side
 
             current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
-            plugin.animation.onTimeChanged.AddListener(OnTimeChanged);
+            animation.onTimeChanged.AddListener(OnTimeChanged);
 
             OnSelectionChanged();
 
-            if (plugin.animation.IsEmpty()) InitExplanation();
+            if (animation.IsEmpty()) InitExplanation();
         }
 
         private void InitChangeCurveTypeUI(bool rightSide)
@@ -104,7 +104,7 @@ namespace VamTimeline
         private void RefreshCurves()
         {
             if (_curves == null) return;
-            _curves.Bind(plugin.animation, current.allTargetsCount == 1 ? current.allTargets.ToList() : current.GetSelectedTargets().ToList());
+            _curves.Bind(animation, current.allTargetsCount == 1 ? current.allTargets.ToList() : current.GetSelectedTargets().ToList());
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
@@ -115,9 +115,9 @@ namespace VamTimeline
             RefreshTargetsList();
         }
 
-        private void OnTimeChanged(float arg0)
+        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)
         {
-            RefreshCurrentCurveType();
+            RefreshCurrentCurveType(args.currentClipTime);
         }
 
         private void OnSelectionChanged()
@@ -132,17 +132,17 @@ namespace VamTimeline
             yield return new WaitForEndOfFrame();
             _selectionChangedPending = false;
             if (_disposing) yield break;
-            RefreshCurrentCurveType();
+            RefreshCurrentCurveType(animation.clipTime);
             RefreshCurves();
             RefreshTargetsList();
             _curveTypeUI.popup.topButton.interactable = current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
         }
 
-        private void RefreshCurrentCurveType()
+        private void RefreshCurrentCurveType(float currentClipTime)
         {
             if (_curveTypeJSON == null) return;
 
-            var time = plugin.animation.time.Snap();
+            var time = currentClipTime.Snap();
             if (current.loop && (time.IsSameFrame(0) || time.IsSameFrame(current.animationLength)))
             {
                 _curveTypeJSON.valNoCallback = _loopCurveType;
@@ -166,17 +166,17 @@ namespace VamTimeline
 
         private void RefreshTargetsList()
         {
-            if (plugin.animation == null) return;
+            if (animation == null) return;
             RemoveTargets();
             plugin.RemoveButton(_manageTargetsUI);
-            var time = plugin.animation.time;
+            var time = animation.clipTime;
 
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var keyframeUI = plugin.CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
-                component.Bind(plugin, plugin.animation.current, target);
+                component.Bind(plugin, animation.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -189,7 +189,7 @@ namespace VamTimeline
                 var keyframeUI = plugin.CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
-                component.Bind(plugin, plugin.animation.current, target);
+                component.Bind(plugin, animation.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -206,7 +206,7 @@ namespace VamTimeline
         public override void Dispose()
         {
             current.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
-            plugin.animation.onTimeChanged.RemoveListener(OnTimeChanged);
+            animation.onTimeChanged.RemoveListener(OnTimeChanged);
             plugin.RemoveButton(_manageTargetsUI);
             RemoveTargets();
             base.Dispose();
@@ -225,23 +225,23 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("("))
             {
-                RefreshCurrentCurveType();
+                RefreshCurrentCurveType(animation.clipTime);
                 return;
             }
-            float time = plugin.animation.time.Snap();
+            float time = animation.clipTime.Snap();
             if (time.IsSameFrame(0) && curveType == CurveTypeValues.CopyPrevious)
             {
-                RefreshCurrentCurveType();
+                RefreshCurrentCurveType(animation.clipTime);
                 return;
             }
-            if (plugin.animation.IsPlaying()) return;
+            if (animation.IsPlaying()) return;
             if (current.loop && (time.IsSameFrame(0) || time.IsSameFrame(current.animationLength)))
             {
-                RefreshCurrentCurveType();
+                RefreshCurrentCurveType(animation.clipTime);
                 return;
             }
             current.ChangeCurve(time, curveType);
-            RefreshCurrentCurveType();
+            RefreshCurrentCurveType(animation.clipTime);
         }
     }
 }
