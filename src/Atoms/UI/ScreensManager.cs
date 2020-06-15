@@ -42,7 +42,7 @@ namespace VamTimeline
         {
             var screens = new[]{
                 EditScreen.ScreenName,
-                BulkScreen.ScreenName,
+                LayersScreen.ScreenName,
                 MoreScreen.ScreenName,
                 PerformanceScreen.ScreenName
             };
@@ -189,6 +189,9 @@ namespace VamTimeline
                     break;
                 case EditScreen.ScreenName:
                     _current = new EditScreen(_plugin);
+                    break;
+                case LayersScreen.ScreenName:
+                    _current = new LayersScreen(_plugin);
                     break;
                 case BulkScreen.ScreenName:
                     _current = new BulkScreen(_plugin);

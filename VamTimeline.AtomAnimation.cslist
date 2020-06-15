@@ -44,6 +44,7 @@ src/Atoms/Common/IAnimationTargetWithCurves.cs
 src/Atoms/FreeControllers/FreeControllerAnimationTarget.cs
 src/Atoms/Params/FloatParamAnimationTarget.cs
 src/Atoms/UI/ScreenBase.cs
+src/Atoms/UI/LayersScreen.cs
 src/Atoms/UI/PerformanceScreen.cs
 src/Atoms/UI/SettingsScreen.cs
 src/Atoms/UI/EditAnimationScreen.cs

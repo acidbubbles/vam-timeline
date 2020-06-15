@@ -42,6 +42,7 @@ namespace VamTimeline
             CreateChangeScreenButton("<b>Sequence</b> animations...", EditSequenceScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Add</b> a new animation...", AddAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Reorder</b> and <b>delete</b> animations...", ManageAnimationsScreen.ScreenName, true);
+            CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedScreen.ScreenName, true);
 

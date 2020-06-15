@@ -17,6 +17,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\Params\\FloatParamAnimationTarget.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\AdvancedScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\MocapScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\LayersScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\BulkScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\EditAnimationScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Atoms\\UI\\EditSequenceScreen.cs",
