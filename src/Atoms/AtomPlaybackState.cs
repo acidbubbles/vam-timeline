@@ -70,22 +70,13 @@ namespace VamTimeline
             return clip;
         }
 
-        public void Reset(string animationName, bool resetTime)
+        public void Reset(bool resetTime)
         {
-            var current = GetClip(animationName);
             if (resetTime) _playTime = 0f;
             foreach (var clip in clips)
             {
-                if (clip == current)
-                {
-                    clip.enabled = true;
-                    clip.weight = 1f;
-                }
-                else
-                {
-                    clip.enabled = false;
-                    clip.weight = 0f;
-                }
+                clip.enabled = false;
+                clip.weight = 0f;
                 clip.blendRate = 0f;
                 clip.sequencing = false;
                 clip.SetNext(null, 0f);

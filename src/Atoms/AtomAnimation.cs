@@ -27,7 +27,7 @@ namespace VamTimeline
         public const float PlayBlendDuration = 0.25f;
 
         private readonly Atom _atom;
-        private readonly AtomPlaybackState _state = new AtomPlaybackState();
+        public readonly AtomPlaybackState state = new AtomPlaybackState();
         private AtomAnimationClip _current;
 
         public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
@@ -36,7 +36,7 @@ namespace VamTimeline
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
 
-        public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = _state.playTime, currentClipTime = currentClipState.clipTime };
+        public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = state.playTime, currentClipTime = currentClipState.clipTime };
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public AtomClipPlaybackState currentClipState { get; private set; }
         public AtomAnimationClip current
@@ -49,9 +49,7 @@ namespace VamTimeline
             {
                 var previous = _current;
                 _current = value;
-                currentClipState = _state.GetClip(value.animationName);
-                // TODO: Is this necessary?
-                _state.Reset(current.animationName, false);
+                currentClipState = state.GetClip(value.animationName);
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
             }
         }
@@ -64,12 +62,12 @@ namespace VamTimeline
             }
             set
             {
-                _state.playTime = value;
+                state.playTime = value;
                 if (current == null) return;
                 currentClipState.clipTime = value;
                 Sample();
                 if (current.animationPattern != null)
-                    current.animationPattern.SetFloatParamValue("currentTime", _state.playTime);
+                    current.animationPattern.SetFloatParamValue("currentTime", state.playTime);
                 onTimeChanged.Invoke(timeArgs);
             }
         }
@@ -78,15 +76,15 @@ namespace VamTimeline
         {
             get
             {
-                return _state.playTime;
+                return state.playTime;
             }
             set
             {
-                _state.playTime = value;
+                state.playTime = value;
                 if (current == null) return;
                 Sample();
                 if (current.animationPattern != null)
-                    current.animationPattern.SetFloatParamValue("currentTime", _state.playTime);
+                    current.animationPattern.SetFloatParamValue("currentTime", state.playTime);
                 onTimeChanged.Invoke(timeArgs);
             }
         }
@@ -95,13 +93,13 @@ namespace VamTimeline
         {
             get
             {
-                return _state.speed;
+                return state.speed;
             }
 
             set
             {
                 if (value <= 0) throw new InvalidOperationException();
-                _state.speed = value;
+                state.speed = value;
                 foreach (var clip in clips)
                 {
                     if (clip.animationPattern != null)
@@ -132,7 +130,7 @@ namespace VamTimeline
                 clips.Add(clip);
             else
                 clips.Insert(lastIndexOfLayer + 1, clip);
-            _state.clips.Add(new AtomClipPlaybackState(clip));
+            state.clips.Add(new AtomClipPlaybackState(clip));
             clip.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
             clip.onAnimationKeyframesModified.AddListener(OnAnimationModified);
             clip.onTargetsListChanged.AddListener(OnAnimationModified);
@@ -156,7 +154,7 @@ namespace VamTimeline
         public void RemoveClip(AtomAnimationClip clip)
         {
             clips.Remove(clip);
-            _state.clips.Remove(new AtomClipPlaybackState(clip));
+            state.clips.Remove(new AtomClipPlaybackState(clip));
             clip.Dispose();
             onClipsListChanged.Invoke();
             OnAnimationModified();
@@ -218,11 +216,11 @@ namespace VamTimeline
                 return;
             }
             var clip = animationName != null ? GetClip(animationName) : current;
-            var clipState = _state.GetClip(clip.animationName);
+            var clipState = state.GetClip(clip.animationName);
             // TODO: Start with 0 weight (but keep current weight if already playing)
             // TODO: All animations should be disabled, and scrubbing should just set the current clip state
-            _state.Blend(clipState, 1f, PlayBlendDuration);
-            _state.isPlaying = true;
+            state.Blend(clipState, 1f, PlayBlendDuration);
+            state.isPlaying = true;
             if (clip.animationPattern)
             {
                 clip.animationPattern.SetBoolParamValue("loopOnce", false);
@@ -266,13 +264,18 @@ namespace VamTimeline
 
         public void Sample()
         {
+            if (state.isPlaying) return;
+            currentClipState.enabled = true;
+            currentClipState.weight = 1f;
             SampleParamsAnimation();
             SampleControllers();
+            currentClipState.enabled = false;
+            currentClipState.weight = 0f;
         }
 
         private void SampleParamsAnimation()
         {
-            foreach (var clip in _state.clips)
+            foreach (var clip in state.clips)
             {
                 if (!clip.enabled) continue;
                 foreach (var target in current.targetFloatParams)
@@ -284,10 +287,10 @@ namespace VamTimeline
 
         private void SampleControllers()
         {
-            foreach (var clip in _state.clips)
+            foreach (var clip in state.clips)
             {
                 if (!clip.enabled) continue;
-                foreach (var target in current.targetControllers)
+                foreach (var target in clip.clip.targetControllers)
                 {
                     var rb = target.controller.GetComponent<Rigidbody>();
                     var position = Vector3.Lerp(rb.transform.localPosition, target.EvaluatePosition(clip.clipTime), clip.weight);
@@ -301,15 +304,15 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (_state.isPlaying)
+            if (state.isPlaying)
             {
                 SampleParamsAnimation();
 
-                foreach (var clip in _state.clips)
+                foreach (var clip in state.clips)
                 {
-                    if (clip.sequencing && _state.playTime >= clip.nextTime)
+                    if (clip.sequencing && state.playTime >= clip.nextTime)
                     {
-                        TransitionAnimation(clip, _state.GetClip(clip.nextAnimationName));
+                        TransitionAnimation(clip, state.GetClip(clip.nextAnimationName));
                     }
                 }
             }
@@ -317,9 +320,9 @@ namespace VamTimeline
 
         public void FixedUpdate()
         {
-            if (_state.isPlaying)
+            if (state.isPlaying)
             {
-                _state.playTime += Time.fixedDeltaTime * _state.speed;
+                state.playTime += Time.fixedDeltaTime * state.speed;
 
                 SampleControllers();
             }
@@ -327,7 +330,7 @@ namespace VamTimeline
 
         public void Stop()
         {
-            _state.isPlaying = false;
+            state.isPlaying = false;
             if (current == null) return;
             foreach (var clip in clips)
             {
@@ -336,13 +339,13 @@ namespace VamTimeline
                     clip.animationPattern.SetBoolParamValue("loopOnce", true);
                 }
             }
-            _state.Reset(current.animationName, false);
+            state.Reset(false);
             playTime = playTime.Snap();
         }
 
         public bool IsPlaying()
         {
-            return _state.isPlaying;
+            return state.isPlaying;
         }
 
         public void RebuildAnimation()
@@ -426,8 +429,8 @@ namespace VamTimeline
             if (from == null) throw new ArgumentNullException(nameof(from));
             if (to == null) throw new ArgumentNullException(nameof(to));
 
-            _state.Blend(from, 0f, current.blendDuration);
-            _state.Blend(to, 1f, current.blendDuration);
+            state.Blend(from, 0f, current.blendDuration);
+            state.Blend(to, 1f, current.blendDuration);
 
             if (from.sequencing)
             {
@@ -455,7 +458,7 @@ namespace VamTimeline
             current = GetClip(animationName);
 
             if (current == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
-            if (_state.isPlaying)
+            if (state.isPlaying)
             {
                 if (current.animationLayer == previous.animationLayer)
                 {
@@ -463,12 +466,11 @@ namespace VamTimeline
                 }
                 else
                 {
-                    _state.Blend(currentClipState, 1f, PlayBlendDuration);
+                    state.Blend(currentClipState, 1f, PlayBlendDuration);
                 }
             }
             else
             {
-                _state.Reset(current.animationName, true);
                 Sample();
             }
 
