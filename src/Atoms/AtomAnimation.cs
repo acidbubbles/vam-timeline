@@ -44,7 +44,7 @@ namespace VamTimeline
             {
                 var previous = _current;
                 _current = value;
-                _state.current = _state.GetClip(value.animationName);
+                _state.Reset(current.animationName, false);
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
             }
         }
@@ -75,6 +75,7 @@ namespace VamTimeline
 
             set
             {
+                if(value <= 0) throw new InvalidOperationException();
                 _state.speed = value;
                 foreach (var clip in clips)
                 {
@@ -149,14 +150,6 @@ namespace VamTimeline
             return false;
         }
 
-        public List<string> GetAnimationNames()
-        {
-            var clipNames = new List<string>(clips.Count);
-            for (var i = 0; i < clips.Count; i++)
-                clipNames.Add(clips[i].animationName);
-            return clipNames;
-        }
-
         protected string GetNewAnimationName()
         {
             for (var i = clips.Count + 1; i < 999; i++)
@@ -195,8 +188,8 @@ namespace VamTimeline
                 SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
                 return;
             }
-            _state.Reset(current.animationName);
-            _state.Play(current.animationName);
+            _state.Blend(current.animationName, 1f, 0.25f);
+            _state.isPlaying = true;
             if (current.animationPattern)
             {
                 current.animationPattern.SetBoolParamValue("loopOnce", false);
@@ -311,22 +304,10 @@ namespace VamTimeline
                     clip.animationPattern.SetBoolParamValue("loopOnce", true);
                 }
             }
-            _state.Reset(current.animationName);
+            _state.Reset(current.animationName, false);
             _state.next = null;
             _state.nextTime = 0;
-            if (_state.originalAnimationName != null && _state.current.clip.animationName != current.animationName)
-            {
-                ChangeAnimation(_state.originalAnimationName);
-                _state.originalAnimationName = null;
-            }
-            if (time > current.animationLength - 0.001f)
-            {
-                time = current.loop ? 0f : current.animationLength;
-            }
-            else
-            {
-                time = time.Snap();
-            }
+            time = time.Snap();
             Sample();
         }
 
@@ -415,7 +396,6 @@ namespace VamTimeline
         {
             var clip = GetClip(animationName);
             if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
-            var time = this.time;
             if (_state.isPlaying)
             {
                 _state.Blend(current.animationName, 0f, current.blendDuration);
@@ -442,8 +422,10 @@ namespace VamTimeline
             }
             else
             {
-                this.time = 0f;
+                _state.Reset(current.animationName, true);
                 Sample();
+                if (previous.animationLayer != current.animationLayer)
+                    onClipsListChanged.Invoke();
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
                 {
                     before = previous,

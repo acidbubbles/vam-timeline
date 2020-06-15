@@ -16,14 +16,12 @@ namespace VamTimeline
         private float _time;
         public List<AtomClipPlaybackState> clips = new List<AtomClipPlaybackState>();
         public bool isPlaying;
-        public float speed;
+        public float speed = 1f;
         // TODO: Private?
         public AtomClipPlaybackState next;
         public float nextTime;
         // TODO: Move outside?
         public string originalAnimationName;
-        // TODO: The goal is to get rid of this
-        public AtomClipPlaybackState current;
 
         public float time
         {
@@ -60,13 +58,6 @@ namespace VamTimeline
             }
         }
 
-        public void Play(string animationName)
-        {
-            current = GetClip(animationName);
-            originalAnimationName = animationName;
-            isPlaying = true;
-        }
-
         public AtomClipPlaybackState GetClip(string animationName)
         {
             return clips.FirstOrDefault(c => c.clip.animationName == animationName);
@@ -85,9 +76,10 @@ namespace VamTimeline
             clip.blendRate = (weight - clip.weight) / duration;
         }
 
-        public void Reset(string animationName)
+        public void Reset(string animationName, bool resetTime)
         {
             var current = GetClip(animationName);
+            if (resetTime) _time = 0f;
             foreach (var clip in clips)
             {
                 if (clip == current)
@@ -101,6 +93,7 @@ namespace VamTimeline
                     clip.weight = 0f;
                 }
                 clip.blendRate = 0f;
+                if (resetTime) clip.time = 0f;
             }
         }
     }

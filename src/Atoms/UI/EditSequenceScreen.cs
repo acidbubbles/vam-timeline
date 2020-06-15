@@ -185,7 +185,9 @@ namespace VamTimeline
 
         private List<string> GetEligibleNextAnimations()
         {
-            var animations = plugin.animation.GetAnimationNames()
+            var animations = plugin.animation.clips
+                .Where(c => c.animationLayer == current.animationLayer)
+                .Select(c => c.animationName)
                 .GroupBy(x =>
                 {
                     var i = x.IndexOf("/");

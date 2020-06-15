@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -180,10 +181,21 @@ namespace VamTimeline
         private void AddLayer()
         {
             var clip = plugin.animation.AddAnimation();
-            clip.animationLayer = Guid.NewGuid().ToString();
+            clip.animationLayer = GetNewLayerName();
 
             plugin.animation.ChangeAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+        }
+
+        protected string GetNewLayerName()
+        {
+            var layers = new HashSet<string>(plugin.animation.clips.Select(c => c.animationLayer));
+            for (var i = 1; i < 999; i++)
+            {
+                var layerName = "Layer " + i;
+                if (!layers.Contains(layerName)) return layerName;
+            }
+            return Guid.NewGuid().ToString();
         }
 
         #endregion

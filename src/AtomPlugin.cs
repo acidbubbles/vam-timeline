@@ -600,7 +600,7 @@ namespace VamTimeline
                 timeJSON.max = animation.current.animationLength;
                 timeJSON.valNoCallback = animation.time;
                 speedJSON.valNoCallback = animation.speed;
-                animationJSON.choices = animation.GetAnimationNames();
+                animationJSON.choices = animation.clips.Where(c => c.animationLayer == animation.current.animationLayer).Select(c => c.animationName).ToList();
                 animationJSON.valNoCallback = animation.current.animationName;
 
                 SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));

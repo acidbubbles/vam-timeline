@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -18,6 +18,7 @@ namespace VamTimeline
         private Scrubber _scrubber;
         private AtomAnimation _animation;
         private JSONStorableStringChooser _animationsJSON;
+        private bool _ignoreAnimationChange;
 
         public bool locked
         {
@@ -64,7 +65,11 @@ namespace VamTimeline
 
         private JSONStorableStringChooser InitAnimationSelectorUI(Transform configurableScrollablePopupPrefab)
         {
-            var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) => _animation?.ChangeAnimation(val));
+            var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) =>
+            {
+                if (_ignoreAnimationChange) return;
+                _animation?.ChangeAnimation(val);
+            });
 
             var popup = Instantiate(configurableScrollablePopupPrefab);
             popup.SetParent(transform, false);
@@ -201,12 +206,21 @@ namespace VamTimeline
 
         private void OnClipsListChanged()
         {
-            _animationsJSON.choices = _animation.GetAnimationNames();
+            _ignoreAnimationChange = true;
+            try
+            {
+                var choices = _animation.clips.Where(c => c.animationLayer == _animation.current.animationLayer).Select(c => c.animationName).ToList();
+                _animationsJSON.choices = choices;
+            }
+            finally
+            {
+                _ignoreAnimationChange = false;
+            }
         }
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            _animationsJSON.val = args.after.animationName;
+            _animationsJSON.valNoCallback = args.after.animationName;
         }
 
         public void OnDestroy()
