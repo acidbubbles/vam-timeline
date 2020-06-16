@@ -324,7 +324,7 @@ namespace VamTimeline
             foreach (var clip in state.clips)
             {
                 if (!clip.enabled) continue;
-                foreach (var target in current.targetFloatParams)
+                foreach (var target in clip.clip.targetFloatParams)
                 {
                     target.floatParam.val = Mathf.Lerp(target.floatParam.val, target.value.Evaluate(clip.clipTime), clip.weight);
                 }
