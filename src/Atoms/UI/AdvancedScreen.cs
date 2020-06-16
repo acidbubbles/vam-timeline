@@ -48,18 +48,40 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
+            var removeAllKeyframesUI = plugin.CreateButton("Remove All Keyframes", true);
+            removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
+            RegisterComponent(removeAllKeyframesUI);
+
             var reverseAnimationUI = plugin.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
+        }
+
+        private void RemoveAllKeyframes()
+        {
+            foreach (var target in current.GetAllOrSelectedTargets())
+            {
+                target.StartBulkUpdates();
+                try
+                {
+                    foreach (var time in target.GetAllKeyframesTime())
+                    {
+                        if (time == 0f || time == current.animationLength) continue;
+                        target.DeleteFrame(time);
+                    }
+                }
+                finally
+                {
+                    target.EndBulkUpdates();
+                }
+            }
         }
 
         private void ReverseAnimation()
         {
             try
             {
-                var anim = current;
-                if (anim == null) throw new NullReferenceException("No current animation to reverse");
-                foreach (var target in anim.GetAllOrSelectedTargets())
+                foreach (var target in current.GetAllOrSelectedTargets())
                 {
                     foreach (var curve in target.GetCurves())
                     {

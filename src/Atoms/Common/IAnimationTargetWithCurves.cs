@@ -18,7 +18,6 @@ namespace VamTimeline
         void EndBulkUpdates();
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
-        void DeleteFrame(float time);
         void DeleteFrameByKey(int key);
         bool TargetsSameAs(IAnimationTargetWithCurves target);
     }
