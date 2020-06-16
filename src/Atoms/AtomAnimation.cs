@@ -271,6 +271,13 @@ namespace VamTimeline
             playTime = playTime.Snap();
         }
 
+        public void Reset()
+        {
+            state.isPlaying = false;
+            state.Reset(true);
+            playTime = 0f;
+        }
+
         public bool IsPlaying()
         {
             return state.isPlaying;

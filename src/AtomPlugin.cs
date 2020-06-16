@@ -347,14 +347,14 @@ namespace VamTimeline
                 if (animation.IsPlaying())
                 {
                     _resumePlayOnUnfreeze = false;
-                    animation.Stop();
+                    animation.Stop(null);
                     animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                     isPlayingJSON.valNoCallback = false;
                     SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
                 }
                 else
                 {
-                    animation.clipTime = 0f;
+                    animation.Reset();
                 }
             });
             RegisterAction(stopJSON);

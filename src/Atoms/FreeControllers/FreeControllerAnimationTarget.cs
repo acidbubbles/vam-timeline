@@ -235,7 +235,7 @@ namespace VamTimeline
 
         #region Evaluate
 
-        internal Vector3 EvaluatePosition(float time)
+        public Vector3 EvaluatePosition(float time)
         {
             return new Vector3(
                 x.Evaluate(time),
@@ -244,7 +244,7 @@ namespace VamTimeline
             );
         }
 
-        internal Quaternion EvaluateRotation(float time)
+        public Quaternion EvaluateRotation(float time)
         {
             return new Quaternion(
                 rotX.Evaluate(time),
@@ -345,7 +345,7 @@ namespace VamTimeline
             }
         }
 
-        internal void SmoothNeighbors(int key)
+        public void SmoothNeighbors(int key)
         {
             if (key == -1) return;
             x.SmoothTangents(key, 1f);

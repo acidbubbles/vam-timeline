@@ -13,7 +13,7 @@ namespace VamTimeline
     public class CurvesLines : MaskableGraphic
     {
         public CurvesStyle style;
-        internal Vector2 range;
+        public Vector2 range;
         private readonly List<KeyValuePair<Color, AnimationCurve>> _curves = new List<KeyValuePair<Color, AnimationCurve>>();
 
         public void ClearCurves()
