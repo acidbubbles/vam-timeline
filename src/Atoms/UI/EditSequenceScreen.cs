@@ -60,6 +60,8 @@ namespace VamTimeline
             CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
 
+            current.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+
             UpdateValues();
         }
 
@@ -270,6 +272,14 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
+            args.before.onAnimationSettingsModified.RemoveListener(OnAnimationSettingsModified);
+            args.after.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+
+            UpdateValues(); ;
+        }
+
+        private void OnAnimationSettingsModified(string _)
+        {
             UpdateValues();
         }
 
@@ -288,6 +298,8 @@ namespace VamTimeline
         public override void Dispose()
         {
             base.Dispose();
+
+            current.onAnimationSettingsModified.RemoveListener(OnAnimationSettingsModified);
         }
 
         #endregion

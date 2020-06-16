@@ -202,6 +202,7 @@ namespace VamTimeline
         private void OnClipsListChanged()
         {
             _animationsJSON.choices = _animation.GetAnimationNames();
+            _animationsJSON.valNoCallback = _animation.current.animationName;
         }
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
