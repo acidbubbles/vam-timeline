@@ -13,6 +13,8 @@ namespace VamTimeline
     /// </summary>
     public class AtomAnimationClip : IAtomAnimationClip
     {
+        public class AnimationSettingModifiedEvent : UnityEvent<string> { }
+
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
         public const string DefaultAnimationLayer = "Layer 1";
@@ -24,6 +26,7 @@ namespace VamTimeline
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
         private string _animationName;
+        private string _animationLayer;
         private bool _ensureQuaternionContinuity = true;
         private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
@@ -31,7 +34,7 @@ namespace VamTimeline
         public UnityEvent onTargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesModified { get; } = new UnityEvent();
-        public UnityEvent onAnimationSettingsModified { get; } = new UnityEvent();
+        public AnimationSettingModifiedEvent onAnimationSettingsModified { get; } = new AnimationSettingModifiedEvent();
         public AnimationPattern animationPattern
         {
             get
@@ -41,13 +44,25 @@ namespace VamTimeline
             set
             {
                 _animationPattern = value;
-                onAnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke(nameof(animationPattern));
             }
         }
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
         public IEnumerable<IAnimationTargetWithCurves> allTargets => targetControllers.Cast<IAnimationTargetWithCurves>().Concat(targetFloatParams.Cast<IAnimationTargetWithCurves>());
-        public readonly string animationLayer;
+        public string animationLayer
+        {
+            get
+            {
+                return _animationLayer;
+            }
+            set
+            {
+                if (_animationLayer == value) return;
+                _animationLayer = value;
+                onAnimationSettingsModified.Invoke(nameof(animationLayer));
+            }
+        }
         public bool ensureQuaternionContinuity
         {
             get
@@ -58,7 +73,7 @@ namespace VamTimeline
             {
                 if (_ensureQuaternionContinuity == value) return;
                 _ensureQuaternionContinuity = value;
-                onAnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke(nameof(ensureQuaternionContinuity));
             }
         }
         public string animationName
@@ -71,7 +86,7 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
-                onAnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke(nameof(animationName));
             }
         }
         public float animationLength
@@ -85,7 +100,7 @@ namespace VamTimeline
                 if (_animationLength == value) return;
                 _animationLength = value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke(nameof(animationLength));
             }
         }
         public bool autoPlay { get; set; } = false;
@@ -125,7 +140,7 @@ namespace VamTimeline
                     _skipNextAnimationSettingsModified = false;
                 }
                 UpdateForcedNextAnimationTime();
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(loop));
                 DirtyAll();
             }
         }
@@ -148,7 +163,7 @@ namespace VamTimeline
                 {
                     _skipNextAnimationSettingsModified = false;
                 }
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(transition));
                 DirtyAll();
             }
         }
@@ -163,7 +178,7 @@ namespace VamTimeline
                 if (_blendDuration == value) return;
                 _blendDuration = value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke(nameof(blendDuration));
             }
         }
         public string nextAnimationName
@@ -177,7 +192,7 @@ namespace VamTimeline
                 if (_nextAnimationName == value) return;
                 _nextAnimationName = value == "" ? null : value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsModified.Invoke();
+                onAnimationSettingsModified.Invoke(nameof(nextAnimationName));
             }
         }
         public float nextAnimationTime
@@ -190,7 +205,7 @@ namespace VamTimeline
             {
                 if (_nextAnimationTime == value) return;
                 _nextAnimationTime = value;
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke();
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(nextAnimationTime));
             }
         }
         public int allTargetsCount => targetControllers.Count + targetFloatParams.Count;

@@ -225,6 +225,8 @@ namespace VamTimeline
                 _animationsJSON.choices = _animation.clips.Select(c => c.animationName).ToList();
                 if (hasLayers)
                     _animationsJSON.displayChoices = _animation.clips.Select(c => $"[{c.animationLayer}] {c.animationName}").ToList();
+                _animationsJSON.valNoCallback = null;
+                _animationsJSON.valNoCallback = _animation.current.animationName;
             }
             finally
             {

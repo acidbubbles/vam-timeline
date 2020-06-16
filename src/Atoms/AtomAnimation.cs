@@ -160,9 +160,11 @@ namespace VamTimeline
             OnAnimationModified();
         }
 
-        private void OnAnimationSettingsModified()
+        private void OnAnimationSettingsModified(string param)
         {
             onAnimationSettingsChanged.Invoke();
+            if (param == nameof(AtomAnimationClip.animationName) || param == nameof(AtomAnimationClip.animationLayer))
+                onClipsListChanged.Invoke();
         }
 
         private void OnAnimationModified()

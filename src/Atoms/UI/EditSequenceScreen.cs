@@ -280,7 +280,7 @@ namespace VamTimeline
             UpdateValues();
         }
 
-        private void OnAnimationSettingsModified()
+        private void OnAnimationSettingsModified(string _)
         {
             UpdateValues();
         }
