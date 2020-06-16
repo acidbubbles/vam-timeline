@@ -1,9 +1,6 @@
-using System;
 using System.Collections;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -17,8 +14,6 @@ namespace VamTimeline
     {
         public const string ScreenName = "Clips";
 
-        private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
-
         public override string name => ScreenName;
 
         public ClipsScreen(IAtomPlugin plugin)
@@ -30,18 +25,18 @@ namespace VamTimeline
         {
             base.Init();
 
-            InitLayers(true);
-
-            CreateSpacer(true);
-
             if (animation.clips.Any())
             {
-                var layer = InitLayerHeader(animation.clips[0].animationLayer);
+                var layerName = animation.clips[0].animationLayer;
+                CreateHeader($"Layer: {layerName}");
 
                 foreach (var clip in animation.clips)
                 {
-                    if (clip.animationLayer != layer)
-                        layer = InitLayerHeader(clip.animationLayer);
+                    if (clip.animationLayer != layerName)
+                    {
+                        layerName = clip.animationLayer;
+                        CreateHeader($"Layer: {layerName}");
+                    }
 
                     InitAnimButton(clip);
                 }
@@ -50,7 +45,7 @@ namespace VamTimeline
             CreateSpacer(true);
 
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
-            CreateChangeScreenButton("<i><b>Layers</b>...</i>", AddAnimationScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Edit</b> layers...</i>", EditLayersScreen.ScreenName, true);
         }
 
         private void InitAnimButton(AtomAnimationClip clip)
@@ -92,34 +87,6 @@ namespace VamTimeline
                 for (var i = 0; i < 4; i++)
                     yield return 0;
             }
-        }
-
-        private string InitLayerHeader(string animationLayer)
-        {
-            var layerUI = plugin.CreateSpacer(true);
-            RegisterComponent(layerUI);
-            layerUI.height = 40f;
-
-            var text = layerUI.gameObject.AddComponent<Text>();
-            text.text = $"Layer: {animationLayer}";
-            text.font = _font;
-            text.fontSize = 28;
-
-            return animationLayer;
-        }
-
-        private void InitLayers(bool rightSide)
-        {
-            // TODO: Replace by a list of all layers, what they are currently playing, and a quick link to play/stop them
-            var layers = new JSONStorableStringChooser("Layer", animation.clips.Select(c => c.animationLayer).Distinct().ToList(), current.animationLayer, "Layer", ChangeLayer);
-            RegisterStorable(layers);
-            var layersUI = plugin.CreateScrollablePopup(layers, rightSide);
-            RegisterComponent(layersUI);
-        }
-
-        private void ChangeLayer(string val)
-        {
-            animation.SelectAnimation(animation.clips.First(c => c.animationLayer == val).animationName);
         }
     }
 }

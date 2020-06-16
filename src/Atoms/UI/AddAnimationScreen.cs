@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -40,10 +38,6 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            InitCreateLayerUI(true);
-
-            CreateSpacer(true);
-
             CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Reorder</b> and <b>delete</b> animations...</i>", ManageAnimationsScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName, true);
@@ -64,13 +58,6 @@ namespace VamTimeline
             RegisterComponent(_addAnimationTransitionUI);
 
             RefreshButtons();
-        }
-
-        public void InitCreateLayerUI(bool rightSide)
-        {
-            var createLayerUI = plugin.CreateButton("Create New Layer", rightSide);
-            createLayerUI.button.onClick.AddListener(() => AddLayer());
-            RegisterComponent(createLayerUI);
         }
 
         #endregion
@@ -176,25 +163,6 @@ namespace VamTimeline
 
             animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);
-        }
-
-        private void AddLayer()
-        {
-            var clip = animation.AddAnimation(GetNewLayerName());
-
-            animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
-        }
-
-        protected string GetNewLayerName()
-        {
-            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
-            for (var i = 1; i < 999; i++)
-            {
-                var layerName = "Layer " + i;
-                if (!layers.Contains(layerName)) return layerName;
-            }
-            return Guid.NewGuid().ToString();
         }
 
         #endregion

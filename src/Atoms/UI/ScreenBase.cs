@@ -16,6 +16,8 @@ namespace VamTimeline
     {
         public class ScreenChangeRequestedEvent : UnityEvent<string> { }
 
+        private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+
         public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
         public abstract string name { get; }
 
@@ -84,6 +86,21 @@ namespace VamTimeline
             spacerUI.height = 30f;
             RegisterComponent(spacerUI);
             return spacerUI;
+        }
+
+        protected Text CreateHeader(string val)
+        {
+            var layerUI = plugin.CreateSpacer(true);
+            RegisterComponent(layerUI);
+            layerUI.height = 40f;
+
+            var text = layerUI.gameObject.AddComponent<Text>();
+            text.text = val;
+            text.font = _font;
+            text.fontSize = 28;
+            text.color = Color.black;
+
+            return text;
         }
 
         protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide)

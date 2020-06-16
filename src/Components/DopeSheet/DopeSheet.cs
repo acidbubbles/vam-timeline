@@ -24,6 +24,7 @@ namespace VamTimeline
         private readonly VerticalLayoutGroup _layout;
         private AtomAnimation _animation;
         private IAtomAnimationClip _clip;
+        private bool _bound;
         private int _ms;
         private bool _locked;
 
@@ -62,9 +63,22 @@ namespace VamTimeline
             _scrollRect.verticalNormalizedPosition = 1f;
         }
 
+        public void OnDisable()
+        {
+            if (_bound)
+                UnbindClip();
+        }
+
+        public void OnEnable()
+        {
+            if (!_bound && _clip != null)
+                BindClip(_clip);
+        }
+
         public void OnDestroy()
         {
-            UnbindClip();
+            if (_bound)
+                UnbindClip();
         }
 
         private GameObject CreateBackground(GameObject parent, Color color)
@@ -231,6 +245,7 @@ namespace VamTimeline
         private void BindClip(IAtomAnimationClip clip)
         {
             _clip = clip;
+            _bound = true;
             var any = false;
             foreach (var group in _clip.GetTargetGroups())
             {
@@ -272,7 +287,7 @@ namespace VamTimeline
                 child.transform.SetParent(null, false);
                 Destroy(child.gameObject);
             }
-            _clip = null;
+            _bound = false;
         }
 
         private void CreateHeader(IAtomAnimationTargetsList group)
