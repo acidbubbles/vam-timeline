@@ -54,6 +54,8 @@ namespace VamTimeline
         private bool _restoring;
         private ScreensManager _ui;
         private AnimationControlPanel _controllerInjectedControlerPanel;
+        private class AnimStorableActionMap { public JSONStorableAction jsa; public string animationName; }
+        private List<AnimStorableActionMap> _playActions = new List<AnimStorableActionMap>();
 
         #region Init
 
@@ -533,12 +535,19 @@ namespace VamTimeline
 
         private void BindAnimation()
         {
+            foreach (var action in _playActions)
+            {
+                DeregisterAction(action.jsa);
+            }
+            _playActions.Clear();
+
             animation.onTimeChanged.AddListener(OnTimeChanged);
             animation.onAnimationRebuildRequested.AddListener(OnAnimationRebuildRequested);
+            animation.onClipsListChanged.AddListener(OnClipsListChanged);
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            animation.onClipsListChanged.AddListener(OnAnimationParametersChanged);
 
+            OnClipsListChanged();
             OnAnimationParametersChanged();
             SampleAfterRebuild();
 
@@ -606,6 +615,45 @@ namespace VamTimeline
             OnAnimationParametersChanged();
         }
 
+        private void OnClipsListChanged()
+        {
+            try
+            {
+                animationJSON.choices = animation.clips.Select(c => c.animationName).ToList();
+                animationJSON.valNoCallback = animation.current.animationName;
+
+                foreach (var animName in animationJSON.choices)
+                {
+                    if (_playActions.Any(a => a.animationName == animName)) continue;
+                    CreateAndRegisterPlayAction(animName);
+                }
+                if (animationJSON.choices.Count > _playActions.Count)
+                {
+                    foreach (var action in _playActions.ToArray())
+                    {
+                        if (!animationJSON.choices.Contains(action.animationName))
+                            _playActions.Remove(action);
+                    }
+                }
+
+                SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnClipsListChanged)}: " + exc);
+            }
+        }
+
+        private void CreateAndRegisterPlayAction(string animationName)
+        {
+            var jsa = new JSONStorableAction($"Play {animationName}", () =>
+            {
+                animation.Play(animationName);
+            });
+            RegisterAction(jsa);
+            _playActions.Add(new AnimStorableActionMap { animationName = animationName, jsa = jsa });
+        }
+
         private void OnAnimationParametersChanged()
         {
             try
@@ -615,13 +663,8 @@ namespace VamTimeline
                 scrubberJSON.valNoCallback = animation.clipTime;
                 timeJSON.valNoCallback = animation.playTime;
                 speedJSON.valNoCallback = animation.speed;
-                animationJSON.choices = animation.clips.Where(c => c.animationLayer == animation.current.animationLayer).Select(c => c.animationName).ToList();
-                animationJSON.valNoCallback = animation.current.animationName;
 
                 SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
-
-                // TODO: Is this necessary?
-                OnTimeChanged(animation.timeArgs);
             }
             catch (Exception exc)
             {
