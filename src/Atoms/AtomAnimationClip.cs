@@ -15,7 +15,7 @@ namespace VamTimeline
     {
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
-        public const string DefaultAnimationLayer = "Default";
+        public const string DefaultAnimationLayer = "Layer 1";
 
         private bool _loop = true;
         private string _nextAnimationName;

@@ -221,8 +221,10 @@ namespace VamTimeline
             _ignoreAnimationChange = true;
             try
             {
-                var choices = _animation.clips.Where(c => c.animationLayer == _animation.current.animationLayer).Select(c => c.animationName).ToList();
-                _animationsJSON.choices = choices;
+                var hasLayers = _animation.clips.Skip(1).Any(c => c.animationLayer != _animation.clips[0].animationLayer);
+                _animationsJSON.choices = _animation.clips.Select(c => c.animationName).ToList();
+                if (hasLayers)
+                    _animationsJSON.displayChoices = _animation.clips.Select(c => $"[{c.animationLayer}] {c.animationName}").ToList();
             }
             finally
             {
