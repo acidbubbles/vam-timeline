@@ -50,6 +50,7 @@ namespace VamTimeline
             CreateSpacer(true);
 
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Layers</b>...</i>", AddAnimationScreen.ScreenName, true);
         }
 
         private void InitAnimButton(AtomAnimationClip clip)

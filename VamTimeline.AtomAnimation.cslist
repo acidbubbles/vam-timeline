@@ -56,6 +56,7 @@ src/Atoms/UI/EditScreen.cs
 src/Atoms/UI/BulkScreen.cs
 src/Atoms/UI/AdvancedScreen.cs
 src/Atoms/UI/MocapScreen.cs
+src/Atoms/UI/EditLayersScreen.cs
 src/Atoms/UI/MoreScreen.cs
 src/Atoms/UI/HelpScreen.cs
 src/Atoms/UI/ScreensManager.cs

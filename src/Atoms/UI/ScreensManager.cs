@@ -202,6 +202,9 @@ namespace VamTimeline
                 case MocapScreen.ScreenName:
                     _current = new MocapScreen(_plugin);
                     break;
+                case EditLayersScreen.ScreenName:
+                    _current = new EditLayersScreen(_plugin);
+                    break;
                 case MoreScreen.ScreenName:
                     _current = new MoreScreen(_plugin);
                     break;

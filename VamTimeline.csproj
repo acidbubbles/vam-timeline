@@ -128,6 +128,7 @@
     <Compile Include="src/Atoms/UI/BulkScreen.cs" />
     <Compile Include="src/Atoms/UI/AdvancedScreen.cs" />
     <Compile Include="src/Atoms/UI/MocapScreen.cs" />
+    <Compile Include="src/Atoms/UI/EditLayersScreen.cs" />
     <Compile Include="src/Atoms/UI/MoreScreen.cs" />
     <Compile Include="src/Atoms/UI/HelpScreen.cs" />
     <Compile Include="src/Atoms/UI/ScreensManager.cs" />
