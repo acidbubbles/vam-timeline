@@ -110,7 +110,7 @@ namespace VamTimeline
                     if (SuperController.singleton.freezeAnimation)
                     {
                         // TODO: Replace this by Pause and the following Play by Resume
-                        animation.Stop();
+                        animation.StopAll();
                         _resumePlayOnUnfreeze = true;
                     }
                 }
@@ -119,7 +119,7 @@ namespace VamTimeline
                     if (_resumePlayOnUnfreeze && !SuperController.singleton.freezeAnimation)
                     {
                         _resumePlayOnUnfreeze = false;
-                        animation.Play();
+                        animation.PlayAll();
                         SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
                         isPlayingJSON.valNoCallback = true;
                     }
@@ -211,8 +211,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation?.IsPlaying() ?? false)
-                    animation.Stop();
+                animation?.StopAll();
                 _ui?.Disable();
                 DestroyControllerPanel();
             }
@@ -288,7 +287,7 @@ namespace VamTimeline
                     _resumePlayOnUnfreeze = true;
                     return;
                 }
-                animation.Play(null, false);
+                animation.PlayClip(animation.current.animationName, false);
                 // TODO: PlayClip is not really playing... is it?
                 isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
@@ -307,7 +306,7 @@ namespace VamTimeline
                     _resumePlayOnUnfreeze = true;
                     return;
                 }
-                animation.Play();
+                animation.PlayAll();
                 isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
@@ -326,7 +325,7 @@ namespace VamTimeline
                     return;
                 }
                 if (animation.IsPlaying()) return;
-                animation.Play();
+                animation.PlayAll();
                 isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
             });
@@ -349,7 +348,7 @@ namespace VamTimeline
                 if (animation.IsPlaying())
                 {
                     _resumePlayOnUnfreeze = false;
-                    animation.Stop(null);
+                    animation.StopAll();
                     animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                     isPlayingJSON.valNoCallback = false;
                     SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
@@ -364,7 +363,7 @@ namespace VamTimeline
             stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
                 if (!animation.IsPlaying()) return;
-                animation.Stop();
+                animation.StopAll();
                 animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                 isPlayingJSON.valNoCallback = false;
                 SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
@@ -436,7 +435,7 @@ namespace VamTimeline
         {
             foreach (var autoPlayClip in animation.clips.Where(c => c.autoPlay))
             {
-                animation.Play(autoPlayClip.animationName);
+                animation.PlayClip(autoPlayClip.animationName, true);
             }
         }
 
@@ -448,7 +447,7 @@ namespace VamTimeline
         {
             try
             {
-                animation.Stop();
+                animation.StopAll();
                 animation.playTime = animation.playTime.Snap(snapJSON.val);
             }
             catch (Exception exc)
@@ -648,7 +647,7 @@ namespace VamTimeline
         {
             var jsa = new JSONStorableAction($"Play {animationName}", () =>
             {
-                animation.Play(animationName);
+                animation.PlayClip(animationName, true);
             });
             RegisterAction(jsa);
             _playActions.Add(new AnimStorableActionMap { animationName = animationName, jsa = jsa });

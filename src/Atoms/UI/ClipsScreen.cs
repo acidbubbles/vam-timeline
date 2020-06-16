@@ -58,11 +58,11 @@ namespace VamTimeline
             {
                 if (clipState.mainInLayer)
                 {
-                    animation.Stop(clip.animationName);
+                    animation.StopClip(clip.animationName);
                 }
                 else
                 {
-                    animation.Play(clip.animationName);
+                    animation.PlayClip(clip.animationName, true);
                 }
             });
             plugin.StartCoroutine(UpdateAnimButton(btn, clipState));

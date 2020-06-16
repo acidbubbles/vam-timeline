@@ -204,7 +204,7 @@ namespace VamTimeline
                     plugin.ChangeAnimation(lastAnimation);
                 else
                     animation.SelectAnimation(lastAnimation);
-                animation.Stop();
+                animation.Sample();
             }
             catch (Exception exc)
             {

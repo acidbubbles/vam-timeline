@@ -146,7 +146,7 @@ namespace VamTimeline
                     mac.armedForRecord = true;
                 }
 
-                animation.Play();
+                animation.PlayAll();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
 
                 plugin.StartCoroutine(StopWhenPlaybackIsComplete());
@@ -165,7 +165,7 @@ namespace VamTimeline
             try
             {
                 SuperController.singleton.motionAnimationMaster.StopRecord();
-                animation.Stop();
+                animation.StopAll();
             }
             catch (Exception exc)
             {

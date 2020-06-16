@@ -132,6 +132,7 @@ namespace VamTimeline
             mainInLayer = false;
             SetNext(null, 0f);
             if (resetTime) clipTime = 0f;
+            else clipTime = clipTime.Snap();
         }
     }
 }

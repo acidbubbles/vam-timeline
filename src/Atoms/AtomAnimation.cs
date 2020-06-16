@@ -210,34 +210,22 @@ namespace VamTimeline
             return clips.FirstOrDefault(c => c.animationName == name);
         }
 
-        public void Play(string animationName = null, bool sequencing = true)
+        public void PlayClip(string animationName, bool sequencing)
         {
-            if (animationName == null && current == null)
+            var clipState = state.GetClip(animationName);
+            if (clipState.enabled && clipState.mainInLayer) return;
+            var clip = clipState.clip;
+            state.isPlaying = true;
+            var previousMain = state.clips.FirstOrDefault(c => c.mainInLayer && c.clip.animationLayer == clip.animationLayer);
+            if (previousMain != null && previousMain != clipState)
             {
-                SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
-                return;
-            }
-            var clip = animationName != null ? GetClip(animationName) : current;
-            var clipState = state.GetClip(clip.animationName);
-            if (state.isPlaying)
-            {
-                var previousMain = state.clips.FirstOrDefault(c => c.mainInLayer && c.clip.animationLayer == clip.animationLayer);
-                if (previousMain != null && previousMain != clipState)
-                {
-                    TransitionAnimation(previousMain, clipState);
-                }
-                else
-                {
-                    state.Blend(clipState, 1f, PlayBlendDuration);
-                    clipState.mainInLayer = true;
-                }
+                TransitionAnimation(previousMain, clipState);
             }
             else
             {
                 state.Blend(clipState, 1f, PlayBlendDuration);
                 clipState.mainInLayer = true;
             }
-            state.isPlaying = true;
             if (clip.animationPattern)
             {
                 clip.animationPattern.SetBoolParamValue("loopOnce", false);
@@ -247,25 +235,40 @@ namespace VamTimeline
                 AssignNextAnimation(clipState);
         }
 
-        public void Stop(string animationName = null)
+        public void PlayAll()
         {
-            if (animationName != null)
+            foreach (var clipState in GetFirstOrMainPerLayer())
             {
-                var clip = state.GetClip(animationName);
-                clip.Reset(false);
-
-                if (state.clips.Any(c => c.mainInLayer))
-                    return;
+                if (clipState.clip.animationLayer == current.animationLayer)
+                    PlayClip(current.animationName, true);
+                else
+                    PlayClip(clipState.clip.animationName, true);
             }
+        }
 
-            state.isPlaying = false;
+        public void StopClip(string animationName)
+        {
+            var clipState = state.GetClip(animationName);
+            clipState.Reset(false);
+
+            if (state.clips.Any(c => c.mainInLayer))
+                return;
+
             if (current == null) return;
-            foreach (var clip in clips)
+            if (clipState.clip.animationPattern)
             {
-                if (clip.animationPattern)
-                {
-                    clip.animationPattern.SetBoolParamValue("loopOnce", true);
-                }
+                clipState.clip.animationPattern.SetBoolParamValue("loopOnce", true);
+            }
+        }
+
+        public void StopAll()
+        {
+            if (!state.isPlaying) return;
+
+            foreach (var clip in state.clips)
+            {
+                if (clip.enabled)
+                    StopClip(clip.clip.animationName);
             }
             state.Reset(false);
             playTime = playTime.Snap();
@@ -283,27 +286,34 @@ namespace VamTimeline
             return state.isPlaying;
         }
 
+        private IEnumerable<AtomClipPlaybackState> GetFirstOrMainPerLayer()
+        {
+            // TODO: This could be optimized to avoid re-scanning every time
+            return state.clips.GroupBy(c => c.clip.animationLayer).Select(g => g.FirstOrDefault(c => c.mainInLayer) ?? g.First());
+        }
+
         private void AssignNextAnimation(AtomClipPlaybackState clipState)
         {
-            if (clipState.clip.nextAnimationName == null) return;
+            var clip = clipState.clip;
+            if (clip.nextAnimationName == null) return;
             if (clips.Count == 1) return;
 
-            if (clipState.clip.nextAnimationTime < 0 + float.Epsilon)
+            if (clip.nextAnimationTime < 0 + float.Epsilon)
                 return;
 
-            var nextTime = (playTime + current.nextAnimationTime).Snap();
+            var nextTime = (playTime + clip.nextAnimationTime).Snap();
 
-            if (current.nextAnimationName == RandomizeAnimationName)
+            if (clip.nextAnimationName == RandomizeAnimationName)
             {
                 var idx = Random.Range(0, clips.Count - 1);
-                if (idx >= clips.IndexOf(current)) idx += 1;
+                if (idx >= clips.IndexOf(clip)) idx += 1;
                 clipState.SetNext(clips[idx].animationName, nextTime);
             }
-            else if (current.nextAnimationName.EndsWith(RandomizeGroupSuffix))
+            else if (clip.nextAnimationName.EndsWith(RandomizeGroupSuffix))
             {
-                var prefix = current.nextAnimationName.Substring(0, current.nextAnimationName.Length - RandomizeGroupSuffix.Length);
+                var prefix = clip.nextAnimationName.Substring(0, clip.nextAnimationName.Length - RandomizeGroupSuffix.Length);
                 var group = clips
-                    .Where(c => c.animationName != current.animationName)
+                    .Where(c => c.animationName != clip.animationName)
                     .Where(c => c.animationName.StartsWith(prefix))
                     .ToList();
                 var idx = Random.Range(0, group.Count);
@@ -311,7 +321,7 @@ namespace VamTimeline
             }
             else
             {
-                clipState.SetNext(current.nextAnimationName, nextTime);
+                clipState.SetNext(clip.nextAnimationName, nextTime);
             }
         }
 
