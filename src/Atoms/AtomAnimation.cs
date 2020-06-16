@@ -338,12 +338,23 @@ namespace VamTimeline
                 if (!clip.enabled) continue;
                 foreach (var target in clip.clip.targetControllers)
                 {
-                    var rb = target.controller.GetComponent<Rigidbody>();
-                    var position = Vector3.Lerp(rb.transform.localPosition, target.EvaluatePosition(clip.clipTime), clip.weight);
-                    var rotation = Quaternion.Slerp(rb.transform.localRotation, target.EvaluateRotation(clip.clipTime), clip.weight);
-                    // TODO: Store in the target
-                    rb.transform.localRotation = rotation;
-                    rb.transform.localPosition = position;
+                    var control = target.controller.control;
+
+                    var rotState = target.controller.currentRotationState;
+                    if (rotState == FreeControllerV3.RotationState.On)
+                    {
+                        var localRotation = Quaternion.Slerp(control.localRotation, target.EvaluateRotation(clip.clipTime), clip.weight);
+                        control.localRotation = localRotation;
+                        // control.rotation = target.controller.linkToRB.rotation * localRotation;
+                    }
+
+                    var posState = target.controller.currentPositionState;
+                    if (posState == FreeControllerV3.PositionState.On)
+                    {
+                        var localPosition = Vector3.Lerp(control.localPosition, target.EvaluatePosition(clip.clipTime), clip.weight);
+                        control.localPosition = localPosition;
+                        // control.position = target.controller.linkToRB.position + Vector3.Scale(localPosition, control.transform.localScale);
+                    }
                 }
             }
         }
