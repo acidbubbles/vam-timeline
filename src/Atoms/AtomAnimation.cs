@@ -81,10 +81,12 @@ namespace VamTimeline
             set
             {
                 state.playTime = value;
-                if (current == null) return;
                 Sample();
-                if (current.animationPattern != null)
-                    current.animationPattern.SetFloatParamValue("currentTime", state.playTime);
+                foreach (var clipState in state.clips)
+                {
+                    if (clipState.clip.animationPattern != null)
+                        clipState.clip.animationPattern.SetFloatParamValue("currentTime", clipState.clipTime);
+                }
                 onTimeChanged.Invoke(timeArgs);
             }
         }
@@ -250,26 +252,23 @@ namespace VamTimeline
         {
             var clipState = state.GetClip(animationName);
             clipState.Reset(false);
-
-            if (state.clips.Any(c => c.mainInLayer))
-                return;
-
-            if (current == null) return;
             if (clipState.clip.animationPattern)
-            {
                 clipState.clip.animationPattern.SetBoolParamValue("loopOnce", true);
-            }
+
+            if (!state.clips.Any(c => c.mainInLayer))
+                state.isPlaying = false;
         }
 
         public void StopAll()
         {
-            if (!state.isPlaying) return;
+            state.isPlaying = false;
 
             foreach (var clip in state.clips)
             {
                 if (clip.enabled)
                     StopClip(clip.clip.animationName);
             }
+
             state.Reset(false);
             playTime = playTime.Snap();
         }
