@@ -90,12 +90,13 @@
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />
     <Compile Include="src/Common/RectTransformExtensions.cs" />
-    <Compile Include="src/Common/IAnimatedAtom.cs " />
-    <Compile Include="src/Common/IAnimationController.cs " />
+    <Compile Include="src/Common/IRemoteAtomPlugin.cs " />
+    <Compile Include="src/Common/IRemoteControllerPlugin.cs " />
     <Compile Include="src/Common/IAtomAnimationTarget.cs " />
     <Compile Include="src/Common/IAtomAnimationClip.cs" />
     <Compile Include="src/Common/IAtomAnimationTargetsList.cs" />
     <Compile Include="src/Common/StorableNames.cs" />
+    <Compile Include="src/Common/SyncProxy.cs" />
     <Compile Include="src/Common/AnimationCurveExtensions.cs" />
 
     <Compile Include="src/Atoms/AtomAnimationClip.cs" />
@@ -135,7 +136,6 @@
 
     <Compile Include="src/AtomPlugin.cs" />
 
-    <Compile Include="src/Controller/LinkedAnimation.cs" />
     <Compile Include="src/Controller/SimpleSignUI.cs" />
 
     <Compile Include="src/ControllerPlugin.cs" />

@@ -1,7 +1,7 @@
 src/Common/RectTransformExtensions.cs
-src/Common/IAnimatedAtom.cs
-src/Common/IAnimationController.cs
+src/Common/IRemoteAtomPlugin.cs
+src/Common/IRemoteControllerPlugin.cs
 src/Common/StorableNames.cs
-src/Controller/LinkedAnimation.cs
+src/Common/SyncProxy.cs
 src/Controller/SimpleSignUI.cs
 src/ControllerPlugin.cs

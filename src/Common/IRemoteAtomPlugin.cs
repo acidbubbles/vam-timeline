@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VamTimeline
@@ -9,8 +10,9 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAnimatedAtom
+    public interface IRemoteAtomPlugin
     {
-        void VamTimelineRequestControlPanelInjection(GameObject container);
+        void VamTimelineConnectController(Dictionary<string, object> dict);
+        void VamTimelineRequestControlPanel(GameObject container);
     }
 }

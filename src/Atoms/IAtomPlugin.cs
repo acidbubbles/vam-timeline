@@ -67,7 +67,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public interface IAtomPlugin : IMVRScript, IAnimatedAtom
+    public interface IAtomPlugin : IMVRScript, IRemoteAtomPlugin
     {
         AtomAnimation animation { get; }
         AtomAnimationSerializer serializer { get; }

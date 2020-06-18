@@ -120,7 +120,7 @@ namespace VamTimeline
                     {
                         _resumePlayOnUnfreeze = false;
                         animation.PlayAll();
-                        SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                        SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
                         isPlayingJSON.valNoCallback = true;
                     }
                     else if (lockedJSON != null && !lockedJSON.val)
@@ -199,7 +199,7 @@ namespace VamTimeline
             {
                 _ui?.Enable();
                 if (_controllerInjectedControlerPanel == null && animation != null && base.containingAtom != null)
-                    SendToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
+                    SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
             }
             catch (Exception exc)
             {
@@ -214,6 +214,8 @@ namespace VamTimeline
                 animation?.StopAll();
                 _ui?.Disable();
                 DestroyControllerPanel();
+                // TODO: Find a good condition
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
             catch (Exception exc)
             {
@@ -290,7 +292,7 @@ namespace VamTimeline
                 animation.PlayClip(animation.current.animationName, false);
                 // TODO: PlayClip is not really playing... is it?
                 isPlayingJSON.valNoCallback = true;
-                SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
             RegisterAction(playClipJSON);
 
@@ -308,7 +310,7 @@ namespace VamTimeline
                 }
                 animation.PlayAll();
                 isPlayingJSON.valNoCallback = true;
-                SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
             RegisterAction(playJSON);
 
@@ -327,7 +329,7 @@ namespace VamTimeline
                 if (animation.IsPlaying()) return;
                 animation.PlayAll();
                 isPlayingJSON.valNoCallback = true;
-                SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
             RegisterAction(playIfNotPlayingJSON);
 
@@ -351,7 +353,7 @@ namespace VamTimeline
                     animation.StopAll();
                     animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                     isPlayingJSON.valNoCallback = false;
-                    SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                    SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
                 }
                 else
                 {
@@ -366,7 +368,7 @@ namespace VamTimeline
                 animation.StopAll();
                 animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                 isPlayingJSON.valNoCallback = false;
-                SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
             RegisterAction(stopIfPlayingJSON);
 
@@ -552,7 +554,7 @@ namespace VamTimeline
 
             _ui.Bind(animation);
 
-            SendToControllers(nameof(IAnimationController.OnTimelineAnimationReady));
+            SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
@@ -564,7 +566,7 @@ namespace VamTimeline
                 scrubberJSON.valNoCallback = time.currentClipTime;
                 timeJSON.valNoCallback = time.time;
 
-                SendToControllers(nameof(IAnimationController.OnTimelineTimeChanged));
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             }
             catch (Exception exc)
             {
@@ -635,7 +637,8 @@ namespace VamTimeline
                     }
                 }
 
-                SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
+                // TODO: Check if main
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)
             {
@@ -663,7 +666,7 @@ namespace VamTimeline
                 timeJSON.valNoCallback = animation.playTime;
                 speedJSON.valNoCallback = animation.speed;
 
-                SendToControllers(nameof(IAnimationController.OnTimelineAnimationParametersChanged));
+                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)
             {
@@ -680,7 +683,7 @@ namespace VamTimeline
                 if (pluginId != null)
                 {
                     var plugin = controller.GetStorableByID(pluginId);
-                    plugin.SendMessage(methodName, base.containingAtom.uid);
+                    plugin.SendMessage(methodName, this, SendMessageOptions.RequireReceiver);
                 }
             }
         }
@@ -799,8 +802,26 @@ namespace VamTimeline
 
         #region Controller integration
 
-        public void VamTimelineRequestControlPanelInjection(GameObject container)
+        public void VamTimelineConnectController(Dictionary<string, object> dict)
         {
+            var proxy = SyncProxy.Wrap(dict);
+            // TODO: This or just use the storables dict already on storable??
+            proxy.animation = animationJSON;
+            proxy.isPlaying = isPlayingJSON;
+            proxy.locked = lockedJSON;
+            proxy.nextFrame = nextFrameJSON;
+            proxy.play = playJSON;
+            proxy.playIfNotPlaying = playIfNotPlayingJSON;
+            proxy.previousFrame = previousFrameJSON;
+            proxy.stop = stopJSON;
+            proxy.time = timeJSON;
+            proxy.connected = true;
+        }
+
+        public void VamTimelineRequestControlPanel(GameObject container)
+        {
+            if (container == null) throw new ArgumentNullException(nameof(container));
+
             _controllerInjectedControlerPanel = container.GetComponent<AnimationControlPanel>();
             if (_controllerInjectedControlerPanel == null)
             {

@@ -81,6 +81,8 @@ namespace VamTimeline
             set
             {
                 state.playTime = value;
+                if (!currentClipState.enabled)
+                    currentClipState.clipTime = value;
                 Sample();
                 foreach (var clipState in state.clips)
                 {

@@ -1,0 +1,121 @@
+
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace VamTimeline
+{
+    /// <summary>
+    /// VaM Timeline
+    /// By Acidbubbles
+    /// Animation timeline with keyframes
+    /// Source: https://github.com/acidbubbles/vam-timeline
+    /// </summary>
+    public class SyncProxy : IDisposable
+    {
+        public static SyncProxy Wrap(Dictionary<string, object> dict)
+        {
+            return new SyncProxy(dict);
+        }
+
+        public readonly Dictionary<string, object> dict;
+
+        public bool connected
+        {
+            get { return Get<bool>(nameof(connected)); }
+            set { Set(nameof(connected), value); }
+        }
+
+        public bool main
+        {
+            get { return Get<bool>(nameof(main)); }
+            set { Set(nameof(main), value); }
+        }
+
+        public JSONStorable storable
+        {
+            get { return Get<JSONStorable>(nameof(storable)); }
+            set { Set(nameof(storable), value); }
+        }
+
+        // TODO: Instead, get from storable and cache
+        public JSONStorableStringChooser animation
+        {
+            get { return Get<JSONStorableStringChooser>(nameof(animation)); }
+            set { Set(nameof(animation), value); }
+        }
+
+        public JSONStorableFloat time
+        {
+            get { return Get<JSONStorableFloat>(nameof(time)); }
+            set { Set(nameof(time), value); }
+        }
+
+        public JSONStorableBool isPlaying
+        {
+            get { return Get<JSONStorableBool>(nameof(isPlaying)); }
+            set { Set(nameof(isPlaying), value); }
+        }
+
+        public JSONStorableBool locked
+        {
+            get { return Get<JSONStorableBool>(nameof(locked)); }
+            set { Set(nameof(locked), value); }
+        }
+
+        public JSONStorableAction play
+        {
+            get { return Get<JSONStorableAction>(nameof(play)); }
+            set { Set(nameof(play), value); }
+        }
+
+        public JSONStorableAction playIfNotPlaying
+        {
+            get { return Get<JSONStorableAction>(nameof(playIfNotPlaying)); }
+            set { Set(nameof(playIfNotPlaying), value); }
+        }
+
+        public JSONStorableAction stop
+        {
+            get { return Get<JSONStorableAction>(nameof(stop)); }
+            set { Set(nameof(stop), value); }
+        }
+
+        public JSONStorableAction nextFrame
+        {
+            get { return Get<JSONStorableAction>(nameof(nextFrame)); }
+            set { Set(nameof(nextFrame), value); }
+        }
+
+        public JSONStorableAction previousFrame
+        {
+            get { return Get<JSONStorableAction>(nameof(previousFrame)); }
+            set { Set(nameof(previousFrame), value); }
+        }
+
+        private SyncProxy(Dictionary<string, object> dict)
+        {
+            this.dict = dict;
+        }
+
+        public SyncProxy()
+            : this(new Dictionary<string, object>())
+        {
+        }
+
+        private T Get<T>(string key)
+        {
+            object val;
+            return dict.TryGetValue(key, out val) ? (T)val : default(T);
+        }
+
+        private void Set<T>(string key, T value)
+        {
+            dict[key] = value;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+}
