@@ -488,6 +488,7 @@ namespace VamTimeline
             from.mainInLayer = false;
             state.Blend(to, 1f, current.blendDuration);
             to.mainInLayer = true;
+            if (to.weight == 0) to.clipTime = 0f;
 
             if (from.sequencing)
             {
