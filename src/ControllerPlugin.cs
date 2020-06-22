@@ -161,7 +161,7 @@ namespace VamTimeline
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
             var link = TryConnectAtom(storable);
-            if (_mainLinkedAnimation?.storable == storable)
+            if (GetOrDispose(_mainLinkedAnimation)?.storable == storable)
             {
                 RequestControlPanelInjection();
             }
@@ -170,10 +170,11 @@ namespace VamTimeline
         public void OnTimelineAnimationDisabled(JSONStorable storable)
         {
             var link = _links.FirstOrDefault(l => l.storable == storable);
+            if (link == null) return;
             _links.Remove(link);
             _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid).ToList();
             if (_mainLinkedAnimation == link)
-                _atomsJSON.val = _links.FirstOrDefault()?.storable.containingAtom.uid;
+                _atomsJSON.val = _links.Select(GetOrDispose).FirstOrDefault()?.storable.containingAtom.uid;
             link.Dispose();
         }
 
@@ -191,6 +192,10 @@ namespace VamTimeline
 
         private SyncProxy TryConnectAtom(JSONStorable storable)
         {
+            foreach (var l in _links.ToArray())
+            {
+                GetOrDispose(l);
+            }
             var existing = _links.FirstOrDefault(a => a.storable == storable);
             if (existing != null) { return existing; }
 
@@ -201,9 +206,14 @@ namespace VamTimeline
 
             storable.SendMessage(nameof(IRemoteAtomPlugin.VamTimelineConnectController), proxy.dict, SendMessageOptions.RequireReceiver);
 
-            if (!proxy.connected) return null;
+            if (!proxy.connected)
+            {
+                proxy.Dispose();
+                return null;
+            }
 
             _links.Add(proxy);
+            _links.Sort((SyncProxy s1, SyncProxy s2) => string.Compare(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
             // TODO: Instead of re-creating the list every time, assign once?
             _atomsJSON.choices = _atomsJSON.choices.Concat(new[] { proxy.storable.containingAtom.uid }).ToList();
 
@@ -295,18 +305,19 @@ namespace VamTimeline
 
         public void OnTimelineAnimationParametersChanged(JSONStorable storable)
         {
-            if (_mainLinkedAnimation == null || _mainLinkedAnimation.storable != storable)
+            var proxy = GetOrDispose(_mainLinkedAnimation);
+            if (proxy == null || proxy.storable != storable)
                 return;
 
             OnTimelineTimeChanged(storable);
 
-            var remoteTime = _mainLinkedAnimation.time;
+            var remoteTime = proxy.time;
             _timeJSON.max = remoteTime.max;
             _timeJSON.valNoCallback = remoteTime.val;
-            var remoteAnimation = _mainLinkedAnimation.animation;
+            var remoteAnimation = proxy.animation;
             _animationJSON.choices = remoteAnimation.choices;
             _animationJSON.valNoCallback = remoteAnimation.val;
-            _lockedJSON.valNoCallback = _mainLinkedAnimation.locked.val;
+            _lockedJSON.valNoCallback = proxy.locked.val;
         }
 
         public void OnTimelineTimeChanged(JSONStorable storable)
@@ -316,14 +327,15 @@ namespace VamTimeline
 
             try
             {
-                if (_mainLinkedAnimation == null || _mainLinkedAnimation.storable != storable)
+                var proxy = GetOrDispose(_mainLinkedAnimation);
+                if (proxy == null || proxy.storable != storable)
                     return;
 
-                var animationName = _mainLinkedAnimation.animation.val;
-                var isPlaying = _mainLinkedAnimation.isPlaying.val;
-                var time = _mainLinkedAnimation.time.val;
+                var animationName = proxy.animation.val;
+                var isPlaying = proxy.isPlaying.val;
+                var time = proxy.time.val;
 
-                foreach (var slave in _links.Where(l => l != _mainLinkedAnimation))
+                foreach (var slave in _links.Where(l => l != proxy).Select(GetOrDispose))
                 {
                     var slaveAnimation = slave.animation;
                     if (slaveAnimation.val != animationName && slaveAnimation.choices.Contains(animationName))
@@ -349,9 +361,10 @@ namespace VamTimeline
         {
             try
             {
-                if (_mainLinkedAnimation == null) return;
+                var proxy = GetOrDispose(_mainLinkedAnimation);
+                if (proxy == null) return;
 
-                var time = _mainLinkedAnimation.time;
+                var time = proxy.time;
                 if (time != null && time.val != _timeJSON.val)
                 {
                     _timeJSON.valNoCallback = time.val;
@@ -368,7 +381,8 @@ namespace VamTimeline
 
         private void HandleKeyboardShortcuts()
         {
-            if (_mainLinkedAnimation == null) return;
+            var proxy = GetOrDispose(_mainLinkedAnimation);
+            if (proxy == null) return;
             if (!_enableKeyboardShortcuts.val) return;
 
             if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -381,7 +395,7 @@ namespace VamTimeline
             }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (_mainLinkedAnimation.isPlaying.val)
+                if (proxy.isPlaying.val)
                     Stop();
                 else
                     Play();
@@ -402,39 +416,39 @@ namespace VamTimeline
             }
             else if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(0));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(0));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha2))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(1));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(1));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha3))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(2));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(2));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha4))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(3));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(3));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha5))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(4));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(4));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha6))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(5));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(5));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha7))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(6));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(6));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha8))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(7));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(7));
             }
             else if (Input.GetKeyDown(KeyCode.Alpha9))
             {
-                ChangeAnimation(_mainLinkedAnimation.animation.choices.ElementAtOrDefault(8));
+                ChangeAnimation(proxy.animation.choices.ElementAtOrDefault(8));
             }
         }
 
@@ -457,7 +471,7 @@ namespace VamTimeline
             {
                 return;
             }
-            var mainLinkedAnimation = _links.FirstOrDefault(la => la.storable.containingAtom.uid == uid);
+            var mainLinkedAnimation = _links.Select(GetOrDispose).FirstOrDefault(la => la.storable.containingAtom.uid == uid);
             if (mainLinkedAnimation == null)
             {
                 _atomsJSON.valNoCallback = "";
@@ -477,7 +491,8 @@ namespace VamTimeline
 
             DestroyControlPanelContainer();
 
-            if (_mainLinkedAnimation == null) return;
+            var proxy = GetOrDispose(_mainLinkedAnimation);
+            if (proxy == null) return;
 
             _controlPanelContainer = new GameObject();
             _controlPanelContainer.transform.SetParent(_controlPanelSpacer.transform, false);
@@ -485,7 +500,7 @@ namespace VamTimeline
             var rect = _controlPanelContainer.AddComponent<RectTransform>();
             rect.StretchParent();
 
-            _mainLinkedAnimation.storable.SendMessage(nameof(IRemoteAtomPlugin.VamTimelineRequestControlPanel), _controlPanelContainer, SendMessageOptions.RequireReceiver);
+            proxy.storable.SendMessage(nameof(IRemoteAtomPlugin.VamTimelineRequestControlPanel), _controlPanelContainer, SendMessageOptions.RequireReceiver);
         }
 
         private void DestroyControlPanelContainer()
@@ -496,10 +511,28 @@ namespace VamTimeline
             _controlPanelContainer = null;
         }
 
+        private SyncProxy GetOrDispose(SyncProxy proxy)
+        {
+            if (proxy == null) return null;
+            if (proxy.storable == null)
+            {
+                var link = _links.FirstOrDefault(l => l == proxy);
+                if (link != null)
+                {
+                    _links.Remove(link);
+                }
+                proxy.Dispose();
+                if (_mainLinkedAnimation == proxy)
+                    _mainLinkedAnimation = null;
+                return null;
+            }
+            return proxy;
+        }
+
         private void ChangeAnimation(string name)
         {
             if (string.IsNullOrEmpty(name)) return;
-            foreach (var la in _links)
+            foreach (var la in _links.Select(GetOrDispose))
             {
                 if (la.animation.choices.Contains(name))
                     la.animation.val = name;
@@ -508,32 +541,27 @@ namespace VamTimeline
 
         private void Play()
         {
-            if (_mainLinkedAnimation == null) return;
-            _mainLinkedAnimation.play.actionCallback();
+            GetOrDispose(_mainLinkedAnimation)?.play.actionCallback();
         }
 
         private void PlayIfNotPlaying()
         {
-            if (_mainLinkedAnimation == null) return;
-            _mainLinkedAnimation.playIfNotPlaying.actionCallback();
+            GetOrDispose(_mainLinkedAnimation)?.playIfNotPlaying.actionCallback();
         }
 
         private void Stop()
         {
-            if (_mainLinkedAnimation == null) return;
-            _mainLinkedAnimation.stop.actionCallback();
+            GetOrDispose(_mainLinkedAnimation)?.stop.actionCallback();
         }
 
         private void NextFrame()
         {
-            if (_mainLinkedAnimation == null) return;
-            _mainLinkedAnimation.nextFrame.actionCallback();
+            GetOrDispose(_mainLinkedAnimation)?.nextFrame.actionCallback();
         }
 
         private void PreviousFrame()
         {
-            if (_mainLinkedAnimation == null) return;
-            _mainLinkedAnimation.previousFrame.actionCallback();
+            GetOrDispose(_mainLinkedAnimation)?.previousFrame.actionCallback();
         }
     }
 }

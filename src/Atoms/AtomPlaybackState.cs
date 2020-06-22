@@ -107,7 +107,7 @@ namespace VamTimeline
 
             set
             {
-                _clipTime = Mathf.Abs(clip.loop ? value % clip.animationLength : Mathf.Max(value, clip.animationLength));
+                _clipTime = Mathf.Abs(clip.loop ? value % clip.animationLength : Mathf.Min(value, clip.animationLength));
             }
         }
 

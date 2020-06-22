@@ -63,7 +63,7 @@ namespace VamTimeline
             set
             {
                 state.playTime = value;
-                if (current == null) return;
+                if (currentClipState == null) return;
                 currentClipState.clipTime = value;
                 Sample();
                 if (current.animationPattern != null)

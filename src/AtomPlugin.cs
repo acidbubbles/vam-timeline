@@ -55,7 +55,7 @@ namespace VamTimeline
         private ScreensManager _ui;
         private AnimationControlPanel _controllerInjectedControlerPanel;
         private class AnimStorableActionMap { public JSONStorableAction jsa; public string animationName; }
-        private List<AnimStorableActionMap> _playActions = new List<AnimStorableActionMap>();
+        private readonly List<AnimStorableActionMap> _playActions = new List<AnimStorableActionMap>();
 
         #region Init
 
