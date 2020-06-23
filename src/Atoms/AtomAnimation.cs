@@ -490,6 +490,7 @@ namespace VamTimeline
             if (from == null) throw new ArgumentNullException(nameof(from));
             if (to == null) throw new ArgumentNullException(nameof(to));
 
+            from.SetNext(null, 0);
             state.Blend(from, 0f, current.blendDuration);
             from.mainInLayer = false;
             state.Blend(to, 1f, current.blendDuration);
