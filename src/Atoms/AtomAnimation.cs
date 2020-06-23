@@ -35,6 +35,7 @@ namespace VamTimeline
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
+        private float _speed;
 
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = state.playTime, currentClipTime = currentClipState.clipTime };
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
@@ -97,13 +98,13 @@ namespace VamTimeline
         {
             get
             {
-                return state.speed;
+                return _speed;
             }
 
             set
             {
                 if (value <= 0) throw new InvalidOperationException();
-                state.speed = value;
+                _speed = value;
                 foreach (var clip in clips)
                 {
                     if (clip.animationPattern != null)
@@ -293,8 +294,9 @@ namespace VamTimeline
 
         private IEnumerable<AtomClipPlaybackState> GetFirstOrMainPerLayer()
         {
-            // TODO: This could be optimized to avoid re-scanning every time
-            return state.clips.GroupBy(c => c.clip.animationLayer).Select(g => g.FirstOrDefault(c => c.mainInLayer) ?? g.First());
+            return state.clips
+                .GroupBy(c => c.clip.animationLayer)
+                .Select(g => g.FirstOrDefault(c => c.mainInLayer) ?? g.First());
         }
 
         private void AssignNextAnimation(AtomClipPlaybackState clipState)
@@ -401,7 +403,7 @@ namespace VamTimeline
         {
             if (state.isPlaying)
             {
-                state.playTime += Time.fixedDeltaTime * state.speed;
+                state.playTime += Time.fixedDeltaTime * _speed;
 
                 SampleControllers();
             }

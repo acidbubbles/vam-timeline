@@ -17,10 +17,6 @@ namespace VamTimeline
         public List<AtomClipPlaybackState> clips = new List<AtomClipPlaybackState>();
         public bool isPlaying;
         public bool sequencing;
-        // This belong in AtomAnimation
-        public float speed = 1f;
-        // TODO: Move outside?
-        public string originalAnimationName;
 
         public float playTime
         {
@@ -39,7 +35,7 @@ namespace VamTimeline
                     clip.clipTime += delta;
                     if (clip.blendRate != 0)
                     {
-                        // TODO: Smooth Lerp
+                        // TODO: Mathf.SmoothStep
                         clip.weight += clip.blendRate * delta;
                         if (clip.weight >= 1f)
                         {

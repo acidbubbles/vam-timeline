@@ -214,7 +214,6 @@ namespace VamTimeline
                 animation?.StopAll();
                 _ui?.Disable();
                 DestroyControllerPanel();
-                // TODO: Find a good condition
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
             catch (Exception exc)
@@ -290,7 +289,6 @@ namespace VamTimeline
                     return;
                 }
                 animation.PlayClip(animation.current.animationName, false);
-                // TODO: PlayClip is not really playing... is it?
                 isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
@@ -637,7 +635,6 @@ namespace VamTimeline
                     }
                 }
 
-                // TODO: Check if main
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)

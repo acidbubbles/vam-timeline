@@ -28,11 +28,10 @@ namespace VamTimeline
         private JSONStorableAction _playJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
-        // TODO: Identify differently
-        private SyncProxy _mainLinkedAnimation;
         private UIDynamic _controlPanelSpacer;
         private GameObject _controlPanelContainer;
         private readonly List<SyncProxy> _links = new List<SyncProxy>();
+        private SyncProxy _selectedLink;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
 
         #region Initialization
@@ -104,7 +103,7 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction("Stop", () => Stop());
             RegisterAction(_stopJSON);
 
-            _timeJSON = new JSONStorableFloat("Time", 0f, v => _mainLinkedAnimation.time.val = v, 0f, 2f, true)
+            _timeJSON = new JSONStorableFloat("Time", 0f, v => _selectedLink.time.val = v, 0f, 2f, true)
             {
                 isStorable = false
             };
@@ -112,7 +111,7 @@ namespace VamTimeline
 
             var nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
-                var i = _animationJSON.choices.IndexOf(_mainLinkedAnimation?.animation.val);
+                var i = _animationJSON.choices.IndexOf(_selectedLink?.animation.val);
                 if (i < 0 || i > _animationJSON.choices.Count - 2) return;
                 _animationJSON.val = _animationJSON.choices[i + 1];
             });
@@ -120,7 +119,7 @@ namespace VamTimeline
 
             var previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
-                var i = _animationJSON.choices.IndexOf(_mainLinkedAnimation?.animation.val);
+                var i = _animationJSON.choices.IndexOf(_selectedLink?.animation.val);
                 if (i < 1 || i > _animationJSON.choices.Count - 1) return;
                 _animationJSON.val = _animationJSON.choices[i - 1];
             });
@@ -146,7 +145,7 @@ namespace VamTimeline
 
             yield return 0;
 
-            if (_autoPlayJSON.val && _mainLinkedAnimation != null)
+            if (_autoPlayJSON.val && _selectedLink != null)
                 PlayIfNotPlaying();
         }
 
@@ -161,7 +160,7 @@ namespace VamTimeline
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
             var link = TryConnectAtom(storable);
-            if (GetOrDispose(_mainLinkedAnimation)?.storable == storable)
+            if (GetOrDispose(_selectedLink)?.storable == storable)
             {
                 RequestControlPanelInjection();
             }
@@ -173,7 +172,7 @@ namespace VamTimeline
             if (link == null) return;
             _links.Remove(link);
             _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid).ToList();
-            if (_mainLinkedAnimation == link)
+            if (_selectedLink == link)
                 _atomsJSON.val = _links.Select(GetOrDispose).FirstOrDefault()?.storable.containingAtom.uid;
             link.Dispose();
         }
@@ -181,9 +180,6 @@ namespace VamTimeline
         private SyncProxy TryConnectAtom(Atom atom)
         {
             if (atom == null) return null;
-
-            // TODO: If it already exists, do not re-create unless the source storable has been destroyed.
-
             var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
             if (storableId == null) return null;
             var storable = atom.GetStorableByID(storableId);
@@ -196,6 +192,7 @@ namespace VamTimeline
             {
                 GetOrDispose(l);
             }
+
             var existing = _links.FirstOrDefault(a => a.storable == storable);
             if (existing != null) { return existing; }
 
@@ -214,12 +211,13 @@ namespace VamTimeline
 
             _links.Add(proxy);
             _links.Sort((SyncProxy s1, SyncProxy s2) => string.Compare(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
-            // TODO: Instead of re-creating the list every time, assign once?
-            _atomsJSON.choices = _atomsJSON.choices.Concat(new[] { proxy.storable.containingAtom.uid }).ToList();
+            _atomsJSON.choices.Add(proxy.storable.containingAtom.uid);
+            _atomsJSON.choices.Sort();
+            _atomsJSON.choices = _atomsJSON.choices;
 
-            if (_mainLinkedAnimation == null)
+            if (_selectedLink == null)
             {
-                _mainLinkedAnimation = proxy;
+                _selectedLink = proxy;
                 proxy.main = true;
                 _atomsJSON.val = proxy.storable.containingAtom.uid;
             }
@@ -265,7 +263,7 @@ namespace VamTimeline
                 _ui.CreateUIPopupInCanvas(_atomsJSON);
                 _controlPanelSpacer = _ui.CreateUISpacerInCanvas(980f);
                 ScanForAtoms();
-                if (_mainLinkedAnimation != null)
+                if (_selectedLink != null)
                     RequestControlPanelInjection();
             }
             catch (Exception exc)
@@ -305,7 +303,7 @@ namespace VamTimeline
 
         public void OnTimelineAnimationParametersChanged(JSONStorable storable)
         {
-            var proxy = GetOrDispose(_mainLinkedAnimation);
+            var proxy = GetOrDispose(_selectedLink);
             if (proxy == null || proxy.storable != storable)
                 return;
 
@@ -327,7 +325,7 @@ namespace VamTimeline
 
             try
             {
-                var proxy = GetOrDispose(_mainLinkedAnimation);
+                var proxy = GetOrDispose(_selectedLink);
                 if (proxy == null || proxy.storable != storable)
                     return;
 
@@ -361,7 +359,7 @@ namespace VamTimeline
         {
             try
             {
-                var proxy = GetOrDispose(_mainLinkedAnimation);
+                var proxy = GetOrDispose(_selectedLink);
                 if (proxy == null) return;
 
                 var time = proxy.time;
@@ -381,7 +379,7 @@ namespace VamTimeline
 
         private void HandleKeyboardShortcuts()
         {
-            var proxy = GetOrDispose(_mainLinkedAnimation);
+            var proxy = GetOrDispose(_selectedLink);
             if (proxy == null) return;
             if (!_enableKeyboardShortcuts.val) return;
 
@@ -462,10 +460,10 @@ namespace VamTimeline
 
         private void SelectCurrentAtom(string uid)
         {
-            if (_mainLinkedAnimation != null)
+            if (_selectedLink != null)
             {
-                _mainLinkedAnimation.main = false;
-                _mainLinkedAnimation = null;
+                _selectedLink.main = false;
+                _selectedLink = null;
             }
             if (string.IsNullOrEmpty(uid))
             {
@@ -478,11 +476,11 @@ namespace VamTimeline
                 return;
             }
 
-            _mainLinkedAnimation = mainLinkedAnimation;
-            _mainLinkedAnimation.main = true;
+            _selectedLink = mainLinkedAnimation;
+            _selectedLink.main = true;
             RequestControlPanelInjection();
 
-            _atomsJSON.valNoCallback = _mainLinkedAnimation.storable.containingAtom.uid;
+            _atomsJSON.valNoCallback = _selectedLink.storable.containingAtom.uid;
         }
 
         private void RequestControlPanelInjection()
@@ -491,7 +489,7 @@ namespace VamTimeline
 
             DestroyControlPanelContainer();
 
-            var proxy = GetOrDispose(_mainLinkedAnimation);
+            var proxy = GetOrDispose(_selectedLink);
             if (proxy == null) return;
 
             _controlPanelContainer = new GameObject();
@@ -522,8 +520,8 @@ namespace VamTimeline
                     _links.Remove(link);
                 }
                 proxy.Dispose();
-                if (_mainLinkedAnimation == proxy)
-                    _mainLinkedAnimation = null;
+                if (_selectedLink == proxy)
+                    _selectedLink = null;
                 return null;
             }
             return proxy;
@@ -541,27 +539,27 @@ namespace VamTimeline
 
         private void Play()
         {
-            GetOrDispose(_mainLinkedAnimation)?.play.actionCallback();
+            GetOrDispose(_selectedLink)?.play.actionCallback();
         }
 
         private void PlayIfNotPlaying()
         {
-            GetOrDispose(_mainLinkedAnimation)?.playIfNotPlaying.actionCallback();
+            GetOrDispose(_selectedLink)?.playIfNotPlaying.actionCallback();
         }
 
         private void Stop()
         {
-            GetOrDispose(_mainLinkedAnimation)?.stop.actionCallback();
+            GetOrDispose(_selectedLink)?.stop.actionCallback();
         }
 
         private void NextFrame()
         {
-            GetOrDispose(_mainLinkedAnimation)?.nextFrame.actionCallback();
+            GetOrDispose(_selectedLink)?.nextFrame.actionCallback();
         }
 
         private void PreviousFrame()
         {
-            GetOrDispose(_mainLinkedAnimation)?.previousFrame.actionCallback();
+            GetOrDispose(_selectedLink)?.previousFrame.actionCallback();
         }
     }
 }
