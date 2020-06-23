@@ -27,6 +27,7 @@ namespace VamTimeline
             set
             {
                 var delta = value - _playTime;
+                if (delta == 0) return;
                 _playTime = value;
                 foreach (var clip in clips)
                 {
