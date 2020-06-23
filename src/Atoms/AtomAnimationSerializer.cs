@@ -24,15 +24,12 @@ namespace VamTimeline
 
         #region Deserialize JSON
 
-        public AtomAnimation DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON)
+        public void DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON)
         {
-            if (animation == null)
-            {
-                animation = new AtomAnimation(_atom)
-                {
-                    speed = DeserializeFloat(animationJSON["Speed"], 1f),
-                };
-            }
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+
+            animation.speed = DeserializeFloat(animationJSON["Speed"], 1f);
+
             JSONArray clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
@@ -71,7 +68,6 @@ namespace VamTimeline
             }
             animation.Initialize();
             animation.RebuildAnimation();
-            return animation;
         }
 
         private static string GenerateUniqueAnimationName(AtomAnimation animation, string animationName)

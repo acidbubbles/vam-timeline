@@ -100,8 +100,6 @@ namespace VamTimeline
 
             try
             {
-                animation.Update();
-
                 if (animation.IsPlaying())
                 {
                     scrubberJSON.valNoCallback = animation.clipTime;
@@ -133,11 +131,6 @@ namespace VamTimeline
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Update)}: " + exc);
             }
-        }
-
-        private void FixedUpdate()
-        {
-            animation.FixedUpdate();
         }
 
         private void UpdateNotPlaying()
@@ -197,6 +190,7 @@ namespace VamTimeline
         {
             try
             {
+                if (animation != null) animation.enabled = true;
                 _ui?.Enable();
                 if (_controllerInjectedControlerPanel == null && animation != null && base.containingAtom != null)
                     SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
@@ -211,7 +205,7 @@ namespace VamTimeline
         {
             try
             {
-                animation?.StopAll();
+                if (animation != null) animation.enabled = false;
                 _ui?.Disable();
                 DestroyControllerPanel();
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
@@ -226,7 +220,7 @@ namespace VamTimeline
         {
             try
             {
-                animation?.Dispose();
+                Destroy(animation);
                 _ui?.Dispose();
                 DestroyControllerPanel();
             }
@@ -426,7 +420,7 @@ namespace VamTimeline
             {
                 yield break;
             }
-            animation = new AtomAnimation(base.containingAtom);
+            animation = gameObject.AddComponent<AtomAnimation>();
             animation.Initialize();
             BindAnimation();
         }
@@ -509,11 +503,12 @@ namespace VamTimeline
             {
                 if (animation != null)
                 {
-                    animation.Dispose();
+                    Destroy(animation);
                     animation = null;
                 }
 
-                animation = serializer.DeserializeAnimation(animation, animationJSON.AsObject);
+                animation = gameObject.AddComponent<AtomAnimation>();
+                serializer.DeserializeAnimation(animation, animationJSON.AsObject);
                 if (animation == null) throw new NullReferenceException("Animation deserialized to null");
                 animation.Initialize();
                 BindAnimation();

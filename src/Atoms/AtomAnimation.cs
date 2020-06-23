@@ -14,7 +14,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimation : IDisposable
+    public class AtomAnimation : MonoBehaviour
     {
         public struct TimeChangedEventArgs { public float time; public float currentClipTime; }
         public class TimeChangedEvent : UnityEvent<TimeChangedEventArgs> { }
@@ -26,7 +26,6 @@ namespace VamTimeline
         public const string RandomizeGroupSuffix = "/*";
         public const float PlayBlendDuration = 0.25f;
 
-        private readonly Atom _atom;
         public readonly AtomPlaybackState state = new AtomPlaybackState();
         private AtomAnimationClip _current;
 
@@ -113,10 +112,8 @@ namespace VamTimeline
             }
         }
 
-        public AtomAnimation(Atom atom)
+        public AtomAnimation()
         {
-            if (atom == null) throw new ArgumentNullException(nameof(atom));
-            _atom = atom;
         }
 
         public void Initialize()
@@ -385,28 +382,26 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (state.isPlaying)
-            {
-                SampleParamsAnimation();
+            if (!state.isPlaying) return;
 
-                foreach (var clip in state.clips)
+            SampleParamsAnimation();
+
+            foreach (var clip in state.clips)
+            {
+                if (clip.nextAnimationName != null && state.playTime >= clip.nextTime)
                 {
-                    if (clip.nextAnimationName != null && state.playTime >= clip.nextTime)
-                    {
-                        TransitionAnimation(clip, state.GetClip(clip.nextAnimationName));
-                    }
+                    TransitionAnimation(clip, state.GetClip(clip.nextAnimationName));
                 }
             }
         }
 
         public void FixedUpdate()
         {
-            if (state.isPlaying)
-            {
-                state.playTime += Time.fixedDeltaTime * _speed;
+            if (!state.isPlaying) return;
 
-                SampleControllers();
-            }
+            state.playTime += Time.fixedDeltaTime * _speed;
+
+            SampleControllers();
         }
 
         public void RebuildAnimation()
@@ -544,7 +539,12 @@ namespace VamTimeline
             });
         }
 
-        public void Dispose()
+        public void OnDisable()
+        {
+            StopAll();
+        }
+
+        public void OnDestroy()
         {
             onTimeChanged.RemoveAllListeners();
             onAnimationRebuildRequested.RemoveAllListeners();
