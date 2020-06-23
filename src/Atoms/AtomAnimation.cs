@@ -219,7 +219,11 @@ namespace VamTimeline
             var clipState = state.GetClip(animationName);
             if (clipState.enabled && clipState.mainInLayer) return;
             var clip = clipState.clip;
-            state.isPlaying = true;
+            if (!state.isPlaying)
+            {
+                state.isPlaying = true;
+                state.sequencing = sequencing || state.sequencing;
+            }
             var previousMain = state.clips.FirstOrDefault(c => c.mainInLayer && c.clip.animationLayer == clip.animationLayer);
             if (previousMain != null && previousMain != clipState)
             {
@@ -385,7 +389,7 @@ namespace VamTimeline
 
                 foreach (var clip in state.clips)
                 {
-                    if (clip.sequencing && state.playTime >= clip.nextTime)
+                    if (clip.nextAnimationName != null && state.playTime >= clip.nextTime)
                     {
                         TransitionAnimation(clip, state.GetClip(clip.nextAnimationName));
                     }
@@ -490,9 +494,8 @@ namespace VamTimeline
             to.mainInLayer = true;
             if (to.weight == 0) to.clipTime = 0f;
 
-            if (from.sequencing)
+            if (state.sequencing)
             {
-                from.sequencing = false;
                 AssignNextAnimation(to);
             }
 
@@ -520,7 +523,9 @@ namespace VamTimeline
             {
                 var previousMain = state.clips.FirstOrDefault(c => c.mainInLayer && c.clip.animationLayer == current.animationLayer);
                 if (previousMain != null)
+                {
                     TransitionAnimation(previousMain, currentClipState);
+                }
             }
             else
             {

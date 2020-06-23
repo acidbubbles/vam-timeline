@@ -16,6 +16,7 @@ namespace VamTimeline
         private float _playTime;
         public List<AtomClipPlaybackState> clips = new List<AtomClipPlaybackState>();
         public bool isPlaying;
+        public bool sequencing;
         // This belong in AtomAnimation
         public float speed = 1f;
         // TODO: Move outside?
@@ -94,7 +95,6 @@ namespace VamTimeline
         public bool enabled;
         public bool mainInLayer;
         public float blendRate;
-        public bool sequencing;
         public string nextAnimationName;
         public float nextTime;
 
@@ -119,8 +119,7 @@ namespace VamTimeline
         public void SetNext(string nextAnimationName, float nextTime)
         {
             this.nextAnimationName = nextAnimationName;
-            this.nextTime = nextTime;
-            sequencing = nextAnimationName != null;
+            this.nextTime = nextAnimationName != null ? nextTime : float.MaxValue;
         }
 
         public void Reset(bool resetTime)
@@ -128,7 +127,6 @@ namespace VamTimeline
             enabled = false;
             weight = 0f;
             blendRate = 0f;
-            sequencing = false;
             mainInLayer = false;
             SetNext(null, 0f);
             if (resetTime) clipTime = 0f;
