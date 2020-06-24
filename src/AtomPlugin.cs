@@ -48,9 +48,6 @@ namespace VamTimeline
         private FreeControllerAnimationTarget _grabbedController;
         private bool _cancelNextGrabbedControllerRelease;
         private bool _resumePlayOnUnfreeze;
-        private bool _animationRebuildRequestPending;
-        private bool _animationRebuildInProgress;
-        private bool _sampleAfterRebuild;
         private bool _restoring;
         private ScreensManager _ui;
         private AnimationControlPanel _controllerInjectedControlerPanel;
@@ -161,7 +158,7 @@ namespace VamTimeline
                     return;
                 }
                 if (animation.current.transition)
-                    SampleAfterRebuild();
+                    animation.Sample();
                 var time = animation.clipTime.Snap();
                 if (autoKeyframeAllControllersJSON.val)
                 {
@@ -536,14 +533,13 @@ namespace VamTimeline
             _playActions.Clear();
 
             animation.onTimeChanged.AddListener(OnTimeChanged);
-            animation.onAnimationRebuildRequested.AddListener(OnAnimationRebuildRequested);
             animation.onClipsListChanged.AddListener(OnClipsListChanged);
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
-            SampleAfterRebuild();
+            animation.Sample();
 
             _ui.Bind(animation);
 
@@ -564,42 +560,6 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnTimeChanged)}: " + exc);
-            }
-        }
-
-        public void SampleAfterRebuild()
-        {
-            _sampleAfterRebuild = true;
-        }
-
-        private void OnAnimationRebuildRequested()
-        {
-            if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
-            if (_animationRebuildRequestPending) return;
-            _animationRebuildRequestPending = true;
-            StartCoroutine(ProcessAnimationRebuildRequest());
-        }
-        private IEnumerator ProcessAnimationRebuildRequest()
-        {
-            yield return new WaitForEndOfFrame();
-            _animationRebuildRequestPending = false;
-            try
-            {
-                _animationRebuildInProgress = true;
-                animation.RebuildAnimation();
-                if (_sampleAfterRebuild)
-                {
-                    _sampleAfterRebuild = false;
-                    animation.Sample();
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ProcessAnimationRebuildRequest)}: " + exc);
-            }
-            finally
-            {
-                _animationRebuildInProgress = false;
             }
         }
 
@@ -760,7 +720,7 @@ namespace VamTimeline
                 {
                     animation.current.Paste(animation.clipTime + entry.time - timeOffset, entry);
                 }
-                SampleAfterRebuild();
+                animation.Sample();
             }
             catch (Exception exc)
             {

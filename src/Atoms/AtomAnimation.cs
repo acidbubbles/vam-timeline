@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -30,7 +31,6 @@ namespace VamTimeline
         private AtomAnimationClip _current;
 
         public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
-        public UnityEvent onAnimationRebuildRequested = new UnityEvent();
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
@@ -111,6 +111,9 @@ namespace VamTimeline
                 }
             }
         }
+        private bool _animationRebuildRequestPending;
+        private bool _animationRebuildInProgress;
+        private bool _sampleAfterRebuild;
 
         public AtomAnimation()
         {
@@ -171,7 +174,10 @@ namespace VamTimeline
 
         private void OnAnimationModified()
         {
-            onAnimationRebuildRequested.Invoke();
+            if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
+            if (_animationRebuildRequestPending) return;
+            _animationRebuildRequestPending = true;
+            StartCoroutine(ProcessAnimationRebuildRequest());
         }
 
         public bool IsEmpty()
@@ -329,9 +335,13 @@ namespace VamTimeline
             }
         }
 
-        public void Sample()
+        public void Sample(bool force = false)
         {
             if (state.isPlaying) return;
+
+            if (!force && (_animationRebuildRequestPending || _animationRebuildInProgress))
+                _sampleAfterRebuild = true;
+
             currentClipState.enabled = true;
             currentClipState.weight = 1f;
             SampleParamsAnimation();
@@ -539,6 +549,35 @@ namespace VamTimeline
             });
         }
 
+        public void SampleAfterRebuild()
+        {
+            _sampleAfterRebuild = true;
+        }
+
+        private IEnumerator ProcessAnimationRebuildRequest()
+        {
+            yield return new WaitForEndOfFrame();
+            _animationRebuildRequestPending = false;
+            try
+            {
+                _animationRebuildInProgress = true;
+                RebuildAnimation();
+                if (_sampleAfterRebuild)
+                {
+                    _sampleAfterRebuild = false;
+                    Sample(true);
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ProcessAnimationRebuildRequest)}: " + exc);
+            }
+            finally
+            {
+                _animationRebuildInProgress = false;
+            }
+        }
+
         public void OnDisable()
         {
             StopAll();
@@ -547,7 +586,6 @@ namespace VamTimeline
         public void OnDestroy()
         {
             onTimeChanged.RemoveAllListeners();
-            onAnimationRebuildRequested.RemoveAllListeners();
             onCurrentAnimationChanged.RemoveAllListeners();
             onAnimationSettingsChanged.RemoveAllListeners();
             foreach (var clip in clips)

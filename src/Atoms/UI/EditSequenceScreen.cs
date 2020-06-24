@@ -230,7 +230,7 @@ namespace VamTimeline
         {
             current.transition = val;
             RefreshTransitionUI();
-            plugin.SampleAfterRebuild();
+            plugin.animation.Sample();
         }
 
         private void ChangeNextAnimation(string val)
