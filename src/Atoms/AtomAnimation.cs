@@ -177,7 +177,7 @@ namespace VamTimeline
             if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             if (_animationRebuildRequestPending) return;
             _animationRebuildRequestPending = true;
-            StartCoroutine(ProcessAnimationRebuildRequest());
+            StartCoroutine(RebuildDeferred());
         }
 
         public bool IsEmpty()
@@ -414,74 +414,6 @@ namespace VamTimeline
             SampleControllers();
         }
 
-        public void RebuildAnimation()
-        {
-            if (current == null) throw new NullReferenceException("No current animation set");
-            var sw = Stopwatch.StartNew();
-            foreach (var clip in clips)
-            {
-                clip.Validate();
-                PrepareClipCurves(clip);
-                if (clip.transition)
-                {
-                    var previous = GetClip(clip.animationName);
-                    if (previous != null && (previous.IsDirty() || clip.IsDirty()))
-                        clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
-                    var next = GetClip(clip.nextAnimationName);
-                    if (next != null && (next.IsDirty() || clip.IsDirty()))
-                        clip.Paste(clip.animationLength, next.Copy(0f, true), false);
-                }
-            }
-            if (sw.ElapsedMilliseconds > 1000)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Suspiciously long animation rebuild ({sw.Elapsed})");
-            }
-        }
-
-        private void PrepareClipCurves(AtomAnimationClip clip)
-        {
-            foreach (var target in clip.targetControllers)
-            {
-                if (!target.dirty) continue;
-
-                target.dirty = false;
-
-                if (clip.loop)
-                    target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
-
-                target.ReapplyCurveTypes();
-
-                if (clip.loop)
-                    target.SmoothLoop();
-
-                if (clip.ensureQuaternionContinuity)
-                {
-                    UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
-                        target.rotX,
-                        target.rotY,
-                        target.rotZ,
-                        target.rotW);
-                }
-            }
-
-            foreach (var target in clip.targetFloatParams)
-            {
-                if (!target.dirty) continue;
-
-                target.dirty = false;
-
-                if (clip.loop)
-                    target.value.SetKeyframe(clip.animationLength, target.value[0].value);
-
-                target.value.FlatAllFrames();
-            }
-        }
-
-        private bool HasAnimatableControllers()
-        {
-            return current.targetControllers.Count > 0;
-        }
-
         public AtomAnimationClip AddAnimation(string animationLayer)
         {
             string animationName = GetNewAnimationName();
@@ -549,12 +481,7 @@ namespace VamTimeline
             });
         }
 
-        public void SampleAfterRebuild()
-        {
-            _sampleAfterRebuild = true;
-        }
-
-        private IEnumerator ProcessAnimationRebuildRequest()
+        private IEnumerator RebuildDeferred()
         {
             yield return new WaitForEndOfFrame();
             _animationRebuildRequestPending = false;
@@ -570,11 +497,74 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(ProcessAnimationRebuildRequest)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimation)}.{nameof(RebuildDeferred)}: " + exc);
             }
             finally
             {
                 _animationRebuildInProgress = false;
+            }
+        }
+
+        public void RebuildAnimation()
+        {
+            if (current == null) throw new NullReferenceException("No current animation set");
+            var sw = Stopwatch.StartNew();
+            foreach (var clip in clips)
+            {
+                clip.Validate();
+                PrepareClipCurves(clip);
+                if (clip.transition)
+                {
+                    var previous = GetClip(clip.animationName);
+                    if (previous != null && (previous.IsDirty() || clip.IsDirty()))
+                        clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
+                    var next = GetClip(clip.nextAnimationName);
+                    if (next != null && (next.IsDirty() || clip.IsDirty()))
+                        clip.Paste(clip.animationLength, next.Copy(0f, true), false);
+                }
+            }
+            if (sw.ElapsedMilliseconds > 1000)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Suspiciously long animation rebuild ({sw.Elapsed})");
+            }
+        }
+
+        private void PrepareClipCurves(AtomAnimationClip clip)
+        {
+            foreach (var target in clip.targetControllers)
+            {
+                if (!target.dirty) continue;
+
+                target.dirty = false;
+
+                if (clip.loop)
+                    target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
+
+                target.ReapplyCurveTypes();
+
+                if (clip.loop)
+                    target.SmoothLoop();
+
+                if (clip.ensureQuaternionContinuity)
+                {
+                    UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
+                        target.rotX,
+                        target.rotY,
+                        target.rotZ,
+                        target.rotW);
+                }
+            }
+
+            foreach (var target in clip.targetFloatParams)
+            {
+                if (!target.dirty) continue;
+
+                target.dirty = false;
+
+                if (clip.loop)
+                    target.value.SetKeyframe(clip.animationLength, target.value[0].value);
+
+                target.value.FlatAllFrames();
             }
         }
 

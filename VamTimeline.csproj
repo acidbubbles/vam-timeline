@@ -139,6 +139,12 @@
     <Compile Include="src/Controller/SimpleSignUI.cs" />
 
     <Compile Include="src/ControllerPlugin.cs" />
+
+    <Compile Include="tests/Framework/TestContext.cs" />
+    <Compile Include="tests/Framework/Test.cs" />
+    <Compile Include="tests/Specs/AnimationTests.cs" />
+    <Compile Include="tests/Plugin/TestsIndex.cs" />
+    <Compile Include="tests/Plugin/TestPlugin.cs" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
