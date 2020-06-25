@@ -28,17 +28,16 @@ namespace VamTimeline
         public const float PlayBlendDuration = 0.25f;
 
         public readonly AtomPlaybackState state = new AtomPlaybackState();
-        private AtomAnimationClip _current;
 
         public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
-        private float _speed;
 
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = state.playTime, currentClipTime = currentClipState.clipTime };
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public AtomClipPlaybackState currentClipState { get; private set; }
+        private AtomAnimationClip _current;
         public AtomAnimationClip current
         {
             get
@@ -93,6 +92,7 @@ namespace VamTimeline
             }
         }
 
+        private float _speed = 1f;
         public float speed
         {
             get
