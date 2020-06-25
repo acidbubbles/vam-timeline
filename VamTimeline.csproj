@@ -116,6 +116,8 @@
 
     <Compile Include="src/AtomAnimations/Params/FloatParamAnimationTarget.cs" />
 
+    <Compile Include="src/UI/Editor.cs" />
+
     <Compile Include="src/UI/Screens/ScreenBase.cs" />
     <Compile Include="src/UI/Screens/ClipsScreen.cs" />
     <Compile Include="src/UI/Screens/PerformanceScreen.cs" />

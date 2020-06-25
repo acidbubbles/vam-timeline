@@ -50,6 +50,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\RectTransformExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\StorableNames.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\SyncProxy.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Editor.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\AnimationControlPanel\\AnimationControlPanel.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Curves\\Curves.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Curves\\CurvesLines.cs",

@@ -89,7 +89,7 @@ namespace VamTimeline
         {
             var controlPanelContainer = _plugin.CreateSpacer(rightSide);
             controlPanelContainer.height = 600f;
-            _controlPanel = controlPanelContainer.gameObject.AddComponent<AnimationControlPanel>();
+            _controlPanel = AnimationControlPanel.Configure(controlPanelContainer.gameObject);
             _controlPanel.Bind(_plugin);
         }
 

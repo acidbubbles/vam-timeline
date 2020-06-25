@@ -14,6 +14,12 @@ namespace VamTimeline
     /// </summary>
     public class AnimationControlPanel : MonoBehaviour
     {
+        public static AnimationControlPanel Configure(GameObject go)
+        {
+            go.AddComponent<VerticalLayoutGroup>();
+            return go.AddComponent<AnimationControlPanel>();
+        }
+
         private DopeSheet _dopeSheet;
         private Scrubber _scrubber;
         private AtomAnimation _animation;
@@ -31,11 +37,6 @@ namespace VamTimeline
                 _dopeSheet.locked = value;
                 _scrubber.enabled = !value;
             }
-        }
-
-        public AnimationControlPanel()
-        {
-            gameObject.AddComponent<VerticalLayoutGroup>();
         }
 
         public void Bind(IAtomPlugin plugin)

@@ -10,6 +10,7 @@ src/Common/IAtomAnimationTargetsList.cs
 src/Common/StorableNames.cs
 src/Common/SyncProxy.cs
 src/Common/AnimationCurveExtensions.cs
+src/UI/Editor.cs
 src/UI/Components/Clickable.cs
 src/UI/Components/Listener.cs
 src/UI/Components/UIVertexHelper.cs

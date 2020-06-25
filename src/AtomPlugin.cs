@@ -49,8 +49,8 @@ namespace VamTimeline
         private bool _cancelNextGrabbedControllerRelease;
         private bool _resumePlayOnUnfreeze;
         private bool _restoring;
-        private ScreensManager _ui;
-        private AnimationControlPanel _controllerInjectedControlerPanel;
+        private Editor _ui;
+        private AnimationControlPanel _controllerInjectedControllerPanel;
         private class AnimStorableActionMap { public JSONStorableAction jsa; public string animationName; }
         private readonly List<AnimStorableActionMap> _playActions = new List<AnimStorableActionMap>();
 
@@ -63,7 +63,6 @@ namespace VamTimeline
             try
             {
                 serializer = new AtomAnimationSerializer(base.containingAtom);
-                _ui = new ScreensManager(this);
                 InitStorables();
                 StartCoroutine(DeferredInit());
             }
@@ -79,7 +78,12 @@ namespace VamTimeline
 
             try
             {
-                _ui?.Init();
+                if(UITransform == null) return;
+                var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
+
+                _ui = Editor.AddTo(scriptUI.fullWidthUIContent);
+                _ui.Bind(this);
+                if(animation != null) _ui.Bind(animation);
             }
             catch (Exception exc)
             {
@@ -188,8 +192,8 @@ namespace VamTimeline
             try
             {
                 if (animation != null) animation.enabled = true;
-                _ui?.Enable();
-                if (_controllerInjectedControlerPanel == null && animation != null && base.containingAtom != null)
+                if (_ui != null) _ui.enabled = true;
+                if (_controllerInjectedControllerPanel == null && animation != null && base.containingAtom != null)
                     SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
             }
             catch (Exception exc)
@@ -203,7 +207,7 @@ namespace VamTimeline
             try
             {
                 if (animation != null) animation.enabled = false;
-                _ui?.Disable();
+                if (_ui != null) _ui.enabled = false;
                 DestroyControllerPanel();
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
@@ -218,7 +222,7 @@ namespace VamTimeline
             try
             {
                 Destroy(animation);
-                _ui?.Dispose();
+                Destroy(_ui);
                 DestroyControllerPanel();
             }
             catch (Exception exc)
@@ -386,9 +390,9 @@ namespace VamTimeline
 
             lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
             {
-                _ui.UpdateLocked(val);
-                if (_controllerInjectedControlerPanel != null)
-                    _controllerInjectedControlerPanel.locked = val;
+                _ui.locked = val;
+                if (_controllerInjectedControllerPanel != null)
+                    _controllerInjectedControllerPanel.locked = val;
             });
             RegisterBool(lockedJSON);
 
@@ -546,7 +550,7 @@ namespace VamTimeline
             OnClipsListChanged();
             OnAnimationParametersChanged();
 
-            _ui.Bind(animation);
+            _ui?.Bind(animation);
 
             SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
         }
@@ -779,21 +783,21 @@ namespace VamTimeline
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
 
-            _controllerInjectedControlerPanel = container.GetComponent<AnimationControlPanel>();
-            if (_controllerInjectedControlerPanel == null)
+            _controllerInjectedControllerPanel = container.GetComponent<AnimationControlPanel>();
+            if (_controllerInjectedControllerPanel == null)
             {
-                _controllerInjectedControlerPanel = container.AddComponent<AnimationControlPanel>();
-                _controllerInjectedControlerPanel.Bind(this);
+                _controllerInjectedControllerPanel = AnimationControlPanel.Configure(container);
+                _controllerInjectedControllerPanel.Bind(this);
             }
-            _controllerInjectedControlerPanel.Bind(animation);
+            _controllerInjectedControllerPanel.Bind(animation);
         }
 
         private void DestroyControllerPanel()
         {
-            if (_controllerInjectedControlerPanel == null) return;
-            _controllerInjectedControlerPanel.gameObject.transform.SetParent(null, false);
-            Destroy(_controllerInjectedControlerPanel.gameObject);
-            _controllerInjectedControlerPanel = null;
+            if (_controllerInjectedControllerPanel == null) return;
+            _controllerInjectedControllerPanel.gameObject.transform.SetParent(null, false);
+            Destroy(_controllerInjectedControllerPanel.gameObject);
+            _controllerInjectedControllerPanel = null;
         }
 
         #endregion
