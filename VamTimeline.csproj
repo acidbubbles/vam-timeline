@@ -99,22 +99,22 @@
     <Compile Include="src/Common/SyncProxy.cs" />
     <Compile Include="src/Common/AnimationCurveExtensions.cs" />
 
-    <Compile Include="src/Atoms/AtomAnimationClip.cs" />
-    <Compile Include="src/Atoms/AtomClipboardEntry.cs" />
-    <Compile Include="src/Atoms/AtomAnimation.cs" />
-    <Compile Include="src/Atoms/AtomAnimationTargetsList.cs" />
-    <Compile Include="src/Atoms/AtomAnimationSerializer.cs" />
-    <Compile Include="src/Atoms/AtomPlaybackState.cs" />
-    <Compile Include="src/Atoms/IAtomPlugin.cs" />
+    <Compile Include="src/AtomAnimations/AtomAnimationClip.cs" />
+    <Compile Include="src/AtomAnimations/AtomClipboardEntry.cs" />
+    <Compile Include="src/AtomAnimations/AtomAnimation.cs" />
+    <Compile Include="src/AtomAnimations/AtomAnimationTargetsList.cs" />
+    <Compile Include="src/AtomAnimations/AtomAnimationSerializer.cs" />
+    <Compile Include="src/AtomAnimations/AtomPlaybackState.cs" />
+    <Compile Include="src/AtomAnimations/IAtomPlugin.cs" />
 
-    <Compile Include="src/Atoms/Common/AnimationTargetBase.cs" />
-    <Compile Include="src/Atoms/Common/CurveTypeValues.cs" />
-    <Compile Include="src/Atoms/Common/KeyframeSettings.cs" />
-    <Compile Include="src/Atoms/Common/IAnimationTargetWithCurves.cs" />
+    <Compile Include="src/AtomAnimations/Common/AnimationTargetBase.cs" />
+    <Compile Include="src/AtomAnimations/Common/CurveTypeValues.cs" />
+    <Compile Include="src/AtomAnimations/Common/KeyframeSettings.cs" />
+    <Compile Include="src/AtomAnimations/Common/IAnimationTargetWithCurves.cs" />
 
-    <Compile Include="src/Atoms/FreeControllers/FreeControllerAnimationTarget.cs" />
+    <Compile Include="src/AtomAnimations/FreeControllers/FreeControllerAnimationTarget.cs" />
 
-    <Compile Include="src/Atoms/Params/FloatParamAnimationTarget.cs" />
+    <Compile Include="src/AtomAnimations/Params/FloatParamAnimationTarget.cs" />
 
     <Compile Include="src/UI/Screens/ScreenBase.cs" />
     <Compile Include="src/UI/Screens/ClipsScreen.cs" />
