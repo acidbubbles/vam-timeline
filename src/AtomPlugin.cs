@@ -415,11 +415,17 @@ namespace VamTimeline
             base.containingAtom.RestoreFromLast(this);
             if (animation != null)
             {
+                yield return 0;
+                animation.Sample();
                 yield break;
             }
             animation = gameObject.AddComponent<AtomAnimation>();
             animation.Initialize();
             BindAnimation();
+
+            yield return 0;
+
+            animation.Sample();
         }
 
         private void StartAutoPlay()
@@ -539,7 +545,6 @@ namespace VamTimeline
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
-            animation.Sample();
 
             _ui.Bind(animation);
 
