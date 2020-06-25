@@ -181,7 +181,7 @@ namespace VamTimeline
         public void Update()
         {
             if (UIPerformance.ShouldSkip()) return;
-            if (!plugin.animation.IsPlaying()) return;
+            if (!plugin.animation.isPlaying) return;
 
             SetTime(plugin.animation.clipTime, false);
         }

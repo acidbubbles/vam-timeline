@@ -234,7 +234,7 @@ namespace VamTimeline
                 RefreshCurrentCurveType(animation.clipTime);
                 return;
             }
-            if (animation.IsPlaying()) return;
+            if (animation.isPlaying) return;
             if (current.loop && (time.IsSameFrame(0) || time.IsSameFrame(current.animationLength)))
             {
                 RefreshCurrentCurveType(animation.clipTime);

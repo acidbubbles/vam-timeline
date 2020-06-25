@@ -219,7 +219,7 @@ namespace VamTimeline
         public void Update()
         {
             if (_animation == null) return;
-            if (!_animation.IsPlaying()) return;
+            if (!_animation.isPlaying) return;
             if (UIPerformance.ShouldSkip()) return;
 
             SetScrubberPosition(_animation.clipTime, false);

@@ -97,7 +97,7 @@ namespace VamTimeline
 
             try
             {
-                if (animation.IsPlaying())
+                if (animation.isPlaying)
                 {
                     scrubberJSON.valNoCallback = animation.clipTime;
                     timeJSON.valNoCallback = animation.playTime;
@@ -315,7 +315,7 @@ namespace VamTimeline
                     _resumePlayOnUnfreeze = true;
                     return;
                 }
-                if (animation.IsPlaying()) return;
+                if (animation.isPlaying) return;
                 animation.PlayAll();
                 isPlayingJSON.valNoCallback = true;
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
@@ -336,7 +336,7 @@ namespace VamTimeline
 
             stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
-                if (animation.IsPlaying())
+                if (animation.isPlaying)
                 {
                     _resumePlayOnUnfreeze = false;
                     animation.StopAll();
@@ -353,7 +353,7 @@ namespace VamTimeline
 
             stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
-                if (!animation.IsPlaying()) return;
+                if (!animation.isPlaying) return;
                 animation.StopAll();
                 animation.clipTime = animation.clipTime.Snap(snapJSON.val);
                 isPlayingJSON.valNoCallback = false;
@@ -678,7 +678,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.IsPlaying()) return;
+                if (animation.isPlaying) return;
                 clipboard.Clear();
                 clipboard.time = animation.clipTime.Snap();
                 clipboard.entries.Add(animation.current.Copy(clipboard.time));
@@ -696,7 +696,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.IsPlaying()) return;
+                if (animation.isPlaying) return;
 
                 clipboard.Clear();
                 clipboard.time = animation.clipTime.Snap();
@@ -712,7 +712,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.IsPlaying()) return;
+                if (animation.isPlaying) return;
 
                 if (clipboard.entries.Count == 0)
                 {

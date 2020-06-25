@@ -77,7 +77,7 @@ namespace VamTimeline
 
         private void AddLayer()
         {
-            var clip = animation.AddAnimation(GetNewLayerName());
+            var clip = animation.CreateClip(GetNewLayerName());
 
             animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditScreen.ScreenName);

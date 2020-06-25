@@ -222,7 +222,7 @@ namespace VamTimeline
                     break;
                 case ChangeLengthModeCropExtendAtTime:
                     {
-                        if (animation.IsPlaying())
+                        if (animation.isPlaying)
                         {
                             _lengthJSON.valNoCallback = current.animationLength;
                             return;

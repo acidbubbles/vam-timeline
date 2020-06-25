@@ -66,7 +66,7 @@ namespace VamTimeline
 
         private void AddAnimationAsCopy()
         {
-            var clip = animation.AddAnimation(current.animationLayer);
+            var clip = animation.CreateClip(current.animationLayer);
             clip.loop = current.loop;
             clip.nextAnimationName = current.nextAnimationName;
             clip.nextAnimationTime = current.nextAnimationTime;
@@ -99,7 +99,7 @@ namespace VamTimeline
 
         private void AddAnimationFromCurrentFrame()
         {
-            var clip = animation.AddAnimation(current.animationLayer);
+            var clip = animation.CreateClip(current.animationLayer);
             clip.loop = current.loop;
             clip.nextAnimationName = current.nextAnimationName;
             clip.nextAnimationTime = current.nextAnimationTime;
@@ -132,7 +132,7 @@ namespace VamTimeline
                 return;
             }
 
-            var clip = animation.AddAnimation(current.animationLayer);
+            var clip = animation.CreateClip(current.animationLayer);
             clip.animationName = $"{current.animationName} > {next.animationName}";
             clip.loop = false;
             clip.transition = true;
