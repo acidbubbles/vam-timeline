@@ -59,33 +59,33 @@
   <ItemGroup>
     <Compile Include="src/External/Unity/UnitySpecific.cs" />
 
-    <Compile Include="src/Components/Clickable.cs" />
-    <Compile Include="src/Components/Listener.cs" />
-    <Compile Include="src/Components/UIVertexHelper.cs" />
-    <Compile Include="src/Components/UIPerformance.cs" />
-    <Compile Include="src/Components/GradientImage.cs" />
+    <Compile Include="src/UI/Components/Clickable.cs" />
+    <Compile Include="src/UI/Components/Listener.cs" />
+    <Compile Include="src/UI/Components/UIVertexHelper.cs" />
+    <Compile Include="src/UI/Components/UIPerformance.cs" />
+    <Compile Include="src/UI/Components/GradientImage.cs" />
 
-    <Compile Include="src/Components/Styling/StyleBase.cs" />
+    <Compile Include="src/UI/Components/Styling/StyleBase.cs" />
 
-    <Compile Include="src/Components/Scrubber/Scrubber.cs" />
-    <Compile Include="src/Components/Scrubber/ScrubberMarkers.cs" />
-    <Compile Include="src/Components/Scrubber/ScrubberStyle.cs" />
+    <Compile Include="src/UI/Components/Scrubber/Scrubber.cs" />
+    <Compile Include="src/UI/Components/Scrubber/ScrubberMarkers.cs" />
+    <Compile Include="src/UI/Components/Scrubber/ScrubberStyle.cs" />
 
-    <Compile Include="src/Components/TargetFrame/ITargetFrame.cs" />
-    <Compile Include="src/Components/TargetFrame/TargetFrameBase.cs" />
-    <Compile Include="src/Components/TargetFrame/ControllerTargetFrame.cs" />
-    <Compile Include="src/Components/TargetFrame/FloatParamTargetFrame.cs" />
-    <Compile Include="src/Components/TargetFrame/SimpleSlider.cs" />
+    <Compile Include="src/UI/Components/TargetFrame/ITargetFrame.cs" />
+    <Compile Include="src/UI/Components/TargetFrame/TargetFrameBase.cs" />
+    <Compile Include="src/UI/Components/TargetFrame/ControllerTargetFrame.cs" />
+    <Compile Include="src/UI/Components/TargetFrame/FloatParamTargetFrame.cs" />
+    <Compile Include="src/UI/Components/TargetFrame/SimpleSlider.cs" />
 
-    <Compile Include="src/Components/Curves/Curves.cs" />
-    <Compile Include="src/Components/Curves/CurvesLines.cs" />
-    <Compile Include="src/Components/Curves/CurvesStyle.cs" />
+    <Compile Include="src/UI/Components/Curves/Curves.cs" />
+    <Compile Include="src/UI/Components/Curves/CurvesLines.cs" />
+    <Compile Include="src/UI/Components/Curves/CurvesStyle.cs" />
 
-    <Compile Include="src/Components/DopeSheet/DopeSheet.cs" />
-    <Compile Include="src/Components/DopeSheet/DopeSheetKeyframes.cs" />
-    <Compile Include="src/Components/DopeSheet/DopeSheetStyle.cs" />
+    <Compile Include="src/UI/Components/DopeSheet/DopeSheet.cs" />
+    <Compile Include="src/UI/Components/DopeSheet/DopeSheetKeyframes.cs" />
+    <Compile Include="src/UI/Components/DopeSheet/DopeSheetStyle.cs" />
 
-    <Compile Include="src/Components/AnimationControlPanel/AnimationControlPanel.cs" />
+    <Compile Include="src/UI/Components/AnimationControlPanel/AnimationControlPanel.cs" />
 
     <Compile Include="src/Common/FloatExtensions.cs" />
     <Compile Include="src/Common/ListExtensions.cs" />
@@ -116,23 +116,23 @@
 
     <Compile Include="src/Atoms/Params/FloatParamAnimationTarget.cs" />
 
-    <Compile Include="src/Atoms/UI/ScreenBase.cs" />
-    <Compile Include="src/Atoms/UI/ClipsScreen.cs" />
-    <Compile Include="src/Atoms/UI/PerformanceScreen.cs" />
-    <Compile Include="src/Atoms/UI/SettingsScreen.cs" />
-    <Compile Include="src/Atoms/UI/EditAnimationScreen.cs" />
-    <Compile Include="src/Atoms/UI/EditSequenceScreen.cs" />
-    <Compile Include="src/Atoms/UI/ManageAnimationsScreen.cs" />
-    <Compile Include="src/Atoms/UI/AddAnimationScreen.cs" />
-    <Compile Include="src/Atoms/UI/TargetsScreen.cs" />
-    <Compile Include="src/Atoms/UI/EditScreen.cs" />
-    <Compile Include="src/Atoms/UI/BulkScreen.cs" />
-    <Compile Include="src/Atoms/UI/AdvancedScreen.cs" />
-    <Compile Include="src/Atoms/UI/MocapScreen.cs" />
-    <Compile Include="src/Atoms/UI/EditLayersScreen.cs" />
-    <Compile Include="src/Atoms/UI/MoreScreen.cs" />
-    <Compile Include="src/Atoms/UI/HelpScreen.cs" />
-    <Compile Include="src/Atoms/UI/ScreensManager.cs" />
+    <Compile Include="src/UI/Screens/ScreenBase.cs" />
+    <Compile Include="src/UI/Screens/ClipsScreen.cs" />
+    <Compile Include="src/UI/Screens/PerformanceScreen.cs" />
+    <Compile Include="src/UI/Screens/SettingsScreen.cs" />
+    <Compile Include="src/UI/Screens/EditAnimationScreen.cs" />
+    <Compile Include="src/UI/Screens/EditSequenceScreen.cs" />
+    <Compile Include="src/UI/Screens/ManageAnimationsScreen.cs" />
+    <Compile Include="src/UI/Screens/AddAnimationScreen.cs" />
+    <Compile Include="src/UI/Screens/TargetsScreen.cs" />
+    <Compile Include="src/UI/Screens/EditScreen.cs" />
+    <Compile Include="src/UI/Screens/BulkScreen.cs" />
+    <Compile Include="src/UI/Screens/AdvancedScreen.cs" />
+    <Compile Include="src/UI/Screens/MocapScreen.cs" />
+    <Compile Include="src/UI/Screens/EditLayersScreen.cs" />
+    <Compile Include="src/UI/Screens/MoreScreen.cs" />
+    <Compile Include="src/UI/Screens/HelpScreen.cs" />
+    <Compile Include="src/UI/Screens/ScreensManager.cs" />
 
     <Compile Include="src/AtomPlugin.cs" />
 
