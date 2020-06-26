@@ -93,7 +93,6 @@ namespace VamTimeline
         public void Bind(AtomAnimation animation)
         {
             _controlPanel.Bind(animation);
-            _screensManager.Bind(animation);
         }
     }
 }

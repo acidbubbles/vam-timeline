@@ -16,7 +16,8 @@ namespace VamTimeline
     {
         public static AnimationControlPanel Configure(GameObject go)
         {
-            go.AddComponent<VerticalLayoutGroup>();
+            var group = go.AddComponent<VerticalLayoutGroup>();
+            group.spacing = 10f;
             return go.AddComponent<AnimationControlPanel>();
         }
 
@@ -42,14 +43,10 @@ namespace VamTimeline
         public void Bind(IAtomPlugin plugin)
         {
             _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
-            InitSpacer();
             _scrubber = InitScrubber(plugin.timeJSON, plugin.scrubberJSON, plugin.snapJSON);
-            InitSpacer();
             // TODO: Make the JSON use animation features instead of the other way around
             InitFrameNav(plugin.manager.configurableButtonPrefab, plugin.previousFrameJSON, plugin.nextFrameJSON);
-            InitSpacer();
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.playClipJSON, plugin.stopJSON);
-            InitSpacer();
             _dopeSheet = InitDopeSheet();
         }
 

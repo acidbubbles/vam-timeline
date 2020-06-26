@@ -149,7 +149,7 @@ namespace VamTimeline
                 animation.PlayAll();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
 
-                plugin.StartCoroutine(StopWhenPlaybackIsComplete());
+                StartCoroutine(StopWhenPlaybackIsComplete());
             }
             catch (Exception exc)
             {

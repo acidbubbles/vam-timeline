@@ -119,7 +119,7 @@ namespace VamTimeline
         {
             if (_selectionChangedPending) return;
             _selectionChangedPending = true;
-            plugin.StartCoroutine(SelectionChangedDeferred());
+            StartCoroutine(SelectionChangedDeferred());
         }
 
         private IEnumerator SelectionChangedDeferred()

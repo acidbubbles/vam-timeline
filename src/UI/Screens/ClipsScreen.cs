@@ -65,7 +65,7 @@ namespace VamTimeline
                     animation.PlayClip(clip.animationName, true);
                 }
             });
-            plugin.StartCoroutine(UpdateAnimButton(btn, clipState));
+            StartCoroutine(UpdateAnimButton(btn, clipState));
         }
 
         private IEnumerator UpdateAnimButton(UIDynamicButton btn, AtomClipPlaybackState clipState)

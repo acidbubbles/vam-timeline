@@ -49,8 +49,6 @@ namespace VamTimeline
 
             tabsContainer.AddComponent<LayoutElement>().minHeight = 60f;
 
-            tabsContainer.AddComponent<Image>().color = Color.blue;
-
             var group = tabsContainer.AddComponent<GridLayoutGroup>();
             group.constraint = GridLayoutGroup.Constraint.Flexible;
             group.constraintCount = screens.Length;
@@ -84,11 +82,6 @@ namespace VamTimeline
             _plugin.lockedJSON.val = screen == PerformanceScreen.ScreenName;
             _screenChanged.Invoke();
             RefreshCurrentUI();
-        }
-
-        public void Bind(AtomAnimation animation)
-        {
-            ChangeScreen(GetDefaultScreen());
         }
 
         private List<string> ListAvailableScreens()
@@ -129,7 +122,7 @@ namespace VamTimeline
             else if (!_uiRefreshScheduled)
             {
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
+                StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
         }
 
@@ -173,6 +166,7 @@ namespace VamTimeline
             var go = new GameObject();
             go.transform.SetParent(transform, false);
             var group = go.AddComponent<VerticalLayoutGroup>();
+            group.spacing = 10f;
 
             switch (screen)
             {
@@ -244,7 +238,7 @@ namespace VamTimeline
             {
                 _uiRefreshInvalidated = false;
                 _uiRefreshScheduled = true;
-                _plugin.StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
+                StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
         }
 

@@ -103,7 +103,7 @@ namespace VamTimeline
             _importRecordedUI.buttonText.text = "Importing, please wait...";
             _importRecordedUI.button.interactable = false;
 
-            plugin.StartCoroutine(ImportRecordedCoroutine());
+            StartCoroutine(ImportRecordedCoroutine());
         }
 
         private IEnumerator ImportRecordedCoroutine()
@@ -383,7 +383,7 @@ namespace VamTimeline
             _reduceKeyframesUI.buttonText.text = "Optimizing, please wait...";
             _reduceKeyframesUI.button.interactable = false;
 
-            plugin.StartCoroutine(ReduceKeyframesCoroutine());
+            StartCoroutine(ReduceKeyframesCoroutine());
         }
 
         private IEnumerator ReduceKeyframesCoroutine()
