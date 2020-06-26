@@ -36,23 +36,19 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            // Left side
-
-            InitPreviewUI(false);
-
-            // Right side
+            InitPreviewUI();
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
             prefabFactory.CreateSpacer();
 
-            InitSequenceUI(true);
+            InitSequenceUI();
 
             prefabFactory.CreateSpacer();
 
-            InitTransitionUI(true);
+            InitTransitionUI();
 
-            InitLoopUI(true);
+            InitLoopUI();
 
             prefabFactory.CreateSpacer();
 
@@ -64,47 +60,47 @@ namespace VamTimeline
             UpdateValues();
         }
 
-        private void InitSequenceUI(bool rightSide)
+        private void InitSequenceUI()
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
-                        var nextAnimationUI = prefabFactory.CreateScrollablePopup(_nextAnimationJSON, rightSide);
+                        var nextAnimationUI = prefabFactory.CreateScrollablePopup(_nextAnimationJSON);
             nextAnimationUI.popupPanelHeight = 260f;
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTime
             };
-                        var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON, rightSide);
+                        var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
 
             _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
-                        var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON, rightSide);
+                        var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
 
             UpdateNextAnimationPreview();
         }
 
-        private void InitPreviewUI(bool rightSide)
+        private void InitPreviewUI()
         {
             _nextAnimationPreviewJSON = new JSONStorableString("Next Preview", "");
-                        var nextAnimationResultUI = prefabFactory.CreateTextField(_nextAnimationPreviewJSON, rightSide);
+                        var nextAnimationResultUI = prefabFactory.CreateTextField(_nextAnimationPreviewJSON);
             nextAnimationResultUI.height = 30f;
         }
 
-        private void InitTransitionUI(bool rightSide)
+        private void InitTransitionUI()
         {
             var transitionLabelJSON = new JSONStorableString("Transition (Help)", "<b>Transition animations</b> can be enabled when there is an animation targeting the current animation, and when the current animation has a next animation configured. Only non-looping animations can be transition animations. This will automatically copy the last frame from the previous animation and the first frame from the next animation.");
-                        var transitionLabelUI = prefabFactory.CreateTextField(transitionLabelJSON, rightSide);
+                        var transitionLabelUI = prefabFactory.CreateTextField(transitionLabelJSON);
             // var layout = animationNameLabelUI.GetComponent<LayoutElement>();
             // layout.minHeight = 36f;
             transitionLabelUI.height = 340f;
             // UnityEngine.Object.Destroy(animationNameLabelUI.gameObject.GetComponentInChildren<Image>());
 
             _transitionJSON = new JSONStorableBool("Transition", false, (bool val) => ChangeTransition(val));
-                        _transitionUI = prefabFactory.CreateToggle(_transitionJSON, rightSide);
+                        _transitionUI = prefabFactory.CreateToggle(_transitionJSON);
         }
 
-        private void InitLoopUI(bool rightSide)
+        private void InitLoopUI()
         {
             _loop = new JSONStorableBool("Loop", current?.loop ?? true, (bool val) =>
             {
@@ -112,7 +108,7 @@ namespace VamTimeline
                 UpdateNextAnimationPreview();
                 RefreshTransitionUI();
             });
-                        _loopUI = prefabFactory.CreateToggle(_loop, rightSide);
+                        _loopUI = prefabFactory.CreateToggle(_loop);
         }
 
         private void RefreshTransitionUI()

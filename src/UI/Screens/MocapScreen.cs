@@ -50,25 +50,25 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        var importRecordedOptionsUI = prefabFactory.CreateScrollablePopup(_importRecordedOptionsJSON, true);
+            var importRecordedOptionsUI = prefabFactory.CreateScrollablePopup(_importRecordedOptionsJSON);
 
             _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Distance Between Frames", 0.04f, 0.001f, 0.5f, true);
-                        var reduceMinPosDistanceUI = prefabFactory.CreateSlider(_reduceMinPosDistanceJSON, true);
+            var reduceMinPosDistanceUI = prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
 
             _reduceMinRotationJSON = new JSONStorableFloat("Minimum Rotation Between Frames", 10f, 0.1f, 90f, true);
-                        var reduceMinRotationUI = prefabFactory.CreateSlider(_reduceMinRotationJSON, true);
+            var reduceMinRotationUI = prefabFactory.CreateSlider(_reduceMinRotationJSON);
 
             _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max Frames per Second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
-                        var maxFramesPerSecondUI = prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON, true);
+            var maxFramesPerSecondUI = prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON);
 
             prefabFactory.CreateSpacer();
 
-            _importRecordedUI = prefabFactory.CreateButton("Import Recorded Animation (Mocap)", true);
+            _importRecordedUI = prefabFactory.CreateButton("Import Recorded Animation (Mocap)");
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
 
             prefabFactory.CreateSpacer();
 
-            _reduceKeyframesUI = prefabFactory.CreateButton("Reduce Float Params Keyframes", true);
+            _reduceKeyframesUI = prefabFactory.CreateButton("Reduce Float Params Keyframes");
             _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
         }
 

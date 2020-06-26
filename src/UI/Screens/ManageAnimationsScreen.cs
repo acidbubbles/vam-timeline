@@ -30,21 +30,17 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            // Left side
-
-            InitAnimationsListUI(false);
-
-            // Right side
+            InitAnimationsListUI();
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
             prefabFactory.CreateSpacer();
 
-            InitReorderAnimationsUI(true);
+            InitReorderAnimationsUI();
 
             prefabFactory.CreateSpacer();
 
-            InitDeleteAnimationsUI(true);
+            InitDeleteAnimationsUI();
 
             prefabFactory.CreateSpacer();
 
@@ -55,24 +51,24 @@ namespace VamTimeline
             animation.onClipsListChanged.AddListener(RefreshAnimationsList);
         }
 
-        private void InitAnimationsListUI(bool rightSide)
+        private void InitAnimationsListUI()
         {
             _animationsListJSON = new JSONStorableString("Animations List", "");
-                        var animationsListUI = prefabFactory.CreateTextField(_animationsListJSON, rightSide);
+                        var animationsListUI = prefabFactory.CreateTextField(_animationsListJSON);
         }
 
-        private void InitReorderAnimationsUI(bool rightSide)
+        private void InitReorderAnimationsUI()
         {
-            var moveAnimUpUI = prefabFactory.CreateButton("Reorder Animation (Move Up)", rightSide);
+            var moveAnimUpUI = prefabFactory.CreateButton("Reorder Animation (Move Up)");
             moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
 
-            var moveAnimDownUI = prefabFactory.CreateButton("Reorder Animation (Move Down)", rightSide);
+            var moveAnimDownUI = prefabFactory.CreateButton("Reorder Animation (Move Down)");
             moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveDown());
         }
 
-        private void InitDeleteAnimationsUI(bool rightSide)
+        private void InitDeleteAnimationsUI()
         {
-            var deleteAnimationUI = prefabFactory.CreateButton("Delete Animation", rightSide);
+            var deleteAnimationUI = prefabFactory.CreateButton("Delete Animation");
             deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
             deleteAnimationUI.buttonColor = Color.red;
             deleteAnimationUI.textColor = Color.white;

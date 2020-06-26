@@ -206,14 +206,6 @@ namespace VamTimeline
             return dopeSheet;
         }
 
-        private void InitSpacer()
-        {
-            var go = new GameObject("Spacer");
-            go.transform.SetParent(transform, false);
-
-            go.AddComponent<LayoutElement>().preferredHeight = 10f;
-        }
-
         private void OnClipsListChanged()
         {
             _ignoreAnimationChange = true;

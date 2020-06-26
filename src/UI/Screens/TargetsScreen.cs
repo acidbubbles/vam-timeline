@@ -38,10 +38,6 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            // Left side
-
-            // Right side
-
             CreateChangeScreenButton("<b><</b> <i>Back to Edit</i>", EditScreen.ScreenName, true);
 
             prefabFactory.CreateSpacer();
@@ -50,7 +46,7 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            InitFloatParamsUI(true);
+            InitFloatParamsUI();
 
             prefabFactory.CreateSpacer();
 
@@ -85,7 +81,7 @@ namespace VamTimeline
 
             UIDynamicButton enableAllTargetsUI = null;
             UIDynamic spacerUI = null;
-            enableAllTargetsUI = prefabFactory.CreateButton("Add All Other Animations' Targets", true);
+            enableAllTargetsUI = prefabFactory.CreateButton("Add All Other Animations' Targets");
             enableAllTargetsUI.button.onClick.AddListener(() =>
             {
                 AddMissingTargets();
@@ -103,10 +99,10 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON, true);
+                        _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
             _addControllerUI.popupPanelHeight = 900f;
 
-            _toggleControllerUI = prefabFactory.CreateButton("Add Controller", true);
+            _toggleControllerUI = prefabFactory.CreateButton("Add Controller");
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
 
             RefreshControllersList();
@@ -147,7 +143,7 @@ namespace VamTimeline
                 ?? controllers.Where(c => c != "control" && c != "").FirstOrDefault();
         }
 
-        private void InitFloatParamsUI(bool rightSide)
+        private void InitFloatParamsUI()
         {
             var storables = GetStorablesWithFloatParams().ToList();
             _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) =>
@@ -158,7 +154,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON, rightSide);
+                        _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
@@ -166,11 +162,11 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON, rightSide);
+                        _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
 
-            _toggleFloatParamUI = prefabFactory.CreateButton("Add Param", rightSide);
+            _toggleFloatParamUI = prefabFactory.CreateButton("Add Param");
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
 
             RefreshStorableFloatsList();
@@ -179,7 +175,7 @@ namespace VamTimeline
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
+                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Add morphs (Make Animatable)</i>");
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
                     var selector = plugin.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
@@ -254,7 +250,7 @@ namespace VamTimeline
                     prefabFactory.RemoveToggle(jsb, jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = prefabFactory.CreateToggle(jsb, true);
+                jsbUI = prefabFactory.CreateToggle(jsb);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
@@ -272,7 +268,7 @@ namespace VamTimeline
                     prefabFactory.RemoveToggle(jsb, jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = prefabFactory.CreateToggle(jsb, true);
+                jsbUI = prefabFactory.CreateToggle(jsb);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);

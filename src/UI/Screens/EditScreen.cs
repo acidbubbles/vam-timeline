@@ -46,7 +46,7 @@ namespace VamTimeline
         private void InitExplanation()
         {
             var textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
-            var textUI = prefabFactory.CreateTextField(textJSON, true);
+            var textUI = prefabFactory.CreateTextField(textJSON);
             textUI.height = 900;
         }
 

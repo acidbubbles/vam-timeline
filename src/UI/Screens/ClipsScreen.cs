@@ -51,7 +51,7 @@ namespace VamTimeline
         private void InitAnimButton(AtomAnimationClip clip)
         {
             var clipState = animation.state.GetClip(clip.animationName);
-            var btn = prefabFactory.CreateButton($"...", true);
+            var btn = prefabFactory.CreateButton($"...");
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {

@@ -50,19 +50,19 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            InitAnimationNameUI(true);
+            InitAnimationNameUI();
 
             prefabFactory.CreateSpacer();
 
-            InitAnimationLengthUI(true);
+            InitAnimationLengthUI();
 
             prefabFactory.CreateSpacer();
 
-            InitMiscSettingsUI(true);
+            InitMiscSettingsUI();
 
             prefabFactory.CreateSpacer();
 
-            InitAnimationPatternLinkUI(true);
+            InitAnimationPatternLinkUI();
 
             prefabFactory.CreateSpacer();
 
@@ -72,20 +72,20 @@ namespace VamTimeline
             UpdateValues();
         }
 
-        private void InitAnimationNameUI(bool rightSide)
+        private void InitAnimationNameUI()
         {
             {
                 var animationLabelJSON = new JSONStorableString("Rename Animation", "Rename animation:");
-                                var animationNameLabelUI = prefabFactory.CreateTextField(animationLabelJSON, rightSide);
+                var animationNameLabelUI = prefabFactory.CreateTextField(animationLabelJSON);
                 var layout = animationNameLabelUI.GetComponent<LayoutElement>();
                 layout.minHeight = 36f;
                 animationNameLabelUI.height = 36f;
-                UnityEngine.Object.Destroy(animationNameLabelUI.gameObject.GetComponentInChildren<Image>());
+                Destroy(animationNameLabelUI.gameObject.GetComponentInChildren<Image>());
             }
 
             {
                 _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
-                                var animationNameUI = prefabFactory.CreateTextInput(_animationNameJSON, rightSide);
+                var animationNameUI = prefabFactory.CreateTextInput(_animationNameJSON);
                 var layout = animationNameUI.GetComponent<LayoutElement>();
                 layout.minHeight = 50f;
                 animationNameUI.height = 50;
@@ -94,7 +94,7 @@ namespace VamTimeline
             }
         }
 
-        private void InitAnimationLengthUI(bool rightSide)
+        private void InitAnimationLengthUI()
         {
             UIDynamicButton applyLengthUI = null;
 
@@ -110,27 +110,27 @@ namespace VamTimeline
              {
                  _lengthWhenLengthModeChanged = current?.animationLength ?? 0f;
              });
-                        var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON, rightSide);
+            var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
             lengthModeUI.popupPanelHeight = 550f;
 
             _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, 0.5f, 10f, false, true);
-                        var lengthUI = prefabFactory.CreateSlider(_lengthJSON, rightSide);
+            var lengthUI = prefabFactory.CreateSlider(_lengthJSON);
             lengthUI.valueFormat = "F3";
 
-            applyLengthUI = prefabFactory.CreateButton("Apply", rightSide);
+            applyLengthUI = prefabFactory.CreateButton("Apply");
             applyLengthUI.button.onClick.AddListener(() =>
             {
                 UpdateAnimationLength(_lengthJSON.val);
             });
         }
 
-        private void InitMiscSettingsUI(bool rightSide)
+        private void InitMiscSettingsUI()
         {
             _loop = new JSONStorableBool("Loop", current?.loop ?? true, (bool val) => ChangeLoop(val));
-                        var loopUI = prefabFactory.CreateToggle(_loop, rightSide);
+            var loopUI = prefabFactory.CreateToggle(_loop);
 
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
-                        var ensureQuaternionContinuityUI = prefabFactory.CreateToggle(_ensureQuaternionContinuity, rightSide);
+            var ensureQuaternionContinuityUI = prefabFactory.CreateToggle(_ensureQuaternionContinuity);
 
             _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
             {
@@ -141,16 +141,16 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        var autoPlayUI = prefabFactory.CreateToggle(_autoPlayJSON, rightSide);
+            var autoPlayUI = prefabFactory.CreateToggle(_autoPlayJSON);
         }
 
-        private void InitAnimationPatternLinkUI(bool rightSide)
+        private void InitAnimationPatternLinkUI()
         {
             _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid))
             {
                 isStorable = false
             };
-                        var linkedAnimationPatternUI = prefabFactory.CreateScrollablePopup(_linkedAnimationPatternJSON, rightSide);
+            var linkedAnimationPatternUI = prefabFactory.CreateScrollablePopup(_linkedAnimationPatternJSON);
             linkedAnimationPatternUI.popupPanelHeight = 800f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
         }

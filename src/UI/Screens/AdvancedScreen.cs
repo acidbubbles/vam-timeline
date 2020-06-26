@@ -32,23 +32,23 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Keyframe Pose (All On)", true);
+            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Keyframe Pose (All On)");
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
 
-            var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe Pose (Animated)", true);
+            var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe Pose (Animated)");
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
 
             prefabFactory.CreateSpacer();
 
-            var bakeUI = prefabFactory.CreateButton("Bake Animation (Arm & Record)", true);
+            var bakeUI = prefabFactory.CreateButton("Bake Animation (Arm & Record)");
             bakeUI.button.onClick.AddListener(() => Bake());
 
             prefabFactory.CreateSpacer();
 
-            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove All Keyframes", true);
+            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove All Keyframes");
             removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
 
-            var reverseAnimationUI = prefabFactory.CreateButton("Reverse Animation Keyframes", true);
+            var reverseAnimationUI = prefabFactory.CreateButton("Reverse Animation Keyframes");
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
         }
 

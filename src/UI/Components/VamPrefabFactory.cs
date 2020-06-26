@@ -20,7 +20,7 @@ namespace VamTimeline
         {
         }
 
-        public UIDynamic CreateSpacer(bool rightSide = false)
+        public UIDynamic CreateSpacer()
         {
             var ui = Instantiate(plugin.manager.configurableSpacerPrefab).GetComponent<UIDynamic>();
             ui.gameObject.transform.SetParent(transform, false);
@@ -28,7 +28,7 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicSlider CreateSlider(JSONStorableFloat jsf, bool rightSide = false)
+        public UIDynamicSlider CreateSlider(JSONStorableFloat jsf)
         {
             RegisterStorable(jsf);
             var ui = Instantiate(plugin.manager.configurableSliderPrefab).GetComponent<UIDynamicSlider>();
@@ -38,7 +38,7 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicButton CreateButton(string label, bool rightSide = false)
+        public UIDynamicButton CreateButton(string label)
         {
             var ui = Instantiate(plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
             ui.gameObject.transform.SetParent(transform, false);
@@ -46,7 +46,7 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicToggle CreateToggle(JSONStorableBool jsb, bool rightSide = false)
+        public UIDynamicToggle CreateToggle(JSONStorableBool jsb)
         {
             RegisterStorable(jsb);
             var ui = Instantiate(plugin.manager.configurableTogglePrefab).GetComponent<UIDynamicToggle>();
@@ -56,7 +56,7 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicTextField CreateTextField(JSONStorableString jss, bool rightSide = false)
+        public UIDynamicTextField CreateTextField(JSONStorableString jss)
         {
             RegisterStorable(jss);
             var ui = Instantiate(plugin.manager.configurableTextFieldPrefab).GetComponent<UIDynamicTextField>();
@@ -65,7 +65,7 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicPopup CreateScrollablePopup(JSONStorableStringChooser jsc, bool rightSide = false)
+        public UIDynamicPopup CreateScrollablePopup(JSONStorableStringChooser jsc)
         {
             RegisterStorable(jsc);
             var ui = Instantiate(plugin.manager.configurableScrollablePopupPrefab).GetComponent<UIDynamicPopup>();
@@ -75,9 +75,9 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false)
+        public UIDynamicTextField CreateTextInput(JSONStorableString jss)
         {
-            var textfield = CreateTextField(jss, rightSide);
+            var textfield = CreateTextField(jss);
             textfield.height = 20f;
             textfield.backgroundColor = Color.white;
             var input = textfield.gameObject.AddComponent<InputField>();

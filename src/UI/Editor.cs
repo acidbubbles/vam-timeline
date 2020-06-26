@@ -75,11 +75,11 @@ namespace VamTimeline
             _controlPanel = CreateControlPanel(leftPanel);
             _controlPanel.Bind(plugin);
 
-            InitChangeCurveTypeUI(false);
+            InitChangeCurveTypeUI();
 
-            InitCurvesUI(false);
+            InitCurvesUI();
 
-            InitClipboardUI(false);
+            InitClipboardUI();
 
             InitAutoKeyframeUI();
 
@@ -98,22 +98,22 @@ namespace VamTimeline
             return AnimationControlPanel.Configure(go);
         }
 
-        private void InitChangeCurveTypeUI(bool rightSide)
+        private void InitChangeCurveTypeUI()
         {
             _curveType = CurveTypePopup.Create(_leftPanelPrefabFactory);
         }
 
-        private void InitCurvesUI(bool rightSide)
+        private void InitCurvesUI()
         {
-            var spacerUI = _leftPanelPrefabFactory.CreateSpacer(rightSide);
+            var spacerUI = _leftPanelPrefabFactory.CreateSpacer();
             spacerUI.height = 300f;
 
             _curves = spacerUI.gameObject.AddComponent<Curves>();
         }
 
-        protected void InitClipboardUI(bool rightSide)
+        protected void InitClipboardUI()
         {
-            var container = _leftPanelPrefabFactory.CreateSpacer(rightSide);
+            var container = _leftPanelPrefabFactory.CreateSpacer();
             container.height = 60f;
 
             var group = container.gameObject.AddComponent<GridLayoutGroup>();
@@ -147,7 +147,7 @@ namespace VamTimeline
 
         private void InitAutoKeyframeUI()
         {
-            var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_plugin.autoKeyframeAllControllersJSON, false);
+            var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_plugin.autoKeyframeAllControllersJSON);
         }
 
         private ScreensManager CreateScreensManager(GameObject panel)

@@ -34,7 +34,7 @@ namespace VamTimeline
 
             // Right side
 
-            InitSpeedUI(true);
+            InitSpeedUI();
 
             prefabFactory.CreateSpacer();
 
@@ -57,27 +57,27 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            InitImportExportUI(true);
+            InitImportExportUI();
         }
 
-        private void InitImportExportUI(bool rightSide)
+        private void InitImportExportUI()
         {
             _exportAnimationsJSON = new JSONStorableStringChooser("Export Animation", new List<string> { "(All)" }.Concat(animation.clips.Select(c => c.animationName)).ToList(), "(All)", "Export Animation")
             {
                 isStorable = false
             };
-                        var exportAnimationsUI = prefabFactory.CreateScrollablePopup(_exportAnimationsJSON, rightSide);
+            var exportAnimationsUI = prefabFactory.CreateScrollablePopup(_exportAnimationsJSON);
 
-            var exportUI = prefabFactory.CreateButton("Export animation", rightSide);
+            var exportUI = prefabFactory.CreateButton("Export animation");
             exportUI.button.onClick.AddListener(() => Export());
 
-            var importUI = prefabFactory.CreateButton("Import animation", rightSide);
+            var importUI = prefabFactory.CreateButton("Import animation");
             importUI.button.onClick.AddListener(() => Import());
         }
 
-        private void InitSpeedUI(bool rightSide)
+        private void InitSpeedUI()
         {
-                        var speedUI = prefabFactory.CreateSlider(plugin.speedJSON, rightSide);
+            var speedUI = prefabFactory.CreateSlider(plugin.speedJSON);
             speedUI.valueFormat = "F3";
         }
 

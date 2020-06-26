@@ -31,12 +31,12 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateSnap(true);
+            CreateSnap();
         }
 
-        private void CreateSnap(bool rightSide)
+        private void CreateSnap()
         {
-                        var snapUI = prefabFactory.CreateSlider(plugin.snapJSON, rightSide);
+            var snapUI = prefabFactory.CreateSlider(plugin.snapJSON);
             snapUI.valueFormat = "F3";
         }
 

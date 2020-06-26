@@ -33,7 +33,7 @@ This mode is optimized to reduce the runtime cost of Timeline to a strict minimu
 
 Use this mode before saving and publishing a scene.
 ");
-                        var textUI = prefabFactory.CreateTextField(textJSON, true);
+            var textUI = prefabFactory.CreateTextField(textJSON);
             textUI.height = 350f;
         }
     }

@@ -26,37 +26,37 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            InitRenameLayers(true);
+            InitRenameLayers();
 
             prefabFactory.CreateSpacer();
 
-            InitCreateLayerUI(true);
+            InitCreateLayerUI();
 
             CreateChangeScreenButton("<i><b>Clips</b></i>", ClipsScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
         }
 
-        private void InitRenameLayers(bool rightSide)
+        private void InitRenameLayers()
         {
             foreach (var layer in animation.clips.Select(c => c.animationLayer).Distinct())
             {
-                InitRenameLayer(layer, rightSide);
+                InitRenameLayer(layer);
             }
         }
 
-        private void InitRenameLayer(string layer, bool rightSide)
+        private void InitRenameLayer(string layer)
         {
             var layerNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateLayerName(ref layer, val));
-                        var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON, rightSide);
+                        var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON);
             var layout = layerNameUI.GetComponent<LayoutElement>();
             layout.minHeight = 50f;
             layerNameUI.height = 50;
             layerNameJSON.valNoCallback = layer;
         }
 
-        public void InitCreateLayerUI(bool rightSide)
+        public void InitCreateLayerUI()
         {
-            var createLayerUI = prefabFactory.CreateButton("Create New Layer", rightSide);
+            var createLayerUI = prefabFactory.CreateButton("Create New Layer");
             createLayerUI.button.onClick.AddListener(() => AddLayer());
         }
 
