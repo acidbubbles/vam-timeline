@@ -38,11 +38,11 @@ namespace VamTimeline
 
             InitSelectionUI(true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitChangeCurveUI(true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitDeleteUI(true);
 
@@ -56,17 +56,14 @@ namespace VamTimeline
 
         protected void InitBulkClipboardUI(bool rightSide)
         {
-            var cutUI = CreateButton("Cut / Delete Frame(s)", rightSide);
+            var cutUI = prefabFactory.CreateButton("Cut / Delete Frame(s)", rightSide);
             cutUI.button.onClick.AddListener(() => CopyDeleteSelected(true, true));
-            RegisterComponent(cutUI);
 
-            var copyUI = CreateButton("Copy Frame(s)", rightSide);
+            var copyUI = prefabFactory.CreateButton("Copy Frame(s)", rightSide);
             copyUI.button.onClick.AddListener(() => CopyDeleteSelected(true, false));
-            RegisterComponent(copyUI);
 
-            var pasteUI = CreateButton("Paste Frame(s)", rightSide);
+            var pasteUI = prefabFactory.CreateButton("Paste Frame(s)", rightSide);
             pasteUI.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
-            RegisterComponent(pasteUI);
         }
 
         private void InitSelectionUI(bool rightSide)
@@ -75,33 +72,26 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterStorable(_selectionJSON);
-            var selectionUI = CreateTextField(_selectionJSON, rightSide);
-            RegisterComponent(selectionUI);
+                        var selectionUI = prefabFactory.CreateTextField(_selectionJSON, rightSide);
 
-            var markSelectionStartUI = CreateButton("Mark Selection Start", rightSide);
+            var markSelectionStartUI = prefabFactory.CreateButton("Mark Selection Start", rightSide);
             markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
-            RegisterComponent(markSelectionStartUI);
 
-            var markSelectionEndUI = CreateButton("Mark Selection End", rightSide);
+            var markSelectionEndUI = prefabFactory.CreateButton("Mark Selection End", rightSide);
             markSelectionEndUI.button.onClick.AddListener(MarkSelectionEnd);
-            RegisterComponent(markSelectionEndUI);
         }
 
         private void InitChangeCurveUI(bool rightSide)
         {
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
-            RegisterStorable(_changeCurveJSON);
-            var curveTypeUI = CreateScrollablePopup(_changeCurveJSON, rightSide);
+                        var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON, rightSide);
             curveTypeUI.popupPanelHeight = 340f;
-            RegisterComponent(curveTypeUI);
         }
 
         private void InitDeleteUI(bool rightSide)
         {
-            var deleteSelectedUI = CreateButton("Delete Selected", rightSide);
+            var deleteSelectedUI = prefabFactory.CreateButton("Delete Selected", rightSide);
             deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
-            RegisterComponent(deleteSelectedUI);
         }
 
         #region Callbacks

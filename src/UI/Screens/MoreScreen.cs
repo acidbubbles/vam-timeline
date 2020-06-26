@@ -36,7 +36,7 @@ namespace VamTimeline
 
             InitSpeedUI(true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("<b>Edit</b> animation settings...", EditAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Sequence</b> animations...", EditSequenceScreen.ScreenName, true);
@@ -47,15 +47,15 @@ namespace VamTimeline
             CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName, true);
             CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("Options...", SettingsScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("Help", HelpScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitImportExportUI(true);
         }
@@ -66,25 +66,19 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterStorable(_exportAnimationsJSON);
-            var exportAnimationsUI = CreateScrollablePopup(_exportAnimationsJSON, rightSide);
-            RegisterComponent(exportAnimationsUI);
+                        var exportAnimationsUI = prefabFactory.CreateScrollablePopup(_exportAnimationsJSON, rightSide);
 
-            var exportUI = CreateButton("Export animation", rightSide);
+            var exportUI = prefabFactory.CreateButton("Export animation", rightSide);
             exportUI.button.onClick.AddListener(() => Export());
-            RegisterComponent(exportUI);
 
-            var importUI = CreateButton("Import animation", rightSide);
+            var importUI = prefabFactory.CreateButton("Import animation", rightSide);
             importUI.button.onClick.AddListener(() => Import());
-            RegisterComponent(importUI);
         }
 
         private void InitSpeedUI(bool rightSide)
         {
-            RegisterStorable(plugin.speedJSON);
-            var speedUI = CreateSlider(plugin.speedJSON, rightSide);
+                        var speedUI = prefabFactory.CreateSlider(plugin.speedJSON, rightSide);
             speedUI.valueFormat = "F3";
-            RegisterComponent(speedUI);
         }
 
         private void Export()

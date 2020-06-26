@@ -167,6 +167,7 @@ namespace VamTimeline
             go.transform.SetParent(transform, false);
             var group = go.AddComponent<VerticalLayoutGroup>();
             group.spacing = 10f;
+            group.childControlHeight = false;
 
             switch (screen)
             {

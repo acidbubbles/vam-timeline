@@ -64,10 +64,8 @@ Check the wiki for resouces and videos. There's a ton of things you can do! Now 
         private void InitExplanation()
         {
             var textJSON = new JSONStorableString("Help", HelpText);
-            RegisterStorable(textJSON);
-            var textUI = CreateTextField(textJSON, true);
+                        var textUI = prefabFactory.CreateTextField(textJSON, true);
             textUI.height = 1100;
-            RegisterComponent(textUI);
         }
     }
 }

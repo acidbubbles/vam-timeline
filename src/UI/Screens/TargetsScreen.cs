@@ -44,15 +44,15 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back to Edit</i>", EditScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitControllersUI();
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitFloatParamsUI(true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitFixMissingUI();
 
@@ -85,17 +85,16 @@ namespace VamTimeline
 
             UIDynamicButton enableAllTargetsUI = null;
             UIDynamic spacerUI = null;
-            enableAllTargetsUI = CreateButton("Add All Other Animations' Targets", true);
+            enableAllTargetsUI = prefabFactory.CreateButton("Add All Other Animations' Targets", true);
             enableAllTargetsUI.button.onClick.AddListener(() =>
             {
                 AddMissingTargets();
-                RemoveButton(enableAllTargetsUI);
-                RemoveSpacer(spacerUI);
+                Destroy(enableAllTargetsUI);
+                Destroy(spacerUI);
             });
             enableAllTargetsUI.buttonColor = Color.yellow;
-            RegisterComponent(enableAllTargetsUI);
 
-            spacerUI = CreateSpacer(true);
+            spacerUI = prefabFactory.CreateSpacer();
         }
 
         private void InitControllersUI()
@@ -104,14 +103,11 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterStorable(_addControllerListJSON);
-            _addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
+                        _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON, true);
             _addControllerUI.popupPanelHeight = 900f;
-            RegisterComponent(_addControllerUI);
 
-            _toggleControllerUI = CreateButton("Add Controller", true);
+            _toggleControllerUI = prefabFactory.CreateButton("Add Controller", true);
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
-            RegisterComponent(_toggleControllerUI);
 
             RefreshControllersList();
         }
@@ -162,25 +158,20 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterStorable(_addStorableListJSON);
-            _addStorableListUI = CreateScrollablePopup(_addStorableListJSON, rightSide);
+                        _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON, rightSide);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
-            RegisterComponent(_addStorableListUI);
 
             _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param")
             {
                 isStorable = false
             };
-            RegisterStorable(_addParamListJSON);
-            _addParamListUI = CreateScrollablePopup(_addParamListJSON, rightSide);
+                        _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON, rightSide);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
-            RegisterComponent(_addParamListUI);
 
-            _toggleFloatParamUI = CreateButton("Add Param", rightSide);
+            _toggleFloatParamUI = prefabFactory.CreateButton("Add Param", rightSide);
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
-            RegisterComponent(_toggleFloatParamUI);
 
             RefreshStorableFloatsList();
             _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
@@ -188,8 +179,7 @@ namespace VamTimeline
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                var makeMorphsAnimatableUI = CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
-                RegisterComponent(makeMorphsAnimatableUI);
+                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
                     var selector = plugin.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
@@ -261,11 +251,10 @@ namespace VamTimeline
                 {
                     _addControllerListJSON.val = target.name;
                     RemoveAnimatedController(target);
-                    RemoveToggle(jsb);
-                    RemoveToggle(jsbUI);
+                    prefabFactory.RemoveToggle(jsb, jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = CreateToggle(jsb, true);
+                jsbUI = prefabFactory.CreateToggle(jsb, true);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
@@ -280,11 +269,10 @@ namespace VamTimeline
                     _addStorableListJSON.val = target.storable.name;
                     _addParamListJSON.val = target.floatParam.name;
                     RemoveFloatParam(target);
-                    RemoveToggle(jsb);
-                    RemoveToggle(jsbUI);
+                    prefabFactory.RemoveToggle(jsb, jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = CreateToggle(jsb, true);
+                jsbUI = prefabFactory.CreateToggle(jsb, true);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
@@ -304,7 +292,7 @@ namespace VamTimeline
             if (_removeToggles == null) return;
             foreach (var toggleJSON in _removeToggles)
             {
-                RemoveToggle(toggleJSON);
+                prefabFactory.RemoveToggle(toggleJSON);
             }
         }
 

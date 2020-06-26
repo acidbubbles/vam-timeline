@@ -45,6 +45,7 @@ namespace VamTimeline
             var verticalLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
             verticalLayoutGroup.childControlWidth = true;
             verticalLayoutGroup.childForceExpandWidth = false;
+            verticalLayoutGroup.spacing = 10f;
 
             return panel;
         }
@@ -58,12 +59,29 @@ namespace VamTimeline
         public GameObject leftPanel;
         public GameObject rightPanel;
         private AnimationControlPanel _controlPanel;
+        private IAtomPlugin _plugin;
         private ScreensManager _screensManager;
+        private VamPrefabFactory _leftPanelPrefabFactory;
+        private Curves _curves;
+        private CurveTypePopup _curveType;
 
         public void Bind(IAtomPlugin plugin)
         {
+            _plugin = plugin;
+
+            _leftPanelPrefabFactory = leftPanel.AddComponent<VamPrefabFactory>();
+            _leftPanelPrefabFactory.plugin = plugin;
+
             _controlPanel = CreateControlPanel(leftPanel);
             _controlPanel.Bind(plugin);
+
+            InitChangeCurveTypeUI(false);
+
+            InitCurvesUI(false);
+
+            InitClipboardUI(false);
+
+            InitAutoKeyframeUI();
 
             _screensManager = CreateScreensManager(rightPanel);
             _screensManager.Bind(plugin);
@@ -80,6 +98,58 @@ namespace VamTimeline
             return AnimationControlPanel.Configure(go);
         }
 
+        private void InitChangeCurveTypeUI(bool rightSide)
+        {
+            _curveType = CurveTypePopup.Create(_leftPanelPrefabFactory);
+        }
+
+        private void InitCurvesUI(bool rightSide)
+        {
+            var spacerUI = _leftPanelPrefabFactory.CreateSpacer(rightSide);
+            spacerUI.height = 300f;
+
+            _curves = spacerUI.gameObject.AddComponent<Curves>();
+        }
+
+        protected void InitClipboardUI(bool rightSide)
+        {
+            var container = _leftPanelPrefabFactory.CreateSpacer(rightSide);
+            container.height = 60f;
+
+            var group = container.gameObject.AddComponent<GridLayoutGroup>();
+            group.constraint = GridLayoutGroup.Constraint.Flexible;
+            group.constraintCount = 3;
+            group.spacing = Vector2.zero;
+            group.cellSize = new Vector2(512f / 3f, 50f);
+            group.childAlignment = TextAnchor.MiddleCenter;
+
+            {
+                var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Cut";
+                btn.button.onClick.AddListener(() => _plugin.cutJSON.actionCallback());
+            }
+
+            {
+                var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Copy";
+                btn.button.onClick.AddListener(() => _plugin.copyJSON.actionCallback());
+            }
+
+            {
+                var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Paste";
+                btn.button.onClick.AddListener(() => _plugin.pasteJSON.actionCallback());
+            }
+        }
+
+        private void InitAutoKeyframeUI()
+        {
+            var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_plugin.autoKeyframeAllControllersJSON, false);
+        }
+
         private ScreensManager CreateScreensManager(GameObject panel)
         {
             var go = new GameObject();
@@ -93,6 +163,8 @@ namespace VamTimeline
         public void Bind(AtomAnimation animation)
         {
             _controlPanel.Bind(animation);
+            _curveType.Bind(animation);
+            _curves.Bind(animation);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             _importRecordedOptionsJSON = new JSONStorableStringChooser(
                 "Import Recorded Animation Options",
@@ -50,36 +50,26 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            RegisterStorable(_importRecordedOptionsJSON);
-            var importRecordedOptionsUI = CreateScrollablePopup(_importRecordedOptionsJSON, true);
-            RegisterComponent(importRecordedOptionsUI);
+                        var importRecordedOptionsUI = prefabFactory.CreateScrollablePopup(_importRecordedOptionsJSON, true);
 
             _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Distance Between Frames", 0.04f, 0.001f, 0.5f, true);
-            RegisterStorable(_reduceMinPosDistanceJSON);
-            var reduceMinPosDistanceUI = CreateSlider(_reduceMinPosDistanceJSON, true);
-            RegisterComponent(reduceMinPosDistanceUI);
+                        var reduceMinPosDistanceUI = prefabFactory.CreateSlider(_reduceMinPosDistanceJSON, true);
 
             _reduceMinRotationJSON = new JSONStorableFloat("Minimum Rotation Between Frames", 10f, 0.1f, 90f, true);
-            RegisterStorable(_reduceMinRotationJSON);
-            var reduceMinRotationUI = CreateSlider(_reduceMinRotationJSON, true);
-            RegisterComponent(reduceMinRotationUI);
+                        var reduceMinRotationUI = prefabFactory.CreateSlider(_reduceMinRotationJSON, true);
 
             _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max Frames per Second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
-            RegisterStorable(_reduceMaxFramesPerSecondJSON);
-            var maxFramesPerSecondUI = CreateSlider(_reduceMaxFramesPerSecondJSON, true);
-            RegisterComponent(maxFramesPerSecondUI);
+                        var maxFramesPerSecondUI = prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
-            _importRecordedUI = CreateButton("Import Recorded Animation (Mocap)", true);
+            _importRecordedUI = prefabFactory.CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
-            RegisterComponent(_importRecordedUI);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
-            _reduceKeyframesUI = CreateButton("Reduce Float Params Keyframes", true);
+            _reduceKeyframesUI = prefabFactory.CreateButton("Reduce Float Params Keyframes", true);
             _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
-            RegisterComponent(_reduceKeyframesUI);
         }
 
         private void ImportRecorded()

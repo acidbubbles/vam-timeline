@@ -42,7 +42,7 @@ namespace VamTimeline
                 }
             }
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Edit</b> layers...</i>", EditLayersScreen.ScreenName, true);
@@ -51,8 +51,7 @@ namespace VamTimeline
         private void InitAnimButton(AtomAnimationClip clip)
         {
             var clipState = animation.state.GetClip(clip.animationName);
-            var btn = CreateButton($"...", true);
-            RegisterComponent(btn);
+            var btn = prefabFactory.CreateButton($"...", true);
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {

@@ -29,17 +29,15 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             CreateSnap(true);
         }
 
         private void CreateSnap(bool rightSide)
         {
-            RegisterStorable(plugin.snapJSON);
-            var snapUI = CreateSlider(plugin.snapJSON, rightSide);
+                        var snapUI = prefabFactory.CreateSlider(plugin.snapJSON, rightSide);
             snapUI.valueFormat = "F3";
-            RegisterComponent(snapUI);
         }
 
         #endregion

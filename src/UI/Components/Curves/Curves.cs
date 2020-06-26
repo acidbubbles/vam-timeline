@@ -115,11 +115,22 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(AtomAnimation animation, IList<IAnimationTargetWithCurves> targets)
+        public void Bind(AtomAnimation animation)
+        {
+            if (_animation != null) throw new InvalidOperationException("Cannot bind to animation twice");
+            _animation = animation;
+            _animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+        }
+
+        private void OnTargetsSelectionChanged()
+        {
+            Bind(_animation.current.allTargetsCount == 1 ? _animation.current.allTargets.ToList() : _animation.current.GetSelectedTargets().ToList());
+        }
+
+        private void Bind(IList<IAnimationTargetWithCurves> targets)
         {
             Unbind();
 
-            _animation = animation;
             if ((targets?.Count ?? 0) > 0)
             {
                 _targets = targets;
@@ -265,6 +276,9 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
+            if (_animation != null)
+                _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+
             if (_targets != null)
             {
                 foreach (var target in _targets)

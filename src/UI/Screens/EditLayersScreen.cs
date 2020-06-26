@@ -28,7 +28,7 @@ namespace VamTimeline
 
             InitRenameLayers(true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitCreateLayerUI(true);
 
@@ -47,9 +47,7 @@ namespace VamTimeline
         private void InitRenameLayer(string layer, bool rightSide)
         {
             var layerNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateLayerName(ref layer, val));
-            RegisterStorable(layerNameJSON);
-            var layerNameUI = CreateTextInput(layerNameJSON, rightSide);
-            RegisterComponent(layerNameUI);
+                        var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON, rightSide);
             var layout = layerNameUI.GetComponent<LayoutElement>();
             layout.minHeight = 50f;
             layerNameUI.height = 50;
@@ -58,9 +56,8 @@ namespace VamTimeline
 
         public void InitCreateLayerUI(bool rightSide)
         {
-            var createLayerUI = CreateButton("Create New Layer", rightSide);
+            var createLayerUI = prefabFactory.CreateButton("Create New Layer", rightSide);
             createLayerUI.button.onClick.AddListener(() => AddLayer());
-            RegisterComponent(createLayerUI);
         }
 
         private void UpdateLayerName(ref string from, string to)

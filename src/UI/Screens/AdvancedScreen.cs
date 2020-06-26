@@ -30,31 +30,26 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
-            var keyframeCurrentPoseUI = CreateButton("Keyframe Pose (All On)", true);
+            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
-            RegisterComponent(keyframeCurrentPoseUI);
 
-            var keyframeCurrentPoseTrackedUI = CreateButton("Keyframe Pose (Animated)", true);
+            var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe Pose (Animated)", true);
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
-            RegisterComponent(keyframeCurrentPoseTrackedUI);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
-            var bakeUI = CreateButton("Bake Animation (Arm & Record)", true);
+            var bakeUI = prefabFactory.CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
-            RegisterComponent(bakeUI);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
-            var removeAllKeyframesUI = CreateButton("Remove All Keyframes", true);
+            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove All Keyframes", true);
             removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
-            RegisterComponent(removeAllKeyframesUI);
 
-            var reverseAnimationUI = CreateButton("Reverse Animation Keyframes", true);
+            var reverseAnimationUI = prefabFactory.CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
-            RegisterComponent(reverseAnimationUI);
         }
 
         private void RemoveAllKeyframes()

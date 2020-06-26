@@ -31,6 +31,7 @@ namespace VamTimeline
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
+        public UnityEvent onTargetsSelectionChanged = new UnityEvent();
 
         public readonly AtomPlaybackState state = new AtomPlaybackState();
         public AtomClipPlaybackState currentClipState { get; private set; }
@@ -51,6 +52,7 @@ namespace VamTimeline
                 _current = value;
                 currentClipState = state.GetClip(value.animationName);
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
+                onTargetsSelectionChanged.Invoke();
             }
         }
 
@@ -546,6 +548,8 @@ namespace VamTimeline
                     t.selected = target.selected;
                 }
             }
+
+            onTargetsSelectionChanged.Invoke();
         }
 
         private void OnAnimationSettingsModified(string param)

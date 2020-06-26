@@ -32,11 +32,11 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             InitCreateAnimationUI(true);
 
-            CreateSpacer(true);
+            prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName, true);
             CreateChangeScreenButton("<i><b>Reorder</b> and <b>delete</b> animations...</i>", ManageAnimationsScreen.ScreenName, true);
@@ -45,17 +45,14 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI(bool rightSide)
         {
-            var addAnimationFromCurrentFrameUI = CreateButton("Create Animation From Current Frame", rightSide);
+            var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create Animation From Current Frame", rightSide);
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
-            RegisterComponent(addAnimationFromCurrentFrameUI);
 
-            var addAnimationAsCopyUI = CreateButton("Create Copy Of Current Animation", rightSide);
+            var addAnimationAsCopyUI = prefabFactory.CreateButton("Create Copy Of Current Animation", rightSide);
             addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
-            RegisterComponent(addAnimationAsCopyUI);
 
-            _addAnimationTransitionUI = CreateButton($"Create Transition (Current -> Next)", rightSide);
+            _addAnimationTransitionUI = prefabFactory.CreateButton($"Create Transition (Current -> Next)", rightSide);
             _addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
-            RegisterComponent(_addAnimationTransitionUI);
 
             RefreshButtons();
         }
