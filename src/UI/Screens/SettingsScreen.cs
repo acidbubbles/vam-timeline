@@ -12,19 +12,18 @@ namespace VamTimeline
     {
         public const string ScreenName = "Settings";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
-        public SettingsScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public SettingsScreen()
+            : base()
         {
-
         }
 
         #region Init
 
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Right side
 
@@ -38,16 +37,16 @@ namespace VamTimeline
         private void CreateSnap(bool rightSide)
         {
             RegisterStorable(plugin.snapJSON);
-            var snapUI = plugin.CreateSlider(plugin.snapJSON, rightSide);
+            var snapUI = CreateSlider(plugin.snapJSON, rightSide);
             snapUI.valueFormat = "F3";
             RegisterComponent(snapUI);
         }
 
         #endregion
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
-            base.Dispose();
+            base.OnDestroy();
         }
     }
 }

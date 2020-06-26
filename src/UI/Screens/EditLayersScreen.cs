@@ -15,16 +15,16 @@ namespace VamTimeline
     {
         public const string ScreenName = "Layers";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
-        public EditLayersScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public EditLayersScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             InitRenameLayers(true);
 
@@ -58,7 +58,7 @@ namespace VamTimeline
 
         public void InitCreateLayerUI(bool rightSide)
         {
-            var createLayerUI = plugin.CreateButton("Create New Layer", rightSide);
+            var createLayerUI = CreateButton("Create New Layer", rightSide);
             createLayerUI.button.onClick.AddListener(() => AddLayer());
             RegisterComponent(createLayerUI);
         }

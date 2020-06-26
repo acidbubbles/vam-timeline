@@ -13,7 +13,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Bulk";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private JSONStorableString _selectionJSON;
         private string _selectedControllers;
@@ -21,14 +21,14 @@ namespace VamTimeline
         private float _selectionEnd = 0;
         private JSONStorableStringChooser _changeCurveJSON;
 
-        public BulkScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public BulkScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Left side
 
@@ -56,15 +56,15 @@ namespace VamTimeline
 
         protected void InitBulkClipboardUI(bool rightSide)
         {
-            var cutUI = plugin.CreateButton("Cut / Delete Frame(s)", rightSide);
+            var cutUI = CreateButton("Cut / Delete Frame(s)", rightSide);
             cutUI.button.onClick.AddListener(() => CopyDeleteSelected(true, true));
             RegisterComponent(cutUI);
 
-            var copyUI = plugin.CreateButton("Copy Frame(s)", rightSide);
+            var copyUI = CreateButton("Copy Frame(s)", rightSide);
             copyUI.button.onClick.AddListener(() => CopyDeleteSelected(true, false));
             RegisterComponent(copyUI);
 
-            var pasteUI = plugin.CreateButton("Paste Frame(s)", rightSide);
+            var pasteUI = CreateButton("Paste Frame(s)", rightSide);
             pasteUI.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
             RegisterComponent(pasteUI);
         }
@@ -76,14 +76,14 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_selectionJSON);
-            var selectionUI = plugin.CreateTextField(_selectionJSON, rightSide);
+            var selectionUI = CreateTextField(_selectionJSON, rightSide);
             RegisterComponent(selectionUI);
 
-            var markSelectionStartUI = plugin.CreateButton("Mark Selection Start", rightSide);
+            var markSelectionStartUI = CreateButton("Mark Selection Start", rightSide);
             markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
             RegisterComponent(markSelectionStartUI);
 
-            var markSelectionEndUI = plugin.CreateButton("Mark Selection End", rightSide);
+            var markSelectionEndUI = CreateButton("Mark Selection End", rightSide);
             markSelectionEndUI.button.onClick.AddListener(MarkSelectionEnd);
             RegisterComponent(markSelectionEndUI);
         }
@@ -92,14 +92,14 @@ namespace VamTimeline
         {
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_changeCurveJSON);
-            var curveTypeUI = plugin.CreateScrollablePopup(_changeCurveJSON, rightSide);
+            var curveTypeUI = CreateScrollablePopup(_changeCurveJSON, rightSide);
             curveTypeUI.popupPanelHeight = 340f;
             RegisterComponent(curveTypeUI);
         }
 
         private void InitDeleteUI(bool rightSide)
         {
-            var deleteSelectedUI = plugin.CreateButton("Delete Selected", rightSide);
+            var deleteSelectedUI = CreateButton("Delete Selected", rightSide);
             deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
             RegisterComponent(deleteSelectedUI);
         }
@@ -228,9 +228,9 @@ namespace VamTimeline
             SelectionModified();
         }
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
-            base.Dispose();
+            base.OnDestroy();
 
             current.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }

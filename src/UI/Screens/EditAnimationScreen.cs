@@ -22,7 +22,7 @@ namespace VamTimeline
         public const string ChangeLengthModeStretch = "Stretch";
         public const string ChangeLengthModeLoop = "Loop (Extend)";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private JSONStorableString _animationNameJSON;
         private JSONStorableStringChooser _lengthModeJSON;
@@ -33,17 +33,16 @@ namespace VamTimeline
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private float _lengthWhenLengthModeChanged;
 
-        public EditAnimationScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public EditAnimationScreen()
+            : base()
         {
-
         }
 
         #region Init
 
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Right side
 
@@ -78,7 +77,7 @@ namespace VamTimeline
             {
                 var animationLabelJSON = new JSONStorableString("Rename Animation", "Rename animation:");
                 RegisterStorable(animationLabelJSON);
-                var animationNameLabelUI = plugin.CreateTextField(animationLabelJSON, rightSide);
+                var animationNameLabelUI = CreateTextField(animationLabelJSON, rightSide);
                 RegisterComponent(animationNameLabelUI);
                 var layout = animationNameLabelUI.GetComponent<LayoutElement>();
                 layout.minHeight = 36f;
@@ -116,17 +115,17 @@ namespace VamTimeline
                  _lengthWhenLengthModeChanged = current?.animationLength ?? 0f;
              });
             RegisterStorable(_lengthModeJSON);
-            var lengthModeUI = plugin.CreateScrollablePopup(_lengthModeJSON, rightSide);
+            var lengthModeUI = CreateScrollablePopup(_lengthModeJSON, rightSide);
             lengthModeUI.popupPanelHeight = 550f;
             RegisterComponent(lengthModeUI);
 
             _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, 0.5f, 10f, false, true);
             RegisterStorable(_lengthJSON);
-            var lengthUI = plugin.CreateSlider(_lengthJSON, rightSide);
+            var lengthUI = CreateSlider(_lengthJSON, rightSide);
             lengthUI.valueFormat = "F3";
             RegisterComponent(lengthUI);
 
-            applyLengthUI = plugin.CreateButton("Apply", rightSide);
+            applyLengthUI = CreateButton("Apply", rightSide);
             RegisterComponent(applyLengthUI);
             applyLengthUI.button.onClick.AddListener(() =>
             {
@@ -138,12 +137,12 @@ namespace VamTimeline
         {
             _loop = new JSONStorableBool("Loop", current?.loop ?? true, (bool val) => ChangeLoop(val));
             RegisterStorable(_loop);
-            var loopUI = plugin.CreateToggle(_loop, rightSide);
+            var loopUI = CreateToggle(_loop, rightSide);
             RegisterComponent(loopUI);
 
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
             RegisterStorable(_ensureQuaternionContinuity);
-            var ensureQuaternionContinuityUI = plugin.CreateToggle(_ensureQuaternionContinuity, rightSide);
+            var ensureQuaternionContinuityUI = CreateToggle(_ensureQuaternionContinuity, rightSide);
             RegisterComponent(ensureQuaternionContinuityUI);
 
             _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
@@ -156,7 +155,7 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_autoPlayJSON);
-            var autoPlayUI = plugin.CreateToggle(_autoPlayJSON, rightSide);
+            var autoPlayUI = CreateToggle(_autoPlayJSON, rightSide);
             RegisterComponent(autoPlayUI);
         }
 
@@ -167,7 +166,7 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_linkedAnimationPatternJSON);
-            var linkedAnimationPatternUI = plugin.CreateScrollablePopup(_linkedAnimationPatternJSON, rightSide);
+            var linkedAnimationPatternUI = CreateScrollablePopup(_linkedAnimationPatternJSON, rightSide);
             linkedAnimationPatternUI.popupPanelHeight = 800f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
             RegisterComponent(linkedAnimationPatternUI);
@@ -363,9 +362,9 @@ namespace VamTimeline
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
         }
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
-            base.Dispose();
+            base.OnDestroy();
         }
 
         #endregion

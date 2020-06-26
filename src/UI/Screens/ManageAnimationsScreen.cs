@@ -15,21 +15,20 @@ namespace VamTimeline
     {
         public const string ScreenName = "Manage Animations";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private JSONStorableString _animationsListJSON;
 
-        public ManageAnimationsScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public ManageAnimationsScreen()
+            : base()
         {
-
         }
 
         #region Init
 
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Left side
 
@@ -60,24 +59,24 @@ namespace VamTimeline
         {
             _animationsListJSON = new JSONStorableString("Animations List", "");
             RegisterStorable(_animationsListJSON);
-            var animationsListUI = plugin.CreateTextField(_animationsListJSON, rightSide);
+            var animationsListUI = CreateTextField(_animationsListJSON, rightSide);
             RegisterComponent(animationsListUI);
         }
 
         private void InitReorderAnimationsUI(bool rightSide)
         {
-            var moveAnimUpUI = plugin.CreateButton("Reorder Animation (Move Up)", rightSide);
+            var moveAnimUpUI = CreateButton("Reorder Animation (Move Up)", rightSide);
             moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
             RegisterComponent(moveAnimUpUI);
 
-            var moveAnimDownUI = plugin.CreateButton("Reorder Animation (Move Down)", rightSide);
+            var moveAnimDownUI = CreateButton("Reorder Animation (Move Down)", rightSide);
             moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveDown());
             RegisterComponent(moveAnimDownUI);
         }
 
         private void InitDeleteAnimationsUI(bool rightSide)
         {
-            var deleteAnimationUI = plugin.CreateButton("Delete Animation", rightSide);
+            var deleteAnimationUI = CreateButton("Delete Animation", rightSide);
             deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
             deleteAnimationUI.buttonColor = Color.red;
             deleteAnimationUI.textColor = Color.white;
@@ -179,10 +178,10 @@ namespace VamTimeline
             _animationsListJSON.val = sb.ToString();
         }
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
             animation.onClipsListChanged.RemoveListener(RefreshAnimationsList);
-            base.Dispose();
+            base.OnDestroy();
         }
 
         #endregion

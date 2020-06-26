@@ -14,19 +14,19 @@ namespace VamTimeline
         public const string ScreenName = "Add Animation";
         private UIDynamicButton _addAnimationTransitionUI;
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
-        public AddAnimationScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public AddAnimationScreen()
+            : base()
         {
 
         }
 
         #region Init
 
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Right side
 
@@ -45,15 +45,15 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI(bool rightSide)
         {
-            var addAnimationFromCurrentFrameUI = plugin.CreateButton("Create Animation From Current Frame", rightSide);
+            var addAnimationFromCurrentFrameUI = CreateButton("Create Animation From Current Frame", rightSide);
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
             RegisterComponent(addAnimationFromCurrentFrameUI);
 
-            var addAnimationAsCopyUI = plugin.CreateButton("Create Copy Of Current Animation", rightSide);
+            var addAnimationAsCopyUI = CreateButton("Create Copy Of Current Animation", rightSide);
             addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
             RegisterComponent(addAnimationAsCopyUI);
 
-            _addAnimationTransitionUI = plugin.CreateButton($"Create Transition (Current -> Next)", rightSide);
+            _addAnimationTransitionUI = CreateButton($"Create Transition (Current -> Next)", rightSide);
             _addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
             RegisterComponent(_addAnimationTransitionUI);
 

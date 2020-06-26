@@ -13,28 +13,25 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class ScreensManager : IDisposable
+    public class ScreensManager : MonoBehaviour
     {
+        public static ScreensManager Configure(GameObject go)
+        {
+            var group = go.AddComponent<VerticalLayoutGroup>();
+            return go.AddComponent<ScreensManager>();
+        }
+
         private readonly UnityEvent _screenChanged = new UnityEvent();
-        private readonly IAtomPlugin _plugin;
+        private IAtomPlugin _plugin;
         private ScreenBase _current;
-        private AnimationControlPanel _controlPanel;
         private bool _uiRefreshScheduled;
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
 
-        public ScreensManager(IAtomPlugin plugin)
+        public void Bind(IAtomPlugin plugin)
         {
             _plugin = plugin;
-        }
-
-        public void Init()
-        {
-            // Left side
-            InitControlPanelUI(false);
-
-            // Right side
             InitTabs();
         }
 
@@ -47,10 +44,14 @@ namespace VamTimeline
                 PerformanceScreen.ScreenName
             };
 
-            var tabsContainer = _plugin.CreateSpacer(true);
-            tabsContainer.height = 60f;
+            var tabsContainer = new GameObject("Tabs");
+            tabsContainer.transform.SetParent(transform, false);
 
-            var group = tabsContainer.gameObject.AddComponent<GridLayoutGroup>();
+            tabsContainer.AddComponent<LayoutElement>().minHeight = 60f;
+
+            tabsContainer.AddComponent<Image>().color = Color.blue;
+
+            var group = tabsContainer.AddComponent<GridLayoutGroup>();
             group.constraint = GridLayoutGroup.Constraint.Flexible;
             group.constraintCount = screens.Length;
             group.spacing = Vector2.zero;
@@ -60,7 +61,7 @@ namespace VamTimeline
             foreach (var screen in screens)
             {
                 var changeTo = screen;
-                var btn = UnityEngine.Object.Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
                 btn.gameObject.transform.SetParent(group.transform, false);
                 btn.label = changeTo;
 
@@ -85,17 +86,8 @@ namespace VamTimeline
             RefreshCurrentUI();
         }
 
-        private void InitControlPanelUI(bool rightSide)
-        {
-            var controlPanelContainer = _plugin.CreateSpacer(rightSide);
-            controlPanelContainer.height = 600f;
-            _controlPanel = AnimationControlPanel.Configure(controlPanelContainer.gameObject);
-            _controlPanel.Bind(_plugin);
-        }
-
         public void Bind(AtomAnimation animation)
         {
-            _controlPanel.Bind(animation);
             ChangeScreen(GetDefaultScreen());
         }
 
@@ -126,7 +118,6 @@ namespace VamTimeline
                 if (_currentScreen == PerformanceScreen.ScreenName)
                     ChangeScreen(GetDefaultScreen());
             }
-            _controlPanel.locked = isLocked;
         }
 
         public void RefreshCurrentUI()
@@ -153,7 +144,7 @@ namespace VamTimeline
             if (_plugin == null || _plugin.animation == null || _plugin.animation.current == null) yield break;
 
             // Same UI, just refresh
-            if (_current != null && _current.name == screen)
+            if (_current != null && _current.screenId == screen)
             {
                 yield break;
             }
@@ -166,11 +157,11 @@ namespace VamTimeline
             {
                 try
                 {
-                    _current.Dispose();
+                    Destroy(_current.gameObject);
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.name}): {exc}");
+                    SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while removing {_current.screenId}): {exc}");
                 }
 
                 _current = null;
@@ -179,52 +170,56 @@ namespace VamTimeline
             yield return 0;
 
             // Create new screen
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+            var group = go.AddComponent<VerticalLayoutGroup>();
+
             switch (screen)
             {
                 case SettingsScreen.ScreenName:
-                    _current = new SettingsScreen(_plugin);
+                    _current = go.AddComponent<SettingsScreen>();
                     break;
                 case TargetsScreen.ScreenName:
-                    _current = new TargetsScreen(_plugin);
+                    _current = go.AddComponent<TargetsScreen>();
                     break;
                 case EditScreen.ScreenName:
-                    _current = new EditScreen(_plugin);
+                    _current = go.AddComponent<EditScreen>();
                     break;
                 case ClipsScreen.ScreenName:
-                    _current = new ClipsScreen(_plugin);
+                    _current = go.AddComponent<ClipsScreen>();
                     break;
                 case BulkScreen.ScreenName:
-                    _current = new BulkScreen(_plugin);
+                    _current = go.AddComponent<BulkScreen>();
                     break;
                 case AdvancedScreen.ScreenName:
-                    _current = new AdvancedScreen(_plugin);
+                    _current = go.AddComponent<AdvancedScreen>();
                     break;
                 case MocapScreen.ScreenName:
-                    _current = new MocapScreen(_plugin);
+                    _current = go.AddComponent<MocapScreen>();
                     break;
                 case EditLayersScreen.ScreenName:
-                    _current = new EditLayersScreen(_plugin);
+                    _current = go.AddComponent<EditLayersScreen>();
                     break;
                 case MoreScreen.ScreenName:
-                    _current = new MoreScreen(_plugin);
+                    _current = go.AddComponent<MoreScreen>();
                     break;
                 case EditAnimationScreen.ScreenName:
-                    _current = new EditAnimationScreen(_plugin);
+                    _current = go.AddComponent<EditAnimationScreen>();
                     break;
                 case EditSequenceScreen.ScreenName:
-                    _current = new EditSequenceScreen(_plugin);
+                    _current = go.AddComponent<EditSequenceScreen>();
                     break;
                 case AddAnimationScreen.ScreenName:
-                    _current = new AddAnimationScreen(_plugin);
+                    _current = go.AddComponent<AddAnimationScreen>();
                     break;
                 case ManageAnimationsScreen.ScreenName:
-                    _current = new ManageAnimationsScreen(_plugin);
+                    _current = go.AddComponent<ManageAnimationsScreen>();
                     break;
                 case PerformanceScreen.ScreenName:
-                    _current = new PerformanceScreen(_plugin);
+                    _current = go.AddComponent<PerformanceScreen>();
                     break;
                 case HelpScreen.ScreenName:
-                    _current = new HelpScreen(_plugin);
+                    _current = go.AddComponent<HelpScreen>();
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");
@@ -232,12 +227,13 @@ namespace VamTimeline
 
             try
             {
+                _current.transform.SetParent(transform, false);
                 _current.onScreenChangeRequested.AddListener(ChangeScreen);
-                _current.Init();
+                _current.Init(_plugin);
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.name}): {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(ScreensManager)}.{nameof(RefreshCurrentUIDeferred)} (while initializing {_current.screenId}): {exc}");
             }
 
             yield return 0;
@@ -252,19 +248,19 @@ namespace VamTimeline
             }
         }
 
-        public void Enable()
+        public void OnEnable()
         {
             ChangeScreen(GetDefaultScreen());
         }
 
-        public void Disable()
+        public void OnDisable()
         {
-            _current?.Dispose();
+            Destroy(_current);
             _current = null;
             _currentScreen = null;
         }
 
-        public void Dispose()
+        public void OnDestroy()
         {
             _screenChanged.RemoveAllListeners();
         }

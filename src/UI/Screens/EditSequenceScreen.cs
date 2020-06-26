@@ -14,7 +14,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Edit Sequence";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private JSONStorableBool _loop;
         private JSONStorableFloat _blendDurationJSON;
@@ -25,17 +25,16 @@ namespace VamTimeline
         private UIDynamicToggle _transitionUI;
         private UIDynamicToggle _loopUI;
 
-        public EditSequenceScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public EditSequenceScreen()
+            : base()
         {
-
         }
 
         #region Init
 
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Left side
 
@@ -69,7 +68,7 @@ namespace VamTimeline
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
             RegisterStorable(_nextAnimationJSON);
-            var nextAnimationUI = plugin.CreateScrollablePopup(_nextAnimationJSON, rightSide);
+            var nextAnimationUI = CreateScrollablePopup(_nextAnimationJSON, rightSide);
             nextAnimationUI.popupPanelHeight = 260f;
             RegisterComponent(nextAnimationUI);
 
@@ -78,13 +77,13 @@ namespace VamTimeline
                 valNoCallback = current.nextAnimationTime
             };
             RegisterStorable(_nextAnimationTimeJSON);
-            var nextAnimationTimeUI = plugin.CreateSlider(_nextAnimationTimeJSON, rightSide);
+            var nextAnimationTimeUI = CreateSlider(_nextAnimationTimeJSON, rightSide);
             nextAnimationTimeUI.valueFormat = "F3";
             RegisterComponent(nextAnimationTimeUI);
 
             _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
             RegisterStorable(_blendDurationJSON);
-            var blendDurationUI = plugin.CreateSlider(_blendDurationJSON, rightSide);
+            var blendDurationUI = CreateSlider(_blendDurationJSON, rightSide);
             blendDurationUI.valueFormat = "F3";
             RegisterComponent(blendDurationUI);
 
@@ -95,7 +94,7 @@ namespace VamTimeline
         {
             _nextAnimationPreviewJSON = new JSONStorableString("Next Preview", "");
             RegisterStorable(_nextAnimationPreviewJSON);
-            var nextAnimationResultUI = plugin.CreateTextField(_nextAnimationPreviewJSON, rightSide);
+            var nextAnimationResultUI = CreateTextField(_nextAnimationPreviewJSON, rightSide);
             nextAnimationResultUI.height = 30f;
             RegisterComponent(nextAnimationResultUI);
         }
@@ -104,7 +103,7 @@ namespace VamTimeline
         {
             var transitionLabelJSON = new JSONStorableString("Transition (Help)", "<b>Transition animations</b> can be enabled when there is an animation targeting the current animation, and when the current animation has a next animation configured. Only non-looping animations can be transition animations. This will automatically copy the last frame from the previous animation and the first frame from the next animation.");
             RegisterStorable(transitionLabelJSON);
-            var transitionLabelUI = plugin.CreateTextField(transitionLabelJSON, rightSide);
+            var transitionLabelUI = CreateTextField(transitionLabelJSON, rightSide);
             RegisterComponent(transitionLabelUI);
             // var layout = animationNameLabelUI.GetComponent<LayoutElement>();
             // layout.minHeight = 36f;
@@ -113,7 +112,7 @@ namespace VamTimeline
 
             _transitionJSON = new JSONStorableBool("Transition", false, (bool val) => ChangeTransition(val));
             RegisterStorable(_transitionJSON);
-            _transitionUI = plugin.CreateToggle(_transitionJSON, rightSide);
+            _transitionUI = CreateToggle(_transitionJSON, rightSide);
             RegisterComponent(_transitionUI);
         }
 
@@ -126,7 +125,7 @@ namespace VamTimeline
                 RefreshTransitionUI();
             });
             RegisterStorable(_loop);
-            _loopUI = plugin.CreateToggle(_loop, rightSide);
+            _loopUI = CreateToggle(_loop, rightSide);
             RegisterComponent(_loopUI);
         }
 
@@ -297,9 +296,9 @@ namespace VamTimeline
             UpdateNextAnimationPreview();
         }
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
-            base.Dispose();
+            base.OnDestroy();
             current.onAnimationSettingsModified.RemoveListener(OnAnimationSettingsModified);
         }
 

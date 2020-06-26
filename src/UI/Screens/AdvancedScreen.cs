@@ -15,16 +15,16 @@ namespace VamTimeline
     {
         public const string ScreenName = "Advanced";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
-        public AdvancedScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public AdvancedScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Right side
 
@@ -32,27 +32,27 @@ namespace VamTimeline
 
             CreateSpacer(true);
 
-            var keyframeCurrentPoseUI = plugin.CreateButton("Keyframe Pose (All On)", true);
+            var keyframeCurrentPoseUI = CreateButton("Keyframe Pose (All On)", true);
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
             RegisterComponent(keyframeCurrentPoseUI);
 
-            var keyframeCurrentPoseTrackedUI = plugin.CreateButton("Keyframe Pose (Animated)", true);
+            var keyframeCurrentPoseTrackedUI = CreateButton("Keyframe Pose (Animated)", true);
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
             RegisterComponent(keyframeCurrentPoseTrackedUI);
 
             CreateSpacer(true);
 
-            var bakeUI = plugin.CreateButton("Bake Animation (Arm & Record)", true);
+            var bakeUI = CreateButton("Bake Animation (Arm & Record)", true);
             bakeUI.button.onClick.AddListener(() => Bake());
             RegisterComponent(bakeUI);
 
             CreateSpacer(true);
 
-            var removeAllKeyframesUI = plugin.CreateButton("Remove All Keyframes", true);
+            var removeAllKeyframesUI = CreateButton("Remove All Keyframes", true);
             removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
             RegisterComponent(removeAllKeyframesUI);
 
-            var reverseAnimationUI = plugin.CreateButton("Reverse Animation Keyframes", true);
+            var reverseAnimationUI = CreateButton("Reverse Animation Keyframes", true);
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
             RegisterComponent(reverseAnimationUI);
         }

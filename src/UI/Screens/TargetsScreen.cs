@@ -15,7 +15,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Targets";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
         private JSONStorableStringChooser _addControllerListJSON;
@@ -27,17 +27,16 @@ namespace VamTimeline
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
 
-        public TargetsScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public TargetsScreen()
+            : base()
         {
-
         }
 
         #region Init
 
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Left side
 
@@ -86,12 +85,12 @@ namespace VamTimeline
 
             UIDynamicButton enableAllTargetsUI = null;
             UIDynamic spacerUI = null;
-            enableAllTargetsUI = plugin.CreateButton("Add All Other Animations' Targets", true);
+            enableAllTargetsUI = CreateButton("Add All Other Animations' Targets", true);
             enableAllTargetsUI.button.onClick.AddListener(() =>
             {
                 AddMissingTargets();
-                plugin.RemoveButton(enableAllTargetsUI);
-                plugin.RemoveSpacer(spacerUI);
+                RemoveButton(enableAllTargetsUI);
+                RemoveSpacer(spacerUI);
             });
             enableAllTargetsUI.buttonColor = Color.yellow;
             RegisterComponent(enableAllTargetsUI);
@@ -106,11 +105,11 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addControllerListJSON);
-            _addControllerUI = plugin.CreateScrollablePopup(_addControllerListJSON, true);
+            _addControllerUI = CreateScrollablePopup(_addControllerListJSON, true);
             _addControllerUI.popupPanelHeight = 900f;
             RegisterComponent(_addControllerUI);
 
-            _toggleControllerUI = plugin.CreateButton("Add Controller", true);
+            _toggleControllerUI = CreateButton("Add Controller", true);
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
             RegisterComponent(_toggleControllerUI);
 
@@ -164,7 +163,7 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addStorableListJSON);
-            _addStorableListUI = plugin.CreateScrollablePopup(_addStorableListJSON, rightSide);
+            _addStorableListUI = CreateScrollablePopup(_addStorableListJSON, rightSide);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
             RegisterComponent(_addStorableListUI);
@@ -174,12 +173,12 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_addParamListJSON);
-            _addParamListUI = plugin.CreateScrollablePopup(_addParamListJSON, rightSide);
+            _addParamListUI = CreateScrollablePopup(_addParamListJSON, rightSide);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
             RegisterComponent(_addParamListUI);
 
-            _toggleFloatParamUI = plugin.CreateButton("Add Param", rightSide);
+            _toggleFloatParamUI = CreateButton("Add Param", rightSide);
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
             RegisterComponent(_toggleFloatParamUI);
 
@@ -189,7 +188,7 @@ namespace VamTimeline
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                var makeMorphsAnimatableUI = plugin.CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
+                var makeMorphsAnimatableUI = CreateButton("<i>Add morphs (Make Animatable)</i>", rightSide);
                 RegisterComponent(makeMorphsAnimatableUI);
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
@@ -262,11 +261,11 @@ namespace VamTimeline
                 {
                     _addControllerListJSON.val = target.name;
                     RemoveAnimatedController(target);
-                    plugin.RemoveToggle(jsb);
-                    plugin.RemoveToggle(jsbUI);
+                    RemoveToggle(jsb);
+                    RemoveToggle(jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = plugin.CreateToggle(jsb, true);
+                jsbUI = CreateToggle(jsb, true);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
@@ -281,11 +280,11 @@ namespace VamTimeline
                     _addStorableListJSON.val = target.storable.name;
                     _addParamListJSON.val = target.floatParam.name;
                     RemoveFloatParam(target);
-                    plugin.RemoveToggle(jsb);
-                    plugin.RemoveToggle(jsbUI);
+                    RemoveToggle(jsb);
+                    RemoveToggle(jsbUI);
                     _removeToggles.Remove(jsb);
                 });
-                jsbUI = plugin.CreateToggle(jsb, true);
+                jsbUI = CreateToggle(jsb, true);
                 jsbUI.backgroundColor = Color.red;
                 jsbUI.textColor = Color.white;
                 _removeToggles.Add(jsb);
@@ -305,7 +304,7 @@ namespace VamTimeline
             if (_removeToggles == null) return;
             foreach (var toggleJSON in _removeToggles)
             {
-                plugin.RemoveToggle(toggleJSON);
+                RemoveToggle(toggleJSON);
             }
         }
 
@@ -495,12 +494,12 @@ namespace VamTimeline
             GenerateRemoveToggles();
         }
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
             if (_addParamListUI != null) _addParamListUI.popup.onOpenPopupHandlers -= RefreshStorableFloatsList;
             current.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
             ClearRemoveToggles();
-            base.Dispose();
+            base.OnDestroy();
         }
 
         #endregion

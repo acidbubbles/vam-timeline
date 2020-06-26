@@ -47,16 +47,16 @@ Now, rewind, and play. You'll see the hand move back and forth between the two p
 Check the wiki for resouces and videos. There's a ton of things you can do! Now have fun!
 ";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
-        public HelpScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public HelpScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             InitExplanation();
         }
@@ -65,7 +65,7 @@ Check the wiki for resouces and videos. There's a ton of things you can do! Now 
         {
             var textJSON = new JSONStorableString("Help", HelpText);
             RegisterStorable(textJSON);
-            var textUI = plugin.CreateTextField(textJSON, true);
+            var textUI = CreateTextField(textJSON, true);
             textUI.height = 1100;
             RegisterComponent(textUI);
         }

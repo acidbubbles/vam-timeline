@@ -15,7 +15,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Edit";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private const string _noKeyframeCurveType = "(No Keyframe)";
         private const string _loopCurveType = "(Loop)";
@@ -24,11 +24,6 @@ namespace VamTimeline
         {
             public ITargetFrame Component;
             public IAnimationTargetWithCurves Target;
-
-            public void Remove(IAtomPlugin plugin)
-            {
-                plugin.RemoveSpacer(Component.Container);
-            }
         }
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
@@ -38,14 +33,14 @@ namespace VamTimeline
         private bool _selectionChangedPending;
         private UIDynamicButton _manageTargetsUI;
 
-        public EditScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public EditScreen()
+            : base()
         {
 
         }
-        public override void Init()
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Left side
 
@@ -71,7 +66,7 @@ namespace VamTimeline
         {
             _curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
             RegisterStorable(_curveTypeJSON);
-            _curveTypeUI = plugin.CreateScrollablePopup(_curveTypeJSON, rightSide);
+            _curveTypeUI = CreateScrollablePopup(_curveTypeJSON, rightSide);
             _curveTypeUI.popupPanelHeight = 450f;
             RegisterComponent(_curveTypeUI);
         }
@@ -79,13 +74,13 @@ namespace VamTimeline
         private void InitAutoKeyframeUI()
         {
             RegisterStorable(plugin.autoKeyframeAllControllersJSON);
-            var autoKeyframeAllControllersUI = plugin.CreateToggle(plugin.autoKeyframeAllControllersJSON, false);
+            var autoKeyframeAllControllersUI = CreateToggle(plugin.autoKeyframeAllControllersJSON, false);
             RegisterComponent(autoKeyframeAllControllersUI);
         }
 
         private void InitCurvesUI(bool rightSide)
         {
-            var spacerUI = plugin.CreateSpacer(rightSide);
+            var spacerUI = CreateSpacer(rightSide);
             spacerUI.height = 300f;
             RegisterComponent(spacerUI);
 
@@ -96,7 +91,7 @@ namespace VamTimeline
         {
             var textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
             RegisterStorable(textJSON);
-            var textUI = plugin.CreateTextField(textJSON, true);
+            var textUI = CreateTextField(textJSON, true);
             textUI.height = 900;
             RegisterComponent(textUI);
         }
@@ -168,12 +163,12 @@ namespace VamTimeline
         {
             if (animation == null) return;
             RemoveTargets();
-            plugin.RemoveButton(_manageTargetsUI);
+            RemoveButton(_manageTargetsUI);
             var time = animation.clipTime;
 
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
-                var keyframeUI = plugin.CreateSpacer(true);
+                var keyframeUI = CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
                 component.Bind(plugin, animation.current, target);
@@ -186,7 +181,7 @@ namespace VamTimeline
 
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
-                var keyframeUI = plugin.CreateSpacer(true);
+                var keyframeUI = CreateSpacer(true);
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(plugin, animation.current, target);
@@ -203,20 +198,20 @@ namespace VamTimeline
                 _manageTargetsUI.buttonColor = new Color(0.8f, 0.7f, 0.8f);
         }
 
-        public override void Dispose()
+        public override void OnDestroy()
         {
             current.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
             animation.onTimeChanged.RemoveListener(OnTimeChanged);
-            plugin.RemoveButton(_manageTargetsUI);
+            RemoveButton(_manageTargetsUI);
             RemoveTargets();
-            base.Dispose();
+            base.OnDestroy();
         }
 
         private void RemoveTargets()
         {
             foreach (var targetRef in _targets)
             {
-                targetRef.Remove(plugin);
+                RemoveSpacer(targetRef.Component.Container);
             }
             _targets.Clear();
         }

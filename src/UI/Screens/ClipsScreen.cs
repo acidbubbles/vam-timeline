@@ -14,16 +14,16 @@ namespace VamTimeline
     {
         public const string ScreenName = "Clips";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
-        public ClipsScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public ClipsScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             if (animation.clips.Any())
             {
@@ -51,7 +51,7 @@ namespace VamTimeline
         private void InitAnimButton(AtomAnimationClip clip)
         {
             var clipState = animation.state.GetClip(clip.animationName);
-            var btn = plugin.CreateButton($"...", true);
+            var btn = CreateButton($"...", true);
             RegisterComponent(btn);
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>

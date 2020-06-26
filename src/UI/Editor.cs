@@ -24,8 +24,8 @@ namespace VamTimeline
             var rightPanel = CreatePanel(go.transform, 0.5f, 1f);
 
             var editor = go.AddComponent<Editor>();
-            editor._leftPanel = leftPanel;
-            editor._rightPanel = leftPanel;
+            editor.leftPanel = leftPanel;
+            editor.rightPanel = rightPanel;
 
             return editor;
         }
@@ -39,12 +39,8 @@ namespace VamTimeline
             rect.anchorMin = new Vector2(xl, 1f);
             rect.anchorMax = new Vector2(xr, 1f);
             rect.anchoredPosition = new Vector2(xl, 1f);
-            rect.pivot = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(xl, 1f);
             rect.sizeDelta = new Vector2(0f, 0f);
-
-            var bg = panel.AddComponent<Image>();
-            bg.raycastTarget = false;
-            bg.color = new Color(xl, xr, 0.5f);
 
             var verticalLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
             verticalLayoutGroup.childControlWidth = true;
@@ -56,17 +52,21 @@ namespace VamTimeline
         public bool locked
         {
             get { return _controlPanel.locked; }
-            set { _controlPanel.locked = value; }
+            set { _controlPanel.locked = value; _screensManager.UpdateLocked(value); }
         }
 
+        public GameObject leftPanel;
+        public GameObject rightPanel;
         private AnimationControlPanel _controlPanel;
-        private GameObject _leftPanel;
-        private GameObject _rightPanel;
+        private ScreensManager _screensManager;
 
         public void Bind(IAtomPlugin plugin)
         {
-            _controlPanel = CreateControlPanel(_leftPanel);
+            _controlPanel = CreateControlPanel(leftPanel);
             _controlPanel.Bind(plugin);
+
+            _screensManager = CreateScreensManager(rightPanel);
+            _screensManager.Bind(plugin);
         }
 
         private static AnimationControlPanel CreateControlPanel(GameObject panel)
@@ -80,9 +80,20 @@ namespace VamTimeline
             return AnimationControlPanel.Configure(go);
         }
 
+        private ScreensManager CreateScreensManager(GameObject panel)
+        {
+            var go = new GameObject();
+            go.transform.SetParent(panel.transform, false);
+
+            var layout = go.AddComponent<LayoutElement>();
+
+            return ScreensManager.Configure(go);
+        }
+
         public void Bind(AtomAnimation animation)
         {
             _controlPanel.Bind(animation);
+            _screensManager.Bind(animation);
         }
     }
 }

@@ -19,18 +19,18 @@ namespace VamTimeline
 
         public const string ScreenName = "More...";
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private JSONStorableStringChooser _exportAnimationsJSON;
 
-        public MoreScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public MoreScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Right side
 
@@ -67,14 +67,14 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_exportAnimationsJSON);
-            var exportAnimationsUI = plugin.CreateScrollablePopup(_exportAnimationsJSON, rightSide);
+            var exportAnimationsUI = CreateScrollablePopup(_exportAnimationsJSON, rightSide);
             RegisterComponent(exportAnimationsUI);
 
-            var exportUI = plugin.CreateButton("Export animation", rightSide);
+            var exportUI = CreateButton("Export animation", rightSide);
             exportUI.button.onClick.AddListener(() => Export());
             RegisterComponent(exportUI);
 
-            var importUI = plugin.CreateButton("Import animation", rightSide);
+            var importUI = CreateButton("Import animation", rightSide);
             importUI.button.onClick.AddListener(() => Import());
             RegisterComponent(importUI);
         }
@@ -82,7 +82,7 @@ namespace VamTimeline
         private void InitSpeedUI(bool rightSide)
         {
             RegisterStorable(plugin.speedJSON);
-            var speedUI = plugin.CreateSlider(plugin.speedJSON, rightSide);
+            var speedUI = CreateSlider(plugin.speedJSON, rightSide);
             speedUI.valueFormat = "F3";
             RegisterComponent(speedUI);
         }

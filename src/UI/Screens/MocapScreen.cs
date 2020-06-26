@@ -18,7 +18,7 @@ namespace VamTimeline
         public const string ScreenName = "Mocap";
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
 
-        public override string name => ScreenName;
+        public override string screenId => ScreenName;
 
         private UIDynamicButton _importRecordedUI;
         private JSONStorableStringChooser _importRecordedOptionsJSON;
@@ -27,14 +27,14 @@ namespace VamTimeline
         private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private JSONStorableFloat _reduceMinRotationJSON;
 
-        public MocapScreen(IAtomPlugin plugin)
-            : base(plugin)
+        public MocapScreen()
+            : base()
         {
-
         }
-        public override void Init()
+
+        public override void Init(IAtomPlugin plugin)
         {
-            base.Init();
+            base.Init(plugin);
 
             // Right side
 
@@ -51,33 +51,33 @@ namespace VamTimeline
                 isStorable = false
             };
             RegisterStorable(_importRecordedOptionsJSON);
-            var importRecordedOptionsUI = plugin.CreateScrollablePopup(_importRecordedOptionsJSON, true);
+            var importRecordedOptionsUI = CreateScrollablePopup(_importRecordedOptionsJSON, true);
             RegisterComponent(importRecordedOptionsUI);
 
             _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Distance Between Frames", 0.04f, 0.001f, 0.5f, true);
             RegisterStorable(_reduceMinPosDistanceJSON);
-            var reduceMinPosDistanceUI = plugin.CreateSlider(_reduceMinPosDistanceJSON, true);
+            var reduceMinPosDistanceUI = CreateSlider(_reduceMinPosDistanceJSON, true);
             RegisterComponent(reduceMinPosDistanceUI);
 
             _reduceMinRotationJSON = new JSONStorableFloat("Minimum Rotation Between Frames", 10f, 0.1f, 90f, true);
             RegisterStorable(_reduceMinRotationJSON);
-            var reduceMinRotationUI = plugin.CreateSlider(_reduceMinRotationJSON, true);
+            var reduceMinRotationUI = CreateSlider(_reduceMinRotationJSON, true);
             RegisterComponent(reduceMinRotationUI);
 
             _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max Frames per Second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
             RegisterStorable(_reduceMaxFramesPerSecondJSON);
-            var maxFramesPerSecondUI = plugin.CreateSlider(_reduceMaxFramesPerSecondJSON, true);
+            var maxFramesPerSecondUI = CreateSlider(_reduceMaxFramesPerSecondJSON, true);
             RegisterComponent(maxFramesPerSecondUI);
 
             CreateSpacer(true);
 
-            _importRecordedUI = plugin.CreateButton("Import Recorded Animation (Mocap)", true);
+            _importRecordedUI = CreateButton("Import Recorded Animation (Mocap)", true);
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
             RegisterComponent(_importRecordedUI);
 
             CreateSpacer(true);
 
-            _reduceKeyframesUI = plugin.CreateButton("Reduce Float Params Keyframes", true);
+            _reduceKeyframesUI = CreateButton("Reduce Float Params Keyframes", true);
             _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
             RegisterComponent(_reduceKeyframesUI);
         }
