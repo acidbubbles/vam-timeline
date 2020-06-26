@@ -20,8 +20,8 @@ namespace VamTimeline
             layout.minHeight = 900f;
             layout.preferredWidth = 1060f;
 
-            var leftPanel = CreatePanel(go.transform, 0f, 0.5f);
-            var rightPanel = CreatePanel(go.transform, 0.5f, 1f);
+            var leftPanel = CreatePanel(go.transform, 0f, 0.5f, 0f);
+            var rightPanel = CreatePanel(go.transform, 0.5f, 1f, 1f);
 
             var editor = go.AddComponent<Editor>();
             editor.leftPanel = leftPanel;
@@ -30,7 +30,7 @@ namespace VamTimeline
             return editor;
         }
 
-        private static GameObject CreatePanel(Transform transform, float xl, float xr)
+        private static GameObject CreatePanel(Transform transform, float xl, float xr, float xa)
         {
             var panel = new GameObject();
             panel.transform.SetParent(transform, false);
@@ -38,9 +38,9 @@ namespace VamTimeline
             var rect = panel.AddComponent<RectTransform>();
             rect.anchorMin = new Vector2(xl, 1f);
             rect.anchorMax = new Vector2(xr, 1f);
-            rect.anchoredPosition = new Vector2(xl, 1f);
-            rect.pivot = new Vector2(xl, 1f);
-            rect.sizeDelta = new Vector2(0f, 0f);
+            rect.anchoredPosition = new Vector2(xa, 1f);
+            rect.pivot = new Vector2(xa, 1f);
+            rect.sizeDelta = new Vector2(-5f, 0f);
 
             var verticalLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
             verticalLayoutGroup.childControlWidth = true;
