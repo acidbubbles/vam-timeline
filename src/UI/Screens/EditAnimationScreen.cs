@@ -88,7 +88,7 @@ namespace VamTimeline
             {
                 _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
                 RegisterStorable(_animationNameJSON);
-                var animationNameUI = plugin.CreateTextInput(_animationNameJSON, rightSide);
+                var animationNameUI = CreateTextInput(_animationNameJSON, rightSide);
                 RegisterComponent(animationNameUI);
                 var layout = animationNameUI.GetComponent<LayoutElement>();
                 layout.minHeight = 50f;

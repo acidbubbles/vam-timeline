@@ -745,22 +745,6 @@ namespace VamTimeline
 
         #endregion
 
-        #region Utils
-
-        public UIDynamicTextField CreateTextInput(JSONStorableString jss, bool rightSide = false)
-        {
-            var textfield = CreateTextField(jss, rightSide);
-            textfield.height = 20f;
-            textfield.backgroundColor = Color.white;
-            var input = textfield.gameObject.AddComponent<InputField>();
-            var rect = input.GetComponent<RectTransform>().sizeDelta = new Vector2(1f, 0.4f);
-            input.textComponent = textfield.UItext;
-            jss.inputField = input;
-            return textfield;
-        }
-
-        #endregion
-
         #region Controller integration
 
         public void VamTimelineConnectController(Dictionary<string, object> dict)
