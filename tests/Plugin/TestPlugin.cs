@@ -36,12 +36,14 @@ namespace VamTimeline.Tests.Plugin
             _runUI.enabled = false;
             _resultBuilder = new StringBuilder();
             _resultJSON.val = "Running...";
+            pluginLabelJSON.val = "Running...";
             StartCoroutine(RunDeferred());
         }
 
         private IEnumerator RunDeferred()
         {
             var globalSW = Stopwatch.StartNew();
+            var success = true;
             yield return 0;
             foreach (var test in TestsIndex.GetAllTests())
             {
@@ -61,10 +63,14 @@ namespace VamTimeline.Tests.Plugin
                     _resultBuilder.AppendLine(output.ToString());
                     _resultJSON.val = _resultBuilder.ToString();
                     _resultBuilder.AppendLine($"FAIL [{globalSW.Elapsed}]");
+                    success = false;
+                    break;
                 }
             }
+            globalSW.Stop();
             _resultBuilder.AppendLine($"DONE {globalSW.Elapsed}");
             _resultJSON.val = _resultBuilder.ToString();
+            pluginLabelJSON.val = (success ? "Success" : "Failed") + $" (ran in {globalSW.Elapsed.TotalSeconds:0.00}s)";
         }
     }
 }
