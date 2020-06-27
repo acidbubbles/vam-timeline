@@ -24,7 +24,7 @@ namespace VamTimeline
         {
             var ui = Instantiate(plugin.manager.configurableSpacerPrefab).GetComponent<UIDynamic>();
             ui.gameObject.transform.SetParent(transform, false);
-            ui.height = 30f;
+            ui.height = 20f;
             return ui;
         }
 

@@ -47,7 +47,7 @@ namespace VamTimeline
         private void InitRenameLayer(string layer)
         {
             var layerNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateLayerName(ref layer, val));
-                        var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON);
+            var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON);
             var layout = layerNameUI.GetComponent<LayoutElement>();
             layout.minHeight = 50f;
             layerNameUI.height = 50;

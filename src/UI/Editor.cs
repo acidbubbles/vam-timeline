@@ -45,6 +45,8 @@ namespace VamTimeline
             var verticalLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
             verticalLayoutGroup.childControlWidth = true;
             verticalLayoutGroup.childForceExpandWidth = false;
+            verticalLayoutGroup.childControlHeight = true;
+            verticalLayoutGroup.childForceExpandHeight = false;
             verticalLayoutGroup.spacing = 10f;
 
             return panel;
@@ -77,7 +79,7 @@ namespace VamTimeline
 
             InitChangeCurveTypeUI();
 
-            InitCurvesUI();
+            _curves = InitCurvesUI();
 
             InitClipboardUI();
 
@@ -93,7 +95,7 @@ namespace VamTimeline
             go.transform.SetParent(panel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 900f;
+            layout.minHeight = 700f;
 
             return AnimationControlPanel.Configure(go);
         }
@@ -103,12 +105,16 @@ namespace VamTimeline
             _curveType = CurveTypePopup.Create(_leftPanelPrefabFactory);
         }
 
-        private void InitCurvesUI()
+        private Curves InitCurvesUI()
         {
-            var spacerUI = _leftPanelPrefabFactory.CreateSpacer();
-            spacerUI.height = 300f;
+            var go = new GameObject();
+            go.transform.SetParent(leftPanel.transform, false);
 
-            _curves = spacerUI.gameObject.AddComponent<Curves>();
+            var layout = go.AddComponent<LayoutElement>();
+            layout.minHeight = 270f;
+            layout.flexibleWidth = 100f;
+
+            return go.AddComponent<Curves>();
         }
 
         protected void InitClipboardUI()

@@ -30,6 +30,8 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
+
             InitBulkClipboardUI();
 
             InitSelectionUI();
@@ -68,7 +70,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        var selectionUI = prefabFactory.CreateTextField(_selectionJSON);
+            var selectionUI = prefabFactory.CreateTextField(_selectionJSON);
 
             var markSelectionStartUI = prefabFactory.CreateButton("Mark Selection Start");
             markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
@@ -80,7 +82,7 @@ namespace VamTimeline
         private void InitChangeCurveUI()
         {
             _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
-                        var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON);
+            var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON);
             curveTypeUI.popupPanelHeight = 340f;
         }
 

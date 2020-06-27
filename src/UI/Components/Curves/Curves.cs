@@ -25,10 +25,8 @@ namespace VamTimeline
 
         public Curves()
         {
-            gameObject.AddComponent<Canvas>();
-            gameObject.AddComponent<GraphicRaycaster>();
-
             var image = gameObject.AddComponent<Image>();
+            image.color = Color.yellow;
             image.raycastTarget = false;
 
             var mask = gameObject.AddComponent<Mask>();
@@ -120,6 +118,7 @@ namespace VamTimeline
             if (_animation != null) throw new InvalidOperationException("Cannot bind to animation twice");
             _animation = animation;
             _animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            OnTargetsSelectionChanged();
         }
 
         private void OnTargetsSelectionChanged()
@@ -243,7 +242,6 @@ namespace VamTimeline
                 _lines.ClearCurves();
                 foreach (var target in _targets)
                     target.onAnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
-                _animation = null;
                 _targets = null;
                 _lines.SetVerticesDirty();
             }
@@ -251,10 +249,10 @@ namespace VamTimeline
 
         private void OnAnimationCurveModified()
         {
-            StartCoroutine(DelayedUpdate());
+            StartCoroutine(DrawCurveLinesDeferred());
         }
 
-        private IEnumerator DelayedUpdate()
+        private IEnumerator DrawCurveLinesDeferred()
         {
             // Allow curve refresh;
             yield return 0;

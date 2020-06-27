@@ -99,7 +99,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
+            _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
             _addControllerUI.popupPanelHeight = 900f;
 
             _toggleControllerUI = prefabFactory.CreateButton("Add Controller");
@@ -154,7 +154,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON);
+            _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
@@ -162,7 +162,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-                        _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
+            _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
 

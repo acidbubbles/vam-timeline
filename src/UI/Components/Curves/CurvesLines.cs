@@ -39,7 +39,7 @@ namespace VamTimeline
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
             var precision = 2f; // Draw at every N pixels
-            var minVertexDelta = 1.5f; // How much distance is required to draw a point
+            var minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
 
             // X ratio
@@ -94,7 +94,7 @@ namespace VamTimeline
                 {
                     var value = curve.Evaluate(time);
                     var y = offsetY + value * yRatio;
-                    if (Mathf.Abs(y - previousY) < minVertexDelta) continue;
+                    if (Mathf.Abs(y - previousY) < minVertexYDelta) continue;
                     var cur = new Vector2(offsetX + time * xRatio, y);
                     previousY = y;
                     points.Add(cur);

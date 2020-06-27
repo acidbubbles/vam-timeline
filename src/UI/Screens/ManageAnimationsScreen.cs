@@ -30,9 +30,9 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            InitAnimationsListUI();
-
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
+
+            InitAnimationsListUI();
 
             prefabFactory.CreateSpacer();
 
@@ -54,7 +54,7 @@ namespace VamTimeline
         private void InitAnimationsListUI()
         {
             _animationsListJSON = new JSONStorableString("Animations List", "");
-                        var animationsListUI = prefabFactory.CreateTextField(_animationsListJSON);
+            var animationsListUI = prefabFactory.CreateTextField(_animationsListJSON);
         }
 
         private void InitReorderAnimationsUI()
