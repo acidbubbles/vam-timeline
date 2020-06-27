@@ -1,4 +1,5 @@
 using SimpleJSON;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -12,6 +13,7 @@ namespace VamTimeline
     {
         Atom containingAtom { get; }
         MVRPluginManager manager { get; }
+        Transform UITransform { get; }
     }
 
     /// <summary>

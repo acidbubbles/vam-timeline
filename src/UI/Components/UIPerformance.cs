@@ -10,9 +10,17 @@ namespace VamTimeline
     /// </summary>
     public static class UIPerformance
     {
-        public static bool ShouldSkip()
+        public const int ReducedFPSUIRate = 2;
+        public const int LowFPSUIRate = 6;
+
+        public static bool ShouldSkip(int everyNFrames = ReducedFPSUIRate)
         {
-            return Time.frameCount % 2 != 0;
+            return Time.frameCount % everyNFrames != 0;
+        }
+
+        public static bool ShouldRun(int everyNFrames = ReducedFPSUIRate)
+        {
+            return Time.frameCount % everyNFrames == 0;
         }
     }
 }

@@ -568,7 +568,8 @@ namespace VamTimeline
                 if (target == null)
                     target = Add(new TriggersAnimationTarget());
                 // TODO: Actually paste something
-                target.SetKeyframe(time, true);
+                target.SetKeyframe(time, null);
+                throw new NotImplementedException();
             }
         }
 

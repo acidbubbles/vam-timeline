@@ -19,6 +19,7 @@ namespace VamTimeline
 
         public AtomAnimation animation { get; private set; }
         public new Atom containingAtom => base.containingAtom;
+        public new Transform UITransform => base.UITransform;
         public new MVRPluginManager manager => base.manager;
         public AtomAnimationSerializer serializer { get; private set; }
         public AtomClipboard clipboard { get; } = new AtomClipboard();
@@ -78,16 +79,24 @@ namespace VamTimeline
             try
             {
                 if (UITransform == null) return;
-                var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
 
-                _ui = Editor.AddTo(scriptUI.fullWidthUIContent);
-                _ui.Bind(this);
-                if (animation != null) _ui.Bind(animation);
+                StartCoroutine(InitUIDeferred());
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(InitUI)}: " + exc);
             }
+        }
+
+        private IEnumerator InitUIDeferred()
+        {
+            yield return StartCoroutine(VamPrefabFactory.LoadUIAssets());
+
+            var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
+
+            _ui = Editor.AddTo(scriptUI.fullWidthUIContent);
+            _ui.Bind(this);
+            if (animation != null) _ui.Bind(animation);
         }
 
         #endregion

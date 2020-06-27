@@ -126,7 +126,7 @@ namespace VamTimeline
                 _scrubberRect.anchorMax = new Vector2(ratio, 1);
             }
 
-            if (Time.frameCount % 6 == 0 && _lastTextUpdate != currentUpdate)
+            if (_lastTextUpdate != currentUpdate && UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
             {
                 _lastTextUpdate = currentUpdate;
                 _timeText.text = $"{timeJSON.val:0.000}s / {scrubberJSON.max:0.000}s";

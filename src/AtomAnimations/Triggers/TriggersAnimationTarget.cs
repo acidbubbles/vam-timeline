@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -10,7 +12,7 @@ namespace VamTimeline
     /// </summary>
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
-        public List<int> keyframes { get; } = new List<int>();
+        public Dictionary<int, Trigger> keyframes { get; } = new Dictionary<int, Trigger>();
 
         public string name => "Triggers";
 
@@ -23,18 +25,17 @@ namespace VamTimeline
             return "Triggers";
         }
 
-        public void SetKeyframe(float time, bool value)
+        public void SetKeyframe(float time, Trigger value)
         {
-            var ms = time.ToMilliseconds();
-            if (value)
-            {
-                if (!keyframes.Contains(ms))
-                    keyframes.Add(ms);
-            }
-            else
-            {
+            SetKeyframe(time.ToMilliseconds(), value);
+        }
+
+        public void SetKeyframe(int ms, Trigger value)
+        {
+            if (value == null)
                 keyframes.Remove(ms);
-            }
+            else
+                keyframes[ms] = value;
         }
 
         public void DeleteFrame(float time)
@@ -44,17 +45,15 @@ namespace VamTimeline
 
         public float[] GetAllKeyframesTime()
         {
-            var times = new float[keyframes.Count];
-            for (var i = 0; i < keyframes.Count; i++)
-            {
-                times[i] = (keyframes[i] / 1000f).Snap();
-            }
-            return times;
+            // TODO: Optimize memory
+            var times = keyframes.Keys.ToList();
+            times.Sort();
+            return times.Select(t => (t / 1000f).Snap()).ToArray();
         }
 
         public bool HasKeyframe(float time)
         {
-            return keyframes.Contains(time.ToMilliseconds());
+            return keyframes.ContainsKey(time.ToMilliseconds());
         }
 
         // TODO: Makes sense?
