@@ -28,6 +28,7 @@ namespace VamTimeline
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
+        private string _defaultScreen;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -78,7 +79,7 @@ namespace VamTimeline
 
         private void ChangeScreen(string screen)
         {
-            _currentScreen = screen;
+            _currentScreen = _defaultScreen = screen;
             _plugin.lockedJSON.val = screen == PerformanceScreen.ScreenName;
             _screenChanged.Invoke();
             RefreshCurrentUI();
@@ -93,7 +94,9 @@ namespace VamTimeline
 
         public string GetDefaultScreen()
         {
-            if (_plugin.animation == null || _plugin.lockedJSON.val)
+            if (_defaultScreen != null)
+                return _defaultScreen;
+            else if (_plugin.animation == null || _plugin.lockedJSON.val)
                 return PerformanceScreen.ScreenName;
             else
                 return EditScreen.ScreenName;
@@ -250,7 +253,7 @@ namespace VamTimeline
 
         public void OnDisable()
         {
-            Destroy(_current);
+            Destroy(_current.gameObject);
             _current = null;
             _currentScreen = null;
         }
