@@ -68,7 +68,7 @@ namespace VamTimeline
 
         public bool HasKeyframe(float time)
         {
-            return Value.KeyframeBinarySearch(time) != -1;
+            return value.KeyframeBinarySearch(time) != -1;
         }
 
         public bool TargetsSameAs(IAnimationTargetWithCurves target)

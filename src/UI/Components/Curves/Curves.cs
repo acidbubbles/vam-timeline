@@ -123,7 +123,7 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            Bind(_animation.current.allTargetsCount == 1 ? _animation.current.allTargets.ToList() : _animation.current.GetSelectedTargets().ToList());
+            Bind(_animation.current.allTargetsCount == 1 ? _animation.current.allCurveTargets.ToList() : _animation.current.GetSelectedTargets().ToList());
         }
 
         private void Bind(IList<IAnimationTargetWithCurves> targets)

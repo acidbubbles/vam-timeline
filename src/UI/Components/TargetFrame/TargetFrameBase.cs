@@ -12,7 +12,8 @@ namespace VamTimeline
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
     public abstract class TargetFrameBase<T> : MonoBehaviour, ITargetFrame
-        where T : IAnimationTargetWithCurves
+        where T : IAtomAnimationTarget
+
     {
         protected readonly StyleBase style = new StyleBase();
         protected IAtomPlugin plugin;
@@ -196,7 +197,7 @@ namespace VamTimeline
             if (stopped)
             {
                 toggle.toggle.interactable = time > 0 && time < clip.animationLength;
-                SetToggle(target.GetLeadCurve().KeyframeBinarySearch(time) != -1);
+                SetToggle(target.HasKeyframe(time));
             }
             else
             {

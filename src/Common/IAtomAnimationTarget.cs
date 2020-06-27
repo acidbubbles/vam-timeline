@@ -18,6 +18,7 @@ namespace VamTimeline
 
         string GetShortName();
         float[] GetAllKeyframesTime();
+        bool HasKeyframe(float time);
         void DeleteFrame(float time);
     }
 }

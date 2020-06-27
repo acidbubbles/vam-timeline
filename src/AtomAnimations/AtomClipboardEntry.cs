@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ namespace VamTimeline
         public float time;
         public List<FreeControllerV3ClipboardEntry> controllers;
         public List<FloatParamValClipboardEntry> floatParams;
+        public List<TriggersClipboardEntry> triggers;
     }
 
     /// <summary>
@@ -76,5 +78,19 @@ namespace VamTimeline
         public Keyframe rotW;
 
         public string curveType;
+    }
+
+    /// <summary>
+    /// VaM Timeline
+    /// By Acidbubbles
+    /// Animation timeline with keyframes
+    /// Source: https://github.com/acidbubbles/vam-timeline
+    /// </summary>
+    public class TriggersClipboardEntry
+    {
+        public TriggersClipboardEntry()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

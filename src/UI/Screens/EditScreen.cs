@@ -20,7 +20,7 @@ namespace VamTimeline
         private class TargetRef
         {
             public ITargetFrame Component;
-            public IAnimationTargetWithCurves Target;
+            public IAtomAnimationTarget Target;
         }
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
@@ -80,6 +80,19 @@ namespace VamTimeline
             Destroy(_manageTargetsUI);
             var time = animation.clipTime;
 
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>())
+            {
+                var keyframeUI = prefabFactory.CreateSpacer();
+                keyframeUI.height = 60f;
+                var component = keyframeUI.gameObject.AddComponent<TriggersTargetFrame>();
+                component.Bind(plugin, animation.current, target);
+                _targets.Add(new TargetRef
+                {
+                    Component = component,
+                    Target = target,
+                });
+            }
+
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var keyframeUI = prefabFactory.CreateSpacer();
@@ -105,6 +118,7 @@ namespace VamTimeline
                     Target = target,
                 });
             }
+
             _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName, true);
             if (current.allTargetsCount == 0)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);

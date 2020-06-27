@@ -42,6 +42,10 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            InitTriggersUI();
+
+            prefabFactory.CreateSpacer();
+
             InitControllersUI();
 
             prefabFactory.CreateSpacer();
@@ -69,10 +73,10 @@ namespace VamTimeline
         {
             if (animation.clips.Count <= 1) return;
 
-            var clipList = current.allTargets.Select(t => t.name).OrderBy(x => x);
+            var clipList = current.allCurveTargets.Select(t => t.name).OrderBy(x => x);
             var otherList = animation.clips
                 .Where(c => c != current && c.animationLayer == current.animationLayer)
-                .SelectMany(c => c.allTargets)
+                .SelectMany(c => c.allCurveTargets)
                 .Select(t => t.name)
                 .Distinct()
                 .OrderBy(x => x);
@@ -91,6 +95,17 @@ namespace VamTimeline
             enableAllTargetsUI.buttonColor = Color.yellow;
 
             spacerUI = prefabFactory.CreateSpacer();
+        }
+
+        private void InitTriggersUI()
+        {
+            // TODO: Allow more than one triggers track
+            var btn = prefabFactory.CreateButton("Add Triggers");
+            btn.button.onClick.AddListener(() =>
+            {
+                if (current.targetTriggers.Count > 0) return;
+                current.Add(new TriggersAnimationTarget());
+            });
         }
 
         private void InitControllersUI()

@@ -132,8 +132,9 @@ namespace VamTimeline
 
         private void SetValue(float val)
         {
+            if (plugin.animation.isPlaying) return;
             target.floatParam.val = val;
-            plugin.animation.SetKeyframe(target, plugin.animation.clipTime, target.floatParam.val);
+            target.SetKeyframe(plugin.animation.clipTime, target.floatParam.val);
             SetTime(plugin.animation.clipTime, true);
             ToggleKeyframe(true);
         }
@@ -162,7 +163,7 @@ namespace VamTimeline
             }
             if (enable)
             {
-                plugin.animation.SetKeyframe(target, time, target.floatParam.val);
+                target.SetKeyframe(time, target.floatParam.val);
             }
             else
             {

@@ -138,14 +138,6 @@ namespace VamTimeline
             return false;
         }
 
-        public void SetKeyframe(FloatParamAnimationTarget target, float time, float val)
-        {
-            time = time.Snap();
-            if (time > current.animationLength)
-                time = current.animationLength;
-            target.SetKeyframe(time, val);
-        }
-
         public void SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
         {
             time = time.Snap();
@@ -539,11 +531,11 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            foreach (var target in current.allTargets)
+            foreach (var target in current.allCurveTargets)
             {
                 foreach (var clip in clips.Where(c => c != current))
                 {
-                    var t = clip.allTargets.FirstOrDefault(x => x.TargetsSameAs(target));
+                    var t = clip.allCurveTargets.FirstOrDefault(x => x.TargetsSameAs(target));
                     if (t == null) continue;
                     t.selected = target.selected;
                 }

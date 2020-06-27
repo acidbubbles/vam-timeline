@@ -164,7 +164,7 @@ namespace VamTimeline
                 }
             }
 
-            // TODO: Serialization of action params
+            // TODO: Deserialization of triggers
         }
 
         private IEnumerable<DAZMorph> GetMorphs()
@@ -391,6 +391,8 @@ namespace VamTimeline
                     };
                 paramsJSON.Add(paramJSON);
             }
+
+            // TODO: Serialization of targets
         }
 
         private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)

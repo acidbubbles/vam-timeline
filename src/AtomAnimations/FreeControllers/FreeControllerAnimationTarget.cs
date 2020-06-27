@@ -221,7 +221,7 @@ namespace VamTimeline
 
         public bool HasKeyframe(float time)
         {
-            return X.KeyframeBinarySearch(time) != -1;
+            return x.KeyframeBinarySearch(time) != -1;
         }
 
         #endregion
