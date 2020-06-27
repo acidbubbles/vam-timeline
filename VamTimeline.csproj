@@ -63,6 +63,7 @@
     <Compile Include="src/AtomAnimations/Common/KeyframeSettings.cs" />
     <Compile Include="src/AtomAnimations/FreeControllers/FreeControllerAnimationTarget.cs" />
     <Compile Include="src/AtomAnimations/Params/FloatParamAnimationTarget.cs" />
+    <Compile Include="src/AtomAnimations/Triggers/TriggerAnimationTarget.cs" />
     <Compile Include="src/AtomAnimations/AtomAnimation.cs" />
     <Compile Include="src/AtomAnimations/AtomAnimationClip.cs" />
     <Compile Include="src/AtomAnimations/AtomAnimationSerializer.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="src/UI/Components/Styling/StyleBase.cs" />
     <Compile Include="src/UI/Components/TargetFrame/ControllerTargetFrame.cs" />
     <Compile Include="src/UI/Components/TargetFrame/FloatParamTargetFrame.cs" />
+    <Compile Include="src/UI/Components/TargetFrame/TriggerTargetFrame.cs" />
     <Compile Include="src/UI/Components/TargetFrame/ITargetFrame.cs" />
     <Compile Include="src/UI/Components/TargetFrame/SimpleSlider.cs" />
     <Compile Include="src/UI/Components/TargetFrame/TargetFrameBase.cs" />

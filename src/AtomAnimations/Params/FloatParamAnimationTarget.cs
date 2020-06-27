@@ -66,6 +66,11 @@ namespace VamTimeline
             return keyframes;
         }
 
+        public bool HasKeyframe(float time)
+        {
+            return Value.KeyframeBinarySearch(time) != -1;
+        }
+
         public bool TargetsSameAs(IAnimationTargetWithCurves target)
         {
             var t = target as FloatParamAnimationTarget;

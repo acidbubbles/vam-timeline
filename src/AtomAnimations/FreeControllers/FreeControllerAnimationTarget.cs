@@ -219,6 +219,11 @@ namespace VamTimeline
             return keyframes;
         }
 
+        public bool HasKeyframe(float time)
+        {
+            return X.KeyframeBinarySearch(time) != -1;
+        }
+
         #endregion
 
         #region Curves

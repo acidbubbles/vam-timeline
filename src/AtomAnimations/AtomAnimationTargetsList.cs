@@ -10,7 +10,7 @@ namespace VamTimeline
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
     public class AtomAnimationTargetsList<T> : List<T>, IAtomAnimationTargetsList
-        where T : IAnimationTargetWithCurves
+        where T : IAtomAnimationTarget
     {
         public string label { get; set; }
 

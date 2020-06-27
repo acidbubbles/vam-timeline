@@ -126,11 +126,11 @@ namespace VamTimeline
                 }
             }
 
-            JSONArray paramsJSON = clipJSON["FloatParams"].AsArray;
+            JSONArray floatParamsJSON = clipJSON["FloatParams"].AsArray;
             var morphs = GetMorphs();
-            if (paramsJSON != null)
+            if (floatParamsJSON != null)
             {
-                foreach (JSONClass paramJSON in paramsJSON)
+                foreach (JSONClass paramJSON in floatParamsJSON)
                 {
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
@@ -163,6 +163,8 @@ namespace VamTimeline
                     DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength);
                 }
             }
+
+            // TODO: Serialization of action params
         }
 
         private IEnumerable<DAZMorph> GetMorphs()
