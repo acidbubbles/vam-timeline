@@ -57,87 +57,115 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="src/AtomAnimations/Common/AnimationTargetBase.cs" />
-    <Compile Include="src/AtomAnimations/Common/CurveTypeValues.cs" />
-    <Compile Include="src/AtomAnimations/Common/IAnimationTargetWithCurves.cs" />
-    <Compile Include="src/AtomAnimations/Common/KeyframeSettings.cs" />
-    <Compile Include="src/AtomAnimations/FreeControllers/FreeControllerAnimationTarget.cs" />
-    <Compile Include="src/AtomAnimations/Params/FloatParamAnimationTarget.cs" />
-    <Compile Include="src/AtomAnimations/Triggers/TriggersAnimationTarget.cs" />
-    <Compile Include="src/AtomAnimations/AtomAnimation.cs" />
-    <Compile Include="src/AtomAnimations/AtomAnimationClip.cs" />
-    <Compile Include="src/AtomAnimations/AtomAnimationSerializer.cs" />
-    <Compile Include="src/AtomAnimations/AtomAnimationTargetsList.cs" />
-    <Compile Include="src/AtomAnimations/AtomClipboardEntry.cs" />
-    <Compile Include="src/AtomAnimations/AtomPlaybackState.cs" />
-    <Compile Include="src/AtomAnimations/IAtomPlugin.cs" />
-    <Compile Include="src/Common/AnimationCurveExtensions.cs" />
-    <Compile Include="src/Common/FloatExtensions.cs" />
-    <Compile Include="src/Common/IAtomAnimationClip.cs" />
-    <Compile Include="src/Common/IAtomAnimationTarget.cs" />
-    <Compile Include="src/Common/IAtomAnimationTargetsList.cs" />
-    <Compile Include="src/Common/IRemoteAtomPlugin.cs" />
-    <Compile Include="src/Common/IRemoteControllerPlugin.cs" />
-    <Compile Include="src/Common/ListExtensions.cs" />
-    <Compile Include="src/Common/RectTransformExtensions.cs" />
-    <Compile Include="src/Common/StorableNames.cs" />
-    <Compile Include="src/Common/SyncProxy.cs" />
-    <Compile Include="src/External/Unity/UnitySpecific.cs" />
-    <Compile Include="src/UI/Components/AnimationControlPanel/AnimationControlPanel.cs" />
-    <Compile Include="src/UI/Components/Curves/Curves.cs" />
-    <Compile Include="src/UI/Components/Curves/CurvesLines.cs" />
-    <Compile Include="src/UI/Components/Curves/CurvesStyle.cs" />
-    <Compile Include="src/UI/Components/DopeSheet/DopeSheet.cs" />
-    <Compile Include="src/UI/Components/DopeSheet/DopeSheetKeyframes.cs" />
-    <Compile Include="src/UI/Components/DopeSheet/DopeSheetStyle.cs" />
-    <Compile Include="src/UI/Components/Scrubber/Scrubber.cs" />
-    <Compile Include="src/UI/Components/Scrubber/ScrubberMarkers.cs" />
-    <Compile Include="src/UI/Components/Scrubber/ScrubberStyle.cs" />
-    <Compile Include="src/UI/Components/Styling/StyleBase.cs" />
-    <Compile Include="src/UI/Components/TargetFrame/ControllerTargetFrame.cs" />
-    <Compile Include="src/UI/Components/TargetFrame/FloatParamTargetFrame.cs" />
-    <Compile Include="src/UI/Components/TargetFrame/TriggersTargetFrame.cs" />
-    <Compile Include="src/UI/Components/TargetFrame/ITargetFrame.cs" />
-    <Compile Include="src/UI/Components/TargetFrame/SimpleSlider.cs" />
-    <Compile Include="src/UI/Components/TargetFrame/TargetFrameBase.cs" />
-    <Compile Include="src/UI/Components/Clickable.cs" />
-    <Compile Include="src/UI/Components/CurveTypePopup.cs" />
-    <Compile Include="src/UI/Components/GradientImage.cs" />
-    <Compile Include="src/UI/Components/Listener.cs" />
-    <Compile Include="src/UI/Components/UIPerformance.cs" />
-    <Compile Include="src/UI/Components/UIVertexHelper.cs" />
-    <Compile Include="src/UI/Components/VamPrefabFactory.cs" />
-    <Compile Include="src/UI/Screens/AddAnimationScreen.cs" />
-    <Compile Include="src/UI/Screens/AdvancedScreen.cs" />
-    <Compile Include="src/UI/Screens/BulkScreen.cs" />
-    <Compile Include="src/UI/Screens/ClipsScreen.cs" />
-    <Compile Include="src/UI/Screens/EditAnimationScreen.cs" />
-    <Compile Include="src/UI/Screens/EditLayersScreen.cs" />
-    <Compile Include="src/UI/Screens/EditScreen.cs" />
-    <Compile Include="src/UI/Screens/EditSequenceScreen.cs" />
-    <Compile Include="src/UI/Screens/HelpScreen.cs" />
-    <Compile Include="src/UI/Screens/ManageAnimationsScreen.cs" />
-    <Compile Include="src/UI/Screens/MocapScreen.cs" />
-    <Compile Include="src/UI/Screens/MoreScreen.cs" />
-    <Compile Include="src/UI/Screens/PerformanceScreen.cs" />
-    <Compile Include="src/UI/Screens/ScreenBase.cs" />
-    <Compile Include="src/UI/Screens/ScreensManager.cs" />
-    <Compile Include="src/UI/Screens/SettingsScreen.cs" />
-    <Compile Include="src/UI/Screens/TargetsScreen.cs" />
-    <Compile Include="src/UI/Editor.cs" />
-    <Compile Include="src/AtomPlugin.cs" />
+    <!-- AtomAnimationFiles -->
+    <Compile Include="src\AtomAnimations\Common\AnimationTargetBase.cs" />
+    <Compile Include="src\AtomAnimations\Common\CurveTypeValues.cs" />
+    <Compile Include="src\AtomAnimations\Common\IAnimationTargetWithCurves.cs" />
+    <Compile Include="src\AtomAnimations\Common\KeyframeSettings.cs" />
+    <Compile Include="src\AtomAnimations\FreeControllers\FreeControllerAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Params\FloatParamAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Triggers\TriggersAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\AtomAnimation.cs" />
+    <Compile Include="src\AtomAnimations\AtomAnimationClip.cs" />
+    <Compile Include="src\AtomAnimations\AtomAnimationSerializer.cs" />
+    <Compile Include="src\AtomAnimations\AtomAnimationTargetsList.cs" />
+    <Compile Include="src\AtomAnimations\AtomClipboardEntry.cs" />
+    <Compile Include="src\AtomAnimations\AtomPlaybackState.cs" />
+    <Compile Include="src\AtomAnimations\IAtomPlugin.cs" />
+    <Compile Include="src\Common\AnimationCurveExtensions.cs" />
+    <Compile Include="src\Common\FloatExtensions.cs" />
+    <Compile Include="src\Common\IAtomAnimationClip.cs" />
+    <Compile Include="src\Common\IAtomAnimationTarget.cs" />
+    <Compile Include="src\Common\IAtomAnimationTargetsList.cs" />
+    <Compile Include="src\Common\IRemoteAtomPlugin.cs" />
+    <Compile Include="src\Common\IRemoteControllerPlugin.cs" />
+    <Compile Include="src\Common\ListExtensions.cs" />
+    <Compile Include="src\Common\RectTransformExtensions.cs" />
+    <Compile Include="src\Common\StorableNames.cs" />
+    <Compile Include="src\Common\SyncProxy.cs" />
+    <Compile Include="src\External\Unity\UnitySpecific.cs" />
+    <Compile Include="src\UI\Components\AnimationControlPanel\AnimationControlPanel.cs" />
+    <Compile Include="src\UI\Components\Curves\Curves.cs" />
+    <Compile Include="src\UI\Components\Curves\CurvesLines.cs" />
+    <Compile Include="src\UI\Components\Curves\CurvesStyle.cs" />
+    <Compile Include="src\UI\Components\DopeSheet\DopeSheet.cs" />
+    <Compile Include="src\UI\Components\DopeSheet\DopeSheetKeyframes.cs" />
+    <Compile Include="src\UI\Components\DopeSheet\DopeSheetStyle.cs" />
+    <Compile Include="src\UI\Components\Scrubber\Scrubber.cs" />
+    <Compile Include="src\UI\Components\Scrubber\ScrubberMarkers.cs" />
+    <Compile Include="src\UI\Components\Scrubber\ScrubberStyle.cs" />
+    <Compile Include="src\UI\Components\Styling\StyleBase.cs" />
+    <Compile Include="src\UI\Components\TargetFrame\ControllerTargetFrame.cs" />
+    <Compile Include="src\UI\Components\TargetFrame\FloatParamTargetFrame.cs" />
+    <Compile Include="src\UI\Components\TargetFrame\ITargetFrame.cs" />
+    <Compile Include="src\UI\Components\TargetFrame\SimpleSlider.cs" />
+    <Compile Include="src\UI\Components\TargetFrame\TargetFrameBase.cs" />
+    <Compile Include="src\UI\Components\TargetFrame\TriggersTargetFrame.cs" />
+    <Compile Include="src\UI\Components\Clickable.cs" />
+    <Compile Include="src\UI\Components\CurveTypePopup.cs" />
+    <Compile Include="src\UI\Components\GradientImage.cs" />
+    <Compile Include="src\UI\Components\Listener.cs" />
+    <Compile Include="src\UI\Components\UIPerformance.cs" />
+    <Compile Include="src\UI\Components\UIVertexHelper.cs" />
+    <Compile Include="src\UI\Components\VamPrefabFactory.cs" />
+    <Compile Include="src\UI\Screens\AddAnimationScreen.cs" />
+    <Compile Include="src\UI\Screens\AdvancedScreen.cs" />
+    <Compile Include="src\UI\Screens\BulkScreen.cs" />
+    <Compile Include="src\UI\Screens\ClipsScreen.cs" />
+    <Compile Include="src\UI\Screens\EditAnimationScreen.cs" />
+    <Compile Include="src\UI\Screens\EditLayersScreen.cs" />
+    <Compile Include="src\UI\Screens\EditScreen.cs" />
+    <Compile Include="src\UI\Screens\EditSequenceScreen.cs" />
+    <Compile Include="src\UI\Screens\HelpScreen.cs" />
+    <Compile Include="src\UI\Screens\ManageAnimationsScreen.cs" />
+    <Compile Include="src\UI\Screens\MocapScreen.cs" />
+    <Compile Include="src\UI\Screens\MoreScreen.cs" />
+    <Compile Include="src\UI\Screens\PerformanceScreen.cs" />
+    <Compile Include="src\UI\Screens\ScreenBase.cs" />
+    <Compile Include="src\UI\Screens\ScreensManager.cs" />
+    <Compile Include="src\UI\Screens\SettingsScreen.cs" />
+    <Compile Include="src\UI\Screens\TargetsScreen.cs" />
+    <Compile Include="src\UI\Editor.cs" />
+    <Compile Include="src\AtomPlugin.cs" />
+    <!-- /AtomAnimationFiles -->
 
+    <!-- ControllerFiles -->
     <Compile Include="src/Controller/SimpleSignUI.cs" />
     <Compile Include="src/ControllerPlugin.cs" />
+    <!-- /ControllerFiles -->
 
+    <!-- TestFiles -->
     <Compile Include="tests/Framework/TestContext.cs" />
     <Compile Include="tests/Framework/Test.cs" />
     <Compile Include="tests/Specs/AnimationTests.cs" />
     <Compile Include="tests/Plugin/TestsIndex.cs" />
     <Compile Include="tests/Plugin/TestPlugin.cs" />
+    <!-- /TestFiles -->
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)/Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
 
 </Project>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
