@@ -30,7 +30,7 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
             InitBulkClipboardUI();
 

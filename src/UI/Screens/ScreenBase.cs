@@ -58,7 +58,7 @@ namespace VamTimeline
             return text;
         }
 
-        protected UIDynamicButton CreateChangeScreenButton(string label, string screenName, bool rightSide)
+        protected UIDynamicButton CreateChangeScreenButton(string label, string screenName)
         {
             var ui = prefabFactory.CreateButton(label);
             ui.button.onClick.AddListener(() => onScreenChangeRequested.Invoke(screenName));

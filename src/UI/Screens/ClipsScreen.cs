@@ -44,8 +44,8 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
-            CreateChangeScreenButton("<i><b>Edit</b> layers...</i>", EditLayersScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Edit</b> layers...</i>", EditLayersScreen.ScreenName);
         }
 
         private void InitAnimButton(AtomAnimationClip clip)

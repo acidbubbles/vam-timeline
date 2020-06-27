@@ -38,22 +38,22 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("<b>Edit</b> animation settings...", EditAnimationScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Sequence</b> animations...", EditSequenceScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Add</b> a new animation...", AddAnimationScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Reorder</b> and <b>delete</b> animations...", ManageAnimationsScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Layers</b>...", EditLayersScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName, true);
-            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedScreen.ScreenName, true);
+            CreateChangeScreenButton("<b>Edit</b> animation settings...", EditAnimationScreen.ScreenName);
+            CreateChangeScreenButton("<b>Sequence</b> animations...", EditSequenceScreen.ScreenName);
+            CreateChangeScreenButton("<b>Add</b> a new animation...", AddAnimationScreen.ScreenName);
+            CreateChangeScreenButton("<b>Reorder</b> and <b>delete</b> animations...", ManageAnimationsScreen.ScreenName);
+            CreateChangeScreenButton("<b>Layers</b>...", EditLayersScreen.ScreenName);
+            CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName);
+            CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName);
+            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("Options...", SettingsScreen.ScreenName, true);
+            CreateChangeScreenButton("Options...", SettingsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("Help", HelpScreen.ScreenName, true);
+            CreateChangeScreenButton("Help", HelpScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 

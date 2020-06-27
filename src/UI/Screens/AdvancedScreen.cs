@@ -28,7 +28,7 @@ namespace VamTimeline
 
             // Right side
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 

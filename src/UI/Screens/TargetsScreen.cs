@@ -38,7 +38,7 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            CreateChangeScreenButton("<b><</b> <i>Back to Edit</i>", EditScreen.ScreenName, true);
+            CreateChangeScreenButton("<b><</b> <i>Back to Edit</i>", EditScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 

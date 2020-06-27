@@ -32,8 +32,8 @@ namespace VamTimeline
 
             InitCreateLayerUI();
 
-            CreateChangeScreenButton("<i><b>Clips</b></i>", ClipsScreen.ScreenName, true);
-            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Clips</b></i>", ClipsScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName);
         }
 
         private void InitRenameLayers()

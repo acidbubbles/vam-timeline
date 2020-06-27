@@ -46,7 +46,7 @@ namespace VamTimeline
 
             // Right side
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName, true);
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
@@ -66,7 +66,7 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName, true);
+            CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName);
 
             _lengthWhenLengthModeChanged = current?.animationLength ?? 0;
             UpdateValues();

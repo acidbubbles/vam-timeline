@@ -119,7 +119,7 @@ namespace VamTimeline
                 });
             }
 
-            _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName, true);
+            _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/Remove Targets", TargetsScreen.ScreenName);
             if (current.allTargetsCount == 0)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
