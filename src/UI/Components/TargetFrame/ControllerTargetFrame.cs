@@ -81,7 +81,7 @@ namespace VamTimeline
         {
             plugin.animation.SetKeyframeToCurrentTransform(target, time);
             if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
-                clip.ChangeCurve(time, CurveTypeValues.Smooth);
+                target.ChangeCurve(time, CurveTypeValues.Smooth);
         }
     }
 }

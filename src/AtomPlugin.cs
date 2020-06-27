@@ -77,12 +77,12 @@ namespace VamTimeline
 
             try
             {
-                if(UITransform == null) return;
+                if (UITransform == null) return;
                 var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
 
                 _ui = Editor.AddTo(scriptUI.fullWidthUIContent);
                 _ui.Bind(this);
-                if(animation != null) _ui.Bind(animation);
+                if (animation != null) _ui.Bind(animation);
             }
             catch (Exception exc)
             {
@@ -179,7 +179,9 @@ namespace VamTimeline
         {
             animation.SetKeyframeToCurrentTransform(target, time);
             if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
-                animation.current.ChangeCurve(time, CurveTypeValues.Smooth);
+            {
+                target.ChangeCurve(time, CurveTypeValues.Smooth);
+            }
         }
 
         #endregion
@@ -687,7 +689,10 @@ namespace VamTimeline
                 clipboard.entries.Add(animation.current.Copy(clipboard.time));
                 var time = animation.clipTime.Snap();
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
-                animation.current.DeleteFrame(time);
+                foreach (var target in animation.current.GetAllOrSelectedTargets())
+                {
+                    target.DeleteFrame(clipboard.time);
+                }
             }
             catch (Exception exc)
             {

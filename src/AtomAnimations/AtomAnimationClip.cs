@@ -224,10 +224,34 @@ namespace VamTimeline
             return allTargets.Count() == 0;
         }
 
-        public IEnumerable<string> GetTargetsNames()
+        public bool IsDirty()
         {
-            return allTargets.Select(c => c.name).ToList();
+            return allCurveTargets.Any(t => t.dirty);
         }
+
+        public void DirtyAll()
+        {
+            foreach (var s in allCurveTargets)
+                s.dirty = true;
+        }
+
+        public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
+        {
+            yield return targetTriggers;
+            yield return targetControllers;
+            yield return targetFloatParams;
+        }
+
+        public void Validate()
+        {
+            foreach (var target in targetControllers)
+            {
+                if (!target.dirty) continue;
+                target.Validate();
+            }
+        }
+
+        #region Add/Remove Targets
 
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
@@ -237,12 +261,7 @@ namespace VamTimeline
 
         public FreeControllerAnimationTarget Add(FreeControllerAnimationTarget target)
         {
-            targetControllers.Add(target);
-            targetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
-            target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
-            target.onAnimationKeyframesModified.AddListener(OnAnimationModified);
-            onTargetsListChanged.Invoke();
-            return target;
+            return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
         }
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
@@ -253,25 +272,51 @@ namespace VamTimeline
 
         public FloatParamAnimationTarget Add(FloatParamAnimationTarget target)
         {
+            return Add(targetFloatParams, new FloatParamAnimationTarget.Comparer(), target);
+        }
+
+        public TriggersAnimationTarget Add(TriggersAnimationTarget target)
+        {
+            return Add(targetTriggers, new TriggersAnimationTarget.Comparer(), target);
+        }
+
+        private T Add<T>(AtomAnimationTargetsList<T> list, IComparer<T> comparer, T target) where T : IAtomAnimationTarget
+        {
             if (target == null) throw new NullReferenceException(nameof(target));
-            targetFloatParams.Add(target);
-            targetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+            list.Add(target);
+            list.Sort(comparer);
             target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
             target.onAnimationKeyframesModified.AddListener(OnAnimationModified);
             onTargetsListChanged.Invoke();
             return target;
         }
 
-        public TriggersAnimationTarget Add(TriggersAnimationTarget target)
+        public void Remove(FreeControllerV3 controller)
         {
-            if (target == null) throw new NullReferenceException(nameof(target));
-            targetTriggers.Add(target);
-            targetTriggers.Sort(new TriggersAnimationTarget.Comparer());
-            target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
-            target.onAnimationKeyframesModified.AddListener(OnAnimationModified);
-            onTargetsListChanged.Invoke();
-            return target;
+            Remove(targetControllers, targetControllers.FirstOrDefault(c => c.controller == controller));
         }
+
+        public void Remove(JSONStorable storable, JSONStorableFloat jsf)
+        {
+            Remove(targetFloatParams, targetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf));
+        }
+
+        public void Remove(TriggersAnimationTarget target)
+        {
+            Remove(targetTriggers, target);
+        }
+
+        private void Remove<T>(List<T> list, T target) where T : IAtomAnimationTarget
+        {
+            if (target == null) return;
+            list.Remove(target);
+            target.Dispose();
+            onTargetsListChanged.Invoke();
+        }
+
+        #endregion
+
+        #region Event callbacks
 
         private void OnTargetSelectionChanged()
         {
@@ -283,39 +328,9 @@ namespace VamTimeline
             onAnimationKeyframesModified.Invoke();
         }
 
-        public void Remove(FreeControllerV3 controller)
-        {
-            var target = targetControllers.FirstOrDefault(c => c.controller == controller);
-            if (target == null) return;
-            targetControllers.Remove(target);
-            target.Dispose();
-            onTargetsListChanged.Invoke();
-        }
+        #endregion
 
-        public void Remove(JSONStorable storable, JSONStorableFloat jsf)
-        {
-            var target = targetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf);
-            if (target == null) return;
-            targetFloatParams.Remove(target);
-            target.Dispose();
-            onTargetsListChanged.Invoke();
-        }
-
-        public void Remove(TriggersAnimationTarget target)
-        {
-            if (target == null) return;
-            targetTriggers.Remove(target);
-            target.Dispose();
-            onTargetsListChanged.Invoke();
-        }
-
-        public void ChangeCurve(float time, string curveType)
-        {
-            foreach (var controller in GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
-            {
-                controller.ChangeCurve(time, curveType);
-            }
-        }
+        #region Frame Nav
 
         public float GetNextFrame(float time)
         {
@@ -359,7 +374,7 @@ namespace VamTimeline
                 }
             }
             var previousTime = 0f;
-                    // TODO: This ignores triggers
+            // TODO: This ignores triggers
             foreach (var controller in GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
             {
                 // TODO: Use bisect for more efficient navigation
@@ -376,28 +391,7 @@ namespace VamTimeline
             return previousTime;
         }
 
-        public bool IsDirty()
-        {
-            return allCurveTargets.Any(t => t.dirty);
-        }
-
-        public void Validate()
-        {
-            foreach (var target in targetControllers)
-            {
-                if (!target.dirty) continue;
-                target.Validate();
-            }
-        }
-
-        public void DeleteFrame(float time)
-        {
-            time = time.Snap();
-            foreach (var target in GetAllOrSelectedTargets())
-            {
-                target.DeleteFrame(time);
-            }
-        }
+        #endregion
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
         {
@@ -414,6 +408,9 @@ namespace VamTimeline
                 .ToList();
         }
 
+        #region Resize
+
+        //TODO: Triggers, move to operations
         public void StretchLength(float value)
         {
             if (value == animationLength)
@@ -499,6 +496,10 @@ namespace VamTimeline
             }
         }
 
+        #endregion
+
+        #region Clipboard
+
         public AtomClipboardEntry Copy(float time, bool all = false)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
@@ -571,20 +572,9 @@ namespace VamTimeline
             }
         }
 
-        public void DirtyAll()
-        {
-            foreach (var s in allCurveTargets)
-                s.dirty = true;
-        }
+        #endregion
 
-        public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
-        {
-            yield return targetTriggers;
-            yield return targetControllers;
-            yield return targetFloatParams;
-        }
-
-        public void UpdateForcedNextAnimationTime()
+        private void UpdateForcedNextAnimationTime()
         {
             _skipNextAnimationSettingsModified = true;
             try
@@ -607,6 +597,7 @@ namespace VamTimeline
             onTargetsSelectionChanged.RemoveAllListeners();
             onAnimationKeyframesModified.RemoveAllListeners();
             onAnimationSettingsModified.RemoveAllListeners();
+            onTargetsListChanged.RemoveAllListeners();
             foreach (var target in allTargets)
             {
                 target.Dispose();

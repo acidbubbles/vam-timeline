@@ -60,7 +60,10 @@ namespace VamTimeline
                 RefreshCurrentCurveType(_animation.clipTime);
                 return;
             }
-            _current.ChangeCurve(time, curveType);
+
+            foreach (var target in _current.targetControllers)
+                target.ChangeCurve(time, curveType);
+
             RefreshCurrentCurveType(_animation.clipTime);
         }
 
