@@ -52,19 +52,20 @@ namespace VamTimeline.Tests.Plugin
                     yield return x;
                 if (output.Length == 0)
                 {
-                    _resultBuilder.AppendLine($"{test.name} [{sw.ElapsedMilliseconds:0}: PASS]");
+                    _resultBuilder.AppendLine($"{test.name} PASS {sw.ElapsedMilliseconds:0}ms");
                     _resultJSON.val = _resultBuilder.ToString();
                 }
                 else
                 {
 
-                    _resultBuilder.AppendLine($"{test.name} [{sw.ElapsedMilliseconds:0}: FAIL]");
+                    _resultBuilder.AppendLine($"{test.name} FAIL {sw.ElapsedMilliseconds:0}ms]");
                     _resultBuilder.AppendLine(output.ToString());
                     _resultJSON.val = _resultBuilder.ToString();
                     _resultBuilder.AppendLine($"FAIL [{globalSW.Elapsed}]");
                 }
             }
-            _resultBuilder.AppendLine($"DONE [{globalSW.Elapsed}]");
+            _resultBuilder.AppendLine($"DONE {globalSW.Elapsed}");
+            _resultJSON.val = _resultBuilder.ToString();
         }
     }
 }
