@@ -334,7 +334,7 @@ namespace VamTimeline
 
         #endregion
 
-        public bool TargetsSameAs(IAnimationTargetWithCurves target)
+        public bool TargetsSameAs(IAtomAnimationTarget target)
         {
             var t = target as FreeControllerAnimationTarget;
             if (t == null) return false;

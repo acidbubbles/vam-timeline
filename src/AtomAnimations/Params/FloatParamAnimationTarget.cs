@@ -71,7 +71,7 @@ namespace VamTimeline
             return value.KeyframeBinarySearch(time) != -1;
         }
 
-        public bool TargetsSameAs(IAnimationTargetWithCurves target)
+        public bool TargetsSameAs(IAtomAnimationTarget target)
         {
             var t = target as FloatParamAnimationTarget;
             if (t == null) return false;

@@ -73,10 +73,10 @@ namespace VamTimeline
         {
             if (animation.clips.Count <= 1) return;
 
-            var clipList = current.allCurveTargets.Select(t => t.name).OrderBy(x => x);
+            var clipList = current.allTargets.Select(t => t.name).OrderBy(x => x);
             var otherList = animation.clips
                 .Where(c => c != current && c.animationLayer == current.animationLayer)
-                .SelectMany(c => c.allCurveTargets)
+                .SelectMany(c => c.allTargets)
                 .Select(t => t.name)
                 .Distinct()
                 .OrderBy(x => x);

@@ -52,6 +52,8 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
         // TODO: This and selection is bound to curves. Make two separate methods or just filter when using?
         public IEnumerable<IAnimationTargetWithCurves> allCurveTargets => targetControllers.Cast<IAnimationTargetWithCurves>().Concat(targetFloatParams.Cast<IAnimationTargetWithCurves>());
+        public IEnumerable<IAtomAnimationTarget> allTargets => targetTriggers.Cast<IAtomAnimationTarget>().Concat(allCurveTargets.Cast<IAtomAnimationTarget>());
+        public int allTargetsCount => targetTriggers.Count + targetControllers.Count + targetFloatParams.Count;
         public string animationLayer
         {
             get
@@ -210,7 +212,6 @@ namespace VamTimeline
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(nextAnimationTime));
             }
         }
-        public int allTargetsCount => targetControllers.Count + targetFloatParams.Count;
 
         public AtomAnimationClip(string animationName, string animationLayer)
         {
@@ -220,12 +221,12 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return allCurveTargets.Count() == 0;
+            return allTargets.Count() == 0;
         }
 
         public IEnumerable<string> GetTargetsNames()
         {
-            return allCurveTargets.Select(c => c.name).ToList();
+            return allTargets.Select(c => c.name).ToList();
         }
 
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
@@ -322,7 +323,8 @@ namespace VamTimeline
             if (time.IsSameFrame(animationLength))
                 return 0f;
             var nextTime = animationLength;
-            foreach (var controller in GetAllOrSelectedTargets())
+            // TODO: This ignores triggers
+            foreach (var controller in GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
             {
                 // TODO: Use bisect for more efficient navigation
                 var leadCurve = controller.GetLeadCurve();
@@ -348,7 +350,8 @@ namespace VamTimeline
             {
                 try
                 {
-                    return GetAllOrSelectedTargets().Select(t => t.GetLeadCurve()).Select(c => c[c.length - (loop ? 2 : 1)].time).Max();
+                    // TODO: This ignores triggers
+                    return GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>().Select(t => t.GetLeadCurve()).Select(c => c[c.length - (loop ? 2 : 1)].time).Max();
                 }
                 catch (InvalidOperationException)
                 {
@@ -356,7 +359,8 @@ namespace VamTimeline
                 }
             }
             var previousTime = 0f;
-            foreach (var controller in GetAllOrSelectedTargets())
+                    // TODO: This ignores triggers
+            foreach (var controller in GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
             {
                 // TODO: Use bisect for more efficient navigation
                 var leadCurve = controller.GetLeadCurve();
@@ -395,20 +399,18 @@ namespace VamTimeline
             }
         }
 
-        public IEnumerable<IAnimationTargetWithCurves> GetAllOrSelectedTargets()
+        public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
         {
-            var result = allCurveTargets
+            var result = allTargets
                 .Where(t => t.selected)
-                .Cast<IAnimationTargetWithCurves>()
                 .ToList();
-            return result.Count > 0 ? result : allCurveTargets;
+            return result.Count > 0 ? result : allTargets;
         }
 
-        public IEnumerable<IAnimationTargetWithCurves> GetSelectedTargets()
+        public IEnumerable<IAtomAnimationTarget> GetSelectedTargets()
         {
-            return allCurveTargets
+            return allTargets
                 .Where(t => t.selected)
-                .Cast<IAnimationTargetWithCurves>()
                 .ToList();
         }
 
@@ -605,7 +607,7 @@ namespace VamTimeline
             onTargetsSelectionChanged.RemoveAllListeners();
             onAnimationKeyframesModified.RemoveAllListeners();
             onAnimationSettingsModified.RemoveAllListeners();
-            foreach (var target in allCurveTargets)
+            foreach (var target in allTargets)
             {
                 target.Dispose();
             }

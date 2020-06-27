@@ -531,11 +531,11 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            foreach (var target in current.allCurveTargets)
+            foreach (var target in current.allTargets)
             {
                 foreach (var clip in clips.Where(c => c != current))
                 {
-                    var t = clip.allCurveTargets.FirstOrDefault(x => x.TargetsSameAs(target));
+                    var t = clip.allTargets.FirstOrDefault(x => x.TargetsSameAs(target));
                     if (t == null) continue;
                     t.selected = target.selected;
                 }

@@ -14,11 +14,8 @@ namespace VamTimeline
     {
         bool dirty { get; set; }
 
-        void StartBulkUpdates();
-        void EndBulkUpdates();
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
         void DeleteFrameByKey(int key);
-        bool TargetsSameAs(IAnimationTargetWithCurves target);
     }
 }

@@ -113,7 +113,7 @@ namespace VamTimeline
             var sb = new StringBuilder();
             sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {current.animationLength:0.000}s");
             var involvedKeyframes = 0;
-            foreach (var target in current.GetAllOrSelectedTargets())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
             {
                 var leadCurve = target.GetLeadCurve();
                 for (var key = 0; key < leadCurve.length; key++)
@@ -132,7 +132,8 @@ namespace VamTimeline
         {
             plugin.clipboard.Clear();
             plugin.clipboard.time = _selectionStart;
-            foreach (var target in current.GetAllOrSelectedTargets())
+            // TODO: This ignores triggers
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
             {
                 target.StartBulkUpdates();
                 try

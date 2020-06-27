@@ -16,7 +16,12 @@ namespace VamTimeline
         bool selected { get; set; }
         string name { get; }
 
+        void StartBulkUpdates();
+        void EndBulkUpdates();
+
+        bool TargetsSameAs(IAtomAnimationTarget target);
         string GetShortName();
+
         float[] GetAllKeyframesTime();
         bool HasKeyframe(float time);
         void DeleteFrame(float time);

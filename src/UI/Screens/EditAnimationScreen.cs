@@ -209,8 +209,8 @@ namespace VamTimeline
                             _lengthJSON.valNoCallback = current.animationLength;
                             return;
                         }
-                        var previousKeyframe = current.allCurveTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
-                        var nextKeyframe = current.allCurveTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
+                        var previousKeyframe = current.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
+                        var nextKeyframe = current.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
 
                         var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
 

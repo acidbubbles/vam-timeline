@@ -76,7 +76,8 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var target in current.GetAllOrSelectedTargets())
+                // TODO: This ignores triggers
+                foreach (var target in current.GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
                 {
                     foreach (var curve in target.GetCurves())
                     {

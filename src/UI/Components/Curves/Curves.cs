@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -123,7 +124,10 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            Bind(_animation.current.allTargetsCount == 1 ? _animation.current.allCurveTargets.ToList() : _animation.current.GetSelectedTargets().ToList());
+            Bind(_animation.current.allTargetsCount == 1
+                ? _animation.current.allCurveTargets.ToList()
+                : _animation.current.GetSelectedTargets().OfType<IAnimationTargetWithCurves>().ToList()
+            );
         }
 
         private void Bind(IList<IAnimationTargetWithCurves> targets)

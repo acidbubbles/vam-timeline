@@ -58,11 +58,9 @@ namespace VamTimeline
         }
 
         // TODO: Makes sense?
-        public bool TargetsSameAs(IAnimationTargetWithCurves target)
+        public bool TargetsSameAs(IAtomAnimationTarget target)
         {
-            var t = target as TriggersAnimationTarget;
-            if (t == null) return false;
-            return true;
+            return false;
         }
 
         public class Comparer : IComparer<TriggersAnimationTarget>
