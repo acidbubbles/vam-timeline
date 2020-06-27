@@ -12,15 +12,15 @@ $atomAnimationFiles > .\VamTimeline.AtomAnimation.cslist
 
 # VamTimeline.csproj
 ( Get-Content ".\VamTimeline.csproj" -Raw ) -Replace "(?sm)(?<=^ +<!-- AtomAnimationFiles -->`r?`n).*?(?=`r?`n +<!-- /AtomAnimationFiles -->)", `
-    [System.String]::Join("`r`n", ($atomAnimationFiles | % { "    <Compile Include=`"$_`" />" } ) ) | `
-    Set-Content ".\VamTimeline.csproj"
+    [System.String]::Join("`r`n", ($atomAnimationFiles | % { "    <Compile Include=`"$_`" />" } ) ) `
+| Set-Content ".\VamTimeline.csproj" -NoNewline
 
 # meta.json
 $allFiles = (ls ./src/*.cs -Recurse) + (ls *.cslist) `
     | % { $_.FullName.Substring((pwd).Path.Length + 1) }
 ( Get-Content ".\meta.json" -Raw ) -Replace "(?sm)(?<=^  `"contentList`": \[`r?`n).*?(?=`r?`n  \],)", `
     [System.String]::Join("`r`n", ($allFiles | % { "    `"Custom\\Scripts\\AcidBubbles\\Timeline\\$($_.Replace("\", "\\"))`"," } ) ).Trim(",") `
-| Set-Content ".\meta.json"
+| Set-Content ".\meta.json" -NoNewline
 
 # tests/VamTimeline.Tests.cslist
 $testFiles = ( `
