@@ -69,7 +69,7 @@ namespace VamTimeline
             clip.nextAnimationTime = current.nextAnimationTime;
             clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
             clip.blendDuration = current.blendDuration;
-            clip.CropOrExtendLengthEnd(current.animationLength);
+            operations.Resize().CropOrExtendLengthEnd(current.animationLength);
             foreach (var origTarget in current.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
@@ -102,7 +102,7 @@ namespace VamTimeline
             clip.nextAnimationTime = current.nextAnimationTime;
             clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
             clip.blendDuration = current.blendDuration;
-            clip.CropOrExtendLengthEnd(current.animationLength);
+            operations.Resize().CropOrExtendLengthEnd(current.animationLength);
             foreach (var origTarget in current.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);

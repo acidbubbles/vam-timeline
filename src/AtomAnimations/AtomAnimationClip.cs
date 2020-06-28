@@ -227,12 +227,12 @@ namespace VamTimeline
 
         public bool IsDirty()
         {
-            return allCurveTargets.Any(t => t.dirty);
+            return allTargets.Any(t => t.dirty);
         }
 
         public void DirtyAll()
         {
-            foreach (var s in allCurveTargets)
+            foreach (var s in allTargets)
                 s.dirty = true;
         }
 
@@ -452,96 +452,6 @@ namespace VamTimeline
                 .Where(t => t.selected)
                 .ToList();
         }
-
-        #region Resize
-
-        //TODO: Triggers, move to operations
-        public void StretchLength(float value)
-        {
-            if (value == animationLength)
-                return;
-            animationLength = value;
-            foreach (var target in allCurveTargets)
-            {
-                foreach (var curve in target.GetCurves())
-                    curve.StretchLength(value);
-            }
-            UpdateKeyframeSettingsFromBegin();
-        }
-
-        public void CropOrExtendLengthEnd(float animationLength)
-        {
-            if (this.animationLength.IsSameFrame(animationLength))
-                return;
-            this.animationLength = animationLength;
-            foreach (var target in allCurveTargets)
-            {
-                foreach (var curve in target.GetCurves())
-                    curve.CropOrExtendLengthEnd(animationLength);
-            }
-            UpdateKeyframeSettingsFromBegin();
-        }
-
-        public void CropOrExtendLengthBegin(float animationLength)
-        {
-            if (this.animationLength.IsSameFrame(animationLength))
-                return;
-            this.animationLength = animationLength;
-            foreach (var target in allCurveTargets)
-            {
-                foreach (var curve in target.GetCurves())
-                    curve.CropOrExtendLengthBegin(animationLength);
-            }
-            UpdateKeyframeSettingsFromEnd();
-        }
-
-        public void CropOrExtendLengthAtTime(float animationLength, float time)
-        {
-            if (this.animationLength.IsSameFrame(animationLength))
-                return;
-            this.animationLength = animationLength;
-            foreach (var target in allCurveTargets)
-            {
-                foreach (var curve in target.GetCurves())
-                    curve.CropOrExtendLengthAtTime(animationLength, time);
-            }
-            UpdateKeyframeSettingsFromBegin();
-        }
-
-        private void UpdateKeyframeSettingsFromBegin()
-        {
-            foreach (var target in targetControllers)
-            {
-                var settings = target.settings.Values.ToList();
-                target.settings.Clear();
-                var leadCurve = target.GetLeadCurve();
-                for (var i = 0; i < leadCurve.length; i++)
-                {
-                    if (i < settings.Count) target.settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
-                    else target.settings.Add(leadCurve[i].time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.CopyPrevious });
-                }
-            }
-        }
-
-        private void UpdateKeyframeSettingsFromEnd()
-        {
-            foreach (var target in targetControllers)
-            {
-                var settings = target.settings.Values.ToList();
-                target.settings.Clear();
-                var leadCurve = target.GetLeadCurve();
-                for (var i = 0; i < leadCurve.length; i++)
-                {
-                    if (i >= settings.Count) break;
-                    int ms = leadCurve[leadCurve.length - i - 1].time.ToMilliseconds();
-                    target.settings.Add(ms, settings[settings.Count - i - 1]);
-                }
-                if (!target.settings.ContainsKey(0))
-                    target.settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
-            }
-        }
-
-        #endregion
 
         #region Clipboard
 

@@ -63,6 +63,8 @@
     <Compile Include="src\AtomAnimations\Common\IAnimationTargetWithCurves.cs" />
     <Compile Include="src\AtomAnimations\Common\KeyframeSettings.cs" />
     <Compile Include="src\AtomAnimations\FreeControllers\FreeControllerAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
+    <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperation.cs" />
     <Compile Include="src\AtomAnimations\Params\FloatParamAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Triggers\TriggersAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimation.cs" />

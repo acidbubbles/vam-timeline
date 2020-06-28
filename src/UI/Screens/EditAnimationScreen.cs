@@ -191,15 +191,15 @@ namespace VamTimeline
             switch (_lengthModeJSON.val)
             {
                 case ChangeLengthModeStretch:
-                    current.StretchLength(newLength);
+                    operations.Resize().StretchLength(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendEnd:
-                    current.CropOrExtendLengthEnd(newLength);
+                    operations.Resize().CropOrExtendLengthEnd(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendBegin:
-                    current.CropOrExtendLengthBegin(newLength);
+                    operations.Resize().CropOrExtendLengthBegin(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendAtTime:
@@ -219,7 +219,7 @@ namespace VamTimeline
                             newLength = current.animationLength - keyframeAllowedDiff;
                         }
 
-                        current.CropOrExtendLengthAtTime(newLength, time);
+                        operations.Resize().CropOrExtendLengthAtTime(newLength, time);
                         break;
                     }
                 case ChangeLengthModeAddKeyframeEnd:
@@ -230,7 +230,7 @@ namespace VamTimeline
                             return;
                         }
                         var snapshot = current.Copy(_lengthWhenLengthModeChanged, true);
-                        current.CropOrExtendLengthEnd(newLength);
+                        operations.Resize().CropOrExtendLengthEnd(newLength);
                         current.Paste(_lengthWhenLengthModeChanged, snapshot);
                         break;
                     }
@@ -242,7 +242,7 @@ namespace VamTimeline
                             return;
                         }
                         var snapshot = current.Copy(0f, true);
-                        current.CropOrExtendLengthBegin(newLength);
+                        operations.Resize().CropOrExtendLengthBegin(newLength);
                         current.Paste((newLength - _lengthWhenLengthModeChanged).Snap(), snapshot);
                         break;
                     }
@@ -269,7 +269,7 @@ namespace VamTimeline
                             c.snapshot.curveType = CurveTypeValues.Smooth;
                         }
 
-                        current.CropOrExtendLengthEnd(newLength);
+                        operations.Resize().CropOrExtendLengthEnd(newLength);
 
                         for (var repeat = 0; repeat < loops; repeat++)
                         {
