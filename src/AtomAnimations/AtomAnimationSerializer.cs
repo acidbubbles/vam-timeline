@@ -172,7 +172,7 @@ namespace VamTimeline
                     var target = new TriggersAnimationTarget();
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
-                        var trigger = new AnimationTimelineTrigger();
+                        var trigger = new AtomAnimationTrigger();
                         trigger.RestoreFromJSON(entryJSON);
                         target.SetKeyframe(trigger.triggerStartTime, trigger);
                     }

@@ -431,7 +431,6 @@ namespace VamTimeline
 
             current.enabled = true;
             current.weight = 1f;
-            // TODO: Do we want this?
             SampleTriggers();
             SampleFloatParams();
             SampleControllers();
@@ -446,7 +445,7 @@ namespace VamTimeline
                 if (!clip.enabled) continue;
                 foreach (var target in clip.targetTriggers)
                 {
-                    target.Sample(isPlaying, clip.clipTime, clip.previousClipTime);
+                    target.Sample(clip.previousClipTime);
                 }
             }
         }

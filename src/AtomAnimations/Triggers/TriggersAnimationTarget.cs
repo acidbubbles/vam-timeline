@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,9 +12,9 @@ namespace VamTimeline
     /// </summary>
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
-        public readonly Dictionary<int, AnimationTimelineTrigger> triggersMap = new Dictionary<int, AnimationTimelineTrigger>();
+        public readonly Dictionary<int, AtomAnimationTrigger> triggersMap = new Dictionary<int, AtomAnimationTrigger>();
         private float[] _keyframes = new float[0];
-        private readonly List<AnimationTimelineTrigger> _triggers = new List<AnimationTimelineTrigger>();
+        private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
         public string name => "Triggers";
 
@@ -26,11 +27,10 @@ namespace VamTimeline
             return "Triggers";
         }
 
-        public void Sample(bool isPlaying, float clipTime, float previousClipTime)
+        public void Sample(float previousClipTime)
         {
-            var reverse = !isPlaying && (clipTime < previousClipTime);
             foreach (var trigger in _triggers)
-                trigger.Update(reverse, previousClipTime);
+                trigger.Update(false, previousClipTime);
         }
 
         public void Validate()
@@ -63,12 +63,12 @@ namespace VamTimeline
             }
         }
 
-        public void SetKeyframe(float time, AnimationTimelineTrigger value)
+        public void SetKeyframe(float time, AtomAnimationTrigger value)
         {
             SetKeyframe(time.ToMilliseconds(), value);
         }
 
-        public void SetKeyframe(int ms, AnimationTimelineTrigger value)
+        public void SetKeyframe(int ms, AtomAnimationTrigger value)
         {
             if (value == null)
                 triggersMap.Remove(ms);
@@ -99,6 +99,13 @@ namespace VamTimeline
             return false;
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            foreach (var target in triggersMap.Select(kvp => kvp.Value))
+                target.Dispose();
+        }
+
         public class Comparer : IComparer<TriggersAnimationTarget>
         {
             public int Compare(TriggersAnimationTarget t1, TriggersAnimationTarget t2)
@@ -106,6 +113,47 @@ namespace VamTimeline
                 return t1.name.CompareTo(t2.name);
 
             }
+        }
+    }
+
+    public class AtomAnimationTrigger : AnimationTimelineTrigger, IDisposable
+    {
+        public Atom atom;
+
+        public AtomAnimationTrigger()
+        {
+            SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
+        }
+
+        public override TriggerActionDiscrete CreateDiscreteActionStartInternal(int index = -1)
+        {
+            var discrete = base.CreateDiscreteActionStartInternal(index);
+            if (discrete.receiverAtom == null) discrete.receiverAtom = atom;
+            return discrete;
+        }
+
+        public override TriggerActionTransition CreateTransitionActionInternal(int index = -1)
+        {
+            var transition = base.CreateTransitionActionInternal(index);
+            if (transition.receiverAtom == null) transition.receiverAtom = atom;
+            return transition;
+        }
+
+        public override TriggerActionDiscrete CreateDiscreteActionEndInternal(int index = -1)
+        {
+            var discrete = base.CreateDiscreteActionEndInternal(index);
+            if (discrete.receiverAtom == null) discrete.receiverAtom = atom;
+            return discrete;
+        }
+
+        private void OnAtomRename(string oldName, string newName)
+        {
+            SyncAtomNames();
+        }
+
+        public void Dispose()
+        {
+            SuperController.singleton.onAtomUIDRenameHandlers -= OnAtomRename;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,7 +30,7 @@ namespace VamTimeline
 
             if (stopped)
             {
-                AnimationTimelineTrigger trigger;
+                AtomAnimationTrigger trigger;
                 var ms = plugin.animation.clipTime.ToMilliseconds();
                 if (target.triggersMap.TryGetValue(ms, out trigger))
                 {
@@ -80,22 +81,23 @@ namespace VamTimeline
 
         private void EditTriggers()
         {
-            Trigger trigger = GetOrCreateTriggerAtCurrentTime();
+            AtomAnimationTrigger trigger = GetOrCreateTriggerAtCurrentTime();
 
             trigger.triggerActionsParent = plugin.UITransform;
             trigger.handler = this;
+            trigger.atom = plugin.containingAtom;
             trigger.InitTriggerUI();
             trigger.OpenTriggerActionsPanel();
         }
 
-        private Trigger GetOrCreateTriggerAtCurrentTime()
+        private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
         {
-            AnimationTimelineTrigger trigger;
+            AtomAnimationTrigger trigger;
             var ms = plugin.animation.clipTime.ToMilliseconds();
             if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
                 // TODO: Assign a display name?
-                trigger = new AnimationTimelineTrigger();
+                trigger = new AtomAnimationTrigger();
                 target.SetKeyframe(ms, trigger);
             }
             return trigger;
@@ -125,8 +127,19 @@ namespace VamTimeline
 
         RectTransform TriggerHandler.CreateTriggerActionDiscreteUI()
         {
-            return Instantiate(VamPrefabFactory.triggerActionDiscretePrefab);
+            var rt = Instantiate(VamPrefabFactory.triggerActionDiscretePrefab);
+            var ui = rt.gameObject.GetComponentInChildren<TriggerActionDiscreteUI>();
+            if (ui == null) SuperController.LogMessage("Nope");
+            else SuperController.LogMessage("Yep");
+            // StartCoroutine(SetupInitialValues(ui));
+            return rt;
         }
+
+        // private IEnumerator SetupInitialValues(TriggerAction ui)
+        // {
+        //     yield return 0;
+        //     ui.receiverAtom = plugin.containingAtom;
+        // }
 
         RectTransform TriggerHandler.CreateTriggerActionTransitionUI()
         {

@@ -53,7 +53,7 @@ namespace VamTimeline
             if (dirty) onAnimationKeyframesModified.Invoke();
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             onSelectedChanged.RemoveAllListeners();
         }
