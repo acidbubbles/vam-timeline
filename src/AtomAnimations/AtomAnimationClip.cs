@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace VamTimeline
@@ -11,7 +12,7 @@ namespace VamTimeline
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AtomAnimationClip : IAtomAnimationClip
+    public class AtomAnimationClip : IAtomAnimationClip, AnimationTimelineTriggerHandler
     {
         public class AnimationSettingModifiedEvent : UnityEvent<string> { }
 
@@ -250,6 +251,48 @@ namespace VamTimeline
                 target.Validate();
             }
         }
+
+        #region Animation State
+
+        private float _clipTime;
+        public float weight;
+        public bool enabled;
+        public bool mainInLayer;
+        public float blendRate;
+        public string scheduledNextAnimationName;
+        public float scheduledNextTime;
+
+        public float clipTime
+        {
+            get
+            {
+                return _clipTime;
+            }
+
+            set
+            {
+                _clipTime = Mathf.Abs(loop ? value % animationLength : Mathf.Min(value, animationLength));
+            }
+        }
+
+        public void SetNext(string nextAnimationName, float nextTime)
+        {
+            scheduledNextAnimationName = nextAnimationName;
+            scheduledNextTime = nextAnimationName != null ? nextTime : float.MaxValue;
+        }
+
+        public void Reset(bool resetTime)
+        {
+            enabled = false;
+            weight = 0f;
+            blendRate = 0f;
+            mainInLayer = false;
+            SetNext(null, 0f);
+            if (resetTime) clipTime = 0f;
+            else clipTime = clipTime.Snap();
+        }
+
+        #endregion
 
         #region Add/Remove Targets
 
@@ -604,5 +647,19 @@ namespace VamTimeline
                 target.Dispose();
             }
         }
+
+        #region AnimationTimelineTriggerHandler
+
+        float AnimationTimelineTriggerHandler.GetCurrentTimeCounter()
+        {
+            return clipTime;
+        }
+
+        float AnimationTimelineTriggerHandler.GetTotalTime()
+        {
+            return animationLength;
+        }
+
+        #endregion
     }
 }

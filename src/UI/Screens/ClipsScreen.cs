@@ -50,12 +50,11 @@ namespace VamTimeline
 
         private void InitAnimButton(AtomAnimationClip clip)
         {
-            var clipState = animation.state.GetClip(clip.animationName);
             var btn = prefabFactory.CreateButton($"...");
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {
-                if (clipState.mainInLayer)
+                if (clip.mainInLayer)
                 {
                     animation.StopClip(clip.animationName);
                 }
@@ -64,23 +63,23 @@ namespace VamTimeline
                     animation.PlayClip(clip.animationName, true);
                 }
             });
-            StartCoroutine(UpdateAnimButton(btn, clipState));
+            StartCoroutine(UpdateAnimButton(btn, clip));
         }
 
-        private IEnumerator UpdateAnimButton(UIDynamicButton btn, AtomClipPlaybackState clipState)
+        private IEnumerator UpdateAnimButton(UIDynamicButton btn, AtomAnimationClip clip)
         {
             yield return 0;
-            var playLabel = $" \u25B6 {clipState.clip.animationName}";
+            var playLabel = $" \u25B6 {clip.animationName}";
             while (!_disposing)
             {
-                if (!clipState.enabled)
+                if (!clip.enabled)
                 {
                     if (btn.label != playLabel)
                         btn.label = playLabel;
                 }
                 else
                 {
-                    btn.label = $" \u25A0 [time: {clipState.clipTime:00.000}, weight: {Mathf.Round(clipState.weight * 100f):000}%]";
+                    btn.label = $" \u25A0 [time: {clip.clipTime:00.000}, weight: {Mathf.Round(clip.weight * 100f):000}%]";
                 }
 
                 for (var i = 0; i < 4; i++)

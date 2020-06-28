@@ -21,7 +21,6 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomAnimationSerializer.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomAnimationTargetsList.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomClipboardEntry.cs",
-    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomPlaybackState.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\IAtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\AnimationCurveExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\FloatExtensions.cs",

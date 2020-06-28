@@ -70,7 +70,6 @@
     <Compile Include="src\AtomAnimations\AtomAnimationSerializer.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationTargetsList.cs" />
     <Compile Include="src\AtomAnimations\AtomClipboardEntry.cs" />
-    <Compile Include="src\AtomAnimations\AtomPlaybackState.cs" />
     <Compile Include="src\AtomAnimations\IAtomPlugin.cs" />
     <Compile Include="src\Common\AnimationCurveExtensions.cs" />
     <Compile Include="src\Common\FloatExtensions.cs" />
