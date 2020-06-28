@@ -12,6 +12,8 @@ namespace VamTimeline
     /// </summary>
     public class TriggersTargetFrame : TargetFrameBase<TriggersAnimationTarget>, TriggerHandler
     {
+        private UIDynamicButton _editTriggersButton;
+
         public TriggersTargetFrame()
             : base()
         {
@@ -27,15 +29,17 @@ namespace VamTimeline
 
             if (stopped)
             {
-                Trigger trigger;
+                AnimationTimelineTrigger trigger;
                 var ms = plugin.animation.clipTime.ToMilliseconds();
-                if (target.keyframes.TryGetValue(ms, out trigger))
+                if (target.triggersMap.TryGetValue(ms, out trigger))
                 {
-                    valueText.text = $"{trigger.displayName} Trigger";
+                    valueText.text = $"Has Triggers";
+                    if (_editTriggersButton != null) _editTriggersButton.label = "Edit Triggers";
                 }
                 else
                 {
                     valueText.text = "-";
+                    if (_editTriggersButton != null) _editTriggersButton.label = "Create Trigger";
                 }
             }
         }
@@ -58,6 +62,7 @@ namespace VamTimeline
             {
                 target.DeleteFrame(time);
             }
+            SetTime(plugin.animation.clipTime, true);
         }
 
         protected override void CreateExpandPanel(RectTransform container)
@@ -67,7 +72,10 @@ namespace VamTimeline
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
 
-            CreateExpandButton(group.transform, "Edit Triggers", EditTriggers);
+            _editTriggersButton = CreateExpandButton(
+                group.transform,
+                target.triggersMap.ContainsKey(plugin.animation.clipTime.ToMilliseconds()) ? "Edit Triggers" : "Create Trigger",
+                EditTriggers);
         }
 
         private void EditTriggers()
@@ -76,17 +84,18 @@ namespace VamTimeline
 
             trigger.triggerActionsParent = plugin.UITransform;
             trigger.handler = this;
+            trigger.InitTriggerUI();
             trigger.OpenTriggerActionsPanel();
         }
 
         private Trigger GetOrCreateTriggerAtCurrentTime()
         {
-            Trigger trigger;
+            AnimationTimelineTrigger trigger;
             var ms = plugin.animation.clipTime.ToMilliseconds();
-            if (!target.keyframes.TryGetValue(ms, out trigger))
+            if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
                 // TODO: Assign a display name?
-                trigger = new Trigger();
+                trigger = new AnimationTimelineTrigger();
                 target.SetKeyframe(ms, trigger);
             }
             return trigger;

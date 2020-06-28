@@ -244,7 +244,7 @@ namespace VamTimeline
 
         public void Validate()
         {
-            foreach (var target in targetControllers)
+            foreach (var target in allTargets)
             {
                 if (!target.dirty) continue;
                 target.Validate();

@@ -33,6 +33,15 @@ namespace VamTimeline
             floatParam.val = Mathf.Lerp(floatParam.val, value.Evaluate(clipTime), weight);
         }
 
+        public void Validate()
+        {
+            if (value.length < 2)
+            {
+                SuperController.LogError($"Target {name} has {value.length} frames");
+                return;
+            }
+        }
+
         public AnimationCurve GetLeadCurve()
         {
             return value;

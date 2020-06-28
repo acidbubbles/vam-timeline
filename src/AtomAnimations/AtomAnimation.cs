@@ -394,6 +394,18 @@ namespace VamTimeline
             currentClipState.weight = 0f;
         }
 
+        private void SampleTriggers()
+        {
+            foreach (var clip in state.clips)
+            {
+                if (!clip.enabled) continue;
+                foreach (var target in clip.clip.targetTriggers)
+                {
+                    target.Sample(clip.clipTime, clip.weight);
+                }
+            }
+        }
+
         private void SampleFloatParams()
         {
             foreach (var clip in state.clips)
@@ -506,6 +518,15 @@ namespace VamTimeline
                     target.value.SetKeyframe(clip.animationLength, target.value[0].value);
 
                 target.value.FlatAllFrames();
+            }
+
+            foreach (var target in clip.targetTriggers)
+            {
+                if(!target.dirty) continue;
+
+                target.dirty = false;
+
+                target.RebuildKeyframes();
             }
         }
 

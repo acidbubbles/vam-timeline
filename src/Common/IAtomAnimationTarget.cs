@@ -13,8 +13,11 @@ namespace VamTimeline
     {
         UnityEvent onAnimationKeyframesModified { get; }
         UnityEvent onSelectedChanged { get; }
+        bool dirty { get; set; }
         bool selected { get; set; }
         string name { get; }
+
+        void Validate();
 
         void StartBulkUpdates();
         void EndBulkUpdates();

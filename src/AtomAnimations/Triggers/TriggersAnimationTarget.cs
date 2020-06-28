@@ -12,7 +12,9 @@ namespace VamTimeline
     /// </summary>
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
-        public Dictionary<int, Trigger> keyframes { get; } = new Dictionary<int, Trigger>();
+        public Dictionary<int, AnimationTimelineTrigger> triggersMap { get; } = new Dictionary<int, AnimationTimelineTrigger>();
+        public List<float> keyframes = new List<float>();
+        public List<AnimationTimelineTrigger> triggers = new List<AnimationTimelineTrigger>();
 
         public string name => "Triggers";
 
@@ -25,35 +27,76 @@ namespace VamTimeline
             return "Triggers";
         }
 
-        public void SetKeyframe(float time, Trigger value)
+        public void Sample(float clipTime, float _weight)
+        {
+            int i;
+            for (i = 0; i < keyframes.Count; i++)
+            {
+                if (clipTime >= i / 1000f)
+                    break;
+            }
+            var trigger = triggers[i];
+            trigger.Update(false, 0f);
+        }
+
+        public void Validate()
+        {
+            foreach (var trigger in triggers)
+                trigger.Validate();
+        }
+
+        public void RebuildKeyframes(AnimationTimelineTriggerHandler timelineHandler)
+        {
+            keyframes.Clear();
+            triggers.Clear();
+
+            foreach (var kvp in triggersMap.OrderBy(x => x.Key))
+            {
+                keyframes.Add(kvp.Key / 1000f);
+                triggers.Add(kvp.Value);
+            }
+
+            for (var i = 0; i < keyframes.Count; i++)
+            {
+                var time = keyframes[i] * 1000f;
+                var trigger = triggers[i];
+                trigger.timeLineHandler = timelineHandler;
+                trigger.triggerStartTime = time;
+                trigger.triggerEndTime = i == keyframes.Count - 1 ? time : (keyframes[i + 1] * 1000f);
+            }
+        }
+
+        public void SetKeyframe(float time, AnimationTimelineTrigger value)
         {
             SetKeyframe(time.ToMilliseconds(), value);
         }
 
-        public void SetKeyframe(int ms, Trigger value)
+        public void SetKeyframe(int ms, AnimationTimelineTrigger value)
         {
             if (value == null)
-                keyframes.Remove(ms);
+                triggersMap.Remove(ms);
             else
-                keyframes[ms] = value;
+                triggersMap[ms] = value;
+            dirty = true;
         }
 
         public void DeleteFrame(float time)
         {
-            keyframes.Remove(time.ToMilliseconds());
+            triggersMap.Remove(time.ToMilliseconds());
+            dirty = true;
         }
 
         public float[] GetAllKeyframesTime()
         {
             // TODO: Optimize memory
-            var times = keyframes.Keys.ToList();
+            var times = triggersMap.Keys.ToList();
             times.Sort();
             return times.Select(t => (t / 1000f).Snap()).ToArray();
         }
 
         public bool HasKeyframe(float time)
         {
-            return keyframes.ContainsKey(time.ToMilliseconds());
+            return triggersMap.ContainsKey(time.ToMilliseconds());
         }
 
         // TODO: Makes sense?
