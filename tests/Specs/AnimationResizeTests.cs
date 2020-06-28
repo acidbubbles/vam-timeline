@@ -16,13 +16,18 @@ namespace VamTimeline.Tests.Specs
     {
         public IEnumerable<Test> GetTests()
         {
-            yield return new Test(nameof(StretchLonger), StretchLonger);
+            yield return new Test(nameof(StretchLongerFreeController), StretchLongerFreeController);
+            yield return new Test(nameof(StretchShorterFreeController), StretchShorterFreeController);
+            yield return new Test(nameof(StretchLongerFloatParam), StretchLongerFloatParam);
+            yield return new Test(nameof(StretchShorterFloatParam), StretchShorterFloatParam);
+            yield return new Test(nameof(StretchLongerTrigger), StretchLongerTrigger);
+            yield return new Test(nameof(StretchShorterTrigger), StretchShorterTrigger);
         }
 
-        public IEnumerable StretchLonger(TestContext context)
+        public IEnumerable StretchLongerFreeController(TestContext context)
         {
             var clip = context.animation.clips[0];
-            var target = GivenThreeKeyframes(context, clip);
+            var target = GivenThreeKeyframesFreeController(context, clip);
 
             new OperationsFactory(clip).Resize().StretchLength(4f);
 
@@ -31,10 +36,10 @@ namespace VamTimeline.Tests.Specs
             yield break;
         }
 
-        public IEnumerable StretchShorter(TestContext context)
+        public IEnumerable StretchShorterFreeController(TestContext context)
         {
             var clip = context.animation.clips[0];
-            var target = GivenThreeKeyframes(context, clip);
+            var target = GivenThreeKeyframesFreeController(context, clip);
 
             new OperationsFactory(clip).Resize().StretchLength(1f);
 
@@ -43,14 +48,81 @@ namespace VamTimeline.Tests.Specs
             yield break;
         }
 
-        private static FreeControllerAnimationTarget GivenThreeKeyframes(TestContext context, AtomAnimationClip clip)
+        public IEnumerable StretchLongerFloatParam(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFloatParam(context, clip);
+
+            new OperationsFactory(clip).Resize().StretchLength(4f);
+
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
+            yield break;
+        }
+
+        public IEnumerable StretchShorterFloatParam(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFloatParam(context, clip);
+
+            new OperationsFactory(clip).Resize().StretchLength(1f);
+
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
+            yield break;
+        }
+
+        public IEnumerable StretchLongerTrigger(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesTrigger(context, clip);
+
+            new OperationsFactory(clip).Resize().StretchLength(4f);
+
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Map after resize");
+            yield break;
+        }
+
+        public IEnumerable StretchShorterTrigger(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesTrigger(context, clip);
+
+            new OperationsFactory(clip).Resize().StretchLength(1f);
+
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Map after resize");
+            yield break;
+        }
+
+        private static FreeControllerAnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
             var target = clip.Add(new FreeControllerV3());
+            context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframe(1f, Vector3.one, Quaternion.identity);
             target.SetKeyframe(2f, Vector3.zero, Quaternion.identity);
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Settings before resize");
+            return target;
+        }
+
+        private static FloatParamAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
+        {
+            var target = clip.Add(new JSONStorable(), new JSONStorableFloat("Test", 0, 0, 1));
+            context.Assert(clip.animationLength, 2f, "Default animation length");
+            target.SetKeyframe(0f, 0f);
+            target.SetKeyframe(1f, 1f);
+            target.SetKeyframe(2f, 0f);
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
+            return target;
+        }
+
+        private static TriggersAnimationTarget GivenThreeKeyframesTrigger(TestContext context, AtomAnimationClip clip)
+        {
+            var target = clip.Add(new TriggersAnimationTarget());
+            context.Assert(clip.animationLength, 2f, "Default animation length");
+            target.SetKeyframe(0f, new AtomAnimationTrigger());
+            target.SetKeyframe(1f, new AtomAnimationTrigger());
+            target.SetKeyframe(2f, new AtomAnimationTrigger());
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map before resize");
             return target;
         }
     }

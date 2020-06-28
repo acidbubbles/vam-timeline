@@ -79,7 +79,12 @@ namespace VamTimeline
 
         public void DeleteFrame(float time)
         {
-            triggersMap.Remove(time.ToMilliseconds());
+            DeleteFrame(time.ToMilliseconds());
+        }
+
+        public void DeleteFrame(int ms)
+        {
+            triggersMap.Remove(ms);
             dirty = true;
         }
 

@@ -28,11 +28,11 @@ namespace VamTimeline.Tests.Framework
             if (!truthy) output.AppendLine(message);
         }
 
-        public void Assert(int actual, int expected, string message)
+        public void Assert<T>(T actual, T expected, string message) where T : struct
         {
-            if (actual == expected) return;
+            if (actual.Equals(expected)) return;
             output.AppendLine(message);
-            output.AppendLine($"Expected {expected}, received {actual}");
+            output.AppendLine($"Expected '{expected}', received '{actual}'");
         }
 
         public void Assert(string actual, string expected, string message)
