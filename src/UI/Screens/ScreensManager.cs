@@ -34,6 +34,7 @@ namespace VamTimeline
         {
             _plugin = plugin;
             InitTabs();
+            OnEnable();
         }
 
         private void InitTabs()
@@ -123,14 +124,13 @@ namespace VamTimeline
             if (_uiRefreshInProgress)
                 _uiRefreshInvalidated = true;
             else if (!_uiRefreshScheduled)
-            {
-                _uiRefreshScheduled = true;
                 StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
-            }
         }
 
         private IEnumerator RefreshCurrentUIDeferred(string screen)
         {
+            _uiRefreshScheduled = true;
+
             // Let every event trigger a UI refresh
             yield return 0;
 
@@ -253,7 +253,7 @@ namespace VamTimeline
 
         public void OnDisable()
         {
-            Destroy(_current.gameObject);
+            Destroy(_current?.gameObject);
             _current = null;
             _currentScreen = null;
         }

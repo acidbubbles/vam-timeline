@@ -431,6 +431,8 @@ namespace VamTimeline
 
             current.enabled = true;
             current.weight = 1f;
+            // TODO: Do we want this?
+            SampleTriggers();
             SampleFloatParams();
             SampleControllers();
             current.enabled = false;
@@ -444,7 +446,7 @@ namespace VamTimeline
                 if (!clip.enabled) continue;
                 foreach (var target in clip.targetTriggers)
                 {
-                    target.Sample(clip.clipTime, clip.weight);
+                    target.Sample(clip.previousClipTime, clip.clipTime);
                 }
             }
         }
@@ -616,6 +618,7 @@ namespace VamTimeline
             if (!isPlaying) return;
 
             SampleFloatParams();
+            SampleTriggers();
 
             foreach (var clip in clips)
             {
@@ -630,7 +633,7 @@ namespace VamTimeline
         {
             if (!isPlaying) return;
 
-            playTime += Time.fixedDeltaTime * _speed;
+            SetPlayTime(playTime + Time.fixedDeltaTime * _speed);
 
             SampleControllers();
         }

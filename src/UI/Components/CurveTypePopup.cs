@@ -105,7 +105,7 @@ namespace VamTimeline
 
         public void OnEnable()
         {
-            if (_listening) return;
+            if (_listening || _animation == null) return;
             _listening = true;
             _animation.onTimeChanged.AddListener(OnTimeChanged);
             _animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
@@ -114,6 +114,7 @@ namespace VamTimeline
 
         public void OnDisable()
         {
+            if (!_listening || _animation == null) return;
             _animation.onTimeChanged.RemoveListener(OnTimeChanged);
             _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
             _listening = false;

@@ -255,6 +255,7 @@ namespace VamTimeline
         #region Animation State
 
         private float _clipTime;
+        public float previousClipTime;
         public float weight;
         public bool enabled;
         public bool mainInLayer;
@@ -271,6 +272,7 @@ namespace VamTimeline
 
             set
             {
+                previousClipTime = _clipTime;
                 _clipTime = Mathf.Abs(loop ? value % animationLength : Mathf.Min(value, animationLength));
             }
         }
@@ -288,8 +290,8 @@ namespace VamTimeline
             blendRate = 0f;
             mainInLayer = false;
             SetNext(null, 0f);
-            if (resetTime) clipTime = 0f;
-            else clipTime = clipTime.Snap();
+            if (resetTime) clipTime = previousClipTime = 0f;
+            else clipTime = previousClipTime = clipTime.Snap();
         }
 
         #endregion

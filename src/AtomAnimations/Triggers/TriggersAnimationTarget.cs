@@ -27,16 +27,17 @@ namespace VamTimeline
             return "Triggers";
         }
 
-        public void Sample(float clipTime, float _weight)
+        public void Sample(float previousClipTime, float clipTime)
         {
-            int i;
-            for (i = 0; i < keyframes.Count; i++)
+            if (keyframes.Count == 0) return;
+            for (var i = 1; i < keyframes.Count; i++)
             {
-                if (clipTime >= i / 1000f)
-                    break;
+                if (clipTime < keyframes[i - 1] || clipTime >= keyframes[i]) continue;
+
+                var trigger = triggers[i];
+                trigger.Update(false, previousClipTime);
+                break;
             }
-            var trigger = triggers[i];
-            trigger.Update(false, 0f);
         }
 
         public void Validate()
