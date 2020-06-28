@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,9 +11,9 @@ namespace VamTimeline
     /// </summary>
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
-        public Dictionary<int, AnimationTimelineTrigger> triggersMap { get; } = new Dictionary<int, AnimationTimelineTrigger>();
-        public List<float> keyframes = new List<float>();
-        public List<AnimationTimelineTrigger> triggers = new List<AnimationTimelineTrigger>();
+        public readonly Dictionary<int, AnimationTimelineTrigger> triggersMap = new Dictionary<int, AnimationTimelineTrigger>();
+        private float[] _keyframes = new float[0];
+        private readonly List<AnimationTimelineTrigger> _triggers = new List<AnimationTimelineTrigger>();
 
         public string name => "Triggers";
 
@@ -27,61 +26,40 @@ namespace VamTimeline
             return "Triggers";
         }
 
-        public void Sample(float previousClipTime, float clipTime)
+        public void Sample(float previousClipTime)
         {
-            if (keyframes.Count == 0) return;
-            for (var i = 1; i < keyframes.Count; i++)
-            {
-                if (clipTime < keyframes[i - 1] || clipTime >= keyframes[i]) continue;
-
-                var trigger = triggers[i];
-                // TODO: We also need to "leave" the current trigger!
-                // TODO: This doesn't work yet (or it's not getting there)
-                if (triggers != null) trigger.Update(false, previousClipTime);
-                return;
-            }
+            // TODO: Check out the reverse / auto reverse logic in animation pattern
+            foreach (var trigger in _triggers)
+                trigger.Update(false, previousClipTime);
         }
 
         public void Validate()
         {
-            foreach (var trigger in triggers)
+            foreach (var trigger in _triggers)
             {
-                if (trigger == null) continue;
                 trigger.Validate();
             }
         }
 
         public void RebuildKeyframes(AnimationTimelineTriggerHandler timelineHandler)
         {
-            keyframes.Clear();
-            triggers.Clear();
+            _keyframes = new float[triggersMap.Count];
+            _triggers.Clear();
 
-            if (!triggersMap.ContainsKey(0))
-            {
-                keyframes.Add(0);
-                triggers.Add(null);
-            }
-
+            var i = 0;
             foreach (var kvp in triggersMap.OrderBy(x => x.Key))
             {
-                keyframes.Add(kvp.Key / 1000f);
-                triggers.Add(kvp.Value);
+                _keyframes[i++] = kvp.Key / 1000f;
+                _triggers.Add(kvp.Value);
             }
 
-            if (!triggersMap.ContainsKey(timelineHandler.GetTotalTime().ToMilliseconds()))
+            for (i = 0; i < _keyframes.Length; i++)
             {
-                keyframes.Add(0);
-                triggers.Add(null);
-            }
-
-            for (var i = 0; i < keyframes.Count; i++)
-            {
-                var time = keyframes[i] * 1000f;
-                var trigger = triggers[i];
-                if (trigger == null) continue;
+                var time = _keyframes[i];
+                var trigger = _triggers[i];
                 trigger.timeLineHandler = timelineHandler;
                 trigger.triggerStartTime = time;
-                trigger.triggerEndTime = i == keyframes.Count - 1 ? time : (keyframes[i + 1] * 1000f);
+                trigger.triggerEndTime = i == _keyframes.Length - 1 ? timelineHandler.GetTotalTime() : _keyframes[i + 1];
             }
         }
 
@@ -107,10 +85,7 @@ namespace VamTimeline
 
         public float[] GetAllKeyframesTime()
         {
-            // TODO: Optimize memory
-            var times = triggersMap.Keys.ToList();
-            times.Sort();
-            return times.Select(t => (t / 1000f).Snap()).ToArray();
+            return _keyframes;
         }
 
         public bool HasKeyframe(float time)
