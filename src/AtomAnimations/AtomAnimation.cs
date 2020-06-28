@@ -446,7 +446,7 @@ namespace VamTimeline
                 if (!clip.enabled) continue;
                 foreach (var target in clip.targetTriggers)
                 {
-                    target.Sample(clip.previousClipTime);
+                    target.Sample(isPlaying, clip.clipTime, clip.previousClipTime);
                 }
             }
         }

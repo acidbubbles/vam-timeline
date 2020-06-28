@@ -26,11 +26,11 @@ namespace VamTimeline
             return "Triggers";
         }
 
-        public void Sample(float previousClipTime)
+        public void Sample(bool isPlaying, float clipTime, float previousClipTime)
         {
-            // TODO: Check out the reverse / auto reverse logic in animation pattern
+            var reverse = !isPlaying && (clipTime < previousClipTime);
             foreach (var trigger in _triggers)
-                trigger.Update(false, previousClipTime);
+                trigger.Update(reverse, previousClipTime);
         }
 
         public void Validate()
