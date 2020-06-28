@@ -17,7 +17,7 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public void StretchLength(float newAnimationLength)
+        public void Stretch(float newAnimationLength)
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
@@ -49,7 +49,7 @@ namespace VamTimeline
             _clip.animationLength = newAnimationLength;
         }
 
-        public void CropOrExtendLengthEnd(float newAnimationLength)
+        public void CropOrExtendEnd(float newAnimationLength)
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
@@ -63,7 +63,7 @@ namespace VamTimeline
             _clip.animationLength = newAnimationLength;
         }
 
-        public void CropOrExtendLengthBegin(float newAnimationLength)
+        public void CropOrExtendBegin(float newAnimationLength)
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;

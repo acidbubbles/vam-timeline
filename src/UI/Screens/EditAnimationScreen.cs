@@ -191,15 +191,15 @@ namespace VamTimeline
             switch (_lengthModeJSON.val)
             {
                 case ChangeLengthModeStretch:
-                    operations.Resize().StretchLength(newLength);
+                    operations.Resize().Stretch(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendEnd:
-                    operations.Resize().CropOrExtendLengthEnd(newLength);
+                    operations.Resize().CropOrExtendEnd(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendBegin:
-                    operations.Resize().CropOrExtendLengthBegin(newLength);
+                    operations.Resize().CropOrExtendBegin(newLength);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendAtTime:
@@ -230,7 +230,7 @@ namespace VamTimeline
                             return;
                         }
                         var snapshot = current.Copy(_lengthWhenLengthModeChanged, true);
-                        operations.Resize().CropOrExtendLengthEnd(newLength);
+                        operations.Resize().CropOrExtendEnd(newLength);
                         current.Paste(_lengthWhenLengthModeChanged, snapshot);
                         break;
                     }
@@ -242,7 +242,7 @@ namespace VamTimeline
                             return;
                         }
                         var snapshot = current.Copy(0f, true);
-                        operations.Resize().CropOrExtendLengthBegin(newLength);
+                        operations.Resize().CropOrExtendBegin(newLength);
                         current.Paste((newLength - _lengthWhenLengthModeChanged).Snap(), snapshot);
                         break;
                     }
@@ -269,7 +269,7 @@ namespace VamTimeline
                             c.snapshot.curveType = CurveTypeValues.Smooth;
                         }
 
-                        operations.Resize().CropOrExtendLengthEnd(newLength);
+                        operations.Resize().CropOrExtendEnd(newLength);
 
                         for (var repeat = 0; repeat < loops; repeat++)
                         {

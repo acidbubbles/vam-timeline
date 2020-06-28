@@ -22,14 +22,23 @@ namespace VamTimeline.Tests.Specs
             yield return new Test(nameof(StretchShorterFloatParam), StretchShorterFloatParam);
             yield return new Test(nameof(StretchLongerTrigger), StretchLongerTrigger);
             yield return new Test(nameof(StretchShorterTrigger), StretchShorterTrigger);
+
+            yield return new Test(nameof(CropOrExtendEndLongerFreeController), CropOrExtendEndLongerFreeController);
+            yield return new Test(nameof(CropOrExtendEndShorterFreeController), CropOrExtendEndShorterFreeController);
+            yield return new Test(nameof(CropOrExtendEndLongerFloatParam), CropOrExtendEndLongerFloatParam);
+            yield return new Test(nameof(CropOrExtendEndShorterFloatParam), CropOrExtendEndShorterFloatParam);
+            yield return new Test(nameof(CropOrExtendEndLongerTrigger), CropOrExtendEndLongerTrigger);
+            yield return new Test(nameof(CropOrExtendEndShorterTrigger), CropOrExtendEndShorterTrigger);
         }
+
+        #region Stretch
 
         public IEnumerable StretchLongerFreeController(TestContext context)
         {
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().StretchLength(4f);
+            new OperationsFactory(clip).Resize().Stretch(4f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Settings after resize");
@@ -41,7 +50,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().StretchLength(1f);
+            new OperationsFactory(clip).Resize().Stretch(1f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Settings after resize");
@@ -53,7 +62,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().StretchLength(4f);
+            new OperationsFactory(clip).Resize().Stretch(4f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
             yield break;
@@ -64,7 +73,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().StretchLength(1f);
+            new OperationsFactory(clip).Resize().Stretch(1f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
             yield break;
@@ -75,7 +84,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().StretchLength(4f);
+            new OperationsFactory(clip).Resize().Stretch(4f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Map after resize");
             yield break;
@@ -86,11 +95,87 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().StretchLength(1f);
+            new OperationsFactory(clip).Resize().Stretch(1f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Map after resize");
             yield break;
         }
+
+        #endregion
+
+        #region CropOrExtendEnd
+
+        public IEnumerable CropOrExtendEndLongerFreeController(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFreeController(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
+
+            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
+            context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000, 4000 }, "Settings after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendEndShorterFreeController(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFreeController(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+
+            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Settings after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendEndLongerFloatParam(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFloatParam(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
+
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendEndShorterFloatParam(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFloatParam(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendEndLongerTrigger(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesTrigger(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
+
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendEndShorterTrigger(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesTrigger(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
+            yield break;
+        }
+
+        #endregion
+
+        #region Setup
 
         private static FreeControllerAnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
@@ -125,5 +210,7 @@ namespace VamTimeline.Tests.Specs
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map before resize");
             return target;
         }
+
+        #endregion
     }
 }
