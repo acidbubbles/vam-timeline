@@ -41,6 +41,27 @@ namespace VamTimeline
             return name;
         }
 
+        public void Sample(float clipTime, float weight)
+        {
+            var control = controller.control;
+
+            var rotState = controller.currentRotationState;
+            if (rotState == FreeControllerV3.RotationState.On)
+            {
+                var localRotation = Quaternion.Slerp(control.localRotation, EvaluateRotation(clipTime), weight);
+                control.localRotation = localRotation;
+                // control.rotation = controller.linkToRB.rotation * localRotation;
+            }
+
+            var posState = controller.currentPositionState;
+            if (posState == FreeControllerV3.PositionState.On)
+            {
+                var localPosition = Vector3.Lerp(control.localPosition, EvaluatePosition(clipTime), weight);
+                control.localPosition = localPosition;
+                // control.position = controller.linkToRB.position + Vector3.Scale(localPosition, control.transform.localScale);
+            }
+        }
+
         #region Control
 
         public AnimationCurve GetLeadCurve()

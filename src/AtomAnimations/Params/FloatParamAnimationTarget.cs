@@ -28,6 +28,11 @@ namespace VamTimeline
             return floatParam.name;
         }
 
+        public void Sample(float clipTime, float weight)
+        {
+            floatParam.val = Mathf.Lerp(floatParam.val, value.Evaluate(clipTime), weight);
+        }
+
         public AnimationCurve GetLeadCurve()
         {
             return value;
