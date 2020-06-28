@@ -35,15 +35,20 @@ namespace VamTimeline
                 if (clipTime < keyframes[i - 1] || clipTime >= keyframes[i]) continue;
 
                 var trigger = triggers[i];
-                trigger.Update(false, previousClipTime);
-                break;
+                // TODO: We also need to "leave" the current trigger!
+                // TODO: This doesn't work yet (or it's not getting there)
+                if (triggers != null) trigger.Update(false, previousClipTime);
+                return;
             }
         }
 
         public void Validate()
         {
             foreach (var trigger in triggers)
+            {
+                if (trigger == null) continue;
                 trigger.Validate();
+            }
         }
 
         public void RebuildKeyframes(AnimationTimelineTriggerHandler timelineHandler)
@@ -51,16 +56,29 @@ namespace VamTimeline
             keyframes.Clear();
             triggers.Clear();
 
+            if (!triggersMap.ContainsKey(0))
+            {
+                keyframes.Add(0);
+                triggers.Add(null);
+            }
+
             foreach (var kvp in triggersMap.OrderBy(x => x.Key))
             {
                 keyframes.Add(kvp.Key / 1000f);
                 triggers.Add(kvp.Value);
             }
 
+            if (!triggersMap.ContainsKey(timelineHandler.GetTotalTime().ToMilliseconds()))
+            {
+                keyframes.Add(0);
+                triggers.Add(null);
+            }
+
             for (var i = 0; i < keyframes.Count; i++)
             {
                 var time = keyframes[i] * 1000f;
                 var trigger = triggers[i];
+                if (trigger == null) continue;
                 trigger.timeLineHandler = timelineHandler;
                 trigger.triggerStartTime = time;
                 trigger.triggerEndTime = i == keyframes.Count - 1 ? time : (keyframes[i + 1] * 1000f);

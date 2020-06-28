@@ -164,7 +164,20 @@ namespace VamTimeline
                 }
             }
 
-            // TODO: Deserialization of triggers
+            JSONArray triggersJSON = clipJSON["Triggers"].AsArray;
+            if (triggersJSON != null)
+            {
+                foreach (JSONClass triggerJSON in triggersJSON)
+                {
+                    var target = new TriggersAnimationTarget();
+                    foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
+                    {
+                        var trigger = new AnimationTimelineTrigger();
+                        trigger.RestoreFromJSON(entryJSON);
+                    }
+                    clip.Add(target);
+                }
+            }
         }
 
         private IEnumerable<DAZMorph> GetMorphs()
@@ -392,7 +405,19 @@ namespace VamTimeline
                 paramsJSON.Add(paramJSON);
             }
 
-            // TODO: Serialization of targets
+            var triggersJSON = new JSONArray();
+            clipJSON.Add("Triggers", triggersJSON);
+            foreach (var target in clip.targetTriggers)
+            {
+                var triggerJSON = new JSONClass();
+                var entriesJSON = new JSONArray();
+                foreach (var x in target.triggersMap.OrderBy(kvp => kvp.Key))
+                {
+                    entriesJSON.Add(x.Value.GetJSON());
+                }
+                triggerJSON["Triggers"] = entriesJSON;
+                triggersJSON.Add(triggerJSON);
+            }
         }
 
         private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
