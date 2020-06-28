@@ -24,11 +24,16 @@ $allFiles = (ls ./src/*.cs -Recurse) + (ls *.cslist) `
 
 # tests/VamTimeline.Tests.cslist
 $testFiles = ( `
+   ls ./tests/*.cs -Recurse `
+|  % { $_.FullName.Substring((pwd).Path.Length + 7) } `
+)
+$testFilesAndDependencies = ( `
     $atomAnimationFiles `
     | ? { -not $_.EndsWith("\AtomPlugin.cs") } `
     | % { "..\$_" } `
-) + ( `
-    ls ./tests/*.cs -Recurse `
-    |  % { $_.FullName.Substring((pwd).Path.Length + 7) } `
-)
-$testFiles > .\tests\VamTimeline.Tests.cslist
+) + $testFiles
+$testFilesAndDependencies > .\tests\VamTimeline.Tests.cslist
+
+( Get-Content ".\VamTimeline.csproj" -Raw ) -Replace "(?sm)(?<=^ +<!-- TestFiles -->`r?`n).*?(?=`r?`n +<!-- /TestFiles -->)", `
+    [System.String]::Join("`r`n", ($testFiles | % { "    <Compile Include=`"tests\$_`" />" } ) ) `
+| Set-Content ".\VamTimeline.csproj" -NoNewline

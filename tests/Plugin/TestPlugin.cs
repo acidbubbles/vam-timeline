@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using VamTimeline.Tests.Framework;
 
 namespace VamTimeline.Tests.Plugin
 {
@@ -45,7 +46,7 @@ namespace VamTimeline.Tests.Plugin
             var globalSW = Stopwatch.StartNew();
             var success = true;
             yield return 0;
-            foreach (var test in TestsIndex.GetAllTests())
+            foreach (Test test in TestsIndex.GetAllTests())
             {
                 var output = new StringBuilder();
                 var sw = Stopwatch.StartNew();

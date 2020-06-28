@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using VamTimeline.Tests.Framework;
 using VamTimeline.Tests.Specs;
 
@@ -12,9 +11,12 @@ namespace VamTimeline.Tests.Plugin
     /// </summary>
     public static class TestsIndex
     {
-        public static IEnumerable<Test> GetAllTests()
+        public static TestsEnumerator GetAllTests()
         {
-            yield return new Test(nameof(AnimationTests.EmptyAnimation), new AnimationTests().EmptyAnimation);
+            return new TestsEnumerator(new ITestClass[]{
+                new AnimationTests(),
+                new AnimationResizeTests()
+            });
         }
     }
 }

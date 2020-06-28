@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace VamTimeline.Tests.Framework
@@ -30,6 +33,20 @@ namespace VamTimeline.Tests.Framework
             if (actual == expected) return;
             output.AppendLine(message);
             output.AppendLine($"Expected {expected}, received {actual}");
+        }
+
+        public void Assert(string actual, string expected, string message)
+        {
+            if (actual == expected) return;
+            output.AppendLine(message);
+            output.AppendLine($"Expected '{expected}', received '{actual}'");
+        }
+
+        public void Assert<T>(IEnumerable<T> actual, IEnumerable<T> expected, string message)
+        {
+            var actualStr = string.Join(", ", actual.Select(v => v.ToString()).ToArray());
+            var expectedStr = string.Join(", ", expected.Select(v => v.ToString()).ToArray());
+            Assert(actualStr, expectedStr, message);
         }
     }
 }

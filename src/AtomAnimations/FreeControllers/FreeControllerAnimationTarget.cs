@@ -43,6 +43,7 @@ namespace VamTimeline
 
         public void Sample(float clipTime, float weight)
         {
+            if (controller?.control == null) return;
             var control = controller.control;
 
             var rotState = controller.currentRotationState;

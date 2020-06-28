@@ -1,6 +1,5 @@
-using UnityEngine;
 using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
 using VamTimeline.Tests.Framework;
 
 namespace VamTimeline.Tests.Specs
@@ -11,8 +10,13 @@ namespace VamTimeline.Tests.Specs
     /// Animation timeline with keyframes
     /// Source: https://github.com/acidbubbles/vam-timeline
     /// </summary>
-    public class AnimationTests
+    public class AnimationTests : ITestClass
     {
+        public IEnumerable<Test> GetTests()
+        {
+            yield return new Test(nameof(AnimationTests.EmptyAnimation), EmptyAnimation);
+        }
+
         public IEnumerable EmptyAnimation(TestContext context)
         {
             context.Assert(context.animation.clips.Count, 1, "Only one clip");
