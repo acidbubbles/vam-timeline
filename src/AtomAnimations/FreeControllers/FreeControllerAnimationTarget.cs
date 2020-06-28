@@ -75,12 +75,22 @@ namespace VamTimeline
             return curves;
         }
 
-        public void Validate()
+        public void Validate(float animationLength)
         {
             var leadCurve = GetLeadCurve();
             if (leadCurve.length < 2)
             {
                 SuperController.LogError($"Target {name} has {leadCurve.length} frames");
+                return;
+            }
+            if (x[0].time != 0)
+            {
+                SuperController.LogError($"Target {name} has no start frame");
+                return;
+            }
+            if (x[x.length - 1].time != animationLength)
+            {
+                SuperController.LogError($"Target {name} ends with frame {x[x.length - 1].time} instead of expected {animationLength}");
                 return;
             }
             if (this.settings.Count > leadCurve.length)

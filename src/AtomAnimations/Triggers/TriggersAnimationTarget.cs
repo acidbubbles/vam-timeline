@@ -33,11 +33,26 @@ namespace VamTimeline
                 trigger.Update(false, previousClipTime);
         }
 
-        public void Validate()
+        public void Validate(float animationLength)
         {
             foreach (var trigger in _triggers)
             {
                 trigger.Validate();
+            }
+            if (triggersMap.Count < 2)
+            {
+                SuperController.LogError($"Target {name} has {triggersMap.Count} frames");
+                return;
+            }
+            if (!triggersMap.ContainsKey(0))
+            {
+                SuperController.LogError($"Target {name} has no start frame");
+                return;
+            }
+            if (!triggersMap.ContainsKey(animationLength.ToMilliseconds()))
+            {
+                SuperController.LogError($"Target {name} ends with frame {triggersMap.Keys.OrderBy(k => k).Last()} instead of expected {animationLength.ToMilliseconds()}");
+                return;
             }
         }
 
@@ -49,7 +64,7 @@ namespace VamTimeline
             var i = 0;
             foreach (var kvp in triggersMap.OrderBy(x => x.Key))
             {
-                _keyframes[i++] = kvp.Key / 1000f;
+                _keyframes[i++] = (kvp.Key / 1000f).Snap();
                 _triggers.Add(kvp.Value);
             }
 

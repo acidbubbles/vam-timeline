@@ -51,7 +51,6 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<TriggersAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersAnimationTarget>() { label = "Triggers" };
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
-        // TODO: This and selection is bound to curves. Make two separate methods or just filter when using?
         public IEnumerable<IAnimationTargetWithCurves> allCurveTargets => targetControllers.Cast<IAnimationTargetWithCurves>().Concat(targetFloatParams.Cast<IAnimationTargetWithCurves>());
         public IEnumerable<IAtomAnimationTarget> allTargets => targetTriggers.Cast<IAtomAnimationTarget>().Concat(allCurveTargets.Cast<IAtomAnimationTarget>());
         public int allTargetsCount => targetTriggers.Count + targetControllers.Count + targetFloatParams.Count;
@@ -248,7 +247,7 @@ namespace VamTimeline
             foreach (var target in allTargets)
             {
                 if (!target.dirty) continue;
-                target.Validate();
+                target.Validate(_animationLength);
             }
         }
 
@@ -383,14 +382,13 @@ namespace VamTimeline
             if (time.IsSameFrame(animationLength))
                 return 0f;
             var nextTime = animationLength;
-            // TODO: This ignores triggers
-            foreach (var controller in GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
+            foreach (var controller in GetAllOrSelectedTargets())
             {
                 // TODO: Use bisect for more efficient navigation
-                var leadCurve = controller.GetLeadCurve();
-                for (var key = 0; key < leadCurve.length; key++)
+                var keyframes = controller.GetAllKeyframesTime();
+                for (var key = 0; key < keyframes.Length; key++)
                 {
-                    var potentialNextTime = leadCurve[key].time;
+                    var potentialNextTime = keyframes[key];
                     if (potentialNextTime <= time) continue;
                     if (potentialNextTime > nextTime) continue;
                     nextTime = potentialNextTime;
@@ -410,8 +408,7 @@ namespace VamTimeline
             {
                 try
                 {
-                    // TODO: This ignores triggers
-                    return GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>().Select(t => t.GetLeadCurve()).Select(c => c[c.length - (loop ? 2 : 1)].time).Max();
+                    return GetAllOrSelectedTargets().Select(t => t.GetAllKeyframesTime()).Select(c => c[c.Length - (loop ? 2 : 1)]).Max();
                 }
                 catch (InvalidOperationException)
                 {
@@ -419,14 +416,13 @@ namespace VamTimeline
                 }
             }
             var previousTime = 0f;
-            // TODO: This ignores triggers
-            foreach (var controller in GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
+            foreach (var controller in GetAllOrSelectedTargets())
             {
                 // TODO: Use bisect for more efficient navigation
-                var leadCurve = controller.GetLeadCurve();
-                for (var key = leadCurve.length - 2; key >= 0; key--)
+                var keyframes = controller.GetAllKeyframesTime();
+                for (var key = keyframes.Length - 2; key >= 0; key--)
                 {
-                    var potentialPreviousTime = leadCurve[key].time;
+                    var potentialPreviousTime = keyframes[key];
                     if (potentialPreviousTime >= time) continue;
                     if (potentialPreviousTime < previousTime) continue;
                     previousTime = potentialPreviousTime;

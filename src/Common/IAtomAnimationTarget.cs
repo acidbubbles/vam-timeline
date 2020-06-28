@@ -17,7 +17,7 @@ namespace VamTimeline
         bool selected { get; set; }
         string name { get; }
 
-        void Validate();
+        void Validate(float animationLength);
 
         void StartBulkUpdates();
         void EndBulkUpdates();

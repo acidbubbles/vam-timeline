@@ -33,11 +33,21 @@ namespace VamTimeline
             floatParam.val = Mathf.Lerp(floatParam.val, value.Evaluate(clipTime), weight);
         }
 
-        public void Validate()
+        public void Validate(float animationLength)
         {
             if (value.length < 2)
             {
                 SuperController.LogError($"Target {name} has {value.length} frames");
+                return;
+            }
+            if (value[0].time != 0)
+            {
+                SuperController.LogError($"Target {name} has no start frame");
+                return;
+            }
+            if (value[value.length - 1].time != animationLength)
+            {
+                SuperController.LogError($"Target {name} ends with frame {value[value.length - 1].time} instead of expected {animationLength}");
                 return;
             }
         }
