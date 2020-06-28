@@ -24,12 +24,22 @@ namespace VamTimeline.Tests.Plugin
             _runUI = CreateButton("Run", false);
             _runUI.button.onClick.AddListener(Run);
 
-
             _resultJSON = new JSONStorableString("Test Results", "Running...");
-            var resultUI = CreateTextField(_resultJSON, true);
-            resultUI.height = 800f;
 
             Run();
+        }
+
+        public override void InitUI()
+        {
+            base.InitUI();
+            if (UITransform == null) return;
+            var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
+
+            _runUI.transform.SetParent(scriptUI.fullWidthUIContent.transform, false);
+
+            var resultUI = CreateTextField(_resultJSON, true);
+            resultUI.height = 800f;
+            resultUI.transform.SetParent(scriptUI.fullWidthUIContent.transform, false);
         }
 
         private void Run()

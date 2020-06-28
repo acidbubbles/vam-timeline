@@ -29,6 +29,13 @@ namespace VamTimeline.Tests.Specs
             yield return new Test(nameof(CropOrExtendEndShorterFloatParam), CropOrExtendEndShorterFloatParam);
             yield return new Test(nameof(CropOrExtendEndLongerTrigger), CropOrExtendEndLongerTrigger);
             yield return new Test(nameof(CropOrExtendEndShorterTrigger), CropOrExtendEndShorterTrigger);
+
+            yield return new Test(nameof(CropOrExtendBeginLongerFreeController), CropOrExtendBeginLongerFreeController);
+            yield return new Test(nameof(CropOrExtendBeginShorterFreeController), CropOrExtendBeginShorterFreeController);
+            yield return new Test(nameof(CropOrExtendBeginLongerFloatParam), CropOrExtendBeginLongerFloatParam);
+            yield return new Test(nameof(CropOrExtendBeginShorterFloatParam), CropOrExtendBeginShorterFloatParam);
+            yield return new Test(nameof(CropOrExtendBeginLongerTrigger), CropOrExtendBeginLongerTrigger);
+            yield return new Test(nameof(CropOrExtendBeginShorterTrigger), CropOrExtendBeginShorterTrigger);
         }
 
         #region Stretch
@@ -168,6 +175,80 @@ namespace VamTimeline.Tests.Specs
             var target = GivenThreeKeyframesTrigger(context, clip);
 
             new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
+            yield break;
+        }
+
+        #endregion
+
+        #region CropOrExtendBegin
+
+        // TODO: End will add a keyframe but begin will push keyframes back. Determine one behavior and stick to it.
+
+        public IEnumerable CropOrExtendBeginLongerFreeController(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFreeController(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
+
+            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
+            context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 3000, 4000 }, "Settings after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendBeginShorterFreeController(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFreeController(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendBegin(1f);
+
+            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Settings after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendBeginLongerFloatParam(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFloatParam(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
+
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendBeginShorterFloatParam(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesFloatParam(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendBegin(1f);
+
+            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendBeginLongerTrigger(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesTrigger(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
+
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 2000, 3000, 4000 }, "Map after resize");
+            yield break;
+        }
+
+        public IEnumerable CropOrExtendBeginShorterTrigger(TestContext context)
+        {
+            var clip = context.animation.clips[0];
+            var target = GivenThreeKeyframesTrigger(context, clip);
+
+            new OperationsFactory(clip).Resize().CropOrExtendBegin(1f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
             yield break;
