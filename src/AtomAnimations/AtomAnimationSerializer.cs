@@ -174,6 +174,7 @@ namespace VamTimeline
                     {
                         var trigger = new AnimationTimelineTrigger();
                         trigger.RestoreFromJSON(entryJSON);
+                        target.SetKeyframe(trigger.triggerStartTime, trigger);
                     }
                     clip.Add(target);
                 }
