@@ -3,12 +3,6 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
-    /// </summary>
     public interface IMVRScript
     {
         Atom containingAtom { get; }
@@ -16,12 +10,6 @@ namespace VamTimeline
         Transform UITransform { get; }
     }
 
-    /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
-    /// </summary>
     public interface IAtomPlugin : IMVRScript, IRemoteAtomPlugin
     {
         AtomAnimation animation { get; }

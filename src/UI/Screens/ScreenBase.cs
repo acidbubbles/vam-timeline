@@ -4,12 +4,6 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
-    /// </summary>
     public abstract class ScreenBase : MonoBehaviour
     {
         public class ScreenChangeRequestedEvent : UnityEvent<string> { }

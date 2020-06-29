@@ -5,12 +5,6 @@ using VamTimeline.Tests.Framework;
 
 namespace VamTimeline.Tests.Plugin
 {
-    /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
-    /// </summary>
     public class TestPlugin : MVRScript
     {
         private StringBuilder _resultBuilder;

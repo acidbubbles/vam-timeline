@@ -6,12 +6,6 @@ using VamTimeline.Tests.Framework;
 
 namespace VamTimeline.Tests.Specs
 {
-    /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
-    /// </summary>
     public class AnimationResizeTests : ITestClass
     {
         public IEnumerable<Test> GetTests()

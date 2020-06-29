@@ -7,12 +7,6 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    /// <summary>
-    /// VaM Timeline
-    /// By Acidbubbles
-    /// Animation timeline with keyframes
-    /// Source: https://github.com/acidbubbles/vam-timeline
-    /// </summary>
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
         private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
