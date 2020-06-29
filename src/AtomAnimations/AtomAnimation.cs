@@ -42,6 +42,7 @@ namespace VamTimeline
             {
                 var previous = _current;
                 _current = value;
+                if (previous != null) previous.Leave();
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
                 onTargetsSelectionChanged.Invoke();
             }
@@ -236,6 +237,8 @@ namespace VamTimeline
         public void StopClip(string animationName)
         {
             var clip = GetClip(animationName);
+            if (clip.enabled)
+                clip.Leave();
             clip.Reset(false);
             if (clip.animationPattern)
                 clip.animationPattern.SetBoolParamValue("loopOnce", true);
@@ -292,6 +295,7 @@ namespace VamTimeline
                     {
                         clip.blendRate = 0f;
                         clip.weight = 0f;
+                        clip.Leave();
                         clip.enabled = false;
                     }
                 }

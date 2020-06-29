@@ -289,6 +289,17 @@ namespace VamTimeline
             else clipTime = previousClipTime = clipTime.Snap();
         }
 
+        public void Leave()
+        {
+            foreach (var target in targetTriggers)
+            {
+                foreach (var trigger in target.triggersMap.Values.Where(v => v.active))
+                {
+                    trigger.active = false;
+                }
+            }
+        }
+
         #endregion
 
         #region Add/Remove Targets
