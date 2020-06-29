@@ -169,7 +169,10 @@ namespace VamTimeline
             {
                 foreach (JSONClass triggerJSON in triggersJSON)
                 {
-                    var target = new TriggersAnimationTarget();
+                    var target = new TriggersAnimationTarget
+                    {
+                        name = DeserializeString(triggerJSON["Name"], "Trigger")
+                    };
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
                         var trigger = new AtomAnimationTrigger();
@@ -408,10 +411,14 @@ namespace VamTimeline
             }
 
             var triggersJSON = new JSONArray();
+            clipJSON.Add("", triggersJSON);
             clipJSON.Add("Triggers", triggersJSON);
             foreach (var target in clip.targetTriggers)
             {
-                var triggerJSON = new JSONClass();
+                var triggerJSON = new JSONClass()
+                {
+                    {"Name", target.name}
+                };
                 var entriesJSON = new JSONArray();
                 foreach (var x in target.triggersMap.OrderBy(kvp => kvp.Key))
                 {

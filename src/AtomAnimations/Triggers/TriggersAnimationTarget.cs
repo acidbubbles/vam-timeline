@@ -16,7 +16,7 @@ namespace VamTimeline
         public float[] keyframes { get; private set; } = new float[0];
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
-        public string name => "Triggers";
+        public string name { get; set; }
 
         public TriggersAnimationTarget()
         {
@@ -24,7 +24,7 @@ namespace VamTimeline
 
         public string GetShortName()
         {
-            return "Triggers";
+            return name;
         }
 
         public void Sample(float previousClipTime)

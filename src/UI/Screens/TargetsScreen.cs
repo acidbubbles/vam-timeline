@@ -105,12 +105,15 @@ namespace VamTimeline
 
         private void InitTriggersUI()
         {
-            // TODO: Allow more than one triggers track
-            var btn = prefabFactory.CreateButton("Add Triggers");
+            var btn = prefabFactory.CreateButton("Add Triggers Track");
             btn.button.onClick.AddListener(() =>
             {
-                if (current.targetTriggers.Count > 0) return;
-                current.Add(new TriggersAnimationTarget());
+                var target = new TriggersAnimationTarget
+                {
+                    name = $"Triggers {current.targetTriggers.Count + 1}"
+                };
+                target.AddEdgeFramesIfMissing(current.animationLength);
+                current.Add(target);
             });
         }
 
