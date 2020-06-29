@@ -22,6 +22,13 @@ namespace VamTimeline
 
         protected override void CreateCustom()
         {
+            if (!expanded) StartCoroutine(ToggleExpandedDeferred());
+        }
+
+        private IEnumerator ToggleExpandedDeferred()
+        {
+            yield return 0;
+            if (!expanded) ToggleExpanded();
         }
 
         public override void SetTime(float time, bool stopped)

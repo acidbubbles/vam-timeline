@@ -21,6 +21,7 @@ namespace VamTimeline
         protected T target;
         protected UIDynamicToggle toggle;
         protected Text valueText;
+        protected bool expanded => _expanded != null;
         private GameObject _expandButton;
         private int _ignoreNextToggleEvent;
         private RectTransform _expanded;
@@ -56,7 +57,7 @@ namespace VamTimeline
             OnAnimationKeyframesModified();
         }
 
-        private void ToggleExpanded()
+        public void ToggleExpanded()
         {
             var ui = GetComponent<UIDynamic>();
             var expandSize = 70f;
