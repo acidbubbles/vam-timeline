@@ -154,8 +154,8 @@ namespace VamTimeline
             else
                 clips.Insert(lastIndexOfLayer + 1, clip);
             clip.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
-            clip.onAnimationKeyframesModified.AddListener(OnAnimationModified);
-            clip.onTargetsListChanged.AddListener(OnAnimationModified);
+            clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
+            clip.onTargetsListChanged.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             onClipsListChanged.Invoke();
         }
@@ -173,7 +173,7 @@ namespace VamTimeline
             clips.Remove(clip);
             clip.Dispose();
             onClipsListChanged.Invoke();
-            OnAnimationModified();
+            OnAnimationKeyframesDirty();
         }
 
         private string GetNewAnimationName()
@@ -504,15 +504,29 @@ namespace VamTimeline
             {
                 clip.Validate();
                 RebuildClip(clip);
-                if (clip.transition)
+            }
+            foreach (var clip in clips)
+            {
+                if (!clip.transition) continue;
+
+                var previous = GetClip(clip.animationName);
+                if (previous != null && (previous.IsDirty() || clip.IsDirty()))
+                    clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
+                var next = GetClip(clip.nextAnimationName);
+                if (next != null && (next.IsDirty() || clip.IsDirty()))
+                    clip.Paste(clip.animationLength, next.Copy(0f, true), false);
+            }
+            foreach (var clip in clips)
+            {
+                if (!clip.IsDirty()) continue;
+
+                foreach (var target in clip.allTargets)
                 {
-                    var previous = GetClip(clip.animationName);
-                    if (previous != null && (previous.IsDirty() || clip.IsDirty()))
-                        clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
-                    var next = GetClip(clip.nextAnimationName);
-                    if (next != null && (next.IsDirty() || clip.IsDirty()))
-                        clip.Paste(clip.animationLength, next.Copy(0f, true), false);
+                    target.dirty = false;
+                    target.onAnimationKeyframesRebuilt.Invoke();
                 }
+
+                clip.onAnimationKeyframesRebuilt.Invoke();
             }
             if (sw.ElapsedMilliseconds > 1000)
             {
@@ -525,8 +539,6 @@ namespace VamTimeline
             foreach (var target in clip.targetControllers)
             {
                 if (!target.dirty) continue;
-
-                target.dirty = false;
 
                 if (clip.loop)
                     target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
@@ -550,8 +562,6 @@ namespace VamTimeline
             {
                 if (!target.dirty) continue;
 
-                target.dirty = false;
-
                 if (clip.loop)
                     target.value.SetKeyframe(clip.animationLength, target.value[0].value);
 
@@ -561,8 +571,6 @@ namespace VamTimeline
             foreach (var target in clip.targetTriggers)
             {
                 if (!target.dirty) continue;
-
-                target.dirty = false;
 
                 target.RebuildKeyframes(clip);
             }
@@ -594,7 +602,7 @@ namespace VamTimeline
                 onClipsListChanged.Invoke();
         }
 
-        private void OnAnimationModified()
+        private void OnAnimationKeyframesDirty()
         {
             if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             if (_animationRebuildRequestPending) return;

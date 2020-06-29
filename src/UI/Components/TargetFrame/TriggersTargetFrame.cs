@@ -127,19 +127,8 @@ namespace VamTimeline
 
         RectTransform TriggerHandler.CreateTriggerActionDiscreteUI()
         {
-            var rt = Instantiate(VamPrefabFactory.triggerActionDiscretePrefab);
-            var ui = rt.gameObject.GetComponentInChildren<TriggerActionDiscreteUI>();
-            if (ui == null) SuperController.LogMessage("Nope");
-            else SuperController.LogMessage("Yep");
-            // StartCoroutine(SetupInitialValues(ui));
-            return rt;
+            return Instantiate(VamPrefabFactory.triggerActionDiscretePrefab);
         }
-
-        // private IEnumerator SetupInitialValues(TriggerAction ui)
-        // {
-        //     yield return 0;
-        //     ui.receiverAtom = plugin.containingAtom;
-        // }
 
         RectTransform TriggerHandler.CreateTriggerActionTransitionUI()
         {

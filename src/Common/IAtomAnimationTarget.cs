@@ -5,7 +5,8 @@ namespace VamTimeline
 {
     public interface IAtomAnimationTarget : IDisposable
     {
-        UnityEvent onAnimationKeyframesModified { get; }
+        UnityEvent onAnimationKeyframesDirty { get; }
+        UnityEvent onAnimationKeyframesRebuilt { get; }
         UnityEvent onSelectedChanged { get; }
         bool dirty { get; set; }
         bool selected { get; set; }

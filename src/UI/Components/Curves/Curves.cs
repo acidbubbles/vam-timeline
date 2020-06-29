@@ -134,7 +134,7 @@ namespace VamTimeline
                 _lines.ClearCurves();
                 foreach (var target in targets)
                 {
-                    target.onAnimationKeyframesModified.AddListener(OnAnimationCurveModified);
+                    target.onAnimationKeyframesRebuilt.AddListener(OnAnimationCurveModified);
                     BindCurves(target);
                 }
                 _lines.SetVerticesDirty();
@@ -239,7 +239,7 @@ namespace VamTimeline
             {
                 _lines.ClearCurves();
                 foreach (var target in _targets)
-                    target.onAnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+                    target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
                 _targets = null;
                 _lines.SetVerticesDirty();
             }
@@ -278,7 +278,7 @@ namespace VamTimeline
             if (_targets != null)
             {
                 foreach (var target in _targets)
-                    target.onAnimationKeyframesModified.RemoveListener(OnAnimationCurveModified);
+                    target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
             }
         }
     }

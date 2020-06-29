@@ -255,7 +255,7 @@ namespace VamTimeline
             }
             _scrubberRect.gameObject.SetActive(any);
             _clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
-            _clip.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
+            _clip.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
         }
 
         private void OnTargetsListChanged()
@@ -265,16 +265,18 @@ namespace VamTimeline
             BindClip(clip);
         }
 
-        private void OnAnimationKeyframesModified()
+        private void OnAnimationKeyframesRebuilt()
         {
             foreach (var keyframe in _keyframesRows)
+            {
                 keyframe.SetVerticesDirty();
+            }
         }
 
         private void UnbindClip()
         {
             _clip.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            _clip.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
+            _clip.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
             _keyframesRows.Clear();
             while (_layout.transform.childCount > 0)
             {
@@ -413,7 +415,7 @@ namespace VamTimeline
 
                 var listener = go.AddComponent<Listener>();
                 listener.Bind(
-                    target.onAnimationKeyframesModified,
+                    target.onAnimationKeyframesRebuilt,
                     () =>
                     {
                         keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);

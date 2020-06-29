@@ -6,7 +6,8 @@ namespace VamTimeline
     public abstract class AnimationTargetBase : IDisposable
     {
         public UnityEvent onSelectedChanged { get; } = new UnityEvent();
-        public UnityEvent onAnimationKeyframesModified { get; } = new UnityEvent();
+        public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
+        public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
 
         private bool _selected;
         private bool _bulk;
@@ -33,7 +34,7 @@ namespace VamTimeline
             {
                 _dirty = value;
                 if (value && !_bulk)
-                    onAnimationKeyframesModified.Invoke();
+                    onAnimationKeyframesDirty.Invoke();
             }
         }
 
@@ -44,12 +45,14 @@ namespace VamTimeline
         public void EndBulkUpdates()
         {
             _bulk = false;
-            if (dirty) onAnimationKeyframesModified.Invoke();
+            if (dirty) onAnimationKeyframesDirty.Invoke();
         }
 
         public virtual void Dispose()
         {
             onSelectedChanged.RemoveAllListeners();
+            onAnimationKeyframesDirty.RemoveAllListeners();
+            onAnimationKeyframesRebuilt.RemoveAllListeners();
         }
     }
 }

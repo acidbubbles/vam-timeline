@@ -10,7 +10,8 @@ namespace VamTimeline
         float animationLength { get; }
         UnityEvent onTargetsSelectionChanged { get; }
         UnityEvent onTargetsListChanged { get; }
-        UnityEvent onAnimationKeyframesModified { get; }
+        UnityEvent onAnimationKeyframesDirty { get; }
+        UnityEvent onAnimationKeyframesRebuilt { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

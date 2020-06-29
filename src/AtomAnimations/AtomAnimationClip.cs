@@ -28,7 +28,8 @@ namespace VamTimeline
 
         public UnityEvent onTargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
-        public UnityEvent onAnimationKeyframesModified { get; } = new UnityEvent();
+        public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
+        public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
         public AnimationSettingModifiedEvent onAnimationSettingsModified { get; } = new AnimationSettingModifiedEvent();
         public AnimationPattern animationPattern
         {
@@ -241,6 +242,7 @@ namespace VamTimeline
             foreach (var target in allTargets)
             {
                 if (!target.dirty) continue;
+
                 target.Validate(_animationLength);
             }
         }
@@ -324,7 +326,7 @@ namespace VamTimeline
             list.Add(target);
             list.Sort(comparer);
             target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
-            target.onAnimationKeyframesModified.AddListener(OnAnimationModified);
+            target.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             onTargetsListChanged.Invoke();
             return target;
         }
@@ -371,9 +373,9 @@ namespace VamTimeline
             onTargetsSelectionChanged.Invoke();
         }
 
-        private void OnAnimationModified()
+        private void OnAnimationKeyframesDirty()
         {
-            onAnimationKeyframesModified.Invoke();
+            onAnimationKeyframesDirty.Invoke();
         }
 
         #endregion
@@ -560,7 +562,8 @@ namespace VamTimeline
         public void Dispose()
         {
             onTargetsSelectionChanged.RemoveAllListeners();
-            onAnimationKeyframesModified.RemoveAllListeners();
+            onAnimationKeyframesDirty.RemoveAllListeners();
+            onAnimationKeyframesRebuilt.RemoveAllListeners();
             onAnimationSettingsModified.RemoveAllListeners();
             onTargetsListChanged.RemoveAllListeners();
             foreach (var target in allTargets)

@@ -44,9 +44,9 @@ namespace VamTimeline
             this.plugin.animation.onTimeChanged.AddListener(this.OnTimeChanged);
             OnTimeChanged(this.plugin.animation.timeArgs);
 
-            target.onAnimationKeyframesModified.AddListener(OnAnimationKeyframesModified);
+            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
 
-            OnAnimationKeyframesModified();
+            OnAnimationKeyframesRebuilt();
         }
 
         public void ToggleExpanded()
@@ -86,7 +86,7 @@ namespace VamTimeline
             return rect;
         }
 
-        private void OnAnimationKeyframesModified()
+        private void OnAnimationKeyframesRebuilt()
         {
             SetTime(plugin.animation.clipTime, true);
         }
@@ -237,7 +237,7 @@ namespace VamTimeline
         public void OnDestroy()
         {
             plugin.animation.onTimeChanged.RemoveListener(OnTimeChanged);
-            target.onAnimationKeyframesModified.RemoveListener(OnAnimationKeyframesModified);
+            target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
         }
     }
 }
