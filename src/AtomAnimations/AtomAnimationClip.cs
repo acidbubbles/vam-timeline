@@ -493,6 +493,7 @@ namespace VamTimeline
                 if (!target.triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) continue;
                 triggers.Add(new TriggersClipboardEntry
                 {
+                    name = target.name,
                     json = trigger.GetJSON()
                 });
             }
@@ -528,8 +529,7 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.triggers)
             {
-                // TODO: Always paste in the first? Makes sense as long as we only support a single triggers track
-                var target = targetTriggers.FirstOrDefault();
+                var target = targetTriggers.FirstOrDefault(t => t.name == entry.name) ?? targetTriggers.FirstOrDefault();
                 if (target == null)
                     target = Add(new TriggersAnimationTarget());
                 AtomAnimationTrigger trigger;

@@ -89,6 +89,7 @@ namespace VamTimeline
     /// </summary>
     public class TriggersClipboardEntry
     {
+        public string name;
         public JSONClass json;
     }
 }
