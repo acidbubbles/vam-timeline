@@ -10,40 +10,48 @@ namespace VamTimeline
             var go = new GameObject();
             go.transform.SetParent(transform, false);
 
-            var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 900f;
-            layout.preferredWidth = 1060f;
+            var rect = go.AddComponent<RectTransform>();
+            rect.pivot = new Vector2(0, 1);
 
-            var leftPanel = CreatePanel(go.transform, 0f, 0.5f, 0f);
-            var rightPanel = CreatePanel(go.transform, 0.5f, 1f, 1f);
+            // var layout = go.AddComponent<LayoutElement>();
+            // layout.minHeight = 900f;
+            // layout.preferredWidth = 1060f;
+
+            var group = go.AddComponent<HorizontalLayoutGroup>();
+            group.spacing = 10f;
+
+            var leftPanel = CreatePanel(go.transform);
+            var rightPanel = CreatePanel(go.transform);
 
             var editor = go.AddComponent<Editor>();
             editor.leftPanel = leftPanel;
             editor.rightPanel = rightPanel;
 
+            var fitter = go.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
             return editor;
         }
 
-        private static GameObject CreatePanel(Transform transform, float xl, float xr, float xa)
+        private static GameObject CreatePanel(Transform transform)
         {
-            var panel = new GameObject();
-            panel.transform.SetParent(transform, false);
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
 
-            var rect = panel.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(xl, 1f);
-            rect.anchorMax = new Vector2(xr, 1f);
-            rect.anchoredPosition = new Vector2(xa, 1f);
-            rect.pivot = new Vector2(xa, 1f);
-            rect.sizeDelta = new Vector2(-5f, 0f);
+            var rect = go.AddComponent<RectTransform>();
+            rect.pivot = new Vector2(0, 1f);
 
-            var verticalLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
+            var verticalLayoutGroup = go.AddComponent<VerticalLayoutGroup>();
             verticalLayoutGroup.childControlWidth = true;
             verticalLayoutGroup.childForceExpandWidth = false;
             verticalLayoutGroup.childControlHeight = true;
             verticalLayoutGroup.childForceExpandHeight = false;
             verticalLayoutGroup.spacing = 10f;
 
-            return panel;
+            var fitter = go.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            return go;
         }
 
         public bool locked
@@ -71,11 +79,11 @@ namespace VamTimeline
             _controlPanel = CreateControlPanel(leftPanel);
             _controlPanel.Bind(plugin);
 
+            InitClipboardUI();
+
             InitChangeCurveTypeUI();
 
             _curves = InitCurvesUI();
-
-            InitClipboardUI();
 
             InitAutoKeyframeUI();
 
@@ -89,7 +97,7 @@ namespace VamTimeline
             go.transform.SetParent(panel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 700f;
+            layout.minHeight = 680f;
 
             return AnimationControlPanel.Configure(go);
         }
@@ -114,14 +122,12 @@ namespace VamTimeline
         protected void InitClipboardUI()
         {
             var container = _leftPanelPrefabFactory.CreateSpacer();
-            container.height = 60f;
+            container.height = 48f;
 
-            var group = container.gameObject.AddComponent<GridLayoutGroup>();
-            group.constraint = GridLayoutGroup.Constraint.Flexible;
-            group.constraintCount = 3;
-            group.spacing = Vector2.zero;
-            group.cellSize = new Vector2(512f / 3f, 50f);
-            group.childAlignment = TextAnchor.MiddleCenter;
+            var group = container.gameObject.AddComponent<HorizontalLayoutGroup>();
+            group.spacing = 4f;
+            group.childForceExpandWidth = true;
+            group.childControlHeight = false;
 
             {
                 var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();

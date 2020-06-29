@@ -12,6 +12,15 @@ namespace VamTimeline
         public static ScreensManager Configure(GameObject go)
         {
             var group = go.AddComponent<VerticalLayoutGroup>();
+            group.childControlHeight = true;
+            group.childForceExpandHeight = false;
+
+            var rect = go.AddComponent<RectTransform>() ?? go.GetComponent<RectTransform>();
+            rect.pivot = new Vector2(0, 1);
+
+            var fitter = go.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
             return go.AddComponent<ScreensManager>();
         }
 
@@ -45,12 +54,10 @@ namespace VamTimeline
 
             tabsContainer.AddComponent<LayoutElement>().minHeight = 60f;
 
-            var group = tabsContainer.AddComponent<GridLayoutGroup>();
-            group.constraint = GridLayoutGroup.Constraint.Flexible;
-            group.constraintCount = screens.Length;
-            group.spacing = Vector2.zero;
-            group.cellSize = new Vector2(512f / 4f, 50f);
-            group.childAlignment = TextAnchor.MiddleCenter;
+            var group = tabsContainer.AddComponent<HorizontalLayoutGroup>();
+            group.spacing = 4f;
+            group.childForceExpandWidth = true;
+            group.childControlHeight = false;
 
             foreach (var screen in screens)
             {
@@ -91,7 +98,7 @@ namespace VamTimeline
         {
             if (_defaultScreen != null)
                 return _defaultScreen;
-            else if (_plugin.animation == null || _plugin.lockedJSON.val)
+            else if (_plugin?.animation == null || _plugin?.lockedJSON?.val == true)
                 return PerformanceScreen.ScreenName;
             else
                 return EditScreen.ScreenName;
@@ -162,9 +169,14 @@ namespace VamTimeline
             // Create new screen
             var go = new GameObject();
             go.transform.SetParent(transform, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.pivot = new Vector2(0, 1);
             var group = go.AddComponent<VerticalLayoutGroup>();
             group.spacing = 10f;
-            group.childControlHeight = false;
+            group.childControlHeight = true;
+            group.childForceExpandHeight = false;
+            var fitter = go.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             switch (screen)
             {
