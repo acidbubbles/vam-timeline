@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -426,12 +427,8 @@ namespace VamTimeline
                     }
                 );
 
-                var targetWithCurves = target as IAnimationTargetWithCurves;
-                if (targetWithCurves != null)
-                {
-                    var click = go.AddComponent<Clickable>();
-                    click.onClick.AddListener(eventData => OnClick(targetWithCurves, rect, eventData));
-                }
+                var click = go.AddComponent<Clickable>();
+                click.onClick.AddListener(eventData => OnClick(target, rect, eventData));
             }
 
             UpdateSelected(target, keyframes, labelBackgroundImage);
@@ -453,18 +450,35 @@ namespace VamTimeline
             }
         }
 
-        private void OnClick(IAnimationTargetWithCurves target, RectTransform rect, PointerEventData eventData)
+        private void OnClick(IAtomAnimationTarget target, RectTransform rect, PointerEventData eventData)
         {
             if (_locked) return;
 
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
-            var curve = target.GetLeadCurve();
             var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
-            var closest = curve.KeyframeBinarySearch(ratio * _clip.animationLength, true);
-            var time = curve[closest].time;
+            var clickedTime = ratio * _clip.animationLength;
+            float time;
+            if (target is IAnimationTargetWithCurves)
+            {
+                var curve = ((IAnimationTargetWithCurves)target).GetLeadCurve();
+                var closest = curve.KeyframeBinarySearch(clickedTime, true);
+                time = curve[closest].time;
+            }
+            else if (target is TriggersAnimationTarget)
+            {
+                var lower = 0f;
+                var higher = ((TriggersAnimationTarget)target).keyframes
+                    .SkipWhile(t => { if (t < clickedTime) { lower = t; return true; } else { return false; } })
+                    .FirstOrDefault();
+                time = Mathf.Abs(clickedTime - lower) < Mathf.Abs(higher - clickedTime) ? lower : higher;
+            }
+            else
+            {
+                throw new NotSupportedException($"Target type {target} is not supported");
+            }
             _animation.clipTime = time;
         }
 

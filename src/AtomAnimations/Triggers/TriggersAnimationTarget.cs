@@ -13,7 +13,7 @@ namespace VamTimeline
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
         public readonly Dictionary<int, AtomAnimationTrigger> triggersMap = new Dictionary<int, AtomAnimationTrigger>();
-        private float[] _keyframes = new float[0];
+        public float[] keyframes { get; private set; } = new float[0];
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
         public string name => "Triggers";
@@ -58,23 +58,23 @@ namespace VamTimeline
 
         public void RebuildKeyframes(AnimationTimelineTriggerHandler timelineHandler)
         {
-            _keyframes = new float[triggersMap.Count];
+            keyframes = new float[triggersMap.Count];
             _triggers.Clear();
 
             var i = 0;
             foreach (var kvp in triggersMap.OrderBy(x => x.Key))
             {
-                _keyframes[i++] = (kvp.Key / 1000f).Snap();
+                keyframes[i++] = (kvp.Key / 1000f).Snap();
                 _triggers.Add(kvp.Value);
             }
 
-            for (i = 0; i < _keyframes.Length; i++)
+            for (i = 0; i < keyframes.Length; i++)
             {
-                var time = _keyframes[i];
+                var time = keyframes[i];
                 var trigger = _triggers[i];
                 trigger.timeLineHandler = timelineHandler;
                 trigger.triggerStartTime = time;
-                trigger.triggerEndTime = i == _keyframes.Length - 1 ? timelineHandler.GetTotalTime() : _keyframes[i + 1];
+                trigger.triggerEndTime = i == keyframes.Length - 1 ? timelineHandler.GetTotalTime() : keyframes[i + 1];
             }
         }
 
@@ -113,7 +113,7 @@ namespace VamTimeline
 
         public float[] GetAllKeyframesTime()
         {
-            return _keyframes;
+            return keyframes;
         }
 
         public bool HasKeyframe(float time)

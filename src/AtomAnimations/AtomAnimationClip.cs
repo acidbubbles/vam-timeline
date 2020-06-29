@@ -489,8 +489,12 @@ namespace VamTimeline
             var triggers = new List<TriggersClipboardEntry>();
             foreach (var target in all ? targetTriggers : GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>())
             {
-                // TODO: Put something in this!
-                triggers.Add(new TriggersClipboardEntry());
+                AtomAnimationTrigger trigger;
+                if (!target.triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) continue;
+                triggers.Add(new TriggersClipboardEntry
+                {
+                    json = trigger.GetJSON()
+                });
             }
             return new AtomClipboardEntry
             {
@@ -528,9 +532,14 @@ namespace VamTimeline
                 var target = targetTriggers.FirstOrDefault();
                 if (target == null)
                     target = Add(new TriggersAnimationTarget());
-                // TODO: Actually paste something
-                target.SetKeyframe(time, null);
-                throw new NotImplementedException();
+                AtomAnimationTrigger trigger;
+                if (!target.triggersMap.TryGetValue(time.ToMilliseconds(), out trigger))
+                {
+                    trigger = new AtomAnimationTrigger();
+                    target.SetKeyframe(time, trigger);
+                }
+                trigger.RestoreFromJSON(entry.json);
+                target.dirty = true;
             }
         }
 

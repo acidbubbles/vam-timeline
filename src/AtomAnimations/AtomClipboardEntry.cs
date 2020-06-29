@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
@@ -88,9 +89,6 @@ namespace VamTimeline
     /// </summary>
     public class TriggersClipboardEntry
     {
-        public TriggersClipboardEntry()
-        {
-            throw new NotImplementedException();
-        }
+        public JSONClass json;
     }
 }
