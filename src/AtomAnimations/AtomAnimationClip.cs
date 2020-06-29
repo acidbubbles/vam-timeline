@@ -337,12 +337,22 @@ namespace VamTimeline
 
         public void Remove(FreeControllerV3 controller)
         {
-            Remove(targetControllers, targetControllers.FirstOrDefault(c => c.controller == controller));
+            Remove(targetControllers.FirstOrDefault(c => c.controller == controller));
+        }
+
+        public void Remove(FreeControllerAnimationTarget target)
+        {
+            Remove(targetControllers, target);
         }
 
         public void Remove(JSONStorable storable, JSONStorableFloat jsf)
         {
-            Remove(targetFloatParams, targetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf));
+            Remove(targetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf));
+        }
+
+        public void Remove(FloatParamAnimationTarget target)
+        {
+            Remove(targetFloatParams, target);
         }
 
         public void Remove(TriggersAnimationTarget target)

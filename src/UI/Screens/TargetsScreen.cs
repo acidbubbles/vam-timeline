@@ -26,6 +26,7 @@ namespace VamTimeline
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
+        private UIDynamicButton _removeUI;
 
         public TargetsScreen()
             : base()
@@ -56,9 +57,14 @@ namespace VamTimeline
 
             InitFixMissingUI();
 
-            GenerateRemoveToggles();
+            prefabFactory.CreateSpacer();
+
+            InitRemoveUI();
+
+            UpdateRemoveUI();
 
             current.onTargetsListChanged.AddListener(OnTargetsListChanged);
+            current.onTargetsSelectionChanged.AddListener(UpdateRemoveUI);
         }
 
         private void OnTargetsListChanged()
@@ -66,7 +72,7 @@ namespace VamTimeline
             RefreshControllersList();
             RefreshStorableFloatsList();
             _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
-            GenerateRemoveToggles();
+            UpdateRemoveUI();
         }
 
         private void InitFixMissingUI()
@@ -250,43 +256,49 @@ namespace VamTimeline
                 .ToList();
         }
 
-        private void GenerateRemoveToggles()
+        private void InitRemoveUI()
         {
-            ClearRemoveToggles();
+            _removeUI = prefabFactory.CreateButton("Remove Selected");
+            _removeUI.buttonColor = Color.red;
+            _removeUI.textColor = Color.white;
+            _removeUI.button.onClick.AddListener(RemoveSelected);
 
-            foreach (var target in current.targetControllers)
-            {
-                UIDynamicToggle jsbUI = null;
-                JSONStorableBool jsb = null;
-                jsb = new JSONStorableBool($"Remove {target.name}", true, (bool val) =>
-                {
-                    _addControllerListJSON.val = target.name;
-                    RemoveAnimatedController(target);
-                    prefabFactory.RemoveToggle(jsb, jsbUI);
-                    _removeToggles.Remove(jsb);
-                });
-                jsbUI = prefabFactory.CreateToggle(jsb);
-                jsbUI.backgroundColor = Color.red;
-                jsbUI.textColor = Color.white;
-                _removeToggles.Add(jsb);
-            }
+            UpdateRemoveUI();
+        }
 
-            foreach (var target in current.targetFloatParams)
+        private void RemoveSelected()
+        {
+            var selected = current.GetSelectedTargets().ToList();
+            foreach (var s in selected)
             {
-                UIDynamicToggle jsbUI = null;
-                JSONStorableBool jsb = null;
-                jsb = new JSONStorableBool($"Remove {target.name}", true, (bool val) =>
                 {
-                    _addStorableListJSON.val = target.storable.name;
-                    _addParamListJSON.val = target.floatParam.name;
-                    RemoveFloatParam(target);
-                    prefabFactory.RemoveToggle(jsb, jsbUI);
-                    _removeToggles.Remove(jsb);
-                });
-                jsbUI = prefabFactory.CreateToggle(jsb);
-                jsbUI.backgroundColor = Color.red;
-                jsbUI.textColor = Color.white;
-                _removeToggles.Add(jsb);
+                    var target = s as FreeControllerAnimationTarget;
+                    if (target != null)
+                    {
+                        _addControllerListJSON.val = target.name;
+                        current.Remove(target);
+                        continue;
+                    }
+                }
+                {
+                    var target = s as FloatParamAnimationTarget;
+                    if (target != null)
+                    {
+                        _addStorableListJSON.val = target.storable.name;
+                        _addParamListJSON.val = target.floatParam.name;
+                        current.Remove(target);
+                        continue;
+                    }
+                }
+                {
+                    var target = s as TriggersAnimationTarget;
+                    if (target != null)
+                    {
+                        current.Remove(target);
+                        continue;
+                    }
+                }
+                throw new NotSupportedException($"Removing target is not supported: {s}");
             }
 
             // Ensures shows on top
@@ -298,13 +310,11 @@ namespace VamTimeline
             _addParamListJSON.popup.visible = false;
         }
 
-        private void ClearRemoveToggles()
+        private void UpdateRemoveUI()
         {
-            if (_removeToggles == null) return;
-            foreach (var toggleJSON in _removeToggles)
-            {
-                prefabFactory.RemoveToggle(toggleJSON);
-            }
+            var count = current.GetSelectedTargets().Count();
+            _removeUI.button.interactable = count > 0;
+            _removeUI.buttonText.text = count == 0 ? "Remove Selected Targets" : $"Remove {count} Targets";
         }
 
         #endregion
@@ -486,18 +496,20 @@ namespace VamTimeline
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             args.before.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
+            args.before.onTargetsSelectionChanged.RemoveListener(UpdateRemoveUI);
             args.after.onTargetsListChanged.AddListener(OnTargetsListChanged);
+            args.after.onTargetsSelectionChanged.AddListener(UpdateRemoveUI);
 
             base.OnCurrentAnimationChanged(args);
 
-            GenerateRemoveToggles();
+            UpdateRemoveUI();
         }
 
         public override void OnDestroy()
         {
             if (_addParamListUI != null) _addParamListUI.popup.onOpenPopupHandlers -= RefreshStorableFloatsList;
             current.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            ClearRemoveToggles();
+            current.onTargetsSelectionChanged.RemoveListener(UpdateRemoveUI);
             base.OnDestroy();
         }
 
