@@ -115,10 +115,9 @@ namespace VamTimeline
             return triggersMap.ContainsKey(time.ToMilliseconds());
         }
 
-        // TODO: Makes sense?
         public bool TargetsSameAs(IAtomAnimationTarget target)
         {
-            return false;
+            return target.name == name;
         }
 
         public override void Dispose()
