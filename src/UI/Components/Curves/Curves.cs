@@ -124,7 +124,7 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            Bind(_animation.current.allTargetsCount == 1
+            Bind(_animation.current.allCurveTargets.Count() == 1
                 ? _animation.current.allCurveTargets.ToList()
                 : _animation.current.allCurveTargets.Where(t => t.selected).ToList()
             );
