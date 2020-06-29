@@ -26,8 +26,6 @@ namespace VamTimeline
         private int _ignoreNextToggleEvent;
         private RectTransform _expanded;
 
-        public UIDynamic Container => gameObject.GetComponent<UIDynamic>();
-
         public TargetFrameBase()
         {
         }

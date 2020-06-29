@@ -138,9 +138,10 @@ namespace VamTimeline
         {
             foreach (var targetRef in _targets)
             {
-                Destroy(targetRef.Component.Container);
+                Destroy(targetRef.Component.gameObject);
             }
             _targets.Clear();
+            Destroy(_manageTargetsUI?.gameObject);
         }
     }
 }

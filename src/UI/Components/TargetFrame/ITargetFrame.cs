@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace VamTimeline
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace VamTimeline
     /// </summary>
     public interface ITargetFrame
     {
-        UIDynamic Container { get; }
+        GameObject gameObject { get; }
         void SetTime(float time, bool stopped);
         void ToggleKeyframe(bool enable);
     }
