@@ -81,6 +81,12 @@ namespace VamTimeline
             dirty = true;
         }
 
+        public void AddEdgeFramesIfMissing(float animationLength)
+        {
+            value.AddEdgeFramesIfMissing(animationLength);
+            dirty = true;
+        }
+
         public float[] GetAllKeyframesTime()
         {
             var curve = value;

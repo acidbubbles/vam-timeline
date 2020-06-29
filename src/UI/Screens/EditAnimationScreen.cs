@@ -219,7 +219,7 @@ namespace VamTimeline
                             newLength = current.animationLength - keyframeAllowedDiff;
                         }
 
-                        operations.Resize().CropOrExtendLengthAtTime(newLength, time);
+                        operations.Resize().CropOrExtendAtTime(newLength, time);
                         break;
                     }
                 case ChangeLengthModeAddKeyframeEnd:

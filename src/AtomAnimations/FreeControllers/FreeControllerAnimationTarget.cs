@@ -242,6 +242,22 @@ namespace VamTimeline
             dirty = true;
         }
 
+        public void AddEdgeFramesIfMissing(float animationLength)
+        {
+            x.AddEdgeFramesIfMissing(animationLength);
+            y.AddEdgeFramesIfMissing(animationLength);
+            z.AddEdgeFramesIfMissing(animationLength);
+            rotX.AddEdgeFramesIfMissing(animationLength);
+            rotY.AddEdgeFramesIfMissing(animationLength);
+            rotZ.AddEdgeFramesIfMissing(animationLength);
+            rotW.AddEdgeFramesIfMissing(animationLength);
+            if (!settings.ContainsKey(0))
+                settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+            if (!settings.ContainsKey(animationLength.ToMilliseconds()))
+                settings.Add(animationLength.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+            dirty = true;
+        }
+
         public float[] GetAllKeyframesTime()
         {
             var curve = x;

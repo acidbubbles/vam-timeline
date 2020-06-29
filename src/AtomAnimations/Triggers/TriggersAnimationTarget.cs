@@ -103,6 +103,14 @@ namespace VamTimeline
             dirty = true;
         }
 
+        public void AddEdgeFramesIfMissing(float animationLength)
+        {
+            if (!triggersMap.ContainsKey(0))
+                SetKeyframe(0, new AtomAnimationTrigger());
+            if (!triggersMap.ContainsKey(animationLength.ToMilliseconds()))
+                SetKeyframe(animationLength.ToMilliseconds(), new AtomAnimationTrigger());
+        }
+
         public float[] GetAllKeyframesTime()
         {
             return _keyframes;

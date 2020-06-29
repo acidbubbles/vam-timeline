@@ -15,5 +15,6 @@ namespace VamTimeline
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
         void DeleteFrameByKey(int key);
+        void AddEdgeFramesIfMissing(float animationLength);
     }
 }

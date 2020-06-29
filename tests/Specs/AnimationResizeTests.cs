@@ -165,7 +165,7 @@ namespace VamTimeline.Tests.Specs
 
             new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map after resize");
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000, 4000 }, "Map after resize");
             yield break;
         }
 
@@ -239,7 +239,7 @@ namespace VamTimeline.Tests.Specs
 
             new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 2000, 3000, 4000 }, "Map after resize");
+            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 3000, 4000 }, "Map after resize");
             yield break;
         }
 

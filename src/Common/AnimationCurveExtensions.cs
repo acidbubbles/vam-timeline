@@ -13,141 +13,67 @@ namespace VamTimeline
     /// </summary>
     public static class AnimationCurveExtensions
     {
-        #region Control
+        #region Keyframes control
 
-        public static void StretchLength(this AnimationCurve curve, float newLength)
+        public static int SetKeyframe(this AnimationCurve curve, float time, float value)
         {
-            if (curve.length < 2) return;
-            int lastKey = curve.length - 1;
-            var curveLength = curve[lastKey].time;
-            if (newLength == curveLength) return;
-            var ratio = newLength / curveLength;
-            if (Math.Abs(ratio) < float.Epsilon) return;
-            int from;
-            int to;
-            int direction;
-            if (ratio < 1f)
-            {
-                from = 0;
-                to = lastKey + 1;
-                direction = 1;
-            }
-            else
-            {
-                from = lastKey;
-                to = -1;
-                direction = -1;
-            }
-            for (var key = from; key != to; key += direction)
-            {
-                var keyframe = curve[key];
-                var time = keyframe.time *= ratio;
-                keyframe.time = time.Snap();
+            var key = curve.AddKey(time, value);
+            if (key != -1)
+                return key;
 
-                curve.MoveKey(key, keyframe);
-            }
-
-            // Sanity check
-            if (curve[lastKey].time > newLength + 0.001f - float.Epsilon)
-            {
-                SuperController.LogError($"VamTimeline: Problem while resizing animation. Expected length {newLength} but was {curve[lastKey].time}");
-            }
-
-            // Ensure exact match
-            var lastframe = curve[lastKey];
-            lastframe.time = newLength;
-            curve.MoveKey(lastKey, lastframe);
+            key = curve.KeyframeBinarySearch(time);
+            if (key == -1) throw new InvalidOperationException($"Cannot find keyframe at time {time}, no keys exist at this position. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
+            var keyframe = curve[key];
+            keyframe.value = value;
+            curve.MoveKey(key, keyframe);
+            return key;
         }
 
-        public static void CropOrExtendLengthEnd(this AnimationCurve curve, float newLength)
+        public static void AddEdgeFramesIfMissing(this AnimationCurve curve, float animationLength)
         {
-            if (curve.length < 2) return;
-            float currentLength = curve[curve.length - 1].time;
-            if (newLength < currentLength)
+            if (curve.length == 0)
             {
-                curve.AddKey(newLength, curve.Evaluate(newLength));
-                for (var i = curve.length - 1; i >= 0; i--)
-                {
-                    if (curve[i].time <= newLength) break;
-                    curve.RemoveKey(i);
-                }
-
-                var last = curve[curve.length - 1];
-                last.time = newLength;
-                curve.MoveKey(curve.length - 1, last);
-            }
-            else if (newLength > currentLength)
-            {
-                curve.AddKey(newLength, curve[curve.length - 1].value);
-            }
-        }
-
-        public static void CropOrExtendLengthBegin(this AnimationCurve curve, float newLength)
-        {
-            if (curve.length < 2) return;
-            var currentLength = curve[curve.length - 1].time;
-            var lengthDiff = newLength - currentLength;
-
-            var keys = curve.keys.ToList();
-            for (var i = keys.Count - 1; i >= 0; i--)
-            {
-                var keyframe = keys[i];
-                float oldTime = keyframe.time;
-                float newTime = oldTime + lengthDiff;
-
-                if (newTime < 0)
-                {
-                    keys.RemoveAt(i);
-                    continue;
-                }
-
-                keyframe.time = newTime.Snap();
-                keys[i] = keyframe;
-            }
-
-            if (keys.Count == 0)
-            {
-                SuperController.LogError("VamTimeline: CropOrExtendLengthBegin resulted in an empty curve.");
+                curve.SetKeyframe(0, 0);
+                curve.SetKeyframe(animationLength, 0);
                 return;
             }
-
-            if (lengthDiff > 0)
+            if (curve.length == 1)
             {
-                var first = curve[0];
-                first.time = 0f;
-                keys[0] = first;
+                var keyframe = curve[0];
+                keyframe.time = 0;
+                curve.MoveKey(0, keyframe);
+                curve.AddKey(animationLength, keyframe.value);
             }
-            else if (keys[0].time != 0)
             {
-                keys.Insert(0, new Keyframe(0f, curve.Evaluate(-lengthDiff)));
+                var keyframe = curve[0];
+                if (keyframe.time > 0)
+                {
+                    if (curve.length > 2)
+                    {
+                        curve.AddKey(0, keyframe.value);
+                    }
+                    else
+                    {
+                        keyframe.time = 0;
+                        curve.MoveKey(0, keyframe);
+                    }
+                }
             }
-
-            var last = keys[keys.Count - 1];
-            last.time = newLength;
-            keys[keys.Count - 1] = last;
-
-            curve.keys = keys.ToArray();
-        }
-
-        public static void CropOrExtendLengthAtTime(this AnimationCurve curve, float newLength, float time)
-        {
-            if (curve.length < 2) return;
-            var lengthDiff = newLength - curve[curve.length - 1].time;
-
-            var keys = curve.keys.ToList();
-            for (var i = 0; i < keys.Count - 1; i++)
             {
-                var keyframe = keys[i];
-                if (keyframe.time <= time - float.Epsilon) continue;
-                keyframe.time = (keyframe.time + lengthDiff).Snap();
-                keys[i] = keyframe;
+                var keyframe = curve[curve.length - 1];
+                if (keyframe.time < animationLength)
+                {
+                    if (curve.length > 2)
+                    {
+                        curve.AddKey(animationLength, keyframe.value);
+                    }
+                    else
+                    {
+                        keyframe.time = animationLength;
+                        curve.MoveKey(curve.length - 1, keyframe);
+                    }
+                }
             }
-
-            var last = keys[keys.Count - 1];
-            last.time = newLength;
-            keys[keys.Count - 1] = last;
-
-            curve.keys = keys.ToArray();
         }
 
         public static void Reverse(this AnimationCurve curve)
@@ -165,24 +91,6 @@ namespace VamTimeline
                 var key = keys[i];
                 curve.AddKey((currentLength - key.time).Snap(), key.value);
             }
-        }
-
-        #endregion
-
-        #region Keyframes control
-
-        public static int SetKeyframe(this AnimationCurve curve, float time, float value)
-        {
-            var key = curve.AddKey(time, value);
-            if (key != -1)
-                return key;
-
-            key = curve.KeyframeBinarySearch(time);
-            if (key == -1) throw new InvalidOperationException($"Cannot find keyframe at time {time}, no keys exist at this position. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
-            var keyframe = curve[key];
-            keyframe.value = value;
-            curve.MoveKey(key, keyframe);
-            return key;
         }
 
         #endregion

@@ -176,10 +176,7 @@ namespace VamTimeline
                         trigger.RestoreFromJSON(entryJSON);
                         target.SetKeyframe(trigger.triggerStartTime, trigger);
                     }
-                    if (!target.triggersMap.ContainsKey(0))
-                        target.SetKeyframe(0, new AtomAnimationTrigger());
-                    if (!target.triggersMap.ContainsKey(clip.animationLength.ToMilliseconds()))
-                        target.SetKeyframe(clip.animationLength.ToMilliseconds(), new AtomAnimationTrigger());
+                    target.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(target);
                 }
             }
