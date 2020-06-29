@@ -97,7 +97,6 @@ namespace VamTimeline
             var ms = plugin.animation.clipTime.ToMilliseconds();
             if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
-                // TODO: Assign a display name?
                 trigger = new AtomAnimationTrigger();
                 target.SetKeyframe(ms, trigger);
             }

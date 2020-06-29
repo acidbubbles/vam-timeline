@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -70,24 +71,48 @@ namespace VamTimeline
         {
             try
             {
-                // TODO: This ignores triggers
-                foreach (var target in current.GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
+                foreach (var target in current.GetAllOrSelectedTargets())
                 {
-                    foreach (var curve in target.GetCurves())
+                    if (target is IAnimationTargetWithCurves)
                     {
-                        curve.Reverse();
-                    }
-
-                    var controllerTarget = target as FreeControllerAnimationTarget;
-                    if (controllerTarget != null)
-                    {
-                        var settings = controllerTarget.settings.ToList();
-                        var length = settings.Last().Key;
-                        controllerTarget.settings.Clear();
-                        foreach (var setting in settings)
+                        var targetWithCurves = (IAnimationTargetWithCurves)target;
+                        foreach (var curve in targetWithCurves.GetCurves())
                         {
-                            controllerTarget.settings.Add(length - setting.Key, setting.Value);
+                            curve.Reverse();
                         }
+
+                        var controllerTarget = target as FreeControllerAnimationTarget;
+                        if (controllerTarget != null)
+                        {
+                            var settings = controllerTarget.settings.ToList();
+                            var length = settings.Last().Key;
+                            controllerTarget.settings.Clear();
+                            foreach (var setting in settings)
+                            {
+                                controllerTarget.settings.Add(length - setting.Key, setting.Value);
+                            }
+                        }
+                    }
+                    else if (target is TriggersAnimationTarget)
+                    {
+                        var triggersTarget = (TriggersAnimationTarget)target;
+                        var keyframes = new List<int>(triggersTarget.triggersMap.Count);
+                        var triggers = new List<AtomAnimationTrigger>(triggersTarget.triggersMap.Count);
+                        foreach (var kvp in triggersTarget.triggersMap)
+                        {
+                            keyframes.Add(kvp.Key);
+                            triggers.Add(kvp.Value);
+                        }
+                        triggersTarget.triggersMap.Clear();
+                        var length = current.animationLength.ToMilliseconds();
+                        for (var i = 0; i < keyframes.Count; i++)
+                        {
+                            triggersTarget.triggersMap.Add(length - keyframes[i], triggers[i]);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Target type {target} is not supported");
                     }
 
                     target.dirty = true;
