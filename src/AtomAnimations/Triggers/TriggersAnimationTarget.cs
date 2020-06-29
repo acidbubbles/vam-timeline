@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -108,6 +109,15 @@ namespace VamTimeline
         public float[] GetAllKeyframesTime()
         {
             return keyframes;
+        }
+
+        public float GetTimeClosestTo(float time)
+        {
+            var lower = 0f;
+            var higher = keyframes
+                .SkipWhile(t => { if (t < time) { lower = t; return true; } else { return false; } })
+                .FirstOrDefault();
+            return Mathf.Abs(time - lower) < Mathf.Abs(higher - time) ? lower : higher;
         }
 
         public bool HasKeyframe(float time)

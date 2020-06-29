@@ -454,26 +454,7 @@ namespace VamTimeline
             var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
             var clickedTime = ratio * _clip.animationLength;
-            float time;
-            if (target is IAnimationTargetWithCurves)
-            {
-                var curve = ((IAnimationTargetWithCurves)target).GetLeadCurve();
-                var closest = curve.KeyframeBinarySearch(clickedTime, true);
-                time = curve[closest].time;
-            }
-            else if (target is TriggersAnimationTarget)
-            {
-                var lower = 0f;
-                var higher = ((TriggersAnimationTarget)target).keyframes
-                    .SkipWhile(t => { if (t < clickedTime) { lower = t; return true; } else { return false; } })
-                    .FirstOrDefault();
-                time = Mathf.Abs(clickedTime - lower) < Mathf.Abs(higher - clickedTime) ? lower : higher;
-            }
-            else
-            {
-                throw new NotSupportedException($"Target type {target} is not supported");
-            }
-            _animation.clipTime = time;
+            _animation.clipTime = target.GetTimeClosestTo(clickedTime);
         }
 
         public void SetScrubberPosition(float time, bool stopped)

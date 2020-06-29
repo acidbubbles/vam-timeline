@@ -261,6 +261,11 @@ namespace VamTimeline
             return keyframes;
         }
 
+        public float GetTimeClosestTo(float time)
+        {
+            return x[x.KeyframeBinarySearch(time, true)].time;
+        }
+
         public bool HasKeyframe(float time)
         {
             return x.KeyframeBinarySearch(time) != -1;

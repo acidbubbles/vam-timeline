@@ -20,6 +20,7 @@ namespace VamTimeline
         string GetShortName();
 
         float[] GetAllKeyframesTime();
+        float GetTimeClosestTo(float time);
         bool HasKeyframe(float time);
         void DeleteFrame(float time);
     }
