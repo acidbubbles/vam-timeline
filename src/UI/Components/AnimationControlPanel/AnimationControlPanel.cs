@@ -16,8 +16,6 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>() ?? go.GetComponent<RectTransform>();
             rect.pivot = new Vector2(0, 1);
 
-            go.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
             return go.AddComponent<AnimationControlPanel>();
         }
 

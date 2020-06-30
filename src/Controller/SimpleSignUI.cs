@@ -30,9 +30,6 @@ namespace VamTimeline
             _container.childControlWidth = true;
             _container.childForceExpandHeight = false;
             _container.childForceExpandWidth = true;
-
-            var fitter = _child.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
         public UIDynamicSlider CreateUISliderInCanvas(JSONStorableFloat jsf)
