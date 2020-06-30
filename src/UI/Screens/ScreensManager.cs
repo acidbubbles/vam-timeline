@@ -33,12 +33,12 @@ namespace VamTimeline
         private string _currentScreen;
         private string _defaultScreen;
         private GameObject _tabsContainer;
+        private Coroutine _uiRefreshCoroutine;
 
         public void Bind(IAtomPlugin plugin)
         {
             _plugin = plugin;
             InitTabs();
-            OnEnable();
         }
 
         private void InitTabs()
@@ -126,7 +126,7 @@ namespace VamTimeline
             if (_uiRefreshInProgress)
                 _uiRefreshInvalidated = true;
             else if (!_uiRefreshScheduled)
-                StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
+                _uiRefreshCoroutine = StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
         }
 
         private IEnumerator RefreshCurrentUIDeferred(string screen)
@@ -144,6 +144,7 @@ namespace VamTimeline
             // Same UI, just refresh
             if (_current != null && _current.screenId == screen)
             {
+                _uiRefreshCoroutine = null;
                 yield break;
             }
 
@@ -245,11 +246,13 @@ namespace VamTimeline
 
             _uiRefreshInProgress = false;
 
+            _uiRefreshCoroutine = null;
+
             if (_uiRefreshInvalidated)
             {
                 _uiRefreshInvalidated = false;
                 _uiRefreshScheduled = true;
-                StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
+                _uiRefreshCoroutine = StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
         }
 
@@ -266,6 +269,10 @@ namespace VamTimeline
             Destroy(_current?.gameObject);
             _current = null;
             _currentScreen = null;
+            if (_uiRefreshCoroutine != null) StopCoroutine(_uiRefreshCoroutine);
+            _uiRefreshInProgress = false;
+            _uiRefreshInvalidated = false;
+            _uiRefreshScheduled = false;
         }
 
         public void OnDestroy()
