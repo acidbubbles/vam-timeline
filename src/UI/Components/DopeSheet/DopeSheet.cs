@@ -47,9 +47,12 @@ namespace VamTimeline
             var scrollView = CreateScrollView(gameObject);
             var viewport = CreateViewport(scrollView);
             var content = CreateContent(viewport);
+            var scrollbar = CreateScrollbar(scrollView);
             _scrollRect = scrollView.GetComponent<ScrollRect>();
             _scrollRect.viewport = viewport.GetComponent<RectTransform>();
             _scrollRect.content = content.GetComponent<RectTransform>();
+            _scrollRect.verticalScrollbar = scrollbar;
+            _scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
             _layout = content.GetComponent<VerticalLayoutGroup>();
         }
 
@@ -141,10 +144,18 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
 
+
             var scroll = go.AddComponent<ScrollRect>();
             scroll.horizontal = false;
 
             return go;
+        }
+
+        private Scrollbar CreateScrollbar(GameObject scrollView)
+        {
+            var vs = Instantiate(VamPrefabFactory.scrollbarPrefab);
+            vs.transform.SetParent(scrollView.transform, false);
+            return vs.GetComponent<Scrollbar>();
         }
 
         private GameObject CreateViewport(GameObject scrollView)

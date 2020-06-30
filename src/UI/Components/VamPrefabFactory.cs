@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using AssetBundles;
@@ -12,80 +13,27 @@ namespace VamTimeline
         public static RectTransform triggerActionMiniPrefab;
         public static RectTransform triggerActionDiscretePrefab;
         public static RectTransform triggerActionTransitionPrefab;
+        public static RectTransform scrollbarPrefab;
 
         public static IEnumerator LoadUIAssets()
         {
-            AssetBundleLoadAssetOperation request = AssetBundleManager.LoadAssetAsync("z_ui2", "TriggerActionsPanel", typeof(GameObject));
-            if (request == null)
-            {
-                SuperController.LogError("Request for TriggerActionsPanel in z_ui2 assetbundle failed");
-                yield break;
-            }
+            foreach (var x in LoadUIAsset("z_ui2", "TriggerActionsPanel", prefab => triggerActionsPrefab = prefab)) yield return x;
+            foreach (var x in LoadUIAsset("z_ui2", "TriggerActionMiniPanel", prefab => triggerActionMiniPrefab = prefab)) yield return x;
+            foreach (var x in LoadUIAsset("z_ui2", "TriggerActionDiscretePanel", prefab => triggerActionDiscretePrefab = prefab)) yield return x;
+            foreach (var x in LoadUIAsset("z_ui2", "TriggerActionTransitionPanel", prefab => triggerActionTransitionPrefab = prefab)) yield return x;
+            foreach (var x in LoadUIAsset("z_ui2", "DynamicTextField", prefab => scrollbarPrefab = prefab.GetComponentInChildren<ScrollRect>().verticalScrollbar.gameObject.GetComponent<RectTransform>())) yield return x;
+        }
+
+        private static IEnumerable LoadUIAsset(string assetBundleName, string assetName, Action<RectTransform> assign)
+        {
+            AssetBundleLoadAssetOperation request = AssetBundleManager.LoadAssetAsync(assetBundleName, assetName, typeof(GameObject));
+            if (request == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null request.");
             yield return request;
             GameObject go = request.GetAsset<GameObject>();
-            if (go == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionsPanel asset");
-            }
-            triggerActionsPrefab = go.GetComponent<RectTransform>();
-            if (triggerActionsPrefab == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionsPanel asset");
-            }
-
-            request = AssetBundleManager.LoadAssetAsync("z_ui2", "TriggerActionMiniPanel", typeof(GameObject));
-            if (request == null)
-            {
-                SuperController.LogError("Request for TriggerActionMiniPanel in z_ui2 assetbundle failed");
-                yield break;
-            }
-            yield return request;
-            go = request.GetAsset<GameObject>();
-            if (go == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionMiniPanel asset");
-            }
-            triggerActionMiniPrefab = go.GetComponent<RectTransform>();
-            if (triggerActionMiniPrefab == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionMiniPanel asset");
-            }
-
-            request = AssetBundleManager.LoadAssetAsync("z_ui2", "TriggerActionDiscretePanel", typeof(GameObject));
-            if (request == null)
-            {
-                SuperController.LogError("Request for TriggerActionDiscretePanel in z_ui2 assetbundle failed");
-                yield break;
-            }
-            yield return request;
-            go = request.GetAsset<GameObject>();
-            if (go == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionDiscretePanel asset");
-            }
-            triggerActionDiscretePrefab = go.GetComponent<RectTransform>();
-            if (triggerActionDiscretePrefab == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionDiscretePanel asset");
-            }
-
-            request = AssetBundleManager.LoadAssetAsync("z_ui2", "TriggerActionTransitionPanel", typeof(GameObject));
-            if (request == null)
-            {
-                SuperController.LogError("Request for TriggerActionTransitionPanel in z_ui2 assetbundle failed");
-                yield break;
-            }
-            yield return request;
-            go = request.GetAsset<GameObject>();
-            if (go == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionTransitionPanel asset");
-            }
-            triggerActionTransitionPrefab = go.GetComponent<RectTransform>();
-            if (triggerActionTransitionPrefab == null)
-            {
-                SuperController.LogError("Failed to load TriggerActionTransitionPanel asset");
-            }
+            if (go == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null GameObject.");
+            var prefab = go.GetComponent<RectTransform>();
+            if (prefab == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null RectTansform.");
+            assign(prefab);
         }
 
         public IAtomPlugin plugin;
