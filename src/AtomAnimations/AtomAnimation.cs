@@ -122,7 +122,7 @@ namespace VamTimeline
                 AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
             if (current == null)
                 current = clips.First();
-            RebuildAnimation();
+            RebuildAnimationNow();
         }
 
         public bool IsEmpty()
@@ -483,7 +483,7 @@ namespace VamTimeline
             try
             {
                 _animationRebuildInProgress = true;
-                RebuildAnimation();
+                RebuildAnimationNow();
                 if (_sampleAfterRebuild)
                 {
                     _sampleAfterRebuild = false;
@@ -500,7 +500,7 @@ namespace VamTimeline
             }
         }
 
-        public void RebuildAnimation()
+        public void RebuildAnimationNow()
         {
             if (current == null) throw new NullReferenceException("No current animation set");
             var sw = Stopwatch.StartNew();
@@ -534,7 +534,7 @@ namespace VamTimeline
             }
             if (sw.ElapsedMilliseconds > 1000)
             {
-                SuperController.LogError($"VamTimeline.{nameof(RebuildAnimation)}: Suspiciously long animation rebuild ({sw.Elapsed})");
+                SuperController.LogError($"VamTimeline.{nameof(RebuildAnimationNow)}: Suspiciously long animation rebuild ({sw.Elapsed})");
             }
         }
 

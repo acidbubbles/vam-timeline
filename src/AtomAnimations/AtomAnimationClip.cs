@@ -546,7 +546,7 @@ namespace VamTimeline
                     target.SetKeyframe(time, trigger);
                 }
                 trigger.RestoreFromJSON(entry.json);
-                target.dirty = true;
+                if (dirty) target.dirty = true;
             }
         }
 

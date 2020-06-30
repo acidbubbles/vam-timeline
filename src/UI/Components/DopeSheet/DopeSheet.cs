@@ -211,19 +211,20 @@ namespace VamTimeline
             _clip.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
             _clip.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
             _keyframesRows.Clear();
-            while (_content.transform.childCount > 0)
+            _bound = false;
+            if (_content == null) return;
+            while (_content.childCount > 0)
             {
-                var child = _content.transform.GetChild(0);
+                var child = _content.GetChild(0);
                 child.transform.SetParent(null, false);
                 Destroy(child.gameObject);
             }
-            _bound = false;
         }
 
         private void CreateHeader(IAtomAnimationTargetsList group)
         {
             var go = new GameObject("Header");
-            go.transform.SetParent(_content.transform, false);
+            go.transform.SetParent(_content, false);
 
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
@@ -273,7 +274,7 @@ namespace VamTimeline
         private void CreateRow(IAtomAnimationTarget target)
         {
             var go = new GameObject("Row");
-            go.transform.SetParent(_content.transform, false);
+            go.transform.SetParent(_content, false);
 
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;

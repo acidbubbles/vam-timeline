@@ -61,7 +61,7 @@ namespace VamTimeline
                 animation.AddClip(clip);
             }
             animation.Initialize();
-            animation.RebuildAnimation();
+            animation.RebuildAnimationNow();
         }
 
         private static string GenerateUniqueAnimationName(AtomAnimation animation, string animationName)

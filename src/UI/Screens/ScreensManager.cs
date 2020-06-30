@@ -255,6 +255,7 @@ namespace VamTimeline
 
         public void OnEnable()
         {
+            if (_plugin == null) return;
             if (_tabsContainer != null) _tabsContainer.SetActive(true);
             ChangeScreen(GetDefaultScreen());
         }

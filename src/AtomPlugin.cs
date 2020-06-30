@@ -772,7 +772,14 @@ namespace VamTimeline
 
         public void VamTimelineRequestControlPanel(GameObject container)
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
+            StartCoroutine(InjectControlPanelDeferred(container));
+        }
+
+        private IEnumerator InjectControlPanelDeferred(GameObject container)
+        {
+            while (_ui == null && container != null) { yield return 0; }
+
+            if (container == null) yield break;
 
             _controllerInjectedControllerPanel = container.GetComponent<AnimationControlPanel>();
             if (_controllerInjectedControllerPanel == null)
