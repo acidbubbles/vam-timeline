@@ -38,9 +38,6 @@ namespace VamTimeline
             editor.leftPanel = leftPanel;
             editor.rightPanel = rightPanel;
 
-            var fitter = go.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
             return editor;
         }
 
@@ -56,6 +53,7 @@ namespace VamTimeline
             layout.minWidth = 0;
             layout.preferredWidth = preferredWidth;
             layout.flexibleWidth = flexibleWidth;
+            layout.minHeight = 100;
 
             var verticalLayoutGroup = go.AddComponent<VerticalLayoutGroup>();
             verticalLayoutGroup.childControlWidth = true;
@@ -63,10 +61,6 @@ namespace VamTimeline
             verticalLayoutGroup.childControlHeight = true;
             verticalLayoutGroup.childForceExpandHeight = false;
             verticalLayoutGroup.spacing = 10f;
-
-            var fitter = go.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
             return go;
         }
@@ -130,7 +124,7 @@ namespace VamTimeline
             go.transform.SetParent(panel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 680f;
+            layout.minHeight = 650f;
 
             return AnimationControlPanel.Configure(go);
         }
@@ -146,7 +140,7 @@ namespace VamTimeline
             go.transform.SetParent(leftPanel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 270f;
+            layout.minHeight = 250f;
             layout.flexibleWidth = 1f;
 
             return go.AddComponent<Curves>();
@@ -219,6 +213,8 @@ namespace VamTimeline
             go.transform.SetParent(panel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
+            layout.preferredHeight = 1138f;
+            layout.flexibleWidth = 1;
 
             return ScreensManager.Configure(go);
         }

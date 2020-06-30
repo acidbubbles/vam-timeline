@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -87,6 +88,16 @@ namespace VamTimeline
             yield return StartCoroutine(VamPrefabFactory.LoadUIAssets());
 
             var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
+
+            var scrollRect = scriptUI.fullWidthUIContent.transform.parent.parent.parent.GetComponent<ScrollRect>();
+            if (scrollRect == null)
+                SuperController.LogError("VamTimeline: Scroll rect not at the expected hierarchy position");
+            else
+            {
+                scrollRect.elasticity = 0;
+                scrollRect.inertia = false;
+                scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            }
 
             _ui = Editor.AddTo(scriptUI.fullWidthUIContent);
             _ui.Bind(this);

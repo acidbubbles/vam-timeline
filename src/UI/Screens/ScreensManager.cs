@@ -13,17 +13,8 @@ namespace VamTimeline
 
         public static ScreensManager Configure(GameObject go)
         {
-            var group = go.AddComponent<VerticalLayoutGroup>();
-            group.childControlHeight = true;
-            group.childForceExpandHeight = false;
-
-            var rect = go.AddComponent<RectTransform>() ?? go.GetComponent<RectTransform>();
-            rect.pivot = new Vector2(0, 1);
-
-            var fitter = go.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            return go.AddComponent<ScreensManager>();
+            var content = VamPrefabFactory.CreateScrollRect(go);
+            return content.gameObject.AddComponent<ScreensManager>();
         }
 
         public readonly ScreenChangedEvent onScreenChanged = new ScreenChangedEvent();

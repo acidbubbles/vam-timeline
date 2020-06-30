@@ -81,6 +81,7 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
+            rect.pivot = new Vector2(0, 1);
 
             var image = go.AddComponent<Image>();
             image.raycastTarget = true;

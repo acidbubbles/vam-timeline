@@ -41,7 +41,7 @@ namespace VamTimeline
         {
             var textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
             var textUI = prefabFactory.CreateTextField(textJSON);
-            textUI.height = 1010f;
+            textUI.height = 1078f;
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
