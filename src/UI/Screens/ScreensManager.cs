@@ -32,6 +32,7 @@ namespace VamTimeline
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
         private string _defaultScreen;
+        private GameObject _tabsContainer;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -49,12 +50,12 @@ namespace VamTimeline
                 PerformanceScreen.ScreenName
             };
 
-            var tabsContainer = new GameObject("Tabs");
-            tabsContainer.transform.SetParent(transform, false);
+            _tabsContainer = new GameObject("Tabs");
+            _tabsContainer.transform.SetParent(transform, false);
 
-            tabsContainer.AddComponent<LayoutElement>().minHeight = 60f;
+            _tabsContainer.AddComponent<LayoutElement>().minHeight = 60f;
 
-            var group = tabsContainer.AddComponent<HorizontalLayoutGroup>();
+            var group = _tabsContainer.AddComponent<HorizontalLayoutGroup>();
             group.spacing = 4f;
             group.childForceExpandWidth = true;
             group.childControlHeight = false;
@@ -254,11 +255,13 @@ namespace VamTimeline
 
         public void OnEnable()
         {
+            if (_tabsContainer != null) _tabsContainer.SetActive(true);
             ChangeScreen(GetDefaultScreen());
         }
 
         public void OnDisable()
         {
+            if (_tabsContainer != null) _tabsContainer.SetActive(false);
             Destroy(_current?.gameObject);
             _current = null;
             _currentScreen = null;
