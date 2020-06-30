@@ -10,10 +10,10 @@ namespace VamTimeline
         public override string screenId => ScreenName;
 
         private JSONStorableString _selectionJSON;
+        private JSONStorableStringChooser _changeCurveJSON;
         private string _selectedControllers;
         private float _selectionStart = 0;
         private float _selectionEnd = 0;
-        private JSONStorableStringChooser _changeCurveJSON;
 
         public BulkScreen()
             : base()
@@ -107,12 +107,12 @@ namespace VamTimeline
             var sb = new StringBuilder();
             sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {current.animationLength:0.000}s");
             var involvedKeyframes = 0;
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
+            foreach (var target in current.GetAllOrSelectedTargets())
             {
-                var leadCurve = target.GetLeadCurve();
-                for (var key = 0; key < leadCurve.length; key++)
+                var keyframes = target.GetAllKeyframesTime();
+                for (var key = 0; key < keyframes.Length; key++)
                 {
-                    var keyTime = leadCurve[key].time;
+                    var keyTime = keyframes[key];
                     if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
                         involvedKeyframes++;
                 }
@@ -126,16 +126,15 @@ namespace VamTimeline
         {
             plugin.clipboard.Clear();
             plugin.clipboard.time = _selectionStart;
-            // TODO: This ignores triggers
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<IAnimationTargetWithCurves>())
+            foreach (var target in current.GetAllOrSelectedTargets())
             {
                 target.StartBulkUpdates();
                 try
                 {
-                    var leadCurve = target.GetLeadCurve();
-                    for (var key = leadCurve.length - 1; key >= 0; key--)
+                    var keyframes = target.GetAllKeyframesTime();
+                    for (var key = keyframes.Length - 1; key >= 0; key--)
                     {
-                        var keyTime = leadCurve[key].time;
+                        var keyTime = keyframes[key];
                         if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
                         {
                             if (copy)
@@ -144,7 +143,7 @@ namespace VamTimeline
                             }
                             if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
                             {
-                                target.DeleteFrameByKey(key);
+                                target.DeleteFrame(keyTime);
                             }
                         }
                     }
