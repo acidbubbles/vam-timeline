@@ -36,6 +36,83 @@ namespace VamTimeline
             assign(prefab);
         }
 
+        public static RectTransform CreateScrollRect(GameObject gameObject)
+        {
+            var scrollView = CreateScrollView(gameObject);
+            var viewport = CreateViewport(scrollView);
+            var content = CreateContent(viewport);
+            var scrollbar = CreateScrollbar(scrollView);
+            var scrollRect = scrollView.GetComponent<ScrollRect>();
+            scrollRect.viewport = viewport.GetComponent<RectTransform>();
+            scrollRect.content = content.GetComponent<RectTransform>();
+            scrollRect.verticalScrollbar = scrollbar;
+            scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+            return content.GetComponent<RectTransform>();
+        }
+
+        private static GameObject CreateScrollView(GameObject parent)
+        {
+            var go = new GameObject("Scroll View");
+            go.transform.SetParent(parent.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+
+            var scroll = go.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+
+            return go;
+        }
+
+        private static Scrollbar CreateScrollbar(GameObject scrollView)
+        {
+            var vs = Instantiate(scrollbarPrefab);
+            vs.transform.SetParent(scrollView.transform, false);
+            return vs.GetComponent<Scrollbar>();
+        }
+
+        private static GameObject CreateViewport(GameObject scrollView)
+        {
+            var go = new GameObject("Viewport");
+            go.transform.SetParent(scrollView.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+            var image = go.AddComponent<Image>();
+            image.raycastTarget = true;
+
+            var mask = go.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
+            return go;
+        }
+
+        private static GameObject CreateContent(GameObject viewport)
+        {
+            var go = new GameObject("Content");
+            go.transform.SetParent(viewport.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchTop();
+            rect.pivot = new Vector2(0, 1);
+
+            var layout = go.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 10f;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childAlignment = TextAnchor.UpperLeft;
+
+            var fit = go.AddComponent<ContentSizeFitter>();
+            fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            return go;
+        }
+
         public IAtomPlugin plugin;
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,8 +14,7 @@ namespace VamTimeline
         private readonly List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
         private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
-        private readonly ScrollRect _scrollRect;
-        private readonly VerticalLayoutGroup _layout;
+        private readonly RectTransform _content;
         private AtomAnimation _animation;
         private IAtomAnimationClip _clip;
         private bool _bound;
@@ -32,7 +30,7 @@ namespace VamTimeline
             set
             {
                 _locked = value;
-                _layout.gameObject.SetActive(!value);
+                _content.gameObject.SetActive(!value);
                 _scrubberRect.gameObject.SetActive(!value);
             }
         }
@@ -44,21 +42,8 @@ namespace VamTimeline
 
             _scrubberRect = CreateScrubber(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
 
-            var scrollView = CreateScrollView(gameObject);
-            var viewport = CreateViewport(scrollView);
-            var content = CreateContent(viewport);
-            var scrollbar = CreateScrollbar(scrollView);
-            _scrollRect = scrollView.GetComponent<ScrollRect>();
-            _scrollRect.viewport = viewport.GetComponent<RectTransform>();
-            _scrollRect.content = content.GetComponent<RectTransform>();
-            _scrollRect.verticalScrollbar = scrollbar;
-            _scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
-            _layout = content.GetComponent<VerticalLayoutGroup>();
-        }
-
-        public void Start()
-        {
-            _scrollRect.verticalNormalizedPosition = 1f;
+            _content = VamPrefabFactory.CreateScrollRect(gameObject);
+            _content.GetComponent<VerticalLayoutGroup>().spacing = _style.RowSpacing;
         }
 
         public void OnDisable()
@@ -134,69 +119,6 @@ namespace VamTimeline
             image.raycastTarget = false;
 
             return line;
-        }
-
-        private GameObject CreateScrollView(GameObject parent)
-        {
-            var go = new GameObject("Scroll View");
-            go.transform.SetParent(parent.transform, false);
-
-            var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent();
-
-
-            var scroll = go.AddComponent<ScrollRect>();
-            scroll.horizontal = false;
-
-            return go;
-        }
-
-        private Scrollbar CreateScrollbar(GameObject scrollView)
-        {
-            var vs = Instantiate(VamPrefabFactory.scrollbarPrefab);
-            vs.transform.SetParent(scrollView.transform, false);
-            return vs.GetComponent<Scrollbar>();
-        }
-
-        private GameObject CreateViewport(GameObject scrollView)
-        {
-            var go = new GameObject("Viewport");
-            go.transform.SetParent(scrollView.transform, false);
-
-            var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent();
-
-            var image = go.AddComponent<Image>();
-            image.raycastTarget = true;
-
-            var mask = go.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
-
-            return go;
-        }
-
-        public GameObject CreateContent(GameObject viewport)
-        {
-            var go = new GameObject("Content");
-            go.transform.SetParent(viewport.transform, false);
-
-            var rect = go.AddComponent<RectTransform>();
-            rect.StretchTop();
-            rect.pivot = new Vector2(0, 1);
-
-            var layout = go.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = _style.RowSpacing;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childAlignment = TextAnchor.UpperLeft;
-
-            var fit = go.AddComponent<ContentSizeFitter>();
-            fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            return go;
         }
 
         public void Bind(AtomAnimation animation)
@@ -289,9 +211,9 @@ namespace VamTimeline
             _clip.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
             _clip.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
             _keyframesRows.Clear();
-            while (_layout.transform.childCount > 0)
+            while (_content.transform.childCount > 0)
             {
-                var child = _layout.transform.GetChild(0);
+                var child = _content.transform.GetChild(0);
                 child.transform.SetParent(null, false);
                 Destroy(child.gameObject);
             }
@@ -301,7 +223,7 @@ namespace VamTimeline
         private void CreateHeader(IAtomAnimationTargetsList group)
         {
             var go = new GameObject("Header");
-            go.transform.SetParent(_layout.transform, false);
+            go.transform.SetParent(_content.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
@@ -351,7 +273,7 @@ namespace VamTimeline
         private void CreateRow(IAtomAnimationTarget target)
         {
             var go = new GameObject("Row");
-            go.transform.SetParent(_layout.transform, false);
+            go.transform.SetParent(_content.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
