@@ -58,6 +58,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\CurveTypePopup.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\GradientImage.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Listener.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\ScreenTabs.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\UIPerformance.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\UIVertexHelper.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\VamPrefabFactory.cs",

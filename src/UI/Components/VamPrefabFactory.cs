@@ -14,6 +14,7 @@ namespace VamTimeline
         public static RectTransform triggerActionDiscretePrefab;
         public static RectTransform triggerActionTransitionPrefab;
         public static RectTransform scrollbarPrefab;
+        public static RectTransform buttonPrefab;
 
         public static IEnumerator LoadUIAssets()
         {
@@ -22,6 +23,7 @@ namespace VamTimeline
             foreach (var x in LoadUIAsset("z_ui2", "TriggerActionDiscretePanel", prefab => triggerActionDiscretePrefab = prefab)) yield return x;
             foreach (var x in LoadUIAsset("z_ui2", "TriggerActionTransitionPanel", prefab => triggerActionTransitionPrefab = prefab)) yield return x;
             foreach (var x in LoadUIAsset("z_ui2", "DynamicTextField", prefab => scrollbarPrefab = prefab.GetComponentInChildren<ScrollRect>().verticalScrollbar.gameObject.GetComponent<RectTransform>())) yield return x;
+            foreach (var x in LoadUIAsset("z_ui2", "DynamicButton", prefab => buttonPrefab = prefab)) yield return x;
         }
 
         private static IEnumerable LoadUIAsset(string assetBundleName, string assetName, Action<RectTransform> assign)

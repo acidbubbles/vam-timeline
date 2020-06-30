@@ -9,6 +9,8 @@ namespace VamTimeline
 {
     public class ScreensManager : MonoBehaviour
     {
+        public class ScreenChangedEvent : UnityEvent<string> { }
+
         public static ScreensManager Configure(GameObject go)
         {
             var group = go.AddComponent<VerticalLayoutGroup>();
@@ -24,7 +26,7 @@ namespace VamTimeline
             return go.AddComponent<ScreensManager>();
         }
 
-        private readonly UnityEvent _screenChanged = new UnityEvent();
+        public readonly ScreenChangedEvent onScreenChanged = new ScreenChangedEvent();
         private IAtomPlugin _plugin;
         private ScreenBase _current;
         private bool _uiRefreshScheduled;
@@ -32,59 +34,19 @@ namespace VamTimeline
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
         private string _defaultScreen;
-        private GameObject _tabsContainer;
         private Coroutine _uiRefreshCoroutine;
 
         public void Bind(IAtomPlugin plugin)
         {
             _plugin = plugin;
-            InitTabs();
         }
 
-        private void InitTabs()
-        {
-            var screens = new[]{
-                EditScreen.ScreenName,
-                ClipsScreen.ScreenName,
-                MoreScreen.ScreenName,
-                PerformanceScreen.ScreenName
-            };
-
-            _tabsContainer = new GameObject("Tabs");
-            _tabsContainer.transform.SetParent(transform, false);
-
-            _tabsContainer.AddComponent<LayoutElement>().minHeight = 60f;
-
-            var group = _tabsContainer.AddComponent<HorizontalLayoutGroup>();
-            group.spacing = 4f;
-            group.childForceExpandWidth = true;
-            group.childControlHeight = false;
-
-            foreach (var screen in screens)
-            {
-                var changeTo = screen;
-                var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
-                btn.gameObject.transform.SetParent(group.transform, false);
-                btn.label = changeTo;
-
-                btn.button.onClick.AddListener(() =>
-                {
-                    ChangeScreen(changeTo);
-                });
-
-                _screenChanged.AddListener(() =>
-                {
-                    var selected = _currentScreen == changeTo;
-                    btn.button.interactable = !selected;
-                });
-            }
-        }
-
-        private void ChangeScreen(string screen)
+        public void ChangeScreen(string screen)
         {
             _currentScreen = _defaultScreen = screen;
             _plugin.lockedJSON.val = screen == PerformanceScreen.ScreenName;
-            _screenChanged.Invoke();
+            if (!enabled) return;
+            onScreenChanged.Invoke(screen);
             RefreshCurrentUI();
         }
 
@@ -259,13 +221,11 @@ namespace VamTimeline
         public void OnEnable()
         {
             if (_plugin == null) return;
-            if (_tabsContainer != null) _tabsContainer.SetActive(true);
             ChangeScreen(GetDefaultScreen());
         }
 
         public void OnDisable()
         {
-            if (_tabsContainer != null) _tabsContainer.SetActive(false);
             Destroy(_current?.gameObject);
             _current = null;
             _currentScreen = null;
@@ -277,7 +237,7 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            _screenChanged.RemoveAllListeners();
+            onScreenChanged.RemoveAllListeners();
         }
     }
 }

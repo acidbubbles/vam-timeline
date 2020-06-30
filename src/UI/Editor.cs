@@ -6,7 +6,7 @@ namespace VamTimeline
     public class Editor : MonoBehaviour
     {
         public const float RightPanelExpandedWidth = 500f;
-        public const float RightPanelCollapsedWidth = 40f;
+        public const float RightPanelCollapsedWidth = 0f;
 
         public static Editor AddTo(RectTransform transform)
         {
@@ -16,17 +16,25 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>();
             rect.pivot = new Vector2(0, 1);
 
-            var group = go.AddComponent<HorizontalLayoutGroup>();
-            group.spacing = 10f;
-            group.childControlWidth = true;
-            group.childForceExpandWidth = false;
-            group.childControlWidth = true;
-            group.childForceExpandWidth = false;
+            var rows = go.AddComponent<VerticalLayoutGroup>();
 
-            var leftPanel = CreatePanel(go.transform, 0f, 1f);
-            var rightPanel = CreatePanel(go.transform, RightPanelExpandedWidth, 0f);
+            var tabs = ScreenTabs.Create(go.transform, VamPrefabFactory.buttonPrefab);
+
+            var panels = new GameObject();
+            panels.transform.SetParent(go.transform, false);
+
+            var panelsGroup = panels.AddComponent<HorizontalLayoutGroup>();
+            panelsGroup.spacing = 10f;
+            panelsGroup.childControlWidth = true;
+            panelsGroup.childForceExpandWidth = false;
+            panelsGroup.childControlWidth = true;
+            panelsGroup.childForceExpandWidth = false;
+
+            var leftPanel = CreatePanel(panels.transform, 0f, 1f);
+            var rightPanel = CreatePanel(panels.transform, RightPanelExpandedWidth, 0f);
 
             var editor = go.AddComponent<Editor>();
+            editor.tabs = tabs;
             editor.leftPanel = leftPanel;
             editor.rightPanel = rightPanel;
 
@@ -69,6 +77,7 @@ namespace VamTimeline
             set { _controlPanel.locked = value; _screensManager.UpdateLocked(value); }
         }
 
+        public ScreenTabs tabs;
         public GameObject leftPanel;
         public GameObject rightPanel;
         private AnimationControlPanel _controlPanel;
@@ -78,6 +87,7 @@ namespace VamTimeline
         private Curves _curves;
         private CurveTypePopup _curveType;
         private bool _expanded = true;
+        private UIDynamicButton _expandButton;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -97,9 +107,20 @@ namespace VamTimeline
 
             InitAutoKeyframeUI();
 
-            InitToggleRightPanelButton();
+            tabs.Add(EditScreen.ScreenName);
+            tabs.Add(ClipsScreen.ScreenName);
+            tabs.Add(MoreScreen.ScreenName);
+            tabs.Add(PerformanceScreen.ScreenName);
+            _expandButton = tabs.Add("Collapse >");
+            InitToggleRightPanelButton(_expandButton);
+            tabs.onTabSelected.AddListener(screenName =>
+            {
+                _screensManager.ChangeScreen(screenName);
+                Expand(true);
+            });
 
             _screensManager = InitScreensManager(rightPanel);
+            _screensManager.onScreenChanged.AddListener(screenName => tabs.Select(screenName));
             _screensManager.Bind(plugin);
         }
 
@@ -168,32 +189,28 @@ namespace VamTimeline
             var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_plugin.autoKeyframeAllControllersJSON);
         }
 
-        private void InitToggleRightPanelButton()
+        private void InitToggleRightPanelButton(UIDynamicButton btn)
         {
-            var rt = Instantiate(_plugin.manager.configurableButtonPrefab);
-            rt.SetParent(rightPanel.transform, false);
+            btn.button.onClick.RemoveAllListeners();
+            btn.button.onClick.AddListener(() => Expand(!_expanded));
+        }
 
-            var btn = rt.GetComponent<UIDynamicButton>();
-            btn.label = "Collapse >";
-            btn.GetComponent<RectTransform>().sizeDelta = new Vector2(-100f, 2f);
-            btn.GetComponent<LayoutElement>().minWidth = 0f;
-            btn.button.onClick.AddListener(() =>
+        private void Expand(bool open)
+        {
+            if (!open && _expanded)
             {
-                if (_expanded)
-                {
-                    _expanded = false;
-                    _screensManager.enabled = false;
-                    rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelCollapsedWidth;
-                    btn.label = "<";
-                }
-                else
-                {
-                    _expanded = true;
-                    _screensManager.enabled = true;
-                    rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelExpandedWidth;
-                    btn.label = "Collapse >";
-                }
-            });
+                _expanded = false;
+                _screensManager.enabled = false;
+                rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelCollapsedWidth;
+                _expandButton.label = "< Expand";
+            }
+            else if (open && !_expanded)
+            {
+                _expanded = true;
+                _screensManager.enabled = true;
+                rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelExpandedWidth;
+                _expandButton.label = "Collapse >";
+            }
         }
 
         private ScreensManager InitScreensManager(GameObject panel)

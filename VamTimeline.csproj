@@ -106,6 +106,7 @@
     <Compile Include="src\UI\Components\CurveTypePopup.cs" />
     <Compile Include="src\UI\Components\GradientImage.cs" />
     <Compile Include="src\UI\Components\Listener.cs" />
+    <Compile Include="src\UI\Components\ScreenTabs.cs" />
     <Compile Include="src\UI\Components\UIPerformance.cs" />
     <Compile Include="src\UI\Components\UIVertexHelper.cs" />
     <Compile Include="src\UI\Components\VamPrefabFactory.cs" />
