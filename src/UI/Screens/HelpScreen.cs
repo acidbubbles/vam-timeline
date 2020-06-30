@@ -59,7 +59,7 @@ Check the wiki for resouces and videos. There's a ton of things you can do! Now 
         {
             var textJSON = new JSONStorableString("Help", HelpText);
             var textUI = prefabFactory.CreateTextField(textJSON);
-            textUI.height = 1100;
+            textUI.height = 1070f;
         }
     }
 }
