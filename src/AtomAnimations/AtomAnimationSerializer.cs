@@ -117,6 +117,7 @@ namespace VamTimeline
                         if (!target.settings.ContainsKey(ms))
                             target.settings.Add(ms, new KeyframeSettings { curveType = CurveTypeValues.LeaveAsIs });
                     }
+                    target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
 
@@ -155,6 +156,7 @@ namespace VamTimeline
                     var target = new FloatParamAnimationTarget(storable, jsf);
                     clip.Add(target);
                     DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength);
+                    target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
 
