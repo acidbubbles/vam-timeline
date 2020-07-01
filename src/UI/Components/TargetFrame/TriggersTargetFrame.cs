@@ -64,7 +64,7 @@ namespace VamTimeline
             {
                 target.DeleteFrame(time);
             }
-            SetTime(plugin.animation.clipTime, true);
+            SetTime(time, true);
         }
 
         protected override void CreateExpandPanel(RectTransform container)
@@ -94,7 +94,7 @@ namespace VamTimeline
         private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
         {
             AtomAnimationTrigger trigger;
-            var ms = plugin.animation.clipTime.ToMilliseconds();
+            var ms = plugin.animation.clipTime.Snap().ToMilliseconds();
             if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
                 trigger = new AtomAnimationTrigger();

@@ -128,8 +128,9 @@ namespace VamTimeline
         {
             if (plugin.animation.isPlaying) return;
             target.floatParam.val = val;
-            target.SetKeyframe(plugin.animation.clipTime, target.floatParam.val);
-            SetTime(plugin.animation.clipTime, true);
+            var time = plugin.animation.clipTime.Snap();
+            target.SetKeyframe(time, target.floatParam.val);
+            SetTime(time, true);
             ToggleKeyframe(true);
         }
 
