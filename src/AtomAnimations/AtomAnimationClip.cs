@@ -293,7 +293,7 @@ namespace VamTimeline
             else
             {
                 clipTime = clipTime.Snap();
-                previousClipTime = clipTime;
+                previousClipTime = -1f;
             }
         }
 

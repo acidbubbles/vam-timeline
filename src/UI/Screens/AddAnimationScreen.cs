@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -26,9 +28,11 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", AnimationsScreen.ScreenName);
 
+            InitCreateAnimationUI();
+
             prefabFactory.CreateSpacer();
 
-            InitCreateAnimationUI();
+            InitCreateLayerUI();
         }
 
         private void InitCreateAnimationUI()
@@ -43,6 +47,12 @@ namespace VamTimeline
             _addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
 
             RefreshButtons();
+        }
+
+        public void InitCreateLayerUI()
+        {
+            var createLayerUI = prefabFactory.CreateButton("Create New Layer");
+            createLayerUI.button.onClick.AddListener(() => AddLayer());
         }
 
         #endregion
@@ -91,7 +101,7 @@ namespace VamTimeline
             }
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
         }
 
         private void AddAnimationFromCurrentFrame()
@@ -117,7 +127,7 @@ namespace VamTimeline
             }
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
         }
 
         private void AddTransitionAnimation()
@@ -159,7 +169,26 @@ namespace VamTimeline
             current.nextAnimationName = clip.animationName;
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
+        }
+
+        private void AddLayer()
+        {
+            var clip = animation.CreateClip(GetNewLayerName());
+
+            animation.SelectAnimation(clip.animationName);
+            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
+        }
+
+        protected string GetNewLayerName()
+        {
+            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
+            for (var i = 1; i < 999; i++)
+            {
+                var layerName = "Layer " + i;
+                if (!layers.Contains(layerName)) return layerName;
+            }
+            return Guid.NewGuid().ToString();
         }
 
         #endregion
