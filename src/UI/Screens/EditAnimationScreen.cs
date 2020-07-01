@@ -9,9 +9,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Edit";
         public const string ChangeLengthModeCropExtendEnd = "Crop/Extend End";
-        public const string ChangeLengthModeAddKeyframeEnd = "Add Keyframe End";
         public const string ChangeLengthModeCropExtendBegin = "Crop/Extend Begin";
-        public const string ChangeLengthModeAddKeyframeBegin = "Add Keyframe Begin";
         public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend At Time";
         public const string ChangeLengthModeStretch = "Stretch";
         public const string ChangeLengthModeLoop = "Loop (Extend)";
@@ -59,9 +57,7 @@ namespace VamTimeline
 
             _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
                 ChangeLengthModeCropExtendEnd,
-                ChangeLengthModeAddKeyframeEnd,
                 ChangeLengthModeCropExtendBegin,
-                ChangeLengthModeAddKeyframeBegin,
                 ChangeLengthModeCropExtendAtTime,
                 ChangeLengthModeStretch,
                 ChangeLengthModeLoop
@@ -121,6 +117,11 @@ namespace VamTimeline
         private void UpdateAnimationLength(float newLength)
         {
             if (_lengthWhenLengthModeChanged == 0f) return;
+            if (animation.isPlaying)
+            {
+                _lengthJSON.valNoCallback = current.animationLength;
+                return;
+            }
 
             newLength = newLength.Snap(plugin.snapJSON.val);
             if (newLength < 0.1f) newLength = 0.1f;
@@ -141,90 +142,17 @@ namespace VamTimeline
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendAtTime:
-                    {
-                        if (animation.isPlaying)
-                        {
-                            _lengthJSON.valNoCallback = current.animationLength;
-                            return;
-                        }
-                        var previousKeyframe = current.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
-                        var nextKeyframe = current.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
-
-                        var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
-
-                        if ((current.animationLength - newLength) > keyframeAllowedDiff)
-                        {
-                            newLength = current.animationLength - keyframeAllowedDiff;
-                        }
-
-                        operations.Resize().CropOrExtendAtTime(newLength, time);
-                        break;
-                    }
-                case ChangeLengthModeAddKeyframeEnd:
-                    {
-                        if (newLength <= _lengthWhenLengthModeChanged + float.Epsilon)
-                        {
-                            _lengthJSON.valNoCallback = current.animationLength;
-                            return;
-                        }
-                        var snapshot = current.Copy(_lengthWhenLengthModeChanged, true);
-                        operations.Resize().CropOrExtendEnd(newLength);
-                        current.Paste(_lengthWhenLengthModeChanged, snapshot);
-                        break;
-                    }
-                case ChangeLengthModeAddKeyframeBegin:
-                    {
-                        if (newLength <= _lengthWhenLengthModeChanged + float.Epsilon)
-                        {
-                            _lengthJSON.valNoCallback = current.animationLength;
-                            return;
-                        }
-                        var snapshot = current.Copy(0f, true);
-                        operations.Resize().CropOrExtendBegin(newLength);
-                        current.Paste((newLength - _lengthWhenLengthModeChanged).Snap(), snapshot);
-                        break;
-                    }
+                    operations.Resize().CropOrExtendAtTime(newLength, time);
+                    break;
                 case ChangeLengthModeLoop:
-                    {
-                        newLength = newLength.Snap(_lengthWhenLengthModeChanged);
-                        var loops = (int)Math.Round(newLength / _lengthWhenLengthModeChanged);
-                        if (loops <= 1 || newLength <= _lengthWhenLengthModeChanged)
-                        {
-                            _lengthJSON.valNoCallback = current.animationLength;
-                            return;
-                        }
-                        var frames = current
-                            .targetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
-                            .Concat(current.targetFloatParams.SelectMany(t => t.value.keys.Select(k => k.time)))
-                            .Select(t => t.Snap())
-                            .Where(t => t < _lengthWhenLengthModeChanged)
-                            .Distinct()
-                            .ToList();
-
-                        var snapshots = frames.Select(f => current.Copy(f, true)).ToList();
-                        foreach (var c in snapshots[0].controllers)
-                        {
-                            c.snapshot.curveType = CurveTypeValues.Smooth;
-                        }
-
-                        operations.Resize().CropOrExtendEnd(newLength);
-
-                        for (var repeat = 0; repeat < loops; repeat++)
-                        {
-                            for (var i = 0; i < frames.Count; i++)
-                            {
-                                var pasteTime = frames[i] + (_lengthWhenLengthModeChanged * repeat);
-                                if (pasteTime >= newLength) continue;
-                                current.Paste(pasteTime, snapshots[i]);
-                            }
-                        }
-                    }
+                    operations.Resize().Loop(newLength, _lengthWhenLengthModeChanged);
                     break;
                 default:
                     SuperController.LogError($"VamTimeline: Unknown animation length type: {_lengthModeJSON.val}");
                     break;
             }
 
+            _lengthJSON.valNoCallback = current.animationLength;
             current.DirtyAll();
 
             animation.clipTime = Math.Max(time, newLength);

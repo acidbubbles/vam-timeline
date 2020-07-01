@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -26,7 +27,7 @@ namespace VamTimeline
             _clip.animationLength = newAnimationLength;
         }
 
-        public static void StretchCurve(AnimationCurve curve, float newLength)
+        private static void StretchCurve(AnimationCurve curve, float newLength)
         {
             if (curve.length < 2) return;
             int lastKey = curve.length - 1;
@@ -139,7 +140,7 @@ namespace VamTimeline
             _clip.animationLength = newAnimationLength;
         }
 
-        public static void CropOrExtendBeginCurve(AnimationCurve curve, float newLength)
+        private static void CropOrExtendBeginCurve(AnimationCurve curve, float newLength)
         {
             if (curve.length < 2) return;
             var currentLength = curve[curve.length - 1].time;
@@ -189,8 +190,19 @@ namespace VamTimeline
         // TODO: Untested, probably not working. If this works, every resize types should use this instead.
         public void CropOrExtendAtTime(float newAnimationLength, float time)
         {
+            var previousKeyframe = _clip.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
+            var nextKeyframe = _clip.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
+
+            var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
+
+            if ((_clip.animationLength - newAnimationLength) > keyframeAllowedDiff)
+            {
+                newAnimationLength = _clip.animationLength - keyframeAllowedDiff;
+            }
+
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
+
             foreach (var target in _clip.allCurveTargets)
             {
                 foreach (var curve in target.GetCurves())
@@ -201,7 +213,7 @@ namespace VamTimeline
             _clip.animationLength = newAnimationLength;
         }
 
-        public static void CropOrExtendAtTimeCurve(AnimationCurve curve, float newLength, float time)
+        private static void CropOrExtendAtTimeCurve(AnimationCurve curve, float newLength, float time)
         {
             if (curve.length < 2) return;
             var lengthDiff = newLength - curve[curve.length - 1].time;
@@ -220,6 +232,41 @@ namespace VamTimeline
             keys[keys.Length - 1] = last;
 
             curve.keys = keys;
+        }
+
+        public void Loop(float newAnimationLength, float lengthWhenLengthModeChanged)
+        {
+            newAnimationLength = newAnimationLength.Snap(lengthWhenLengthModeChanged);
+            var loops = (int)Math.Round(newAnimationLength / lengthWhenLengthModeChanged);
+            if (loops <= 1 || newAnimationLength <= lengthWhenLengthModeChanged)
+            {
+                return;
+            }
+            var frames = _clip
+                .targetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
+                .Concat(_clip.targetFloatParams.SelectMany(t => t.value.keys.Select(k => k.time)))
+                .Select(t => t.Snap())
+                .Where(t => t < lengthWhenLengthModeChanged)
+                .Distinct()
+                .ToList();
+
+            var snapshots = frames.Select(f => _clip.Copy(f, true)).ToList();
+            foreach (var c in snapshots[0].controllers)
+            {
+                c.snapshot.curveType = CurveTypeValues.Smooth;
+            }
+
+            CropOrExtendEnd(newAnimationLength);
+
+            for (var repeat = 0; repeat < loops; repeat++)
+            {
+                for (var i = 0; i < frames.Count; i++)
+                {
+                    var pasteTime = frames[i] + (lengthWhenLengthModeChanged * repeat);
+                    if (pasteTime >= newAnimationLength) continue;
+                    _clip.Paste(pasteTime, snapshots[i]);
+                }
+            }
         }
 
         private void MatchKeyframeSettingsPivotBegin()
