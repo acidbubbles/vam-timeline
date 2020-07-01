@@ -13,7 +13,7 @@ namespace VamTimeline
         {
             var curveTypeJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve");
             var curveTypeUI = prefabFactory.CreateScrollablePopup(curveTypeJSON);
-            curveTypeUI.popupPanelHeight = 450f;
+            curveTypeUI.popupPanelHeight = 300f;
 
             var curveTypePopup = curveTypeUI.gameObject.AddComponent<CurveTypePopup>();
             curveTypePopup.curveTypeJSON = curveTypeJSON;
