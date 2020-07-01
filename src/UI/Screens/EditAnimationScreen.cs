@@ -454,6 +454,8 @@ namespace VamTimeline
 
         private void UpdateValues()
         {
+            _animationNameJSON.valNoCallback = current.animationName;
+            _layerNameJSON.valNoCallback = current.animationLayer;
             _lengthJSON.valNoCallback = current.animationLength;
             _loop.valNoCallback = current.loop;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;

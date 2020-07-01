@@ -524,21 +524,32 @@ namespace VamTimeline
             {
                 var target = targetControllers.FirstOrDefault(c => c.controller == entry.controller);
                 if (target == null)
+                {
                     target = Add(entry.controller);
+                    target.SetCurveSnapshot(0, entry.snapshot, dirty);
+                    target.SetCurveSnapshot(animationLength, entry.snapshot, dirty);
+                }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
             foreach (var entry in clipboard.floatParams)
             {
                 var target = targetFloatParams.FirstOrDefault(c => c.floatParam == entry.floatParam);
                 if (target == null)
+                {
                     target = Add(entry.storable, entry.floatParam);
+                    target.SetKeyframe(0, entry.snapshot.value, dirty);
+                    target.SetKeyframe(animationLength, entry.snapshot.value, dirty);
+                }
                 target.SetKeyframe(time, entry.snapshot.value, dirty);
             }
             foreach (var entry in clipboard.triggers)
             {
                 var target = targetTriggers.FirstOrDefault(t => t.name == entry.name) ?? targetTriggers.FirstOrDefault();
                 if (target == null)
-                    target = Add(new TriggersAnimationTarget());
+                {
+                    target = Add(new TriggersAnimationTarget { name = entry.name });
+                    target.AddEdgeFramesIfMissing(animationLength);
+                }
                 AtomAnimationTrigger trigger;
                 if (!target.triggersMap.TryGetValue(time.ToMilliseconds(), out trigger))
                 {

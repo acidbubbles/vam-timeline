@@ -53,6 +53,7 @@ namespace VamTimeline
         {
             var clip = animation.CreateClip(current.animationLayer);
             clip.loop = current.loop;
+            clip.animationLength = current.animationLength;
             clip.nextAnimationName = current.nextAnimationName;
             clip.nextAnimationTime = current.nextAnimationTime;
             clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
@@ -75,6 +76,17 @@ namespace VamTimeline
             {
                 var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
                 newTarget.value.keys = origTarget.value.keys.ToArray();
+                newTarget.dirty = true;
+            }
+            foreach (var origTarget in current.targetTriggers)
+            {
+                var newTarget = clip.Add(new TriggersAnimationTarget { name = origTarget.name });
+                foreach (var origTrigger in origTarget.triggersMap)
+                {
+                    var trigger = new AtomAnimationTrigger();
+                    trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
+                    newTarget.SetKeyframe(origTrigger.Key, trigger);
+                }
                 newTarget.dirty = true;
             }
 
