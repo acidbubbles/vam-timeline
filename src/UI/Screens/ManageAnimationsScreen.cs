@@ -24,7 +24,7 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", AnimationsScreen.ScreenName);
 
             InitAnimationsListUI();
 
@@ -35,10 +35,6 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitDeleteAnimationsUI();
-
-            prefabFactory.CreateSpacer();
-
-            CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName);
 
             RefreshAnimationsList();
 

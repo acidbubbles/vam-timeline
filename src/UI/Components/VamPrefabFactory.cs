@@ -60,7 +60,6 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
 
-
             var scroll = go.AddComponent<ScrollRect>();
             scroll.horizontal = false;
 
@@ -180,13 +179,57 @@ namespace VamTimeline
 
         public UIDynamicTextField CreateTextInput(JSONStorableString jss)
         {
-            var textfield = CreateTextField(jss);
-            textfield.height = 20f;
-            textfield.backgroundColor = Color.white;
-            var input = textfield.gameObject.AddComponent<InputField>();
-            var rect = input.GetComponent<RectTransform>().sizeDelta = new Vector2(1f, 0.4f);
-            input.textComponent = textfield.UItext;
-            jss.inputField = input;
+            RegisterStorable(jss);
+
+            var container = new GameObject();
+            container.transform.SetParent(transform, false);
+            {
+                var rect = container.AddComponent<RectTransform>();
+                rect.pivot = new Vector2(0, 1);
+
+                var layout = container.AddComponent<LayoutElement>();
+                layout.preferredHeight = 70f;
+                layout.flexibleWidth = 1f;
+            }
+
+            var textfield = Instantiate(plugin.manager.configurableTextFieldPrefab).GetComponent<UIDynamicTextField>();
+            textfield.gameObject.transform.SetParent(container.transform, false);
+            {
+                jss.dynamicText = textfield;
+
+                textfield.backgroundColor = Color.white;
+
+                var input = textfield.gameObject.AddComponent<InputField>();
+                input.textComponent = textfield.UItext;
+                jss.inputField = input;
+
+                Destroy(textfield.GetComponent<LayoutElement>());
+
+                var rect = textfield.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0, 1);
+                rect.anchorMax = new Vector2(1, 1);
+                rect.pivot = new Vector2(0, 1);
+                rect.anchoredPosition = new Vector2(0, -30f);
+                rect.sizeDelta = new Vector2(0, 40f);
+            }
+
+            var title = new GameObject();
+            title.transform.SetParent(container.transform, false);
+            {
+                var rect = title.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0, 1);
+                rect.anchorMax = new Vector2(1, 1);
+                rect.pivot = new Vector2(0, 1);
+                rect.anchoredPosition = new Vector2(0, 0f);
+                rect.sizeDelta = new Vector2(0, 30f);
+
+                var text = title.AddComponent<Text>();
+                text.font = textfield.UItext.font;
+                text.text = jss.name;
+                text.fontSize = 24;
+                text.color = new Color(0.85f, 0.8f, 0.82f);
+            }
+
             return textfield;
         }
 

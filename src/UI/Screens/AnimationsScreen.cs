@@ -4,13 +4,13 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ClipsScreen : ScreenBase
+    public class AnimationsScreen : ScreenBase
     {
         public const string ScreenName = "Animations";
 
         public override string screenId => ScreenName;
 
-        public ClipsScreen()
+        public AnimationsScreen()
             : base()
         {
         }
@@ -19,12 +19,16 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
+            CreateHeader("Animations", 1);
+
             InitClipsUI();
 
             prefabFactory.CreateSpacer();
 
+            CreateHeader("Operations", 1);
+
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Edit</b> layers and clips...</i>", EditLayersScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Reorder/delete</b> animations...</i>", ManageAnimationsScreen.ScreenName);
         }
 
         private void InitClipsUI()
@@ -35,14 +39,14 @@ namespace VamTimeline
 
             var layerName = animation.clips[0].animationLayer;
             if (hasLayers)
-                CreateHeader($"{layerName}");
+                CreateHeader($"Layer: [{layerName}]", 2);
 
             foreach (var clip in animation.clips)
             {
                 if (hasLayers && clip.animationLayer != layerName)
                 {
                     layerName = clip.animationLayer;
-                    CreateHeader($"{layerName}");
+                    CreateHeader($"Layer: [{layerName}]", 2);
                 }
 
                 InitAnimButton(clip);

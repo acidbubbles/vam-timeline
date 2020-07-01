@@ -24,17 +24,11 @@ namespace VamTimeline
 
             // Right side
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", AnimationsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
             InitCreateAnimationUI();
-
-            prefabFactory.CreateSpacer();
-
-            CreateChangeScreenButton("<i><b>Edit</b> animation settings...</i>", EditAnimationScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Reorder</b> and <b>delete</b> animations...</i>", ManageAnimationsScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName);
         }
 
         private void InitCreateAnimationUI()
@@ -85,7 +79,7 @@ namespace VamTimeline
             }
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
         }
 
         private void AddAnimationFromCurrentFrame()
@@ -111,7 +105,7 @@ namespace VamTimeline
             }
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
         }
 
         private void AddTransitionAnimation()
@@ -153,7 +147,7 @@ namespace VamTimeline
             current.nextAnimationName = clip.animationName;
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
         }
 
         #endregion

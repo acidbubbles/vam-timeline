@@ -101,8 +101,8 @@ namespace VamTimeline
 
             InitAutoKeyframeUI();
 
-            tabs.Add(ClipsScreen.ScreenName);
-            tabs.Add(EditScreen.ScreenName);
+            tabs.Add(AnimationsScreen.ScreenName);
+            tabs.Add(TargetsScreen.ScreenName);
             tabs.Add(EditAnimationScreen.ScreenName);
             tabs.Add(MoreScreen.ScreenName);
             tabs.Add(PerformanceScreen.ScreenName);

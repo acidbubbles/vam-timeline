@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,13 +6,13 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class AdvancedScreen : ScreenBase
+    public class AdvancedKeyframeToolsScreen : ScreenBase
     {
         public const string ScreenName = "Advanced";
 
         public override string screenId => ScreenName;
 
-        public AdvancedScreen()
+        public AdvancedKeyframeToolsScreen()
             : base()
         {
         }
@@ -120,7 +120,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ReverseAnimation)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(ReverseAnimation)}: {exc}");
             }
         }
 
@@ -146,7 +146,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(KeyframeCurrentPose)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(KeyframeCurrentPose)}: {exc}");
             }
         }
 
@@ -168,7 +168,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(Bake)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(Bake)}: {exc}");
             }
         }
 
@@ -184,7 +184,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
             }
         }
     }

@@ -8,6 +8,7 @@ namespace VamTimeline
     {
         public class ScreenChangeRequestedEvent : UnityEvent<string> { }
 
+        protected static readonly Color navButtonColor = new Color(0.8f, 0.7f, 0.8f);
         private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
 
         public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
@@ -39,7 +40,7 @@ namespace VamTimeline
             current = plugin.animation?.current;
         }
 
-        protected Text CreateHeader(string val)
+        protected Text CreateHeader(string val, int level)
         {
             var layerUI = prefabFactory.CreateSpacer();
             layerUI.height = 40f;
@@ -47,8 +48,19 @@ namespace VamTimeline
             var text = layerUI.gameObject.AddComponent<Text>();
             text.text = val;
             text.font = _font;
-            text.fontSize = 28;
-            text.color = Color.black;
+            switch (level)
+            {
+                case 1:
+                    text.fontSize = 30;
+                    text.fontStyle = FontStyle.Bold;
+                    text.color = new Color(0.95f, 0.9f, 0.92f);
+                    break;
+                case 2:
+                    text.fontSize = 28;
+                    text.fontStyle = FontStyle.Bold;
+                    text.color = new Color(0.85f, 0.8f, 0.82f);
+                    break;
+            }
 
             return text;
         }
@@ -57,6 +69,7 @@ namespace VamTimeline
         {
             var ui = prefabFactory.CreateButton(label);
             ui.button.onClick.AddListener(() => onScreenChangeRequested.Invoke(screenName));
+            ui.buttonColor = navButtonColor;
             return ui;
         }
 

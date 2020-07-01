@@ -55,7 +55,7 @@ namespace VamTimeline
             else if (_plugin?.animation == null || _plugin?.lockedJSON?.val == true)
                 return PerformanceScreen.ScreenName;
             else
-                return EditScreen.ScreenName;
+                return TargetsScreen.ScreenName;
         }
 
         public void UpdateLocked(bool isLocked)
@@ -121,64 +121,48 @@ namespace VamTimeline
 
             yield return 0;
 
-            // Create new screen
-            var go = new GameObject();
-            go.transform.SetParent(transform, false);
-            var rect = go.AddComponent<RectTransform>();
-            rect.pivot = new Vector2(0, 1);
-            var group = go.AddComponent<VerticalLayoutGroup>();
-            group.spacing = 10f;
-            group.childControlHeight = true;
-            group.childForceExpandHeight = false;
-            var fitter = go.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var screenContainer = CreateScreenContainer();
 
             switch (screen)
             {
                 case SettingsScreen.ScreenName:
-                    _current = go.AddComponent<SettingsScreen>();
+                    _current = screenContainer.AddComponent<SettingsScreen>();
+                    break;
+                case AddRemoveTargetsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AddRemoveTargetsScreen>();
                     break;
                 case TargetsScreen.ScreenName:
-                    _current = go.AddComponent<TargetsScreen>();
+                    _current = screenContainer.AddComponent<TargetsScreen>();
                     break;
-                case EditScreen.ScreenName:
-                    _current = go.AddComponent<EditScreen>();
-                    break;
-                case ClipsScreen.ScreenName:
-                    _current = go.AddComponent<ClipsScreen>();
+                case AnimationsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AnimationsScreen>();
                     break;
                 case BulkScreen.ScreenName:
-                    _current = go.AddComponent<BulkScreen>();
+                    _current = screenContainer.AddComponent<BulkScreen>();
                     break;
-                case AdvancedScreen.ScreenName:
-                    _current = go.AddComponent<AdvancedScreen>();
+                case AdvancedKeyframeToolsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AdvancedKeyframeToolsScreen>();
                     break;
                 case MocapScreen.ScreenName:
-                    _current = go.AddComponent<MocapScreen>();
-                    break;
-                case EditLayersScreen.ScreenName:
-                    _current = go.AddComponent<EditLayersScreen>();
+                    _current = screenContainer.AddComponent<MocapScreen>();
                     break;
                 case MoreScreen.ScreenName:
-                    _current = go.AddComponent<MoreScreen>();
+                    _current = screenContainer.AddComponent<MoreScreen>();
                     break;
                 case EditAnimationScreen.ScreenName:
-                    _current = go.AddComponent<EditAnimationScreen>();
-                    break;
-                case EditSequenceScreen.ScreenName:
-                    _current = go.AddComponent<EditSequenceScreen>();
+                    _current = screenContainer.AddComponent<EditAnimationScreen>();
                     break;
                 case AddAnimationScreen.ScreenName:
-                    _current = go.AddComponent<AddAnimationScreen>();
+                    _current = screenContainer.AddComponent<AddAnimationScreen>();
                     break;
                 case ManageAnimationsScreen.ScreenName:
-                    _current = go.AddComponent<ManageAnimationsScreen>();
+                    _current = screenContainer.AddComponent<ManageAnimationsScreen>();
                     break;
                 case PerformanceScreen.ScreenName:
-                    _current = go.AddComponent<PerformanceScreen>();
+                    _current = screenContainer.AddComponent<PerformanceScreen>();
                     break;
                 case HelpScreen.ScreenName:
-                    _current = go.AddComponent<HelpScreen>();
+                    _current = screenContainer.AddComponent<HelpScreen>();
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");
@@ -207,6 +191,25 @@ namespace VamTimeline
                 _uiRefreshScheduled = true;
                 _uiRefreshCoroutine = StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
             }
+        }
+
+        private GameObject CreateScreenContainer()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.pivot = new Vector2(0, 1);
+
+            var group = go.AddComponent<VerticalLayoutGroup>();
+            group.spacing = 10f;
+            group.childControlHeight = true;
+            group.childForceExpandHeight = false;
+
+            var fitter = go.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            return go;
         }
 
         public void OnEnable()

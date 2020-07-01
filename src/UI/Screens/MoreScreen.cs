@@ -26,20 +26,9 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            // Right side
-
-            InitSpeedUI();
-
-            prefabFactory.CreateSpacer();
-
-            CreateChangeScreenButton("<b>Edit</b> animation settings...", EditAnimationScreen.ScreenName);
-            CreateChangeScreenButton("<b>Sequence</b> animations...", EditSequenceScreen.ScreenName);
-            CreateChangeScreenButton("<b>Add</b> a new animation...", AddAnimationScreen.ScreenName);
-            CreateChangeScreenButton("<b>Reorder</b> and <b>delete</b> animations...", ManageAnimationsScreen.ScreenName);
-            CreateChangeScreenButton("<b>Layers</b>...", EditLayersScreen.ScreenName);
             CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName);
             CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName);
-            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedScreen.ScreenName);
+            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedKeyframeToolsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
@@ -67,12 +56,6 @@ namespace VamTimeline
 
             var importUI = prefabFactory.CreateButton("Import animation");
             importUI.button.onClick.AddListener(() => Import());
-        }
-
-        private void InitSpeedUI()
-        {
-            var speedUI = prefabFactory.CreateSlider(plugin.speedJSON);
-            speedUI.valueFormat = "F3";
         }
 
         private void Export()
@@ -196,7 +179,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AdvancedScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
             }
         }
     }
