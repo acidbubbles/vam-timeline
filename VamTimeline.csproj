@@ -58,29 +58,28 @@
 
   <ItemGroup>
     <!-- AtomAnimationFiles -->
-    <Compile Include="src\AtomAnimations\Common\AnimationTargetBase.cs" />
-    <Compile Include="src\AtomAnimations\Common\CurveTypeValues.cs" />
-    <Compile Include="src\AtomAnimations\Common\IAnimationTargetWithCurves.cs" />
-    <Compile Include="src\AtomAnimations\Common\KeyframeSettings.cs" />
-    <Compile Include="src\AtomAnimations\FreeControllers\FreeControllerAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
     <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperation.cs" />
-    <Compile Include="src\AtomAnimations\Params\FloatParamAnimationTarget.cs" />
-    <Compile Include="src\AtomAnimations\Triggers\TriggersAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Targets\AnimationTargetBase.cs" />
+    <Compile Include="src\AtomAnimations\Targets\CurveTypeValues.cs" />
+    <Compile Include="src\AtomAnimations\Targets\FloatParamAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Targets\FreeControllerAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Targets\IAnimationTargetWithCurves.cs" />
+    <Compile Include="src\AtomAnimations\Targets\KeyframeSettings.cs" />
+    <Compile Include="src\AtomAnimations\Targets\TriggersAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\AnimationCurveExtensions.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimation.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationSerializer.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationTargetsList.cs" />
     <Compile Include="src\AtomAnimations\AtomClipboardEntry.cs" />
-    <Compile Include="src\AtomAnimations\IAtomPlugin.cs" />
-    <Compile Include="src\Common\AnimationCurveExtensions.cs" />
-    <Compile Include="src\Common\FloatExtensions.cs" />
-    <Compile Include="src\Common\IAtomAnimationClip.cs" />
-    <Compile Include="src\Common\IAtomAnimationTarget.cs" />
-    <Compile Include="src\Common\IAtomAnimationTargetsList.cs" />
+    <Compile Include="src\AtomAnimations\FloatExtensions.cs" />
+    <Compile Include="src\AtomAnimations\IAtomAnimationClip.cs" />
+    <Compile Include="src\AtomAnimations\IAtomAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\IAtomAnimationTargetsList.cs" />
+    <Compile Include="src\AtomAnimations\ListExtensions.cs" />
     <Compile Include="src\Common\IRemoteAtomPlugin.cs" />
     <Compile Include="src\Common\IRemoteControllerPlugin.cs" />
-    <Compile Include="src\Common\ListExtensions.cs" />
     <Compile Include="src\Common\RectTransformExtensions.cs" />
     <Compile Include="src\Common\StorableNames.cs" />
     <Compile Include="src\Common\SyncProxy.cs" />
@@ -129,6 +128,7 @@
     <Compile Include="src\UI\Screens\TargetsScreen.cs" />
     <Compile Include="src\UI\Editor.cs" />
     <Compile Include="src\AtomPlugin.cs" />
+    <Compile Include="src\IAtomPlugin.cs" />
     <!-- /AtomAnimationFiles -->
 
     <!-- ControllerFiles -->
