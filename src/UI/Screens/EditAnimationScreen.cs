@@ -7,7 +7,7 @@ namespace VamTimeline
 {
     public class EditAnimationScreen : ScreenBase
     {
-        public const string ScreenName = "Edit Animation";
+        public const string ScreenName = "Edit";
         public const string ChangeLengthModeCropExtendEnd = "Crop/Extend End";
         public const string ChangeLengthModeAddKeyframeEnd = "Add Keyframe End";
         public const string ChangeLengthModeCropExtendBegin = "Crop/Extend Begin";
@@ -18,7 +18,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        private JSONStorableString _animationNameJSON;
         private JSONStorableStringChooser _lengthModeJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableBool _ensureQuaternionContinuity;
@@ -38,13 +37,9 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            // Right side
-
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
-
             prefabFactory.CreateSpacer();
 
-            InitAnimationNameUI();
+            InitMiscSettingsUI();
 
             prefabFactory.CreateSpacer();
 
@@ -52,40 +47,10 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            InitMiscSettingsUI();
-
-            prefabFactory.CreateSpacer();
-
             InitAnimationPatternLinkUI();
-
-            prefabFactory.CreateSpacer();
-
-            CreateChangeScreenButton("<i><b>Sequence</b> animations...</i>", EditSequenceScreen.ScreenName);
 
             _lengthWhenLengthModeChanged = current?.animationLength ?? 0;
             UpdateValues();
-        }
-
-        private void InitAnimationNameUI()
-        {
-            {
-                var animationLabelJSON = new JSONStorableString("Rename Animation", "Rename animation:");
-                var animationNameLabelUI = prefabFactory.CreateTextField(animationLabelJSON);
-                var layout = animationNameLabelUI.GetComponent<LayoutElement>();
-                layout.minHeight = 36f;
-                animationNameLabelUI.height = 36f;
-                Destroy(animationNameLabelUI.gameObject.GetComponentInChildren<Image>());
-            }
-
-            {
-                _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
-                var animationNameUI = prefabFactory.CreateTextInput(_animationNameJSON);
-                var layout = animationNameUI.GetComponent<LayoutElement>();
-                layout.minHeight = 50f;
-                animationNameUI.height = 50;
-
-                _animationNameJSON.valNoCallback = current.animationName;
-            }
         }
 
         private void InitAnimationLengthUI()
@@ -152,27 +117,6 @@ namespace VamTimeline
         #endregion
 
         #region Callbacks
-
-        private void UpdateAnimationName(string val)
-        {
-            var previousAnimationName = current.animationName;
-            if (string.IsNullOrEmpty(val))
-            {
-                _animationNameJSON.valNoCallback = previousAnimationName;
-                return;
-            }
-            if (animation.clips.Any(c => c.animationName == val))
-            {
-                _animationNameJSON.valNoCallback = previousAnimationName;
-                return;
-            }
-            current.animationName = val;
-            foreach (var clip in animation.clips)
-            {
-                if (clip.nextAnimationName == previousAnimationName)
-                    clip.nextAnimationName = val;
-            }
-        }
 
         private void UpdateAnimationLength(float newLength)
         {
@@ -332,7 +276,6 @@ namespace VamTimeline
         private void UpdateValues()
         {
             _lengthJSON.valNoCallback = current.animationLength;
-            _animationNameJSON.valNoCallback = current.animationName;
             _loop.valNoCallback = current.loop;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _autoPlayJSON.valNoCallback = current.autoPlay;

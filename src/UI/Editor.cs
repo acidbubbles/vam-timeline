@@ -101,8 +101,9 @@ namespace VamTimeline
 
             InitAutoKeyframeUI();
 
-            tabs.Add(EditScreen.ScreenName);
             tabs.Add(ClipsScreen.ScreenName);
+            tabs.Add(EditScreen.ScreenName);
+            tabs.Add(EditAnimationScreen.ScreenName);
             tabs.Add(MoreScreen.ScreenName);
             tabs.Add(PerformanceScreen.ScreenName);
             _expandButton = tabs.Add("Collapse >");

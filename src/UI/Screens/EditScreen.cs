@@ -7,7 +7,7 @@ namespace VamTimeline
 {
     public class EditScreen : ScreenBase
     {
-        public const string ScreenName = "Edit";
+        public const string ScreenName = "Targets";
 
         public override string screenId => ScreenName;
 

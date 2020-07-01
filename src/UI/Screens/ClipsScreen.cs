@@ -6,7 +6,7 @@ namespace VamTimeline
 {
     public class ClipsScreen : ScreenBase
     {
-        public const string ScreenName = "Clips";
+        public const string ScreenName = "Animations";
 
         public override string screenId => ScreenName;
 
@@ -19,27 +19,34 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            if (animation.clips.Any())
-            {
-                var layerName = animation.clips[0].animationLayer;
-                CreateHeader($"Layer: {layerName}");
-
-                foreach (var clip in animation.clips)
-                {
-                    if (clip.animationLayer != layerName)
-                    {
-                        layerName = clip.animationLayer;
-                        CreateHeader($"Layer: {layerName}");
-                    }
-
-                    InitAnimButton(clip);
-                }
-            }
+            InitClipsUI();
 
             prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Edit</b> layers...</i>", EditLayersScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Edit</b> layers and clips...</i>", EditLayersScreen.ScreenName);
+        }
+
+        private void InitClipsUI()
+        {
+            if (!animation.clips.Any()) return;
+
+            var hasLayers = animation.clips.Select(a => a.animationLayer).Distinct().Count() > 1;
+
+            var layerName = animation.clips[0].animationLayer;
+            if (hasLayers)
+                CreateHeader($"{layerName}");
+
+            foreach (var clip in animation.clips)
+            {
+                if (hasLayers && clip.animationLayer != layerName)
+                {
+                    layerName = clip.animationLayer;
+                    CreateHeader($"{layerName}");
+                }
+
+                InitAnimButton(clip);
+            }
         }
 
         private void InitAnimButton(AtomAnimationClip clip)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -20,38 +21,39 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            InitRenameLayers();
+            CreateChangeScreenButton("<i><b><</b> Back to clips...</i>", AddAnimationScreen.ScreenName);
+
+            InitLayersAndAnimations();
 
             prefabFactory.CreateSpacer();
 
-            InitCreateLayerUI();
-
-            CreateChangeScreenButton("<i><b>Clips</b></i>", ClipsScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Add</b> a new animation...</i>", AddAnimationScreen.ScreenName);
         }
 
-        private void InitRenameLayers()
+        private void InitLayersAndAnimations()
         {
             foreach (var layer in animation.clips.Select(c => c.animationLayer).Distinct())
             {
                 InitRenameLayer(layer);
+
+                foreach(var clip in animation.clips.Where(c => c.animationLayer == layer))
+                {
+                    InitRenameClip(clip);
+                }
             }
         }
 
         private void InitRenameLayer(string layer)
         {
-            var layerNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateLayerName(ref layer, val));
+            var layerNameJSON = new JSONStorableString("Layer Name", "", (string val) => UpdateLayerName(ref layer, val));
             var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON);
             var layout = layerNameUI.GetComponent<LayoutElement>();
             layout.minHeight = 50f;
             layerNameUI.height = 50;
+            layerNameUI.backgroundColor = Color.clear;
+            layerNameUI.UItext.fontSize = 32;
+            layerNameUI.UItext.fontStyle = FontStyle.Bold;
             layerNameJSON.valNoCallback = layer;
-        }
-
-        public void InitCreateLayerUI()
-        {
-            var createLayerUI = prefabFactory.CreateButton("Create New Layer");
-            createLayerUI.button.onClick.AddListener(() => AddLayer());
         }
 
         private void UpdateLayerName(ref string from, string to)
@@ -66,23 +68,35 @@ namespace VamTimeline
             from = to;
         }
 
-        private void AddLayer()
+        private void InitRenameClip(AtomAnimationClip clip)
         {
-            var clip = animation.CreateClip(GetNewLayerName());
-
-            animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditScreen.ScreenName);
+            var layerNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(clip, val));
+            var layerNameUI = prefabFactory.CreateTextInput(layerNameJSON);
+            var layout = layerNameUI.GetComponent<LayoutElement>();
+            layout.minHeight = 50f;
+            layerNameUI.height = 50;
+            layerNameUI.backgroundColor = Color.clear;
+            layerNameUI.UItext.fontSize = 26;
+            layerNameJSON.valNoCallback = clip.animationName;
         }
 
-        protected string GetNewLayerName()
+        private void UpdateAnimationName(AtomAnimationClip clip, string val)
         {
-            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
-            for (var i = 1; i < 999; i++)
+            var previousAnimationName = clip.animationName;
+            if (string.IsNullOrEmpty(val))
             {
-                var layerName = "Layer " + i;
-                if (!layers.Contains(layerName)) return layerName;
+                return;
             }
-            return Guid.NewGuid().ToString();
+            if (animation.clips.Any(c => c.animationName == val))
+            {
+                return;
+            }
+            clip.animationName = val;
+            foreach (var other in animation.clips)
+            {
+                if (other.nextAnimationName == previousAnimationName)
+                    other.nextAnimationName = val;
+            }
         }
     }
 }
