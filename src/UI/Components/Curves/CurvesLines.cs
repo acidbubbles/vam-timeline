@@ -28,7 +28,7 @@ namespace VamTimeline
             if (style == null || _curves.Count == 0) return;
 
             // General
-            var margin = 60f;
+            var margin = 20f;
             var width = rectTransform.rect.width;
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
@@ -110,6 +110,30 @@ namespace VamTimeline
                     }));
                 }
             }
+
+            // Border
+            var halfBorder = style.BorderSize / 2f;
+            var quarterBorder = halfBorder / 2f;
+            vh.DrawLine(new[]
+            {
+                new Vector2(-halfWidth, -halfHeight + quarterBorder),
+                new Vector2(halfWidth, -halfHeight + quarterBorder)
+            }, style.BorderSize, style.BorderColor);
+            vh.DrawLine(new[]
+            {
+                new Vector2(-halfWidth, halfHeight - quarterBorder),
+                new Vector2(halfWidth, halfHeight - quarterBorder)
+            }, style.BorderSize, style.BorderColor);
+            vh.DrawLine(new[]
+            {
+                new Vector2(-halfWidth + halfBorder, halfHeight),
+                new Vector2(-halfWidth + halfBorder, -halfHeight)
+            }, style.BorderSize, style.BorderColor);
+            vh.DrawLine(new[]
+            {
+                new Vector2(halfWidth - halfBorder, halfHeight),
+                new Vector2(halfWidth - halfBorder, -halfHeight)
+            }, style.BorderSize, style.BorderColor);
         }
     }
 }

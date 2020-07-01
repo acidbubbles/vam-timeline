@@ -20,6 +20,14 @@ namespace VamTimeline
             rect.sizeDelta = new Vector2(0, 0);
         }
 
+        public static void StretchBottom(this RectTransform rect)
+        {
+            rect.anchorMin = new Vector2(0, 0);
+            rect.anchorMax = new Vector2(1, 0);
+            rect.anchoredPosition = new Vector2(0, 0);
+            rect.sizeDelta = new Vector2(0, 0);
+        }
+
         public static void StretchLeft(this RectTransform rect)
         {
             rect.anchorMin = new Vector2(0, 0);

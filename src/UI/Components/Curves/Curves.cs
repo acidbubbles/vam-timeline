@@ -12,26 +12,20 @@ namespace VamTimeline
         private readonly CurvesStyle _style = new CurvesStyle();
         private readonly RectTransform _scrubberRect;
         private readonly GameObject _noCurves;
-        private readonly CurvesLines _lines;
+        private readonly GameObject _linesContainer;
+        private readonly IList<IAnimationTargetWithCurves> _targets = new List<IAnimationTargetWithCurves>();
+        private readonly IList<CurvesLines> _lines = new List<CurvesLines>();
         private float _animationLength;
         private AtomAnimation _animation;
-        private IList<IAnimationTargetWithCurves> _targets;
         private float _clipTime;
 
         public Curves()
         {
-            var image = gameObject.AddComponent<Image>();
-            image.color = Color.yellow;
-            image.raycastTarget = false;
-
-            var mask = gameObject.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
-
             CreateBackground(_style.BackgroundColor);
 
             _noCurves = CreateNoCurvesText();
 
-            _lines = CreateCurvesLines();
+            _linesContainer = CreateLinesContainer();
             _scrubberRect = CreateScrubber();
         }
 
@@ -72,7 +66,7 @@ namespace VamTimeline
             return rect;
         }
 
-        private CurvesLines CreateCurvesLines()
+        public GameObject CreateLinesContainer()
         {
             var go = new GameObject();
             go.transform.SetParent(transform, false);
@@ -80,9 +74,55 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
 
-            var lines = go.AddComponent<CurvesLines>();
+            var group = go.AddComponent<VerticalLayoutGroup>();
+            group.childForceExpandHeight = true;
+
+            return go;
+        }
+
+        private CurvesLines CreateCurvesLines(GameObject parent, Color color, string label)
+        {
+            var go = new GameObject();
+            go.transform.SetParent(parent.transform, false);
+
+            var image = go.AddComponent<Image>();
+            image.color = Color.yellow;
+            image.raycastTarget = false;
+
+            var mask = go.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
+            var layout = go.AddComponent<LayoutElement>();
+            layout.flexibleWidth = 1;
+            layout.flexibleHeight = 1;
+
+            var linesContainer = new GameObject();
+            linesContainer.transform.SetParent(go.transform, false);
+
+            var linesRect = linesContainer.AddComponent<RectTransform>();
+            linesRect.StretchParent();
+
+            var lines = linesContainer.AddComponent<CurvesLines>();
             lines.style = _style;
             lines.raycastTarget = false;
+
+            var textContainer = new GameObject();
+            textContainer.transform.SetParent(go.transform, false);
+
+            var textRect = textContainer.AddComponent<RectTransform>();
+            textRect.anchorMin = new Vector2(0, 0);
+            textRect.anchorMax = new Vector2(1, 0);
+            textRect.anchoredPosition = new Vector2(8f, 8f);
+            textRect.pivot = new Vector2(0, 0);
+            textRect.sizeDelta = new Vector2(0, 30);
+
+            var textText = textContainer.AddComponent<Text>();
+            textText.raycastTarget = false;
+            textText.alignment = TextAnchor.LowerLeft;
+            textText.font = _style.Font;
+            textText.color = color;
+            textText.text = label;
+            textText.fontSize = 18;
 
             return lines;
         }
@@ -130,51 +170,42 @@ namespace VamTimeline
 
             if ((targets?.Count ?? 0) > 0)
             {
-                _targets = targets;
-                _lines.ClearCurves();
                 foreach (var target in targets)
                 {
-                    target.onAnimationKeyframesRebuilt.AddListener(OnAnimationCurveModified);
                     BindCurves(target);
                 }
-                _lines.SetVerticesDirty();
                 _noCurves.SetActive(false);
                 _scrubberRect.gameObject.SetActive(true);
                 _clipTime = -1f;
             }
             else
             {
-                _targets = null;
                 _animationLength = 0f;
                 _noCurves.SetActive(true);
                 _scrubberRect.gameObject.SetActive(false);
             }
         }
 
-        private void DrawCurveLines()
-        {
-            _lines.SetVerticesDirty();
-        }
-
         private void BindCurves(IAnimationTargetWithCurves target)
         {
             var lead = target.GetLeadCurve();
-            if (lead.length < 2) return;
-            _animationLength = lead[lead.length - 1].time;
+            _animationLength = lead.keys[lead.keys.Length - 1].time;
             if (target is FreeControllerAnimationTarget)
             {
-                var targetController = (FreeControllerAnimationTarget)target;
-
+                var t = (FreeControllerAnimationTarget)target;
+                BindCurve(t.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
+                BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
+                BindCurve(t.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
                 // To display rotation as euleur angles, we have to build custom curves. But it's not that useful.
-                // var rotVX = new Keyframe[targetController.rotX.length];
-                // var rotVY = new Keyframe[targetController.rotY.length];
-                // var rotVZ = new Keyframe[targetController.rotZ.length];
-                // for (var t = 0; t < targetController.rotW.length; t++)
+                // var rotVX = new Keyframe[t.rotX.length];
+                // var rotVY = new Keyframe[t.rotY.length];
+                // var rotVZ = new Keyframe[t.rotZ.length];
+                // for (var time = 0; time < t.rotW.length; time++)
                 // {
-                //     Keyframe keyX = targetController.rotX[t];
-                //     Keyframe keyY = targetController.rotY[t];
-                //     Keyframe keyZ = targetController.rotZ[t];
-                //     Keyframe keyW = targetController.rotW[t];
+                //     Keyframe keyX = t.rotX[time];
+                //     Keyframe keyY = t.rotY[time];
+                //     Keyframe keyZ = t.rotZ[time];
+                //     Keyframe keyW = t.rotW[time];
                 //     var rot = new Quaternion(
                 //         keyX.value,
                 //         keyY.value,
@@ -182,34 +213,37 @@ namespace VamTimeline
                 //         keyW.value
                 //     );
                 //     var eulerAngles = rot.eulerAngles;
-                //     rotVX[t] = new Keyframe(keyW.time, eulerAngles.x);
-                //     rotVY[t] = new Keyframe(keyW.time, eulerAngles.y);
-                //     rotVZ[t] = new Keyframe(keyW.time, eulerAngles.z);
+                //     rotVX[time] = new Keyframe(keyW.time, eulerAngles.x);
+                //     rotVY[time] = new Keyframe(keyW.time, eulerAngles.y);
+                //     rotVZ[time] = new Keyframe(keyW.time, eulerAngles.z);
                 // }
                 // AnimationCurve rotVXCurve = new AnimationCurve(rotVX);
                 // AnimationCurve rotVYCurve = new AnimationCurve(rotVY);
                 // AnimationCurve rotVZCurve = new AnimationCurve(rotVZ);
-                // _lines.AddCurve(new Color(1.0f, 0.8f, 0.8f), rotVXCurve);
-                // _lines.AddCurve(new Color(0.8f, 1.0f, 0.8f), rotVYCurve);
-                // _lines.AddCurve(new Color(0.8f, 0.8f, 1.0f), rotVZCurve);
-
-                var range = EstimateRange(targetController.x, targetController.y, targetController.z/*, rotVXCurve, rotVYCurve, rotVZCurve*//*, targetController.rotX, targetController.rotY, targetController.rotZ, targetController.rotW*/);
-                _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
-                _lines.AddCurve(_style.CurveLineColorX, targetController.x);
-                _lines.AddCurve(_style.CurveLineColorY, targetController.y);
-                _lines.AddCurve(_style.CurveLineColorZ, targetController.z);
-                // _lines.AddCurve(_style.CurveLineColorX * 0.5f, targetController.rotX);
-                // _lines.AddCurve(_style.CurveLineColorY * 0.5f, targetController.rotY);
-                // _lines.AddCurve(_style.CurveLineColorZ * 0.5f, targetController.rotZ);
-                // _lines.AddCurve(_style.CurveLineColorFloat * 0.5f, targetController.rotW);
+                // BindCurve(rotVXCurve, new Color(1.0f, 0.8f, 0.8f), $"{target.GetShortName()} rot x");
+                // BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
+                // BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
             }
             else if (target is FloatParamAnimationTarget)
             {
-                var targetParam = (FloatParamAnimationTarget)target;
-                var range = EstimateRange(targetParam.value);
-                _lines.range = new Vector2(Mathf.Min(_lines.range.x, range.x), Mathf.Max(_lines.range.y, range.y));
-                _lines.AddCurve(_style.CurveLineColorFloat, targetParam.value);
+                var t = (FloatParamAnimationTarget)target;
+                BindCurve(t.value, _style.CurveLineColorFloat, target.GetShortName());
             }
+            else
+            {
+                return;
+            }
+            _targets.Add(target);
+            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationCurveModified);
+        }
+
+        private void BindCurve(AnimationCurve lead, Color color, string label)
+        {
+            var lines = CreateCurvesLines(_linesContainer, color, label);
+            _lines.Add(lines);
+            lines.range = EstimateRange(lead);
+            lines.AddCurve(color, lead);
+            lines.SetVerticesDirty();
         }
 
         private Vector2 EstimateRange(params AnimationCurve[] curves)
@@ -235,14 +269,12 @@ namespace VamTimeline
 
         private void Unbind()
         {
-            if (_targets != null)
-            {
-                _lines.ClearCurves();
-                foreach (var target in _targets)
-                    target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
-                _targets = null;
-                _lines.SetVerticesDirty();
-            }
+            foreach (var t in _targets)
+                t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
+            _targets.Clear();
+            foreach (var l in _lines)
+                Destroy(l.gameObject.transform.parent.gameObject);
+            _lines.Clear();
         }
 
         private void OnAnimationCurveModified()
@@ -255,14 +287,15 @@ namespace VamTimeline
             // Allow curve refresh;
             yield return 0;
             yield return 0;
-            if (_targets != null)
-                DrawCurveLines();
+            foreach (var l in _lines)
+                l.SetVerticesDirty();
         }
 
         public void Update()
         {
             if (_animation == null) return;
             if (_animation.clipTime == _clipTime) return;
+            if (UIPerformance.ShouldSkip()) return;
 
             _clipTime = _animation.clipTime;
             var ratio = Mathf.Clamp01(_animation.clipTime / _animationLength);
@@ -275,11 +308,8 @@ namespace VamTimeline
             if (_animation != null)
                 _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
 
-            if (_targets != null)
-            {
-                foreach (var target in _targets)
-                    target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
-            }
+            foreach (var t in _targets)
+                t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
         }
     }
 }
