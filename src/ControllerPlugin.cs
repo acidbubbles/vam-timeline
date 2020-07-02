@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -258,9 +257,8 @@ namespace VamTimeline
             try
             {
                 _ui = new SimpleSignUI(_atom, this);
-                _ui.CreateUIToggleInCanvas(_lockedJSON);
                 _ui.CreateUIPopupInCanvas(_atomsJSON);
-                _injectedUIContainer = _ui.CreateUISpacerInCanvas(980f);
+                _injectedUIContainer = _ui.CreateUISpacerInCanvas(1060f);
                 ScanForAtoms();
                 if (_selectedLink != null)
                     RequestControlPanelInjection();

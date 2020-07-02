@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -76,16 +77,16 @@ namespace VamTimeline
         public bool locked
         {
             get { return _controlPanel.locked; }
-            set { _controlPanel.locked = value; _screensManager.UpdateLocked(value); }
+            set { _controlPanel.locked = value; screensManager.UpdateLocked(value); }
         }
 
         public AtomAnimation animation;
         public ScreenTabs tabs;
         public GameObject leftPanel;
         public GameObject rightPanel;
+        public ScreensManager screensManager;
         private AnimationControlPanel _controlPanel;
         private IAtomPlugin _plugin;
-        private ScreensManager _screensManager;
         private VamPrefabFactory _leftPanelPrefabFactory;
         private Curves _curves;
         private CurveTypePopup _curveType;
@@ -120,13 +121,13 @@ namespace VamTimeline
             InitToggleRightPanelButton(_expandButton);
             tabs.onTabSelected.AddListener(screenName =>
             {
-                _screensManager.ChangeScreen(screenName);
+                screensManager.ChangeScreen(screenName);
                 Expand(true);
             });
 
-            _screensManager = InitScreensManager(rightPanel);
-            _screensManager.onScreenChanged.AddListener(screenName => tabs.Select(screenName));
-            _screensManager.Bind(plugin);
+            screensManager = InitScreensManager(rightPanel);
+            screensManager.onScreenChanged.AddListener(screenName => tabs.Select(screenName));
+            screensManager.Bind(plugin);
         }
 
         private AnimationControlPanel CreateControlPanel(GameObject panel)
@@ -206,14 +207,14 @@ namespace VamTimeline
             if (!open && _expanded)
             {
                 _expanded = false;
-                _screensManager.enabled = false;
+                screensManager.enabled = false;
                 rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelCollapsedWidth;
                 _expandButton.label = "< Expand";
             }
             else if (open && !_expanded)
             {
                 _expanded = true;
-                _screensManager.enabled = true;
+                screensManager.enabled = true;
                 rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelExpandedWidth;
                 _expandButton.label = "Collapse >";
             }
@@ -243,8 +244,6 @@ namespace VamTimeline
             _controlPanel.Bind(animation);
             _curveType.Bind(animation);
             _curves.Bind(animation);
-            SuperController.LogMessage("Activate?");
-            _screensManager.gameObject.SetActive(true);
 
             animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
         }
