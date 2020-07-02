@@ -5,6 +5,9 @@ namespace VamTimeline
 {
     public class ControllerTargetFrame : TargetFrameBase<FreeControllerAnimationTarget>
     {
+        private LineRenderer _line;
+        private Shader _shader;
+
         public ControllerTargetFrame()
             : base()
         {
@@ -12,6 +15,62 @@ namespace VamTimeline
 
         protected override void CreateCustom()
         {
+            target.onSelectedChanged.AddListener(OnSelectedChanged);
+            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
+            OnSelectedChanged();
+        }
+
+        private void OnSelectedChanged()
+        {
+            if (!target.selected && _line != null)
+            {
+                Destroy(_line);
+                _line = null;
+            }
+            else if (target.selected && _line == null)
+            {
+                _line = CreateLine();
+                UpdateLine();
+            }
+        }
+
+        private void OnAnimationKeyframesRebuilt()
+        {
+            if (!target.selected) return;
+            if (_line != null) UpdateLine();
+        }
+
+        private LineRenderer CreateLine()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(target.controller.control, false);
+
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            if (_shader == null) _shader = Shader.Find("Sprites/Default");
+            line.material = new Material(_shader) { renderQueue = 4000 };
+            line.widthMultiplier = 0.002f;
+            line.colorGradient = new Gradient
+            {
+                colorKeys = new[] { new GradientColorKey(new Color(0f, 0.2f, 0.8f), 0f), new GradientColorKey(new Color(0.4f, 0.4f, 0.9f), 1f) }
+            };
+
+            return line;
+        }
+
+        private void UpdateLine()
+        {
+            var pointsPerSecond = 16f;
+            var pointsCount = Mathf.CeilToInt(target.x[target.x.length - 1].time * pointsPerSecond);
+            var points = new Vector3[pointsCount];
+
+            for (var t = 0; t < pointsCount; t++)
+            {
+                points[t] = target.EvaluatePosition(t / pointsPerSecond);
+            }
+
+            _line.positionCount = pointsCount;
+            _line.SetPositions(points);
         }
 
         protected override void CreateExpandPanel(RectTransform container)
@@ -76,6 +135,13 @@ namespace VamTimeline
             plugin.animation.SetKeyframeToCurrentTransform(target, time);
             if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
                 target.ChangeCurve(time, CurveTypeValues.Smooth);
+        }
+
+        public override void OnDestroy()
+        {
+            target.onSelectedChanged.RemoveListener(OnSelectedChanged);
+            Destroy(_line?.gameObject);
+            base.OnDestroy();
         }
     }
 }

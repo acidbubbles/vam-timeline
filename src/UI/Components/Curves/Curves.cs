@@ -112,7 +112,7 @@ namespace VamTimeline
             var textRect = textContainer.AddComponent<RectTransform>();
             textRect.anchorMin = new Vector2(0, 0);
             textRect.anchorMax = new Vector2(1, 0);
-            textRect.anchoredPosition = new Vector2(8f, 8f);
+            textRect.anchoredPosition = new Vector2(5f, 5f);
             textRect.pivot = new Vector2(0, 0);
             textRect.sizeDelta = new Vector2(0, 30);
 
@@ -120,9 +120,9 @@ namespace VamTimeline
             textText.raycastTarget = false;
             textText.alignment = TextAnchor.LowerLeft;
             textText.font = _style.Font;
-            textText.color = color;
+            textText.color = Color.Lerp(color, Color.white, .9f);
             textText.text = label;
-            textText.fontSize = 18;
+            textText.fontSize = 20;
 
             return lines;
         }

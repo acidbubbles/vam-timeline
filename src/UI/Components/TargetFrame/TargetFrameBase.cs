@@ -24,7 +24,7 @@ namespace VamTimeline
         {
         }
 
-        public void Bind(IAtomPlugin plugin, AtomAnimationClip clip, T target)
+        public virtual void Bind(IAtomPlugin plugin, AtomAnimationClip clip, T target)
         {
             this.plugin = plugin;
             this.clip = clip;
@@ -234,7 +234,7 @@ namespace VamTimeline
         protected abstract void CreateExpandPanel(RectTransform container);
         public abstract void ToggleKeyframe(bool enable);
 
-        public void OnDestroy()
+        public virtual void OnDestroy()
         {
             plugin.animation.onTimeChanged.RemoveListener(OnTimeChanged);
             target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
