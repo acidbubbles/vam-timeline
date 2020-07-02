@@ -41,9 +41,9 @@ namespace VamTimeline
         public void Bind(IAtomPlugin plugin)
         {
             _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
-            _scrubber = InitScrubber(plugin.timeJSON, plugin.scrubberJSON, plugin.snapJSON);
+            _scrubber = InitScrubber();
             // TODO: Make the JSON use animation features instead of the other way around
-            InitFrameNav(plugin.manager.configurableButtonPrefab, plugin.previousFrameJSON, plugin.nextFrameJSON);
+            InitFrameNav(plugin.manager.configurableButtonPrefab);
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.playClipJSON, plugin.stopJSON);
             _dopeSheet = InitDopeSheet();
         }
@@ -79,7 +79,7 @@ namespace VamTimeline
             return jsc;
         }
 
-        private Scrubber InitScrubber(JSONStorableFloat timeJSON, JSONStorableFloat scrubberJSON, JSONStorableFloat snapJSON)
+        private Scrubber InitScrubber()
         {
             var go = new GameObject("Scrubber");
             go.transform.SetParent(transform, false);
@@ -87,9 +87,6 @@ namespace VamTimeline
             go.AddComponent<LayoutElement>().preferredHeight = 60f;
 
             var scrubber = go.AddComponent<Scrubber>();
-            scrubber.scrubberJSON = scrubberJSON;
-            scrubber.timeJSON = timeJSON;
-            scrubber.snapJSON = snapJSON;
 
             return scrubber;
         }
@@ -126,7 +123,7 @@ namespace VamTimeline
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
         }
 
-        private void InitFrameNav(Transform buttonPrefab, JSONStorableAction previousFrameJSON, JSONStorableAction nextFrameJSON)
+        private void InitFrameNav(Transform buttonPrefab)
         {
             var container = new GameObject("Frame Nav");
             container.transform.SetParent(transform, false);
@@ -136,7 +133,10 @@ namespace VamTimeline
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () => previousFrameJSON.actionCallback());
+            CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () =>
+            {
+                _animation.clipTime = _animation.current.GetPreviousFrame(_animation.clipTime);
+            });
 
             CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
             {
@@ -175,7 +175,10 @@ namespace VamTimeline
                 _animation.clipTime = time;
             });
 
-            CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () => nextFrameJSON.actionCallback());
+            CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () =>
+            {
+                _animation.clipTime = _animation.current.GetNextFrame(_animation.clipTime);
+            });
         }
 
         private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction callback)

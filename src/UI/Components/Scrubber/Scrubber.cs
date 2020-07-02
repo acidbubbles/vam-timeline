@@ -15,9 +15,6 @@ namespace VamTimeline
         private ScrubberMarkers _markers;
 
         public AtomAnimation animation;
-        public JSONStorableFloat snapJSON { get; set; }
-        public JSONStorableFloat scrubberJSON { get; set; }
-        public JSONStorableFloat timeJSON { get; set; }
 
         public Scrubber()
         {
@@ -107,15 +104,15 @@ namespace VamTimeline
         {
             if (UIPerformance.ShouldSkip()) return;
 
-            var currentUpdate = new Vector2(scrubberJSON.val, scrubberJSON.max);
+            var currentUpdate = new Vector2(animation.clipTime, animation.current.animationLength);
 
             if (_lastScrubberUpdate != currentUpdate)
             {
                 if (_lastScrubberUpdate.y != currentUpdate.y)
-                    _markers.length = scrubberJSON.max;
+                    _markers.length = currentUpdate.y;
 
                 _lastScrubberUpdate = currentUpdate;
-                var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
+                var ratio = Mathf.Clamp01(currentUpdate.x / currentUpdate.y);
                 _scrubberRect.anchorMin = new Vector2(ratio, 0);
                 _scrubberRect.anchorMax = new Vector2(ratio, 1);
             }
@@ -123,7 +120,7 @@ namespace VamTimeline
             if (_lastTextUpdate != currentUpdate && UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
             {
                 _lastTextUpdate = currentUpdate;
-                _timeText.text = $"{timeJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+                _timeText.text = $"{animation.playTime:0.000}s / {animation.clipTime:0.000}s";
             }
         }
 
@@ -136,12 +133,12 @@ namespace VamTimeline
 
         public void OnEnable()
         {
-            if (scrubberJSON == null) return;
+            if (animation == null) return;
 
-            var ratio = Mathf.Clamp01(scrubberJSON.val / scrubberJSON.max);
+            var ratio = Mathf.Clamp01(animation.clipTime / animation.current.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-            _timeText.text = $"{timeJSON.val:0.000}s / {scrubberJSON.max:0.000}s";
+            _timeText.text = $"{animation.playTime:0.000}s / {animation.current.animationLength:0.000}s";
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -173,7 +170,7 @@ namespace VamTimeline
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
-            var time = (scrubberJSON.max * ratio).Snap(snapJSON.val);
+            var time = (animation.current.animationLength * ratio).Snap(animation.snap);
             if (time >= animation.current.animationLength - 0.001f)
             {
                 if (animation.current.loop)
@@ -181,7 +178,7 @@ namespace VamTimeline
                 else
                     time = animation.current.animationLength;
             }
-            scrubberJSON.val = time;
+            animation.clipTime = time;
         }
     }
 }

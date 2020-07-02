@@ -106,7 +106,7 @@ namespace VamTimeline
             }
             if (enable)
             {
-                if (plugin.autoKeyframeAllControllersJSON.val)
+                if (plugin.animation.autoKeyframeAllControllers)
                 {
                     foreach (var target1 in clip.targetControllers)
                         SetControllerKeyframe(time, target1);
@@ -118,7 +118,7 @@ namespace VamTimeline
             }
             else
             {
-                if (plugin.autoKeyframeAllControllersJSON.val)
+                if (plugin.animation.autoKeyframeAllControllers)
                 {
                     foreach (var target1 in clip.targetControllers)
                         target1.DeleteFrame(time);

@@ -35,7 +35,7 @@ namespace VamTimeline
         {
             if (!animation.clips.Any()) return;
 
-            var hasLayers = animation.clips.Select(a => a.animationLayer).Distinct().Count() > 1;
+            var hasLayers = animation.EnumerateLayers().Skip(1).Any();
 
             var layerName = animation.clips[0].animationLayer;
             if (hasLayers)

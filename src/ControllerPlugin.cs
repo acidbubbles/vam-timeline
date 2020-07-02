@@ -205,9 +205,13 @@ namespace VamTimeline
 
             _links.Add(proxy);
             _links.Sort((SyncProxy s1, SyncProxy s2) => string.Compare(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
-            _atomsJSON.choices.Add(proxy.storable.containingAtom.uid);
-            _atomsJSON.choices.Sort();
-            _atomsJSON.choices = _atomsJSON.choices;
+
+            var list = new List<string>(_atomsJSON.choices)
+            {
+                proxy.storable.containingAtom.uid
+            };
+            list.Sort();
+            _atomsJSON.choices = list;
 
             if (_selectedLink == null)
             {

@@ -16,24 +16,24 @@ namespace VamTimeline
         AtomAnimationSerializer serializer { get; }
         AtomClipboard clipboard { get; }
 
-        JSONStorableStringChooser animationJSON { get; }
-        JSONStorableFloat scrubberJSON { get; }
-        JSONStorableFloat timeJSON { get; }
+        // JSONStorableStringChooser animationJSON { get; }
+        // JSONStorableFloat scrubberJSON { get; }
+        // JSONStorableFloat timeJSON { get; }
         JSONStorableAction playClipJSON { get; }
         JSONStorableAction playJSON { get; }
         JSONStorableAction playIfNotPlayingJSON { get; }
-        JSONStorableBool isPlayingJSON { get; }
+        // JSONStorableBool isPlayingJSON { get; }
         JSONStorableAction stopJSON { get; }
         JSONStorableAction stopIfPlayingJSON { get; }
-        JSONStorableAction nextFrameJSON { get; }
-        JSONStorableAction previousFrameJSON { get; }
-        JSONStorableFloat snapJSON { get; }
+        // JSONStorableAction nextFrameJSON { get; }
+        // JSONStorableAction previousFrameJSON { get; }
+        // JSONStorableFloat snapJSON { get; }
         JSONStorableAction cutJSON { get; }
         JSONStorableAction copyJSON { get; }
         JSONStorableAction pasteJSON { get; }
-        JSONStorableBool lockedJSON { get; }
-        JSONStorableBool autoKeyframeAllControllersJSON { get; }
-        JSONStorableFloat speedJSON { get; }
+        // JSONStorableBool lockedJSON { get; }
+        // JSONStorableBool autoKeyframeAllControllersJSON { get; }
+        // JSONStorableFloat speedJSON { get; }
 
         void Load(JSONNode animationJSON);
         JSONClass GetAnimationJSON(string animationName = null);

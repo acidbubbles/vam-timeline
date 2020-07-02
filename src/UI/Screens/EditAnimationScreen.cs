@@ -31,6 +31,7 @@ namespace VamTimeline
         private JSONStorableBool _transitionJSON;
         private UIDynamicToggle _transitionUI;
         private UIDynamicToggle _loopUI;
+        private JSONStorableFloat _speedJSON;
 
         public EditAnimationScreen()
             : base()
@@ -67,13 +68,18 @@ namespace VamTimeline
             InitAnimationPatternLinkUI();
 
             current.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+            animation.onSpeedChanged.AddListener(OnSpeedChanged);
             _lengthWhenLengthModeChanged = current?.animationLength ?? 0;
             UpdateValues();
         }
 
         private void InitSpeedUI()
         {
-            var speedUI = prefabFactory.CreateSlider(plugin.speedJSON);
+            _speedJSON = new JSONStorableFloat("Speed", 1f, 0f, 10f, false)
+            {
+                valNoCallback = animation.speed
+            };
+            var speedUI = prefabFactory.CreateSlider(_speedJSON);
             speedUI.valueFormat = "F3";
         }
 
@@ -316,7 +322,7 @@ namespace VamTimeline
                 return;
             }
 
-            newLength = newLength.Snap(plugin.snapJSON.val);
+            newLength = newLength.Snap(animation.snap);
             if (newLength < 0.1f) newLength = 0.1f;
             var time = animation.clipTime.Snap();
 
@@ -452,6 +458,11 @@ namespace VamTimeline
             UpdateValues();
         }
 
+        private void OnSpeedChanged()
+        {
+            _speedJSON.valNoCallback = animation.speed;
+        }
+
         private void UpdateValues()
         {
             _animationNameJSON.valNoCallback = current.animationName;
@@ -472,6 +483,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
+            animation.onSpeedChanged.RemoveListener(OnSpeedChanged);
             current.onAnimationSettingsModified.RemoveListener(OnAnimationSettingsModified);
             base.OnDestroy();
         }

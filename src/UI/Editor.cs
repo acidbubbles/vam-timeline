@@ -82,6 +82,7 @@ namespace VamTimeline
         private CurveTypePopup _curveType;
         private bool _expanded = true;
         private UIDynamicButton _expandButton;
+        private JSONStorableBool _autoKeyframeAllControllersJSON;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -181,7 +182,8 @@ namespace VamTimeline
 
         private void InitAutoKeyframeUI()
         {
-            var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_plugin.autoKeyframeAllControllersJSON);
+            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", _plugin.animation.autoKeyframeAllControllers);
+            var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
         }
 
         private void InitToggleRightPanelButton(UIDynamicButton btn)
@@ -225,6 +227,8 @@ namespace VamTimeline
             _controlPanel.Bind(animation);
             _curveType.Bind(animation);
             _curves.Bind(animation);
+
+            animation.onEditorSettingsChanged.AddListener(v => _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers);
         }
     }
 }

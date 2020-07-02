@@ -3,6 +3,7 @@ namespace VamTimeline
     public class SettingsScreen : ScreenBase
     {
         public const string ScreenName = "Settings";
+        private JSONStorableFloat _snapJSON;
 
         public override string screenId => ScreenName;
 
@@ -24,11 +25,22 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             CreateSnap();
+
+            animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+        }
+
+        private void OnEditorSettingsChanged(string _)
+        {
+            _snapJSON.valNoCallback = animation.snap;
         }
 
         private void CreateSnap()
         {
-            var snapUI = prefabFactory.CreateSlider(plugin.snapJSON);
+            _snapJSON = new JSONStorableFloat("Snap", 0.1f, 0.01f, 1f)
+            {
+                valNoCallback = animation.snap
+            };
+            var snapUI = prefabFactory.CreateSlider(_snapJSON);
             snapUI.valueFormat = "F3";
         }
 

@@ -37,7 +37,6 @@ namespace VamTimeline
         public JSONStorableAction copyJSON { get; private set; }
         public JSONStorableAction pasteJSON { get; private set; }
         public JSONStorableBool lockedJSON { get; private set; }
-        public JSONStorableBool autoKeyframeAllControllersJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
 
         private FreeControllerAnimationTarget _grabbedController;
@@ -177,7 +176,7 @@ namespace VamTimeline
                 if (animation.current.transition)
                     animation.Sample();
                 var time = animation.clipTime.Snap();
-                if (autoKeyframeAllControllersJSON.val)
+                if (animation.autoKeyframeAllControllers)
                 {
                     foreach (var target in animation.current.targetControllers)
                         SetControllerKeyframe(time, target);
@@ -410,11 +409,6 @@ namespace VamTimeline
                     _controllerInjectedControllerPanel.locked = val;
             });
             RegisterBool(lockedJSON);
-
-            autoKeyframeAllControllersJSON = new JSONStorableBool("Auto Keyframe All Controllers", false)
-            {
-                isStorable = false
-            };
 
             speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
             {

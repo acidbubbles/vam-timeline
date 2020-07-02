@@ -15,6 +15,7 @@ namespace VamTimeline
         public class TimeChangedEvent : UnityEvent<TimeChangedEventArgs> { }
         public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
+        public class AnimationSettingsChanged : UnityEvent<string> { }
 
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
@@ -24,8 +25,31 @@ namespace VamTimeline
         public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
+        public AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
+        public UnityEvent onSpeedChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
         public UnityEvent onTargetsSelectionChanged = new UnityEvent();
+
+        #region Editor Settings
+        private float _snap = 0.1f;
+        public float snap
+        {
+            get { return _snap; }
+            set { _snap = value; onEditorSettingsChanged.Invoke(nameof(snap)); }
+        }
+        private bool _autoKeyframeAllControllers;
+        public bool autoKeyframeAllControllers
+        {
+            get { return _autoKeyframeAllControllers; }
+            set { _autoKeyframeAllControllers = value; onEditorSettingsChanged.Invoke(nameof(autoKeyframeAllControllers)); }
+        }
+        private bool _locked;
+        public bool locked
+        {
+            get { return _locked; }
+            set { _locked = value; onEditorSettingsChanged.Invoke(nameof(locked)); }
+        }
+        #endregion
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
@@ -105,6 +129,7 @@ namespace VamTimeline
                     if (clip.animationPattern != null)
                         clip.animationPattern.SetFloatParamValue("speed", value);
                 }
+                onEditorSettingsChanged.Invoke(nameof(speed));
             }
         }
         private bool _animationRebuildRequestPending;
@@ -185,6 +210,20 @@ namespace VamTimeline
                 if (!clips.Any(c => c.animationName == animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();
+        }
+
+        public IEnumerable<string> EnumerateLayers()
+        {
+            if (clips.Count == 0) yield break;
+            if (clips.Count == 1) yield return clips[0].animationLayer;
+            var lastLayer = clips[0].animationLayer;
+            yield return lastLayer;
+            for (var i = 1; i < clips.Count; i++)
+            {
+                var clip = clips[i];
+                if (clip.animationLayer == lastLayer) continue;
+                yield return lastLayer = clip.animationLayer;
+            }
         }
 
         #endregion

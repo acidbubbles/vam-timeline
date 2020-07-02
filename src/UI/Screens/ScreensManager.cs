@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -35,7 +36,7 @@ namespace VamTimeline
         public void ChangeScreen(string screen)
         {
             _currentScreen = _defaultScreen = screen;
-            _plugin.lockedJSON.val = screen == PerformanceScreen.ScreenName;
+            _plugin.animation.locked = screen == PerformanceScreen.ScreenName;
             if (!enabled) return;
             onScreenChanged.Invoke(screen);
             RefreshCurrentUI();
@@ -52,10 +53,13 @@ namespace VamTimeline
         {
             if (_defaultScreen != null)
                 return _defaultScreen;
-            else if (_plugin?.animation == null || _plugin?.lockedJSON?.val == true)
+            if (_plugin?.animation == null)
                 return PerformanceScreen.ScreenName;
-            else
-                return TargetsScreen.ScreenName;
+            if (_plugin.animation.locked == true)
+                return PerformanceScreen.ScreenName;
+            if (_plugin.animation.clips.Count > 1 && _plugin.animation.EnumerateLayers().Skip(1).Any())
+                return AnimationsScreen.ScreenName;
+            return TargetsScreen.ScreenName;
         }
 
         public void UpdateLocked(bool isLocked)
