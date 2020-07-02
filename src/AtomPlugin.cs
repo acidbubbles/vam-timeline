@@ -44,7 +44,7 @@ namespace VamTimeline
         private bool _resumePlayOnUnfreeze;
         private bool _restoring;
         private Editor _ui;
-        private AnimationControlPanel _controllerInjectedControllerPanel;
+        private Editor _controllerInjectedUI;
         private class AnimStorableActionMap { public JSONStorableAction jsa; public string animationName; }
         private readonly List<AnimStorableActionMap> _playActions = new List<AnimStorableActionMap>();
 
@@ -207,7 +207,7 @@ namespace VamTimeline
             {
                 if (animation != null) animation.enabled = true;
                 if (_ui != null) _ui.enabled = true;
-                if (_controllerInjectedControllerPanel == null && animation != null && base.containingAtom != null)
+                if (_controllerInjectedUI == null && animation != null && base.containingAtom != null)
                     SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
             }
             catch (Exception exc)
@@ -405,8 +405,8 @@ namespace VamTimeline
             lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
             {
                 _ui.locked = val;
-                if (_controllerInjectedControllerPanel != null)
-                    _controllerInjectedControllerPanel.locked = val;
+                if (_controllerInjectedUI != null)
+                    _controllerInjectedUI.locked = val;
             });
             RegisterBool(lockedJSON);
 
@@ -786,21 +786,22 @@ namespace VamTimeline
 
             if (container == null) yield break;
 
-            _controllerInjectedControllerPanel = container.GetComponent<AnimationControlPanel>();
-            if (_controllerInjectedControllerPanel == null)
+            _controllerInjectedUI = container.GetComponent<Editor>();
+            if (_controllerInjectedUI == null)
             {
-                _controllerInjectedControllerPanel = AnimationControlPanel.Configure(container);
-                _controllerInjectedControllerPanel.Bind(this);
+                _controllerInjectedUI = Editor.Configure(container);
+                _controllerInjectedUI.Bind(this);
             }
-            _controllerInjectedControllerPanel.Bind(animation);
+            if (_controllerInjectedUI.animation != animation)
+                _controllerInjectedUI.Bind(animation);
         }
 
         private void DestroyControllerPanel()
         {
-            if (_controllerInjectedControllerPanel == null) return;
-            _controllerInjectedControllerPanel.gameObject.transform.SetParent(null, false);
-            Destroy(_controllerInjectedControllerPanel.gameObject);
-            _controllerInjectedControllerPanel = null;
+            if (_controllerInjectedUI == null) return;
+            _controllerInjectedUI.gameObject.transform.SetParent(null, false);
+            Destroy(_controllerInjectedUI.gameObject);
+            _controllerInjectedUI = null;
         }
 
         #endregion

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,14 +9,21 @@ namespace VamTimeline
         public const float RightPanelExpandedWidth = 500f;
         public const float RightPanelCollapsedWidth = 0f;
 
-        public static Editor AddTo(RectTransform transform)
+        public static Editor AddTo(Transform transform)
         {
             var go = new GameObject();
             go.transform.SetParent(transform, false);
 
             var rect = go.AddComponent<RectTransform>();
+            rect.StretchTop();
+            rect.sizeDelta = new Vector2(0, 750);
             rect.pivot = new Vector2(0, 1);
 
+            return Configure(go);
+        }
+
+        public static Editor Configure(GameObject go)
+        {
             var rows = go.AddComponent<VerticalLayoutGroup>();
 
             var tabs = ScreenTabs.Create(go.transform, VamPrefabFactory.buttonPrefab);
@@ -27,8 +35,8 @@ namespace VamTimeline
             panelsGroup.spacing = 10f;
             panelsGroup.childControlWidth = true;
             panelsGroup.childForceExpandWidth = false;
-            panelsGroup.childControlWidth = true;
-            panelsGroup.childForceExpandWidth = false;
+            panelsGroup.childControlHeight = true;
+            panelsGroup.childForceExpandHeight = false;
 
             var leftPanel = CreatePanel(panels.transform, 0f, 1f);
             var rightPanel = CreatePanel(panels.transform, RightPanelExpandedWidth, 0f);
@@ -71,6 +79,7 @@ namespace VamTimeline
             set { _controlPanel.locked = value; _screensManager.UpdateLocked(value); }
         }
 
+        public AtomAnimation animation;
         public ScreenTabs tabs;
         public GameObject leftPanel;
         public GameObject rightPanel;
@@ -120,13 +129,13 @@ namespace VamTimeline
             _screensManager.Bind(plugin);
         }
 
-        private static AnimationControlPanel CreateControlPanel(GameObject panel)
+        private AnimationControlPanel CreateControlPanel(GameObject panel)
         {
             var go = new GameObject();
             go.transform.SetParent(panel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 650f;
+            layout.flexibleHeight = 100f;
 
             return AnimationControlPanel.Configure(go);
         }
@@ -142,7 +151,7 @@ namespace VamTimeline
             go.transform.SetParent(leftPanel.transform, false);
 
             var layout = go.AddComponent<LayoutElement>();
-            layout.minHeight = 250f;
+            layout.preferredHeight = 200f;
             layout.flexibleWidth = 1f;
 
             return go.AddComponent<Curves>();
@@ -224,11 +233,31 @@ namespace VamTimeline
 
         public void Bind(AtomAnimation animation)
         {
+            if (this.animation != null)
+            {
+                this.animation.onEditorSettingsChanged.RemoveListener(OnEditorSettingsChanged);
+            }
+
+            this.animation = animation;
+
             _controlPanel.Bind(animation);
             _curveType.Bind(animation);
             _curves.Bind(animation);
+            SuperController.LogMessage("Activate?");
+            _screensManager.gameObject.SetActive(true);
 
-            animation.onEditorSettingsChanged.AddListener(v => _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers);
+            animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+        }
+
+        private void OnEditorSettingsChanged(string _)
+        {
+            _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers;
+        }
+
+        public void OnDestroy()
+        {
+            animation.onEditorSettingsChanged.RemoveListener(OnEditorSettingsChanged);
+            animation = null;
         }
     }
 }

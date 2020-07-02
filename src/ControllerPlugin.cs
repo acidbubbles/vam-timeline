@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -22,8 +23,8 @@ namespace VamTimeline
         private JSONStorableAction _playJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
-        private UIDynamic _controlPanelSpacer;
-        private GameObject _controlPanelContainer;
+        private UIDynamic _injectedUIContainer;
+        private GameObject _injectedUI;
         private readonly List<SyncProxy> _links = new List<SyncProxy>();
         private SyncProxy _selectedLink;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
@@ -259,7 +260,7 @@ namespace VamTimeline
                 _ui = new SimpleSignUI(_atom, this);
                 _ui.CreateUIToggleInCanvas(_lockedJSON);
                 _ui.CreateUIPopupInCanvas(_atomsJSON);
-                _controlPanelSpacer = _ui.CreateUISpacerInCanvas(980f);
+                _injectedUIContainer = _ui.CreateUISpacerInCanvas(980f);
                 ScanForAtoms();
                 if (_selectedLink != null)
                     RequestControlPanelInjection();
@@ -483,28 +484,32 @@ namespace VamTimeline
 
         private void RequestControlPanelInjection()
         {
-            if (_controlPanelSpacer == null) return;
+            if (_injectedUIContainer == null) return;
 
             DestroyControlPanelContainer();
 
             var proxy = GetOrDispose(_selectedLink);
             if (proxy == null) return;
 
-            _controlPanelContainer = new GameObject();
-            _controlPanelContainer.transform.SetParent(_controlPanelSpacer.transform, false);
+            _injectedUI = new GameObject();
+            _injectedUI.transform.SetParent(_injectedUIContainer.transform, false);
 
-            var rect = _controlPanelContainer.AddComponent<RectTransform>();
-            rect.StretchParent();
+            var rect = _injectedUI.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0, 1);
+            rect.anchorMax = new Vector2(1, 1);
+            rect.sizeDelta = new Vector2(0, _injectedUIContainer.height);
+            rect.pivot = new Vector2(0, 1);
+            rect.anchoredPosition = new Vector2(0, 0);
 
-            proxy.storable.SendMessage(nameof(IRemoteAtomPlugin.VamTimelineRequestControlPanel), _controlPanelContainer, SendMessageOptions.RequireReceiver);
+            proxy.storable.SendMessage(nameof(IRemoteAtomPlugin.VamTimelineRequestControlPanel), _injectedUI, SendMessageOptions.RequireReceiver);
         }
 
         private void DestroyControlPanelContainer()
         {
-            if (_controlPanelContainer == null) return;
-            _controlPanelContainer.transform.SetParent(null, false);
-            Destroy(_controlPanelContainer);
-            _controlPanelContainer = null;
+            if (_injectedUI == null) return;
+            _injectedUI.transform.SetParent(null, false);
+            Destroy(_injectedUI);
+            _injectedUI = null;
         }
 
         private SyncProxy GetOrDispose(SyncProxy proxy)

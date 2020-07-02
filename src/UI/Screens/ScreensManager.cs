@@ -31,6 +31,8 @@ namespace VamTimeline
         public void Bind(IAtomPlugin plugin)
         {
             _plugin = plugin;
+            if (enabled && plugin.animation != null)
+                ChangeScreen(GetDefaultScreen());
         }
 
         public void ChangeScreen(string screen)
