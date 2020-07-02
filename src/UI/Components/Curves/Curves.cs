@@ -9,6 +9,8 @@ namespace VamTimeline
 {
     public class Curves : MonoBehaviour
     {
+        private const int MaxCurves = 9;
+
         private readonly CurvesStyle _style = new CurvesStyle();
         private readonly RectTransform _scrubberRect;
         private readonly GameObject _noCurves;
@@ -190,9 +192,12 @@ namespace VamTimeline
         {
             var lead = target.GetLeadCurve();
             _animationLength = lead.keys[lead.keys.Length - 1].time;
+            _targets.Add(target);
+            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationCurveModified);
             if (target is FreeControllerAnimationTarget)
             {
                 var t = (FreeControllerAnimationTarget)target;
+                if(_lines.Count > MaxCurves - 3) return;
                 BindCurve(t.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
                 BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
                 BindCurve(t.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
@@ -226,6 +231,7 @@ namespace VamTimeline
             }
             else if (target is FloatParamAnimationTarget)
             {
+                if(_lines.Count > MaxCurves - 1) return;
                 var t = (FloatParamAnimationTarget)target;
                 BindCurve(t.value, _style.CurveLineColorFloat, target.GetShortName());
             }
@@ -233,8 +239,6 @@ namespace VamTimeline
             {
                 return;
             }
-            _targets.Add(target);
-            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationCurveModified);
         }
 
         private void BindCurve(AnimationCurve lead, Color color, string label)
