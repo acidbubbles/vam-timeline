@@ -255,8 +255,11 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            animation.onEditorSettingsChanged.RemoveListener(OnEditorSettingsChanged);
-            animation = null;
+            if (animation != null)
+            {
+                animation.onEditorSettingsChanged.RemoveListener(OnEditorSettingsChanged);
+                animation = null;
+            }
         }
     }
 }
