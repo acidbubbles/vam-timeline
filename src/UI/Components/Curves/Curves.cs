@@ -197,7 +197,7 @@ namespace VamTimeline
             if (target is FreeControllerAnimationTarget)
             {
                 var t = (FreeControllerAnimationTarget)target;
-                if(_lines.Count > _maxCurves - 3) return;
+                if (_lines.Count > _maxCurves - 3) return;
                 BindCurve(t.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
                 BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
                 BindCurve(t.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
@@ -231,7 +231,7 @@ namespace VamTimeline
             }
             else if (target is FloatParamAnimationTarget)
             {
-                if(_lines.Count > _maxCurves - 1) return;
+                if (_lines.Count > _maxCurves - 1) return;
                 var t = (FloatParamAnimationTarget)target;
                 BindCurve(t.value, _style.CurveLineColorFloat, target.GetShortName());
             }
@@ -245,30 +245,8 @@ namespace VamTimeline
         {
             var lines = CreateCurvesLines(_linesContainer, color, label);
             _lines.Add(lines);
-            lines.range = EstimateRange(lead);
             lines.AddCurve(color, lead);
             lines.SetVerticesDirty();
-        }
-
-        private Vector2 EstimateRange(params AnimationCurve[] curves)
-        {
-            var boundsEvalPrecision = 20f; // Check how many points to detect highest value
-            var minY = float.MaxValue;
-            var maxY = float.MinValue;
-            var lead = curves[0];
-            var maxX = lead[lead.length - 1].time;
-            var boundsTestStep = maxX / boundsEvalPrecision;
-            foreach (var curve in curves)
-            {
-                if (curve.length == 0) continue;
-                for (var time = 0f; time < maxX; time += boundsTestStep)
-                {
-                    var value = curve.Evaluate(time);
-                    minY = Mathf.Min(minY, value);
-                    maxY = Mathf.Max(maxY, value);
-                }
-            }
-            return new Vector2(minY, maxY);
         }
 
         private void Unbind()

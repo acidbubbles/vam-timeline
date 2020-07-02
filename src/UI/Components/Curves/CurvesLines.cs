@@ -7,13 +7,11 @@ namespace VamTimeline
     public class CurvesLines : MaskableGraphic
     {
         public CurvesStyle style;
-        public Vector2 range;
         private readonly List<KeyValuePair<Color, AnimationCurve>> _curves = new List<KeyValuePair<Color, AnimationCurve>>();
 
         public void ClearCurves()
         {
             _curves.Clear();
-            range = Vector2.zero;
         }
 
         public void AddCurve(Color color, AnimationCurve curve)
@@ -35,6 +33,7 @@ namespace VamTimeline
             var precision = 2f; // Draw at every N pixels
             var minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
+            var range = EstimateRange();
 
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];
@@ -134,6 +133,28 @@ namespace VamTimeline
                 new Vector2(halfWidth - halfBorder, halfHeight),
                 new Vector2(halfWidth - halfBorder, -halfHeight)
             }, style.BorderSize, style.BorderColor);
+        }
+
+        private Vector2 EstimateRange()
+        {
+            var boundsEvalPrecision = 20f; // Check how many points to detect highest value
+            var minY = float.MaxValue;
+            var maxY = float.MinValue;
+            var lead = _curves[0].Value;
+            var maxX = lead[lead.length - 1].time;
+            var boundsTestStep = maxX / boundsEvalPrecision;
+            foreach (var kvp in _curves)
+            {
+                var curve = kvp.Value;
+                if (curve.length == 0) continue;
+                for (var time = 0f; time < maxX; time += boundsTestStep)
+                {
+                    var value = curve.Evaluate(time);
+                    minY = Mathf.Min(minY, value);
+                    maxY = Mathf.Max(maxY, value);
+                }
+            }
+            return new Vector2(minY, maxY);
         }
     }
 }
