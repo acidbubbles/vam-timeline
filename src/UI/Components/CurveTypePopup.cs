@@ -7,7 +7,8 @@ namespace VamTimeline
     public class CurveTypePopup : MonoBehaviour
     {
         private const string _noKeyframeCurveType = "(No Keyframe)";
-        private const string _loopCurveType = "(Loop)";
+
+        private readonly HashSet<string> _curveTypes = new HashSet<string>();
 
         public static CurveTypePopup Create(VamPrefabFactory prefabFactory)
         {
@@ -37,23 +38,14 @@ namespace VamTimeline
 
         private void ChangeCurve(string curveType)
         {
+            if (_animation.isPlaying) return;
+
             if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("("))
             {
                 RefreshCurrentCurveType(_animation.clipTime);
                 return;
             }
             float time = _animation.clipTime.Snap();
-            if (time.IsSameFrame(0) && curveType == CurveTypeValues.CopyPrevious)
-            {
-                RefreshCurrentCurveType(_animation.clipTime);
-                return;
-            }
-            if (_animation.isPlaying) return;
-            if (_current.loop && (time.IsSameFrame(0) || time.IsSameFrame(_current.animationLength)))
-            {
-                RefreshCurrentCurveType(_animation.clipTime);
-                return;
-            }
 
             foreach (var target in _current.targetControllers)
                 target.ChangeCurve(time, curveType);
@@ -66,25 +58,20 @@ namespace VamTimeline
             if (curveTypeJSON == null) return;
 
             var time = currentClipTime.Snap();
-            if (_current.loop && (time.IsSameFrame(0) || time.IsSameFrame(_current.animationLength)))
-            {
-                curveTypeJSON.valNoCallback = _loopCurveType;
-                return;
-            }
             var ms = time.ToMilliseconds();
-            var curveTypes = new HashSet<string>();
+            _curveTypes.Clear();
             foreach (var target in _current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 KeyframeSettings v;
                 if (!target.settings.TryGetValue(ms, out v)) continue;
-                curveTypes.Add(v.curveType);
+                _curveTypes.Add(v.curveType);
             }
-            if (curveTypes.Count == 0)
+            if (_curveTypes.Count == 0)
                 curveTypeJSON.valNoCallback = _noKeyframeCurveType;
-            else if (curveTypes.Count == 1)
-                curveTypeJSON.valNoCallback = curveTypes.First().ToString();
+            else if (_curveTypes.Count == 1)
+                curveTypeJSON.valNoCallback = _curveTypes.First().ToString();
             else
-                curveTypeJSON.valNoCallback = "(" + string.Join("/", curveTypes.ToArray()) + ")";
+                curveTypeJSON.valNoCallback = "(" + string.Join("/", _curveTypes.ToArray()) + ")";
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)

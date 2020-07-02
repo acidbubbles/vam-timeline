@@ -46,6 +46,17 @@ namespace VamTimeline
             }
         }
 
+        public void ReapplyCurveTypes(bool loop)
+        {
+            if (value.length < 2) return;
+
+            for (var key = 0; key < value.length; key++)
+            {
+                // TODO: Keep a registry of curve types
+                value.ApplyCurveType(key, CurveTypeValues.Flat, loop);
+            }
+        }
+
         public AnimationCurve GetLeadCurve()
         {
             return value;

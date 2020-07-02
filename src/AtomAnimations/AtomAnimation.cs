@@ -586,10 +586,7 @@ namespace VamTimeline
                 if (clip.loop)
                     target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
 
-                target.ReapplyCurveTypes();
-
-                if (clip.loop)
-                    target.SmoothLoop();
+                target.ReapplyCurveTypes(clip.loop);
 
                 if (clip.ensureQuaternionContinuity)
                 {
@@ -608,7 +605,7 @@ namespace VamTimeline
                 if (clip.loop)
                     target.value.SetKeyframe(clip.animationLength, target.value[0].value);
 
-                target.value.FlatAllFrames();
+                target.ReapplyCurveTypes(clip.loop);
             }
 
             foreach (var target in clip.targetTriggers)
