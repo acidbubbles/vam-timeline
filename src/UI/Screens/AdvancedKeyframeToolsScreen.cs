@@ -139,6 +139,8 @@ namespace VamTimeline
                     {
                         if (!all) continue;
                         target = animation.current.Add(fc);
+                        animation.SetKeyframeToCurrentTransform(target, 0f);
+                        animation.SetKeyframeToCurrentTransform(target, current.animationLength);
                     }
                     animation.SetKeyframeToCurrentTransform(target, time);
                 }
