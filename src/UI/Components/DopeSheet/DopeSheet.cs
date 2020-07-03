@@ -390,7 +390,26 @@ namespace VamTimeline
             var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
             var clickedTime = ratio * _clip.animationLength;
+            var previousClipTime = _animation.clipTime;
             _animation.clipTime = target.GetTimeClosestTo(clickedTime);
+            if (!target.selected)
+            {
+                target.selected = true;
+                if (!Input.GetKey(KeyCode.LeftControl))
+                {
+                    foreach (var t in _clip.GetAllTargets().Where(x => x.selected && x != target))
+                        t.selected = false;
+                }
+            }
+            else if (previousClipTime == _animation.clipTime)
+            {
+                target.selected = false;
+                if (!Input.GetKey(KeyCode.LeftControl))
+                {
+                    foreach (var t in _clip.GetAllTargets().Where(x => x.selected && x != target))
+                        t.selected = false;
+                }
+            }
         }
 
         public void SetScrubberPosition(float time, bool stopped)

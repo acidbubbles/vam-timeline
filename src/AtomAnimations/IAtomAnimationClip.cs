@@ -13,6 +13,9 @@ namespace VamTimeline
         UnityEvent onAnimationKeyframesDirty { get; }
         UnityEvent onAnimationKeyframesRebuilt { get; }
 
+        IEnumerable<IAnimationTargetWithCurves> GetAllCurveTargets();
+        IEnumerable<IAtomAnimationTarget> GetAllTargets();
+        int GetAllTargetsCount();
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }
 }

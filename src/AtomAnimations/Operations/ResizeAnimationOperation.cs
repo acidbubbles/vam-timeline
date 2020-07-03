@@ -17,7 +17,7 @@ namespace VamTimeline
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
-            foreach (var target in _clip.allCurveTargets)
+            foreach (var target in _clip.GetAllCurveTargets())
             {
                 foreach (var curve in target.GetCurves())
                     StretchCurve(curve, newAnimationLength);
@@ -98,7 +98,7 @@ namespace VamTimeline
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
-            foreach (var target in _clip.allCurveTargets)
+            foreach (var target in _clip.GetAllCurveTargets())
             {
                 foreach (var curve in target.GetCurves())
                 {
@@ -130,7 +130,7 @@ namespace VamTimeline
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
-            foreach (var target in _clip.allCurveTargets)
+            foreach (var target in _clip.GetAllCurveTargets())
             {
                 foreach (var curve in target.GetCurves())
                     CropOrExtendBeginCurve(curve, newAnimationLength);
@@ -190,8 +190,8 @@ namespace VamTimeline
         // TODO: Untested, probably not working. If this works, every resize types should use this instead.
         public void CropOrExtendAtTime(float newAnimationLength, float time)
         {
-            var previousKeyframe = _clip.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
-            var nextKeyframe = _clip.allTargets.SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
+            var previousKeyframe = _clip.GetAllTargets().SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
+            var nextKeyframe = _clip.GetAllTargets().SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
 
             var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
 
@@ -203,7 +203,7 @@ namespace VamTimeline
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
 
-            foreach (var target in _clip.allCurveTargets)
+            foreach (var target in _clip.GetAllCurveTargets())
             {
                 foreach (var curve in target.GetCurves())
                     CropOrExtendAtTimeCurve(curve, newAnimationLength, time);

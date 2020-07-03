@@ -46,9 +46,30 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<TriggersAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersAnimationTarget>() { label = "Triggers" };
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
-        public IEnumerable<IAnimationTargetWithCurves> allCurveTargets => targetControllers.Cast<IAnimationTargetWithCurves>().Concat(targetFloatParams.Cast<IAnimationTargetWithCurves>());
-        public IEnumerable<IAtomAnimationTarget> allTargets => targetTriggers.Cast<IAtomAnimationTarget>().Concat(allCurveTargets.Cast<IAtomAnimationTarget>());
-        public int allTargetsCount => targetTriggers.Count + targetControllers.Count + targetFloatParams.Count;
+
+        public IEnumerable<IAnimationTargetWithCurves> GetAllCurveTargets()
+        {
+            foreach (var t in targetControllers)
+                yield return t;
+            foreach (var t in targetFloatParams)
+                yield return t;
+        }
+
+        public IEnumerable<IAtomAnimationTarget> GetAllTargets()
+        {
+            foreach (var t in targetTriggers)
+                yield return t;
+            foreach (var t in targetControllers)
+                yield return t;
+            foreach (var t in targetFloatParams)
+                yield return t;
+        }
+
+        public int GetAllTargetsCount()
+        {
+            return targetTriggers.Count + targetControllers.Count + targetFloatParams.Count;
+        }
+
         public string animationLayer
         {
             get
@@ -216,17 +237,17 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return allTargets.Count() == 0;
+            return GetAllTargets().Count() == 0;
         }
 
         public bool IsDirty()
         {
-            return allTargets.Any(t => t.dirty);
+            return GetAllTargets().Any(t => t.dirty);
         }
 
         public void DirtyAll()
         {
-            foreach (var s in allTargets)
+            foreach (var s in GetAllTargets())
                 s.dirty = true;
         }
 
@@ -239,7 +260,7 @@ namespace VamTimeline
 
         public void Validate()
         {
-            foreach (var target in allTargets)
+            foreach (var target in GetAllTargets())
             {
                 if (!target.dirty) continue;
 
@@ -461,15 +482,15 @@ namespace VamTimeline
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
         {
-            var result = allTargets
+            var result = GetAllTargets()
                 .Where(t => t.selected)
                 .ToList();
-            return result.Count > 0 ? result : allTargets;
+            return result.Count > 0 ? result : GetAllTargets();
         }
 
         public IEnumerable<IAtomAnimationTarget> GetSelectedTargets()
         {
-            return allTargets
+            return GetAllTargets()
                 .Where(t => t.selected)
                 .ToList();
         }
@@ -596,7 +617,7 @@ namespace VamTimeline
             onAnimationKeyframesRebuilt.RemoveAllListeners();
             onAnimationSettingsModified.RemoveAllListeners();
             onTargetsListChanged.RemoveAllListeners();
-            foreach (var target in allTargets)
+            foreach (var target in GetAllTargets())
             {
                 target.Dispose();
             }

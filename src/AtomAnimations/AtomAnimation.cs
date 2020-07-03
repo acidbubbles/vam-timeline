@@ -563,7 +563,7 @@ namespace VamTimeline
             {
                 if (!clip.IsDirty()) continue;
 
-                foreach (var target in clip.allTargets)
+                foreach (var target in clip.GetAllTargets())
                 {
                     target.dirty = false;
                     target.onAnimationKeyframesRebuilt.Invoke();
@@ -622,11 +622,11 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            foreach (var target in current.allTargets)
+            foreach (var target in current.GetAllTargets())
             {
                 foreach (var clip in clips.Where(c => c != current))
                 {
-                    var t = clip.allTargets.FirstOrDefault(x => x.TargetsSameAs(target));
+                    var t = clip.GetAllTargets().FirstOrDefault(x => x.TargetsSameAs(target));
                     if (t == null) continue;
                     t.selected = target.selected;
                 }

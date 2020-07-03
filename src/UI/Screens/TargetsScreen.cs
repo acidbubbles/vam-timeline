@@ -114,7 +114,7 @@ namespace VamTimeline
             }
 
             _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/remove targets", AddRemoveTargetsScreen.ScreenName);
-            if (current.allTargetsCount == 0)
+            if (current.GetAllTargetsCount() == 0)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
                 _manageTargetsUI.buttonColor = navButtonColor;
