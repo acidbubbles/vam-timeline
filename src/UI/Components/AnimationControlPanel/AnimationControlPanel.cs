@@ -44,7 +44,7 @@ namespace VamTimeline
             _scrubber = InitScrubber();
             // TODO: Make the JSON use animation features instead of the other way around
             InitFrameNav(plugin.manager.configurableButtonPrefab);
-            InitPlaybackButtons(plugin.manager.configurableButtonPrefab, plugin.playJSON, plugin.playClipJSON, plugin.stopJSON);
+            InitPlaybackButtons(plugin.manager.configurableButtonPrefab);
             _dopeSheet = InitDopeSheet();
         }
 
@@ -91,7 +91,7 @@ namespace VamTimeline
             return scrubber;
         }
 
-        private void InitPlaybackButtons(Transform buttonPrefab, JSONStorableAction playJSON, JSONStorableAction playClipJSON, JSONStorableAction stopJSON)
+        private void InitPlaybackButtons(Transform buttonPrefab)
         {
             var container = new GameObject("Playback");
             container.transform.SetParent(transform, false);
@@ -104,21 +104,21 @@ namespace VamTimeline
             var playAll = Instantiate(buttonPrefab);
             playAll.SetParent(container.transform, false);
             playAll.GetComponent<UIDynamicButton>().label = "\u25B6 Seq";
-            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => playJSON.actionCallback());
+            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayAll());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
 
             var playClip = Instantiate(buttonPrefab);
             playClip.SetParent(container.transform, false);
             playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
-            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => playClipJSON.actionCallback());
+            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayClip(_animation.current.animationName, false));
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
 
             var stop = Instantiate(buttonPrefab);
             stop.SetParent(container.transform, false);
             stop.GetComponent<UIDynamicButton>().label = "\u25A0 Stop";
-            stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => stopJSON.actionCallback());
+            stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => { if (_animation.isPlaying) _animation.StopAll(); else _animation.ResetAll(); });
             stop.GetComponent<LayoutElement>().preferredWidth = 0;
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
         }

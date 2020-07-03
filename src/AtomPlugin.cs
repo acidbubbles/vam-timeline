@@ -24,7 +24,6 @@ namespace VamTimeline
         public JSONStorableAction previousAnimationJSON { get; private set; }
         public JSONStorableFloat scrubberJSON { get; private set; }
         public JSONStorableFloat timeJSON { get; private set; }
-        public JSONStorableAction playClipJSON { get; private set; }
         public JSONStorableAction playJSON { get; private set; }
         public JSONStorableBool isPlayingJSON { get; private set; }
         public JSONStorableAction playIfNotPlayingJSON { get; private set; }
@@ -40,7 +39,6 @@ namespace VamTimeline
 
         private FreeControllerAnimationTarget _grabbedController;
         private bool _cancelNextGrabbedControllerRelease;
-        private bool _resumePlayOnUnfreeze;
         private bool _restoring;
         private Editor _ui;
         private Editor _controllerInjectedUI;
@@ -116,27 +114,10 @@ namespace VamTimeline
                 {
                     scrubberJSON.valNoCallback = animation.clipTime;
                     timeJSON.valNoCallback = animation.playTime;
-
-                    if (SuperController.singleton.freezeAnimation)
-                    {
-                        // TODO: Replace this by Pause and the following Play by Resume
-                        animation.StopAll();
-                        _resumePlayOnUnfreeze = true;
-                    }
                 }
-                else
+                else if (animation?.locked == false)
                 {
-                    if (_resumePlayOnUnfreeze && !SuperController.singleton.freezeAnimation)
-                    {
-                        _resumePlayOnUnfreeze = false;
-                        animation.PlayAll();
-                        SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
-                        isPlayingJSON.valNoCallback = true;
-                    }
-                    else if (lockedJSON != null && !lockedJSON.val)
-                    {
-                        UpdateNotPlaying();
-                    }
+                    UpdateNotPlaying();
                 }
             }
             catch (Exception exc)
@@ -284,58 +265,16 @@ namespace VamTimeline
             };
             RegisterFloat(timeJSON);
 
-            playClipJSON = new JSONStorableAction(StorableNames.PlayClip, () =>
-            {
-                if (animation?.current == null)
-                {
-                    SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
-                    return;
-                }
-                if (SuperController.singleton.freezeAnimation)
-                {
-                    _resumePlayOnUnfreeze = true;
-                    return;
-                }
-                animation.PlayClip(animation.current.animationName, false);
-                isPlayingJSON.valNoCallback = true;
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
-            });
-            RegisterAction(playClipJSON);
-
             playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                if (animation?.current == null)
-                {
-                    SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
-                    return;
-                }
-                if (SuperController.singleton.freezeAnimation)
-                {
-                    _resumePlayOnUnfreeze = true;
-                    return;
-                }
-                animation.PlayAll();
-                isPlayingJSON.valNoCallback = true;
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
+                animation?.PlayAll();
             });
             RegisterAction(playJSON);
 
             playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (animation?.current == null)
-                {
-                    SuperController.LogError($"VamTimeline: Cannot play animation, Timeline is still loading");
-                    return;
-                }
-                if (SuperController.singleton.freezeAnimation)
-                {
-                    _resumePlayOnUnfreeze = true;
-                    return;
-                }
-                if (animation.isPlaying) return;
+                if (animation == null || animation.isPlaying == true) return;
                 animation.PlayAll();
-                isPlayingJSON.valNoCallback = true;
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
             RegisterAction(playIfNotPlayingJSON);
 
@@ -353,28 +292,18 @@ namespace VamTimeline
 
             stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
+                if (animation == null) return;
                 if (animation.isPlaying)
-                {
-                    _resumePlayOnUnfreeze = false;
                     animation.StopAll();
-                    animation.clipTime = animation.clipTime.Snap(animation.snap);
-                    isPlayingJSON.valNoCallback = false;
-                    SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
-                }
                 else
-                {
-                    animation.Reset();
-                }
+                    animation.ResetAll();
             });
             RegisterAction(stopJSON);
 
             stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
-                if (!animation.isPlaying) return;
+                if (animation == null || !animation.isPlaying) return;
                 animation.StopAll();
-                animation.clipTime = animation.clipTime.Snap(animation.snap);
-                isPlayingJSON.valNoCallback = false;
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
             RegisterAction(stopIfPlayingJSON);
 
@@ -543,6 +472,7 @@ namespace VamTimeline
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+            animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
@@ -647,6 +577,12 @@ namespace VamTimeline
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnAnimationParametersChanged)}: {exc}");
             }
+        }
+
+        private void OnIsPlayingChanged(bool isPlaying)
+        {
+            isPlayingJSON.valNoCallback = isPlaying;
+            SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
         }
 
         private void SendToControllers(string methodName)

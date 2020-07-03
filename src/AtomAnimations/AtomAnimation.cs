@@ -16,6 +16,7 @@ namespace VamTimeline
         public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public class AnimationSettingsChanged : UnityEvent<string> { }
+        public class IsPlayingEvent : UnityEvent<bool> { }
 
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
@@ -30,6 +31,7 @@ namespace VamTimeline
         public UnityEvent onClipsListChanged = new UnityEvent();
         public UnityEvent onTargetsSelectionChanged = new UnityEvent();
         public UnityEvent onAnimationRebuilt = new UnityEvent();
+        public IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
 
         #region Editor Settings
         private float _snap = 0.1f;
@@ -55,6 +57,7 @@ namespace VamTimeline
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
         public bool isPlaying { get; private set; }
+        private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
         private AtomAnimationClip _current;
         public AtomAnimationClip current
@@ -233,10 +236,12 @@ namespace VamTimeline
 
         public void PlayClip(string animationName, bool sequencing)
         {
+            var first = false;
             var clip = GetClip(animationName);
             if (clip.enabled && clip.mainInLayer) return;
             if (!isPlaying)
             {
+                first = true;
                 isPlaying = true;
                 _sequencing = _sequencing || sequencing;
             }
@@ -258,6 +263,9 @@ namespace VamTimeline
             }
             if (sequencing && clip.nextAnimationName != null)
                 AssignNextAnimation(clip);
+
+            if (first)
+                onIsPlayingChanged.Invoke(true);
         }
 
         public void PlayAll()
@@ -288,6 +296,7 @@ namespace VamTimeline
             {
                 isPlaying = false;
                 playTime = current.clipTime;
+                onIsPlayingChanged.Invoke(false);
             }
         }
 
@@ -301,15 +310,22 @@ namespace VamTimeline
                     StopClip(clip.animationName);
             }
 
-            Reset(false);
-            playTime = playTime.Snap();
+            foreach (var clip in clips)
+            {
+                clip.Reset(false);
+            }
+            playTime = playTime.Snap(snap);
         }
 
-        public void Reset()
+        public void ResetAll()
         {
             isPlaying = false;
-            Reset(true);
-            playTime = 0f;
+            _playTime = 0f;
+            foreach (var clip in clips)
+            {
+                clip.Reset(true);
+            }
+            playTime = playTime;
         }
 
         #endregion
@@ -350,15 +366,6 @@ namespace VamTimeline
         {
             clip.enabled = true;
             clip.blendRate = (weight - clip.weight) / duration;
-        }
-
-        private void Reset(bool resetTime)
-        {
-            if (resetTime) _playTime = 0f;
-            foreach (var clip in clips)
-            {
-                clip.Reset(resetTime);
-            }
         }
 
         #endregion
@@ -663,7 +670,7 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (!isPlaying) return;
+            if (!allowAnimationProcessing) return;
 
             SampleFloatParams();
             SampleTriggers();
@@ -679,7 +686,7 @@ namespace VamTimeline
 
         public void FixedUpdate()
         {
-            if (!isPlaying) return;
+            if (!allowAnimationProcessing) return;
 
             SetPlayTime(playTime + Time.fixedDeltaTime * _speed);
 
@@ -696,6 +703,11 @@ namespace VamTimeline
             onTimeChanged.RemoveAllListeners();
             onCurrentAnimationChanged.RemoveAllListeners();
             onAnimationSettingsChanged.RemoveAllListeners();
+            onIsPlayingChanged.RemoveAllListeners();
+            onEditorSettingsChanged.RemoveAllListeners();
+            onSpeedChanged.RemoveAllListeners();
+            onClipsListChanged.RemoveAllListeners();
+            onAnimationRebuilt.RemoveAllListeners();
             foreach (var clip in clips)
             {
                 clip.Dispose();
