@@ -81,6 +81,7 @@ namespace VamTimeline
                 SuperController.LogError("VamTimeline: No motion animation to import.");
                 return;
             }
+
             current.animationLength = length;
 
             if (_importRecordedUI == null) return;
@@ -110,6 +111,13 @@ namespace VamTimeline
                     if (mot == null || mot.clip == null) continue;
                     if (mot.clip.clipLength <= 0.1) continue;
                     ctrl = mot.controller;
+
+                    if (animation.EnumerateLayers().Where(l => l != current.animationLayer).Select(l => animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == ctrl))
+                    {
+                        SuperController.LogError($"Skipping controller {ctrl.name} because it was used in another layer.");
+                        continue;
+                    }
+
                     current.Remove(ctrl);
                     target = current.Add(ctrl);
                     target.StartBulkUpdates();
