@@ -121,7 +121,7 @@ namespace VamTimeline
             rotY.SetKeyframe(time, locationRotation.y);
             rotZ.SetKeyframe(time, locationRotation.z);
             rotW.SetKeyframe(time, locationRotation.w);
-            SetKeyframeSettings(time, CurveTypeValues.Smooth);
+            EnsureKeyframeSettings(time, CurveTypeValues.Smooth);
             dirty = true;
             return key;
         }

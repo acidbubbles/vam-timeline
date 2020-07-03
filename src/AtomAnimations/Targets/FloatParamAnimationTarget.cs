@@ -52,7 +52,7 @@ namespace VamTimeline
         public void SetKeyframe(float time, float value, bool dirty = true)
         {
             this.value.SetKeyframe(time, value);
-            SetKeyframeSettings(time, CurveTypeValues.Smooth);
+            EnsureKeyframeSettings(time, CurveTypeValues.Smooth);
             if (dirty) base.dirty = true;
         }
 

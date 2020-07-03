@@ -61,7 +61,6 @@ namespace VamTimeline
                 KeyframeSettings setting;
                 if (!settings.TryGetValue(curve[key].time.ToMilliseconds(), out setting))
                 {
-                    SuperController.LogError("??" + key);
                     continue;
                 }
                 curve.ApplyCurveType(key, setting.curveType, loop);
@@ -73,7 +72,7 @@ namespace VamTimeline
             }
         }
 
-        protected void SetKeyframeSettings(float time, string defaultCurveTypeValue)
+        public void EnsureKeyframeSettings(float time, string defaultCurveTypeValue)
         {
             var ms = time.ToMilliseconds();
             if (!settings.ContainsKey(ms))

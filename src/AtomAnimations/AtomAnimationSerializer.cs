@@ -109,14 +109,7 @@ namespace VamTimeline
                     DeserializeCurve(target.rotY, controllerJSON["RotY"], clip.animationLength);
                     DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength);
                     DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength);
-                    AnimationCurve leadCurve = target.GetLeadCurve();
-                    for (var key = 0; key < leadCurve.length; key++)
-                    {
-                        var time = leadCurve[key].time;
-                        var ms = time.ToMilliseconds();
-                        if (!target.settings.ContainsKey(ms))
-                            target.settings.Add(ms, new KeyframeSettings { curveType = CurveTypeValues.LeaveAsIs });
-                    }
+                    AddMissingKeyframeSettings(target);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
@@ -155,7 +148,8 @@ namespace VamTimeline
                     }
                     var target = new FloatParamAnimationTarget(storable, jsf);
                     clip.Add(target);
-                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength);
+                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength, target.settings);
+                    AddMissingKeyframeSettings(target);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
@@ -178,6 +172,16 @@ namespace VamTimeline
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(target);
                 }
+            }
+        }
+
+        private static void AddMissingKeyframeSettings(ICurveAnimationTarget target)
+        {
+            AnimationCurve leadCurve = target.GetLeadCurve();
+            for (var key = 0; key < leadCurve.length; key++)
+            {
+                var time = leadCurve[key].time;
+                target.EnsureKeyframeSettings(time, CurveTypeValues.LeaveAsIs);
             }
         }
 
@@ -401,7 +405,7 @@ namespace VamTimeline
                     {
                         { "Storable", target.storable.storeId },
                         { "Name", target.floatParam.name },
-                        { "Value", SerializeCurve(target.value) },
+                        { "Value", SerializeCurve(target.value, target.settings) },
                     };
                 paramsJSON.Add(paramJSON);
             }

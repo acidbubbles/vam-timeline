@@ -11,6 +11,7 @@ namespace VamTimeline
         void DeleteFrameByKey(int key);
         void AddEdgeFramesIfMissing(float animationLength);
         void ChangeCurve(float time, string curveType, bool loop);
+        void EnsureKeyframeSettings(float time, string defaultCurveTypeValue);
         string GetKeyframeSettings(float time);
     }
 }
