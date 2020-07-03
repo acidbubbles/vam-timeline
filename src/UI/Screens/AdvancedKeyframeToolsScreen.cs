@@ -132,8 +132,7 @@ namespace VamTimeline
                 foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (!fc.name.EndsWith("Control")) continue;
-                    if (fc.currentPositionState != FreeControllerV3.PositionState.On) continue;
-                    if (fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
+                    if (fc.currentPositionState != FreeControllerV3.PositionState.On && fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
 
                     var target = current.targetControllers.FirstOrDefault(tc => tc.controller == fc);
                     if (target == null)
