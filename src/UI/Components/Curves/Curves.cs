@@ -12,7 +12,7 @@ namespace VamTimeline
         private const int _maxCurves = 9;
 
         private readonly CurvesStyle _style = new CurvesStyle();
-        private readonly RectTransform _scrubberRect;
+        private readonly RectTransform _scrubberLineRect;
         private readonly GameObject _noCurves;
         private readonly GameObject _linesContainer;
         private readonly IList<ICurveAnimationTarget> _targets = new List<ICurveAnimationTarget>();
@@ -28,7 +28,7 @@ namespace VamTimeline
             _noCurves = CreateNoCurvesText();
 
             _linesContainer = CreateLinesContainer();
-            _scrubberRect = CreateScrubber();
+            _scrubberLineRect = CreateScrubber();
         }
 
         private GameObject CreateBackground(Color color)
@@ -65,7 +65,7 @@ namespace VamTimeline
             image.color = _style.ScrubberColor;
             image.raycastTarget = false;
 
-            return rect;
+            return lineRect;
         }
 
         public GameObject CreateLinesContainer()
@@ -177,14 +177,14 @@ namespace VamTimeline
                     BindCurves(target);
                 }
                 _noCurves.SetActive(false);
-                _scrubberRect.gameObject.SetActive(true);
+                _scrubberLineRect.transform.parent.gameObject.SetActive(true);
                 _clipTime = -1f;
             }
             else
             {
                 _animationLength = 0f;
                 _noCurves.SetActive(true);
-                _scrubberRect.gameObject.SetActive(false);
+                _scrubberLineRect.transform.parent.gameObject.SetActive(false);
             }
         }
 
@@ -281,8 +281,8 @@ namespace VamTimeline
 
             _clipTime = _animation.clipTime;
             var ratio = Mathf.Clamp01(_animation.clipTime / _animationLength);
-            _scrubberRect.anchorMin = new Vector2(ratio, 0);
-            _scrubberRect.anchorMax = new Vector2(ratio, 1);
+            _scrubberLineRect.anchorMin = new Vector2(ratio, 0);
+            _scrubberLineRect.anchorMax = new Vector2(ratio, 1);
         }
 
         public void OnDestroy()
