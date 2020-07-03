@@ -75,7 +75,7 @@ namespace VamTimeline
 
         private void InitSpeedUI()
         {
-            _speedJSON = new JSONStorableFloat("Speed", 1f, 0f, 10f, false)
+            _speedJSON = new JSONStorableFloat("Speed", 1f, (float val) => animation.speed = val, 0.01f, 10f, true)
             {
                 valNoCallback = animation.speed
             };
