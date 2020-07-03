@@ -42,10 +42,10 @@ namespace VamTimeline
 
         protected Text CreateHeader(string val, int level)
         {
-            var layerUI = prefabFactory.CreateSpacer();
-            layerUI.height = 40f;
+            var headerUI = prefabFactory.CreateSpacer();
+            headerUI.height = 40f;
 
-            var text = layerUI.gameObject.AddComponent<Text>();
+            var text = headerUI.gameObject.AddComponent<Text>();
             text.text = val;
             text.font = _font;
             switch (level)

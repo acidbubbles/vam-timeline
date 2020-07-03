@@ -25,6 +25,7 @@ namespace VamTimeline
         private UIDynamicButton _manageTargetsUI;
         private UIDynamic _spacerUI;
         private JSONStorableBool _filterJSON;
+        private UnityEngine.UI.Text _noTargetsUI;
 
         public TargetsScreen()
             : base()
@@ -78,13 +79,14 @@ namespace VamTimeline
         {
             if (animation == null) return;
             RemoveTargets();
-            if (_filterUI != null) prefabFactory.RemoveToggle(_filterJSON, _filterUI);
-            Destroy(_spacerUI?.gameObject);
-            Destroy(_manageTargetsUI?.gameObject);
+            RemoveTargetSiblingComponents();
+
             var time = animation.clipTime;
+            var hasTargets = false;
 
             foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>() : current.targetTriggers)
             {
+                hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<TriggersTargetFrame>();
@@ -98,6 +100,7 @@ namespace VamTimeline
 
             foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>() : current.targetControllers)
             {
+                hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
@@ -111,6 +114,7 @@ namespace VamTimeline
 
             foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>() : current.targetFloatParams)
             {
+                hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
@@ -122,13 +126,20 @@ namespace VamTimeline
                 });
             }
 
-            _spacerUI = prefabFactory.CreateSpacer();
+            if (!hasTargets)
+            {
+                _noTargetsUI = CreateHeader("No targets", 2);
+            }
+            else
+            {
+                _spacerUI = prefabFactory.CreateSpacer();
 
-            _filterUI = prefabFactory.CreateToggle(_filterJSON);
-            _filterUI.backgroundColor = navButtonColor;
-            var toggleColors = _filterUI.toggle.colors;
-            toggleColors.normalColor = navButtonColor;
-            _filterUI.toggle.colors = toggleColors;
+                _filterUI = prefabFactory.CreateToggle(_filterJSON);
+                _filterUI.backgroundColor = navButtonColor;
+                var toggleColors = _filterUI.toggle.colors;
+                toggleColors.normalColor = navButtonColor;
+                _filterUI.toggle.colors = toggleColors;
+            }
 
             _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/remove targets", AddRemoveTargetsScreen.ScreenName);
             if (current.GetAllTargetsCount() == 0)
@@ -153,6 +164,18 @@ namespace VamTimeline
             }
             _targets.Clear();
             Destroy(_manageTargetsUI?.gameObject);
+        }
+
+        private void RemoveTargetSiblingComponents()
+        {
+            if (_filterUI != null) prefabFactory.RemoveToggle(_filterJSON, _filterUI);
+            _filterUI = null;
+            Destroy(_noTargetsUI?.gameObject);
+            _noTargetsUI = null;
+            Destroy(_spacerUI?.gameObject);
+            _spacerUI = null;
+            Destroy(_manageTargetsUI?.gameObject);
+            _manageTargetsUI = null;
         }
     }
 }
