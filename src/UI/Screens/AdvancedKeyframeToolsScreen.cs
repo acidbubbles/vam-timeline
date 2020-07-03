@@ -9,6 +9,8 @@ namespace VamTimeline
     public class AdvancedKeyframeToolsScreen : ScreenBase
     {
         public const string ScreenName = "Advanced";
+        private UIDynamicButton _bakeUI;
+        private bool _baking;
 
         public override string screenId => ScreenName;
 
@@ -35,8 +37,8 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            var bakeUI = prefabFactory.CreateButton("Bake Animation (Arm & Record)");
-            bakeUI.button.onClick.AddListener(() => Bake());
+            _bakeUI = prefabFactory.CreateButton("Bake Animation (Arm & Record)");
+            _bakeUI.button.onClick.AddListener(() => Bake());
 
             prefabFactory.CreateSpacer();
 
@@ -160,12 +162,21 @@ namespace VamTimeline
         {
             try
             {
+                if (_baking)
+                {
+                    animation.StopAll();
+                    return;
+                }
+
                 var controllers = animation.clips.SelectMany(c => c.targetControllers).Select(c => c.controller).Distinct().ToList();
                 foreach (var mac in plugin.containingAtom.motionAnimationControls)
                 {
                     if (!controllers.Contains(mac.controller)) continue;
                     mac.armedForRecord = true;
                 }
+
+                _baking = true;
+                _bakeUI.label = "Click or press Esc to stop...";
 
                 animation.PlayAll();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
@@ -180,11 +191,14 @@ namespace VamTimeline
 
         private IEnumerator StopWhenPlaybackIsComplete()
         {
-            var waitFor = animation.clips.Sum(c => c.nextAnimationTime.IsSameFrame(0) ? c.animationLength : c.nextAnimationTime);
-            yield return new WaitForSeconds(waitFor);
+            while (animation.isPlaying && !Input.GetKey(KeyCode.Escape))
+                yield return 0;
 
             try
             {
+                _baking = false;
+                _bakeUI.label = "Bake Animation (Arm & Record)";
+
                 SuperController.singleton.motionAnimationMaster.StopRecord();
                 animation.StopAll();
             }
