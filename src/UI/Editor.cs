@@ -73,12 +73,6 @@ namespace VamTimeline
             return go;
         }
 
-        public bool locked
-        {
-            get { return _controlPanel.locked; }
-            set { _controlPanel.locked = value; screensManager.UpdateLocked(value); }
-        }
-
         public AtomAnimation animation;
         public ScreenTabs tabs;
         public GameObject leftPanel;
@@ -245,11 +239,14 @@ namespace VamTimeline
             _curves.Bind(animation);
 
             animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+            OnEditorSettingsChanged(null);
         }
 
         private void OnEditorSettingsChanged(string _)
         {
             _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers;
+            _controlPanel.locked = animation.locked;
+            screensManager.UpdateLocked(animation.locked);
         }
 
         public void OnDestroy()
