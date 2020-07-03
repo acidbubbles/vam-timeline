@@ -392,13 +392,19 @@ namespace VamTimeline
                     return;
                 }
 
-                _addControllerListJSON.valNoCallback = "";
-
                 if (current.targetControllers.Any(c => c.controller == controller))
                     return;
 
-                controller.currentPositionState = FreeControllerV3.PositionState.On;
-                controller.currentRotationState = FreeControllerV3.RotationState.On;
+                if (controller.currentPositionState == FreeControllerV3.PositionState.Off && controller.currentRotationState == FreeControllerV3.RotationState.Off)
+                {
+                    controller.currentPositionState = FreeControllerV3.PositionState.On;
+                    controller.currentRotationState = FreeControllerV3.RotationState.On;
+                }
+                else if (controller.currentPositionState != FreeControllerV3.PositionState.On && controller.currentRotationState != FreeControllerV3.RotationState.On)
+                {
+                    SuperController.LogError($"Controller {uid} has neither rotation nor position set to 'On'. Change it before adding it.");
+                    return;
+                }
 
                 foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
                 {
@@ -411,6 +417,8 @@ namespace VamTimeline
                             added.ChangeCurve(clip.animationLength, CurveTypeValues.CopyPrevious, false);
                     }
                 }
+
+                _addControllerListJSON.valNoCallback = "";
             }
             catch (Exception exc)
             {
