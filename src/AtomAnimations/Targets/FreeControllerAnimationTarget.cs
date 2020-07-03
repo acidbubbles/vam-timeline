@@ -34,23 +34,40 @@ namespace VamTimeline
 
         public void Sample(float clipTime, float weight)
         {
-            if (controller?.control == null) return;
-            var control = controller.control;
+            var control = controller?.control;
+            if (control == null) return;
+            if (controller.possessed) return;
 
-            var rotState = controller.currentRotationState;
-            if (rotState == FreeControllerV3.RotationState.On)
+            if (controller.currentRotationState == FreeControllerV3.RotationState.On)
             {
-                var localRotation = Quaternion.Slerp(control.localRotation, EvaluateRotation(clipTime), weight);
-                control.localRotation = localRotation;
-                // control.rotation = controller.linkToRB.rotation * localRotation;
+                var targetRotation = EvaluateRotation(clipTime);
+                if (controller.linkToRB != null)
+                {
+                    targetRotation = controller.linkToRB.rotation * targetRotation;
+                    var rotation = Quaternion.Slerp(control.rotation, targetRotation, weight);
+                    control.rotation = rotation;
+                }
+                else
+                {
+                    var localRotation = Quaternion.Slerp(control.localRotation, targetRotation, weight);
+                    control.localRotation = localRotation;
+                }
             }
 
-            var posState = controller.currentPositionState;
-            if (posState == FreeControllerV3.PositionState.On)
+            if (controller.currentPositionState == FreeControllerV3.PositionState.On)
             {
-                var localPosition = Vector3.Lerp(control.localPosition, EvaluatePosition(clipTime), weight);
-                control.localPosition = localPosition;
-                // control.position = controller.linkToRB.position + Vector3.Scale(localPosition, control.transform.localScale);
+                var targetPosition = EvaluatePosition(clipTime);
+                if (controller.linkToRB != null)
+                {
+                    targetPosition = controller.linkToRB.position + controller.linkToRB.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
+                    var position = Vector3.Lerp(control.position, targetPosition, weight);
+                    control.position = position;
+                }
+                else
+                {
+                    var localPosition = Vector3.Lerp(control.localPosition, targetPosition, weight);
+                    control.localPosition = localPosition;
+                }
             }
         }
 
@@ -87,6 +104,11 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrentTransform(float time)
         {
+            if (controller.linkToRB != null)
+            {
+                return SetKeyframe(time, controller.linkToRB.transform.InverseTransformPoint(controller.transform.position), Quaternion.Inverse(controller.transform.rotation) * controller.linkToRB.rotation);
+            }
+
             return SetKeyframe(time, controller.transform.localPosition, controller.transform.localRotation);
         }
 
