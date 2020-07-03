@@ -59,7 +59,7 @@ namespace VamTimeline
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {
-                if (clip.mainInLayer)
+                if (clip.enabled)
                 {
                     animation.StopClip(clip.animationName);
                 }
