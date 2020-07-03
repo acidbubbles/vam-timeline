@@ -40,10 +40,10 @@ namespace VamTimeline
             CreateBackground(gameObject, _style.BackgroundColor);
             CreateLabelsBackground();
 
-            _scrubberRect = CreateScrubber(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
-
             _content = VamPrefabFactory.CreateScrollRect(gameObject);
             _content.GetComponent<VerticalLayoutGroup>().spacing = _style.RowSpacing;
+            _scrubberRect = CreateScrubber(_content.transform.parent.gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
+
         }
 
         public void OnDisable()
@@ -106,6 +106,7 @@ namespace VamTimeline
             rect.StretchParent();
             rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
             rect.sizeDelta = new Vector2(-_style.LabelWidth - _style.KeyframesRowPadding * 2f, 0);
+            rect.SetSiblingIndex(0);
 
             var line = new GameObject("Scrubber Line");
             line.transform.SetParent(go.transform, false);
@@ -186,7 +187,7 @@ namespace VamTimeline
                         CreateRow(target);
                 }
             }
-            _scrubberRect.gameObject.SetActive(any);
+            _scrubberRect?.gameObject.SetActive(any);
             _clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
             _clip.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
         }
@@ -414,7 +415,7 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float time, bool stopped)
         {
-            if (_locked) return;
+            if (_locked || _scrubberRect == null) return;
 
             var ratio = Mathf.Clamp01(time / _clip.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
