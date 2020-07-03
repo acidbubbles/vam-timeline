@@ -6,7 +6,7 @@ namespace VamTimeline
 {
     public abstract class CurveAnimationTargetBase : AnimationTargetBase
     {
-        public readonly SortedDictionary<int, KeyframeSettings> settings = new SortedDictionary<int, KeyframeSettings>();
+        public SortedDictionary<int, KeyframeSettings> settings { get; } = new SortedDictionary<int, KeyframeSettings>();
         public abstract string name { get; }
 
         public abstract AnimationCurve GetLeadCurve();

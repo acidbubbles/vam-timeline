@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace VamTimeline
 {
     public interface ICurveAnimationTarget : IAtomAnimationTarget
     {
+        SortedDictionary<int, KeyframeSettings> settings { get; }
+
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
         void AddEdgeFramesIfMissing(float animationLength);

@@ -81,16 +81,12 @@ namespace VamTimeline
                             curve.Reverse();
                         }
 
-                        var controllerTarget = target as FreeControllerAnimationTarget;
-                        if (controllerTarget != null)
+                        var settings = targetWithCurves.settings.ToList();
+                        var length = settings.Last().Key;
+                        targetWithCurves.settings.Clear();
+                        foreach (var setting in settings)
                         {
-                            var settings = controllerTarget.settings.ToList();
-                            var length = settings.Last().Key;
-                            controllerTarget.settings.Clear();
-                            foreach (var setting in settings)
-                            {
-                                controllerTarget.settings.Add(length - setting.Key, setting.Value);
-                            }
+                            targetWithCurves.settings.Add(length - setting.Key, setting.Value);
                         }
                     }
                     else if (target is TriggersAnimationTarget)
