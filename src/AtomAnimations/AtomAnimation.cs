@@ -284,7 +284,10 @@ namespace VamTimeline
                 clip.animationPattern.SetBoolParamValue("loopOnce", true);
 
             if (!clips.Any(c => c.mainInLayer))
+            {
                 isPlaying = false;
+                playTime = current.clipTime;
+            }
         }
 
         public void StopAll()
