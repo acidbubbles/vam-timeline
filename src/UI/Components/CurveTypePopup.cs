@@ -47,7 +47,7 @@ namespace VamTimeline
             }
             float time = _animation.clipTime.Snap();
 
-            foreach (var target in _current.targetControllers)
+            foreach (var target in _current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
                 target.ChangeCurve(time, curveType);
 
             RefreshCurrentCurveType(_animation.clipTime);
@@ -67,11 +67,20 @@ namespace VamTimeline
                 _curveTypes.Add(v.curveType);
             }
             if (_curveTypes.Count == 0)
+            {
                 curveTypeJSON.valNoCallback = _noKeyframeCurveType;
+                curveTypeUI.popup.topButton.interactable = false;
+            }
             else if (_curveTypes.Count == 1)
+            {
                 curveTypeJSON.valNoCallback = _curveTypes.First().ToString();
+                curveTypeUI.popup.topButton.interactable = true;
+            }
             else
+            {
                 curveTypeJSON.valNoCallback = "(" + string.Join("/", _curveTypes.ToArray()) + ")";
+                curveTypeUI.popup.topButton.interactable = true;
+            }
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)
@@ -81,7 +90,12 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
-            curveTypeUI.popup.topButton.interactable = _current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Count() > 0;
+            RefreshCurrentCurveType(_animation.clipTime);
+        }
+
+        private void OnAnimationRebuilt()
+        {
+            RefreshCurrentCurveType(_animation.clipTime);
         }
 
         public void OnEnable()
@@ -90,6 +104,7 @@ namespace VamTimeline
             _listening = true;
             _animation.onTimeChanged.AddListener(OnTimeChanged);
             _animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            _animation.onAnimationRebuilt.AddListener(OnAnimationRebuilt);
             OnTimeChanged(_animation.timeArgs);
         }
 
@@ -98,6 +113,7 @@ namespace VamTimeline
             if (!_listening || _animation == null) return;
             _animation.onTimeChanged.RemoveListener(OnTimeChanged);
             _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            _animation.onAnimationRebuilt.RemoveListener(OnAnimationRebuilt);
             _listening = false;
         }
     }

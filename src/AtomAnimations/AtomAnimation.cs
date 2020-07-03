@@ -29,6 +29,7 @@ namespace VamTimeline
         public UnityEvent onSpeedChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
         public UnityEvent onTargetsSelectionChanged = new UnityEvent();
+        public UnityEvent onAnimationRebuilt = new UnityEvent();
 
         #region Editor Settings
         private float _snap = 0.1f;
@@ -575,6 +576,8 @@ namespace VamTimeline
             {
                 SuperController.LogError($"VamTimeline.{nameof(RebuildAnimationNow)}: Suspiciously long animation rebuild ({sw.Elapsed})");
             }
+
+            onAnimationRebuilt.Invoke();
         }
 
         private void RebuildClip(AtomAnimationClip clip)
