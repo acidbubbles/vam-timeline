@@ -58,8 +58,10 @@
 
   <ItemGroup>
     <!-- AtomAnimationFiles -->
+    <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
     <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperation.cs" />
+    <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />
     <Compile Include="src\AtomAnimations\Targets\AnimationTargetBase.cs" />
     <Compile Include="src\AtomAnimations\Targets\CurveAnimationTargetBase.cs" />
     <Compile Include="src\AtomAnimations\Targets\CurveTypeValues.cs" />

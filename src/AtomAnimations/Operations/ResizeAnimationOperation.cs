@@ -21,8 +21,9 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                     StretchCurve(curve, newAnimationLength);
+                MatchKeyframeSettingsPivotBegin(target);
+                target.AddEdgeFramesIfMissing(newAnimationLength);
             }
-            MatchKeyframeSettingsPivotBegin();
             StretchTriggers(newAnimationLength);
             _clip.animationLength = newAnimationLength;
         }
@@ -103,10 +104,10 @@ namespace VamTimeline
                 foreach (var curve in target.GetCurves())
                 {
                     CropEndCurve(curve, newAnimationLength);
-                    curve.AddEdgeFramesIfMissing(newAnimationLength);
                 }
+                MatchKeyframeSettingsPivotBegin(target);
+                target.AddEdgeFramesIfMissing(newAnimationLength);
             }
-            MatchKeyframeSettingsPivotBegin();
             CropEndTriggers(newAnimationLength);
             _clip.animationLength = newAnimationLength;
         }
@@ -134,8 +135,9 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                     CropOrExtendBeginCurve(curve, newAnimationLength);
+                MatchKeyframeSettingsPivotEnd(target);
+                target.AddEdgeFramesIfMissing(newAnimationLength);
             }
-            MatchKeyframeSettingsPivotEnd();
             CropBeginTriggersAndOffset(newAnimationLength);
             _clip.animationLength = newAnimationLength;
         }
@@ -207,8 +209,9 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                     CropOrExtendAtTimeCurve(curve, newAnimationLength, time);
+                MatchKeyframeSettingsPivotBegin(target);
+                target.AddEdgeFramesIfMissing(newAnimationLength);
             }
-            MatchKeyframeSettingsPivotBegin();
             CropEndTriggers(newAnimationLength);
             _clip.animationLength = newAnimationLength;
         }
@@ -269,18 +272,15 @@ namespace VamTimeline
             }
         }
 
-        private void MatchKeyframeSettingsPivotBegin()
+        private static void MatchKeyframeSettingsPivotBegin(ICurveAnimationTarget target)
         {
-            foreach (var target in _clip.targetControllers)
+            var settings = target.settings.Values.ToList();
+            target.settings.Clear();
+            var leadCurve = target.GetLeadCurve();
+            for (var i = 0; i < leadCurve.length; i++)
             {
-                var settings = target.settings.Values.ToList();
-                target.settings.Clear();
-                var leadCurve = target.GetLeadCurve();
-                for (var i = 0; i < leadCurve.length; i++)
-                {
-                    if (i < settings.Count) target.settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
-                    else target.settings.Add(leadCurve[i].time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.CopyPrevious });
-                }
+                if (i < settings.Count) target.settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
+                else target.settings.Add(leadCurve[i].time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.CopyPrevious });
             }
         }
 
@@ -308,22 +308,19 @@ namespace VamTimeline
             }
         }
 
-        private void MatchKeyframeSettingsPivotEnd()
+        private void MatchKeyframeSettingsPivotEnd(ICurveAnimationTarget target)
         {
-            foreach (var target in _clip.targetControllers)
+            var settings = target.settings.Values.ToList();
+            target.settings.Clear();
+            var leadCurve = target.GetLeadCurve();
+            for (var i = 0; i < leadCurve.length; i++)
             {
-                var settings = target.settings.Values.ToList();
-                target.settings.Clear();
-                var leadCurve = target.GetLeadCurve();
-                for (var i = 0; i < leadCurve.length; i++)
-                {
-                    if (i >= settings.Count) break;
-                    int ms = leadCurve[leadCurve.length - i - 1].time.ToMilliseconds();
-                    target.settings.Add(ms, settings[settings.Count - i - 1]);
-                }
-                if (!target.settings.ContainsKey(0))
-                    target.settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+                if (i >= settings.Count) break;
+                int ms = leadCurve[leadCurve.length - i - 1].time.ToMilliseconds();
+                target.settings.Add(ms, settings[settings.Count - i - 1]);
             }
+            if (!target.settings.ContainsKey(0))
+                target.settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
         }
 
         private void CropBeginTriggersAndOffset(float newAnimationLength)

@@ -9,8 +9,10 @@
   "promotionalLink": "https://github.com/acidbubbles/vam-timeline",
   "programVersion": "1.19.0.5",
   "contentList": [
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\KeyframesOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\OperationsFactory.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\ResizeAnimationOperation.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\TargetsOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\AnimationTargetBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\CurveAnimationTargetBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\CurveTypeValues.cs",

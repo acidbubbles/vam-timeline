@@ -10,7 +10,7 @@ namespace VamTimeline
         public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
 
         private bool _selected;
-        private bool _bulk;
+        private int _bulk;
         private bool _dirty = true;
 
         public bool selected
@@ -33,19 +33,19 @@ namespace VamTimeline
             set
             {
                 _dirty = value;
-                if (value && !_bulk)
+                if (value && _bulk == 0)
                     onAnimationKeyframesDirty.Invoke();
             }
         }
 
         public void StartBulkUpdates()
         {
-            _bulk = true;
+            _bulk++;
         }
         public void EndBulkUpdates()
         {
-            _bulk = false;
-            if (dirty) onAnimationKeyframesDirty.Invoke();
+            _bulk--;
+            if (_bulk == 0 && dirty) onAnimationKeyframesDirty.Invoke();
         }
 
         public virtual void Dispose()

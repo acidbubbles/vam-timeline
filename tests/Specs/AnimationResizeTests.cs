@@ -39,7 +39,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().Stretch(4f);
+            new ResizeAnimationOperation(clip).Stretch(4f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Settings after resize");
@@ -51,7 +51,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().Stretch(1f);
+            new ResizeAnimationOperation(clip).Stretch(1f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Settings after resize");
@@ -63,7 +63,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().Stretch(4f);
+            new ResizeAnimationOperation(clip).Stretch(4f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
             yield break;
@@ -74,7 +74,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().Stretch(1f);
+            new ResizeAnimationOperation(clip).Stretch(1f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
             yield break;
@@ -85,7 +85,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().Stretch(4f);
+            new ResizeAnimationOperation(clip).Stretch(4f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Map after resize");
             yield break;
@@ -96,7 +96,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().Stretch(1f);
+            new ResizeAnimationOperation(clip).Stretch(1f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Map after resize");
             yield break;
@@ -111,7 +111,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
+            new ResizeAnimationOperation(clip).CropOrExtendEnd(4f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000, 4000 }, "Settings after resize");
@@ -123,7 +123,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+            new ResizeAnimationOperation(clip).CropOrExtendEnd(1f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Settings after resize");
@@ -135,7 +135,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
+            new ResizeAnimationOperation(clip).CropOrExtendEnd(4f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
             yield break;
@@ -146,7 +146,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+            new ResizeAnimationOperation(clip).CropOrExtendEnd(1f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
             yield break;
@@ -157,7 +157,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendEnd(4f);
+            new ResizeAnimationOperation(clip).CropOrExtendEnd(4f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000, 4000 }, "Map after resize");
             yield break;
@@ -168,7 +168,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendEnd(1f);
+            new ResizeAnimationOperation(clip).CropOrExtendEnd(1f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
             yield break;
@@ -185,7 +185,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
+            new ResizeAnimationOperation(clip).CropOrExtendBegin(4f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 3000, 4000 }, "Settings after resize");
@@ -197,7 +197,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFreeController(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendBegin(1f);
+            new ResizeAnimationOperation(clip).CropOrExtendBegin(1f);
 
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Settings after resize");
@@ -209,7 +209,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
+            new ResizeAnimationOperation(clip).CropOrExtendBegin(4f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
             yield break;
@@ -220,7 +220,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesFloatParam(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendBegin(1f);
+            new ResizeAnimationOperation(clip).CropOrExtendBegin(1f);
 
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
             yield break;
@@ -231,7 +231,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendBegin(4f);
+            new ResizeAnimationOperation(clip).CropOrExtendBegin(4f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 3000, 4000 }, "Map after resize");
             yield break;
@@ -242,7 +242,7 @@ namespace VamTimeline.Tests.Specs
             var clip = context.animation.clips[0];
             var target = GivenThreeKeyframesTrigger(context, clip);
 
-            new OperationsFactory(clip).Resize().CropOrExtendBegin(1f);
+            new ResizeAnimationOperation(clip).CropOrExtendBegin(1f);
 
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
             yield break;

@@ -37,32 +37,32 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             _importRecordedOptionsJSON = new JSONStorableStringChooser(
-                "Import Recorded Animation Options",
+                "Import options",
                  new List<string> { "Keyframe Reduction", "Fixed Frames per Second" },
                  "Keyframe Reduction",
-                 "Import Recorded Animation Options")
+                 "Import options")
             {
                 isStorable = false
             };
             var importRecordedOptionsUI = prefabFactory.CreateScrollablePopup(_importRecordedOptionsJSON);
 
-            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum Distance Between Frames", 0.04f, 0.001f, 0.5f, true);
+            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, 0.001f, 0.5f, true);
             var reduceMinPosDistanceUI = prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
 
-            _reduceMinRotationJSON = new JSONStorableFloat("Minimum Rotation Between Frames", 10f, 0.1f, 90f, true);
+            _reduceMinRotationJSON = new JSONStorableFloat("Minimum rotation between frames", 10f, 0.1f, 90f, true);
             var reduceMinRotationUI = prefabFactory.CreateSlider(_reduceMinRotationJSON);
 
-            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max Frames per Second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
+            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val), 1f, 10f, true);
             var maxFramesPerSecondUI = prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON);
 
             prefabFactory.CreateSpacer();
 
-            _importRecordedUI = prefabFactory.CreateButton("Import Recorded Animation (Mocap)");
+            _importRecordedUI = prefabFactory.CreateButton("Import recorded animation (mocap)");
             _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
 
             prefabFactory.CreateSpacer();
 
-            _reduceKeyframesUI = prefabFactory.CreateButton("Reduce Float Params Keyframes");
+            _reduceKeyframesUI = prefabFactory.CreateButton("Reduce float params keyframes");
             _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
         }
 
@@ -82,7 +82,11 @@ namespace VamTimeline
                 return;
             }
 
-            current.animationLength = length;
+            if (length > current.animationLength)
+            {
+                operations.Resize().CropOrExtendEnd(length);
+                animation.RebuildAnimationNow();
+            }
 
             if (_importRecordedUI == null) return;
             _importRecordedUI.buttonText.text = "Importing, please wait...";
@@ -119,10 +123,9 @@ namespace VamTimeline
                     }
 
                     current.Remove(ctrl);
-                    target = current.Add(ctrl);
+                    target = operations.Targets().Add(ctrl);
                     target.StartBulkUpdates();
-                    target.SetKeyframeToCurrentTransform(0);
-                    target.SetKeyframeToCurrentTransform(current.animationLength);
+                    operations.Keyframes().RemoveAll(target);
                 }
                 catch (Exception exc)
                 {
@@ -151,7 +154,7 @@ namespace VamTimeline
                 target.EndBulkUpdates();
             }
 
-            _importRecordedUI.buttonText.text = "Import Recorded Animation (Mocap)";
+            _importRecordedUI.buttonText.text = "Import recorded animation (mocap)";
             _importRecordedUI.button.interactable = true;
         }
 
@@ -412,7 +415,7 @@ namespace VamTimeline
                 catch (Exception exc)
                 {
                     _reduceKeyframesUI.button.interactable = true;
-                    _reduceKeyframesUI.buttonText.text = "Reduce Float Params Keyframes";
+                    _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
                     SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[FloatParam]: {exc}");
                     yield break;
                 }

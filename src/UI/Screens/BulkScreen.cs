@@ -50,41 +50,41 @@ namespace VamTimeline
 
         protected void InitBulkClipboardUI()
         {
-            var cutUI = prefabFactory.CreateButton("Cut / Delete Frame(s)");
+            var cutUI = prefabFactory.CreateButton("Cut / delete frame(s)");
             cutUI.button.onClick.AddListener(() => CopyDeleteSelected(true, true));
 
-            var copyUI = prefabFactory.CreateButton("Copy Frame(s)");
+            var copyUI = prefabFactory.CreateButton("Copy frame(s)");
             copyUI.button.onClick.AddListener(() => CopyDeleteSelected(true, false));
 
-            var pasteUI = prefabFactory.CreateButton("Paste Frame(s)");
+            var pasteUI = prefabFactory.CreateButton("Paste frame(s)");
             pasteUI.button.onClick.AddListener(() => plugin.pasteJSON.actionCallback());
         }
 
         private void InitSelectionUI()
         {
-            _selectionJSON = new JSONStorableString("Selected Frames", "")
+            _selectionJSON = new JSONStorableString("Selected frames", "")
             {
                 isStorable = false
             };
             var selectionUI = prefabFactory.CreateTextField(_selectionJSON);
 
-            var markSelectionStartUI = prefabFactory.CreateButton("Mark Selection Start");
+            var markSelectionStartUI = prefabFactory.CreateButton("Mark selection start");
             markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
 
-            var markSelectionEndUI = prefabFactory.CreateButton("Mark Selection End");
+            var markSelectionEndUI = prefabFactory.CreateButton("Mark selection end");
             markSelectionEndUI.button.onClick.AddListener(MarkSelectionEnd);
         }
 
         private void InitChangeCurveUI()
         {
-            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change Curve", ChangeCurve);
+            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change curve", ChangeCurve);
             var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON);
             curveTypeUI.popupPanelHeight = 340f;
         }
 
         private void InitDeleteUI()
         {
-            var deleteSelectedUI = prefabFactory.CreateButton("Delete Selected");
+            var deleteSelectedUI = prefabFactory.CreateButton("Delete selected");
             deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
         }
 

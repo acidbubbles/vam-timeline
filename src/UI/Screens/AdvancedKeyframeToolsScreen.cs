@@ -29,44 +29,29 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Keyframe Pose (All On)");
+            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Keyframe pose (all on controllers)");
             keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
 
-            var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe Pose (Animated)");
+            var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe pose (animated targets only)");
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
 
             prefabFactory.CreateSpacer();
 
-            _bakeUI = prefabFactory.CreateButton("Bake Animation (Arm & Record)");
+            _bakeUI = prefabFactory.CreateButton("Bake animation (arm & record)");
             _bakeUI.button.onClick.AddListener(() => Bake());
 
             prefabFactory.CreateSpacer();
 
-            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove All Keyframes");
+            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove all keyframes");
             removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
 
-            var reverseAnimationUI = prefabFactory.CreateButton("Reverse Animation Keyframes");
+            var reverseAnimationUI = prefabFactory.CreateButton("Reverse keyframes");
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
         }
 
         private void RemoveAllKeyframes()
         {
-            foreach (var target in current.GetAllOrSelectedTargets())
-            {
-                target.StartBulkUpdates();
-                try
-                {
-                    foreach (var time in target.GetAllKeyframesTime())
-                    {
-                        if (time == 0f || time == current.animationLength) continue;
-                        target.DeleteFrame(time);
-                    }
-                }
-                finally
-                {
-                    target.EndBulkUpdates();
-                }
-            }
+            operations.Keyframes().RemoveAll();
         }
 
         private void ReverseAnimation()
@@ -141,13 +126,7 @@ namespace VamTimeline
                             SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
                             continue;
                         }
-                        foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
-                        {
-                            var t = clip.Add(fc);
-                            t.SetKeyframeToCurrentTransform(0f);
-                            t.SetKeyframeToCurrentTransform(clip.animationLength);
-                            if (clip == current) target = t;
-                        }
+                        target = operations.Targets().Add(fc);
                     }
                     animation.SetKeyframeToCurrentTransform(target, time);
                 }
@@ -197,7 +176,7 @@ namespace VamTimeline
             try
             {
                 _baking = false;
-                _bakeUI.label = "Bake Animation (Arm & Record)";
+                _bakeUI.label = "Bake animation (arm & record)";
 
                 SuperController.singleton.motionAnimationMaster.StopRecord();
                 animation.StopAll();
