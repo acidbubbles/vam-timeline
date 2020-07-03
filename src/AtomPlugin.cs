@@ -155,7 +155,7 @@ namespace VamTimeline
             else if (Input.GetMouseButton(0) && grabbing == null)
                 grabbing = base.containingAtom.freeControllers.FirstOrDefault(c => _grabbingControllers.Contains(c.linkToRB?.gameObject.name));
 
-            if (_grabbedController == null && grabbing != null)
+            if (_grabbedController == null && grabbing != null && !grabbing.possessed)
             {
                 _grabbedController = animation.current.targetControllers.FirstOrDefault(c => c.controller == grabbing);
             }
