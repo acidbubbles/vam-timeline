@@ -66,6 +66,11 @@ namespace VamTimeline
                 }
                 curve.ApplyCurveType(key, setting.curveType, loop);
             }
+
+            if (loop && settings[0].curveType == CurveTypeValues.Smooth)
+            {
+                curve.SmoothLoop();
+            }
         }
 
         protected void SetKeyframeSettings(float time, string defaultCurveTypeValue)
