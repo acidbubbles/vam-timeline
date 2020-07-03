@@ -258,25 +258,25 @@ namespace VamTimeline
         public void RemovePopup(JSONStorableStringChooser jsc, UIDynamicPopup component = null)
         {
             if (jsc.popup != null) { jsc.popup = null; _storables.Remove(jsc); }
-            if (component != null) Destroy(component);
+            if (component != null) Destroy(component.gameObject);
         }
 
         public void RemoveSlider(JSONStorableFloat jsf, UIDynamicSlider component = null)
         {
             if (jsf.slider != null) { jsf.slider = null; _storables.Remove(jsf); }
-            if (component != null) Destroy(component);
+            if (component != null) Destroy(component.gameObject);
         }
 
         public void RemoveTextField(JSONStorableString jss, UIDynamicTextField component = null)
         {
             if (jss.dynamicText != null) { jss.dynamicText = null; _storables.Remove(jss); }
-            if (component != null) Destroy(component);
+            if (component != null) Destroy(component.gameObject);
         }
 
         public void RemoveToggle(JSONStorableBool jsb, UIDynamicToggle component = null)
         {
             if (jsb.toggle != null) { jsb.toggle = null; _storables.Remove(jsb); }
-            if (component != null) Destroy(component);
+            if (component != null) Destroy(component.gameObject);
         }
 
         private T RegisterStorable<T>(T v)

@@ -19,7 +19,10 @@ namespace VamTimeline
 
         private readonly List<TargetRef> _targets = new List<TargetRef>();
         private bool _selectionChangedPending;
+        private UIDynamicToggle _filterUI;
         private UIDynamicButton _manageTargetsUI;
+        private UIDynamic _spacerUI;
+        private JSONStorableBool _filterJSON;
 
         public TargetsScreen()
             : base()
@@ -29,6 +32,8 @@ namespace VamTimeline
         public override void Init(IAtomPlugin plugin)
         {
             base.Init(plugin);
+
+            _filterJSON = new JSONStorableBool("Filter unselected targets", true, (bool _) => OnSelectionChanged());
 
             current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
 
@@ -71,10 +76,12 @@ namespace VamTimeline
         {
             if (animation == null) return;
             RemoveTargets();
-            Destroy(_manageTargetsUI);
+            if (_filterUI != null) prefabFactory.RemoveToggle(_filterJSON, _filterUI);
+            Destroy(_spacerUI?.gameObject);
+            Destroy(_manageTargetsUI?.gameObject);
             var time = animation.clipTime;
 
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>())
+            foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>() : current.targetTriggers)
             {
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
@@ -87,7 +94,7 @@ namespace VamTimeline
                 });
             }
 
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>() : current.targetControllers)
             {
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
@@ -100,7 +107,7 @@ namespace VamTimeline
                 });
             }
 
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>() : current.targetFloatParams)
             {
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
@@ -112,6 +119,14 @@ namespace VamTimeline
                     Target = target,
                 });
             }
+
+            _spacerUI = prefabFactory.CreateSpacer();
+
+            _filterUI = prefabFactory.CreateToggle(_filterJSON);
+            _filterUI.backgroundColor = navButtonColor;
+            var toggleColors = _filterUI.toggle.colors;
+            toggleColors.normalColor = navButtonColor;
+            _filterUI.toggle.colors = toggleColors;
 
             _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/remove targets", AddRemoveTargetsScreen.ScreenName);
             if (current.GetAllTargetsCount() == 0)
