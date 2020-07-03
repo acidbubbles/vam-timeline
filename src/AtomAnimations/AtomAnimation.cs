@@ -130,7 +130,7 @@ namespace VamTimeline
                     if (clip.animationPattern != null)
                         clip.animationPattern.SetFloatParamValue("speed", value);
                 }
-                onEditorSettingsChanged.Invoke(nameof(speed));
+                onSpeedChanged.Invoke();
             }
         }
         private bool _animationRebuildRequestPending;
