@@ -120,7 +120,7 @@ namespace VamTimeline
             if (_lastTextUpdate != currentUpdate && UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
             {
                 _lastTextUpdate = currentUpdate;
-                _timeText.text = $"{animation.playTime:0.000}s / {animation.clipTime:0.000}s";
+                _timeText.text = $"{animation.playTime:0.000}s / {animation.current.animationLength:0.000}s";
             }
         }
 
