@@ -77,7 +77,7 @@ namespace VamTimeline
             };
             RegisterBool(_lockedJSON);
 
-            _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string> { "" }, "", "Atoms", (string v) => SelectCurrentAtom(v))
+            _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string>(), "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
                 isStorable = false
             };
