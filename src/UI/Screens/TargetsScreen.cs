@@ -7,6 +7,8 @@ namespace VamTimeline
 {
     public class TargetsScreen : ScreenBase
     {
+        private static bool _lastFilterVal = true;
+
         public const string ScreenName = "Targets";
 
         public override string screenId => ScreenName;
@@ -33,7 +35,7 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            _filterJSON = new JSONStorableBool("Filter unselected targets", true, (bool _) => OnSelectionChanged());
+            _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, (bool val) => { _lastFilterVal = val; OnSelectionChanged(); });
 
             current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
 
