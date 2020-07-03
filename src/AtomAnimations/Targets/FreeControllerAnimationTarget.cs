@@ -1,14 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
 {
-    public class FreeControllerAnimationTarget : AnimationTargetBase, IAnimationTargetWithCurves
+    public class FreeControllerAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
     {
         public readonly FreeControllerV3 controller;
-        public readonly SortedDictionary<int, KeyframeSettings> settings = new SortedDictionary<int, KeyframeSettings>();
         public readonly AnimationCurve x = new AnimationCurve();
         public readonly AnimationCurve y = new AnimationCurve();
         public readonly AnimationCurve z = new AnimationCurve();
@@ -18,7 +15,7 @@ namespace VamTimeline
         public readonly AnimationCurve rotW = new AnimationCurve();
         public readonly List<AnimationCurve> curves;
 
-        public string name => controller.name;
+        public override string name => controller.name;
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
@@ -59,7 +56,7 @@ namespace VamTimeline
 
         #region Control
 
-        public AnimationCurve GetLeadCurve()
+        public override AnimationCurve GetLeadCurve()
         {
             return x;
         }
@@ -71,46 +68,7 @@ namespace VamTimeline
 
         public void Validate(float animationLength)
         {
-            var leadCurve = GetLeadCurve();
-            if (leadCurve.length < 2)
-            {
-                SuperController.LogError($"Target {name} has {leadCurve.length} frames");
-                return;
-            }
-            if (x[0].time != 0)
-            {
-                SuperController.LogError($"Target {name} has no start frame");
-                return;
-            }
-            if (x[x.length - 1].time != animationLength)
-            {
-                SuperController.LogError($"Target {name} ends with frame {x[x.length - 1].time} instead of expected {animationLength}");
-                return;
-            }
-            if (this.settings.Count > leadCurve.length)
-            {
-                var curveKeys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToList();
-                var extraneousKeys = this.settings.Keys.Except(curveKeys);
-                SuperController.LogError($"Target {name} has {leadCurve.length} frames but {this.settings.Count} settings. Attempting auto-repair.");
-                foreach (var extraneousKey in extraneousKeys)
-                    this.settings.Remove(extraneousKey);
-            }
-            if (this.settings.Count != leadCurve.length)
-            {
-                SuperController.LogError($"Target {name} has {leadCurve.length} frames but {this.settings.Count} settings");
-                SuperController.LogError($"  Target  : {string.Join(", ", leadCurve.keys.Select(k => k.time.ToString()).ToArray())}");
-                SuperController.LogError($"  Settings: {string.Join(", ", this.settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
-                return;
-            }
-            var settings = this.settings.Select(s => s.Key);
-            var keys = leadCurve.keys.Select(k => k.time.ToMilliseconds()).ToArray();
-            if (!settings.SequenceEqual(keys))
-            {
-                SuperController.LogError($"Target {name} has different times for settings and keyframes");
-                SuperController.LogError($"Settings: {string.Join(", ", settings.Select(s => s.ToString()).ToArray())}");
-                SuperController.LogError($"Keyframes: {string.Join(", ", keys.Select(k => k.ToString()).ToArray())}");
-                return;
-            }
+            Validate(GetLeadCurve(), animationLength);
         }
 
         public void ReapplyCurveTypes(bool loop)
@@ -119,20 +77,7 @@ namespace VamTimeline
 
             foreach (var curve in curves)
             {
-                for (var key = 0; key < curve.length; key++)
-                {
-                    KeyframeSettings setting;
-                    if (!settings.TryGetValue(curve[key].time.ToMilliseconds(), out setting)) continue;
-                    curve.ApplyCurveType(key, setting.curveType, loop);
-                }
-            }
-        }
-
-        public void SmoothLoop()
-        {
-            foreach (var curve in curves)
-            {
-                curve.SmoothLoop();
+                ReapplyCurveTypes(curve, loop);
             }
         }
 
@@ -154,9 +99,7 @@ namespace VamTimeline
             rotY.SetKeyframe(time, locationRotation.y);
             rotZ.SetKeyframe(time, locationRotation.z);
             rotW.SetKeyframe(time, locationRotation.w);
-            var ms = time.ToMilliseconds();
-            if (!settings.ContainsKey(ms))
-                settings[ms] = new KeyframeSettings { curveType = CurveTypeValues.Smooth };
+            SetKeyframeSettings(time, CurveTypeValues.Smooth);
             dirty = true;
             return key;
         }
@@ -169,11 +112,11 @@ namespace VamTimeline
 
         public void DeleteFrameByKey(int key)
         {
-            var settingIndex = settings.Remove(GetLeadCurve()[key].time.ToMilliseconds());
             foreach (var curve in curves)
             {
                 curve.RemoveKey(key);
             }
+            DeleteKeyframeSettings(GetLeadCurve()[key].time);
             dirty = true;
         }
 
@@ -186,10 +129,7 @@ namespace VamTimeline
             rotY.AddEdgeFramesIfMissing(animationLength);
             rotZ.AddEdgeFramesIfMissing(animationLength);
             rotW.AddEdgeFramesIfMissing(animationLength);
-            if (!settings.ContainsKey(0))
-                settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
-            if (!settings.ContainsKey(animationLength.ToMilliseconds()))
-                settings.Add(animationLength.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+            AddEdgeKeyframeSettingsIfMissing(animationLength);
             dirty = true;
         }
 
@@ -210,18 +150,6 @@ namespace VamTimeline
         public bool HasKeyframe(float time)
         {
             return x.KeyframeBinarySearch(time) != -1;
-        }
-
-        #endregion
-
-        #region Curves
-
-        public void ChangeCurve(float time, string curveType)
-        {
-            if (string.IsNullOrEmpty(curveType)) return;
-
-            UpdateSetting(time, curveType, false);
-            dirty = true;
         }
 
         #endregion
@@ -253,18 +181,18 @@ namespace VamTimeline
 
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
-            if (x.KeyframeBinarySearch(time) == -1) return null;
-            KeyframeSettings setting;
+            var key = x.KeyframeBinarySearch(time);
+            if (key == -1) return null;
             return new FreeControllerV3Snapshot
             {
-                x = x[x.KeyframeBinarySearch(time)],
-                y = y[y.KeyframeBinarySearch(time)],
-                z = z[z.KeyframeBinarySearch(time)],
-                rotX = rotX[rotX.KeyframeBinarySearch(time)],
-                rotY = rotY[rotY.KeyframeBinarySearch(time)],
-                rotZ = rotZ[rotZ.KeyframeBinarySearch(time)],
-                rotW = rotW[rotW.KeyframeBinarySearch(time)],
-                curveType = settings.TryGetValue(time.ToMilliseconds(), out setting) ? setting.curveType : CurveTypeValues.LeaveAsIs
+                x = x[key],
+                y = y[key],
+                z = z[key],
+                rotX = rotX[key],
+                rotY = rotY[key],
+                rotZ = rotZ[key],
+                rotW = rotW[key],
+                curveType = GetKeyframeSettings(time) ?? CurveTypeValues.LeaveAsIs
             };
         }
 
@@ -279,15 +207,6 @@ namespace VamTimeline
             rotW.SetKeySnapshot(time, snapshot.rotW);
             UpdateSetting(time, snapshot.curveType, true);
             if (dirty) base.dirty = true;
-        }
-
-        private void UpdateSetting(float time, string curveType, bool create)
-        {
-            var ms = time.ToMilliseconds();
-            if (settings.ContainsKey(ms))
-                settings[ms].curveType = curveType;
-            else if (create)
-                settings.Add(ms, new KeyframeSettings { curveType = curveType });
         }
 
         #endregion

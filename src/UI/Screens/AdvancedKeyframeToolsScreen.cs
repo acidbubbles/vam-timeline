@@ -73,9 +73,9 @@ namespace VamTimeline
             {
                 foreach (var target in current.GetAllOrSelectedTargets())
                 {
-                    if (target is IAnimationTargetWithCurves)
+                    if (target is ICurveAnimationTarget)
                     {
-                        var targetWithCurves = (IAnimationTargetWithCurves)target;
+                        var targetWithCurves = (ICurveAnimationTarget)target;
                         foreach (var curve in targetWithCurves.GetCurves())
                         {
                             curve.Reverse();

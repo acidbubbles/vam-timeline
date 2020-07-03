@@ -47,7 +47,7 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
         public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
 
-        public IEnumerable<IAnimationTargetWithCurves> GetAllCurveTargets()
+        public IEnumerable<ICurveAnimationTarget> GetAllCurveTargets()
         {
             foreach (var t in targetControllers)
                 yield return t;
@@ -513,13 +513,13 @@ namespace VamTimeline
             var floatParams = new List<FloatParamValClipboardEntry>();
             foreach (var target in all ? targetFloatParams : GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
-                int key = target.value.KeyframeBinarySearch(time);
-                if (key == -1) continue;
+                var snapshot = target.GetCurveSnapshot(time);
+                if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
                     storable = target.storable,
                     floatParam = target.floatParam,
-                    snapshot = target.value[key]
+                    snapshot = snapshot
                 });
             }
             var triggers = new List<TriggersClipboardEntry>();
@@ -566,10 +566,10 @@ namespace VamTimeline
                 if (target == null)
                 {
                     target = Add(entry.storable, entry.floatParam);
-                    target.SetKeyframe(0, entry.snapshot.value, dirty);
-                    target.SetKeyframe(animationLength, entry.snapshot.value, dirty);
+                    target.SetCurveSnapshot(0, entry.snapshot, dirty);
+                    target.SetCurveSnapshot(animationLength, entry.snapshot, dirty);
                 }
-                target.SetKeyframe(time, entry.snapshot.value, dirty);
+                target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
             foreach (var entry in clipboard.triggers)
             {

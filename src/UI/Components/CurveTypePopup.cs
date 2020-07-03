@@ -47,8 +47,8 @@ namespace VamTimeline
             }
             float time = _animation.clipTime.Snap();
 
-            foreach (var target in _current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
-                target.ChangeCurve(time, curveType);
+            foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
+                target.ChangeCurve(time, curveType, _current.loop);
 
             RefreshCurrentCurveType(_animation.clipTime);
         }
@@ -60,12 +60,13 @@ namespace VamTimeline
             var time = currentClipTime.Snap();
             var ms = time.ToMilliseconds();
             _curveTypes.Clear();
-            foreach (var target in _current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
-                KeyframeSettings v;
-                if (!target.settings.TryGetValue(ms, out v)) continue;
-                _curveTypes.Add(v.curveType);
+                var curveType = target.GetKeyframeSettings(time);
+                if (curveType == null) continue;
+                _curveTypes.Add(curveType);
             }
+
             if (_curveTypes.Count == 0)
             {
                 curveTypeJSON.valNoCallback = _noKeyframeCurveType;

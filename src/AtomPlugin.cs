@@ -193,7 +193,7 @@ namespace VamTimeline
             animation.SetKeyframeToCurrentTransform(target, time);
             if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
             {
-                target.ChangeCurve(time, CurveTypeValues.Smooth);
+                target.ChangeCurve(time, CurveTypeValues.Smooth, animation.current.loop);
             }
         }
 

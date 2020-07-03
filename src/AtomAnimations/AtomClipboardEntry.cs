@@ -29,7 +29,7 @@ namespace VamTimeline
     {
         public JSONStorable storable;
         public JSONStorableFloat floatParam;
-        public Keyframe snapshot;
+        public FloatParamSnapshot snapshot;
     }
 
     public class FreeControllerV3ClipboardEntry
@@ -38,7 +38,12 @@ namespace VamTimeline
         public FreeControllerV3Snapshot snapshot;
     }
 
-    public class FreeControllerV3Snapshot
+    public abstract class CurveSnapshot
+    {
+        public string curveType;
+    }
+
+    public class FreeControllerV3Snapshot : CurveSnapshot
     {
         public Keyframe x;
         public Keyframe y;
@@ -47,8 +52,11 @@ namespace VamTimeline
         public Keyframe rotY;
         public Keyframe rotZ;
         public Keyframe rotW;
+    }
 
-        public string curveType;
+    public class FloatParamSnapshot : CurveSnapshot
+    {
+        public Keyframe value;
     }
 
     public class TriggersClipboardEntry

@@ -160,7 +160,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(val)) return;
             _changeCurveJSON.valNoCallback = "";
 
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
@@ -171,7 +171,7 @@ namespace VamTimeline
                         var keyTime = leadCurve[key].time;
                         if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
                         {
-                            target.ChangeCurve(keyTime, val);
+                            target.ChangeCurve(keyTime, val, current.loop);
                         }
                     }
                 }

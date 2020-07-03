@@ -342,7 +342,7 @@ namespace VamTimeline
                     {
                         KeyframeSettings settings;
                         if (target.settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
-                            target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);
+                            target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear, current.loop);
                     }
                     lastRecordedFrame = time;
                     previousStep = step;

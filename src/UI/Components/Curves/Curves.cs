@@ -15,7 +15,7 @@ namespace VamTimeline
         private readonly RectTransform _scrubberRect;
         private readonly GameObject _noCurves;
         private readonly GameObject _linesContainer;
-        private readonly IList<IAnimationTargetWithCurves> _targets = new List<IAnimationTargetWithCurves>();
+        private readonly IList<ICurveAnimationTarget> _targets = new List<ICurveAnimationTarget>();
         private readonly IList<CurvesLines> _lines = new List<CurvesLines>();
         private float _animationLength;
         private AtomAnimation _animation;
@@ -166,7 +166,7 @@ namespace VamTimeline
             );
         }
 
-        private void Bind(IList<IAnimationTargetWithCurves> targets)
+        private void Bind(IList<ICurveAnimationTarget> targets)
         {
             Unbind();
 
@@ -188,7 +188,7 @@ namespace VamTimeline
             }
         }
 
-        private void BindCurves(IAnimationTargetWithCurves target)
+        private void BindCurves(ICurveAnimationTarget target)
         {
             var lead = target.GetLeadCurve();
             _animationLength = lead.keys[lead.keys.Length - 1].time;

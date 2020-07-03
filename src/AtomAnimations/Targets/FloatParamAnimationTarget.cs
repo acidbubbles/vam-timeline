@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class FloatParamAnimationTarget : AnimationTargetBase, IAnimationTargetWithCurves
+    public class FloatParamAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
     {
         public readonly JSONStorable storable;
         public readonly JSONStorableFloat floatParam;
         public readonly AnimationCurve value = new AnimationCurve();
 
-        public string name => storable != null ? $"{storable.name}/{floatParam.name}" : floatParam.name;
+        public override string name => storable != null ? $"{storable.name}/{floatParam.name}" : floatParam.name;
 
         public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat floatParam)
         {
@@ -29,35 +29,17 @@ namespace VamTimeline
 
         public void Validate(float animationLength)
         {
-            if (value.length < 2)
-            {
-                SuperController.LogError($"Target {name} has {value.length} frames");
-                return;
-            }
-            if (value[0].time != 0)
-            {
-                SuperController.LogError($"Target {name} has no start frame");
-                return;
-            }
-            if (value[value.length - 1].time != animationLength)
-            {
-                SuperController.LogError($"Target {name} ends with frame {value[value.length - 1].time} instead of expected {animationLength}");
-                return;
-            }
+            Validate(value, animationLength);
         }
 
         public void ReapplyCurveTypes(bool loop)
         {
             if (value.length < 2) return;
 
-            for (var key = 0; key < value.length; key++)
-            {
-                // TODO: Keep a registry of curve types
-                value.ApplyCurveType(key, CurveTypeValues.Flat, loop);
-            }
+            ReapplyCurveTypes(value, loop);
         }
 
-        public AnimationCurve GetLeadCurve()
+        public override AnimationCurve GetLeadCurve()
         {
             return value;
         }
@@ -70,6 +52,7 @@ namespace VamTimeline
         public void SetKeyframe(float time, float value, bool dirty = true)
         {
             this.value.SetKeyframe(time, value);
+            SetKeyframeSettings(time, CurveTypeValues.Smooth);
             if (dirty) base.dirty = true;
         }
 
@@ -83,12 +66,14 @@ namespace VamTimeline
         public void DeleteFrameByKey(int key)
         {
             value.RemoveKey(key);
+            DeleteKeyframeSettings(GetLeadCurve()[key].time);
             dirty = true;
         }
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
             value.AddEdgeFramesIfMissing(animationLength);
+            AddEdgeKeyframeSettingsIfMissing(animationLength);
             dirty = true;
         }
 
@@ -110,6 +95,28 @@ namespace VamTimeline
         {
             return value.KeyframeBinarySearch(time) != -1;
         }
+
+        #region Snapshots
+
+        public FloatParamSnapshot GetCurveSnapshot(float time)
+        {
+            var key = value.KeyframeBinarySearch(time);
+            if (key == -1) return null;
+            return new FloatParamSnapshot
+            {
+                value = value[key],
+                curveType = GetKeyframeSettings(time) ?? CurveTypeValues.LeaveAsIs
+            };
+        }
+
+        public void SetCurveSnapshot(float time, FloatParamSnapshot snapshot, bool dirty = true)
+        {
+            value.SetKeySnapshot(time, snapshot.value);
+            UpdateSetting(time, snapshot.curveType, true);
+            if (dirty) base.dirty = true;
+        }
+
+        #endregion
 
         public bool TargetsSameAs(IAtomAnimationTarget target)
         {

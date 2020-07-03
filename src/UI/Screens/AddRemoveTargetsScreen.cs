@@ -47,8 +47,6 @@ namespace VamTimeline
 
             InitFloatParamsUI();
 
-            prefabFactory.CreateSpacer();
-
             InitFixMissingUI();
 
             prefabFactory.CreateSpacer();
@@ -83,6 +81,7 @@ namespace VamTimeline
             var ok = clipList.SequenceEqual(otherList);
             if (ok) return;
 
+            prefabFactory.CreateSpacer();
             UIDynamicButton enableAllTargetsUI = null;
             UIDynamic spacerUI = null;
             enableAllTargetsUI = prefabFactory.CreateButton("Add All Other Animations' Targets");
@@ -193,7 +192,8 @@ namespace VamTimeline
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Add morphs (Make Animatable)</i>");
+                prefabFactory.CreateSpacer();
+                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Go to <b>morphs</b> (animatable)</i>");
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
                     var selector = plugin.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
@@ -408,7 +408,7 @@ namespace VamTimeline
                         added.SetKeyframeToCurrentTransform(0f);
                         added.SetKeyframeToCurrentTransform(clip.animationLength);
                         if (!clip.loop)
-                            added.ChangeCurve(clip.animationLength, CurveTypeValues.CopyPrevious);
+                            added.ChangeCurve(clip.animationLength, CurveTypeValues.CopyPrevious, false);
                     }
                 }
             }
