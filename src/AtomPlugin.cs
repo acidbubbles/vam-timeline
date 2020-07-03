@@ -32,7 +32,6 @@ namespace VamTimeline
         public JSONStorableAction stopIfPlayingJSON { get; private set; }
         public JSONStorableAction nextFrameJSON { get; private set; }
         public JSONStorableAction previousFrameJSON { get; private set; }
-        public JSONStorableFloat snapJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
         public JSONStorableAction pasteJSON { get; private set; }
@@ -273,7 +272,7 @@ namespace VamTimeline
             });
             RegisterAction(previousAnimationJSON);
 
-            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animation.clipTime = v.Snap(snapJSON.val), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animation.clipTime = v.Snap(animation.snap), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false
             };
@@ -358,7 +357,7 @@ namespace VamTimeline
                 {
                     _resumePlayOnUnfreeze = false;
                     animation.StopAll();
-                    animation.clipTime = animation.clipTime.Snap(snapJSON.val);
+                    animation.clipTime = animation.clipTime.Snap(animation.snap);
                     isPlayingJSON.valNoCallback = false;
                     SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
                 }
@@ -373,7 +372,7 @@ namespace VamTimeline
             {
                 if (!animation.isPlaying) return;
                 animation.StopAll();
-                animation.clipTime = animation.clipTime.Snap(snapJSON.val);
+                animation.clipTime = animation.clipTime.Snap(animation.snap);
                 isPlayingJSON.valNoCallback = false;
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             });
@@ -385,30 +384,18 @@ namespace VamTimeline
             previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
             RegisterAction(previousFrameJSON);
 
-            snapJSON = new JSONStorableFloat(StorableNames.Snap, 0.01f, (float val) =>
-            {
-                var rounded = val.Snap();
-                if (val != rounded)
-                    snapJSON.valNoCallback = rounded;
-                if (animation != null && animation.clipTime % rounded != 0)
-                    animation.clipTime = animation.clipTime.Snap(rounded);
-            }, 0.001f, 1f, true)
-            {
-                isStorable = true
-            };
-            RegisterFloat(snapJSON);
-
             cutJSON = new JSONStorableAction("Cut", () => Cut());
             copyJSON = new JSONStorableAction("Copy", () => Copy());
             pasteJSON = new JSONStorableAction("Paste", () => Paste());
 
             lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
             {
-                _ui.locked = val;
-                if (_controllerInjectedUI != null)
-                    _controllerInjectedUI.locked = val;
-            });
-            RegisterBool(lockedJSON);
+                if (animation == null) return;
+                animation.locked = val;
+            })
+            {
+                isStorable = false
+            };
 
             speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
             {
@@ -458,7 +445,7 @@ namespace VamTimeline
             try
             {
                 animation.StopAll();
-                animation.playTime = animation.playTime.Snap(snapJSON.val);
+                animation.playTime = animation.playTime.Snap(animation.snap);
             }
             catch (Exception exc)
             {
@@ -555,6 +542,7 @@ namespace VamTimeline
             animation.onClipsListChanged.AddListener(OnClipsListChanged);
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
@@ -637,6 +625,23 @@ namespace VamTimeline
                 speedJSON.valNoCallback = animation.speed;
 
                 SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnAnimationParametersChanged)}: {exc}");
+            }
+        }
+
+        private void OnEditorSettingsChanged(string name)
+        {
+            try
+            {
+                // Update UI
+                lockedJSON.valNoCallback = animation.locked;
+                speedJSON.valNoCallback = animation.speed;
+
+                if (name == nameof(AtomAnimation.locked))
+                    SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)
             {

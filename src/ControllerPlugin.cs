@@ -356,6 +356,10 @@ namespace VamTimeline
         {
             try
             {
+                HandleKeyboardShortcuts();
+
+                if (Time.frameCount % 2 == 0) return;
+
                 var proxy = GetOrDispose(_selectedLink);
                 if (proxy == null) return;
 
@@ -364,8 +368,6 @@ namespace VamTimeline
                 {
                     _timeJSON.valNoCallback = time.val;
                 }
-
-                HandleKeyboardShortcuts();
             }
             catch (Exception exc)
             {
