@@ -8,7 +8,6 @@ namespace VamTimeline
     {
         AnimationCurve GetLeadCurve();
         IEnumerable<AnimationCurve> GetCurves();
-        void DeleteFrameByKey(int key);
         void AddEdgeFramesIfMissing(float animationLength);
         void ChangeCurve(float time, string curveType, bool loop);
         void EnsureKeyframeSettings(float time, string defaultCurveTypeValue);

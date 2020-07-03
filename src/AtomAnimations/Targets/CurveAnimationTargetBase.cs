@@ -79,11 +79,6 @@ namespace VamTimeline
                 settings[ms] = new KeyframeSettings { curveType = defaultCurveTypeValue };
         }
 
-        protected void DeleteKeyframeSettings(float time)
-        {
-            settings.Remove(time.ToMilliseconds());
-        }
-
         protected void AddEdgeKeyframeSettingsIfMissing(float animationLength)
         {
             if (!settings.ContainsKey(0))

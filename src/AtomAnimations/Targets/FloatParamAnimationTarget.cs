@@ -60,13 +60,8 @@ namespace VamTimeline
         {
             var key = value.KeyframeBinarySearch(time);
             if (key == -1) return;
-            DeleteFrameByKey(key);
-        }
-
-        public void DeleteFrameByKey(int key)
-        {
             value.RemoveKey(key);
-            DeleteKeyframeSettings(GetLeadCurve()[key].time);
+            settings.Remove(time.ToMilliseconds());
             dirty = true;
         }
 
