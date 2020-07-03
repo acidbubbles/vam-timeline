@@ -138,6 +138,11 @@ namespace VamTimeline
                     if (target == null)
                     {
                         if (!all) continue;
+                        if (animation.EnumerateLayers().Where(l => l != current.animationLayer).Select(l => animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == fc))
+                        {
+                            SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
+                            continue;
+                        }
                         target = animation.current.Add(fc);
                         animation.SetKeyframeToCurrentTransform(target, 0f);
                         animation.SetKeyframeToCurrentTransform(target, current.animationLength);
