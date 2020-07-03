@@ -240,6 +240,7 @@ namespace VamTimeline
                 isPlaying = true;
                 _sequencing = _sequencing || sequencing;
             }
+            if (sequencing && !clip.enabled) clip.clipTime = 0;
             var previousMain = clips.FirstOrDefault(c => c.mainInLayer && c.animationLayer == clip.animationLayer);
             if (previousMain != null && previousMain != clip)
             {
