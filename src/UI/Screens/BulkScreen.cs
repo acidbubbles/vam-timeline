@@ -26,9 +26,11 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
-            InitBulkClipboardUI();
-
             InitSelectionUI();
+
+            prefabFactory.CreateSpacer();
+
+            InitBulkClipboardUI();
 
             prefabFactory.CreateSpacer();
 
