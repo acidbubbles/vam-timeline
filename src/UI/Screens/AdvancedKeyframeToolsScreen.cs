@@ -124,7 +124,7 @@ namespace VamTimeline
         {
             try
             {
-                var time = animation.clipTime;
+                var time = animation.clipTime.Snap();
                 foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (!fc.name.EndsWith("Control")) continue;
@@ -139,9 +139,13 @@ namespace VamTimeline
                             SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
                             continue;
                         }
-                        target = animation.current.Add(fc);
-                        animation.SetKeyframeToCurrentTransform(target, 0f);
-                        animation.SetKeyframeToCurrentTransform(target, current.animationLength);
+                        foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+                        {
+                            var t = clip.Add(fc);
+                            t.SetKeyframeToCurrentTransform(0f);
+                            t.SetKeyframeToCurrentTransform(clip.animationLength);
+                            if (clip == current) target = t;
+                        }
                     }
                     animation.SetKeyframeToCurrentTransform(target, time);
                 }
