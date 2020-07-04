@@ -633,7 +633,6 @@ namespace VamTimeline
                 if (animation.isPlaying) return;
                 var time = animation.clipTime;
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
-                SuperController.LogError(time.ToString());
                 foreach (var target in animation.current.GetAllOrSelectedTargets())
                 {
                     target.DeleteFrame(time);

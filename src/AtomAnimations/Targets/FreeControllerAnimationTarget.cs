@@ -17,6 +17,25 @@ namespace VamTimeline
 
         public override string name => controller.name;
 
+        private Rigidbody _lastLinkedRigidbody;
+        public Rigidbody GetLinkedRigidbody()
+        {
+            var rb = controller.linkToRB;
+            if (rb == _lastLinkedRigidbody) return _lastLinkedRigidbody;
+            if (rb == null)
+            {
+                _lastLinkedRigidbody = null;
+                return null;
+            }
+            var tfc = rb.GetComponent<FreeControllerV3>();
+            if (tfc == null && _lastLinkedRigidbody != null)
+                return _lastLinkedRigidbody;
+            if (tfc != null)
+                return _lastLinkedRigidbody = controller.linkToRB;
+            controller.RestorePreLinkState();
+            return _lastLinkedRigidbody = controller.linkToRB;
+        }
+
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
             curves = new List<AnimationCurve> {
@@ -37,13 +56,14 @@ namespace VamTimeline
             var control = controller?.control;
             if (control == null) return;
             if (controller.possessed) return;
+            Rigidbody link = GetLinkedRigidbody();
 
             if (controller.currentRotationState == FreeControllerV3.RotationState.On)
             {
                 var targetRotation = EvaluateRotation(clipTime);
-                if (controller.linkToRB != null)
+                if (link != null)
                 {
-                    targetRotation = controller.linkToRB.rotation * targetRotation;
+                    targetRotation = link.rotation * targetRotation;
                     var rotation = Quaternion.Slerp(control.rotation, targetRotation, weight);
                     control.rotation = rotation;
                 }
@@ -57,9 +77,9 @@ namespace VamTimeline
             if (controller.currentPositionState == FreeControllerV3.PositionState.On)
             {
                 var targetPosition = EvaluatePosition(clipTime);
-                if (controller.linkToRB != null)
+                if (link != null)
                 {
-                    targetPosition = controller.linkToRB.position + controller.linkToRB.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
+                    targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
                     var position = Vector3.Lerp(control.position, targetPosition, weight);
                     control.position = position;
                 }
@@ -104,10 +124,9 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrentTransform(float time)
         {
-            if (controller.linkToRB != null)
-            {
-                return SetKeyframe(time, controller.linkToRB.transform.InverseTransformPoint(controller.transform.position), Quaternion.Inverse(controller.transform.rotation) * controller.linkToRB.rotation);
-            }
+            var rb = GetLinkedRigidbody();
+            if (rb != null)
+                return SetKeyframe(time, rb.transform.InverseTransformPoint(controller.transform.position), Quaternion.Inverse(rb.rotation) * controller.transform.rotation);
 
             return SetKeyframe(time, controller.transform.localPosition, controller.transform.localRotation);
         }

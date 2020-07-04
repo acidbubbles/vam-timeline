@@ -535,6 +535,7 @@ namespace VamTimeline
 
         public void RebuildAnimationNow()
         {
+            if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             _animationRebuildRequestPending = false;
             _animationRebuildInProgress = true;
             try
