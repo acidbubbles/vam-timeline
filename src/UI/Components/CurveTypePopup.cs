@@ -50,6 +50,9 @@ namespace VamTimeline
             foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
                 target.ChangeCurve(time, curveType, _current.loop);
 
+            if (curveType == CurveTypeValues.CopyPrevious)
+                _animation.Sample();
+
             RefreshCurrentCurveType(_animation.clipTime);
         }
 

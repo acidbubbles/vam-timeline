@@ -77,8 +77,11 @@ namespace VamTimeline
         public void EnsureKeyframeSettings(float time, string defaultCurveTypeValue)
         {
             var ms = time.ToMilliseconds();
-            if (!settings.ContainsKey(ms))
-                settings[ms] = new KeyframeSettings { curveType = defaultCurveTypeValue };
+            KeyframeSettings ks;
+            if (!settings.TryGetValue(ms, out ks))
+                settings.Add(ms, new KeyframeSettings { curveType = defaultCurveTypeValue });
+            else if (ks.curveType == CurveTypeValues.CopyPrevious)
+                ks.curveType = defaultCurveTypeValue;
         }
 
         protected void AddEdgeKeyframeSettingsIfMissing(float animationLength)
@@ -105,6 +108,10 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(curveType)) return;
 
+            if (time == 0 && curveType == CurveTypeValues.CopyPrevious)
+            {
+                return;
+            }
             UpdateSetting(time, curveType, false);
             if (loop && time == 0)
             {

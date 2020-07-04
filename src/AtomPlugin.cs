@@ -172,10 +172,6 @@ namespace VamTimeline
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
             animation.SetKeyframeToCurrentTransform(target, time);
-            if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
-            {
-                target.ChangeCurve(time, CurveTypeValues.Smooth, animation.current.loop);
-            }
         }
 
         #endregion

@@ -13,7 +13,7 @@ namespace VamTimeline
         public const string Bounce = "Bounce";
         public const string LinearFlat = "Linear -> Flat";
         public const string FlatLinear = "Flat -> Linear";
-        public const string CopyPrevious = "Copy Previous (Flat)";
+        public const string CopyPrevious = "Copy Previous Keyframe";
 
         // Used for serialization. Do not reorder.
         private static readonly List<string> _indexedCurveTypes = new List<string> { LeaveAsIs, Flat, Linear, Smooth, Bounce, LinearFlat, FlatLinear, CopyPrevious, Constant, FlatLong };
