@@ -197,6 +197,15 @@ namespace VamTimeline
 
         #region Snapshots
 
+        ISnapshot IAtomAnimationTarget.GetSnapshot(float time)
+        {
+            return GetCurveSnapshot(time);
+        }
+        void IAtomAnimationTarget.SetSnapshot(float time, ISnapshot snapshot)
+        {
+            SetCurveSnapshot(time, (FreeControllerV3Snapshot)snapshot);
+        }
+
         public FreeControllerV3Snapshot GetCurveSnapshot(float time)
         {
             var key = x.KeyframeBinarySearch(time);

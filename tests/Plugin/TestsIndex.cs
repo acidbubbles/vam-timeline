@@ -9,7 +9,7 @@ namespace VamTimeline.Tests.Plugin
         {
             return new TestsEnumerator(new ITestClass[]{
                 new AnimationTests(),
-                new AnimationResizeTests()
+                new ResizeAnimationOperationTests()
             });
         }
     }

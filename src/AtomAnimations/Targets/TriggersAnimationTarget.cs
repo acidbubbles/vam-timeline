@@ -130,6 +130,39 @@ namespace VamTimeline
             return target.name == name;
         }
 
+        #region Snapshots
+
+        ISnapshot IAtomAnimationTarget.GetSnapshot(float time)
+        {
+            return GetCurveSnapshot(time);
+        }
+        void IAtomAnimationTarget.SetSnapshot(float time, ISnapshot snapshot)
+        {
+            SetCurveSnapshot(time, (TriggerSnapshot)snapshot);
+        }
+
+        public TriggerSnapshot GetCurveSnapshot(float time)
+        {
+            AtomAnimationTrigger trigger;
+            if (!triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) return null;
+            return new TriggerSnapshot { json = trigger.GetJSON() };
+        }
+
+        public void SetCurveSnapshot(float time, TriggerSnapshot snapshot)
+        {
+            AtomAnimationTrigger trigger;
+            var ms = time.ToMilliseconds();
+            if (!triggersMap.TryGetValue(ms, out trigger))
+            {
+                trigger = new AtomAnimationTrigger();
+                SetKeyframe(ms, trigger);
+            }
+            trigger.RestoreFromJSON(snapshot.json);
+            dirty = true;
+        }
+
+        #endregion
+
         public override void Dispose()
         {
             base.Dispose();

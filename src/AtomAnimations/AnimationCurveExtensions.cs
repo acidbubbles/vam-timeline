@@ -333,10 +333,22 @@ namespace VamTimeline
         public static void SetKeySnapshot(this AnimationCurve curve, float time, Keyframe keyframe)
         {
             var index = curve.KeyframeBinarySearch(time);
-            if (index == -1)
-                index = curve.AddKey(time, keyframe.value);
-            keyframe.time = time;
-            curve.MoveKey(index, keyframe);
+            try
+            {
+                if (index == -1 || curve.length == 0)
+                {
+                    curve.AddKey(time, keyframe.value);
+                }
+                else
+                {
+                    keyframe.time = time;
+                    curve.MoveKey(index, keyframe);
+                }
+            }
+            catch (Exception exc)
+            {
+                throw new Exception($"i {index} of {curve.length}", exc);
+            }
         }
 
         #endregion

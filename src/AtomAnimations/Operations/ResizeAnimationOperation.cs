@@ -13,87 +13,39 @@ namespace VamTimeline
             _clip = clip;
         }
 
+        private class SnapshotAt
+        {
+            public float time;
+            public ISnapshot snapshot;
+        }
+
+        #region Stretch
+
         public void Stretch(float newAnimationLength)
         {
             if (_clip.animationLength.IsSameFrame(newAnimationLength))
                 return;
-            foreach (var target in _clip.GetAllCurveTargets())
-            {
-                foreach (var curve in target.GetCurves())
-                    StretchCurve(curve, newAnimationLength);
-                MatchKeyframeSettingsPivotBegin(target);
-                target.AddEdgeFramesIfMissing(newAnimationLength);
-            }
-            StretchTriggers(newAnimationLength);
+
+            var keyframeOps = new KeyframesOperation(_clip);
+            var originalAnimationLength = _clip.animationLength;
             _clip.animationLength = newAnimationLength;
-        }
-
-        private static void StretchCurve(AnimationCurve curve, float newLength)
-        {
-            if (curve.length < 2) return;
-            int lastKey = curve.length - 1;
-            var curveLength = curve[lastKey].time;
-            if (newLength == curveLength) return;
-            var ratio = newLength / curveLength;
-            if (Mathf.Abs(ratio) < float.Epsilon) return;
-            int from;
-            int to;
-            int direction;
-            if (ratio < 1f)
+            var ratio = newAnimationLength / originalAnimationLength;
+            foreach (var target in _clip.GetAllTargets())
             {
-                from = 0;
-                to = lastKey + 1;
-                direction = 1;
-            }
-            else
-            {
-                from = lastKey;
-                to = -1;
-                direction = -1;
-            }
-            for (var key = from; key != to; key += direction)
-            {
-                var keyframe = curve[key];
-                var time = keyframe.time *= ratio;
-                keyframe.time = time.Snap();
+                var snapshots = target
+                    .GetAllKeyframesTime()
+                    .Select(t => new SnapshotAt { time = t, snapshot = target.GetSnapshot(t) })
+                    .ToList();
+                keyframeOps.RemoveAll(target, true);
 
-                curve.MoveKey(key, keyframe);
-            }
-
-            // Sanity check
-            if (curve[lastKey].time > newLength + 0.001f - float.Epsilon)
-            {
-                SuperController.LogError($"VamTimeline: Problem while resizing animation. Expected length {newLength} but was {curve[lastKey].time}");
-            }
-
-            // Ensure exact match
-            var lastframe = curve[lastKey];
-            lastframe.time = newLength;
-            curve.MoveKey(lastKey, lastframe);
-        }
-
-        private void StretchTriggers(float newAnimationLength)
-        {
-            var ratio = newAnimationLength / _clip.animationLength;
-            foreach (var target in _clip.targetTriggers)
-            {
-                var kvps = target.triggersMap.ToList();
-                target.StartBulkUpdates();
-                target.triggersMap.Clear();
-                target.dirty = true;
-                try
+                foreach (var s in snapshots)
                 {
-                    foreach (var kvp in kvps)
-                    {
-                        target.SetKeyframe(Mathf.Clamp(Mathf.RoundToInt(kvp.Key * ratio), 0, newAnimationLength.ToMilliseconds()), kvp.Value);
-                    }
-                }
-                finally
-                {
-                    target.EndBulkUpdates();
+                    target.SetSnapshot((s.time * ratio).Snap(), s.snapshot);
                 }
             }
         }
+
+        #endregion
 
         public void CropOrExtendEnd(float newAnimationLength)
         {
@@ -105,7 +57,7 @@ namespace VamTimeline
                 {
                     CropEndCurve(curve, newAnimationLength);
                 }
-                MatchKeyframeSettingsPivotBegin(target);
+                MatchKeyframeSettingsPivotBegin(target, newAnimationLength);
                 target.AddEdgeFramesIfMissing(newAnimationLength);
             }
             CropEndTriggers(newAnimationLength);
@@ -135,7 +87,7 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                     CropOrExtendBeginCurve(curve, newAnimationLength);
-                MatchKeyframeSettingsPivotEnd(target);
+                MatchKeyframeSettingsPivotEnd(target, newAnimationLength);
                 target.AddEdgeFramesIfMissing(newAnimationLength);
             }
             CropBeginTriggersAndOffset(newAnimationLength);
@@ -209,7 +161,7 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                     CropOrExtendAtTimeCurve(curve, newAnimationLength, time);
-                MatchKeyframeSettingsPivotBegin(target);
+                MatchKeyframeSettingsPivotBegin(target, newAnimationLength);
                 target.AddEdgeFramesIfMissing(newAnimationLength);
             }
             CropEndTriggers(newAnimationLength);
@@ -272,7 +224,7 @@ namespace VamTimeline
             }
         }
 
-        private static void MatchKeyframeSettingsPivotBegin(ICurveAnimationTarget target)
+        private static void MatchKeyframeSettingsPivotBegin(ICurveAnimationTarget target, float newAnimationLength)
         {
             var settings = target.settings.Values.ToList();
             target.settings.Clear();
@@ -308,7 +260,7 @@ namespace VamTimeline
             }
         }
 
-        private void MatchKeyframeSettingsPivotEnd(ICurveAnimationTarget target)
+        private void MatchKeyframeSettingsPivotEnd(ICurveAnimationTarget target, float newAnimationLength)
         {
             var settings = target.settings.Values.ToList();
             target.settings.Clear();

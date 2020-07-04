@@ -525,12 +525,11 @@ namespace VamTimeline
             var triggers = new List<TriggersClipboardEntry>();
             foreach (var target in all ? targetTriggers : GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>())
             {
-                AtomAnimationTrigger trigger;
-                if (!target.triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) continue;
+                var snapshot = target.GetCurveSnapshot(time);
                 triggers.Add(new TriggersClipboardEntry
                 {
                     name = target.name,
-                    json = trigger.GetJSON()
+                    snapshot = snapshot
                 });
             }
             return new AtomClipboardEntry
@@ -573,20 +572,14 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.triggers)
             {
+                if (!dirty) throw new InvalidOperationException("Cannot paste triggers without dirty");
                 var target = targetTriggers.FirstOrDefault(t => t.name == entry.name) ?? targetTriggers.FirstOrDefault();
                 if (target == null)
                 {
                     target = Add(new TriggersAnimationTarget { name = entry.name });
                     target.AddEdgeFramesIfMissing(animationLength);
                 }
-                AtomAnimationTrigger trigger;
-                if (!target.triggersMap.TryGetValue(time.ToMilliseconds(), out trigger))
-                {
-                    trigger = new AtomAnimationTrigger();
-                    target.SetKeyframe(time, trigger);
-                }
-                trigger.RestoreFromJSON(entry.json);
-                if (dirty) target.dirty = true;
+                target.SetCurveSnapshot(time, entry.snapshot);
             }
         }
 

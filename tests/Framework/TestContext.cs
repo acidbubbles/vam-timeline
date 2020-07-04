@@ -3,16 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace VamTimeline.Tests.Framework
 {
     public class TestContext
     {
+        public readonly GameObject gameObject;
         public readonly StringBuilder output;
         public readonly AtomAnimation animation;
 
-        public TestContext(StringBuilder output, AtomAnimation animation)
+        public TestContext(GameObject gameObject, StringBuilder output, AtomAnimation animation)
         {
+            this.gameObject = gameObject;
             this.output = output;
             this.animation = animation;
         }

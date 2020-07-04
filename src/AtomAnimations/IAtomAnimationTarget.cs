@@ -24,5 +24,8 @@ namespace VamTimeline
         float GetTimeClosestTo(float time);
         bool HasKeyframe(float time);
         void DeleteFrame(float time);
+
+        ISnapshot GetSnapshot(float time);
+        void SetSnapshot(float time, ISnapshot snapshot);
     }
 }

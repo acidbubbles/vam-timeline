@@ -93,6 +93,15 @@ namespace VamTimeline
 
         #region Snapshots
 
+        ISnapshot IAtomAnimationTarget.GetSnapshot(float time)
+        {
+            return GetCurveSnapshot(time);
+        }
+        void IAtomAnimationTarget.SetSnapshot(float time, ISnapshot snapshot)
+        {
+            SetCurveSnapshot(time, (FloatParamSnapshot)snapshot);
+        }
+
         public FloatParamSnapshot GetCurveSnapshot(float time)
         {
             var key = value.KeyframeBinarySearch(time);

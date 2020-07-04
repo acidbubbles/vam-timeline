@@ -38,12 +38,22 @@ namespace VamTimeline
         public FreeControllerV3Snapshot snapshot;
     }
 
+    public class TriggersClipboardEntry : ISnapshot
+    {
+        public string name;
+        public TriggerSnapshot snapshot;
+    }
+
+    public interface ISnapshot
+    {
+    }
+
     public abstract class CurveSnapshot
     {
         public string curveType;
     }
 
-    public class FreeControllerV3Snapshot : CurveSnapshot
+    public class FreeControllerV3Snapshot : CurveSnapshot, ISnapshot
     {
         public Keyframe x;
         public Keyframe y;
@@ -54,14 +64,13 @@ namespace VamTimeline
         public Keyframe rotW;
     }
 
-    public class FloatParamSnapshot : CurveSnapshot
+    public class FloatParamSnapshot : CurveSnapshot, ISnapshot
     {
         public Keyframe value;
     }
 
-    public class TriggersClipboardEntry
+    public class TriggerSnapshot : ISnapshot
     {
-        public string name;
         public JSONClass json;
     }
 }

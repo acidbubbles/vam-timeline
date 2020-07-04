@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,7 +6,7 @@ using VamTimeline.Tests.Framework;
 
 namespace VamTimeline.Tests.Specs
 {
-    public class AnimationResizeTests : ITestClass
+    public class ResizeAnimationOperationTests : ITestClass
     {
         public IEnumerable<Test> GetTests()
         {
@@ -254,11 +254,18 @@ namespace VamTimeline.Tests.Specs
 
         private static FreeControllerAnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
-            var target = clip.Add(new FreeControllerV3());
+            var controller = new GameObject("Test Controller");
+            controller.SetActive(false);
+            controller.transform.SetParent(context.gameObject.transform, false);
+            var fc = controller.AddComponent<FreeControllerV3>();
+            fc.UITransforms = new Transform[0];
+            fc.UITransformsPlayMode = new Transform[0];
+            var target = clip.Add(fc);
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframe(1f, Vector3.one, Quaternion.identity);
             target.SetKeyframe(2f, Vector3.zero, Quaternion.identity);
+            context.animation.RebuildAnimationNow();
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
             context.Assert(target.settings.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Settings before resize");
             return target;
@@ -271,6 +278,7 @@ namespace VamTimeline.Tests.Specs
             target.SetKeyframe(0f, 0f);
             target.SetKeyframe(1f, 1f);
             target.SetKeyframe(2f, 0f);
+            context.animation.RebuildAnimationNow();
             context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
             return target;
         }
@@ -282,6 +290,7 @@ namespace VamTimeline.Tests.Specs
             target.SetKeyframe(0f, new AtomAnimationTrigger());
             target.SetKeyframe(1f, new AtomAnimationTrigger());
             target.SetKeyframe(2f, new AtomAnimationTrigger());
+            context.animation.RebuildAnimationNow();
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map before resize");
             return target;
         }

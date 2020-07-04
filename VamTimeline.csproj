@@ -144,8 +144,8 @@
     <Compile Include="tests\Framework\TestsEnumerator.cs" />
     <Compile Include="tests\Plugin\TestPlugin.cs" />
     <Compile Include="tests\Plugin\TestsIndex.cs" />
-    <Compile Include="tests\Specs\AnimationResizeTests.cs" />
     <Compile Include="tests\Specs\AnimationTests.cs" />
+    <Compile Include="tests\Specs\ResizeAnimationOperationTests.cs" />
     <!-- /TestFiles -->
   </ItemGroup>
 

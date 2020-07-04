@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
+using UnityEngine;
 
 namespace VamTimeline.Tests.Framework
 {
@@ -17,11 +18,15 @@ namespace VamTimeline.Tests.Framework
 
         public IEnumerable Run(MVRScript testPlugin, StringBuilder output)
         {
-            var animation = testPlugin.gameObject.AddComponent<AtomAnimation>();
+            var go = new GameObject();
+            go.transform.SetParent(testPlugin.gameObject.transform, false);
+
+            var animation = go.AddComponent<AtomAnimation>();
             animation.Initialize();
-            var context = new TestContext(output, animation);
+            var context = new TestContext(go, output, animation);
             foreach (var x in _run(context))
                 yield return x;
+            UnityEngine.Object.Destroy(go);
         }
     }
 }
