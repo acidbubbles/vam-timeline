@@ -530,28 +530,27 @@ namespace VamTimeline
         private IEnumerator RebuildDeferred()
         {
             yield return new WaitForEndOfFrame();
+            RebuildAnimationNow();
+        }
+
+        public void RebuildAnimationNow()
+        {
             _animationRebuildRequestPending = false;
+            _animationRebuildInProgress = true;
             try
             {
-                _animationRebuildInProgress = true;
-                RebuildAnimationNow();
-                if (_sampleAfterRebuild)
-                {
-                    _sampleAfterRebuild = false;
-                    Sample(true);
-                }
+                RebuildAnimationNowImpl();
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimation)}.{nameof(RebuildDeferred)}: " + exc);
+                SuperController.LogError($"VamTimeline.{nameof(AtomAnimation)}.{nameof(RebuildAnimationNow)}: " + exc);
             }
             finally
             {
                 _animationRebuildInProgress = false;
             }
         }
-
-        public void RebuildAnimationNow()
+        private void RebuildAnimationNowImpl()
         {
             if (current == null) throw new NullReferenceException("No current animation set");
             var sw = Stopwatch.StartNew();
@@ -586,6 +585,12 @@ namespace VamTimeline
             if (sw.ElapsedMilliseconds > 1000)
             {
                 SuperController.LogError($"VamTimeline.{nameof(RebuildAnimationNow)}: Suspiciously long animation rebuild ({sw.Elapsed})");
+            }
+
+            if (_sampleAfterRebuild)
+            {
+                _sampleAfterRebuild = false;
+                Sample(true);
             }
 
             onAnimationRebuilt.Invoke();
