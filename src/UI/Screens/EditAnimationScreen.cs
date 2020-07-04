@@ -350,11 +350,11 @@ namespace VamTimeline
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendBegin:
-                    operations.Resize().CropOrExtendBegin(newLength);
+                    operations.Resize().CropOrExtendAt(newLength, 0f);
                     _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendAtTime:
-                    operations.Resize().CropOrExtendAtTime(newLength, time);
+                    operations.Resize().CropOrExtendAt(newLength, time);
                     break;
                 case ChangeLengthModeLoop:
                     operations.Resize().Loop(newLength, _lengthWhenLengthModeChanged);

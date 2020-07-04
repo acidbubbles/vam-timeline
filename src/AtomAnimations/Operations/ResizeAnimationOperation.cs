@@ -44,6 +44,8 @@ namespace VamTimeline
 
         #endregion
 
+        #region CropOrExtendEnd
+
         public void CropOrExtendEnd(float newAnimationLength)
         {
             var originalAnimationLength = _clip.animationLength;
@@ -97,117 +99,75 @@ namespace VamTimeline
             }
         }
 
-        // TODO: Replace by simpler implementation, see before
+        #endregion
 
-        public void CropOrExtendBegin(float newAnimationLength)
+        #region CropOrExtendAt
+
+        public void CropOrExtendAt(float newAnimationLength, float time)
         {
-            if (_clip.animationLength.IsSameFrame(newAnimationLength))
-                return;
-            foreach (var target in _clip.GetAllCurveTargets())
-            {
-                foreach (var curve in target.GetCurves())
-                    CropOrExtendBeginCurve(curve, newAnimationLength);
-                MatchKeyframeSettingsPivotEnd(target, newAnimationLength);
-                target.AddEdgeFramesIfMissing(newAnimationLength);
-            }
-            CropBeginTriggersAndOffset(newAnimationLength);
+            var originalAnimationLength = _clip.animationLength;
             _clip.animationLength = newAnimationLength;
+            var delta = newAnimationLength - originalAnimationLength;
+
+            if (newAnimationLength < originalAnimationLength)
+            {
+                CropAt(delta, time);
+            }
+            else if (newAnimationLength > originalAnimationLength)
+            {
+                ExtendAt(delta, time);
+            }
         }
 
-        private static void CropOrExtendBeginCurve(AnimationCurve curve, float newLength)
+        private void CropAt(float delta, float time)
         {
-            if (curve.length < 2) return;
-            var currentLength = curve[curve.length - 1].time;
-            var lengthDiff = newLength - currentLength;
-
-            var keys = curve.keys.ToList();
-            for (var i = keys.Count - 1; i >= 0; i--)
+            var keyframeOps = new KeyframesOperation(_clip);
+            foreach (var target in _clip.GetAllTargets())
             {
-                var keyframe = keys[i];
-                float oldTime = keyframe.time;
-                float newTime = oldTime + lengthDiff;
+                // TODO: Create new keyframe if missing from evaluate curve
+                var snapshots = target
+                    .GetAllKeyframesTime()
+                    .Where(t => t < time || t >= time - delta)
+                    .Select(t =>
+                    {
+                        var newTime = t < time ? t : t + delta;
+                        return new SnapshotAt { time = newTime, snapshot = target.GetSnapshot(t) };
+                    })
+                    .ToList();
+                keyframeOps.RemoveAll(target, true);
 
-                if (newTime < 0)
+                foreach (var s in snapshots)
                 {
-                    keys.RemoveAt(i);
-                    continue;
+                    target.SetSnapshot(s.time, s.snapshot);
                 }
 
-                keyframe.time = newTime.Snap();
-                keys[i] = keyframe;
+                target.AddEdgeFramesIfMissing(_clip.animationLength);
             }
-
-            if (keys.Count == 0)
-            {
-                SuperController.LogError("VamTimeline: CropOrExtendLengthBegin resulted in an empty curve.");
-                return;
-            }
-
-            if (lengthDiff > 0)
-            {
-                var first = curve[0];
-                first.time = 0f;
-                keys[0] = first;
-            }
-            else if (keys[0].time != 0)
-            {
-                keys.Insert(0, new Keyframe(0f, curve.Evaluate(-lengthDiff)));
-            }
-
-            var last = keys[keys.Count - 1];
-            last.time = newLength;
-            keys[keys.Count - 1] = last;
-
-            curve.keys = keys.ToArray();
         }
 
-        // TODO: Untested, probably not working. If this works, every resize types should use this instead.
-        public void CropOrExtendAtTime(float newAnimationLength, float time)
+        private void ExtendAt(float delta, float time)
         {
-            var previousKeyframe = _clip.GetAllTargets().SelectMany(t => t.GetAllKeyframesTime()).Where(t => t <= time + 0.0011f).Max();
-            var nextKeyframe = _clip.GetAllTargets().SelectMany(t => t.GetAllKeyframesTime()).Where(t => t > time + 0.0001f).Min();
-
-            var keyframeAllowedDiff = (nextKeyframe - time - 0.001f).Snap();
-
-            if ((_clip.animationLength - newAnimationLength) > keyframeAllowedDiff)
+            var keyframeOps = new KeyframesOperation(_clip);
+            var originalAnimationLength = _clip.animationLength;
+            foreach (var target in _clip.GetAllTargets())
             {
-                newAnimationLength = _clip.animationLength - keyframeAllowedDiff;
-            }
+                // TODO: Create new keyframe if missing from evaluate curve
+                var snapshots = target
+                    .GetAllKeyframesTime()
+                    .Select(t => new SnapshotAt { time = t < time ? t : t + delta, snapshot = target.GetSnapshot(t) })
+                    .ToList();
+                keyframeOps.RemoveAll(target, true);
 
-            if (_clip.animationLength.IsSameFrame(newAnimationLength))
-                return;
+                foreach (var s in snapshots)
+                {
+                    target.SetSnapshot(s.time, s.snapshot);
+                }
 
-            foreach (var target in _clip.GetAllCurveTargets())
-            {
-                foreach (var curve in target.GetCurves())
-                    CropOrExtendAtTimeCurve(curve, newAnimationLength, time);
-                MatchKeyframeSettingsPivotBegin(target, newAnimationLength);
-                target.AddEdgeFramesIfMissing(newAnimationLength);
+                target.AddEdgeFramesIfMissing(_clip.animationLength);
             }
-            CropEndTriggers(newAnimationLength);
-            _clip.animationLength = newAnimationLength;
         }
 
-        private static void CropOrExtendAtTimeCurve(AnimationCurve curve, float newLength, float time)
-        {
-            if (curve.length < 2) return;
-            var lengthDiff = newLength - curve[curve.length - 1].time;
-
-            var keys = curve.keys;
-            for (var i = 0; i < keys.Length - 1; i++)
-            {
-                var keyframe = keys[i];
-                if (keyframe.time <= time - float.Epsilon) continue;
-                keyframe.time = (keyframe.time + lengthDiff).Snap();
-                keys[i] = keyframe;
-            }
-
-            var last = keys[keys.Length - 1];
-            last.time = newLength;
-            keys[keys.Length - 1] = last;
-
-            curve.keys = keys;
-        }
+        #endregion
 
         public void Loop(float newAnimationLength, float lengthWhenLengthModeChanged)
         {
@@ -240,81 +200,6 @@ namespace VamTimeline
                     var pasteTime = frames[i] + (lengthWhenLengthModeChanged * repeat);
                     if (pasteTime >= newAnimationLength) continue;
                     _clip.Paste(pasteTime, snapshots[i]);
-                }
-            }
-        }
-
-        private static void MatchKeyframeSettingsPivotBegin(ICurveAnimationTarget target, float newAnimationLength)
-        {
-            var settings = target.settings.Values.ToList();
-            target.settings.Clear();
-            var leadCurve = target.GetLeadCurve();
-            for (var i = 0; i < leadCurve.length; i++)
-            {
-                if (i < settings.Count) target.settings.Add(leadCurve[i].time.ToMilliseconds(), settings[i]);
-                else target.settings.Add(leadCurve[i].time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.CopyPrevious });
-            }
-        }
-
-        private void CropEndTriggers(float newAnimationLength)
-        {
-            var lengthMs = newAnimationLength.ToMilliseconds();
-            foreach (var target in _clip.targetTriggers)
-            {
-                var keys = target.triggersMap.Keys.ToList();
-                target.StartBulkUpdates();
-                target.dirty = true;
-                try
-                {
-                    foreach (var key in keys)
-                    {
-                        if (key > lengthMs)
-                            target.DeleteFrame(key);
-                    }
-                    target.AddEdgeFramesIfMissing(newAnimationLength);
-                }
-                finally
-                {
-                    target.EndBulkUpdates();
-                }
-            }
-        }
-
-        private void MatchKeyframeSettingsPivotEnd(ICurveAnimationTarget target, float newAnimationLength)
-        {
-            var settings = target.settings.Values.ToList();
-            target.settings.Clear();
-            var leadCurve = target.GetLeadCurve();
-            for (var i = 0; i < leadCurve.length; i++)
-            {
-                if (i >= settings.Count) break;
-                int ms = leadCurve[leadCurve.length - i - 1].time.ToMilliseconds();
-                target.settings.Add(ms, settings[settings.Count - i - 1]);
-            }
-            if (!target.settings.ContainsKey(0))
-                target.settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
-        }
-
-        private void CropBeginTriggersAndOffset(float newAnimationLength)
-        {
-            var lengthDiff = (newAnimationLength - _clip.animationLength).ToMilliseconds();
-            foreach (var target in _clip.targetTriggers)
-            {
-                var kvps = target.triggersMap.ToList();
-                target.StartBulkUpdates();
-                target.triggersMap.Clear();
-                target.dirty = true;
-                try
-                {
-                    foreach (var kvp in kvps)
-                    {
-                        target.SetKeyframe(Mathf.Clamp(kvp.Key + lengthDiff, 0, newAnimationLength.ToMilliseconds()), kvp.Value);
-                    }
-                    target.AddEdgeFramesIfMissing(newAnimationLength);
-                }
-                finally
-                {
-                    target.EndBulkUpdates();
                 }
             }
         }
