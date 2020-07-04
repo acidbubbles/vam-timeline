@@ -166,7 +166,7 @@ namespace VamTimeline
             {
                 foreach (var c in animation.clips.Where(c => c != current && c.animationLayer == current.animationLayer))
                     c.autoPlay = false;
-                current.autoPlay = true;
+                current.autoPlay = val;
             })
             {
                 isStorable = false
