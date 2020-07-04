@@ -169,38 +169,33 @@ namespace VamTimeline
 
         #endregion
 
-        public void Loop(float newAnimationLength, float lengthWhenLengthModeChanged)
+        public void Loop(float newAnimationLength)
         {
-            newAnimationLength = newAnimationLength.Snap(lengthWhenLengthModeChanged);
-            var loops = (int)Math.Round(newAnimationLength / lengthWhenLengthModeChanged);
-            if (loops <= 1 || newAnimationLength <= lengthWhenLengthModeChanged)
+            var keyframeOps = new KeyframesOperation(_clip);
+            var originalAnimationLength = _clip.animationLength;
+            _clip.animationLength = newAnimationLength;
+            foreach (var target in _clip.GetAllTargets())
             {
-                return;
-            }
-            var frames = _clip
-                .targetControllers.SelectMany(t => t.GetLeadCurve().keys.Select(k => k.time))
-                .Concat(_clip.targetFloatParams.SelectMany(t => t.value.keys.Select(k => k.time)))
-                .Select(t => t.Snap())
-                .Where(t => t < lengthWhenLengthModeChanged)
-                .Distinct()
-                .ToList();
+                var snapshots = target
+                    .GetAllKeyframesTime()
+                    .Select(t => new SnapshotAt { time = t, snapshot = target.GetSnapshot(t) })
+                    .ToList();
+                snapshots.RemoveAt(snapshots.Count - 1);
+                keyframeOps.RemoveAll(target, true);
 
-            var snapshots = frames.Select(f => _clip.Copy(f, true)).ToList();
-            foreach (var c in snapshots[0].controllers)
-            {
-                c.snapshot.curveType = CurveTypeValues.Smooth;
-            }
-
-            CropOrExtendEnd(newAnimationLength);
-
-            for (var repeat = 0; repeat < loops; repeat++)
-            {
-                for (var i = 0; i < frames.Count; i++)
+                float time = 0f;
+                var iteration = 0;
+                var i = 0;
+                while (true)
                 {
-                    var pasteTime = frames[i] + (lengthWhenLengthModeChanged * repeat);
-                    if (pasteTime >= newAnimationLength) continue;
-                    _clip.Paste(pasteTime, snapshots[i]);
+                    var snapshot = snapshots[i++];
+                    time = snapshot.time + (iteration * originalAnimationLength);
+                    if (time > newAnimationLength) break;
+                    target.SetSnapshot(time, snapshot.snapshot);
+                    if (i >= snapshots.Count) { i = 0; iteration++; }
                 }
+
+                target.AddEdgeFramesIfMissing(_clip.animationLength);
             }
         }
     }

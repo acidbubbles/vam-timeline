@@ -7,11 +7,11 @@ namespace VamTimeline
     public class EditAnimationScreen : ScreenBase
     {
         public const string ScreenName = "Edit";
-        public const string ChangeLengthModeCropExtendEnd = "Crop/Extend End";
-        public const string ChangeLengthModeCropExtendBegin = "Crop/Extend Begin";
-        public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend At Time";
+        public const string ChangeLengthModeCropExtendEnd = "Crop/Extend (End)";
+        public const string ChangeLengthModeCropExtendBegin = "Crop/Extend (Beginning)";
+        public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend (Time)";
         public const string ChangeLengthModeStretch = "Stretch";
-        public const string ChangeLengthModeLoop = "Loop (Extend)";
+        public const string ChangeLengthModeLoop = "Loop";
 
         public override string screenId => ScreenName;
 
@@ -21,7 +21,6 @@ namespace VamTimeline
         private JSONStorableBool _loop;
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
-        private float _lengthWhenLengthModeChanged;
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
         private JSONStorableFloat _blendDurationJSON;
@@ -69,7 +68,6 @@ namespace VamTimeline
 
             current.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
-            _lengthWhenLengthModeChanged = current?.animationLength ?? 0;
             UpdateValues();
         }
 
@@ -149,10 +147,7 @@ namespace VamTimeline
                 ChangeLengthModeCropExtendAtTime,
                 ChangeLengthModeStretch,
                 ChangeLengthModeLoop
-             }, ChangeLengthModeCropExtendEnd, "Change Length Mode", (string val) =>
-             {
-                 _lengthWhenLengthModeChanged = current?.animationLength ?? 0f;
-             });
+             }, ChangeLengthModeCropExtendEnd, "Change Length Mode");
             var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
             lengthModeUI.popupPanelHeight = 550f;
 
@@ -328,7 +323,6 @@ namespace VamTimeline
 
         private void UpdateAnimationLength(float newLength)
         {
-            if (_lengthWhenLengthModeChanged == 0f) return;
             if (animation.isPlaying)
             {
                 _lengthJSON.valNoCallback = current.animationLength;
@@ -343,21 +337,18 @@ namespace VamTimeline
             {
                 case ChangeLengthModeStretch:
                     operations.Resize().Stretch(newLength);
-                    _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendEnd:
                     operations.Resize().CropOrExtendEnd(newLength);
-                    _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendBegin:
                     operations.Resize().CropOrExtendAt(newLength, 0f);
-                    _lengthWhenLengthModeChanged = newLength;
                     break;
                 case ChangeLengthModeCropExtendAtTime:
                     operations.Resize().CropOrExtendAt(newLength, time);
                     break;
                 case ChangeLengthModeLoop:
-                    operations.Resize().Loop(newLength, _lengthWhenLengthModeChanged);
+                    operations.Resize().Loop(newLength);
                     break;
                 default:
                     SuperController.LogError($"VamTimeline: Unknown animation length type: {_lengthModeJSON.val}");
@@ -368,11 +359,6 @@ namespace VamTimeline
             current.DirtyAll();
 
             animation.clipTime = Math.Max(time, newLength);
-        }
-
-        private void ChangeLoop(bool val)
-        {
-            current.loop = val;
         }
 
         private void SetEnsureQuaternionContinuity(bool val)
