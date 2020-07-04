@@ -92,12 +92,23 @@ namespace VamTimeline
         private void UpdateLayerName(string to)
         {
             to = to.Trim();
-            if (to == "")
+            if (to == "" || to == current.animationLayer)
+            {
+                _layerNameJSON.valNoCallback = current.animationLayer;
                 return;
+            }
 
-            var layer = current.animationLayer;
-            foreach (var clip in animation.clips.Where(c => c.animationLayer == layer))
+            var from = current.animationLayer;
+            if (animation.clips.Any(c => c.animationLayer == to))
+            {
+                _layerNameJSON.valNoCallback = current.animationLayer;
+                return;
+            }
+
+            foreach (var clip in animation.clips.Where(c => c.animationLayer == from))
+            {
                 clip.animationLayer = to;
+            }
         }
 
         private void InitRenameAnimation()
@@ -112,10 +123,12 @@ namespace VamTimeline
             var previousAnimationName = current.animationName;
             if (string.IsNullOrEmpty(val))
             {
+                _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
             if (animation.clips.Any(c => c.animationName == val))
             {
+                _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
             current.animationName = val;

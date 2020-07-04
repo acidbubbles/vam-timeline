@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -209,10 +210,17 @@ namespace VamTimeline
 
         private void OnClipsListChanged()
         {
+            if (_ignoreAnimationChange) return;
+            StartCoroutine(SyncAnimationsList());
+        }
+
+        private IEnumerator SyncAnimationsList()
+        {
+            yield return 0;
             _ignoreAnimationChange = true;
             try
             {
-                var hasLayers = _animation.clips.Skip(1).Any(c => c.animationLayer != _animation.clips[0].animationLayer);
+                var hasLayers = _animation.EnumerateLayers().Skip(1).Any();
                 _animationsJSON.choices = _animation.clips.Select(c => c.animationName).ToList();
                 if (hasLayers)
                     _animationsJSON.displayChoices = _animation.clips.Select(c => $"[{c.animationLayer}] {c.animationName}").ToList();
