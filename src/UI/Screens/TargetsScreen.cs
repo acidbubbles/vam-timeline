@@ -26,6 +26,8 @@ namespace VamTimeline
         private UIDynamic _spacerUI;
         private JSONStorableBool _filterJSON;
         private UnityEngine.UI.Text _noTargetsUI;
+        private JSONStorableString _textJSON;
+        private UIDynamicTextField _textUI;
 
         public TargetsScreen()
             : base()
@@ -40,16 +42,22 @@ namespace VamTimeline
 
             current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
 
-            OnSelectionChanged();
-
-            if (animation.IsEmpty()) InitExplanation();
+            if (animation.IsEmpty())
+            {
+                InitExplanation();
+                CreateAddRemoveTargetsButton(true);
+            }
+            else
+            {
+                OnSelectionChanged();
+            }
         }
 
         private void InitExplanation()
         {
-            var textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
-            var textUI = prefabFactory.CreateTextField(textJSON);
-            textUI.height = 1078f;
+            _textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
+            _textUI = prefabFactory.CreateTextField(_textJSON);
+            _textUI.height = 1078f;
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
@@ -141,8 +149,13 @@ namespace VamTimeline
                 _filterUI.toggle.colors = toggleColors;
             }
 
+            CreateAddRemoveTargetsButton(current.GetAllTargetsCount() == 0);
+        }
+
+        private void CreateAddRemoveTargetsButton(bool highlight)
+        {
             _manageTargetsUI = CreateChangeScreenButton("<b>[+/-]</b> Add/remove targets", AddRemoveTargetsScreen.ScreenName);
-            if (current.GetAllTargetsCount() == 0)
+            if (highlight)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
                 _manageTargetsUI.buttonColor = navButtonColor;
@@ -169,6 +182,7 @@ namespace VamTimeline
         private void RemoveTargetSiblingComponents()
         {
             if (_filterUI != null) prefabFactory.RemoveToggle(_filterJSON, _filterUI);
+            if (_textUI != null) prefabFactory.RemoveTextField(_textJSON, _textUI);
             _filterUI = null;
             Destroy(_noTargetsUI?.gameObject);
             _noTargetsUI = null;
