@@ -219,7 +219,11 @@ namespace VamTimeline
         public IEnumerable<string> EnumerateLayers()
         {
             if (clips.Count == 0) yield break;
-            if (clips.Count == 1) yield return clips[0].animationLayer;
+            if (clips.Count == 1)
+            {
+                yield return clips[0].animationLayer;
+                yield break;
+            }
             var lastLayer = clips[0].animationLayer;
             yield return lastLayer;
             for (var i = 1; i < clips.Count; i++)
