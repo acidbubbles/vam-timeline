@@ -37,10 +37,9 @@ namespace VamTimeline
 
         public void ChangeScreen(string screen)
         {
-            _currentScreen = _defaultScreen = screen;
-            _plugin.animation.locked = screen == PerformanceScreen.ScreenName;
+            _currentScreen = screen;
+            if (screen != PerformanceScreen.ScreenName) _defaultScreen = screen;
             if (!enabled) return;
-            onScreenChanged.Invoke(screen);
             RefreshCurrentUI();
         }
 
@@ -53,11 +52,11 @@ namespace VamTimeline
 
         public string GetDefaultScreen()
         {
+            if (_plugin.animation.locked == true)
+                return PerformanceScreen.ScreenName;
             if (_defaultScreen != null)
                 return _defaultScreen;
             if (_plugin?.animation == null)
-                return PerformanceScreen.ScreenName;
-            if (_plugin.animation.locked == true)
                 return PerformanceScreen.ScreenName;
             if (_plugin.animation.clips.Count > 1 && _plugin.animation.EnumerateLayers().Skip(1).Any())
                 return AnimationsScreen.ScreenName;
@@ -179,6 +178,7 @@ namespace VamTimeline
                 _current.transform.SetParent(transform, false);
                 _current.onScreenChangeRequested.AddListener(ChangeScreen);
                 _current.Init(_plugin);
+                onScreenChanged.Invoke(_current.screenId);
             }
             catch (Exception exc)
             {

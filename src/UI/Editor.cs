@@ -119,7 +119,11 @@ namespace VamTimeline
             });
 
             screensManager = InitScreensManager(rightPanel);
-            screensManager.onScreenChanged.AddListener(screenName => tabs.Select(screenName));
+            screensManager.onScreenChanged.AddListener(screenName =>
+            {
+                tabs.Select(screenName);
+                animation.locked = screenName == PerformanceScreen.ScreenName;
+            });
             screensManager.Bind(plugin);
         }
 

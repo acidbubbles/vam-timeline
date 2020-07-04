@@ -15,8 +15,6 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            plugin.animation.locked = true;
-
             InitExplanation();
         }
 
