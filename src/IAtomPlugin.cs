@@ -16,6 +16,7 @@ namespace VamTimeline
         AtomAnimationSerializer serializer { get; }
         AtomClipboard clipboard { get; }
 
+        JSONStorableAction deleteJSON { get; }
         JSONStorableAction cutJSON { get; }
         JSONStorableAction copyJSON { get; }
         JSONStorableAction pasteJSON { get; }

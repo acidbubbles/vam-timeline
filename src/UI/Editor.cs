@@ -168,6 +168,13 @@ namespace VamTimeline
             {
                 var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
                 btn.gameObject.transform.SetParent(group.transform, false);
+                btn.label = "Del";
+                btn.button.onClick.AddListener(() => _plugin.deleteJSON.actionCallback());
+            }
+
+            {
+                var btn = Instantiate(_plugin.manager.configurableButtonPrefab).GetComponent<UIDynamicButton>();
+                btn.gameObject.transform.SetParent(group.transform, false);
                 btn.label = "Cut";
                 btn.button.onClick.AddListener(() => _plugin.cutJSON.actionCallback());
             }

@@ -31,6 +31,7 @@ namespace VamTimeline
         public JSONStorableAction stopIfPlayingJSON { get; private set; }
         public JSONStorableAction nextFrameJSON { get; private set; }
         public JSONStorableAction previousFrameJSON { get; private set; }
+        public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
         public JSONStorableAction pasteJSON { get; private set; }
@@ -313,6 +314,7 @@ namespace VamTimeline
             previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
             RegisterAction(previousFrameJSON);
 
+            deleteJSON = new JSONStorableAction("Delete", () => Delete());
             cutJSON = new JSONStorableAction("Cut", () => Cut());
             copyJSON = new JSONStorableAction("Copy", () => Copy());
             pasteJSON = new JSONStorableAction("Paste", () => Paste());
@@ -628,19 +630,38 @@ namespace VamTimeline
             animation.clipTime = animation.current.GetPreviousFrame(animation.clipTime);
         }
 
+        private void Delete()
+        {
+            try
+            {
+                if (animation.isPlaying) return;
+                var time = animation.clipTime;
+                if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
+                SuperController.LogError(time.ToString());
+                foreach (var target in animation.current.GetAllOrSelectedTargets())
+                {
+                    target.DeleteFrame(time);
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Delete)}: {exc}");
+            }
+        }
+
         private void Cut()
         {
             try
             {
                 if (animation.isPlaying) return;
                 clipboard.Clear();
-                clipboard.time = animation.clipTime.Snap();
+                var time = animation.clipTime;
+                clipboard.time = time;
                 clipboard.entries.Add(animation.current.Copy(clipboard.time));
-                var time = animation.clipTime.Snap();
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
                 foreach (var target in animation.current.GetAllOrSelectedTargets())
                 {
-                    target.DeleteFrame(clipboard.time);
+                    target.DeleteFrame(time);
                 }
             }
             catch (Exception exc)
@@ -656,7 +677,7 @@ namespace VamTimeline
                 if (animation.isPlaying) return;
 
                 clipboard.Clear();
-                clipboard.time = animation.clipTime.Snap();
+                clipboard.time = animation.clipTime;
                 clipboard.entries.Add(animation.current.Copy(clipboard.time));
             }
             catch (Exception exc)

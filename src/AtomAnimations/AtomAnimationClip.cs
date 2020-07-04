@@ -534,7 +534,7 @@ namespace VamTimeline
             }
             return new AtomClipboardEntry
             {
-                time = time,
+                time = time.Snap(),
                 controllers = controllers,
                 floatParams = floatParams,
                 triggers = triggers
