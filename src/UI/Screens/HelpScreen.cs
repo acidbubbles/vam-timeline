@@ -52,6 +52,8 @@ Check the wiki for resouces and videos. There's a ton of things you can do! Now 
         {
             base.Init(plugin);
 
+            CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
+
             InitExplanation();
         }
 
