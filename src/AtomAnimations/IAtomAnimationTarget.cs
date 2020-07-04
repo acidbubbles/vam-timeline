@@ -24,6 +24,7 @@ namespace VamTimeline
         float GetTimeClosestTo(float time);
         bool HasKeyframe(float time);
         void DeleteFrame(float time);
+        void AddEdgeFramesIfMissing(float animationLength);
 
         ISnapshot GetSnapshot(float time);
         void SetSnapshot(float time, ISnapshot snapshot);

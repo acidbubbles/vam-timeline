@@ -7,7 +7,7 @@ namespace VamTimeline
 {
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
-        public readonly Dictionary<int, AtomAnimationTrigger> triggersMap = new Dictionary<int, AtomAnimationTrigger>();
+        public readonly SortedDictionary<int, AtomAnimationTrigger> triggersMap = new SortedDictionary<int, AtomAnimationTrigger>();
         public float[] keyframes { get; private set; } = new float[0];
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 

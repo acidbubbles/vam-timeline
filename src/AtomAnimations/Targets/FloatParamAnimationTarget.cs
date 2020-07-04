@@ -67,9 +67,10 @@ namespace VamTimeline
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
+            var before = value.length;
             value.AddEdgeFramesIfMissing(animationLength);
             AddEdgeKeyframeSettingsIfMissing(animationLength);
-            dirty = true;
+            if (value.length != before) dirty = true;
         }
 
         public float[] GetAllKeyframesTime()

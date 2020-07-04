@@ -33,6 +33,8 @@ namespace VamTimeline
                 var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
                 var extraneousKeys = this.settings.Keys.Except(curveKeys).ToList();
                 SuperController.LogError($"Target {name} has {curve.length} frames but {this.settings.Count} settings. Attempting auto-repair.");
+                SuperController.LogError($"  Target  : {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}");
+                SuperController.LogError($"  Settings: {string.Join(", ", this.settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
                 foreach (var extraneousKey in extraneousKeys)
                     this.settings.Remove(extraneousKey);
             }
@@ -83,8 +85,20 @@ namespace VamTimeline
         {
             if (!settings.ContainsKey(0))
                 settings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
-            if (!settings.ContainsKey(animationLength.ToMilliseconds()))
-                settings.Add(animationLength.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+            var ms = animationLength.ToMilliseconds();
+            if (!settings.ContainsKey(ms))
+            {
+                if (settings.Count == 2)
+                {
+                    var last = settings.Last();
+                    settings.Remove(last.Key);
+                    settings.Add(ms, last.Value);
+                }
+                else
+                {
+                    settings.Add(ms, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
+                }
+            }
         }
 
         public void ChangeCurve(float time, string curveType, bool loop)

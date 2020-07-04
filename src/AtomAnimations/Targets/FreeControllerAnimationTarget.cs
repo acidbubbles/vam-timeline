@@ -140,6 +140,7 @@ namespace VamTimeline
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
+            var before = x.length;
             x.AddEdgeFramesIfMissing(animationLength);
             y.AddEdgeFramesIfMissing(animationLength);
             z.AddEdgeFramesIfMissing(animationLength);
@@ -148,7 +149,7 @@ namespace VamTimeline
             rotZ.AddEdgeFramesIfMissing(animationLength);
             rotW.AddEdgeFramesIfMissing(animationLength);
             AddEdgeKeyframeSettingsIfMissing(animationLength);
-            dirty = true;
+            if (x.length != before) dirty = true;
         }
 
         public float[] GetAllKeyframesTime()

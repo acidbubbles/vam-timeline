@@ -23,9 +23,6 @@ namespace VamTimeline
 
         public void Stretch(float newAnimationLength)
         {
-            if (_clip.animationLength.IsSameFrame(newAnimationLength))
-                return;
-
             var keyframeOps = new KeyframesOperation(_clip);
             var originalAnimationLength = _clip.animationLength;
             _clip.animationLength = newAnimationLength;
@@ -49,35 +46,58 @@ namespace VamTimeline
 
         public void CropOrExtendEnd(float newAnimationLength)
         {
-            if (_clip.animationLength.IsSameFrame(newAnimationLength))
-                return;
+            var originalAnimationLength = _clip.animationLength;
+            _clip.animationLength = newAnimationLength;
+
+            if (newAnimationLength < originalAnimationLength)
+            {
+                CropEnd(newAnimationLength);
+            }
+            else if (newAnimationLength > originalAnimationLength)
+            {
+                ExtendEnd(newAnimationLength);
+            }
+        }
+
+        private void CropEnd(float newAnimationLength)
+        {
             foreach (var target in _clip.GetAllCurveTargets())
             {
                 foreach (var curve in target.GetCurves())
                 {
-                    CropEndCurve(curve, newAnimationLength);
+                    var key = curve.AddKey(newAnimationLength, curve.Evaluate(newAnimationLength));
                 }
-                MatchKeyframeSettingsPivotBegin(target, newAnimationLength);
+                target.EnsureKeyframeSettings(newAnimationLength, target.settings.Last().Value.curveType);
+                target.dirty = true;
+                var keyframesToDelete = target.GetAllKeyframesTime().Where(t => t > newAnimationLength);
+                foreach (var t in keyframesToDelete)
+                    target.DeleteFrame(t);
+            }
+            foreach (var target in _clip.targetTriggers)
+            {
+                while (target.triggersMap.Count > 0)
+                {
+                    var lastTrigger = target.triggersMap.Keys.Last();
+                    if (lastTrigger * 1000f > newAnimationLength)
+                    {
+                        target.triggersMap.Remove(lastTrigger);
+                        continue;
+                    }
+                    break;
+                }
                 target.AddEdgeFramesIfMissing(newAnimationLength);
             }
-            CropEndTriggers(newAnimationLength);
-            _clip.animationLength = newAnimationLength;
         }
 
-        public static void CropEndCurve(AnimationCurve curve, float newLength)
+        private void ExtendEnd(float newAnimationLength)
         {
-            if (curve.length < 2) return;
-            float currentLength = curve[curve.length - 1].time;
-            if (newLength >= currentLength) return;
-
-            var key = curve.AddKey(newLength, curve.Evaluate(newLength));
-            if (key == -1) key = curve.KeyframeBinarySearch(newLength);
-            if (key == -1) throw new InvalidOperationException($"Could not add nor find keyframe at time {newLength}");
-            while (curve.length - 1 > key)
+            foreach (var target in _clip.GetAllTargets())
             {
-                curve.RemoveKey(curve.length - 1);
+                target.AddEdgeFramesIfMissing(newAnimationLength);
             }
         }
+
+        // TODO: Replace by simpler implementation, see before
 
         public void CropOrExtendBegin(float newAnimationLength)
         {

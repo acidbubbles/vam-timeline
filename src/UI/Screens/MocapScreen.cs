@@ -138,7 +138,9 @@ namespace VamTimeline
                     {
                         if (!mot.clip.steps.Any(s => s.positionOn || s.rotationOn)) continue;
                         target = operations.Targets().Add(ctrl);
+                        target.AddEdgeFramesIfMissing(current.animationLength);
                     }
+                        target.Validate(current.animationLength);
                     target.StartBulkUpdates();
                     operations.Keyframes().RemoveAll(target);
                 }
