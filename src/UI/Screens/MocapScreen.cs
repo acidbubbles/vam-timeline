@@ -74,7 +74,6 @@ namespace VamTimeline
                 return;
             }
 
-            current.loop = SuperController.singleton.motionAnimationMaster.loop;
             var length = plugin.containingAtom.motionAnimationControls.Select(m => m.clip.clipLength).Max().Snap(0.01f);
             if (length < 0.001f)
             {
@@ -82,9 +81,19 @@ namespace VamTimeline
                 return;
             }
 
+            var requiresRebuild = false;
+            if (current.loop)
+            {
+                current.loop = SuperController.singleton.motionAnimationMaster.loop;
+                requiresRebuild = true;
+            }
             if (length > current.animationLength)
             {
                 operations.Resize().CropOrExtendEnd(length);
+                requiresRebuild = true;
+            }
+            if (requiresRebuild)
+            {
                 animation.RebuildAnimationNow();
             }
 
@@ -103,6 +112,7 @@ namespace VamTimeline
             yield return 0;
 
             var controlCounter = 0;
+            var filterSelected = current.targetControllers.Any(c => c.selected);
             foreach (var mot in containingAtom.motionAnimationControls)
             {
                 FreeControllerAnimationTarget target = null;
@@ -115,6 +125,8 @@ namespace VamTimeline
                     if (mot == null || mot.clip == null) continue;
                     if (mot.clip.clipLength <= 0.1) continue;
                     ctrl = mot.controller;
+                    target = current.targetControllers.FirstOrDefault(t => t.controller == ctrl);
+                    if (filterSelected && (target == null || !target.selected)) continue;
 
                     if (animation.EnumerateLayers().Where(l => l != current.animationLayer).Select(l => animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == ctrl))
                     {
@@ -122,8 +134,11 @@ namespace VamTimeline
                         continue;
                     }
 
-                    current.Remove(ctrl);
-                    target = operations.Targets().Add(ctrl);
+                    if (target == null)
+                    {
+                        if (!mot.clip.steps.Any(s => s.positionOn || s.rotationOn)) continue;
+                        target = operations.Targets().Add(ctrl);
+                    }
                     target.StartBulkUpdates();
                     operations.Keyframes().RemoveAll(target);
                 }

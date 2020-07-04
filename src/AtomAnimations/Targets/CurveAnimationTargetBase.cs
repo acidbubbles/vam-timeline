@@ -31,7 +31,7 @@ namespace VamTimeline
             if (this.settings.Count > curve.length)
             {
                 var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
-                var extraneousKeys = this.settings.Keys.Except(curveKeys);
+                var extraneousKeys = this.settings.Keys.Except(curveKeys).ToList();
                 SuperController.LogError($"Target {name} has {curve.length} frames but {this.settings.Count} settings. Attempting auto-repair.");
                 foreach (var extraneousKey in extraneousKeys)
                     this.settings.Remove(extraneousKey);
