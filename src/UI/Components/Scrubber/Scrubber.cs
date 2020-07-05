@@ -120,7 +120,7 @@ namespace VamTimeline
             if (_lastTextUpdate != currentUpdate && UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
             {
                 _lastTextUpdate = currentUpdate;
-                _timeText.text = $"{animation.playTime:0.000}s / {animation.current.animationLength:0.000}s";
+                _timeText.text = $"{animation.clipTime:0.000}s / {animation.current.animationLength:0.000}s";
             }
         }
 
@@ -138,7 +138,7 @@ namespace VamTimeline
             var ratio = Mathf.Clamp01(animation.clipTime / animation.current.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-            _timeText.text = $"{animation.playTime:0.000}s / {animation.current.animationLength:0.000}s";
+            _timeText.text = $"{animation.clipTime:0.000}s / {animation.current.animationLength:0.000}s";
         }
 
         public void OnPointerDown(PointerEventData eventData)
