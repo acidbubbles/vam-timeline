@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -35,6 +34,10 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitDeleteAnimationsUI();
+
+            prefabFactory.CreateSpacer();
+
+            CreateChangeScreenButton("<i><b>Add</b> animations/layers...</i>", AddAnimationScreen.ScreenName);
 
             RefreshAnimationsList();
 
@@ -75,7 +78,7 @@ namespace VamTimeline
                 var anim = current;
                 if (anim == null) return;
                 var idx = animation.clips.IndexOf(anim);
-                if (idx <= 0) return;
+                if (idx <= 0 || animation.clips[idx - 1].animationLayer != current.animationLayer) return;
                 animation.clips.RemoveAt(idx);
                 animation.clips.Insert(idx - 1, anim);
                 animation.onClipsListChanged.Invoke();
@@ -93,7 +96,7 @@ namespace VamTimeline
                 var anim = current;
                 if (anim == null) return;
                 var idx = animation.clips.IndexOf(anim);
-                if (idx >= animation.clips.Count - 1) return;
+                if (idx >= animation.clips.Count - 1 || animation.clips[idx + 1].animationLayer != current.animationLayer) return;
                 animation.clips.RemoveAt(idx);
                 animation.clips.Insert(idx + 1, anim);
                 animation.onClipsListChanged.Invoke();
@@ -147,12 +150,18 @@ namespace VamTimeline
         {
             var sb = new StringBuilder();
 
+            string layer = null;
             foreach (var clip in animation.clips)
             {
+                if (clip.animationLayer != layer)
+                {
+                    layer = clip.animationLayer;
+                    sb.AppendLine($"=== {layer} ===");
+                }
                 if (clip == current)
                     sb.Append("> ");
                 else
-                    sb.Append("  ");
+                    sb.Append("   ");
                 sb.AppendLine(clip.animationName);
             }
 
