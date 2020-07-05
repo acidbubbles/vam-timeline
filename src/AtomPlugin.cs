@@ -43,8 +43,14 @@ namespace VamTimeline
         private bool _restoring;
         private Editor _ui;
         private Editor _controllerInjectedUI;
-        private class AnimStorableActionMap { public JSONStorableAction jsa; public string animationName; }
-        private readonly List<AnimStorableActionMap> _playActions = new List<AnimStorableActionMap>();
+        private class AnimStorableActionMap
+        {
+            public string animationName;
+            public JSONStorableAction playJSON;
+            public JSONStorableFloat speedJSON;
+            public JSONStorableFloat weightJSON;
+        }
+        private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
 
         #region Init
 
@@ -462,11 +468,13 @@ namespace VamTimeline
 
         private void BindAnimation()
         {
-            foreach (var action in _playActions)
+            foreach (var action in _clipStorables)
             {
-                DeregisterAction(action.jsa);
+                DeregisterAction(action.playJSON);
+                DeregisterFloat(action.speedJSON);
+                DeregisterFloat(action.weightJSON);
             }
-            _playActions.Clear();
+            _clipStorables.Clear();
 
             animation.onTimeChanged.AddListener(OnTimeChanged);
             animation.onClipsListChanged.AddListener(OnClipsListChanged);
@@ -515,15 +523,15 @@ namespace VamTimeline
 
                 foreach (var animName in animationJSON.choices)
                 {
-                    if (_playActions.Any(a => a.animationName == animName)) continue;
-                    CreateAndRegisterPlayAction(animName);
+                    if (_clipStorables.Any(a => a.animationName == animName)) continue;
+                    CreateAndRegisterClipStorables(animName);
                 }
-                if (animationJSON.choices.Count > _playActions.Count)
+                if (animationJSON.choices.Count > _clipStorables.Count)
                 {
-                    foreach (var action in _playActions.ToArray())
+                    foreach (var action in _clipStorables.ToArray())
                     {
                         if (!animationJSON.choices.Contains(action.animationName))
-                            _playActions.Remove(action);
+                            _clipStorables.Remove(action);
                     }
                 }
 
@@ -535,14 +543,44 @@ namespace VamTimeline
             }
         }
 
-        private void CreateAndRegisterPlayAction(string animationName)
+        private void CreateAndRegisterClipStorables(string animationName)
         {
-            var jsa = new JSONStorableAction($"Play {animationName}", () =>
+            var clip = animation.GetClip(animationName);
+            if (clip == null) return;
+
+            var playJSON = new JSONStorableAction($"Play {animationName}", () =>
             {
                 animation.PlayClip(animationName, true);
             });
-            RegisterAction(jsa);
-            _playActions.Add(new AnimStorableActionMap { animationName = animationName, jsa = jsa });
+            RegisterAction(playJSON);
+
+            var speedJSON = new JSONStorableFloat($"Speed {animationName}", 1f, (float val) =>
+            {
+                clip.speed = val;
+            }, 0.1f, 10f)
+            {
+                valNoCallback = clip.speed,
+                isStorable = false,
+            };
+            RegisterFloat(speedJSON);
+
+            var weightJSON = new JSONStorableFloat($"Weight {animationName}", 1f, (float val) =>
+            {
+                clip.weight = val;
+            }, 0f, 1f)
+            {
+                valNoCallback = clip.weight,
+                isStorable = false,
+            };
+            RegisterFloat(weightJSON);
+
+            _clipStorables.Add(new AnimStorableActionMap
+            {
+                animationName = animationName,
+                playJSON = playJSON,
+                speedJSON = speedJSON,
+                weightJSON = weightJSON,
+            });
         }
 
         private void OnAnimationParametersChanged()
