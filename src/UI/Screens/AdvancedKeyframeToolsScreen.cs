@@ -114,7 +114,12 @@ namespace VamTimeline
                 var time = animation.clipTime.Snap();
                 foreach (var fc in plugin.containingAtom.freeControllers)
                 {
+                    if (fc.name == "control") continue;
                     if (!fc.name.EndsWith("Control")) continue;
+
+                    if (fc.currentRotationState == FreeControllerV3.RotationState.Comply) fc.currentRotationState = FreeControllerV3.RotationState.On;
+                    if (fc.currentPositionState == FreeControllerV3.PositionState.Comply) fc.currentPositionState = FreeControllerV3.PositionState.On;
+
                     if (fc.currentPositionState != FreeControllerV3.PositionState.On && fc.currentRotationState != FreeControllerV3.RotationState.On) continue;
 
                     var target = current.targetControllers.FirstOrDefault(tc => tc.controller == fc);
