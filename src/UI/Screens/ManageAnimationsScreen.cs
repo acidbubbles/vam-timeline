@@ -11,6 +11,7 @@ namespace VamTimeline
         public override string screenId => ScreenName;
 
         private JSONStorableString _animationsListJSON;
+        private UIDynamicButton _deleteAnimationUI;
 
         public ManageAnimationsScreen()
             : base()
@@ -61,10 +62,10 @@ namespace VamTimeline
 
         private void InitDeleteAnimationsUI()
         {
-            var deleteAnimationUI = prefabFactory.CreateButton("Delete Animation");
-            deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
-            deleteAnimationUI.buttonColor = Color.red;
-            deleteAnimationUI.textColor = Color.white;
+            _deleteAnimationUI = prefabFactory.CreateButton("Delete Animation");
+            _deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
+            _deleteAnimationUI.buttonColor = Color.red;
+            _deleteAnimationUI.textColor = Color.white;
         }
 
         #endregion
@@ -151,6 +152,7 @@ namespace VamTimeline
             var sb = new StringBuilder();
 
             string layer = null;
+            var animationsInLayer = 0;
             foreach (var clip in animation.clips)
             {
                 if (clip.animationLayer != layer)
@@ -158,6 +160,10 @@ namespace VamTimeline
                     layer = clip.animationLayer;
                     sb.AppendLine($"=== {layer} ===");
                 }
+
+                if (clip.animationLayer == current.animationLayer)
+                    animationsInLayer++;
+
                 if (clip == current)
                     sb.Append("> ");
                 else
@@ -166,6 +172,7 @@ namespace VamTimeline
             }
 
             _animationsListJSON.val = sb.ToString();
+            _deleteAnimationUI.button.interactable = animationsInLayer > 1;
         }
 
         public override void OnDestroy()
