@@ -127,7 +127,6 @@ namespace VamTimeline
 
             set
             {
-                if (value <= 0) throw new InvalidOperationException();
                 _speed = value;
                 foreach (var clip in clips)
                 {

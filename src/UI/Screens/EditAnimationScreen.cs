@@ -76,14 +76,14 @@ namespace VamTimeline
 
         private void InitPlaybackUI()
         {
-            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, (float val) => animation.speed = val, 0.01f, 10f, true)
+            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, (float val) => animation.speed = val, 0f, 10f, false)
             {
                 valNoCallback = animation.speed
             };
             var animationSpeedUI = prefabFactory.CreateSlider(_animationSpeedJSON);
             animationSpeedUI.valueFormat = "F3";
 
-            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => current.speed = val, 0.01f, 10f, true)
+            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => current.speed = val, 0f, 10f, false)
             {
                 valNoCallback = current.speed
             };
@@ -168,7 +168,7 @@ namespace VamTimeline
             var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
             lengthModeUI.popupPanelHeight = 550f;
 
-            _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, (float val) => _lengthJSON.valNoCallback = val.Snap(animation.snap), 0.5f, 10f, false, true);
+            _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, (float val) => { _lengthJSON.valNoCallback = val.Snap(animation.snap); if (_lengthJSON.valNoCallback < 0.1f) _lengthJSON.valNoCallback = 0.1f; }, 0f, 10f, false, true);
             var lengthUI = prefabFactory.CreateSlider(_lengthJSON);
             lengthUI.valueFormat = "F3";
 

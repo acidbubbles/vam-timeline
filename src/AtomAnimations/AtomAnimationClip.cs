@@ -239,7 +239,6 @@ namespace VamTimeline
 
             set
             {
-                if (value <= 0) throw new InvalidOperationException();
                 _speed = value;
                 onPlaybackSettingsChanged.Invoke();
             }
