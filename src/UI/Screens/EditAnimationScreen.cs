@@ -375,7 +375,7 @@ namespace VamTimeline
             _lengthJSON.valNoCallback = current.animationLength;
             current.DirtyAll();
 
-            animation.clipTime = Math.Max(time, newLength);
+            animation.clipTime = Math.Min(time, newLength);
         }
 
         private void SetEnsureQuaternionContinuity(bool val)
