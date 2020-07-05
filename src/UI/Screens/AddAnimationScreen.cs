@@ -155,16 +155,14 @@ namespace VamTimeline
             foreach (var origTarget in current.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
-                newTarget.SetKeyframe(0f, Vector3.zero, Quaternion.identity);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(current.animationLength));
-                newTarget.SetKeyframe(clip.animationLength, Vector3.zero, Quaternion.identity);
-                newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.controller == origTarget.controller).GetCurveSnapshot(0f));
+                newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
             foreach (var origTarget in current.targetFloatParams)
             {
                 var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
-                newTarget.SetKeyframe(0f, origTarget.value.Evaluate(current.animationLength));
-                newTarget.SetKeyframe(clip.animationLength, next.targetFloatParams.First(t => ReferenceEquals(t.floatParam, origTarget.floatParam)).value.Evaluate(0f));
+                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(current.animationLength));
+                newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
 
             animation.clips.Remove(clip);

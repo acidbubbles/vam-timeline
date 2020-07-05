@@ -568,12 +568,33 @@ namespace VamTimeline
             {
                 if (!clip.transition) continue;
 
-                var previous = GetClip(clip.animationName);
+                bool realign = false;
+                var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
                 if (previous != null && (previous.IsDirty() || clip.IsDirty()))
+                {
                     clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
+                    realign = true;
+                }
                 var next = GetClip(clip.nextAnimationName);
                 if (next != null && (next.IsDirty() || clip.IsDirty()))
+                {
                     clip.Paste(clip.animationLength, next.Copy(0f, true), false);
+                    realign = true;
+                }
+                if (realign)
+                {
+                    foreach (var target in clip.targetControllers)
+                    {
+                        if (clip.ensureQuaternionContinuity)
+                        {
+                            UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
+                                target.rotX,
+                                target.rotY,
+                                target.rotZ,
+                                target.rotW);
+                        }
+                    }
+                }
             }
             foreach (var clip in clips)
             {
