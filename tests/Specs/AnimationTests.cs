@@ -18,11 +18,11 @@ namespace VamTimeline.Tests.Specs
             context.animation.PlayAll();
             yield return 0f;
             context.Assert(context.animation.isPlaying, "Play should set isPlaying to true");
-            context.Assert(context.animation.clips[0].enabled, "Clips is enabled");
+            context.Assert(context.animation.clips[0].playbackEnabled, "Clips is enabled");
             context.animation.StopAll();
             yield return 0f;
             context.Assert(!context.animation.isPlaying, "Stop should set isPlaying to false");
-            context.Assert(!context.animation.clips[0].enabled, "Clip is disabled");
+            context.Assert(!context.animation.clips[0].playbackEnabled, "Clip is disabled");
         }
     }
 }

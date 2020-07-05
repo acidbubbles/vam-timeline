@@ -30,7 +30,8 @@ namespace VamTimeline
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
-        public AnimationSettingModifiedEvent onAnimationSettingsModified { get; } = new AnimationSettingModifiedEvent();
+        public UnityEvent onPlaybackSettingsChanged { get; } = new UnityEvent();
+        public AnimationSettingModifiedEvent onAnimationSettingsChanged { get; } = new AnimationSettingModifiedEvent();
         public AnimationPattern animationPattern
         {
             get
@@ -40,7 +41,7 @@ namespace VamTimeline
             set
             {
                 _animationPattern = value;
-                onAnimationSettingsModified.Invoke(nameof(animationPattern));
+                onAnimationSettingsChanged.Invoke(nameof(animationPattern));
             }
         }
         public readonly AtomAnimationTargetsList<TriggersAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersAnimationTarget>() { label = "Triggers" };
@@ -80,7 +81,7 @@ namespace VamTimeline
             {
                 if (_animationLayer == value) return;
                 _animationLayer = value;
-                onAnimationSettingsModified.Invoke(nameof(animationLayer));
+                onAnimationSettingsChanged.Invoke(nameof(animationLayer));
             }
         }
         public bool ensureQuaternionContinuity
@@ -93,7 +94,7 @@ namespace VamTimeline
             {
                 if (_ensureQuaternionContinuity == value) return;
                 _ensureQuaternionContinuity = value;
-                onAnimationSettingsModified.Invoke(nameof(ensureQuaternionContinuity));
+                onAnimationSettingsChanged.Invoke(nameof(ensureQuaternionContinuity));
             }
         }
         public string animationName
@@ -106,7 +107,7 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
-                onAnimationSettingsModified.Invoke(nameof(animationName));
+                onAnimationSettingsChanged.Invoke(nameof(animationName));
             }
         }
         public float animationLength
@@ -120,7 +121,7 @@ namespace VamTimeline
                 if (_animationLength == value) return;
                 _animationLength = value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsModified.Invoke(nameof(animationLength));
+                onAnimationSettingsChanged.Invoke(nameof(animationLength));
             }
         }
         public bool autoPlay { get; set; } = false;
@@ -160,7 +161,7 @@ namespace VamTimeline
                     _skipNextAnimationSettingsModified = false;
                 }
                 UpdateForcedNextAnimationTime();
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(loop));
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(loop));
                 DirtyAll();
             }
         }
@@ -183,7 +184,7 @@ namespace VamTimeline
                 {
                     _skipNextAnimationSettingsModified = false;
                 }
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(transition));
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(transition));
                 DirtyAll();
             }
         }
@@ -198,7 +199,7 @@ namespace VamTimeline
                 if (_blendDuration == value) return;
                 _blendDuration = value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsModified.Invoke(nameof(blendDuration));
+                onAnimationSettingsChanged.Invoke(nameof(blendDuration));
             }
         }
         public string nextAnimationName
@@ -212,7 +213,7 @@ namespace VamTimeline
                 if (_nextAnimationName == value) return;
                 _nextAnimationName = value == "" ? null : value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsModified.Invoke(nameof(nextAnimationName));
+                onAnimationSettingsChanged.Invoke(nameof(nextAnimationName));
             }
         }
         public float nextAnimationTime
@@ -225,7 +226,38 @@ namespace VamTimeline
             {
                 if (_nextAnimationTime == value) return;
                 _nextAnimationTime = value;
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsModified.Invoke(nameof(nextAnimationTime));
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(nextAnimationTime));
+            }
+        }
+        private float _speed = 1f;
+        public float speed
+        {
+            get
+            {
+                return _speed;
+            }
+
+            set
+            {
+                if (value <= 0) throw new InvalidOperationException();
+                _speed = value;
+                onPlaybackSettingsChanged.Invoke();
+            }
+        }
+        private float _weight = 1f;
+        public float weight
+        {
+            get
+            {
+                return _weight;
+            }
+
+            set
+            {
+                _weight = Mathf.Clamp01(value);
+                if (playbackBlendRate > 0) playbackBlendRate = 0;
+                if (playbackWeight != _weight && playbackBlendRate == 0) playbackWeight = _weight;
+                onPlaybackSettingsChanged.Invoke();
             }
         }
 
@@ -271,13 +303,13 @@ namespace VamTimeline
         #region Animation State
 
         private float _clipTime;
-        public float previousClipTime = -1;
-        public float weight;
-        public bool enabled;
-        public bool mainInLayer;
-        public float blendRate;
-        public string scheduledNextAnimationName;
-        public float scheduledNextTime;
+        public float playbackPreviousClipTime = -1;
+        public float playbackWeight;
+        public bool playbackEnabled;
+        public bool playbackMainInLayer;
+        public float playbackBlendRate;
+        public string playbackScheduledNextAnimationName;
+        public float playbackScheduledNextTime;
 
         public float clipTime
         {
@@ -288,33 +320,33 @@ namespace VamTimeline
 
             set
             {
-                previousClipTime = _clipTime;
+                playbackPreviousClipTime = _clipTime;
                 _clipTime = Mathf.Abs(loop ? value % animationLength : Mathf.Min(value, animationLength));
             }
         }
 
         public void SetNext(string nextAnimationName, float nextTime)
         {
-            scheduledNextAnimationName = nextAnimationName;
-            scheduledNextTime = nextAnimationName != null ? nextTime : float.MaxValue;
+            playbackScheduledNextAnimationName = nextAnimationName;
+            playbackScheduledNextTime = nextAnimationName != null ? nextTime : float.MaxValue;
         }
 
         public void Reset(bool resetTime)
         {
-            enabled = false;
-            weight = 0f;
-            blendRate = 0f;
-            mainInLayer = false;
+            playbackEnabled = false;
+            playbackWeight = 0f;
+            playbackBlendRate = 0f;
+            playbackMainInLayer = false;
             SetNext(null, 0f);
             if (resetTime)
             {
                 clipTime = 0f;
-                previousClipTime = -1f;
+                playbackPreviousClipTime = -1f;
             }
             else
             {
                 clipTime = clipTime.Snap();
-                previousClipTime = -1f;
+                playbackPreviousClipTime = -1f;
             }
         }
 
@@ -608,7 +640,7 @@ namespace VamTimeline
             onTargetsSelectionChanged.RemoveAllListeners();
             onAnimationKeyframesDirty.RemoveAllListeners();
             onAnimationKeyframesRebuilt.RemoveAllListeners();
-            onAnimationSettingsModified.RemoveAllListeners();
+            onAnimationSettingsChanged.RemoveAllListeners();
             onTargetsListChanged.RemoveAllListeners();
             foreach (var target in GetAllTargets())
             {

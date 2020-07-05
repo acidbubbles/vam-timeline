@@ -30,7 +30,9 @@ namespace VamTimeline
         private JSONStorableBool _transitionJSON;
         private UIDynamicToggle _transitionUI;
         private UIDynamicToggle _loopUI;
-        private JSONStorableFloat _speedJSON;
+        private JSONStorableFloat _animationSpeedJSON;
+        private JSONStorableFloat _clipSpeedJSON;
+        private JSONStorableFloat _clipWeightJSON;
 
         public EditAnimationScreen()
             : base()
@@ -43,8 +45,8 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            CreateHeader("Speed (Applies to all)", 1);
-            InitSpeedUI();
+            CreateHeader("Playback", 1);
+            InitPlaybackUI();
 
             CreateHeader("Name", 1);
             InitRenameLayer();
@@ -66,19 +68,34 @@ namespace VamTimeline
             CreateHeader("Links", 1);
             InitAnimationPatternLinkUI();
 
-            current.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+            current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            current.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
             UpdateValues();
         }
 
-        private void InitSpeedUI()
+        private void InitPlaybackUI()
         {
-            _speedJSON = new JSONStorableFloat("Speed", 1f, (float val) => animation.speed = val, 0.01f, 10f, true)
+            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, (float val) => animation.speed = val, 0.01f, 10f, true)
             {
                 valNoCallback = animation.speed
             };
-            var speedUI = prefabFactory.CreateSlider(_speedJSON);
-            speedUI.valueFormat = "F3";
+            var animationSpeedUI = prefabFactory.CreateSlider(_animationSpeedJSON);
+            animationSpeedUI.valueFormat = "F3";
+
+            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => current.speed = val, 0.01f, 10f, true)
+            {
+                valNoCallback = current.speed
+            };
+            var clipSpeedUI = prefabFactory.CreateSlider(_clipSpeedJSON);
+            clipSpeedUI.valueFormat = "F3";
+
+            _clipWeightJSON = new JSONStorableFloat("Weight", 1f, (float val) => current.weight = val, 0f, 1f, true)
+            {
+                valNoCallback = current.weight
+            };
+            var clipWeigthUI = prefabFactory.CreateSlider(_clipWeightJSON);
+            clipWeigthUI.valueFormat = "F4";
         }
 
         private void InitRenameLayer()
@@ -446,20 +463,28 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
-            args.before.onAnimationSettingsModified.RemoveListener(OnAnimationSettingsModified);
-            args.after.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+            args.before.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
+            args.before.onPlaybackSettingsChanged.RemoveListener(OnPlaybackSettingsChanged);
+            args.after.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            args.after.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
 
             UpdateValues();
         }
 
-        private void OnAnimationSettingsModified(string _)
+        private void OnAnimationSettingsChanged(string _)
         {
             UpdateValues();
+        }
+
+        private void OnPlaybackSettingsChanged()
+        {
+            _clipWeightJSON.valNoCallback = current.weight;
+            _clipSpeedJSON.valNoCallback = current.speed;
         }
 
         private void OnSpeedChanged()
         {
-            _speedJSON.valNoCallback = animation.speed;
+            _animationSpeedJSON.valNoCallback = animation.speed;
         }
 
         private void UpdateValues()
@@ -483,7 +508,8 @@ namespace VamTimeline
         public override void OnDestroy()
         {
             animation.onSpeedChanged.RemoveListener(OnSpeedChanged);
-            current.onAnimationSettingsModified.RemoveListener(OnAnimationSettingsModified);
+            current.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
+            current.onPlaybackSettingsChanged.RemoveListener(OnPlaybackSettingsChanged);
             base.OnDestroy();
         }
 

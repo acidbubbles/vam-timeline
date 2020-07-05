@@ -55,6 +55,8 @@ namespace VamTimeline
                     nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                     nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
                     autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
+                    speed = DeserializeFloat(clipJSON["Speed"], 1),
+                    weight = DeserializeFloat(clipJSON["Weight"], 1),
                 };
                 clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
                 DeserializeClip(clip, clipJSON);
@@ -360,6 +362,8 @@ namespace VamTimeline
                     { "Transition", clip.transition ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" },
                     { "AnimationLayer", clip.animationLayer },
+                    { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
+                    { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
                 };
                 if (clip.nextAnimationName != null)
                     clipJSON["NextAnimationName"] = clip.nextAnimationName;

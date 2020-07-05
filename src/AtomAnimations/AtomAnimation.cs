@@ -105,7 +105,7 @@ namespace VamTimeline
             set
             {
                 SetPlayTime(value);
-                if (!current.enabled)
+                if (!current.playbackEnabled)
                     current.clipTime = value;
                 Sample();
                 foreach (var clip in clips)
@@ -184,7 +184,7 @@ namespace VamTimeline
                 clips.Add(clip);
             else
                 clips.Insert(lastIndexOfLayer + 1, clip);
-            clip.onAnimationSettingsModified.AddListener(OnAnimationSettingsModified);
+            clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
@@ -243,15 +243,15 @@ namespace VamTimeline
         {
             var first = false;
             var clip = GetClip(animationName);
-            if (clip.enabled && clip.mainInLayer) return;
+            if (clip.playbackEnabled && clip.playbackMainInLayer) return;
             if (!isPlaying)
             {
                 first = true;
                 isPlaying = true;
                 _sequencing = _sequencing || sequencing;
             }
-            if (sequencing && !clip.enabled) clip.clipTime = 0;
-            var previousMain = clips.FirstOrDefault(c => c.mainInLayer && c.animationLayer == clip.animationLayer);
+            if (sequencing && !clip.playbackEnabled) clip.clipTime = 0;
+            var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == clip.animationLayer);
             if (previousMain != null && previousMain != clip)
             {
                 TransitionAnimation(previousMain, clip);
@@ -259,7 +259,7 @@ namespace VamTimeline
             else
             {
                 Blend(clip, 1f, PlayBlendDuration);
-                clip.mainInLayer = true;
+                clip.playbackMainInLayer = true;
             }
             if (clip.animationPattern)
             {
@@ -277,7 +277,7 @@ namespace VamTimeline
         {
             var firstOrMainPerLayer = clips
                 .GroupBy(c => c.animationLayer)
-                .Select(g => g.FirstOrDefault(c => c.mainInLayer) ?? g.First());
+                .Select(g => g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.First());
 
             foreach (var clip in firstOrMainPerLayer)
             {
@@ -291,13 +291,13 @@ namespace VamTimeline
         public void StopClip(string animationName)
         {
             var clip = GetClip(animationName);
-            if (clip.enabled)
+            if (clip.playbackEnabled)
                 clip.Leave();
             clip.Reset(false);
             if (clip.animationPattern)
                 clip.animationPattern.SetBoolParamValue("loopOnce", true);
 
-            if (!clips.Any(c => c.mainInLayer))
+            if (!clips.Any(c => c.playbackMainInLayer))
             {
                 isPlaying = false;
                 playTime = current.clipTime;
@@ -311,7 +311,7 @@ namespace VamTimeline
 
             foreach (var clip in clips)
             {
-                if (clip.enabled)
+                if (clip.playbackEnabled)
                     StopClip(clip.animationName);
             }
 
@@ -344,24 +344,25 @@ namespace VamTimeline
             _playTime = value;
             foreach (var clip in clips)
             {
-                if (!clip.enabled) continue;
+                if (!clip.playbackEnabled) continue;
 
-                clip.clipTime += delta;
-                if (clip.blendRate != 0)
+                var clipDelta = delta * clip.speed;
+                clip.clipTime += clipDelta;
+                if (clip.playbackBlendRate != 0)
                 {
                     // TODO: Mathf.SmoothStep
-                    clip.weight += clip.blendRate * delta;
-                    if (clip.weight >= 1f)
+                    clip.playbackWeight += clip.playbackBlendRate * clipDelta;
+                    if (clip.playbackWeight >= clip.weight)
                     {
-                        clip.blendRate = 0f;
-                        clip.weight = 1f;
+                        clip.playbackBlendRate = 0f;
+                        clip.playbackWeight = clip.weight;
                     }
-                    else if (clip.weight <= 0f)
+                    else if (clip.playbackWeight <= 0f)
                     {
-                        clip.blendRate = 0f;
-                        clip.weight = 0f;
+                        clip.playbackBlendRate = 0f;
+                        clip.playbackWeight = 0f;
                         clip.Leave();
-                        clip.enabled = false;
+                        clip.playbackEnabled = false;
                     }
                 }
             }
@@ -369,8 +370,8 @@ namespace VamTimeline
 
         private void Blend(AtomAnimationClip clip, float weight, float duration)
         {
-            clip.enabled = true;
-            clip.blendRate = (weight - clip.weight) / duration;
+            clip.playbackEnabled = true;
+            clip.playbackBlendRate = (weight - clip.playbackWeight) / duration;
         }
 
         #endregion
@@ -386,7 +387,7 @@ namespace VamTimeline
 
             if (isPlaying)
             {
-                var previousMain = clips.FirstOrDefault(c => c.mainInLayer && c.animationLayer == current.animationLayer);
+                var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == current.animationLayer);
                 if (previousMain != null)
                 {
                     TransitionAnimation(previousMain, current);
@@ -417,10 +418,10 @@ namespace VamTimeline
 
             from.SetNext(null, 0);
             Blend(from, 0f, current.blendDuration);
-            from.mainInLayer = false;
+            from.playbackMainInLayer = false;
             Blend(to, 1f, current.blendDuration);
-            to.mainInLayer = true;
-            if (to.weight == 0) to.clipTime = 0f;
+            to.playbackMainInLayer = true;
+            if (to.playbackWeight == 0) to.clipTime = 0f;
 
             if (_sequencing)
             {
@@ -483,23 +484,23 @@ namespace VamTimeline
             if (!force && (_animationRebuildRequestPending || _animationRebuildInProgress))
                 _sampleAfterRebuild = true;
 
-            current.enabled = true;
-            current.weight = 1f;
+            current.playbackEnabled = true;
+            current.playbackWeight = 1f;
             SampleTriggers();
             SampleFloatParams();
             SampleControllers();
-            current.enabled = false;
-            current.weight = 0f;
+            current.playbackEnabled = false;
+            current.playbackWeight = 0f;
         }
 
         private void SampleTriggers()
         {
             foreach (var clip in clips)
             {
-                if (!clip.enabled) continue;
+                if (!clip.playbackEnabled) continue;
                 foreach (var target in clip.targetTriggers)
                 {
-                    target.Sample(clip.previousClipTime);
+                    target.Sample(clip.playbackPreviousClipTime);
                 }
             }
         }
@@ -508,10 +509,10 @@ namespace VamTimeline
         {
             foreach (var clip in clips)
             {
-                if (!clip.enabled) continue;
+                if (!clip.playbackEnabled) continue;
                 foreach (var target in clip.targetFloatParams)
                 {
-                    target.Sample(clip.clipTime, clip.weight);
+                    target.Sample(clip.clipTime, clip.playbackWeight);
                 }
             }
         }
@@ -520,10 +521,10 @@ namespace VamTimeline
         {
             foreach (var clip in clips)
             {
-                if (!clip.enabled) continue;
+                if (!clip.playbackEnabled) continue;
                 foreach (var target in clip.targetControllers)
                 {
-                    target.Sample(clip.clipTime, clip.weight);
+                    target.Sample(clip.clipTime, clip.playbackWeight);
                 }
             }
         }
@@ -660,7 +661,7 @@ namespace VamTimeline
             onTargetsSelectionChanged.Invoke();
         }
 
-        private void OnAnimationSettingsModified(string param)
+        private void OnAnimationSettingsChanged(string param)
         {
             onAnimationSettingsChanged.Invoke();
             if (param == nameof(AtomAnimationClip.animationName) || param == nameof(AtomAnimationClip.animationLayer))
@@ -688,9 +689,9 @@ namespace VamTimeline
 
             foreach (var clip in clips)
             {
-                if (clip.scheduledNextAnimationName != null && playTime >= clip.scheduledNextTime)
+                if (clip.playbackScheduledNextAnimationName != null && playTime >= clip.playbackScheduledNextTime)
                 {
-                    TransitionAnimation(clip, GetClip(clip.scheduledNextAnimationName));
+                    TransitionAnimation(clip, GetClip(clip.playbackScheduledNextAnimationName));
                 }
             }
         }

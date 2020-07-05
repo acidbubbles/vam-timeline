@@ -59,7 +59,7 @@ namespace VamTimeline
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {
-                if (clip.enabled)
+                if (clip.playbackEnabled)
                 {
                     animation.StopClip(clip.animationName);
                 }
@@ -77,7 +77,7 @@ namespace VamTimeline
             var playLabel = $" \u25B6 {clip.animationName}";
             while (!_disposing)
             {
-                if (!clip.enabled)
+                if (!clip.playbackEnabled)
                 {
                     if (btn.label != playLabel)
                         btn.label = playLabel;
