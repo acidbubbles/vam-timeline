@@ -56,8 +56,7 @@ namespace VamTimeline
             if (_dopeSheet != null) _dopeSheet.Bind(animation);
             _animation.onClipsListChanged.AddListener(OnClipsListChanged);
             _animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            OnClipsListChanged();
-            OnCurrentAnimationChanged(new AtomAnimation.CurrentAnimationChangedEventArgs { after = animation.current });
+            SyncAnimationsListNow();
         }
 
         private JSONStorableStringChooser InitAnimationSelectorUI(Transform configurableScrollablePopupPrefab)
@@ -217,6 +216,11 @@ namespace VamTimeline
         private IEnumerator SyncAnimationsList()
         {
             yield return 0;
+            SyncAnimationsListNow();
+        }
+
+        private void SyncAnimationsListNow()
+        {
             _ignoreAnimationChange = true;
             try
             {
