@@ -622,6 +622,8 @@ namespace VamTimeline
                         target.rotZ,
                         target.rotW);
                 }
+
+                RebuildClipLoop(clip, target);
             }
 
             foreach (var target in clip.targetFloatParams)
@@ -632,6 +634,8 @@ namespace VamTimeline
                     target.value.SetKeyframe(clip.animationLength, target.value[0].value);
 
                 target.ReapplyCurveTypes(clip.loop);
+
+                RebuildClipLoop(clip, target);
             }
 
             foreach (var target in clip.targetTriggers)
@@ -639,6 +643,16 @@ namespace VamTimeline
                 if (!target.dirty) continue;
 
                 target.RebuildKeyframes(clip);
+            }
+        }
+
+        private static void RebuildClipLoop(AtomAnimationClip clip, ICurveAnimationTarget target)
+        {
+            KeyframeSettings settings;
+            if (clip.loop && target.settings.TryGetValue(0, out settings) && settings.curveType == CurveTypeValues.Smooth)
+            {
+                foreach (var curve in target.GetCurves())
+                    curve.SmoothLoop();
             }
         }
 
