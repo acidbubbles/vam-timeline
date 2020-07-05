@@ -236,7 +236,8 @@ namespace VamTimeline
         {
             animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterStringChooser(animationJSON);
 
@@ -258,13 +259,15 @@ namespace VamTimeline
 
             scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animation.clipTime = v.Snap(animation.snap), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterFloat(scrubberJSON);
 
             timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animation.playTime = v.Snap(), 0f, float.MaxValue, true)
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterFloat(timeJSON);
 
@@ -289,7 +292,8 @@ namespace VamTimeline
                     stopJSON.actionCallback();
             })
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterBool(isPlayingJSON);
 
@@ -327,12 +331,14 @@ namespace VamTimeline
                 animation.locked = val;
             })
             {
-                isStorable = false
+                isStorable = true,
+                isRestorable = true
             };
 
             speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterFloat(speedJSON);
         }
@@ -561,6 +567,7 @@ namespace VamTimeline
             {
                 valNoCallback = clip.speed,
                 isStorable = false,
+                isRestorable = false
             };
             RegisterFloat(speedJSON);
 
@@ -571,6 +578,7 @@ namespace VamTimeline
             {
                 valNoCallback = clip.weight,
                 isStorable = false,
+                isRestorable = false
             };
             RegisterFloat(weightJSON);
 

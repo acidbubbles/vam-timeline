@@ -112,10 +112,7 @@ namespace VamTimeline
 
         private void InitControllersUI()
         {
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", new List<string>(), "", "Animate controller")
-            {
-                isStorable = false
-            };
+            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", new List<string>(), "", "Animate controller");
             _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
             _addControllerUI.popupPanelHeight = 900f;
 
@@ -167,18 +164,12 @@ namespace VamTimeline
             {
                 RefreshStorableFloatsList();
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
-            })
-            {
-                isStorable = false
-            };
+            });
             _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON);
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param")
-            {
-                isStorable = false
-            };
+            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param");
             _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;

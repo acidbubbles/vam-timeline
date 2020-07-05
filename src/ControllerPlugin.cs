@@ -73,18 +73,21 @@ namespace VamTimeline
 
             _lockedJSON = new JSONStorableBool("Locked (Performance)", false, (bool val) => Lock(val))
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterBool(_lockedJSON);
 
             _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string>(), "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
 
             _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v))
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterStringChooser(_animationJSON);
 
@@ -99,7 +102,8 @@ namespace VamTimeline
 
             _timeJSON = new JSONStorableFloat("Time", 0f, v => _selectedLink.time.val = v, 0f, 2f, true)
             {
-                isStorable = false
+                isStorable = false,
+                isRestorable = false
             };
             RegisterFloat(_timeJSON);
 

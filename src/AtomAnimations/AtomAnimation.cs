@@ -149,8 +149,7 @@ namespace VamTimeline
         {
             if (clips.Count == 0)
                 AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
-            if (current == null)
-                current = clips.First();
+            _current = clips[0];
             RebuildAnimationNow();
         }
 
@@ -478,7 +477,7 @@ namespace VamTimeline
 
         public void Sample(bool force = false)
         {
-            if (isPlaying) return;
+            if (isPlaying || !enabled) return;
 
             if (!force && (_animationRebuildRequestPending || _animationRebuildInProgress))
                 _sampleAfterRebuild = true;
@@ -720,7 +719,6 @@ namespace VamTimeline
 
         public void OnDisable()
         {
-            StopAll();
         }
 
         public void OnDestroy()

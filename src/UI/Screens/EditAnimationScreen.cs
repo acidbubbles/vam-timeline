@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -168,7 +169,19 @@ namespace VamTimeline
             var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
             lengthModeUI.popupPanelHeight = 550f;
 
-            _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, (float val) => { _lengthJSON.valNoCallback = val.Snap(animation.snap); if (_lengthJSON.valNoCallback < 0.1f) _lengthJSON.valNoCallback = 0.1f; }, 0f, 10f, false, true);
+            _lengthJSON = new JSONStorableFloat(
+                "Change Length To (s)",
+                AtomAnimationClip.DefaultAnimationLength,
+                (float val) =>
+                {
+                    _lengthJSON.valNoCallback = val.Snap(animation.snap);
+                    if (_lengthJSON.valNoCallback < 0.1f)
+                        _lengthJSON.valNoCallback = 0.1f;
+                },
+                0f,
+                Mathf.Max((current.animationLength * 5f).Snap(10f), 10f),
+                false,
+                true);
             var lengthUI = prefabFactory.CreateSlider(_lengthJSON);
             lengthUI.valueFormat = "F3";
 
@@ -492,6 +505,7 @@ namespace VamTimeline
             _animationNameJSON.valNoCallback = current.animationName;
             _layerNameJSON.valNoCallback = current.animationLayer;
             _lengthJSON.valNoCallback = current.animationLength;
+            _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
             _loop.valNoCallback = current.loop;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _autoPlayJSON.valNoCallback = current.autoPlay;
