@@ -168,7 +168,7 @@ namespace VamTimeline
             var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
             lengthModeUI.popupPanelHeight = 550f;
 
-            _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, 0.5f, 10f, false, true);
+            _lengthJSON = new JSONStorableFloat("Change Length To (s)", AtomAnimationClip.DefaultAnimationLength, (float val) => _lengthJSON.valNoCallback = val.Snap(animation.snap), 0.5f, 10f, false, true);
             var lengthUI = prefabFactory.CreateSlider(_lengthJSON);
             lengthUI.valueFormat = "F3";
 

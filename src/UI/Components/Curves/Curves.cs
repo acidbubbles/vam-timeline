@@ -193,7 +193,7 @@ namespace VamTimeline
             var lead = target.GetLeadCurve();
             _animationLength = lead.keys[lead.keys.Length - 1].time;
             _targets.Add(target);
-            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationCurveModified);
+            target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             if (target is FreeControllerAnimationTarget)
             {
                 var t = (FreeControllerAnimationTarget)target;
@@ -252,14 +252,14 @@ namespace VamTimeline
         private void Unbind()
         {
             foreach (var t in _targets)
-                t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
+                t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
             _targets.Clear();
             foreach (var l in _lines)
                 Destroy(l.gameObject.transform.parent.gameObject);
             _lines.Clear();
         }
 
-        private void OnAnimationCurveModified()
+        private void OnAnimationKeyframesRebuilt()
         {
             StartCoroutine(DrawCurveLinesDeferred());
         }
@@ -291,7 +291,7 @@ namespace VamTimeline
                 _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
 
             foreach (var t in _targets)
-                t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationCurveModified);
+                t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
         }
     }
 }

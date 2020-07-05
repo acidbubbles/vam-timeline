@@ -26,6 +26,7 @@ namespace VamTimeline
             if (style == null || _curves.Count == 0) return;
 
             // General
+            var range = EstimateRange();
             var margin = 20f;
             var width = rectTransform.rect.width;
             var height = rectTransform.rect.height - margin * 2f;
@@ -33,7 +34,6 @@ namespace VamTimeline
             var precision = 2f; // Draw at every N pixels
             var minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
-            var range = EstimateRange();
 
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];
