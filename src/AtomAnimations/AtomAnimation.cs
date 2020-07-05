@@ -73,6 +73,7 @@ namespace VamTimeline
                 if (previous != null) previous.Leave();
                 onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
                 onTargetsSelectionChanged.Invoke();
+                if (!isPlaying) clipTime = 0f;
             }
         }
 
