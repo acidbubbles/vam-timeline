@@ -178,8 +178,6 @@ namespace VamTimeline.Tests.Specs
 
         #region CropOrExtendBegin
 
-        // TODO: End will add a keyframe but begin will push keyframes back. Determine one behavior and stick to it.
-
         public IEnumerable CropOrExtendBeginLongerFreeController(TestContext context)
         {
             var clip = context.animation.clips[0];

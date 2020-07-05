@@ -159,7 +159,7 @@ namespace VamTimeline
                 var time = animation.clipTime.Snap();
                 if (animation.autoKeyframeAllControllers)
                 {
-                    foreach (var target in animation.current.targetControllers)
+                    foreach (var target in animation.current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
                         SetControllerKeyframe(time, target);
                 }
                 else

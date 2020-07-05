@@ -196,7 +196,7 @@ namespace VamTimeline
 
         private void InitAutoKeyframeUI()
         {
-            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", _plugin.animation.autoKeyframeAllControllers);
+            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", _plugin.animation.autoKeyframeAllControllers, (bool val) => animation.autoKeyframeAllControllers = val);
             var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
         }
 

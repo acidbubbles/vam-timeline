@@ -8,7 +8,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Edit";
         public const string ChangeLengthModeCropExtendEnd = "Crop/Extend (End)";
-        public const string ChangeLengthModeCropExtendBegin = "Crop/Extend (Beginning)";
+        public const string ChangeLengthModeCropExtendBegin = "Crop/Extend (Begin)";
         public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend (Time)";
         public const string ChangeLengthModeStretch = "Stretch";
         public const string ChangeLengthModeLoop = "Loop";
