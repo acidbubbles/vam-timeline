@@ -405,6 +405,9 @@ namespace VamTimeline
 
             try
             {
+                // Merge load calls RestoreFromJSON before disposing the previous version...
+                if (animation != null) return;
+
                 var animationJSON = jc["Animation"];
                 if (animationJSON != null && animationJSON.AsObject != null)
                 {
