@@ -144,7 +144,7 @@ namespace VamTimeline
         public void OnPointerDown(PointerEventData eventData)
         {
             eventData.useDragThreshold = false;
-            UpdateScrubberFromView(eventData);
+            UpdateScrubberFromView(eventData, true);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -159,10 +159,10 @@ namespace VamTimeline
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            UpdateScrubberFromView(eventData);
+            UpdateScrubberFromView(eventData, true);
         }
 
-        private void UpdateScrubberFromView(PointerEventData eventData)
+        private void UpdateScrubberFromView(PointerEventData eventData, bool final = false)
         {
             if (animation == null) return;
             Vector2 localPosition;
@@ -170,7 +170,7 @@ namespace VamTimeline
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
-            var time = (animation.current.animationLength * ratio).Snap(animation.snap);
+            var time = (animation.current.animationLength * ratio).Snap(final ? animation.snap : 0);
             if (time >= animation.current.animationLength - 0.001f)
             {
                 if (animation.current.loop)
