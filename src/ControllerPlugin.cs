@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ControllerPlugin : MVRScript, IRemoteControllerPlugin
+    public class ControllerPlugin : MVRScript, ITimelineListener
     {
         private const string _atomSeparator = ";";
 

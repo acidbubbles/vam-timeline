@@ -83,6 +83,7 @@
     <Compile Include="src\AtomAnimations\ListExtensions.cs" />
     <Compile Include="src\Common\IRemoteAtomPlugin.cs" />
     <Compile Include="src\Common\IRemoteControllerPlugin.cs" />
+    <Compile Include="src\Common\ITimelineListener.cs" />
     <Compile Include="src\Common\RectTransformExtensions.cs" />
     <Compile Include="src\Common\StorableNames.cs" />
     <Compile Include="src\Common\SyncProxy.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="src\UI\Editor.cs" />
     <Compile Include="src\AtomPlugin.cs" />
     <Compile Include="src\IAtomPlugin.cs" />
+    <Compile Include="src\TimelineEventNames.cs" />
     <!-- /AtomAnimationFiles -->
 
     <!-- ControllerFiles -->

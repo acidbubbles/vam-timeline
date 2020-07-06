@@ -17,6 +17,7 @@ namespace VamTimeline
         public new Transform UITransform => base.UITransform;
         public new MVRPluginManager manager => base.manager;
         public AtomAnimationSerializer serializer { get; private set; }
+
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         public JSONStorableStringChooser animationJSON { get; private set; }
@@ -38,6 +39,8 @@ namespace VamTimeline
         public JSONStorableBool lockedJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
 
+        private bool _syncing = false;
+        private readonly List<JSONStorable> _otherTimelines = new List<JSONStorable>();
         private FreeControllerAnimationTarget _grabbedController;
         private bool _cancelNextGrabbedControllerRelease;
         private bool _restoring;
@@ -192,8 +195,12 @@ namespace VamTimeline
             {
                 if (animation != null) animation.enabled = true;
                 if (_ui != null) _ui.enabled = true;
-                if (_controllerInjectedUI == null && animation != null && base.containingAtom != null)
-                    SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+                if (animation != null && base.containingAtom != null)
+                {
+                    ScanForAtoms();
+                    BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
+                    BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+                }
             }
             catch (Exception exc)
             {
@@ -208,7 +215,8 @@ namespace VamTimeline
                 if (animation != null) animation.enabled = false;
                 if (_ui != null) _ui.enabled = false;
                 DestroyControllerPanel();
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
+                BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationDisabled));
+                BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
             catch (Exception exc)
             {
@@ -220,9 +228,9 @@ namespace VamTimeline
         {
             try
             {
-                try { Destroy(animation); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)}: {exc}"); }
-                try { Destroy(_ui); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)}: {exc}"); }
-                try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)}: {exc}"); }
+                try { Destroy(animation); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [animations]: {exc}"); }
+                try { Destroy(_ui); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [ui]: {exc}"); }
+                try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [panel]: {exc}"); }
             }
             catch (Exception exc)
             {
@@ -373,7 +381,7 @@ namespace VamTimeline
         {
             foreach (var autoPlayClip in animation.clips.Where(c => c.autoPlay))
             {
-                animation.PlayClip(autoPlayClip.animationName, true);
+                animation.PlayClip(autoPlayClip, true);
             }
         }
 
@@ -496,7 +504,23 @@ namespace VamTimeline
 
             _ui?.Bind(animation);
 
-            SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+            ScanForAtoms();
+            BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
+            BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
+        }
+
+        private void ScanForAtoms()
+        {
+            foreach (var atom in SuperController.singleton.GetAtoms())
+            {
+                if (atom == null) continue;
+                var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
+                if (storableId == null) continue;
+                var storable = atom.GetStorableByID(storableId);
+                if (storable == this) continue;
+                if (!storable.enabled) continue;
+                OnTimelineAnimationReady(storable);
+            }
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
@@ -508,7 +532,7 @@ namespace VamTimeline
                 scrubberJSON.valNoCallback = time.currentClipTime;
                 timeJSON.valNoCallback = time.time;
 
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
+                BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             }
             catch (Exception exc)
             {
@@ -543,7 +567,7 @@ namespace VamTimeline
                     }
                 }
 
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
+                BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)
             {
@@ -603,7 +627,7 @@ namespace VamTimeline
                 timeJSON.valNoCallback = animation.playTime;
                 speedJSON.valNoCallback = animation.speed;
 
-                SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
+                BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)
             {
@@ -620,7 +644,7 @@ namespace VamTimeline
                 speedJSON.valNoCallback = animation.speed;
 
                 if (name == nameof(AtomAnimation.locked))
-                    SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
+                    BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
             catch (Exception exc)
             {
@@ -628,13 +652,34 @@ namespace VamTimeline
             }
         }
 
-        private void OnIsPlayingChanged(bool isPlaying)
+        private void OnIsPlayingChanged(AtomAnimationClip clip)
         {
-            isPlayingJSON.valNoCallback = isPlaying;
-            SendToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
+            isPlayingJSON.valNoCallback = animation.isPlaying;
+            SendTimelineEvent(new Dictionary<string, object>{
+                {"name", TimelineEventNames.PlaybackState},
+                {nameof(clip.animationName), clip.animationName},
+                {nameof(clip.playbackEnabled), clip.playbackEnabled},
+                {nameof(clip.clipTime), clip.clipTime},
+                {nameof(animation.sequencing), animation.sequencing},
+            });
         }
 
-        private void SendToControllers(string methodName)
+        private void BroadcastToTimelines(string methodName)
+        {
+            foreach (var atom in SuperController.singleton.GetAtoms())
+            {
+                if (atom == containingAtom) continue;
+                var pluginId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
+                if (pluginId != null)
+                {
+                    var plugin = atom.GetStorableByID(pluginId);
+                    if (plugin == this) continue;
+                    plugin.SendMessage(methodName, this, SendMessageOptions.RequireReceiver);
+                }
+            }
+        }
+
+        private void BroadcastToControllers(string methodName)
         {
             var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
             foreach (var controller in externalControllers)
@@ -810,6 +855,69 @@ namespace VamTimeline
             _controllerInjectedUI.gameObject.transform.SetParent(null, false);
             Destroy(_controllerInjectedUI.gameObject);
             _controllerInjectedUI = null;
+        }
+
+        #endregion
+
+        #region Sync Events
+
+        public void OnTimelineAnimationReady(JSONStorable storable)
+        {
+            if (storable == this || _otherTimelines.Contains(storable)) return;
+            _otherTimelines.Add(storable);
+        }
+
+        public void OnTimelineAnimationDisabled(JSONStorable storable)
+        {
+            _otherTimelines.Remove(storable);
+        }
+
+        public void SendTimelineEvent(Dictionary<string, object> e)
+        {
+            foreach (var storable in _otherTimelines)
+            {
+                if (storable == null)
+                {
+                    continue;
+                    // SuperController.LogError($"Storables: {_otherTimelines.Count}, {storable?.containingAtom?.name}");
+                    // throw new Exception("Target storable is disabled");
+                }
+                storable.SendMessage(nameof(OnTimelineEvent), e);
+            }
+        }
+
+        public void OnTimelineEvent(Dictionary<string, object> e)
+        {
+            if (_syncing)
+                throw new InvalidOperationException("Already syncing, infinite loop avoided!");
+
+            _syncing = true;
+            try
+            {
+                switch ((string)e["name"])
+                {
+                    case TimelineEventNames.PlaybackState:
+                        var clip = animation.GetClip((string)e[nameof(AtomAnimationClip.animationName)]);
+                        if (clip == null) return;
+                        clip.clipTime = (float)e[nameof(clip.clipTime)];
+                        if ((bool)e[nameof(clip.playbackEnabled)])
+                            animation.PlayClip(clip, (bool)e[nameof(animation.sequencing)]);
+                        else
+                            animation.StopClip(clip);
+                        break;
+                    default:
+                        SuperController.LogError($"Atom {transform.parent.name} received message name {e["name"]} but no handler exists for that event");
+                        break;
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Atom {transform.parent.name} event crashed: {exc}");
+            }
+            finally
+            {
+                _syncing = false;
+            }
         }
 
         #endregion

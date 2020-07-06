@@ -16,8 +16,9 @@ namespace VamTimeline
             _atom = atom;
             _owner = owner;
 
+            var canvas = _atom.GetComponentInChildren<Canvas>();
             _child = new GameObject("Simple Sign UI");
-            _child.transform.SetParent(_atom.GetComponentInChildren<Canvas>().transform, false);
+            _child.transform.SetParent(canvas.transform, false);
 
             var rect = _child.AddComponent<RectTransform>();
             rect.anchorMin = new Vector2(0, 0);

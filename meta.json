@@ -34,6 +34,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\ListExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\IRemoteAtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\IRemoteControllerPlugin.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\ITimelineListener.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\RectTransformExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\StorableNames.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\SyncProxy.cs",
@@ -84,6 +85,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\ControllerPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\IAtomPlugin.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\TimelineEventNames.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\VamTimeline.AtomAnimation.cslist",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\VamTimeline.Controller.cslist"
   ],

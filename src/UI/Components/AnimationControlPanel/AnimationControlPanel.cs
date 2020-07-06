@@ -111,7 +111,7 @@ namespace VamTimeline
             var playClip = Instantiate(buttonPrefab);
             playClip.SetParent(container.transform, false);
             playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
-            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayClip(_animation.current.animationName, false));
+            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayClip(_animation.current, false));
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
 

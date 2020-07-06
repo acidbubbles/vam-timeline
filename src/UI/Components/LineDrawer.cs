@@ -30,7 +30,6 @@ namespace VamTimeline
             {
                 colors[i] = colorGradient.Evaluate(p / (float)points.Length);
                 colors[i + 1] = colorGradient.Evaluate((p + 1) / (float)points.Length);
-                // SuperController.LogMessage(i + " " + colors[i] + " - " + colors[i + 1]);
                 vertices[i] = points[p];
                 vertices[i + 1] = points[p + 1];
                 p++;

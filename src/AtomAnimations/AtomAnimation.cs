@@ -16,7 +16,7 @@ namespace VamTimeline
         public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public class AnimationSettingsChanged : UnityEvent<string> { }
-        public class IsPlayingEvent : UnityEvent<bool> { }
+        public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
 
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
@@ -136,10 +136,12 @@ namespace VamTimeline
                 onSpeedChanged.Invoke();
             }
         }
+
+        public bool sequencing { get; private set; }
+
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
         private bool _sampleAfterRebuild;
-        private bool _sequencing;
 
         public AtomAnimation()
         {
@@ -239,14 +241,17 @@ namespace VamTimeline
 
         public void PlayClip(string animationName, bool sequencing)
         {
-            var first = false;
             var clip = GetClip(animationName);
+            PlayClip(clip, sequencing);
+        }
+
+        public void PlayClip(AtomAnimationClip clip, bool sequencing)
+        {
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
             if (!isPlaying)
             {
-                first = true;
                 isPlaying = true;
-                _sequencing = _sequencing || sequencing;
+                this.sequencing = this.sequencing || sequencing;
             }
             if (sequencing && !clip.playbackEnabled) clip.clipTime = 0;
             var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == clip.animationLayer);
@@ -267,8 +272,7 @@ namespace VamTimeline
             if (sequencing && clip.nextAnimationName != null)
                 AssignNextAnimation(clip);
 
-            if (first)
-                onIsPlayingChanged.Invoke(true);
+            onIsPlayingChanged.Invoke(clip);
         }
 
         public void PlayAll()
@@ -280,17 +284,21 @@ namespace VamTimeline
             foreach (var clip in firstOrMainPerLayer)
             {
                 if (clip.animationLayer == current.animationLayer)
-                    PlayClip(current.animationName, true);
+                    PlayClip(current, true);
                 else
-                    PlayClip(clip.animationName, true);
+                    PlayClip(clip, true);
             }
         }
 
         public void StopClip(string animationName)
         {
             var clip = GetClip(animationName);
-            if (clip.playbackEnabled)
-                clip.Leave();
+        }
+
+        public void StopClip(AtomAnimationClip clip)
+        {
+            if (!clip.playbackEnabled) return;
+            clip.Leave();
             clip.Reset(false);
             if (clip.animationPattern)
                 clip.animationPattern.SetBoolParamValue("loopOnce", true);
@@ -299,8 +307,9 @@ namespace VamTimeline
             {
                 isPlaying = false;
                 playTime = current.clipTime;
-                onIsPlayingChanged.Invoke(false);
             }
+
+            onIsPlayingChanged.Invoke(clip);
         }
 
         public void StopAll()
@@ -310,7 +319,7 @@ namespace VamTimeline
             foreach (var clip in clips)
             {
                 if (clip.playbackEnabled)
-                    StopClip(clip.animationName);
+                    StopClip(clip);
             }
 
             foreach (var clip in clips)
@@ -421,7 +430,7 @@ namespace VamTimeline
             to.playbackMainInLayer = true;
             if (to.playbackWeight == 0) to.clipTime = 0f;
 
-            if (_sequencing)
+            if (sequencing)
             {
                 AssignNextAnimation(to);
             }

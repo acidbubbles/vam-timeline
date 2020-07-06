@@ -61,11 +61,11 @@ namespace VamTimeline
             {
                 if (clip.playbackEnabled)
                 {
-                    animation.StopClip(clip.animationName);
+                    animation.StopClip(clip);
                 }
                 else
                 {
-                    animation.PlayClip(clip.animationName, true);
+                    animation.PlayClip(clip, true);
                 }
             });
             StartCoroutine(UpdateAnimButton(btn, clip));
