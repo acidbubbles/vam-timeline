@@ -10,8 +10,6 @@ namespace VamTimeline
 {
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
-        private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
-
         public AtomAnimation animation { get; private set; }
         public new Atom containingAtom => base.containingAtom;
         public new Transform UITransform => base.UITransform;
@@ -41,11 +39,11 @@ namespace VamTimeline
 
         private bool _syncing = false;
         private readonly List<JSONStorable> _otherTimelines = new List<JSONStorable>();
-        private FreeControllerAnimationTarget _grabbedController;
-        private bool _cancelNextGrabbedControllerRelease;
         private bool _restoring;
         private Editor _ui;
         private Editor _controllerInjectedUI;
+        private FreeControllerV3Hook _freeControllerHook;
+
         private class AnimStorableActionMap
         {
             public string animationName;
@@ -64,6 +62,9 @@ namespace VamTimeline
             try
             {
                 serializer = new AtomAnimationSerializer(base.containingAtom);
+                _freeControllerHook = gameObject.AddComponent<FreeControllerV3Hook>();
+                _freeControllerHook.enabled = false;
+                _freeControllerHook.containingAtom = base.containingAtom;
                 InitStorables();
                 StartCoroutine(DeferredInit());
             }
@@ -125,64 +126,11 @@ namespace VamTimeline
                     scrubberJSON.valNoCallback = animation.clipTime;
                     timeJSON.valNoCallback = animation.playTime;
                 }
-                else if (animation?.locked == false)
-                {
-                    UpdateNotPlaying();
-                }
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Update)}: {exc}");
             }
-        }
-
-        private void UpdateNotPlaying()
-        {
-            var sc = SuperController.singleton;
-            var grabbing = sc.RightGrabbedController ?? sc.LeftGrabbedController ?? sc.RightFullGrabbedController ?? sc.LeftFullGrabbedController;
-            if (grabbing != null && grabbing.containingAtom != base.containingAtom)
-                grabbing = null;
-            else if (Input.GetMouseButton(0) && grabbing == null)
-                grabbing = base.containingAtom.freeControllers.FirstOrDefault(c => _grabbingControllers.Contains(c.linkToRB?.gameObject.name));
-
-            if (_grabbedController == null && grabbing != null && !grabbing.possessed)
-            {
-                _grabbedController = animation.current.targetControllers.FirstOrDefault(c => c.controller == grabbing);
-            }
-            if (_grabbedController != null && grabbing != null)
-            {
-                if (Input.GetKeyDown(KeyCode.Escape))
-                    _cancelNextGrabbedControllerRelease = true;
-            }
-            else if (_grabbedController != null && grabbing == null)
-            {
-                var grabbedController = _grabbedController;
-                _grabbedController = null;
-                if (_cancelNextGrabbedControllerRelease)
-                {
-                    _cancelNextGrabbedControllerRelease = false;
-                    return;
-                }
-
-                var time = animation.clipTime.Snap();
-                if (animation.autoKeyframeAllControllers)
-                {
-                    foreach (var target in animation.current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
-                        SetControllerKeyframe(time, target);
-                }
-                else
-                {
-                    SetControllerKeyframe(time, grabbedController);
-                }
-
-                if (animation.current.transition && (animation.clipTime == 0 || animation.clipTime == animation.current.animationLength))
-                    animation.Sample();
-            }
-        }
-
-        private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
-        {
-            animation.SetKeyframeToCurrentTransform(target, time);
         }
 
         #endregion
@@ -193,13 +141,17 @@ namespace VamTimeline
         {
             try
             {
-                if (animation != null) animation.enabled = true;
                 if (_ui != null) _ui.enabled = true;
-                if (animation != null && base.containingAtom != null)
+                if (animation != null)
                 {
-                    ScanForAtoms();
-                    BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
-                    BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+                    animation.enabled = true;
+                    if (_freeControllerHook != null) _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
+                    if (base.containingAtom != null)
+                    {
+                        ScanForAtoms();
+                        BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
+                        BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+                    }
                 }
             }
             catch (Exception exc)
@@ -214,6 +166,7 @@ namespace VamTimeline
             {
                 if (animation != null) animation.enabled = false;
                 if (_ui != null) _ui.enabled = false;
+                if (_freeControllerHook != null) _freeControllerHook.enabled = false;
                 DestroyControllerPanel();
                 BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationDisabled));
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
@@ -231,6 +184,7 @@ namespace VamTimeline
                 try { Destroy(animation); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [animations]: {exc}"); }
                 try { Destroy(_ui); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [ui]: {exc}"); }
                 try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [panel]: {exc}"); }
+                Destroy(_freeControllerHook);
             }
             catch (Exception exc)
             {
@@ -503,6 +457,8 @@ namespace VamTimeline
             OnAnimationParametersChanged();
 
             _ui?.Bind(animation);
+            if (_freeControllerHook != null) _freeControllerHook.animation = animation;
+            if (enabled) _freeControllerHook.enabled = true;
 
             ScanForAtoms();
             BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
@@ -642,6 +598,7 @@ namespace VamTimeline
                 // Update UI
                 lockedJSON.valNoCallback = animation.locked;
                 speedJSON.valNoCallback = animation.speed;
+                _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
 
                 if (name == nameof(AtomAnimation.locked))
                     BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
@@ -655,6 +612,7 @@ namespace VamTimeline
         private void OnIsPlayingChanged(AtomAnimationClip clip)
         {
             isPlayingJSON.valNoCallback = animation.isPlaying;
+            _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
             SendTimelineEvent(new Dictionary<string, object>{
                 {"name", TimelineEventNames.PlaybackState},
                 {nameof(clip.animationName), clip.animationName},

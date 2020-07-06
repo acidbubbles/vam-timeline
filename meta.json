@@ -84,6 +84,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Editor.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\ControllerPlugin.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\FreeControllerV3Hook.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\IAtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\TimelineEventNames.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\VamTimeline.AtomAnimation.cslist",

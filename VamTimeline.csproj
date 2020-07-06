@@ -131,6 +131,7 @@
     <Compile Include="src\UI\Screens\TargetsScreen.cs" />
     <Compile Include="src\UI\Editor.cs" />
     <Compile Include="src\AtomPlugin.cs" />
+    <Compile Include="src\FreeControllerV3Hook.cs" />
     <Compile Include="src\IAtomPlugin.cs" />
     <Compile Include="src\TimelineEventNames.cs" />
     <!-- /AtomAnimationFiles -->
