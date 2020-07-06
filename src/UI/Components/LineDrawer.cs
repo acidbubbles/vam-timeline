@@ -55,7 +55,7 @@ namespace VamTimeline
                 if (points != null) Recalculate();
                 _dirty = false;
             }
-            Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, 0);
+            Graphics.DrawMesh(_mesh, transform.parent.localToWorldMatrix, material, 0);
         }
     }
 }

@@ -36,6 +36,11 @@ namespace VamTimeline
             return _lastLinkedRigidbody = controller.linkToRB;
         }
 
+        public Transform GetParent()
+        {
+            return GetLinkedRigidbody()?.transform ?? controller.transform.parent;
+        }
+
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
             curves = new List<AnimationCurve> {

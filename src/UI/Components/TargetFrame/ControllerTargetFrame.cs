@@ -42,7 +42,7 @@ namespace VamTimeline
         private LineDrawer CreateLine()
         {
             var go = new GameObject();
-            go.transform.SetParent(target.controller.linkToRB?.transform ?? target.controller.transform.parent, false);
+            go.transform.SetParent(target.GetParent(), false);
 
             var line = go.AddComponent<LineDrawer>();
             line.colorGradient = new Gradient
