@@ -160,8 +160,7 @@ namespace VamTimeline
                     _cancelNextGrabbedControllerRelease = false;
                     return;
                 }
-                if (animation.current.transition)
-                    animation.Sample();
+
                 var time = animation.clipTime.Snap();
                 if (animation.autoKeyframeAllControllers)
                 {
@@ -172,6 +171,9 @@ namespace VamTimeline
                 {
                     SetControllerKeyframe(time, grabbedController);
                 }
+
+                if (animation.current.transition && (animation.clipTime == 0 || animation.clipTime == animation.current.animationLength))
+                    animation.Sample();
             }
         }
 
