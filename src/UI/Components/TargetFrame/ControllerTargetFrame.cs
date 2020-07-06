@@ -5,8 +5,7 @@ namespace VamTimeline
 {
     public class ControllerTargetFrame : TargetFrameBase<FreeControllerAnimationTarget>
     {
-        private LineRenderer _line;
-        private Shader _shader;
+        private LineDrawer _line;
 
         public ControllerTargetFrame()
             : base()
@@ -40,37 +39,38 @@ namespace VamTimeline
             if (_line != null) UpdateLine();
         }
 
-        private LineRenderer CreateLine()
+        private LineDrawer CreateLine()
         {
             var go = new GameObject();
-            go.transform.SetParent(target.controller.control, false);
+            go.transform.SetParent(target.controller.linkToRB?.transform ?? target.controller.transform.parent, false);
 
-            var line = go.AddComponent<LineRenderer>();
-            line.useWorldSpace = true;
-            if (_shader == null) _shader = Shader.Find("Sprites/Default");
-            line.material = new Material(_shader) { renderQueue = 4000 };
-            line.widthMultiplier = 0.002f;
+            var line = go.AddComponent<LineDrawer>();
             line.colorGradient = new Gradient
             {
-                colorKeys = new[] { new GradientColorKey(new Color(0f, 0.2f, 0.8f), 0f), new GradientColorKey(new Color(0.4f, 0.4f, 0.9f), 1f) }
+                colorKeys = new[] { new GradientColorKey(new Color(0f, 0.2f, 0.8f), 0f), new GradientColorKey(new Color(0.6f, 0.65f, 0.95f), 1f) }
             };
+            var mat = new Material(Shader.Find("Battlehub/RTGizmos/Handles")) { color = Color.white };
+            mat.SetFloat("_Offset", 1f);
+            mat.SetFloat("_MinAlpha", 1f);
+            mat.SetPass(0);
+            line.material = mat;
 
             return line;
         }
 
         private void UpdateLine()
         {
-            var pointsPerSecond = 16f;
-            var pointsCount = Mathf.CeilToInt(target.x[target.x.length - 1].time * pointsPerSecond);
+            var pointsPerSecond = 32f;
+            var pointsCount = Mathf.CeilToInt(target.x[target.x.length - 1].time * pointsPerSecond) + 1;
             var points = new Vector3[pointsCount];
 
-            for (var t = 0; t < pointsCount; t++)
+            for (var t = 0; t < pointsCount - 1; t++)
             {
                 points[t] = target.EvaluatePosition(t / pointsPerSecond);
             }
+            points[pointsCount - 1] = points[0];
 
-            _line.positionCount = pointsCount;
-            _line.SetPositions(points);
+            _line.points = points;
         }
 
         protected override void CreateExpandPanel(RectTransform container)

@@ -107,6 +107,7 @@
     <Compile Include="src\UI\Components\Clickable.cs" />
     <Compile Include="src\UI\Components\CurveTypePopup.cs" />
     <Compile Include="src\UI\Components\GradientImage.cs" />
+    <Compile Include="src\UI\Components\LineDrawer.cs" />
     <Compile Include="src\UI\Components\Listener.cs" />
     <Compile Include="src\UI\Components\ScreenTabs.cs" />
     <Compile Include="src\UI\Components\UIPerformance.cs" />
