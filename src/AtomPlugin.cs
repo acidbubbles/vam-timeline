@@ -789,7 +789,7 @@ namespace VamTimeline
             _eventManager.OnTimelineAnimationDisabled(storable);
         }
 
-        public void OnTimelineEvent(Dictionary<string, object> e)
+        public void OnTimelineEvent(object[] e)
         {
             _eventManager.OnTimelineEvent(e);
         }
