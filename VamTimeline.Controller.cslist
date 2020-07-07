@@ -1,6 +1,7 @@
 src/Common/RectTransformExtensions.cs
 src/Common/IRemoteAtomPlugin.cs
 src/Common/IRemoteControllerPlugin.cs
+src/Common/ITimelineListener.cs
 src/Common/StorableNames.cs
 src/Common/SyncProxy.cs
 src/Controller/SimpleSignUI.cs

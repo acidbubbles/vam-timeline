@@ -455,7 +455,7 @@ namespace VamTimeline
             if (enabled) _freeControllerHook.enabled = true;
 
             _eventManager.Ready();
-            BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
+            BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
@@ -736,7 +736,6 @@ namespace VamTimeline
             // TODO: This or just use the storables dict already on storable??
             proxy.animation = animationJSON;
             proxy.isPlaying = isPlayingJSON;
-            proxy.locked = lockedJSON;
             proxy.nextFrame = nextFrameJSON;
             proxy.play = playJSON;
             proxy.playIfNotPlaying = playIfNotPlayingJSON;

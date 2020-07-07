@@ -20,12 +20,6 @@ namespace VamTimeline
             set { Set(nameof(connected), value); }
         }
 
-        public bool main
-        {
-            get { return Get<bool>(nameof(main)); }
-            set { Set(nameof(main), value); }
-        }
-
         public JSONStorable storable
         {
             get { return Get<JSONStorable>(nameof(storable)); }
@@ -49,12 +43,6 @@ namespace VamTimeline
         {
             get { return Get<JSONStorableBool>(nameof(isPlaying)); }
             set { Set(nameof(isPlaying), value); }
-        }
-
-        public JSONStorableBool locked
-        {
-            get { return Get<JSONStorableBool>(nameof(locked)); }
-            set { Set(nameof(locked), value); }
         }
 
         public JSONStorableAction play

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,8 +7,11 @@ namespace VamTimeline
 {
     public class SimpleSignUI : IDisposable
     {
+        public readonly Material material;
+
         private readonly Atom _atom;
         private readonly MVRScript _owner;
+        private readonly Text _text;
         private readonly GameObject _child;
         private readonly VerticalLayoutGroup _container;
 
@@ -16,7 +20,11 @@ namespace VamTimeline
             _atom = atom;
             _owner = owner;
 
-            var canvas = _atom.GetComponentInChildren<Canvas>();
+            var canvas = _atom.GetComponentsInChildren<Canvas>().FirstOrDefault(c => c.gameObject.name == "Sign");
+            if (canvas == null) throw new NullReferenceException($"Expected Sign Canvas, but found: {string.Join(",", _atom.GetComponentsInChildren<Canvas>().Select(c => c.gameObject.name).ToArray())}");
+            _text = canvas.GetComponentInChildren<Text>();
+            _text.enabled = false;
+
             _child = new GameObject("Simple Sign UI");
             _child.transform.SetParent(canvas.transform, false);
 
@@ -124,6 +132,7 @@ namespace VamTimeline
 
         public void Dispose()
         {
+            _text.enabled = true;
             UnityEngine.Object.Destroy(_child);
         }
     }

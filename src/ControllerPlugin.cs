@@ -15,7 +15,6 @@ namespace VamTimeline
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableBool _hideJSON;
         private JSONStorableBool _enableKeyboardShortcuts;
-        private JSONStorableBool _lockedJSON;
         private JSONStorableStringChooser _atomsJSON;
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableFloat _timeJSON;
@@ -70,13 +69,6 @@ namespace VamTimeline
 
             _enableKeyboardShortcuts = new JSONStorableBool("Enable Keyboard Shortcuts", false);
             RegisterBool(_enableKeyboardShortcuts);
-
-            _lockedJSON = new JSONStorableBool("Locked (Performance)", false, (bool val) => Lock(val))
-            {
-                isStorable = false,
-                isRestorable = false
-            };
-            RegisterBool(_lockedJSON);
 
             _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string>(), "", "Atoms", (string v) => SelectCurrentAtom(v))
             {
@@ -220,7 +212,6 @@ namespace VamTimeline
             if (_selectedLink == null)
             {
                 _selectedLink = proxy;
-                proxy.main = true;
                 _atomsJSON.val = proxy.storable.containingAtom.uid;
             }
 
@@ -316,7 +307,6 @@ namespace VamTimeline
             var remoteAnimation = proxy.animation;
             _animationJSON.choices = remoteAnimation.choices;
             _animationJSON.valNoCallback = remoteAnimation.val;
-            _lockedJSON.valNoCallback = proxy.locked.val;
         }
 
         public void OnTimelineTimeChanged(JSONStorable storable)
@@ -437,19 +427,10 @@ namespace VamTimeline
             }
         }
 
-        private void Lock(bool val)
-        {
-            foreach (var animation in _links)
-            {
-                animation.locked.val = val;
-            }
-        }
-
         private void SelectCurrentAtom(string uid)
         {
             if (_selectedLink != null)
             {
-                _selectedLink.main = false;
                 _selectedLink = null;
             }
             if (string.IsNullOrEmpty(uid))
@@ -464,7 +445,6 @@ namespace VamTimeline
             }
 
             _selectedLink = mainLinkedAnimation;
-            _selectedLink.main = true;
             RequestControlPanelInjection();
 
             _atomsJSON.valNoCallback = _selectedLink.storable.containingAtom.uid;
