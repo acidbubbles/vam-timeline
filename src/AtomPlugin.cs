@@ -37,8 +37,7 @@ namespace VamTimeline
         public JSONStorableBool lockedJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
 
-        private bool _syncing = false;
-        private readonly List<JSONStorable> _otherTimelines = new List<JSONStorable>();
+        private TimelineEventManager _eventManager;
         private bool _restoring;
         private Editor _ui;
         private Editor _controllerInjectedUI;
@@ -62,6 +61,7 @@ namespace VamTimeline
             try
             {
                 serializer = new AtomAnimationSerializer(base.containingAtom);
+                _eventManager = new TimelineEventManager(base.containingAtom, this);
                 _freeControllerHook = gameObject.AddComponent<FreeControllerV3Hook>();
                 _freeControllerHook.enabled = false;
                 _freeControllerHook.containingAtom = base.containingAtom;
@@ -118,18 +118,10 @@ namespace VamTimeline
         public void Update()
         {
             if (animation == null) return;
-
-            try
+            if (animation.isPlaying)
             {
-                if (animation.isPlaying)
-                {
-                    scrubberJSON.valNoCallback = animation.clipTime;
-                    timeJSON.valNoCallback = animation.playTime;
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(Update)}: {exc}");
+                scrubberJSON.valNoCallback = animation.clipTime;
+                timeJSON.valNoCallback = animation.playTime;
             }
         }
 
@@ -141,15 +133,16 @@ namespace VamTimeline
         {
             try
             {
-                if (_ui != null) _ui.enabled = true;
+                if (_ui != null)
+                    _ui.enabled = true;
                 if (animation != null)
                 {
                     animation.enabled = true;
-                    if (_freeControllerHook != null) _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
+                    if (_freeControllerHook != null)
+                        _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
                     if (base.containingAtom != null)
                     {
-                        ScanForAtoms();
-                        BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
+                        _eventManager.Ready();
                         BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
                     }
                 }
@@ -167,8 +160,8 @@ namespace VamTimeline
                 if (animation != null) animation.enabled = false;
                 if (_ui != null) _ui.enabled = false;
                 if (_freeControllerHook != null) _freeControllerHook.enabled = false;
+                if (_eventManager != null) _eventManager.Unready();
                 DestroyControllerPanel();
-                BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationDisabled));
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
             catch (Exception exc)
@@ -457,26 +450,12 @@ namespace VamTimeline
             OnAnimationParametersChanged();
 
             _ui?.Bind(animation);
+            _eventManager.animation = animation;
             if (_freeControllerHook != null) _freeControllerHook.animation = animation;
             if (enabled) _freeControllerHook.enabled = true;
 
-            ScanForAtoms();
-            BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationReady));
+            _eventManager.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
-        }
-
-        private void ScanForAtoms()
-        {
-            foreach (var atom in SuperController.singleton.GetAtoms())
-            {
-                if (atom == null) continue;
-                var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
-                if (storableId == null) continue;
-                var storable = atom.GetStorableByID(storableId);
-                if (storable == this) continue;
-                if (!storable.enabled) continue;
-                OnTimelineAnimationReady(storable);
-            }
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
@@ -613,28 +592,7 @@ namespace VamTimeline
         {
             isPlayingJSON.valNoCallback = animation.isPlaying;
             _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
-            SendTimelineEvent(new Dictionary<string, object>{
-                {"name", TimelineEventNames.PlaybackState},
-                {nameof(clip.animationName), clip.animationName},
-                {nameof(clip.playbackEnabled), clip.playbackEnabled},
-                {nameof(clip.clipTime), clip.clipTime},
-                {nameof(animation.sequencing), animation.sequencing},
-            });
-        }
-
-        private void BroadcastToTimelines(string methodName)
-        {
-            foreach (var atom in SuperController.singleton.GetAtoms())
-            {
-                if (atom == containingAtom) continue;
-                var pluginId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
-                if (pluginId != null)
-                {
-                    var plugin = atom.GetStorableByID(pluginId);
-                    if (plugin == this) continue;
-                    plugin.SendMessage(methodName, this, SendMessageOptions.RequireReceiver);
-                }
-            }
+            _eventManager.SendPlaybackState(clip);
         }
 
         private void BroadcastToControllers(string methodName)
@@ -821,61 +779,17 @@ namespace VamTimeline
 
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
-            if (storable == this || _otherTimelines.Contains(storable)) return;
-            _otherTimelines.Add(storable);
+            _eventManager.OnTimelineAnimationReady(storable);
         }
 
         public void OnTimelineAnimationDisabled(JSONStorable storable)
         {
-            _otherTimelines.Remove(storable);
-        }
-
-        public void SendTimelineEvent(Dictionary<string, object> e)
-        {
-            foreach (var storable in _otherTimelines)
-            {
-                if (storable == null)
-                {
-                    continue;
-                    // SuperController.LogError($"Storables: {_otherTimelines.Count}, {storable?.containingAtom?.name}");
-                    // throw new Exception("Target storable is disabled");
-                }
-                storable.SendMessage(nameof(OnTimelineEvent), e);
-            }
+            _eventManager.OnTimelineAnimationDisabled(storable);
         }
 
         public void OnTimelineEvent(Dictionary<string, object> e)
         {
-            if (_syncing)
-                throw new InvalidOperationException("Already syncing, infinite loop avoided!");
-
-            _syncing = true;
-            try
-            {
-                switch ((string)e["name"])
-                {
-                    case TimelineEventNames.PlaybackState:
-                        var clip = animation.GetClip((string)e[nameof(AtomAnimationClip.animationName)]);
-                        if (clip == null) return;
-                        clip.clipTime = (float)e[nameof(clip.clipTime)];
-                        if ((bool)e[nameof(clip.playbackEnabled)])
-                            animation.PlayClip(clip, (bool)e[nameof(animation.sequencing)]);
-                        else
-                            animation.StopClip(clip);
-                        break;
-                    default:
-                        SuperController.LogError($"Atom {transform.parent.name} received message name {e["name"]} but no handler exists for that event");
-                        break;
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Atom {transform.parent.name} event crashed: {exc}");
-            }
-            finally
-            {
-                _syncing = false;
-            }
+            _eventManager.OnTimelineEvent(e);
         }
 
         #endregion

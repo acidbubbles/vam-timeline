@@ -133,6 +133,7 @@
     <Compile Include="src\AtomPlugin.cs" />
     <Compile Include="src\FreeControllerV3Hook.cs" />
     <Compile Include="src\IAtomPlugin.cs" />
+    <Compile Include="src\TimelineEventManager.cs" />
     <Compile Include="src\TimelineEventNames.cs" />
     <!-- /AtomAnimationFiles -->
 
