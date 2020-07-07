@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ namespace VamTimeline
 
         private JSONStorableString _animationsListJSON;
         private UIDynamicButton _deleteAnimationUI;
+        private UIDynamicButton _deleteLayerUI;
 
         public ManageAnimationsScreen()
             : base()
@@ -35,6 +37,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitDeleteAnimationsUI();
+            InitDeleteLayerUI();
 
             prefabFactory.CreateSpacer();
 
@@ -66,6 +69,14 @@ namespace VamTimeline
             _deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
             _deleteAnimationUI.buttonColor = Color.red;
             _deleteAnimationUI.textColor = Color.white;
+        }
+
+        private void InitDeleteLayerUI()
+        {
+            _deleteLayerUI = prefabFactory.CreateButton("Delete Layer");
+            _deleteLayerUI.button.onClick.AddListener(() => DeleteLayer());
+            _deleteLayerUI.buttonColor = Color.red;
+            _deleteLayerUI.textColor = Color.white;
         }
 
         #endregion
@@ -136,6 +147,26 @@ namespace VamTimeline
             }
         }
 
+        private void DeleteLayer()
+        {
+            try
+            {
+                if (!animation.EnumerateLayers().Skip(1).Any())
+                {
+                    SuperController.LogError("VamTimeline: Cannot delete the only layer.");
+                    return;
+                }
+                var clips = animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList();
+                foreach (var clip in clips)
+                    animation.RemoveClip(clip);
+                plugin.ChangeAnimation(animation.clips[0].animationName);
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(ManageAnimationsScreen)}.{nameof(DeleteLayer)}: {exc}");
+            }
+        }
+
         #endregion
 
         #region Events
@@ -152,12 +183,14 @@ namespace VamTimeline
             var sb = new StringBuilder();
 
             string layer = null;
+            var layersCount = 0;
             var animationsInLayer = 0;
             foreach (var clip in animation.clips)
             {
                 if (clip.animationLayer != layer)
                 {
                     layer = clip.animationLayer;
+                    layersCount++;
                     sb.AppendLine($"=== {layer} ===");
                 }
 
@@ -173,6 +206,7 @@ namespace VamTimeline
 
             _animationsListJSON.val = sb.ToString();
             _deleteAnimationUI.button.interactable = animationsInLayer > 1;
+            _deleteLayerUI.button.interactable = layersCount > 1;
         }
 
         public override void OnDestroy()
