@@ -27,6 +27,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomAnimationSerializer.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomAnimationTargetsList.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomClipboardEntry.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\DictionaryExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\FloatExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\IAtomAnimationClip.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\IAtomAnimationTarget.cs",
@@ -87,7 +88,6 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\FreeControllerV3Hook.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\IAtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\TimelineEventManager.cs",
-    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\TimelineEventNames.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\VamTimeline.AtomAnimation.cslist",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\VamTimeline.Controller.cslist"
   ],

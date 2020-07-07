@@ -467,6 +467,7 @@ namespace VamTimeline
                 scrubberJSON.valNoCallback = time.currentClipTime;
                 timeJSON.valNoCallback = time.time;
 
+                _eventManager.SendTime(animation.current);
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             }
             catch (Exception exc)

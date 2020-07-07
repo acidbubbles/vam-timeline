@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using EventArgs = System.Collections.Generic.Dictionary<string, object>;
 
 namespace VamTimeline
 {
@@ -9,7 +10,7 @@ namespace VamTimeline
     {
         public AtomAnimation animation;
 
-        private readonly List<JSONStorable> _otherTimelines = new List<JSONStorable>();
+        private readonly List<JSONStorable> _otherPlugins = new List<JSONStorable>();
         private readonly Atom _containingAtom;
         private readonly JSONStorable _plugin;
         private bool _syncing = false;
@@ -35,16 +36,16 @@ namespace VamTimeline
 
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
-            if (storable == _plugin || _otherTimelines.Contains(storable)) return;
-            _otherTimelines.Add(storable);
+            if (storable == _plugin || _otherPlugins.Contains(storable)) return;
+            _otherPlugins.Add(storable);
         }
 
         public void OnTimelineAnimationDisabled(JSONStorable storable)
         {
-            _otherTimelines.Remove(storable);
+            _otherPlugins.Remove(storable);
         }
 
-        public void OnTimelineEvent(Dictionary<string, object> e)
+        public void OnTimelineEvent(EventArgs e)
         {
             if (_syncing)
                 throw new InvalidOperationException("Already syncing, infinite loop avoided!");
@@ -52,16 +53,13 @@ namespace VamTimeline
             _syncing = true;
             try
             {
-                switch ((string)e["name"])
+                switch (e.Get<string>("name"))
                 {
-                    case TimelineEventNames.PlaybackState:
-                        var clip = animation.GetClip((string)e[nameof(AtomAnimationClip.animationName)]);
-                        if (clip == null) return;
-                        clip.clipTime = (float)e[nameof(clip.clipTime)];
-                        if ((bool)e[nameof(clip.playbackEnabled)])
-                            animation.PlayClip(clip, (bool)e[nameof(animation.sequencing)]);
-                        else
-                            animation.StopClip(clip);
+                    case nameof(SendPlaybackState):
+                        ReceivePlaybackState(e);
+                        break;
+                    case nameof(SendTime):
+                        ReceiveTime(e);
                         break;
                     default:
                         SuperController.LogError($"Received message name {e["name"]} but no handler exists for that event");
@@ -111,9 +109,9 @@ namespace VamTimeline
 
         #region Messages
 
-        public void SendTimelineEvent(Dictionary<string, object> e)
+        public void SendTimelineEvent(EventArgs e)
         {
-            foreach (var storable in _otherTimelines)
+            foreach (var storable in _otherPlugins)
             {
                 if (storable == null)
                 {
@@ -127,13 +125,47 @@ namespace VamTimeline
 
         public void SendPlaybackState(AtomAnimationClip clip)
         {
-            SendTimelineEvent(new Dictionary<string, object>{
-                {"name", TimelineEventNames.PlaybackState},
+            if (_syncing) return;
+            SendTimelineEvent(new EventArgs{
+                {"name", nameof(SendPlaybackState)},
                 {nameof(clip.animationName), clip.animationName},
                 {nameof(clip.playbackEnabled), clip.playbackEnabled},
                 {nameof(clip.clipTime), clip.clipTime},
                 {nameof(animation.sequencing), animation.sequencing},
             });
+        }
+
+        private void ReceivePlaybackState(EventArgs e)
+        {
+            var clip = GetClip(e);
+            if (clip == null) return;
+            clip.clipTime = e.Get<float>(nameof(clip.clipTime));
+            if (e.Get<bool>(nameof(clip.playbackEnabled)))
+                animation.PlayClip(clip, e.Get<bool>(nameof(animation.sequencing)));
+            else
+                animation.StopClip(clip);
+        }
+
+        public void SendTime(AtomAnimationClip clip)
+        {
+            if (_syncing) return;
+            SendTimelineEvent(new EventArgs{
+                {"name", nameof(SendTime)},
+                {nameof(clip.animationName), clip.animationName},
+                {nameof(clip.clipTime), clip.clipTime},
+            });
+        }
+
+        private void ReceiveTime(EventArgs e)
+        {
+            var clip = GetClip(e);
+            if (clip != animation.current) return;
+            animation.clipTime = e.Get<float>(nameof(clip.clipTime));
+        }
+
+        private AtomAnimationClip GetClip(EventArgs e)
+        {
+            return animation.GetClip(e.Get<string>(nameof(AtomAnimationClip.animationName)));
         }
 
         #endregion
