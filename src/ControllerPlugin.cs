@@ -24,6 +24,7 @@ namespace VamTimeline
         private UIDynamic _injectedUIContainer;
         private GameObject _injectedUI;
         private readonly List<SyncProxy> _links = new List<SyncProxy>();
+        private readonly List<KeyValuePair<string, JSONStorableAction>> _playActions = new List<KeyValuePair<string, JSONStorableAction>>();
         private SyncProxy _selectedLink;
         private bool _ignoreVamTimelineAnimationFrameUpdated;
 
@@ -298,6 +299,27 @@ namespace VamTimeline
             var proxy = GetOrDispose(_selectedLink);
             if (proxy == null || proxy.storable != storable)
                 return;
+            _animationJSON.choices = _links
+                .ToList()
+                .Select(l => GetOrDispose(l))
+                .Where(leftUIContent => leftUIContent != null)
+                .SelectMany(l => l.animation.choices)
+                .Distinct()
+                .ToList();
+            foreach (var a in _playActions)
+            {
+                DeregisterAction(a.Value);
+            }
+            _playActions.Clear();
+            foreach (var a in _animationJSON.choices)
+            {
+                if (!_playActions.Any(kvp => kvp.Key == a))
+                {
+                    var playJSON = new JSONStorableAction($"Play {a}", () => Play(a));
+                    RegisterAction(playJSON);
+                    _playActions.Add(new KeyValuePair<string, JSONStorableAction>(a, playJSON));
+                }
+            }
 
             OnTimelineTimeChanged(storable);
 
@@ -305,7 +327,6 @@ namespace VamTimeline
             _timeJSON.max = remoteTime.max;
             _timeJSON.valNoCallback = remoteTime.val;
             var remoteAnimation = proxy.animation;
-            _animationJSON.choices = remoteAnimation.choices;
             _animationJSON.valNoCallback = remoteAnimation.val;
         }
 
@@ -511,6 +532,11 @@ namespace VamTimeline
         private void Play()
         {
             GetOrDispose(_selectedLink)?.play.actionCallback();
+        }
+
+        private void Play(string animationName)
+        {
+            GetOrDispose(_selectedLink)?.storable.CallAction($"Play {animationName}");
         }
 
         private void PlayIfNotPlaying()

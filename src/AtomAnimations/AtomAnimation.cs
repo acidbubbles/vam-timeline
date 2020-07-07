@@ -277,6 +277,7 @@ namespace VamTimeline
         public void StopClip(string animationName)
         {
             var clip = GetClip(animationName);
+            StopClip(clip);
         }
 
         public void StopClip(AtomAnimationClip clip)
