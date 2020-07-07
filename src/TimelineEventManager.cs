@@ -61,6 +61,9 @@ namespace VamTimeline
                     case nameof(SendTime):
                         ReceiveTime(e);
                         break;
+                    case nameof(SendCurrentAnimation):
+                        ReceiveCurrentAnimation(e);
+                        break;
                     default:
                         SuperController.LogError($"Received message name {e["name"]} but no handler exists for that event");
                         break;
@@ -161,6 +164,25 @@ namespace VamTimeline
             var clip = GetClip(e);
             if (clip != animation.current) return;
             animation.clipTime = e.Get<float>(nameof(clip.clipTime));
+        }
+
+        private bool x;
+        public void SendCurrentAnimation(AtomAnimationClip clip)
+        {
+            if (_syncing) return;
+            if (x) throw new Exception();
+            x = true;
+            SendTimelineEvent(new EventArgs{
+                {"name", nameof(SendCurrentAnimation)},
+                {nameof(clip.animationName), clip.animationName},
+            });
+        }
+
+        private void ReceiveCurrentAnimation(EventArgs e)
+        {
+            var clip = GetClip(e);
+            if (clip == null) return;
+            animation.SelectAnimation(clip);
         }
 
         private AtomAnimationClip GetClip(EventArgs e)

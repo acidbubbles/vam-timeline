@@ -59,23 +59,7 @@ namespace VamTimeline
         public bool isPlaying { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
-        private AtomAnimationClip _current;
-        public AtomAnimationClip current
-        {
-            get
-            {
-                return _current;
-            }
-            set
-            {
-                var previous = _current;
-                _current = value;
-                if (previous != null) previous.Leave();
-                onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs { before = previous, after = _current });
-                onTargetsSelectionChanged.Invoke();
-                if (!isPlaying) clipTime = 0f;
-            }
-        }
+        public AtomAnimationClip current { get; private set; }
 
         public float clipTime
         {
@@ -151,7 +135,7 @@ namespace VamTimeline
         {
             if (clips.Count == 0)
                 AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
-            _current = clips[0];
+            current = clips[0];
             RebuildAnimationNow();
         }
 
@@ -387,10 +371,31 @@ namespace VamTimeline
 
         public void SelectAnimation(string animationName)
         {
-            var previous = current;
-            current = GetClip(animationName);
+            var clip = GetClip(animationName);
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
+            if (current == clip)
+            {
+                clipTime = 0;
+                return;
+            }
 
-            if (current == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
+            SelectAnimation(clip);
+        }
+
+        public void SelectAnimation(AtomAnimationClip clip)
+        {
+            var previous = current;
+            current = clip;
+
+            if (previous != null) previous.Leave();
+
+            if (previous.animationLayer != current.animationLayer)
+                onClipsListChanged.Invoke();
+            onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
+            {
+                before = previous,
+                after = current
+            });
 
             if (isPlaying)
             {
@@ -402,16 +407,9 @@ namespace VamTimeline
             }
             else
             {
+                clipTime = 0f;
                 Sample();
             }
-
-            if (previous.animationLayer != current.animationLayer)
-                onClipsListChanged.Invoke();
-            onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
-            {
-                before = previous,
-                after = current
-            });
         }
 
         #endregion

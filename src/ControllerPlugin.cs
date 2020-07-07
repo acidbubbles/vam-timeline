@@ -333,22 +333,6 @@ namespace VamTimeline
                 var animationName = proxy.animation.val;
                 var isPlaying = proxy.isPlaying.val;
                 var time = proxy.time.val;
-
-                foreach (var slave in _links.Where(l => l != proxy).Select(GetOrDispose))
-                {
-                    var slaveAnimation = slave.animation;
-                    if (slaveAnimation.val != animationName && slaveAnimation.choices.Contains(animationName))
-                        slave.animation.val = animationName;
-
-                    if (isPlaying)
-                        slave.playIfNotPlaying.actionCallback();
-                    else
-                        slave.stop.actionCallback();
-
-                    var slaveTime = slave.time;
-                    if (slaveTime.val < time - 0.0005f || slaveTime.val > time + 0.0005f)
-                        slaveTime.val = time;
-                }
             }
             finally
             {
