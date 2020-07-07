@@ -11,10 +11,10 @@ namespace VamTimeline
 
         private readonly List<JSONStorable> _otherPlugins = new List<JSONStorable>();
         private readonly Atom _containingAtom;
-        private readonly JSONStorable _plugin;
+        private readonly IAtomPlugin _plugin;
         private bool _syncing = false;
 
-        public TimelineEventManager(Atom containingAtom, JSONStorable plugin)
+        public TimelineEventManager(Atom containingAtom, IAtomPlugin plugin)
         {
             _containingAtom = containingAtom;
             _plugin = plugin;
@@ -35,7 +35,7 @@ namespace VamTimeline
 
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
-            if (storable == _plugin || _otherPlugins.Contains(storable)) return;
+            if (ReferenceEquals(storable, _plugin) || _otherPlugins.Contains(storable)) return;
             _otherPlugins.Add(storable);
         }
 
@@ -63,6 +63,9 @@ namespace VamTimeline
                     case nameof(SendCurrentAnimation):
                         ReceiveCurrentAnimation(e);
                         break;
+                    case nameof(SendScreen):
+                        ReceiveScreen(e);
+                        break;
                     default:
                         SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
                         break;
@@ -87,7 +90,7 @@ namespace VamTimeline
                 if (pluginId != null)
                 {
                     var plugin = atom.GetStorableByID(pluginId);
-                    if (plugin == _plugin) continue;
+                    if (ReferenceEquals(plugin, _plugin)) continue;
                     plugin.SendMessage(methodName, _plugin, SendMessageOptions.RequireReceiver);
                 }
             }
@@ -101,7 +104,7 @@ namespace VamTimeline
                 var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
                 if (storableId == null) continue;
                 var storable = atom.GetStorableByID(storableId);
-                if (storable == _plugin) continue;
+                if (ReferenceEquals(storable, _plugin)) continue;
                 if (!storable.enabled) continue;
                 OnTimelineAnimationReady(storable);
             }
@@ -174,6 +177,28 @@ namespace VamTimeline
             var clip = GetClip(e);
             if (clip == null) return;
             animation.SelectAnimation(clip);
+        }
+
+        public void SendScreen(string screen)
+        {
+            if (_syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendScreen),
+                 screen,
+            });
+        }
+
+        private void ReceiveScreen(object[] e)
+        {
+            if (_plugin.ui != null)
+            {
+                _plugin.ui.screensManager.ChangeScreen((string)e[1]);
+                // If the selection cannot be dispatched, change the controller injected ui up front
+                if (!_plugin.ui.isActiveAndEnabled && _plugin.controllerInjectedUI != null)
+                {
+                    _plugin.controllerInjectedUI.screensManager.ChangeScreen((string)e[1]);
+                }
+            }
         }
 
         private AtomAnimationClip GetClip(object[] e)

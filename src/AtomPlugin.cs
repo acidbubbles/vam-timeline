@@ -16,6 +16,8 @@ namespace VamTimeline
         public new MVRPluginManager manager => base.manager;
         public AtomAnimationSerializer serializer { get; private set; }
 
+        public Editor ui { get; private set; }
+        public Editor controllerInjectedUI { get; private set; }
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         public JSONStorableStringChooser animationJSON { get; private set; }
@@ -39,8 +41,6 @@ namespace VamTimeline
 
         private TimelineEventManager _eventManager;
         private bool _restoring;
-        private Editor _ui;
-        private Editor _controllerInjectedUI;
         private FreeControllerV3Hook _freeControllerHook;
 
         private class AnimStorableActionMap
@@ -106,9 +106,14 @@ namespace VamTimeline
                 scrollRect.movementType = ScrollRect.MovementType.Clamped;
             }
 
-            _ui = Editor.AddTo(scriptUI.fullWidthUIContent);
-            _ui.Bind(this);
-            if (animation != null) _ui.Bind(animation);
+            ui = Editor.AddTo(scriptUI.fullWidthUIContent);
+            ui.Bind(this);
+            if (animation != null) ui.Bind(animation);
+            ui.screensManager.onScreenChanged.AddListener(screen =>
+            {
+                if (controllerInjectedUI != null) controllerInjectedUI.screensManager.ChangeScreen(screen);
+                _eventManager.SendScreen(screen);
+            });
         }
 
         #endregion
@@ -133,8 +138,8 @@ namespace VamTimeline
         {
             try
             {
-                if (_ui != null)
-                    _ui.enabled = true;
+                if (ui != null)
+                    ui.enabled = true;
                 if (animation != null)
                 {
                     animation.enabled = true;
@@ -158,7 +163,7 @@ namespace VamTimeline
             try
             {
                 if (animation != null) animation.enabled = false;
-                if (_ui != null) _ui.enabled = false;
+                if (ui != null) ui.enabled = false;
                 if (_freeControllerHook != null) _freeControllerHook.enabled = false;
                 if (_eventManager != null) _eventManager.Unready();
                 DestroyControllerPanel();
@@ -175,7 +180,7 @@ namespace VamTimeline
             try
             {
                 try { Destroy(animation); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [animations]: {exc}"); }
-                try { Destroy(_ui); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [ui]: {exc}"); }
+                try { Destroy(ui); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [ui]: {exc}"); }
                 try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"VamTimeline.{nameof(OnDestroy)} [panel]: {exc}"); }
                 Destroy(_freeControllerHook);
             }
@@ -449,7 +454,7 @@ namespace VamTimeline
             OnClipsListChanged();
             OnAnimationParametersChanged();
 
-            _ui?.Bind(animation);
+            ui?.Bind(animation);
             _eventManager.animation = animation;
             if (_freeControllerHook != null) _freeControllerHook.animation = animation;
             if (enabled) _freeControllerHook.enabled = true;
@@ -752,26 +757,32 @@ namespace VamTimeline
 
         private IEnumerator InjectControlPanelDeferred(GameObject container)
         {
-            while (_ui == null && container != null) { yield return 0; }
+            while (ui == null && container != null) { yield return 0; }
 
             if (container == null) yield break;
 
-            _controllerInjectedUI = container.GetComponent<Editor>();
-            if (_controllerInjectedUI == null)
+            controllerInjectedUI = container.GetComponent<Editor>();
+            if (controllerInjectedUI == null)
             {
-                _controllerInjectedUI = Editor.Configure(container);
-                _controllerInjectedUI.Bind(this);
+                controllerInjectedUI = Editor.Configure(container);
+                controllerInjectedUI.Bind(this);
+                controllerInjectedUI.screensManager.onScreenChanged.AddListener(screen =>
+                {
+                    // TODO: This dispatches twice
+                    ui.screensManager.ChangeScreen(screen);
+                    _eventManager.SendScreen(screen);
+                });
             }
-            if (_controllerInjectedUI.animation != animation)
-                _controllerInjectedUI.Bind(animation);
+            if (controllerInjectedUI.animation != animation)
+                controllerInjectedUI.Bind(animation);
         }
 
         private void DestroyControllerPanel()
         {
-            if (_controllerInjectedUI == null) return;
-            _controllerInjectedUI.gameObject.transform.SetParent(null, false);
-            Destroy(_controllerInjectedUI.gameObject);
-            _controllerInjectedUI = null;
+            if (controllerInjectedUI == null) return;
+            controllerInjectedUI.gameObject.transform.SetParent(null, false);
+            Destroy(controllerInjectedUI.gameObject);
+            controllerInjectedUI = null;
         }
 
         #endregion

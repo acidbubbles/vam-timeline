@@ -14,6 +14,8 @@ namespace VamTimeline
     {
         AtomAnimation animation { get; }
         AtomAnimationSerializer serializer { get; }
+        Editor ui { get; }
+        Editor controllerInjectedUI { get; }
         AtomClipboard clipboard { get; }
 
         JSONStorableAction deleteJSON { get; }

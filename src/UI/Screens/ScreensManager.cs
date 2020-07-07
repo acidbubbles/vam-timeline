@@ -39,8 +39,8 @@ namespace VamTimeline
         {
             _currentScreen = screen;
             if (screen != PerformanceScreen.ScreenName) _defaultScreen = screen;
-            if (!enabled) return;
-            RefreshCurrentUI();
+            if (!isActiveAndEnabled) return;
+            RefreshCurrentUI(screen);
         }
 
         private List<string> ListAvailableScreens()
@@ -77,20 +77,23 @@ namespace VamTimeline
             }
         }
 
-        public void RefreshCurrentUI()
+        private void RefreshCurrentUI(string screen)
         {
             if (_plugin.animation == null) return;
 
             if (_uiRefreshInProgress)
+            {
                 _uiRefreshInvalidated = true;
+            }
             else if (!_uiRefreshScheduled)
-                _uiRefreshCoroutine = StartCoroutine(RefreshCurrentUIDeferred(_currentScreen));
+            {
+                _uiRefreshScheduled = true;
+                _uiRefreshCoroutine = StartCoroutine(RefreshCurrentUIDeferred(screen));
+            }
         }
 
         private IEnumerator RefreshCurrentUIDeferred(string screen)
         {
-            _uiRefreshScheduled = true;
-
             // Let every event trigger a UI refresh
             yield return 0;
 
