@@ -86,7 +86,7 @@ namespace VamTimeline
         private UIDynamicButton _expandButton;
         private JSONStorableBool _autoKeyframeAllControllersJSON;
 
-        public void Bind(IAtomPlugin plugin)
+        public void Bind(IAtomPlugin plugin, string defaultScreen = null)
         {
             _plugin = plugin;
 
@@ -123,7 +123,7 @@ namespace VamTimeline
                 tabs.Select(screenName);
                 animation.locked = screenName == PerformanceScreen.ScreenName;
             });
-            screensManager.Bind(plugin);
+            screensManager.Bind(plugin, defaultScreen);
         }
 
         private AnimationControlPanel CreateControlPanel(GameObject panel)

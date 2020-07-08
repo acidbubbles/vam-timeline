@@ -769,7 +769,7 @@ namespace VamTimeline
             if (controllerInjectedUI == null)
             {
                 controllerInjectedUI = Editor.Configure(container);
-                controllerInjectedUI.Bind(this);
+                controllerInjectedUI.Bind(this, ui.screensManager.GetDefaultScreen());
                 controllerInjectedUI.screensManager.onScreenChanged.AddListener(screen =>
                 {
                     // TODO: This dispatches twice
