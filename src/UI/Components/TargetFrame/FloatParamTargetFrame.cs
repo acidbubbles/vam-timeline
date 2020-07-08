@@ -127,6 +127,7 @@ namespace VamTimeline
         private void SetValue(float val)
         {
             if (plugin.animation.isPlaying) return;
+            if (!target.EnsureAvailable(false)) return;
             target.floatParam.val = val;
             var time = plugin.animation.clipTime.Snap();
             target.SetKeyframe(time, target.floatParam.val);
@@ -137,6 +138,14 @@ namespace VamTimeline
         public override void SetTime(float time, bool stopped)
         {
             base.SetTime(time, stopped);
+
+            if (!target.EnsureAvailable())
+            {
+                if (stopped)
+                {
+                    valueText.text = "Waiting...";
+                }
+            }
 
             if (stopped)
             {
@@ -154,6 +163,11 @@ namespace VamTimeline
             {
                 if (!enable)
                     SetToggle(true);
+                return;
+            }
+            if (!target.EnsureAvailable(false))
+            {
+                SetToggle(!enabled);
                 return;
             }
             if (enable)

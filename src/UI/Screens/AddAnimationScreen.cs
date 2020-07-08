@@ -130,6 +130,7 @@ namespace VamTimeline
             }
             foreach (var origTarget in current.targetFloatParams)
             {
+                if (!origTarget.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
                 newTarget.SetKeyframe(0f, origTarget.floatParam.val);
                 newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);

@@ -236,9 +236,9 @@ namespace VamTimeline
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetFloatParams)
                 .Where(t => t.storable == storable)
-                .Select(t => t.floatParam.name));
+                .Select(t => t.floatParamName));
             _addParamListJSON.choices = values
-                .Where(v => !current.targetFloatParams.Any(t => t.storable == storable && t.floatParam.name == v))
+                .Where(v => !current.targetFloatParams.Any(t => t.storableId == storable.storeId && t.floatParamName == v))
                 .Where(v => !reservedByOtherLayers.Contains(v))
                 .OrderBy(v => v)
                 .ToList();
@@ -272,8 +272,8 @@ namespace VamTimeline
                     var target = s as FloatParamAnimationTarget;
                     if (target != null)
                     {
-                        _addStorableListJSON.val = target.storable.name;
-                        _addParamListJSON.val = target.floatParam.name;
+                        _addStorableListJSON.val = target.storableId;
+                        _addParamListJSON.val = target.floatParamName;
                         current.Remove(target);
                         continue;
                     }
@@ -311,8 +311,8 @@ namespace VamTimeline
 
         private class FloatParamRef
         {
-            public JSONStorable Storable { get; set; }
-            public JSONStorableFloat FloatParam { get; set; }
+            public JSONStorable storable { get; set; }
+            public JSONStorableFloat floatParam { get; set; }
         }
 
         private void AddMissingTargets()
@@ -329,8 +329,9 @@ namespace VamTimeline
                 var allFloatParams = animation.clips
                     .Where(c => c.animationLayer == current.animationLayer)
                     .SelectMany(c => c.targetFloatParams)
+                    .Where(t => t.EnsureAvailable(false))
                     .Where(t => h.Add(t.floatParam))
-                    .Select(t => new FloatParamRef { Storable = t.storable, FloatParam = t.floatParam })
+                    .Select(t => new FloatParamRef { storable = t.storable, floatParam = t.floatParam })
                     .ToList();
 
                 foreach (var clip in animation.clips)
@@ -351,15 +352,12 @@ namespace VamTimeline
 
                     foreach (var floatParamRef in allFloatParams)
                     {
-                        if (!clip.targetFloatParams.Any(t => t.floatParam == floatParamRef.FloatParam))
-                        {
-                            var target = clip.Add(floatParamRef.Storable, floatParamRef.FloatParam);
-                            if (target != null)
-                            {
-                                target.SetKeyframe(0f, floatParamRef.FloatParam.val);
-                                target.SetKeyframe(clip.animationLength, floatParamRef.FloatParam.val);
-                            }
-                        }
+                        if (clip.targetFloatParams.Any(t => t.floatParamName == floatParamRef.floatParam.name)) continue;
+                        var target = clip.Add(floatParamRef.storable, floatParamRef.floatParam);
+                        if (target == null) continue;
+                        if (!target.EnsureAvailable(false)) continue;
+                        target.SetKeyframe(0f, floatParamRef.floatParam.val);
+                        target.SetKeyframe(clip.animationLength, floatParamRef.floatParam.val);
                     }
                     clip.targetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
                 }
@@ -446,11 +444,10 @@ namespace VamTimeline
                 foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
                 {
                     var added = clip.Add(storable, sourceFloatParam);
-                    if (added != null)
-                    {
-                        added.SetKeyframe(0f, sourceFloatParam.val);
-                        added.SetKeyframe(clip.animationLength, sourceFloatParam.val);
-                    }
+                    if (added == null) continue;
+
+                    added.SetKeyframe(0f, sourceFloatParam.val);
+                    added.SetKeyframe(clip.animationLength, sourceFloatParam.val);
                 }
             }
             catch (Exception exc)

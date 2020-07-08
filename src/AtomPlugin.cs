@@ -310,6 +310,10 @@ namespace VamTimeline
             yield return new WaitForEndOfFrame();
             if (animation != null)
             {
+                while (SuperController.singleton.isLoading)
+                {
+                    yield return 0;
+                }
                 StartAutoPlay();
                 yield break;
             }

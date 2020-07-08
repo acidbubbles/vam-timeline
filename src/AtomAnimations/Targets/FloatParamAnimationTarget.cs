@@ -1,29 +1,91 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
 {
     public class FloatParamAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
     {
-        public readonly JSONStorable storable;
-        public readonly JSONStorableFloat floatParam;
+        public readonly string storableId;
+        public JSONStorable storable { get; private set; }
+        public readonly string floatParamName;
+        public JSONStorableFloat floatParam { get; private set; }
         public readonly AnimationCurve value = new AnimationCurve();
 
-        public override string name => storable != null ? $"{storable.name}/{floatParam.name}" : floatParam.name;
+        public override string name => $"{storableId}/{floatParamName}";
+
+        private bool _available;
+        private readonly Atom _atom;
+        private int _lastAvailableCheck = 0;
+
+        public FloatParamAnimationTarget(Atom atom, string storableId, string floatParamName)
+        {
+            _atom = atom;
+            this.storableId = storableId;
+            this.floatParamName = floatParamName;
+            _available = false;
+        }
 
         public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat floatParam)
         {
+            storableId = storable.storeId;
+            this.storable = storable;
+            floatParamName = floatParam.name;
+            this.floatParam = floatParam;
+            _available = true;
+        }
+
+        public bool EnsureAvailable(bool silent = true)
+        {
+            if (_available) return true;
+            if (Time.frameCount == _lastAvailableCheck) return false;
+            if (TryBind(silent)) return true;
+            _lastAvailableCheck = Time.frameCount;
+            return false;
+        }
+
+        public bool TryBind(bool silent)
+        {
+            if (SuperController.singleton.isLoading) return false;
+            var storable = _atom.GetStorableByID(storableId);
+            if (storable == null)
+            {
+                if (!silent) SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a storable '{storableId}'. It might be loading, try again later.");
+                return false;
+            }
+            if (storableId == "geometry")
+            {
+                // This allows loading an animation even though the animatable option was checked off (e.g. loading a pose)
+                var morph = (storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByDisplayName(floatParamName);
+                if (morph == null)
+                {
+                    if (!silent) SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a morph (geometry) '{floatParamName}'.");
+                    return false;
+                }
+                if (!morph.animatable)
+                    morph.animatable = true;
+            }
+            var floatParam = storable.GetFloatJSONParam(floatParamName);
+            if (floatParam == null)
+            {
+                if (!silent) SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
+                return false;
+            }
+
             this.storable = storable;
             this.floatParam = floatParam;
+            _available = true;
+            return true;
         }
 
         public string GetShortName()
         {
-            return floatParam.name;
+            return floatParamName;
         }
 
         public void Sample(float clipTime, float weight)
         {
+            if (!EnsureAvailable()) return;
             floatParam.val = Mathf.Lerp(floatParam.val, value.Evaluate(clipTime), weight);
         }
 

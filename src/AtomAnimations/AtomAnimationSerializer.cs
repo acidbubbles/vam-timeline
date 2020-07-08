@@ -117,38 +117,13 @@ namespace VamTimeline
             }
 
             JSONArray floatParamsJSON = clipJSON["FloatParams"].AsArray;
-            var morphs = GetMorphs();
             if (floatParamsJSON != null)
             {
                 foreach (JSONClass paramJSON in floatParamsJSON)
                 {
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
-                    if (storableId == "geometry")
-                    {
-                        // This allows loading an animation even though the animatable option was checked off (e.g. loading a pose)
-                        var morph = morphs.FirstOrDefault(m => m.jsonFloat.name == floatParamName);
-                        if (morph == null)
-                        {
-                            SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a morph (geometry) '{floatParamName}'");
-                            continue;
-                        }
-                        if (!morph.animatable)
-                            morph.animatable = true;
-                    }
-                    var storable = _atom.GetStorableByID(storableId);
-                    if (storable == null)
-                    {
-                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a storable '{storableId}'");
-                        continue;
-                    }
-                    var jsf = storable.GetFloatJSONParam(floatParamName);
-                    if (jsf == null)
-                    {
-                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
-                        continue;
-                    }
-                    var target = new FloatParamAnimationTarget(storable, jsf);
+                    var target = new FloatParamAnimationTarget(_atom, storableId, floatParamName);
                     clip.Add(target);
                     DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength, target.settings);
                     AddMissingKeyframeSettings(target);
@@ -184,22 +159,6 @@ namespace VamTimeline
             {
                 var time = leadCurve[key].time;
                 target.EnsureKeyframeSettings(time, CurveTypeValues.LeaveAsIs);
-            }
-        }
-
-        private IEnumerable<DAZMorph> GetMorphs()
-        {
-            var geometry = _atom.GetStorableByID("geometry");
-            if (geometry == null) yield break;
-            var character = geometry as DAZCharacterSelector;
-            if (character == null) yield break;
-            var morphControl = character.morphsControlUI;
-            if (morphControl == null) yield break;
-            foreach (var morphDisplayName in morphControl.GetMorphDisplayNames())
-            {
-                var morph = morphControl.GetMorphByDisplayName(morphDisplayName);
-                if (morph == null) continue;
-                yield return morph;
             }
         }
 
@@ -407,8 +366,8 @@ namespace VamTimeline
             {
                 var paramJSON = new JSONClass
                     {
-                        { "Storable", target.storable.storeId },
-                        { "Name", target.floatParam.name },
+                        { "Storable", target.storableId },
+                        { "Name", target.floatParamName },
                         { "Value", SerializeCurve(target.value, target.settings) },
                     };
                 paramsJSON.Add(paramJSON);
