@@ -84,7 +84,6 @@ namespace VamTimeline
         private CurveTypePopup _curveType;
         private bool _expanded = true;
         private UIDynamicButton _expandButton;
-        private JSONStorableBool _autoKeyframeAllControllersJSON;
 
         public void Bind(IAtomPlugin plugin, string defaultScreen = null)
         {
@@ -101,8 +100,6 @@ namespace VamTimeline
             InitChangeCurveTypeUI();
 
             _curves = InitCurvesUI();
-
-            InitAutoKeyframeUI();
 
             tabs.Add(AnimationsScreen.ScreenName);
             tabs.Add(TargetsScreen.ScreenName);
@@ -188,12 +185,6 @@ namespace VamTimeline
             }
         }
 
-        private void InitAutoKeyframeUI()
-        {
-            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", _plugin.animation.autoKeyframeAllControllers, (bool val) => animation.autoKeyframeAllControllers = val);
-            var autoKeyframeAllControllersUI = _leftPanelPrefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
-        }
-
         private void InitToggleRightPanelButton(UIDynamicButton btn)
         {
             btn.button.onClick.RemoveAllListeners();
@@ -232,33 +223,11 @@ namespace VamTimeline
 
         public void Bind(AtomAnimation animation)
         {
-            if (this.animation != null)
-            {
-                this.animation.onEditorSettingsChanged.RemoveListener(OnEditorSettingsChanged);
-            }
-
             this.animation = animation;
 
             _controlPanel.Bind(animation);
             _curveType.Bind(animation);
             _curves.Bind(animation);
-
-            animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
-            OnEditorSettingsChanged(null);
-        }
-
-        private void OnEditorSettingsChanged(string _)
-        {
-            _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers;
-        }
-
-        public void OnDestroy()
-        {
-            if (animation != null)
-            {
-                animation.onEditorSettingsChanged.RemoveListener(OnEditorSettingsChanged);
-                animation = null;
-            }
         }
     }
 }

@@ -122,13 +122,13 @@
     <Compile Include="src\UI\Screens\BulkScreen.cs" />
     <Compile Include="src\UI\Screens\EditAnimationScreen.cs" />
     <Compile Include="src\UI\Screens\HelpScreen.cs" />
+    <Compile Include="src\UI\Screens\LockedScreen.cs" />
     <Compile Include="src\UI\Screens\ManageAnimationsScreen.cs" />
     <Compile Include="src\UI\Screens\MocapScreen.cs" />
     <Compile Include="src\UI\Screens\MoreScreen.cs" />
-    <Compile Include="src\UI\Screens\LockedScreen.cs" />
+    <Compile Include="src\UI\Screens\OptionsScreen.cs" />
     <Compile Include="src\UI\Screens\ScreenBase.cs" />
     <Compile Include="src\UI\Screens\ScreensManager.cs" />
-    <Compile Include="src\UI\Screens\SettingsScreen.cs" />
     <Compile Include="src\UI\Screens\TargetsScreen.cs" />
     <Compile Include="src\UI\Editor.cs" />
     <Compile Include="src\AtomPlugin.cs" />

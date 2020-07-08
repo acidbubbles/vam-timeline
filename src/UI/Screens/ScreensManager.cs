@@ -117,8 +117,8 @@ namespace VamTimeline
 
             switch (screen)
             {
-                case SettingsScreen.ScreenName:
-                    _current = screenContainer.AddComponent<SettingsScreen>();
+                case OptionsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<OptionsScreen>();
                     break;
                 case AddRemoveTargetsScreen.ScreenName:
                     _current = screenContainer.AddComponent<AddRemoveTargetsScreen>();

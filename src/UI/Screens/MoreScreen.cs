@@ -32,7 +32,7 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("Options...", SettingsScreen.ScreenName);
+            CreateChangeScreenButton("Options...", OptionsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
