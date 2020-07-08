@@ -39,7 +39,7 @@ namespace VamTimeline
         public JSONStorableBool lockedJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
 
-        private TimelineEventManager _eventManager;
+        private PeerManager _eventManager;
         private bool _restoring;
         private FreeControllerV3Hook _freeControllerHook;
 
@@ -61,7 +61,7 @@ namespace VamTimeline
             try
             {
                 serializer = new AtomAnimationSerializer(base.containingAtom);
-                _eventManager = new TimelineEventManager(base.containingAtom, this);
+                _eventManager = new PeerManager(base.containingAtom, this);
                 _freeControllerHook = gameObject.AddComponent<FreeControllerV3Hook>();
                 _freeControllerHook.enabled = false;
                 _freeControllerHook.containingAtom = base.containingAtom;

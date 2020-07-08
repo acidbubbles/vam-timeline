@@ -1,20 +1,20 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
 {
-    public class TimelineEventManager
+    public class PeerManager
     {
         public AtomAnimation animation;
 
-        private readonly List<JSONStorable> _otherPlugins = new List<JSONStorable>();
+        private readonly List<JSONStorable> _peers = new List<JSONStorable>();
         private readonly Atom _containingAtom;
         private readonly IAtomPlugin _plugin;
         private bool _syncing = false;
 
-        public TimelineEventManager(Atom containingAtom, IAtomPlugin plugin)
+        public PeerManager(Atom containingAtom, IAtomPlugin plugin)
         {
             _containingAtom = containingAtom;
             _plugin = plugin;
@@ -35,13 +35,13 @@ namespace VamTimeline
 
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
-            if (ReferenceEquals(storable, _plugin) || _otherPlugins.Contains(storable)) return;
-            _otherPlugins.Add(storable);
+            if (ReferenceEquals(storable, _plugin) || _peers.Contains(storable)) return;
+            _peers.Add(storable);
         }
 
         public void OnTimelineAnimationDisabled(JSONStorable storable)
         {
-            _otherPlugins.Remove(storable);
+            _peers.Remove(storable);
         }
 
         public void OnTimelineEvent(object[] e)
@@ -73,7 +73,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(TimelineEventManager)}.{nameof(OnTimelineEvent)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(PeerManager)}.{nameof(OnTimelineEvent)}: {exc}");
             }
             finally
             {
@@ -116,7 +116,7 @@ namespace VamTimeline
 
         public void SendTimelineEvent(object[] e)
         {
-            foreach (var storable in _otherPlugins)
+            foreach (var storable in _peers)
             {
                 if (storable == null) continue;
                 storable.SendMessage(nameof(OnTimelineEvent), e);
@@ -139,11 +139,11 @@ namespace VamTimeline
         {
             var clip = GetClip(e);
             if (clip == null) return;
-            clip.clipTime = (float)e[3];
             if ((bool)e[2])
                 animation.PlayClip(clip, (bool)e[4]);
             else
                 animation.StopClip(clip);
+            clip.clipTime = (float)e[3];
         }
 
         public void SendTime(AtomAnimationClip clip)
