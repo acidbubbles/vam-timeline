@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -33,6 +31,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitCreateLayerUI();
+            InitSplitLayerUI();
 
             prefabFactory.CreateSpacer();
 
@@ -57,6 +56,12 @@ namespace VamTimeline
         {
             var createLayerUI = prefabFactory.CreateButton("Create New Layer");
             createLayerUI.button.onClick.AddListener(() => AddLayer());
+        }
+
+        private void InitSplitLayerUI()
+        {
+            var splitLayerUI = prefabFactory.CreateButton("Split selection to new layer");
+            splitLayerUI.button.onClick.AddListener(() => SplitLayer());
         }
 
         #endregion
@@ -182,13 +187,41 @@ namespace VamTimeline
             onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
         }
 
-        protected string GetNewLayerName()
+        private void SplitLayer()
         {
-            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
+            var targets = current.GetSelectedTargets().ToList();
+            if (targets.Count == 0)
+            {
+                SuperController.LogError("VamTimeline: You must select a subset of targets to split to another layer.");
+                return;
+            }
+
+            var newLayerName = GetNewLayerName();
+            foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList())
+            {
+                var targetsToMove = clip.GetAllTargets().Where(t => targets.Any(t2 => t2.TargetsSameAs(t))).ToList();
+
+                foreach (var t in targetsToMove)
+                    clip.Remove(t);
+
+                var newClip = animation.CreateClip(newLayerName);
+                newClip.animationLength = clip.animationLength;
+                newClip.blendDuration = clip.blendDuration;
+                newClip.nextAnimationName = clip.nextAnimationName;
+                newClip.nextAnimationTime = clip.nextAnimationTime;
+                newClip.animationName = GetSplitAnimationName(clip.animationName);
+
+                foreach (var m in targetsToMove)
+                    newClip.Add(m);
+            }
+        }
+
+        private string GetSplitAnimationName(string animationName)
+        {
             for (var i = 1; i < 999; i++)
             {
-                var layerName = "Layer " + i;
-                if (!layers.Contains(layerName)) return layerName;
+                var newName = $"{animationName} (Split {i})";
+                if (!animation.clips.Any(c => c.animationName == newName)) return newName;
             }
             return Guid.NewGuid().ToString();
         }

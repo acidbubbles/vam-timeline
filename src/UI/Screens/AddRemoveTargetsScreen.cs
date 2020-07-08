@@ -69,7 +69,7 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            if (animation.clips.Count <= 1) return;
+            if (animation.clips.Where(c => c.animationLayer == current.animationLayer).Count() <= 1) return;
 
             var clipList = current.GetAllTargets().Select(t => t.name).OrderBy(x => x);
             var otherList = animation.clips

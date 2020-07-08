@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -71,6 +74,17 @@ namespace VamTimeline
             ui.button.onClick.AddListener(() => onScreenChangeRequested.Invoke(screenName));
             ui.buttonColor = navButtonColor;
             return ui;
+        }
+
+        protected string GetNewLayerName()
+        {
+            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
+            for (var i = 1; i < 999; i++)
+            {
+                var layerName = "Layer " + i;
+                if (!layers.Contains(layerName)) return layerName;
+            }
+            return Guid.NewGuid().ToString();
         }
 
         public virtual void OnDestroy()

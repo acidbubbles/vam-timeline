@@ -364,6 +364,17 @@ namespace VamTimeline
 
         #region Add/Remove Targets
 
+        public IAtomAnimationTarget Add(IAtomAnimationTarget target)
+        {
+            if (target is FreeControllerAnimationTarget)
+                return Add((FreeControllerAnimationTarget)target);
+            if (target is FloatParamAnimationTarget)
+                return Add((FloatParamAnimationTarget)target);
+            if (target is TriggersAnimationTarget)
+                return Add((TriggersAnimationTarget)target);
+            throw new NotSupportedException($"Cannot add unknown target type {target}");
+        }
+
         public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
         {
             if (targetControllers.Any(c => c.controller == controller)) return null;
@@ -400,6 +411,26 @@ namespace VamTimeline
             target.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             onTargetsListChanged.Invoke();
             return target;
+        }
+
+        public void Remove(IAtomAnimationTarget target)
+        {
+            if (target is FreeControllerAnimationTarget)
+            {
+                Remove((FreeControllerAnimationTarget)target);
+                return;
+            }
+            if (target is FloatParamAnimationTarget)
+            {
+                Remove((FloatParamAnimationTarget)target);
+                return;
+            }
+            if (target is TriggersAnimationTarget)
+            {
+                Remove((TriggersAnimationTarget)target);
+                return;
+            }
+            throw new NotSupportedException($"Cannot remove unknown target type {target}");
         }
 
         public void Remove(FreeControllerV3 controller)
