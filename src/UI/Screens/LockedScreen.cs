@@ -1,12 +1,12 @@
 namespace VamTimeline
 {
-    public class PerformanceScreen : ScreenBase
+    public class LockedScreen : ScreenBase
     {
-        public const string ScreenName = "Lock";
+        public const string ScreenName = "Locked";
 
         public override string screenId => ScreenName;
 
-        public PerformanceScreen()
+        public LockedScreen()
             : base()
         {
 
@@ -21,11 +21,9 @@ namespace VamTimeline
         private void InitExplanation()
         {
             var textJSON = new JSONStorableString("Help", @"
-<b>Performance Mode</b>
+<b>Locked</b>
 
-This mode is optimized to reduce the runtime cost of Timeline to a strict minimum.
-
-Use this mode before saving and publishing a scene.
+Enable ""Edit Mode"" to make modifications to this animation.
 ");
             var textUI = prefabFactory.CreateTextField(textJSON);
             textUI.height = 350f;

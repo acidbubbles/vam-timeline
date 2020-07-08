@@ -17,6 +17,8 @@ namespace VamTimeline
         public void Update()
         {
             var sc = SuperController.singleton;
+            if (sc.gameMode != SuperController.GameMode.Edit) return;
+
             var grabbing = sc.RightGrabbedController ?? sc.LeftGrabbedController ?? sc.RightFullGrabbedController ?? sc.LeftFullGrabbedController;
             if (grabbing != null && grabbing.containingAtom != containingAtom)
                 grabbing = null;

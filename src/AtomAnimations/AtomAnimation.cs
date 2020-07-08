@@ -46,12 +46,6 @@ namespace VamTimeline
             get { return _autoKeyframeAllControllers; }
             set { _autoKeyframeAllControllers = value; onEditorSettingsChanged.Invoke(nameof(autoKeyframeAllControllers)); }
         }
-        private bool _locked;
-        public bool locked
-        {
-            get { return _locked; }
-            set { _locked = value; onEditorSettingsChanged.Invoke(nameof(locked)); }
-        }
         #endregion
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();

@@ -77,7 +77,7 @@ namespace VamTimeline
 
         private void InitChangeCurveUI()
         {
-            _changeCurveJSON = new JSONStorableStringChooser(StorableNames.ChangeCurve, CurveTypeValues.DisplayCurveTypes, "", "Change curve", ChangeCurve);
+            _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.DisplayCurveTypes, "", "Change curve", ChangeCurve);
             var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON);
             curveTypeUI.popupPanelHeight = 340f;
         }

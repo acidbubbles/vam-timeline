@@ -19,21 +19,6 @@ namespace VamTimeline
         private IAtomAnimationClip _clip;
         private bool _bound;
         private int _ms;
-        private bool _locked;
-
-        public bool locked
-        {
-            get
-            {
-                return _locked;
-            }
-            set
-            {
-                _locked = value;
-                _content.gameObject.SetActive(!value);
-                _scrubberRect.gameObject.SetActive(!value);
-            }
-        }
 
         public DopeSheet()
         {
@@ -383,7 +368,7 @@ namespace VamTimeline
 
         private void OnClick(IAtomAnimationTarget target, RectTransform rect, PointerEventData eventData)
         {
-            if (_locked) return;
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
 
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
@@ -415,7 +400,7 @@ namespace VamTimeline
 
         public void SetScrubberPosition(float time, bool stopped)
         {
-            if (_locked || _scrubberRect == null) return;
+            if (_scrubberRect == null) return;
 
             var ratio = Mathf.Clamp01(time / _clip.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);

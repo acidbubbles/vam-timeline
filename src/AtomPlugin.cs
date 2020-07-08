@@ -36,7 +36,6 @@ namespace VamTimeline
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
         public JSONStorableAction pasteJSON { get; private set; }
-        public JSONStorableBool lockedJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
 
         private PeerManager _eventManager;
@@ -144,7 +143,7 @@ namespace VamTimeline
                 {
                     animation.enabled = true;
                     if (_freeControllerHook != null)
-                        _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
+                        _freeControllerHook.enabled = !animation.isPlaying;
                     if (base.containingAtom != null)
                     {
                         _eventManager.Ready();
@@ -286,16 +285,6 @@ namespace VamTimeline
             cutJSON = new JSONStorableAction("Cut", () => Cut());
             copyJSON = new JSONStorableAction("Copy", () => Copy());
             pasteJSON = new JSONStorableAction("Paste", () => Paste());
-
-            lockedJSON = new JSONStorableBool(StorableNames.Locked, false, (bool val) =>
-            {
-                if (animation == null) return;
-                animation.locked = val;
-            })
-            {
-                isStorable = true,
-                isRestorable = true
-            };
 
             speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
             {
@@ -586,12 +575,8 @@ namespace VamTimeline
             try
             {
                 // Update UI
-                lockedJSON.valNoCallback = animation.locked;
                 speedJSON.valNoCallback = animation.speed;
-                _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
-
-                if (name == nameof(AtomAnimation.locked))
-                    BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
+                _freeControllerHook.enabled = !animation.isPlaying;
             }
             catch (Exception exc)
             {
@@ -602,7 +587,7 @@ namespace VamTimeline
         private void OnIsPlayingChanged(AtomAnimationClip clip)
         {
             isPlayingJSON.valNoCallback = animation.isPlaying;
-            _freeControllerHook.enabled = !animation.locked && !animation.isPlaying;
+            _freeControllerHook.enabled = !animation.isPlaying;
             _eventManager.SendPlaybackState(clip);
         }
 
@@ -653,7 +638,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying) return;
+                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
                 var time = animation.clipTime;
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
                 foreach (var target in animation.current.GetAllOrSelectedTargets())
@@ -671,7 +656,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying) return;
+                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
                 clipboard.Clear();
                 var time = animation.clipTime;
                 clipboard.time = time;
@@ -692,7 +677,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying) return;
+                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
 
                 clipboard.Clear();
                 clipboard.time = animation.clipTime;
@@ -708,7 +693,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying) return;
+                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
 
                 if (clipboard.entries.Count == 0)
                 {

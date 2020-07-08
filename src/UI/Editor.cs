@@ -108,7 +108,6 @@ namespace VamTimeline
             tabs.Add(TargetsScreen.ScreenName);
             tabs.Add(EditAnimationScreen.ScreenName);
             tabs.Add(MoreScreen.ScreenName);
-            tabs.Add(PerformanceScreen.ScreenName);
             _expandButton = tabs.Add("Collapse >");
             InitToggleRightPanelButton(_expandButton);
             tabs.onTabSelected.AddListener(screenName =>
@@ -118,11 +117,7 @@ namespace VamTimeline
             });
 
             screensManager = InitScreensManager(rightPanel);
-            screensManager.onScreenChanged.AddListener(screenName =>
-            {
-                tabs.Select(screenName);
-                animation.locked = screenName == PerformanceScreen.ScreenName;
-            });
+            screensManager.onScreenChanged.AddListener(screenName => tabs.Select(screenName));
             screensManager.Bind(plugin, defaultScreen);
         }
 
@@ -255,8 +250,6 @@ namespace VamTimeline
         private void OnEditorSettingsChanged(string _)
         {
             _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers;
-            _controlPanel.locked = animation.locked;
-            screensManager.UpdateLocked(animation.locked);
         }
 
         public void OnDestroy()

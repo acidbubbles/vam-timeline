@@ -37,9 +37,12 @@ namespace VamTimeline
 
         public void ChangeScreen(string screen)
         {
-            _currentScreen = screen;
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit)
+                _currentScreen = LockedScreen.ScreenName;
+            else
+                _currentScreen = screen;
             if (!isActiveAndEnabled) return;
-            RefreshCurrentUI(screen);
+            RefreshCurrentUI(_currentScreen);
         }
 
         private List<string> ListAvailableScreens()
@@ -51,29 +54,11 @@ namespace VamTimeline
 
         public string GetDefaultScreen()
         {
-            if (_plugin.animation.locked == true)
-                return PerformanceScreen.ScreenName;
             if (_currentScreen != null)
                 return _currentScreen;
-            if (_plugin?.animation == null)
-                return PerformanceScreen.ScreenName;
             if (_plugin.animation.clips.Count > 1 && _plugin.animation.EnumerateLayers().Skip(1).Any())
                 return AnimationsScreen.ScreenName;
             return TargetsScreen.ScreenName;
-        }
-
-        public void UpdateLocked(bool isLocked)
-        {
-            if (isLocked)
-            {
-                if (_currentScreen != PerformanceScreen.ScreenName)
-                    ChangeScreen(PerformanceScreen.ScreenName);
-            }
-            else
-            {
-                if (_currentScreen == PerformanceScreen.ScreenName)
-                    ChangeScreen(GetDefaultScreen());
-            }
         }
 
         private void RefreshCurrentUI(string screen)
@@ -165,8 +150,8 @@ namespace VamTimeline
                 case ManageAnimationsScreen.ScreenName:
                     _current = screenContainer.AddComponent<ManageAnimationsScreen>();
                     break;
-                case PerformanceScreen.ScreenName:
-                    _current = screenContainer.AddComponent<PerformanceScreen>();
+                case LockedScreen.ScreenName:
+                    _current = screenContainer.AddComponent<LockedScreen>();
                     break;
                 case HelpScreen.ScreenName:
                     _current = screenContainer.AddComponent<HelpScreen>();

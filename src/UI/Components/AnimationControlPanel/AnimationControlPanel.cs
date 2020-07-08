@@ -26,19 +26,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
 
-        public bool locked
-        {
-            get
-            {
-                return _dopeSheet.enabled;
-            }
-            set
-            {
-                _dopeSheet.locked = value;
-                _scrubber.enabled = !value;
-            }
-        }
-
         public void Bind(IAtomPlugin plugin)
         {
             _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
