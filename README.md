@@ -18,4 +18,4 @@ The paths to the VaM dll files in the `.csproj` file are relative, so clone into
 
 ## License
 
-[MIT](LICENSE.md)
+[GNU GPLv3](LICENSE.md)
