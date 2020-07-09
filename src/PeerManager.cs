@@ -12,7 +12,9 @@ namespace VamTimeline
         private readonly List<JSONStorable> _peers = new List<JSONStorable>();
         private readonly Atom _containingAtom;
         private readonly IAtomPlugin _plugin;
-        private bool _syncing = false;
+        private bool _sending = false;
+        private bool _receiving = false;
+        private bool syncing => _sending || _receiving;
 
         public PeerManager(Atom containingAtom, IAtomPlugin plugin)
         {
@@ -46,10 +48,10 @@ namespace VamTimeline
 
         public void OnTimelineEvent(object[] e)
         {
-            if (_syncing)
+            if (_receiving)
                 throw new InvalidOperationException("Already syncing, infinite loop avoided!");
 
-            _syncing = true;
+            _receiving = true;
             try
             {
                 switch ((string)e[0])
@@ -80,7 +82,7 @@ namespace VamTimeline
             }
             finally
             {
-                _syncing = false;
+                _receiving = false;
             }
         }
 
@@ -119,7 +121,7 @@ namespace VamTimeline
 
         public void SendPlaybackState(AtomAnimationClip clip)
         {
-            if (_syncing) return;
+            if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendPlaybackState),
                  clip.animationName,
@@ -142,7 +144,7 @@ namespace VamTimeline
 
         public void SendTime(AtomAnimationClip clip)
         {
-            if (_syncing) return;
+            if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendTime),
                  clip.animationName,
@@ -159,7 +161,7 @@ namespace VamTimeline
 
         public void SendCurrentAnimation(AtomAnimationClip clip)
         {
-            if (_syncing) return;
+            if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendCurrentAnimation),
                  clip.animationName,
@@ -175,7 +177,7 @@ namespace VamTimeline
 
         public void SendSyncAnimation(AtomAnimationClip clip)
         {
-            if (_syncing) return;
+            if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendSyncAnimation), // 0
                  clip.animationName, // 1
@@ -210,7 +212,7 @@ namespace VamTimeline
 
         public void SendScreen(string screen)
         {
-            if (_syncing) return;
+            if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendScreen),
                  screen,
@@ -232,10 +234,18 @@ namespace VamTimeline
 
         private void SendTimelineEvent(object[] e)
         {
-            foreach (var storable in _peers)
+            _sending = true;
+            try
             {
-                if (storable == null) continue;
-                storable.SendMessage(nameof(OnTimelineEvent), e);
+                foreach (var storable in _peers)
+                {
+                    if (storable == null) continue;
+                    storable.SendMessage(nameof(OnTimelineEvent), e);
+                }
+            }
+            finally
+            {
+                _sending = false;
             }
         }
 
