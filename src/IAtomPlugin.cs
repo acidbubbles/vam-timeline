@@ -17,6 +17,7 @@ namespace VamTimeline
         Editor ui { get; }
         Editor controllerInjectedUI { get; }
         AtomClipboard clipboard { get; }
+        PeerManager peers { get; }
 
         JSONStorableAction deleteJSON { get; }
         JSONStorableAction cutJSON { get; }

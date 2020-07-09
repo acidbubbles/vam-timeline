@@ -28,7 +28,7 @@ namespace VamTimeline
             CreateHeader("Operations", 1);
 
             CreateChangeScreenButton("<i><b>Add</b> animations/layers...</i>", AddAnimationScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Reorder/delete</b> animations...</i>", ManageAnimationsScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
         }
 
         private void InitClipsUI()

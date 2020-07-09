@@ -35,7 +35,7 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("<i><b>Reorder/delete</b> animations...</i>", ManageAnimationsScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
         }
 
         private void InitCreateAnimationUI()

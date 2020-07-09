@@ -172,6 +172,12 @@ namespace VamTimeline
         public AtomAnimationClip CreateClip(string animationLayer)
         {
             string animationName = GetNewAnimationName();
+            return CreateClip(animationLayer, animationName);
+        }
+
+        public AtomAnimationClip CreateClip(string animationLayer, string animationName)
+        {
+            if(clips.Any(c => c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationName}' already exists");
             var clip = new AtomAnimationClip(animationName, animationLayer);
             AddClip(clip);
             return clip;

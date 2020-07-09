@@ -66,6 +66,9 @@ namespace VamTimeline
                     case nameof(SendScreen):
                         ReceiveScreen(e);
                         break;
+                    case nameof(SendSyncAnimation):
+                        ReceiveSyncAnimation(e);
+                        break;
                     default:
                         SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
                         break;
@@ -113,15 +116,6 @@ namespace VamTimeline
         #endregion
 
         #region Messages
-
-        public void SendTimelineEvent(object[] e)
-        {
-            foreach (var storable in _peers)
-            {
-                if (storable == null) continue;
-                storable.SendMessage(nameof(OnTimelineEvent), e);
-            }
-        }
 
         public void SendPlaybackState(AtomAnimationClip clip)
         {
@@ -179,6 +173,41 @@ namespace VamTimeline
             animation.SelectAnimation(clip);
         }
 
+        public void SendSyncAnimation(AtomAnimationClip clip)
+        {
+            if (_syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendSyncAnimation), // 0
+                 clip.animationName, // 1
+                 clip.animationLayer, // 2
+                 clip.animationLength, // 3
+                 clip.nextAnimationName, // 4
+                 clip.nextAnimationTime, // 5
+                 clip.blendDuration, // 6
+                 clip.autoPlay, // 7
+                 clip.loop, // 8
+                 clip.transition, // 9
+                 clip.speed, // 10
+                 clip.weight // 11
+            });
+        }
+
+        private void ReceiveSyncAnimation(object[] e)
+        {
+            var clip = GetClip(e);
+            if (clip == null) clip = animation.CreateClip((string)e[2], (string)e[1]);
+            new OperationsFactory(animation, clip).Resize().CropOrExtendEnd((float)e[3]);
+            clip.nextAnimationName = (string)e[4];
+            clip.nextAnimationTime = (float)e[5];
+            clip.blendDuration = (float)e[6];
+            clip.autoPlay = (bool)e[7];
+            clip.loop = (bool)e[8];
+            clip.transition = (bool)e[9];
+            clip.speed = (float)e[10];
+            clip.weight = (float)e[11];
+            animation.SelectAnimation(clip);
+        }
+
         public void SendScreen(string screen)
         {
             if (_syncing) return;
@@ -198,6 +227,15 @@ namespace VamTimeline
                 {
                     _plugin.controllerInjectedUI.screensManager.ChangeScreen((string)e[1]);
                 }
+            }
+        }
+
+        private void SendTimelineEvent(object[] e)
+        {
+            foreach (var storable in _peers)
+            {
+                if (storable == null) continue;
+                storable.SendMessage(nameof(OnTimelineEvent), e);
             }
         }
 
