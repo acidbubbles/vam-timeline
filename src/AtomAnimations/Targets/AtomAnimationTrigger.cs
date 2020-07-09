@@ -8,7 +8,6 @@ namespace VamTimeline
         public Atom atom;
         public float startTime;
         public float endTime;
-        private float _playbackPreviousTime;
 
         public AtomAnimationTrigger()
         {
@@ -29,10 +28,10 @@ namespace VamTimeline
             }
         }
 
-        public void Leave()
+        public void Leave(float clipTime)
         {
+            transitionInterpValue = clipTime < startTime ? 1f : 1f;
             if (active) active = false;
-            _playbackPreviousTime = -1f;
         }
 
         #region JSON

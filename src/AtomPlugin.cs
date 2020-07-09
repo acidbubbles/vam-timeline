@@ -106,6 +106,7 @@ namespace VamTimeline
             }
 
             ui = Editor.AddTo(scriptUI.fullWidthUIContent);
+            ui.popupParent = UITransform;
             ui.Bind(this);
             if (animation != null) ui.Bind(animation);
             ui.screensManager.onScreenChanged.AddListener(screen =>
@@ -754,6 +755,7 @@ namespace VamTimeline
             if (controllerInjectedUI == null)
             {
                 controllerInjectedUI = Editor.Configure(container);
+                controllerInjectedUI.popupParent = controllerInjectedUI.transform.parent;
                 controllerInjectedUI.Bind(this, ui.screensManager.GetDefaultScreen());
                 controllerInjectedUI.screensManager.onScreenChanged.AddListener(screen =>
                 {

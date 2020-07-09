@@ -7,6 +7,8 @@ namespace VamTimeline
 {
     public class TriggersTargetFrame : TargetFrameBase<TriggersAnimationTarget>, TriggerHandler
     {
+        public Transform popupParent;
+
         private UIDynamicButton _editTriggersButton;
 
         public TriggersTargetFrame()
@@ -82,13 +84,15 @@ namespace VamTimeline
 
         private void EditTriggers()
         {
-            AtomAnimationTrigger trigger = GetOrCreateTriggerAtCurrentTime();
+            var trigger = GetOrCreateTriggerAtCurrentTime();
 
-            trigger.triggerActionsParent = plugin.UITransform;
             trigger.handler = this;
+            trigger.triggerActionsParent = popupParent;
             trigger.atom = plugin.containingAtom;
             trigger.InitTriggerUI();
             trigger.OpenTriggerActionsPanel();
+            // When already open but in the wront parent:
+            trigger.triggerActionsPanel.transform.SetParent(popupParent, false);
         }
 
         private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()

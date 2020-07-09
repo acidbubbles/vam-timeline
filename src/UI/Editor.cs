@@ -77,6 +77,7 @@ namespace VamTimeline
         public GameObject leftPanel;
         public GameObject rightPanel;
         public ScreensManager screensManager;
+        public Transform popupParent;
         private AnimationControlPanel _controlPanel;
         private IAtomPlugin _plugin;
         private VamPrefabFactory _leftPanelPrefabFactory;
@@ -218,7 +219,9 @@ namespace VamTimeline
             layout.preferredHeight = 1138f;
             layout.flexibleWidth = 1;
 
-            return ScreensManager.Configure(go);
+            var screensManager = ScreensManager.Configure(go);
+            screensManager.popupParent = popupParent;
+            return screensManager;
         }
 
         public void Bind(AtomAnimation animation)

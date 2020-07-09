@@ -19,6 +19,7 @@ namespace VamTimeline
         }
 
         public readonly ScreenChangedEvent onScreenChanged = new ScreenChangedEvent();
+        public Transform popupParent;
         private IAtomPlugin _plugin;
         private ScreenBase _current;
         private bool _uiRefreshScheduled;
@@ -163,6 +164,7 @@ namespace VamTimeline
             try
             {
                 _current.transform.SetParent(transform, false);
+                _current.popupParent = popupParent;
                 _current.onScreenChangeRequested.AddListener(ChangeScreen);
                 _current.Init(_plugin);
                 onScreenChanged.Invoke(_current.screenId);

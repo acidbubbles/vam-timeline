@@ -98,6 +98,7 @@ namespace VamTimeline
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<TriggersTargetFrame>();
+                component.popupParent = popupParent;
                 component.Bind(plugin, animation.current, target);
                 _targets.Add(new TargetRef
                 {

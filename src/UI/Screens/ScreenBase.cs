@@ -15,6 +15,7 @@ namespace VamTimeline
         private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
 
         public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
+        public Transform popupParent;
         public abstract string screenId { get; }
 
         protected AtomAnimation animation => plugin.animation;
