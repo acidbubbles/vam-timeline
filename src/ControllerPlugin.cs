@@ -296,9 +296,6 @@ namespace VamTimeline
 
         public void OnTimelineAnimationParametersChanged(JSONStorable storable)
         {
-            var proxy = GetOrDispose(_selectedLink);
-            if (proxy == null || proxy.storable != storable)
-                return;
             _animationJSON.choices = _links
                 .ToList()
                 .Select(l => GetOrDispose(l))
@@ -320,6 +317,10 @@ namespace VamTimeline
                     _playActions.Add(new KeyValuePair<string, JSONStorableAction>(a, playJSON));
                 }
             }
+
+            var proxy = GetOrDispose(_selectedLink);
+            if (proxy == null || proxy.storable != storable)
+                return;
 
             OnTimelineTimeChanged(storable);
 

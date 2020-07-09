@@ -38,7 +38,7 @@ namespace VamTimeline
         public JSONStorableAction pasteJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
 
-        private PeerManager _eventManager;
+        private PeerManager _peers;
         private bool _restoring;
         private FreeControllerV3Hook _freeControllerHook;
 
@@ -60,7 +60,7 @@ namespace VamTimeline
             try
             {
                 serializer = new AtomAnimationSerializer(base.containingAtom);
-                _eventManager = new PeerManager(base.containingAtom, this);
+                _peers = new PeerManager(base.containingAtom, this);
                 _freeControllerHook = gameObject.AddComponent<FreeControllerV3Hook>();
                 _freeControllerHook.enabled = false;
                 _freeControllerHook.containingAtom = base.containingAtom;
@@ -111,7 +111,7 @@ namespace VamTimeline
             ui.screensManager.onScreenChanged.AddListener(screen =>
             {
                 if (controllerInjectedUI != null) controllerInjectedUI.screensManager.ChangeScreen(screen);
-                _eventManager.SendScreen(screen);
+                _peers.SendScreen(screen);
             });
         }
 
@@ -146,7 +146,7 @@ namespace VamTimeline
                         _freeControllerHook.enabled = !animation.isPlaying;
                     if (base.containingAtom != null)
                     {
-                        _eventManager.Ready();
+                        _peers.Ready();
                         BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
                     }
                 }
@@ -164,7 +164,7 @@ namespace VamTimeline
                 if (animation != null) animation.enabled = false;
                 if (ui != null) ui.enabled = false;
                 if (_freeControllerHook != null) _freeControllerHook.enabled = false;
-                if (_eventManager != null) _eventManager.Unready();
+                if (_peers != null) _peers.Unready();
                 DestroyControllerPanel();
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
@@ -448,11 +448,11 @@ namespace VamTimeline
             OnAnimationParametersChanged();
 
             ui?.Bind(animation);
-            _eventManager.animation = animation;
+            _peers.animation = animation;
             if (_freeControllerHook != null) _freeControllerHook.animation = animation;
             if (enabled) _freeControllerHook.enabled = true;
 
-            _eventManager.Ready();
+            _peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
         }
 
@@ -465,7 +465,7 @@ namespace VamTimeline
                 scrubberJSON.valNoCallback = time.currentClipTime;
                 timeJSON.valNoCallback = time.time;
 
-                _eventManager.SendTime(animation.current);
+                _peers.SendTime(animation.current);
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             }
             catch (Exception exc)
@@ -477,7 +477,7 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             animationJSON.valNoCallback = args.after.animationName;
-            _eventManager.SendCurrentAnimation(animation.current);
+            _peers.SendCurrentAnimation(animation.current);
             OnAnimationParametersChanged();
         }
 
@@ -580,7 +580,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnAnimationParametersChanged)}: {exc}");
+                SuperController.LogError($"VamTimeline.{nameof(AtomPlugin)}.{nameof(OnEditorSettingsChanged)}: {exc}");
             }
         }
 
@@ -588,7 +588,7 @@ namespace VamTimeline
         {
             isPlayingJSON.valNoCallback = animation.isPlaying;
             _freeControllerHook.enabled = !animation.isPlaying;
-            _eventManager.SendPlaybackState(clip);
+            _peers.SendPlaybackState(clip);
         }
 
         private void BroadcastToControllers(string methodName)
@@ -759,7 +759,7 @@ namespace VamTimeline
                 {
                     // TODO: This dispatches twice
                     ui.screensManager.ChangeScreen(screen);
-                    _eventManager.SendScreen(screen);
+                    _peers.SendScreen(screen);
                 });
             }
             if (controllerInjectedUI.animation != animation)
@@ -780,17 +780,17 @@ namespace VamTimeline
 
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
-            _eventManager.OnTimelineAnimationReady(storable);
+            _peers.OnTimelineAnimationReady(storable);
         }
 
         public void OnTimelineAnimationDisabled(JSONStorable storable)
         {
-            _eventManager.OnTimelineAnimationDisabled(storable);
+            _peers.OnTimelineAnimationDisabled(storable);
         }
 
         public void OnTimelineEvent(object[] e)
         {
-            _eventManager.OnTimelineEvent(e);
+            _peers.OnTimelineEvent(e);
         }
 
         #endregion
