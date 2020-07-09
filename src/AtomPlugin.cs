@@ -759,7 +759,6 @@ namespace VamTimeline
                 controllerInjectedUI.Bind(this, ui.screensManager.GetDefaultScreen());
                 controllerInjectedUI.screensManager.onScreenChanged.AddListener(screen =>
                 {
-                    // TODO: This dispatches twice
                     ui.screensManager.ChangeScreen(screen);
                     peers.SendScreen(screen);
                 });

@@ -30,7 +30,6 @@ namespace VamTimeline
         {
             _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
             _scrubber = InitScrubber();
-            // TODO: Make the JSON use animation features instead of the other way around
             InitFrameNav(plugin.manager.configurableButtonPrefab);
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab);
             _dopeSheet = InitDopeSheet();
