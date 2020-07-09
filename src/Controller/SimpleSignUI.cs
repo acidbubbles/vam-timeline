@@ -11,7 +11,6 @@ namespace VamTimeline
 
         private readonly Atom _atom;
         private readonly MVRScript _owner;
-        private readonly Text _text;
         private readonly GameObject _child;
         private readonly VerticalLayoutGroup _container;
 
@@ -22,19 +21,24 @@ namespace VamTimeline
 
             var canvas = _atom.GetComponentsInChildren<Canvas>().FirstOrDefault(c => c.gameObject.name == "Sign");
             if (canvas == null) throw new NullReferenceException($"Expected Sign Canvas, but found: {string.Join(",", _atom.GetComponentsInChildren<Canvas>().Select(c => c.gameObject.name).ToArray())}");
-            _text = canvas.GetComponentInChildren<Text>();
-            _text.enabled = false;
 
             _child = new GameObject("Simple Sign UI");
             _child.transform.SetParent(canvas.transform, false);
 
             var rect = _child.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0, 0);
-            rect.anchorMax = new Vector2(1, 1);
-            rect.sizeDelta = new Vector2(-10, -10);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(-26f, -20f);
+            rect.offsetMax = new Vector2(20f, 26f);
+
+            var bg = _child.AddComponent<GradientImage>();
+            var color = new Color(0.30f, 0.36f, 0.52f);
+            bg.top = Color.Lerp(color, Color.black, 0.18f);
+            bg.bottom = Color.Lerp(color, Color.white, 0.03f);
 
             _container = _child.AddComponent<VerticalLayoutGroup>();
             _container.spacing = 20f;
+            _container.padding = new RectOffset(20, 20, 20, 20);
             _container.childControlHeight = true;
             _container.childControlWidth = true;
             _container.childForceExpandHeight = false;
@@ -132,7 +136,6 @@ namespace VamTimeline
 
         public void Dispose()
         {
-            _text.enabled = true;
             UnityEngine.Object.Destroy(_child);
         }
     }

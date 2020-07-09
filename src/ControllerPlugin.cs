@@ -302,7 +302,7 @@ namespace VamTimeline
             _animationJSON.choices = _links
                 .ToList()
                 .Select(l => GetOrDispose(l))
-                .Where(leftUIContent => leftUIContent != null)
+                .Where(l => l != null)
                 .SelectMany(l => l.animation.choices)
                 .Distinct()
                 .ToList();
