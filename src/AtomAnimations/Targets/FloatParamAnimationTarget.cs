@@ -189,7 +189,7 @@ namespace VamTimeline
         {
             var t = target as FloatParamAnimationTarget;
             if (t == null) return false;
-            return t.storable == storable && t.floatParam == floatParam;
+            return t.storableId == storableId && t.floatParamName == floatParamName;
         }
 
         public class Comparer : IComparer<FloatParamAnimationTarget>

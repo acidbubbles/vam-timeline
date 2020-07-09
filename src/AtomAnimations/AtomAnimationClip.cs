@@ -379,12 +379,13 @@ namespace VamTimeline
 
         public FreeControllerAnimationTarget Add(FreeControllerAnimationTarget target)
         {
+            if (targetControllers.Any(t => t.controller == target.controller)) return null;
             return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
         }
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
-            if (targetFloatParams.Any(s => s.storable.name == storable.name && s.name == jsf.name)) return null;
+            if (targetFloatParams.Any(t => t.storableId == storable.storeId && t.floatParamName == jsf.name)) return null;
             return Add(new FloatParamAnimationTarget(storable, jsf));
         }
 
@@ -575,8 +576,8 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
-                    storable = target.storable,
-                    floatParam = target.floatParam,
+                    storableId = target.storableId,
+                    floatParamName = target.floatParamName,
                     snapshot = snapshot
                 });
             }
@@ -611,20 +612,18 @@ namespace VamTimeline
                 var target = targetControllers.FirstOrDefault(c => c.controller == entry.controller);
                 if (target == null)
                 {
-                    target = Add(entry.controller);
-                    target.SetCurveSnapshot(0, entry.snapshot, dirty);
-                    target.SetCurveSnapshot(animationLength, entry.snapshot, dirty);
+                    SuperController.LogError($"Cannot paste controller {entry.controller.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.floatParam == entry.floatParam);
+                var target = targetFloatParams.FirstOrDefault(c => c.storableId == entry.storableId && c.floatParamName == entry.floatParamName);
                 if (target == null)
                 {
-                    target = Add(entry.storable, entry.floatParam);
-                    target.SetCurveSnapshot(0, entry.snapshot, dirty);
-                    target.SetCurveSnapshot(animationLength, entry.snapshot, dirty);
+                    SuperController.LogError($"Cannot paste storable {entry.storableId}/{entry.floatParamName} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
@@ -634,8 +633,8 @@ namespace VamTimeline
                 var target = targetTriggers.FirstOrDefault(t => t.name == entry.name) ?? targetTriggers.FirstOrDefault();
                 if (target == null)
                 {
-                    target = Add(new TriggersAnimationTarget { name = entry.name });
-                    target.AddEdgeFramesIfMissing(animationLength);
+                    SuperController.LogError($"Cannot paste triggers {entry.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot);
             }

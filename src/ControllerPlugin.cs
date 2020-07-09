@@ -137,7 +137,10 @@ namespace VamTimeline
             yield return 0;
 
             if (_autoPlayJSON.val && _selectedLink != null)
-                PlayIfNotPlaying();
+            {
+                foreach (var atom in _links.Select(GetOrDispose))
+                    atom.playIfNotPlaying.actionCallback();
+            }
         }
 
         private void ScanForAtoms()

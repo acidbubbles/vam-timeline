@@ -27,8 +27,8 @@ namespace VamTimeline
 
     public class FloatParamValClipboardEntry
     {
-        public JSONStorable storable;
-        public JSONStorableFloat floatParam;
+        public string storableId;
+        public string floatParamName;
         public FloatParamSnapshot snapshot;
     }
 
