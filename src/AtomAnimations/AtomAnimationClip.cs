@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace VamTimeline
 {
-    public class AtomAnimationClip : IAtomAnimationClip, AnimationTimelineTriggerHandler
+    public class AtomAnimationClip : IAtomAnimationClip
     {
         public class AnimationSettingModifiedEvent : UnityEvent<string> { }
 
@@ -302,7 +302,6 @@ namespace VamTimeline
         #region Animation State
 
         private float _clipTime;
-        public float playbackPreviousClipTime = -1;
         public float playbackWeight;
         public bool playbackEnabled;
         public bool playbackMainInLayer;
@@ -319,7 +318,6 @@ namespace VamTimeline
 
             set
             {
-                playbackPreviousClipTime = _clipTime;
                 _clipTime = Mathf.Abs(loop ? value % animationLength : Mathf.Min(value, animationLength));
             }
         }
@@ -340,12 +338,10 @@ namespace VamTimeline
             if (resetTime)
             {
                 clipTime = 0f;
-                playbackPreviousClipTime = -1f;
             }
             else
             {
                 clipTime = clipTime.Snap();
-                playbackPreviousClipTime = -1f;
             }
         }
 
@@ -353,9 +349,9 @@ namespace VamTimeline
         {
             foreach (var target in targetTriggers)
             {
-                foreach (var trigger in target.triggersMap.Values.Where(v => v.active))
+                foreach (var trigger in target.triggersMap.Values)
                 {
-                    trigger.active = false;
+                    trigger.Leave();
                 }
             }
         }
@@ -677,19 +673,5 @@ namespace VamTimeline
                 target.Dispose();
             }
         }
-
-        #region AnimationTimelineTriggerHandler
-
-        float AnimationTimelineTriggerHandler.GetCurrentTimeCounter()
-        {
-            return clipTime;
-        }
-
-        float AnimationTimelineTriggerHandler.GetTotalTime()
-        {
-            return animationLength;
-        }
-
-        #endregion
     }
 }

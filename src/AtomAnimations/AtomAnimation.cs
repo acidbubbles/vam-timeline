@@ -506,7 +506,7 @@ namespace VamTimeline
                 if (!clip.playbackEnabled) continue;
                 foreach (var target in clip.targetTriggers)
                 {
-                    target.Sample(clip.playbackPreviousClipTime);
+                    target.Sample(clip.clipTime);
                 }
             }
         }
@@ -673,7 +673,7 @@ namespace VamTimeline
             {
                 if (!target.dirty) continue;
 
-                target.RebuildKeyframes(clip);
+                target.RebuildKeyframes(clip.animationLength);
             }
         }
 

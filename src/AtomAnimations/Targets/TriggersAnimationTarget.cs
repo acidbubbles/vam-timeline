@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -22,10 +21,10 @@ namespace VamTimeline
             return name;
         }
 
-        public void Sample(float previousClipTime)
+        public void Sample(float time)
         {
             foreach (var trigger in _triggers)
-                trigger.Update(false, previousClipTime);
+                trigger.Update(time);
         }
 
         public void Validate(float animationLength)
@@ -51,7 +50,7 @@ namespace VamTimeline
             }
         }
 
-        public void RebuildKeyframes(AnimationTimelineTriggerHandler timelineHandler)
+        public void RebuildKeyframes(float animationLength)
         {
             keyframes = new float[triggersMap.Count];
             _triggers.Clear();
@@ -67,9 +66,8 @@ namespace VamTimeline
             {
                 var time = keyframes[i];
                 var trigger = _triggers[i];
-                trigger.timeLineHandler = timelineHandler;
-                trigger.triggerStartTime = time;
-                trigger.triggerEndTime = i == keyframes.Length - 1 ? timelineHandler.GetTotalTime() : keyframes[i + 1];
+                trigger.startTime = time;
+                trigger.endTime = i == keyframes.Length - 1 ? animationLength : keyframes[i + 1];
             }
         }
 
@@ -177,47 +175,6 @@ namespace VamTimeline
                 return t1.name.CompareTo(t2.name);
 
             }
-        }
-    }
-
-    public class AtomAnimationTrigger : AnimationTimelineTrigger, IDisposable
-    {
-        public Atom atom;
-
-        public AtomAnimationTrigger()
-        {
-            SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
-        }
-
-        public override TriggerActionDiscrete CreateDiscreteActionStartInternal(int index = -1)
-        {
-            var discrete = base.CreateDiscreteActionStartInternal(index);
-            if (discrete.receiverAtom == null) discrete.receiverAtom = atom;
-            return discrete;
-        }
-
-        public override TriggerActionTransition CreateTransitionActionInternal(int index = -1)
-        {
-            var transition = base.CreateTransitionActionInternal(index);
-            if (transition.receiverAtom == null) transition.receiverAtom = atom;
-            return transition;
-        }
-
-        public override TriggerActionDiscrete CreateDiscreteActionEndInternal(int index = -1)
-        {
-            var discrete = base.CreateDiscreteActionEndInternal(index);
-            if (discrete.receiverAtom == null) discrete.receiverAtom = atom;
-            return discrete;
-        }
-
-        private void OnAtomRename(string oldName, string newName)
-        {
-            SyncAtomNames();
-        }
-
-        public void Dispose()
-        {
-            SuperController.singleton.onAtomUIDRenameHandlers -= OnAtomRename;
         }
     }
 }

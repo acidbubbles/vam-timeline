@@ -144,7 +144,7 @@ namespace VamTimeline
                     {
                         var trigger = new AtomAnimationTrigger();
                         trigger.RestoreFromJSON(entryJSON);
-                        target.SetKeyframe(trigger.triggerStartTime, trigger);
+                        target.SetKeyframe(trigger.startTime, trigger);
                     }
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(target);
