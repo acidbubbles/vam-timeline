@@ -556,10 +556,10 @@ namespace VamTimeline
 
         #region Clipboard
 
-        public AtomClipboardEntry Copy(float time, bool all = false)
+        public AtomClipboardEntry Copy(float time, IEnumerable<IAtomAnimationTarget> targets)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
-            foreach (var target in all ? targetControllers : GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -570,7 +570,7 @@ namespace VamTimeline
                 });
             }
             var floatParams = new List<FloatParamValClipboardEntry>();
-            foreach (var target in all ? targetFloatParams : GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in targets.OfType<FloatParamAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -582,7 +582,7 @@ namespace VamTimeline
                 });
             }
             var triggers = new List<TriggersClipboardEntry>();
-            foreach (var target in all ? targetTriggers : GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>())
+            foreach (var target in targets.OfType<TriggersAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 triggers.Add(new TriggersClipboardEntry

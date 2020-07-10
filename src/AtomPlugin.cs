@@ -661,7 +661,7 @@ namespace VamTimeline
                 clipboard.Clear();
                 var time = animation.clipTime;
                 clipboard.time = time;
-                clipboard.entries.Add(animation.current.Copy(clipboard.time));
+                clipboard.entries.Add(animation.current.Copy(clipboard.time, animation.current.GetAllOrSelectedTargets()));
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
                 foreach (var target in animation.current.GetAllOrSelectedTargets())
                 {
@@ -682,7 +682,7 @@ namespace VamTimeline
 
                 clipboard.Clear();
                 clipboard.time = animation.clipTime;
-                clipboard.entries.Add(animation.current.Copy(clipboard.time));
+                clipboard.entries.Add(animation.current.Copy(clipboard.time, animation.current.GetAllOrSelectedTargets()));
             }
             catch (Exception exc)
             {

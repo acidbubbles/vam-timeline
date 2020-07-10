@@ -139,7 +139,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
-            target.onSelectedChanged.RemoveListener(OnSelectedChanged);
+            target?.onSelectedChanged.RemoveListener(OnSelectedChanged);
             Destroy(_line?.gameObject);
             base.OnDestroy();
         }

@@ -141,7 +141,7 @@ namespace VamTimeline
                         {
                             if (copy)
                             {
-                                plugin.clipboard.entries.Insert(0, current.Copy(keyTime));
+                                plugin.clipboard.entries.Insert(0, current.Copy(keyTime, current.GetAllOrSelectedTargets()));
                             }
                             if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
                             {

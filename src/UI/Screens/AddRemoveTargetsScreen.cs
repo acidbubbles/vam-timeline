@@ -84,7 +84,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             UIDynamicButton enableAllTargetsUI = null;
             UIDynamic spacerUI = null;
-            enableAllTargetsUI = prefabFactory.CreateButton("Add All Other Animations' Targets");
+            enableAllTargetsUI = prefabFactory.CreateButton("Add all other animations' targets");
             enableAllTargetsUI.button.onClick.AddListener(() =>
             {
                 AddMissingTargets();
@@ -98,7 +98,7 @@ namespace VamTimeline
 
         private void InitTriggersUI()
         {
-            var btn = prefabFactory.CreateButton("Add Triggers Track");
+            var btn = prefabFactory.CreateButton("Add triggers track");
             btn.button.onClick.AddListener(() =>
             {
                 var target = new TriggersAnimationTarget
@@ -112,11 +112,11 @@ namespace VamTimeline
 
         private void InitControllersUI()
         {
-            _addControllerListJSON = new JSONStorableStringChooser("Animate Controller", new List<string>(), "", "Animate controller");
+            _addControllerListJSON = new JSONStorableStringChooser("Animate controller", new List<string>(), "", "Animate controller");
             _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
             _addControllerUI.popupPanelHeight = 900f;
 
-            _toggleControllerUI = prefabFactory.CreateButton("Add Controller");
+            _toggleControllerUI = prefabFactory.CreateButton("Add controller");
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
 
             RefreshControllersList();
@@ -160,7 +160,7 @@ namespace VamTimeline
         private void InitFloatParamsUI()
         {
             var storables = GetStorablesWithFloatParams().ToList();
-            _addStorableListJSON = new JSONStorableStringChooser("Animate Storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) =>
+            _addStorableListJSON = new JSONStorableStringChooser("Animate storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) =>
             {
                 RefreshStorableFloatsList();
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
@@ -169,12 +169,12 @@ namespace VamTimeline
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate Param", new List<string> { "" }, "", "Animate Param");
+            _addParamListJSON = new JSONStorableStringChooser("Animate param", new List<string> { "" }, "", "Animate param");
             _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
 
-            _toggleFloatParamUI = prefabFactory.CreateButton("Add Param");
+            _toggleFloatParamUI = prefabFactory.CreateButton("Add param");
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
 
             RefreshStorableFloatsList();
@@ -246,7 +246,7 @@ namespace VamTimeline
 
         private void InitRemoveUI()
         {
-            _removeUI = prefabFactory.CreateButton("Remove Selected");
+            _removeUI = prefabFactory.CreateButton("Remove selected");
             _removeUI.buttonColor = Color.red;
             _removeUI.textColor = Color.white;
             _removeUI.button.onClick.AddListener(RemoveSelected);
@@ -302,7 +302,7 @@ namespace VamTimeline
         {
             var count = current.GetSelectedTargets().Count();
             _removeUI.button.interactable = count > 0;
-            _removeUI.buttonText.text = count == 0 ? "Remove Selected Targets" : $"Remove {count} Targets";
+            _removeUI.buttonText.text = count == 0 ? "Remove selected targets" : $"Remove {count} targets";
         }
 
         #endregion

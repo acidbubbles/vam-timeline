@@ -177,7 +177,7 @@ namespace VamTimeline
 
         public AtomAnimationClip CreateClip(string animationLayer, string animationName)
         {
-            if(clips.Any(c => c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationName}' already exists");
+            if (clips.Any(c => c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationName}' already exists");
             var clip = new AtomAnimationClip(animationName, animationLayer);
             AddClip(clip);
             return clip;
@@ -609,13 +609,13 @@ namespace VamTimeline
             var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
             if (previous != null && (previous.IsDirty() || clip.IsDirty()))
             {
-                clip.Paste(0f, previous.Copy(previous.animationLength, true), false);
+                clip.Paste(0f, previous.Copy(previous.animationLength, previous.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
                 realign = true;
             }
             var next = GetClip(clip.nextAnimationName);
             if (next != null && (next.IsDirty() || clip.IsDirty()))
             {
-                clip.Paste(clip.animationLength, next.Copy(0f, true), false);
+                clip.Paste(clip.animationLength, next.Copy(0f, next.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
                 realign = true;
             }
             if (realign)
