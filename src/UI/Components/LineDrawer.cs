@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -22,11 +21,11 @@ namespace VamTimeline
 
         public void Recalculate()
         {
-            var verticesCount = (points.Length - 1) * 2;
+            var verticesCount = (points.Length) * 2;
             var vertices = new Vector3[verticesCount];
             var colors = new Color[verticesCount];
             var p = 0;
-            for (var i = 0; i < verticesCount; i += 2)
+            for (var i = 0; i < verticesCount - 2; i += 2)
             {
                 colors[i] = colorGradient.Evaluate(p / (float)points.Length);
                 colors[i + 1] = colorGradient.Evaluate((p + 1) / (float)points.Length);
