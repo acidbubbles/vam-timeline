@@ -187,8 +187,11 @@ namespace VamTimeline
                 var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Go to <b>morphs</b> (animatable)</i>");
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
+                    SuperController.singleton.SelectController(plugin.containingAtom.freeControllers.First(f => f.name == "control"));
                     var selector = plugin.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
-                    if (character.selectedCharacter.isMale)
+                    if(selector == null)
+                        SuperController.LogError("Could not find the tabs selector");
+                    else if (character.selectedCharacter.isMale)
                         selector.SetActiveTab("Male Morphs");
                     else
                         selector.SetActiveTab("Female Morphs");
