@@ -61,14 +61,15 @@ namespace VamTimeline
         private void UpdateLine()
         {
             var pointsPerSecond = 32f;
-            var pointsCount = Mathf.CeilToInt(target.x[target.x.length - 1].time * pointsPerSecond) + 1;
+            var pointsCount = Mathf.FloorToInt(target.x[target.x.length - 1].time * pointsPerSecond) + (clip.loop ? 1 : 0);
             var points = new Vector3[pointsCount];
 
-            for (var t = 0; t < pointsCount - 1; t++)
+            for (var t = 0; t < pointsCount - (clip.loop ? 1 : 0); t++)
             {
                 points[t] = target.EvaluatePosition(t / pointsPerSecond);
             }
-            points[pointsCount - 1] = points[0];
+            if (clip.loop)
+                points[pointsCount - 1] = points[0];
 
             _line.points = points;
         }
