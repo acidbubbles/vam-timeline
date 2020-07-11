@@ -150,6 +150,19 @@ namespace VamTimeline
             return key;
         }
 
+        public int SetKeyframeByKey(int key, Vector3 localPosition, Quaternion locationRotation)
+        {
+            x.SetKeyframeByKey(key, localPosition.x);
+            y.SetKeyframeByKey(key, localPosition.y);
+            z.SetKeyframeByKey(key, localPosition.z);
+            rotX.SetKeyframeByKey(key, locationRotation.x);
+            rotY.SetKeyframeByKey(key, locationRotation.y);
+            rotZ.SetKeyframeByKey(key, locationRotation.z);
+            rotW.SetKeyframeByKey(key, locationRotation.w);
+            dirty = true;
+            return key;
+        }
+
         public void DeleteFrame(float time)
         {
             var key = GetLeadCurve().KeyframeBinarySearch(time);
@@ -185,6 +198,15 @@ namespace VamTimeline
             return keyframes;
         }
 
+        public int[] GetAllKeyframesKeys()
+        {
+            var curve = x;
+            var keyframes = new int[curve.length];
+            for (var i = 0; i < curve.length; i++)
+                keyframes[i] = i;
+            return keyframes;
+        }
+
         public float GetTimeClosestTo(float time)
         {
             return x[x.KeyframeBinarySearch(time, true)].time;
@@ -215,6 +237,30 @@ namespace VamTimeline
                 rotY.Evaluate(time),
                 rotZ.Evaluate(time),
                 rotW.Evaluate(time)
+            );
+        }
+
+        public float GetKeyframeTime(int key)
+        {
+            return x[key].time;
+        }
+
+        public Vector3 GetKeyframePosition(int key)
+        {
+            return new Vector3(
+                x[key].value,
+                y[key].value,
+                z[key].value
+            );
+        }
+
+        public Quaternion GetKeyframeRotation(int key)
+        {
+            return new Quaternion(
+                rotX[key].value,
+                rotY[key].value,
+                rotZ[key].value,
+                rotW[key].value
             );
         }
 

@@ -17,6 +17,12 @@ namespace VamTimeline
 
             key = curve.KeyframeBinarySearch(time);
             if (key == -1) throw new InvalidOperationException($"Cannot find keyframe at time {time}, no keys exist at this position. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
+            SetKeyframeByKey(curve, key, value);
+            return key;
+        }
+
+        public static int SetKeyframeByKey(this AnimationCurve curve, int key, float value)
+        {
             var keyframe = curve[key];
             keyframe.value = value;
             curve.MoveKey(key, keyframe);
@@ -27,7 +33,7 @@ namespace VamTimeline
         {
             if (curve.length == 0)
             {
-                curve.SetKeyframe(0, 0);
+                curve.SetKeyframeByKey(0, 0);
                 curve.SetKeyframe(animationLength, 0);
                 return;
             }

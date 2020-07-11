@@ -235,7 +235,7 @@ namespace VamTimeline
 
             if (steps.Count < 2) yield break;
 
-            target.SetKeyframe(0, steps[0].position, steps[0].rotation);
+            target.SetKeyframe(0f, steps[0].position, steps[0].rotation);
             target.SetKeyframe(current.animationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation);
 
             var buckets = new List<ReducerBucket>
