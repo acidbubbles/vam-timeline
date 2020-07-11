@@ -10,6 +10,7 @@ namespace VamTimeline
         public abstract string name { get; }
 
         public abstract AnimationCurve GetLeadCurve();
+        public abstract IEnumerable<AnimationCurve> GetCurves();
 
         protected void Validate(AnimationCurve curve, float animationLength)
         {
@@ -25,14 +26,27 @@ namespace VamTimeline
             }
             if (curve[curve.length - 1].time != animationLength)
             {
-                SuperController.LogError($"Target {name} ends with frame {curve[curve.length - 1].time} instead of expected {animationLength}");
-                return;
+                SuperController.LogError($"Target {name} ends with frame {curve[curve.length - 1].time} instead of expected {animationLength}. Auto-repairing last frame.");
+                var lastTime = curve[curve.length - 1].time;
+                foreach (var c in GetCurves())
+                {
+                    var keyframe = c[c.length - 1];
+                    if (keyframe.time == animationLength) continue;
+                    keyframe.time = animationLength;
+                    c.MoveKey(c.length - 1, keyframe);
+                }
+                if (!this.settings.ContainsKey(animationLength.ToMilliseconds()))
+                {
+                    var kvp = this.settings.Last();
+                    this.settings.Remove(kvp.Key);
+                    this.settings.Add(animationLength.ToMilliseconds(), kvp.Value);
+                }
             }
             if (this.settings.Count > curve.length)
             {
                 var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
                 var extraneousKeys = this.settings.Keys.Except(curveKeys).ToList();
-                SuperController.LogError($"Target {name} has {curve.length} frames but {this.settings.Count} settings. Attempting auto-repair.");
+                SuperController.LogError($"Target {name} has {curve.length} frames but {this.settings.Count} settings. Auto-repairing extraneous keys.");
                 SuperController.LogError($"  Target  : {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}");
                 SuperController.LogError($"  Settings: {string.Join(", ", this.settings.Select(k => (k.Key / 1000f).ToString()).ToArray())}");
                 foreach (var extraneousKey in extraneousKeys)

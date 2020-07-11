@@ -106,7 +106,7 @@ namespace VamTimeline
             return value;
         }
 
-        public IEnumerable<AnimationCurve> GetCurves()
+        public override IEnumerable<AnimationCurve> GetCurves()
         {
             return new[] { value };
         }
