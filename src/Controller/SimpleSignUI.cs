@@ -28,8 +28,8 @@ namespace VamTimeline
             var rect = _child.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(-26f, -20f);
-            rect.offsetMax = new Vector2(20f, 26f);
+            rect.offsetMin = new Vector2(-30f, 50f);
+            rect.offsetMax = new Vector2(30f, 80f);
 
             var bg = _child.AddComponent<GradientImage>();
             var color = new Color(0.30f, 0.36f, 0.52f);
