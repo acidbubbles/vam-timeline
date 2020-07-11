@@ -189,7 +189,7 @@ namespace VamTimeline
                 {
                     SuperController.singleton.SelectController(plugin.containingAtom.freeControllers.First(f => f.name == "control"));
                     var selector = plugin.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
-                    if(selector == null)
+                    if (selector == null)
                         SuperController.LogError("Could not find the tabs selector");
                     else if (character.selectedCharacter.isMale)
                         selector.SetActiveTab("Male Morphs");
@@ -377,6 +377,7 @@ namespace VamTimeline
             {
                 var uid = _addControllerListJSON.val;
                 if (string.IsNullOrEmpty(uid)) return;
+                _addControllerListJSON.valNoCallback = "";
                 var controller = plugin.containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
@@ -385,7 +386,10 @@ namespace VamTimeline
                 }
 
                 if (current.targetControllers.Any(c => c.controller == controller))
+                {
+                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {plugin.containingAtom.uid} was already added");
                     return;
+                }
 
                 if (controller.currentPositionState == FreeControllerV3.PositionState.Off && controller.currentRotationState == FreeControllerV3.RotationState.Off)
                 {
@@ -409,8 +413,6 @@ namespace VamTimeline
                             added.ChangeCurve(clip.animationLength, CurveTypeValues.CopyPrevious, false);
                     }
                 }
-
-                _addControllerListJSON.valNoCallback = "";
             }
             catch (Exception exc)
             {
