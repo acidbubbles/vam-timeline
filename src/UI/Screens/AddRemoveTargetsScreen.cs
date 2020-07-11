@@ -159,8 +159,7 @@ namespace VamTimeline
 
         private void InitFloatParamsUI()
         {
-            var storables = GetStorablesWithFloatParams().ToList();
-            _addStorableListJSON = new JSONStorableStringChooser("Animate storable", storables, storables.Contains("geometry") ? "geometry" : storables.FirstOrDefault(), "Animate Storable", (string name) =>
+            _addStorableListJSON = new JSONStorableStringChooser("Animate storable", new List<string>(), "", "Animate Storable", (string name) =>
             {
                 RefreshStorableFloatsList();
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
@@ -169,7 +168,7 @@ namespace VamTimeline
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate param", new List<string> { "" }, "", "Animate param");
+            _addParamListJSON = new JSONStorableStringChooser("Animate param", new List<string>(), "", "Animate param");
             _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 600f;
@@ -177,8 +176,8 @@ namespace VamTimeline
             _toggleFloatParamUI = prefabFactory.CreateButton("Add param");
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
 
+            RefreshStorablesList();
             RefreshStorableFloatsList();
-            _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
 
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
@@ -201,7 +200,10 @@ namespace VamTimeline
 
         private void RefreshStorablesList()
         {
+            if (_addStorableListJSON == null) return;
             _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
+            if (string.IsNullOrEmpty(_addParamListJSON.val))
+                _addStorableListJSON.valNoCallback = _addStorableListJSON.choices.Contains("geometry") ? "geometry" : _addStorableListJSON.choices.FirstOrDefault();
         }
 
         private IEnumerable<string> GetStorablesWithFloatParams()
@@ -220,6 +222,8 @@ namespace VamTimeline
 
         private void RefreshStorableFloatsList()
         {
+            if (_addStorableListJSON == null) return;
+
             if (string.IsNullOrEmpty(_addStorableListJSON.val))
             {
                 _addParamListJSON.choices = new List<string>();
@@ -238,13 +242,15 @@ namespace VamTimeline
             var reservedByOtherLayers = new HashSet<string>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetFloatParams)
-                .Where(t => t.storable == storable)
+                .Where(t => t.storableId == storable.storeId)
                 .Select(t => t.floatParamName));
             _addParamListJSON.choices = values
                 .Where(v => !current.targetFloatParams.Any(t => t.storableId == storable.storeId && t.floatParamName == v))
                 .Where(v => !reservedByOtherLayers.Contains(v))
                 .OrderBy(v => v)
                 .ToList();
+            if (string.IsNullOrEmpty(_addParamListJSON.val))
+                _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault();
         }
 
         private void InitRemoveUI()
@@ -424,20 +430,23 @@ namespace VamTimeline
         {
             try
             {
-                if (string.IsNullOrEmpty(_addStorableListJSON.val)) return;
-                if (string.IsNullOrEmpty(_addParamListJSON.val)) return;
+                var storableId = _addStorableListJSON.val;
+                var floatParamName = _addParamListJSON.val;
 
-                var storable = plugin.containingAtom.GetStorableByID(_addStorableListJSON.val);
+                if (string.IsNullOrEmpty(storableId)) return;
+                if (string.IsNullOrEmpty(floatParamName)) return;
+
+                var storable = plugin.containingAtom.GetStorableByID(storableId);
                 if (storable == null)
                 {
-                    SuperController.LogError($"VamTimeline: Storable {_addStorableListJSON.val} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Storable {storableId} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
-                var sourceFloatParam = storable.GetFloatJSONParam(_addParamListJSON.val);
+                var sourceFloatParam = storable.GetFloatJSONParam(floatParamName);
                 if (sourceFloatParam == null)
                 {
-                    SuperController.LogError($"VamTimeline: Param {_addParamListJSON.val} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"VamTimeline: Param {floatParamName} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
@@ -501,6 +510,11 @@ namespace VamTimeline
             base.OnCurrentAnimationChanged(args);
 
             UpdateRemoveUI();
+        }
+
+        public void OnEnable()
+        {
+            RefreshStorablesList();
         }
 
         public override void OnDestroy()
