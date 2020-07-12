@@ -261,17 +261,23 @@ namespace VamTimeline
 
         public void PlayAll()
         {
-            var firstOrMainPerLayer = clips
-                .GroupBy(c => c.animationLayer)
-                .Select(g => g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.First());
-
-            foreach (var clip in firstOrMainPerLayer)
+            foreach (var clip in GetMainClipPerLayer())
             {
                 if (clip.animationLayer == current.animationLayer)
                     PlayClip(current, true);
                 else
                     PlayClip(clip, true);
             }
+        }
+
+        private IEnumerable<AtomAnimationClip> GetMainClipPerLayer()
+        {
+            return clips
+                .GroupBy(c => c.animationLayer)
+                .Select(g =>
+                {
+                    return g.FirstOrDefault(c => c == current || c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First();
+                });
         }
 
         public void StopClip(string animationName)
@@ -484,20 +490,29 @@ namespace VamTimeline
 
         #region Sampling
 
-        public void Sample(bool force = false)
+        public void Sample(bool ignoreRebuild = false)
         {
             if (isPlaying || !enabled) return;
 
-            if (!force && (_animationRebuildRequestPending || _animationRebuildInProgress))
+            if (!ignoreRebuild && (_animationRebuildRequestPending || _animationRebuildInProgress))
+            {
                 _sampleAfterRebuild = true;
+                return;
+            }
 
-            current.playbackEnabled = true;
-            current.playbackWeight = 1f;
+            foreach (var clip in GetMainClipPerLayer())
+            {
+                clip.playbackEnabled = true;
+                clip.playbackWeight = 1f;
+            }
             SampleTriggers();
             SampleFloatParams();
             SampleControllers();
-            current.playbackEnabled = false;
-            current.playbackWeight = 0f;
+            foreach (var clip in GetMainClipPerLayer())
+            {
+                clip.playbackEnabled = false;
+                clip.playbackWeight = 0f;
+            }
         }
 
         private void SampleTriggers()
