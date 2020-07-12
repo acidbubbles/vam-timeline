@@ -63,6 +63,12 @@ namespace VamTimeline
             set { Set(nameof(stop), value); }
         }
 
+        public JSONStorableAction stopAndReset
+        {
+            get { return Get<JSONStorableAction>(nameof(stopAndReset)); }
+            set { Set(nameof(stopAndReset), value); }
+        }
+
         public JSONStorableAction nextFrame
         {
             get { return Get<JSONStorableAction>(nameof(nextFrame)); }

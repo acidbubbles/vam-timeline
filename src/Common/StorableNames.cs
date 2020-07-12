@@ -12,6 +12,7 @@ namespace VamTimeline
         public const string IsPlaying = "Is Playing";
         public const string Stop = "Stop";
         public const string StopIfPlaying = "Stop If Playing";
+        public const string StopAndReset = "Stop And Reset";
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";
         public const string Speed = "Speed";

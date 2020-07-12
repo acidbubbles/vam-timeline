@@ -31,6 +31,7 @@ namespace VamTimeline
         public JSONStorableAction playIfNotPlayingJSON { get; private set; }
         public JSONStorableAction stopJSON { get; private set; }
         public JSONStorableAction stopIfPlayingJSON { get; private set; }
+        public JSONStorableAction stopAndResetJSON { get; private set; }
         public JSONStorableAction nextFrameJSON { get; private set; }
         public JSONStorableAction previousFrameJSON { get; private set; }
         public JSONStorableAction deleteJSON { get; private set; }
@@ -275,6 +276,15 @@ namespace VamTimeline
                 animation.StopAll();
             });
             RegisterAction(stopIfPlayingJSON);
+
+            stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () =>
+            {
+                if (animation == null) return;
+                if (animation.isPlaying)
+                    animation.StopAll();
+                animation.ResetAll();
+            });
+            RegisterAction(stopAndResetJSON);
 
             nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => NextFrame());
             RegisterAction(nextFrameJSON);
@@ -736,6 +746,7 @@ namespace VamTimeline
             proxy.playIfNotPlaying = playIfNotPlayingJSON;
             proxy.previousFrame = previousFrameJSON;
             proxy.stop = stopJSON;
+            proxy.stopAndReset = stopAndResetJSON;
             proxy.time = timeJSON;
             proxy.connected = true;
         }

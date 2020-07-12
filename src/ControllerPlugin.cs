@@ -21,6 +21,7 @@ namespace VamTimeline
         private JSONStorableAction _playJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
         private JSONStorableAction _stopJSON;
+        private JSONStorableAction _stopAndResetJSON;
         private UIDynamic _injectedUIContainer;
         private GameObject _injectedUI;
         private readonly List<SyncProxy> _links = new List<SyncProxy>();
@@ -77,23 +78,26 @@ namespace VamTimeline
                 isRestorable = false
             };
 
-            _animationJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string v) => ChangeAnimation(v))
+            _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", (string v) => ChangeAnimation(v))
             {
                 isStorable = false,
                 isRestorable = false
             };
             RegisterStringChooser(_animationJSON);
 
-            _playJSON = new JSONStorableAction("Play", () => Play());
+            _playJSON = new JSONStorableAction(StorableNames.Play, () => Play());
             RegisterAction(_playJSON);
 
-            _playIfNotPlayingJSON = new JSONStorableAction("Play If Not Playing", () => PlayIfNotPlaying());
+            _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => PlayIfNotPlaying());
             RegisterAction(_playIfNotPlayingJSON);
 
-            _stopJSON = new JSONStorableAction("Stop", () => Stop());
+            _stopJSON = new JSONStorableAction(StorableNames.Stop, () => Stop());
             RegisterAction(_stopJSON);
 
-            _timeJSON = new JSONStorableFloat("Time", 0f, v => _selectedLink.time.val = v, 0f, 2f, true)
+            _stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () => StopAndReset());
+            RegisterAction(_stopAndResetJSON);
+
+            _timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => _selectedLink.time.val = v, 0f, 2f, true)
             {
                 isStorable = false,
                 isRestorable = false
@@ -551,6 +555,11 @@ namespace VamTimeline
         private void Stop()
         {
             GetOrDispose(_selectedLink)?.stop.actionCallback();
+        }
+
+        private void StopAndReset()
+        {
+            GetOrDispose(_selectedLink)?.stopAndReset.actionCallback();
         }
 
         private void NextFrame()
