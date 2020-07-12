@@ -68,40 +68,48 @@ namespace VamTimeline
 
         private void ImportRecorded()
         {
-            if (SuperController.singleton.motionAnimationMaster == null || plugin.containingAtom.motionAnimationControls == null)
+            try
             {
-                SuperController.LogError("VamTimeline: Missing motion animation controls");
-                return;
-            }
+                if (SuperController.singleton.motionAnimationMaster == null || plugin.containingAtom?.motionAnimationControls == null)
+                {
+                    SuperController.LogError("VamTimeline: Missing motion animation controls");
+                    return;
+                }
 
-            var length = plugin.containingAtom.motionAnimationControls.Select(m => m.clip.clipLength).Max().Snap(0.01f);
-            if (length < 0.001f)
-            {
-                SuperController.LogError("VamTimeline: No motion animation to import.");
-                return;
-            }
+                var length = plugin.containingAtom.motionAnimationControls.Select(m => m?.clip?.clipLength ?? 0).Max().Snap(0.01f);
+                if (length < 0.01f)
+                {
+                    SuperController.LogError("VamTimeline: No motion animation to import.");
+                    return;
+                }
 
-            var requiresRebuild = false;
-            if (current.loop)
-            {
-                current.loop = SuperController.singleton.motionAnimationMaster.loop;
-                requiresRebuild = true;
-            }
-            if (length > current.animationLength)
-            {
-                operations.Resize().CropOrExtendEnd(length);
-                requiresRebuild = true;
-            }
-            if (requiresRebuild)
-            {
-                animation.RebuildAnimationNow();
-            }
+                var requiresRebuild = false;
+                if (current.loop)
+                {
+                    current.loop = SuperController.singleton.motionAnimationMaster.loop;
+                    requiresRebuild = true;
+                }
+                if (length > current.animationLength)
+                {
+                    operations.Resize().CropOrExtendEnd(length);
+                    requiresRebuild = true;
+                }
+                if (requiresRebuild)
+                {
+                    animation.RebuildAnimationNow();
+                }
 
-            if (_importRecordedUI == null) return;
-            _importRecordedUI.buttonText.text = "Importing, please wait...";
-            _importRecordedUI.button.interactable = false;
+                if (_importRecordedUI == null) throw new NullReferenceException(nameof(_importRecordedUI));
 
-            StartCoroutine(ImportRecordedCoroutine());
+                _importRecordedUI.buttonText.text = "Importing, please wait...";
+                _importRecordedUI.button.interactable = false;
+
+                StartCoroutine(ImportRecordedCoroutine());
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ImportRecorded)}: {exc}");
+            }
         }
 
         private IEnumerator ImportRecordedCoroutine()
@@ -140,7 +148,7 @@ namespace VamTimeline
                         target = operations.Targets().Add(ctrl);
                         target.AddEdgeFramesIfMissing(current.animationLength);
                     }
-                        target.Validate(current.animationLength);
+                    target.Validate(current.animationLength);
                     target.StartBulkUpdates();
                     operations.Keyframes().RemoveAll(target);
                 }
