@@ -14,6 +14,11 @@ namespace VamTimeline
 
         protected void Validate(AnimationCurve curve, float animationLength)
         {
+            if (animationLength <= 0)
+            {
+                SuperController.LogError($"Target {name} has an invalid animation length of {animationLength}");
+                return;
+            }
             if (curve.length < 2)
             {
                 SuperController.LogError($"Target {name} has {curve.length} frames");
@@ -24,23 +29,14 @@ namespace VamTimeline
                 SuperController.LogError($"Target {name} has no start frame");
                 return;
             }
-            if (curve[curve.length - 1].time != animationLength)
+            if (curve[curve.length - 1].time > animationLength)
             {
-                SuperController.LogError($"Target {name} ends with frame {curve[curve.length - 1].time} instead of expected {animationLength}. Auto-repairing last frame.");
-                var lastTime = curve[curve.length - 1].time;
+                var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
+                var extraneousKeys = this.settings.Keys.Except(curveKeys).ToList();
+                SuperController.LogError($"Target {name} has  duration of {curve[curve.length - 1].time} but the animation should be {animationLength}. Auto-repairing extraneous keys.");
                 foreach (var c in GetCurves())
-                {
-                    var keyframe = c[c.length - 1];
-                    if (keyframe.time == animationLength) continue;
-                    keyframe.time = animationLength;
-                    c.MoveKey(c.length - 1, keyframe);
-                }
-                if (!this.settings.ContainsKey(animationLength.ToMilliseconds()))
-                {
-                    var kvp = this.settings.Last();
-                    this.settings.Remove(kvp.Key);
-                    this.settings.Add(animationLength.ToMilliseconds(), kvp.Value);
-                }
+                    while (c[c.length - 1].time > animationLength && c.length > 2)
+                        c.RemoveKey(c.length - 1);
             }
             if (this.settings.Count > curve.length)
             {
@@ -67,6 +63,24 @@ namespace VamTimeline
                 SuperController.LogError($"Settings: {string.Join(", ", settings.Select(s => s.ToString()).ToArray())}");
                 SuperController.LogError($"Keyframes: {string.Join(", ", keys.Select(k => k.ToString()).ToArray())}");
                 return;
+            }
+            if (curve[curve.length - 1].time != animationLength)
+            {
+                SuperController.LogError($"Target {name} ends with frame {curve[curve.length - 1].time} instead of expected {animationLength}. Auto-repairing last frame.");
+                var lastTime = curve[curve.length - 1].time;
+                foreach (var c in GetCurves())
+                {
+                    var keyframe = c[c.length - 1];
+                    if (keyframe.time == animationLength) continue;
+                    keyframe.time = animationLength;
+                    c.MoveKey(c.length - 1, keyframe);
+                }
+                if (!this.settings.ContainsKey(animationLength.ToMilliseconds()))
+                {
+                    var kvp = this.settings.Last();
+                    this.settings.Remove(kvp.Key);
+                    this.settings.Add(animationLength.ToMilliseconds(), kvp.Value);
+                }
             }
         }
 
