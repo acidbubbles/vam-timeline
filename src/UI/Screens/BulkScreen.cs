@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -7,13 +8,19 @@ namespace VamTimeline
     {
         public const string ScreenName = "Bulk";
 
+        private const string _offsetControllerUILabel = "Start offset controllers mode...";
+        private const string _offsetControllerUIOfsettingLabel = "Apply recorded offset...";
+
+        private static bool _offsetting;
+        private static AtomClipboardEntry _offsetSnapshot;
+
         public override string screenId => ScreenName;
 
+        private JSONStorableFloat _startJSON;
+        private JSONStorableFloat _endJSON;
         private JSONStorableString _selectionJSON;
         private JSONStorableStringChooser _changeCurveJSON;
-        private string _selectedControllers;
-        private float _selectionStart = 0;
-        private float _selectionEnd = 0;
+        private UIDynamicButton _offsetControllerUI;
 
         public BulkScreen()
             : base()
@@ -40,10 +47,15 @@ namespace VamTimeline
 
             InitDeleteUI();
 
+            prefabFactory.CreateSpacer();
+
+            _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
+            _offsetControllerUI.button.onClick.AddListener(() => OffsetController());
+
             // Init
 
-            _selectionStart = 0f;
-            _selectionEnd = current.animationLength;
+            _startJSON.valNoCallback = 0f;
+            _endJSON.valNoCallback = current.animationLength;
             current.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
@@ -62,17 +74,37 @@ namespace VamTimeline
 
         private void InitSelectionUI()
         {
+            _startJSON = new JSONStorableFloat("Selection starts at", 0f, (float val) =>
+            {
+                var closest = current.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
+                _startJSON.valNoCallback = closest;
+                if (_startJSON.val > _endJSON.val) _endJSON.valNoCallback = _startJSON.val;
+                SelectionModified();
+
+            }, 0f, current.animationLength);
+            prefabFactory.CreateSlider(_startJSON);
+
+            _endJSON = new JSONStorableFloat("Selection ends at", 0f, (float val) =>
+            {
+                var closest = current.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
+                _endJSON.valNoCallback = closest;
+                if (_endJSON.val < _startJSON.val) _startJSON.valNoCallback = _endJSON.val;
+                SelectionModified();
+            }, 0f, current.animationLength);
+            prefabFactory.CreateSlider(_endJSON);
+
+            var markSelectionStartUI = prefabFactory.CreateButton("Start at current time");
+            markSelectionStartUI.button.onClick.AddListener(() => _startJSON.val = current.clipTime);
+
+            var markSelectionEndUI = prefabFactory.CreateButton("End at current time");
+            markSelectionEndUI.button.onClick.AddListener(() => _endJSON.val = animation.clipTime);
+
             _selectionJSON = new JSONStorableString("Selected frames", "")
             {
                 isStorable = false
             };
             var selectionUI = prefabFactory.CreateTextField(_selectionJSON);
-
-            var markSelectionStartUI = prefabFactory.CreateButton("Mark selection start");
-            markSelectionStartUI.button.onClick.AddListener(MarkSelectionStart);
-
-            var markSelectionEndUI = prefabFactory.CreateButton("Mark selection end");
-            markSelectionEndUI.button.onClick.AddListener(MarkSelectionEnd);
+            selectionUI.height = 100f;
         }
 
         private void InitChangeCurveUI()
@@ -90,36 +122,21 @@ namespace VamTimeline
 
         #region Callbacks
 
-        private void MarkSelectionStart()
-        {
-            _selectionStart = animation.clipTime;
-            if (_selectionEnd < _selectionStart) _selectionEnd = _selectionStart;
-            SelectionModified();
-        }
-
-        private void MarkSelectionEnd()
-        {
-            _selectionEnd = animation.clipTime;
-            if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
-            SelectionModified();
-        }
-
         private void SelectionModified()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Selected range: {_selectionStart:0.000}s-{_selectionEnd:0.000}s of {current.animationLength:0.000}s");
-            var involvedKeyframes = 0;
             foreach (var target in current.GetAllOrSelectedTargets())
             {
+                var involvedKeyframes = 0;
                 var keyframes = target.GetAllKeyframesTime();
                 for (var key = 0; key < keyframes.Length; key++)
                 {
                     var keyTime = keyframes[key];
-                    if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                    if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)
                         involvedKeyframes++;
                 }
                 if (involvedKeyframes > 0)
-                    sb.AppendLine($"- {target.name}: {involvedKeyframes} keyframes");
+                    sb.AppendLine($"{target.name}: {involvedKeyframes} keyframes");
             }
             _selectionJSON.val = sb.ToString();
         }
@@ -127,7 +144,7 @@ namespace VamTimeline
         public void CopyDeleteSelected(bool copy, bool delete)
         {
             plugin.clipboard.Clear();
-            plugin.clipboard.time = _selectionStart;
+            plugin.clipboard.time = _startJSON.valNoCallback;
             foreach (var target in current.GetAllOrSelectedTargets())
             {
                 target.StartBulkUpdates();
@@ -137,16 +154,15 @@ namespace VamTimeline
                     for (var key = keyframes.Length - 1; key >= 0; key--)
                     {
                         var keyTime = keyframes[key];
-                        if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                        if (keyTime < _startJSON.val || keyTime > _endJSON.val) continue;
+
+                        if (copy)
                         {
-                            if (copy)
-                            {
-                                plugin.clipboard.entries.Insert(0, current.Copy(keyTime, current.GetAllOrSelectedTargets()));
-                            }
-                            if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
-                            {
-                                target.DeleteFrame(keyTime);
-                            }
+                            plugin.clipboard.entries.Insert(0, current.Copy(keyTime, current.GetAllOrSelectedTargets()));
+                        }
+                        if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
+                        {
+                            target.DeleteFrame(keyTime);
                         }
                     }
                 }
@@ -171,7 +187,7 @@ namespace VamTimeline
                     for (var key = leadCurve.length - 2; key > 0; key--)
                     {
                         var keyTime = leadCurve[key].time;
-                        if (keyTime >= _selectionStart && keyTime <= _selectionEnd)
+                        if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)
                         {
                             target.ChangeCurve(keyTime, val, current.loop);
                         }
@@ -184,16 +200,76 @@ namespace VamTimeline
             }
         }
 
+        private void OffsetController()
+        {
+            if (animation.isPlaying) return;
+
+            if (_offsetting)
+                ApplyOffset();
+            else
+                StartRecordOffset();
+        }
+
+        private void StartRecordOffset()
+        {
+            if (current.clipTime < _startJSON.val || current.clipTime > _endJSON.val)
+            {
+                SuperController.LogError($"VamTimeline: Cannot offset, current time is outside of the bounds of the selection");
+                return;
+            }
+            _offsetSnapshot = current.Copy(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Cast<IAtomAnimationTarget>());
+            if (_offsetSnapshot.controllers.Count == 0)
+            {
+                SuperController.LogError($"VamTimeline: Cannot offset, no keyframes were found at time {current.clipTime}.");
+                return;
+            }
+
+            _offsetControllerUI.label = _offsetControllerUIOfsettingLabel;
+            _offsetting = true;
+        }
+
+        private void ApplyOffset()
+        {
+            _offsetting = false;
+            _offsetControllerUI.label = _offsetControllerUILabel;
+
+            foreach (var snap in _offsetSnapshot.controllers)
+            {
+                Vector3 positionDelta;
+                Quaternion rotationDelta;
+
+                {
+                    var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
+                    var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
+
+                    var positionAfter = snap.controller.control.position;
+                    var rotationAfter = snap.controller.control.rotation;
+
+                    positionDelta = positionAfter - positionBefore;
+                    rotationDelta = Quaternion.Inverse(rotationBefore) * rotationAfter;
+                }
+
+                var target = current.targetControllers.First(t => t.controller == snap.controller);
+                foreach (var key in target.GetAllKeyframesKeys())
+                {
+                    var time = target.GetKeyframeTime(key);
+                    if (time < _startJSON.valNoCallback || time > _endJSON.valNoCallback) continue;
+                    // Do not double-apply
+                    if (time == _offsetSnapshot.time) continue;
+
+                    var positionBefore = target.GetKeyframePosition(key);
+                    var rotationBefore = target.GetKeyframeRotation(key);
+
+                    target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
+                }
+            }
+        }
+
         #endregion
 
         public void OnTargetsSelectionChanged()
         {
-            var selectedControllers = string.Join(",", current.GetAllOrSelectedTargets().Select(t => t.name).ToArray());
-            if (_selectedControllers != selectedControllers)
-            {
-                SelectionModified();
-                _selectedControllers = selectedControllers;
-            }
+            SelectionModified();
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
@@ -203,10 +279,10 @@ namespace VamTimeline
             args.before.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
             args.after.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
 
-            if (current.animationLength < _selectionEnd)
+            if (current.animationLength < _endJSON.valNoCallback)
             {
-                _selectionEnd = current.animationLength;
-                if (_selectionStart > _selectionEnd) _selectionStart = _selectionEnd;
+                _endJSON.valNoCallback = current.animationLength;
+                if (_startJSON.valNoCallback > _endJSON.valNoCallback) _startJSON.valNoCallback = _endJSON.valNoCallback;
             }
 
             SelectionModified();

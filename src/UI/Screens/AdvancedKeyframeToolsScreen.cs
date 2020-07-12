@@ -9,14 +9,8 @@ namespace VamTimeline
     public class AdvancedKeyframeToolsScreen : ScreenBase
     {
         public const string ScreenName = "Advanced";
-        private const string _offsetControllerUILabel = "Offset controllers";
-        private const string _offsetControllerUIOfsettingLabel = "Click again to apply offset...";
-
-        private static bool _offsetting;
-        private static AtomClipboardEntry _offsetSnapshot;
 
         private UIDynamicButton _bakeUI;
-        private UIDynamicButton _offsetControllerUI;
         private bool _baking;
 
         public override string screenId => ScreenName;
@@ -54,11 +48,6 @@ namespace VamTimeline
 
             var reverseAnimationUI = prefabFactory.CreateButton("Reverse keyframes");
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
-
-            prefabFactory.CreateSpacer();
-
-            _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
-            _offsetControllerUI.button.onClick.AddListener(() => OffsetController());
         }
 
         private void RemoveAllKeyframes()
@@ -201,64 +190,6 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
-            }
-        }
-
-        private void OffsetController()
-        {
-            if (animation.isPlaying) return;
-
-            if (_offsetting)
-                ApplyOffset();
-            else
-                StartRecordOffset();
-        }
-
-        private void StartRecordOffset()
-        {
-            _offsetSnapshot = current.Copy(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Cast<IAtomAnimationTarget>());
-            if (_offsetSnapshot.controllers.Count == 0)
-            {
-                SuperController.LogError($"VamTimeline: Cannot offset, no keyframes were found at time {current.clipTime}.");
-                return;
-            }
-
-            _offsetControllerUI.label = _offsetControllerUIOfsettingLabel;
-            _offsetting = true;
-        }
-
-        private void ApplyOffset()
-        {
-            _offsetting = false;
-            _offsetControllerUI.label = _offsetControllerUILabel;
-
-            foreach (var snap in _offsetSnapshot.controllers)
-            {
-                Vector3 positionDelta;
-                Quaternion rotationDelta;
-
-                {
-                    var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
-                    var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
-
-                    var positionAfter = snap.controller.control.position;
-                    var rotationAfter = snap.controller.control.rotation;
-
-                    positionDelta = positionAfter - positionBefore;
-                    rotationDelta = Quaternion.Inverse(rotationBefore) * rotationAfter;
-                }
-
-                var target = current.targetControllers.First(t => t.controller == snap.controller);
-                foreach (var key in target.GetAllKeyframesKeys())
-                {
-                    // Do not double-apply
-                    if (target.GetKeyframeTime(key) == _offsetSnapshot.time) continue;
-
-                    var positionBefore = target.GetKeyframePosition(key);
-                    var rotationBefore = target.GetKeyframeRotation(key);
-
-                    target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
-                }
             }
         }
     }
