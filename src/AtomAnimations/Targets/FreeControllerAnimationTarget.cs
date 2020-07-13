@@ -63,7 +63,7 @@ namespace VamTimeline
             if (controller.possessed) return;
             Rigidbody link = GetLinkedRigidbody();
 
-            if (controller.currentRotationState == FreeControllerV3.RotationState.On)
+            if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
             {
                 var targetRotation = EvaluateRotation(clipTime);
                 if (link != null)
@@ -79,7 +79,7 @@ namespace VamTimeline
                 }
             }
 
-            if (controller.currentPositionState == FreeControllerV3.PositionState.On)
+            if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
             {
                 var targetPosition = EvaluatePosition(clipTime);
                 if (link != null)

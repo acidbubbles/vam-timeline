@@ -402,11 +402,6 @@ namespace VamTimeline
                     controller.currentPositionState = FreeControllerV3.PositionState.On;
                     controller.currentRotationState = FreeControllerV3.RotationState.On;
                 }
-                else if (controller.currentPositionState != FreeControllerV3.PositionState.On && controller.currentRotationState != FreeControllerV3.RotationState.On)
-                {
-                    SuperController.LogError($"Controller {uid} has neither rotation nor position set to 'On'. Change it before adding it.");
-                    return;
-                }
 
                 foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
                 {
