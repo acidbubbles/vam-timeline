@@ -233,8 +233,17 @@ namespace VamTimeline
             _offsetting = false;
             _offsetControllerUI.label = _offsetControllerUILabel;
 
+            if (animation.clipTime != _offsetSnapshot.time)
+            {
+                SuperController.LogError("VamTimeline: Time changed. Please move controllers within a single frame.");
+                return;
+            }
+
             foreach (var snap in _offsetSnapshot.controllers)
             {
+                var target = current.targetControllers.First(t => t.controller == snap.controller);
+                var rb = target.GetLinkedRigidbody();
+
                 Vector3 positionDelta;
                 Quaternion rotationDelta;
 
@@ -242,14 +251,13 @@ namespace VamTimeline
                     var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
                     var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
 
-                    var positionAfter = snap.controller.control.position;
-                    var rotationAfter = snap.controller.control.rotation;
+                    var positionAfter = rb == null ? snap.controller.control.localPosition : rb.transform.InverseTransformPoint(snap.controller.transform.position);
+                    var rotationAfter = rb == null ? snap.controller.control.localRotation : Quaternion.Inverse(rb.rotation) * snap.controller.transform.rotation;
 
                     positionDelta = positionAfter - positionBefore;
                     rotationDelta = Quaternion.Inverse(rotationBefore) * rotationAfter;
                 }
 
-                var target = current.targetControllers.First(t => t.controller == snap.controller);
                 foreach (var key in target.GetAllKeyframesKeys())
                 {
                     var time = target.GetKeyframeTime(key);
