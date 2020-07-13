@@ -217,6 +217,8 @@ namespace VamTimeline
             list.Sort();
             _atomsJSON.choices = list;
 
+            OnTimelineAnimationParametersChanged(storable);
+
             if (_selectedLink == null)
             {
                 _selectedLink = proxy;
@@ -315,6 +317,7 @@ namespace VamTimeline
                 DeregisterAction(a.Value);
             }
             _playActions.Clear();
+
             foreach (var a in _animationJSON.choices)
             {
                 if (!_playActions.Any(kvp => kvp.Key == a))
