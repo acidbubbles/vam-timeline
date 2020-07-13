@@ -36,7 +36,7 @@ namespace VamTimeline
 
         private void InitSnapUI()
         {
-            _snapJSON = new JSONStorableFloat("Snap", 0.1f, (float val) => animation.snap = val.Snap(), 0.01f, 1f)
+            _snapJSON = new JSONStorableFloat("Snap", 0.1f, (float val) => animation.snap = val.Snap(), 0.1f, 1f)
             {
                 valNoCallback = animation.snap
             };
