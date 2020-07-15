@@ -287,10 +287,17 @@ namespace VamTimeline
                 { "Speed", animation.speed.ToString(CultureInfo.InvariantCulture) }
             };
             var clipsJSON = new JSONArray();
-            animationJSON.Add("Clips", clipsJSON);
             foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))
             {
-                var clipJSON = new JSONClass
+                clipsJSON.Add(SerializeClip(clip));
+            }
+            animationJSON.Add("Clips", clipsJSON);
+            return animationJSON;
+        }
+
+        public JSONClass SerializeClip(AtomAnimationClip clip)
+        {
+            var clipJSON = new JSONClass
                 {
                     { "AnimationName", clip.animationName },
                     { "AnimationLength", clip.animationLength.ToString(CultureInfo.InvariantCulture) },
@@ -302,17 +309,15 @@ namespace VamTimeline
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
                 };
-                if (clip.nextAnimationName != null)
-                    clipJSON["NextAnimationName"] = clip.nextAnimationName;
-                if (clip.nextAnimationTime != 0)
-                    clipJSON["NextAnimationTime"] = clip.nextAnimationTime.ToString(CultureInfo.InvariantCulture);
-                if (clip.autoPlay)
-                    clipJSON["AutoPlay"] = "1";
+            if (clip.nextAnimationName != null)
+                clipJSON["NextAnimationName"] = clip.nextAnimationName;
+            if (clip.nextAnimationTime != 0)
+                clipJSON["NextAnimationTime"] = clip.nextAnimationTime.ToString(CultureInfo.InvariantCulture);
+            if (clip.autoPlay)
+                clipJSON["AutoPlay"] = "1";
 
-                SerializeClip(clip, clipJSON);
-                clipsJSON.Add(clipJSON);
-            }
-            return animationJSON;
+            SerializeClip(clip, clipJSON);
+            return clipJSON;
         }
 
         private void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)

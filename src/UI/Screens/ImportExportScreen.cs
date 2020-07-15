@@ -47,7 +47,7 @@ namespace VamTimeline
 
         private void InitExportUI()
         {
-            _exportAnimationsJSON = new JSONStorableStringChooser("Animation to export", new List<string> { _poseAndAllAnimations, _allAnimations }.Concat(animation.clips.Select(c => c.animationName)).ToList(), _poseAndAllAnimations, "Animation to export")
+            _exportAnimationsJSON = new JSONStorableStringChooser("Animation to export", new List<string> { _poseAndAllAnimations, _allAnimations }.Concat(animation.clips.Where(c => !c.transition).Select(c => c.animationName)).ToList(), _poseAndAllAnimations, "Animation to export")
             {
                 isStorable = false
             };
@@ -89,35 +89,12 @@ namespace VamTimeline
 
             try
             {
-                var jc = plugin.GetAnimationJSON(_exportAnimationsJSON.val == _poseAndAllAnimations || _exportAnimationsJSON.val == _allAnimations ? null : _exportAnimationsJSON.val);
-                jc["AtomType"] = plugin.containingAtom.type;
-                var atomState = new JSONClass();
-                IEnumerable<FreeControllerV3> controllers;
-                if (_exportAnimationsJSON.val == _poseAndAllAnimations)
-                    controllers = plugin.containingAtom.freeControllers;
-                else if (_exportAnimationsJSON.val == _allAnimations)
-                    controllers = animation.clips
-                          .SelectMany(c => c.targetControllers)
-                          .Select(t => t.controller)
-                          .Distinct();
-                else
-                    controllers = animation.clips
-                        .First(c => c.animationName == _exportAnimationsJSON.val)
-                        .targetControllers
-                        .Select(t => t.controller);
-                foreach (var fc in controllers)
+                var jc = new JSONClass
                 {
-                    if (fc.name == "control") continue;
-                    if (!fc.name.EndsWith("Control")) continue;
-                    atomState[fc.name] = new JSONClass
-                    {
-                        {"currentPositionState", ((int)fc.currentPositionState).ToString()},
-                        {"localPosition", AtomAnimationSerializer.SerializeVector3(fc.transform.localPosition)},
-                        {"currentRotationState", ((int)fc.currentRotationState).ToString()},
-                        {"localRotation", AtomAnimationSerializer.SerializeQuaternion(fc.transform.localRotation)}
-                    };
-                }
-                jc["ControllersState"] = atomState;
+                    ["Clips"] = GetClipsJson(),
+                    ["AtomType"] = plugin.containingAtom.type,
+                    ["ControllersState"] = GetAtomStateJson()
+                };
                 SuperController.singleton.SaveJSON(jc, path);
                 SuperController.singleton.DoSaveScreenshot(path);
             }
@@ -125,6 +102,55 @@ namespace VamTimeline
             {
                 SuperController.LogError($"VamTimeline: Failed to export animation: {exc}");
             }
+        }
+
+        private JSONArray GetClipsJson()
+        {
+            var all = _exportAnimationsJSON.val == _poseAndAllAnimations || _exportAnimationsJSON.val == _allAnimations;
+            IEnumerable<AtomAnimationClip> clips;
+            if (all)
+                clips = animation.clips;
+            else
+                clips = animation.clips.Where(c => c.animationName == _exportAnimationsJSON.val);
+            var clipsJSON = new JSONArray();
+
+            foreach (var clip in clips)
+            {
+                clipsJSON.Add(plugin.serializer.SerializeClip(clip));
+            }
+
+            return clipsJSON;
+        }
+
+        private JSONClass GetAtomStateJson()
+        {
+            var atomState = new JSONClass();
+            IEnumerable<FreeControllerV3> controllers;
+            if (_exportAnimationsJSON.val == _poseAndAllAnimations)
+                controllers = plugin.containingAtom.freeControllers;
+            else if (_exportAnimationsJSON.val == _allAnimations)
+                controllers = animation.clips
+                      .SelectMany(c => c.targetControllers)
+                      .Select(t => t.controller)
+                      .Distinct();
+            else
+                controllers = animation.clips
+                    .First(c => c.animationName == _exportAnimationsJSON.val)
+                    .targetControllers
+                    .Select(t => t.controller);
+            foreach (var fc in controllers)
+            {
+                if (fc.name == "control") continue;
+                if (!fc.name.EndsWith("Control")) continue;
+                atomState[fc.name] = new JSONClass
+                    {
+                        {"currentPositionState", ((int)fc.currentPositionState).ToString()},
+                        {"localPosition", AtomAnimationSerializer.SerializeVector3(fc.transform.localPosition)},
+                        {"currentRotationState", ((int)fc.currentRotationState).ToString()},
+                        {"localRotation", AtomAnimationSerializer.SerializeQuaternion(fc.transform.localRotation)}
+                    };
+            }
+            return atomState;
         }
 
         private void Import()
@@ -229,6 +255,9 @@ namespace VamTimeline
                     clip.animationName = newAnimationName;
                 }
             }
+
+            if (clip.autoPlay && animation.clips.Any(c => c.autoPlay))
+                clip.autoPlay = false;
 
             return clip;
         }
