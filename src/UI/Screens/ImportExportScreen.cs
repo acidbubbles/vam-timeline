@@ -47,7 +47,7 @@ namespace VamTimeline
 
         private void InitExportUI()
         {
-            _exportAnimationsJSON = new JSONStorableStringChooser("Animation to export", new List<string> { _poseAndAllAnimations, _allAnimations }.Concat(animation.clips.Select(c => c.animationName)).ToList(), "(All)", "Animation to export")
+            _exportAnimationsJSON = new JSONStorableStringChooser("Animation to export", new List<string> { _poseAndAllAnimations, _allAnimations }.Concat(animation.clips.Select(c => c.animationName)).ToList(), _poseAndAllAnimations, "Animation to export")
             {
                 isStorable = false
             };
