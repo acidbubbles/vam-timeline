@@ -35,6 +35,7 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            CreateChangeScreenButton("<i><b>Import</b> from file...</i>", ImportExportScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
         }
 
