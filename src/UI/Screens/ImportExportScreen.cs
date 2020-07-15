@@ -155,26 +155,9 @@ namespace VamTimeline
                 }
 
                 var jc = json.AsObject;
-                if (jc.HasKey("ControllersState"))
-                {
-                    var controllersState = jc["ControllersState"].AsObject;
-                    foreach (var k in controllersState.Keys)
-                    {
-                        var fc = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == k);
-                        if (fc == null)
-                        {
-                            SuperController.LogError($"VamTimeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
-                            continue;
-                        }
-                        var state = controllersState[k];
-                        fc.currentPositionState = (FreeControllerV3.PositionState)state["currentPositionState"].AsInt;
-                        fc.transform.localPosition = AtomAnimationSerializer.DeserializeVector3(state["localPosition"].AsObject);
-                        fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
-                        fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
-                    }
-                }
+                if (!ImportClips(jc)) return;
+                ImportControllerStates(jc);
 
-                plugin.serializer.DeserializeAnimation(animation, json.AsObject);
                 var lastAnimation = animation.clips.Select(c => c.animationName).LastOrDefault();
                 // NOTE: Because the animation instance changes, we'll end up with the _old_ "current" not being updated.
                 if (lastAnimation != animation.current.animationName)
@@ -186,6 +169,101 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"VamTimeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
+            }
+        }
+
+        private bool ImportClips(JSONClass jc)
+        {
+            var clipsJSON = jc["Clips"].AsArray;
+            if (clipsJSON == null || clipsJSON.Count == 0)
+            {
+                SuperController.LogError($"VamTimeline: Imported file does not contain any animations. Are you trying to load a scene file?");
+                return false;
+            }
+            foreach (JSONClass clipJSON in clipsJSON)
+            {
+                var clip = ImportClip(clipJSON);
+                if (clip == null) continue;
+                animation.AddClip(clip);
+            }
+            animation.Initialize();
+            animation.RebuildAnimationNow();
+            return true;
+        }
+
+        private AtomAnimationClip ImportClip(JSONClass clipJSON)
+        {
+            var clip = plugin.serializer.DeserializeClip(clipJSON);
+
+            foreach (var controller in clip.targetControllers.Select(t => t.controller))
+            {
+                if (animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controller == controller)))
+                {
+                    SuperController.LogError($"VamTimeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation.");
+                    return null;
+                }
+            }
+
+            foreach (var floatParam in clip.targetFloatParams.Select(t => t.name))
+            {
+                if (animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetFloatParams.Any(t => t.name == floatParam)))
+                {
+                    SuperController.LogError($"VamTimeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation.");
+                    return null;
+                }
+            }
+
+            var existingClip = animation.GetClip(clip.animationName);
+            if (existingClip != null)
+            {
+                if (existingClip.IsEmpty())
+                {
+                    var clipToRemove = animation.GetClip(clip.animationName);
+                    animation.clips.Remove(clipToRemove);
+                    clipToRemove.Dispose();
+                }
+                else
+                {
+                    var newAnimationName = GenerateUniqueAnimationName(animation, clip.animationName);
+                    SuperController.LogError($"VamTimeline: Imported clip '{clip.animationName}' already exists and will be imported with the name {newAnimationName}");
+                    clip.animationName = newAnimationName;
+                }
+            }
+
+            return clip;
+        }
+
+        private static string GenerateUniqueAnimationName(AtomAnimation animation, string animationName)
+        {
+            var i = 1;
+            while (true)
+            {
+                var newAnimationName = $"{animationName} ({i})";
+                if (!animation.clips.Any(c => c.animationName == newAnimationName))
+                    return newAnimationName;
+                i++;
+            }
+        }
+
+        private void ImportControllerStates(JSONClass jc)
+        {
+            if (jc.HasKey("ControllersState"))
+            {
+                var controllersState = jc["ControllersState"].AsObject;
+                foreach (var k in controllersState.Keys)
+                {
+                    var fc = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == k);
+                    if (fc == null)
+                    {
+                        SuperController.LogError($"VamTimeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
+                        continue;
+                    }
+                    var state = controllersState[k];
+                    fc.currentPositionState = (FreeControllerV3.PositionState)state["currentPositionState"].AsInt;
+                    fc.transform.localPosition = AtomAnimationSerializer.DeserializeVector3(state["localPosition"].AsObject);
+                    fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
+                    fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
+                }
             }
         }
     }

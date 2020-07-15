@@ -24,58 +24,36 @@ namespace VamTimeline
 
             animation.speed = DeserializeFloat(animationJSON["Speed"], 1f);
 
-            JSONArray clipsJSON = animationJSON["Clips"].AsArray;
+            var clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                var animationName = clipJSON["AnimationName"].Value;
-                var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
-                var existingClip = animation.GetClip(animationName);
-                if (existingClip != null)
-                {
-                    if (existingClip.IsEmpty())
-                    {
-                        var clipToRemove = animation.GetClip(animationName);
-                        animation.clips.Remove(clipToRemove);
-                        clipToRemove.Dispose();
-                    }
-                    else
-                    {
-                        var newAnimationName = GenerateUniqueAnimationName(animation, animationName);
-                        SuperController.LogError($"VamTimeline: Imported clip '{animationName}' already exists and will be imported with the name {newAnimationName}");
-                        animationName = newAnimationName;
-                    }
-                }
-                var clip = new AtomAnimationClip(animationName, animationLayer)
-                {
-                    blendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
-                    loop = DeserializeBool(clipJSON["Loop"], true),
-                    transition = DeserializeBool(clipJSON["Transition"], false),
-                    ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
-                    nextAnimationName = clipJSON["NextAnimationName"]?.Value,
-                    nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
-                    autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
-                    speed = DeserializeFloat(clipJSON["Speed"], 1),
-                    weight = DeserializeFloat(clipJSON["Weight"], 1),
-                };
-                clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
-                DeserializeClip(clip, clipJSON);
+                var clip = DeserializeClip(clipJSON);
                 animation.AddClip(clip);
             }
             animation.Initialize();
             animation.RebuildAnimationNow();
         }
 
-        private static string GenerateUniqueAnimationName(AtomAnimation animation, string animationName)
+        public AtomAnimationClip DeserializeClip(JSONClass clipJSON)
         {
-            var i = 1;
-            while (true)
+            var animationName = clipJSON["AnimationName"].Value;
+            var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
+            var clip = new AtomAnimationClip(animationName, animationLayer)
             {
-                var newAnimationName = $"{animationName} ({i})";
-                if (!animation.clips.Any(c => c.animationName == newAnimationName))
-                    return newAnimationName;
-                i++;
-            }
+                blendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
+                loop = DeserializeBool(clipJSON["Loop"], true),
+                transition = DeserializeBool(clipJSON["Transition"], false),
+                ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
+                nextAnimationName = clipJSON["NextAnimationName"]?.Value,
+                nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
+                autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
+                speed = DeserializeFloat(clipJSON["Speed"], 1),
+                weight = DeserializeFloat(clipJSON["Weight"], 1),
+            };
+            clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
+            DeserializeClip(clip, clipJSON);
+            return clip;
         }
 
         private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
