@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -12,6 +14,7 @@ namespace VamTimeline
         private const string _offsetControllerUIOfsettingLabel = "Apply recorded offset...";
 
         private static bool _offsetting;
+        private static string _lastOffsetMode;
         private static AtomClipboardEntry _offsetSnapshot;
 
         public override string screenId => ScreenName;
@@ -20,7 +23,10 @@ namespace VamTimeline
         private JSONStorableFloat _endJSON;
         private JSONStorableString _selectionJSON;
         private JSONStorableStringChooser _changeCurveJSON;
+        private JSONStorableStringChooser _offsetModeJSON;
         private UIDynamicButton _offsetControllerUI;
+        private const string _changePivotMode = "Change pivot";
+        private const string _offsetMode = "Offset";
 
         public BulkScreen()
             : base()
@@ -45,12 +51,10 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            InitDeleteUI();
+            InitOffsetUI();
 
-            prefabFactory.CreateSpacer();
-
-            _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
-            _offsetControllerUI.button.onClick.AddListener(() => OffsetController());
+            // To allow selecting in the popup
+            prefabFactory.CreateSpacer().height = 200f;
 
             // Init
 
@@ -60,9 +64,21 @@ namespace VamTimeline
             OnTargetsSelectionChanged();
         }
 
+        private void InitOffsetUI()
+        {
+            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { _changePivotMode, _offsetMode }, _lastOffsetMode ?? _changePivotMode, "Offset mode", (string val) => _lastOffsetMode = val);
+            var offsetModeUI = prefabFactory.CreateScrollablePopup(_offsetModeJSON);
+
+            _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
+            _offsetControllerUI.button.onClick.AddListener(() => OffsetController());
+        }
+
         protected void InitBulkClipboardUI()
         {
-            var cutUI = prefabFactory.CreateButton("Cut / delete frame(s)");
+            var deleteUI = prefabFactory.CreateButton("Delete frame(s)");
+            deleteUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
+
+            var cutUI = prefabFactory.CreateButton("Cut frame(s)");
             cutUI.button.onClick.AddListener(() => CopyDeleteSelected(true, true));
 
             var copyUI = prefabFactory.CreateButton("Copy frame(s)");
@@ -112,12 +128,6 @@ namespace VamTimeline
             _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.DisplayCurveTypes, "", "Change curve", ChangeCurve);
             var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON);
             curveTypeUI.popupPanelHeight = 340f;
-        }
-
-        private void InitDeleteUI()
-        {
-            var deleteSelectedUI = prefabFactory.CreateButton("Delete selected");
-            deleteSelectedUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
         }
 
         #region Callbacks
@@ -244,6 +254,7 @@ namespace VamTimeline
                 var target = current.targetControllers.First(t => t.controller == snap.controller);
                 var rb = target.GetLinkedRigidbody();
 
+                Vector3 pivot;
                 Vector3 positionDelta;
                 Quaternion rotationDelta;
 
@@ -254,6 +265,7 @@ namespace VamTimeline
                     var positionAfter = rb == null ? snap.controller.control.localPosition : rb.transform.InverseTransformPoint(snap.controller.transform.position);
                     var rotationAfter = rb == null ? snap.controller.control.localRotation : Quaternion.Inverse(rb.rotation) * snap.controller.transform.rotation;
 
+                    pivot = positionBefore;
                     positionDelta = positionAfter - positionBefore;
                     rotationDelta = Quaternion.Inverse(rotationBefore) * rotationAfter;
                 }
@@ -268,7 +280,19 @@ namespace VamTimeline
                     var positionBefore = target.GetKeyframePosition(key);
                     var rotationBefore = target.GetKeyframeRotation(key);
 
-                    target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
+                    if (_offsetModeJSON.val == _changePivotMode)
+                    {
+                        var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
+                        target.SetKeyframeByKey(key, positionAfter, rotationBefore * rotationDelta);
+                    }
+                    else if (_offsetModeJSON.val == _offsetMode)
+                    {
+                        target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"Offset mode '{_offsetModeJSON.val}' is not implemented");
+                    }
                 }
             }
         }
