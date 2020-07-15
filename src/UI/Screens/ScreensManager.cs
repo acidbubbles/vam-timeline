@@ -142,6 +142,9 @@ namespace VamTimeline
                 case MoreScreen.ScreenName:
                     _current = screenContainer.AddComponent<MoreScreen>();
                     break;
+                case ImportExportScreen.ScreenName:
+                    _current = screenContainer.AddComponent<ImportExportScreen>();
+                    break;
                 case EditAnimationScreen.ScreenName:
                     _current = screenContainer.AddComponent<EditAnimationScreen>();
                     break;

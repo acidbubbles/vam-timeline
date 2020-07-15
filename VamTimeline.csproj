@@ -123,6 +123,7 @@
     <Compile Include="src\UI\Screens\BulkScreen.cs" />
     <Compile Include="src\UI\Screens\EditAnimationScreen.cs" />
     <Compile Include="src\UI\Screens\HelpScreen.cs" />
+    <Compile Include="src\UI\Screens\ImportExportScreen.cs" />
     <Compile Include="src\UI\Screens\LockedScreen.cs" />
     <Compile Include="src\UI\Screens\ManageAnimationsScreen.cs" />
     <Compile Include="src\UI\Screens\MocapScreen.cs" />
