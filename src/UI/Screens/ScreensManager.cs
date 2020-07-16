@@ -55,7 +55,9 @@ namespace VamTimeline
 
         public string GetDefaultScreen()
         {
-            if (_currentScreen != null)
+            if(SuperController.singleton.gameMode != SuperController.GameMode.Edit)
+                return LockedScreen.ScreenName;
+            if (_currentScreen != null && _currentScreen != LockedScreen.ScreenName)
                 return _currentScreen;
             if (_plugin.animation.clips.Count > 1 && _plugin.animation.EnumerateLayers().Skip(1).Any())
                 return AnimationsScreen.ScreenName;
