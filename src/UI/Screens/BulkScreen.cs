@@ -283,11 +283,11 @@ namespace VamTimeline
                     if (_offsetModeJSON.val == _changePivotMode)
                     {
                         var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
-                        target.SetKeyframeByKey(key, positionAfter, rotationBefore * rotationDelta);
+                        target.SetKeyframeByKey(key, positionAfter, rotationDelta * rotationBefore);
                     }
                     else if (_offsetModeJSON.val == _offsetMode)
                     {
-                        target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
+                        target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationDelta * rotationBefore);
                     }
                     else
                     {
