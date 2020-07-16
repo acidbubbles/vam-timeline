@@ -167,9 +167,9 @@ namespace VamTimeline
                     return;
                 }
                 var clips = animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList();
+                animation.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer).animationName);
                 foreach (var clip in clips)
                     animation.RemoveClip(clip);
-                plugin.ChangeAnimation(animation.clips[0].animationName);
             }
             catch (Exception exc)
             {

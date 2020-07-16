@@ -399,6 +399,7 @@ namespace VamTimeline
 
             if (previous.animationLayer != current.animationLayer)
                 onClipsListChanged.Invoke();
+            onTargetsSelectionChanged.Invoke();
             onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
             {
                 before = previous,
