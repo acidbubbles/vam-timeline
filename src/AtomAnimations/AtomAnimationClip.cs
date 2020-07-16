@@ -407,6 +407,7 @@ namespace VamTimeline
             target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
             target.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             onTargetsListChanged.Invoke();
+            onTargetsSelectionChanged.Invoke();
             return target;
         }
 
@@ -461,6 +462,7 @@ namespace VamTimeline
             list.Remove(target);
             target.Dispose();
             onTargetsListChanged.Invoke();
+            onTargetsSelectionChanged.Invoke();
         }
 
         #endregion

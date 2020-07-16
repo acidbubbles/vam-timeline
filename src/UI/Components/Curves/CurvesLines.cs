@@ -16,7 +16,6 @@ namespace VamTimeline
 
         public void AddCurve(Color color, AnimationCurve curve)
         {
-            if (curve.length == 0) return;
             _curves.Add(new KeyValuePair<Color, AnimationCurve>(color, curve));
         }
 
@@ -37,6 +36,7 @@ namespace VamTimeline
 
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];
+            if (lastCurve.Value.length < 2) return;
             var maxX = lastCurve.Value[lastCurve.Value.length - 1].time;
             var xRatio = width / maxX;
 
