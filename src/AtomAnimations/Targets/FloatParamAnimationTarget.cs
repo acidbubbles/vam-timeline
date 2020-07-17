@@ -23,21 +23,29 @@ namespace VamTimeline
             _atom = atom;
             this.storableId = storableId;
             this.floatParamName = floatParamName;
-            _available = false;
         }
 
         public FloatParamAnimationTarget(JSONStorable storable, JSONStorableFloat floatParam)
+            : this(storable.containingAtom, storable.storeId, floatParam.name)
         {
-            storableId = storable.storeId;
             this.storable = storable;
-            floatParamName = floatParam.name;
             this.floatParam = floatParam;
             _available = true;
         }
 
         public bool EnsureAvailable(bool silent = true)
         {
-            if (_available) return true;
+            if (_available)
+            {
+                if (storable == null)
+                {
+                    _available = false;
+                    storable = null;
+                    floatParam = null;
+                    return false;
+                }
+                return true;
+            }
             if (Time.frameCount == _lastAvailableCheck) return false;
             if (TryBind(silent)) return true;
             _lastAvailableCheck = Time.frameCount;
