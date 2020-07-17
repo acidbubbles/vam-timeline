@@ -1,9 +1,16 @@
+using System.Collections;
 using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
 {
-    public interface IMVRScript
+    public interface IMonoBehavior
+    {
+        Coroutine StartCoroutine(IEnumerator routine);
+        void StopCoroutine(Coroutine routine);
+    }
+
+    public interface IMVRScript : IMonoBehavior
     {
         Atom containingAtom { get; }
         MVRPluginManager manager { get; }

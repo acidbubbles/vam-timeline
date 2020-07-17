@@ -10,6 +10,9 @@ namespace VamTimeline
     public class MocapScreen : ScreenBase
     {
         public const string ScreenName = "Mocap";
+        private const string _recordingLabel = "\u25A0 Waiting for recording...";
+        private const string _startRecordLabel = "\u25B6 Play and record now";
+        private static Coroutine _recording;
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
 
         public override string screenId => ScreenName;
@@ -21,6 +24,7 @@ namespace VamTimeline
         private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private JSONStorableFloat _reduceMinRotationJSON;
         private JSONStorableBool _resizeAnimationJSON;
+        private UIDynamicButton _playAndRecordUI;
 
         public MocapScreen()
             : base()
@@ -68,6 +72,18 @@ namespace VamTimeline
 
             _reduceKeyframesUI = prefabFactory.CreateButton("Reduce float params keyframes");
             _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
+
+            prefabFactory.CreateSpacer();
+
+            _playAndRecordUI = prefabFactory.CreateButton(_recording != null ? _recordingLabel : _startRecordLabel);
+            _playAndRecordUI.button.onClick.AddListener(() => PlayAndRecord());
+            if (_recording == null && !plugin.containingAtom.freeControllers.Any(fc => fc.GetComponent<MotionAnimationControl>()?.armedForRecord ?? false))
+            {
+                _playAndRecordUI.button.interactable = false;
+            }
+
+            var clearMocapUI = prefabFactory.CreateButton("Clear atom's mocap");
+            clearMocapUI.button.onClick.AddListener(() => ClearMocapData());
         }
 
         private void ImportRecorded()
@@ -283,7 +299,7 @@ namespace VamTimeline
                 }
 
                 // Cannot find large enough diffs, exit
-                if (keyWithLargestRotationAngle == -1 || keyWithLargestPositionDistance == -1) break;
+                if (keyWithLargestRotationAngle == -1 && keyWithLargestPositionDistance == -1) break;
                 var posInRange = largestPositionDistance >= _reduceMinPosDistanceJSON.val;
                 var rotInRange = largestRotationAngle >= _reduceMinRotationJSON.val;
                 if (!posInRange && !rotInRange) break;
@@ -514,6 +530,57 @@ namespace VamTimeline
             }
 
             source.keys = target.keys;
+        }
+
+        public void PlayAndRecord()
+        {
+            if (_recording != null)
+            {
+                plugin.StopCoroutine(_recording);
+                _recording = null;
+                _playAndRecordUI.label = _startRecordLabel;
+                SuperController.singleton.StopPlayback();
+                animation.StopAll();
+                return;
+            }
+            animation.StopAll();
+            animation.ResetAll();
+            _recording = plugin.StartCoroutine(PlayAndRecordCoroutine());
+        }
+
+        private IEnumerator PlayAndRecordCoroutine()
+        {
+            yield return 0;
+            ClearMocapData();
+            SuperController.singleton.SelectModeAnimationRecord();
+            while (SuperController.singleton.helpText?.StartsWith("Recording...") == false)
+            {
+                if (string.IsNullOrEmpty(SuperController.singleton.helpText))
+                {
+                    _recording = null;
+                    _playAndRecordUI.label = _startRecordLabel;
+                    yield break;
+                }
+                yield return 0;
+            }
+            animation.PlayAll();
+            while (SuperController.singleton.helpText?.StartsWith("Recording...") == true)
+            {
+                yield return 0;
+            }
+            animation.StopAll();
+            SuperController.singleton.motionAnimationMaster.StopPlayback();
+            _recording = null;
+            SuperController.LogMessage("Re-open Timeline's Mocap screen and import your mocap.");
+        }
+
+        private void ClearMocapData()
+        {
+            SuperController.singleton.motionAnimationMaster.SeekToBeginning();
+            foreach (var mac in plugin.containingAtom.freeControllers.Select(fc => fc.GetComponent<MotionAnimationControl>()).Where(mac => mac != null))
+            {
+                mac.ClearAnimation();
+            }
         }
     }
 }
