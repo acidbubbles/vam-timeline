@@ -20,6 +20,7 @@ namespace VamTimeline
         private JSONStorableFloat _reduceMinPosDistanceJSON;
         private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private JSONStorableFloat _reduceMinRotationJSON;
+        private JSONStorableBool _resizeAnimationJSON;
 
         public MocapScreen()
             : base()
@@ -45,6 +46,9 @@ namespace VamTimeline
                 isStorable = false
             };
             var importRecordedOptionsUI = prefabFactory.CreateScrollablePopup(_importRecordedOptionsJSON);
+
+            _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", true);
+            var resizeAnimationUI = prefabFactory.CreateToggle(_resizeAnimationJSON);
 
             _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, 0.001f, 0.5f, true);
             var reduceMinPosDistanceUI = prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
@@ -89,7 +93,7 @@ namespace VamTimeline
                     current.loop = SuperController.singleton.motionAnimationMaster.loop;
                     requiresRebuild = true;
                 }
-                if (length > current.animationLength)
+                if (_resizeAnimationJSON.val && length != current.animationLength)
                 {
                     operations.Resize().CropOrExtendEnd(length);
                     requiresRebuild = true;
@@ -228,11 +232,12 @@ namespace VamTimeline
         private IEnumerable ExtractFramesWithReductionTechnique(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
-            var maxIterations = (int)(clip.clipLength * 10);
+            var maxIterations = (int)(current.animationLength * 10);
 
             var containingAtom = plugin.containingAtom;
             var steps = clip.steps
                 .Where(s => s.positionOn || s.rotationOn)
+                .TakeWhile(s => s.timeStep <= current.animationLength)
                 .GroupBy(s => s.timeStep.Snap(minFrameDistance).ToMilliseconds())
                 .Select(g =>
                 {
