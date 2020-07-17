@@ -597,6 +597,9 @@ namespace VamTimeline
                 }
                 yield return 0;
             }
+            var excludedControllers = current.targetControllers.Where(t => t.controller.GetComponent<MotionAnimationControl>()?.armedForRecord == true).ToList();
+            foreach (var target in excludedControllers)
+                target.playbackEnabled = false;
             animation.PlayAll(false);
             while ((_lastResizeAnimation || animation.playTime <= animation.clipTime) && IsRecording())
             {
@@ -604,6 +607,8 @@ namespace VamTimeline
             }
             if (IsRecording()) SuperController.singleton.StopPlayback();
             animation.StopAll();
+            foreach (var target in excludedControllers)
+                target.playbackEnabled = true;
             SuperController.singleton.motionAnimationMaster.StopPlayback();
             _recordingCoroutine = null;
             SuperController.LogMessage("Re-open Timeline's Mocap screen and import your mocap.");

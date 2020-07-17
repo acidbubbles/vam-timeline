@@ -17,6 +17,8 @@ namespace VamTimeline
 
         public override string name => controller.name;
 
+        public bool playbackEnabled = true;
+
         private Rigidbody _lastLinkedRigidbody;
         public Rigidbody GetLinkedRigidbody()
         {
@@ -58,6 +60,8 @@ namespace VamTimeline
 
         public void Sample(float clipTime, float weight)
         {
+            if (!playbackEnabled) return;
+
             var control = controller?.control;
             if (control == null) return;
             if (controller.possessed) return;
