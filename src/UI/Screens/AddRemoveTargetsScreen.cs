@@ -214,7 +214,6 @@ namespace VamTimeline
                 if (storableId.StartsWith("hairTool")) continue;
                 var storable = plugin.containingAtom.GetStorableByID(storableId);
                 if (storable == null) continue;
-                if (ReferenceEquals(storable, plugin)) continue;
                 if ((storable.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
             }
