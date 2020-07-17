@@ -94,8 +94,12 @@ namespace VamTimeline
             }
             foreach (var origTarget in current.targetFloatParams)
             {
-                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
+                var newTarget = clip.Add(new FloatParamAnimationTarget(plugin.containingAtom, origTarget.storableId, origTarget.floatParamName));
                 newTarget.value.keys = origTarget.value.keys.ToArray();
+                foreach (var kvp in origTarget.settings)
+                {
+                    newTarget.settings[kvp.Key] = new KeyframeSettings { curveType = kvp.Value.curveType };
+                }
                 newTarget.dirty = true;
             }
             foreach (var origTarget in current.targetTriggers)
