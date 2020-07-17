@@ -597,7 +597,7 @@ namespace VamTimeline
                 }
                 yield return 0;
             }
-            animation.PlayAll();
+            animation.PlayAll(false);
             while ((_lastResizeAnimation || animation.playTime <= animation.clipTime) && IsRecording())
             {
                 yield return 0;

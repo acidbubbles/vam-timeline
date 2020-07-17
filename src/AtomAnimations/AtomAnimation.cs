@@ -259,14 +259,14 @@ namespace VamTimeline
             onIsPlayingChanged.Invoke(clip);
         }
 
-        public void PlayAll()
+        public void PlayAll(bool sequencing = true)
         {
             foreach (var clip in GetMainClipPerLayer())
             {
                 if (clip.animationLayer == current.animationLayer)
-                    PlayClip(current, true);
+                    PlayClip(current, sequencing);
                 else
-                    PlayClip(clip, true);
+                    PlayClip(clip, sequencing);
             }
         }
 
