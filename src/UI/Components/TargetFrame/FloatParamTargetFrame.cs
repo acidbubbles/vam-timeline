@@ -21,6 +21,7 @@ namespace VamTimeline
             var interactions = slider.AddComponent<SimpleSlider>();
             interactions.OnChange.AddListener((float val) =>
             {
+                if (!target.EnsureAvailable()) return;
                 SetValue(target.floatParam.min + val * (target.floatParam.max - target.floatParam.min));
             });
         }
@@ -151,8 +152,9 @@ namespace VamTimeline
             {
                 if (stopped)
                 {
-                    valueText.text = "Waiting...";
+                    valueText.text = "Storable is unavailable";
                 }
+                return;
             }
 
             if (stopped)
