@@ -611,6 +611,7 @@ namespace VamTimeline
                 target.playbackEnabled = true;
             SuperController.singleton.motionAnimationMaster.StopPlayback();
             _recordingCoroutine = null;
+            SuperController.singleton.SelectController(plugin.containingAtom.mainController);
             SuperController.LogMessage("Re-open Timeline's Mocap screen and import your mocap.");
         }
 
