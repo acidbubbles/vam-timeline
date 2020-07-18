@@ -130,7 +130,8 @@ namespace VamTimeline
             var time = plugin.animation.clipTime.Snap();
             if (plugin.animation.isPlaying)
             {
-                if (Mathf.Abs(target.value.Evaluate(time) - val) < 0.01)
+                time = plugin.animation.clipTime.Snap(0.01f);
+                if (Mathf.Abs(target.value.Evaluate(time) - val) < 0.05)
                     return;
             }
             target.SetKeyframe(time, val);

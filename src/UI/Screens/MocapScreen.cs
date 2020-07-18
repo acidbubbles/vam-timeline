@@ -464,6 +464,7 @@ namespace VamTimeline
 
         private IEnumerator ReduceKeyframesCoroutine()
         {
+            /*
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 target.StartBulkUpdates();
@@ -474,8 +475,8 @@ namespace VamTimeline
                 catch (Exception exc)
                 {
                     _reduceKeyframesUI.button.interactable = true;
-                    _reduceKeyframesUI.buttonText.text = "Reduce Float Params Keyframes";
-                    SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[FloatParam]: {exc}");
+                    _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
+                    SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[Controller]: {exc}");
                     yield break;
                 }
                 finally
@@ -485,13 +486,14 @@ namespace VamTimeline
                 }
                 yield return 0;
             }
+            */
 
             foreach (var target in current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
                 {
-                    ReduceKeyframes(target.value);
+                    ReduceKeyframes(target);
                 }
                 catch (Exception exc)
                 {
@@ -509,11 +511,12 @@ namespace VamTimeline
             }
 
             _reduceKeyframesUI.button.interactable = true;
-            _reduceKeyframesUI.buttonText.text = "Reduce Float Params Keyframes";
+            _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
         }
 
-        private void ReduceKeyframes(AnimationCurve source)
+        private void ReduceKeyframes(FloatParamAnimationTarget t)
         {
+            var source = t.value;
             var sw = Stopwatch.StartNew();
             var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
             var maxIterations = (int)(source[source.length - 1].time * 10);
@@ -530,8 +533,8 @@ namespace VamTimeline
                 .ToList();
 
             var target = new AnimationCurve();
-            target.FlatFrame(target.AddKey(0, source[0].value));
-            target.FlatFrame(target.AddKey(source[source.length - 1].time, source[source.length - 1].value));
+            target.SmoothNeighbors(target.AddKey(0, source[0].value));
+            target.SmoothNeighbors(target.AddKey(source[source.length - 1].time, source[source.length - 1].value));
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
@@ -561,10 +564,24 @@ namespace VamTimeline
                 var step = steps[keyToApply];
                 steps.RemoveAt(keyToApply);
                 var key = target.SetKeyframe(step.time, step.value);
-                target.FlatFrame(key);
+                target.SmoothNeighbors(key);
             }
 
-            source.keys = target.keys;
+            t.StartBulkUpdates();
+            try
+            {
+                operations.Keyframes().RemoveAll(t);
+                for (var key = 0; key < target.length; key++)
+                {
+                    var keyframe = target[key];
+                    t.SetKeyframe(keyframe.time, keyframe.value);
+                }
+                t.AddEdgeFramesIfMissing(source[source.length - 1].time);
+            }
+            finally
+            {
+                t.EndBulkUpdates();
+            }
         }
 
         public void PlayAndRecord()

@@ -362,17 +362,13 @@ namespace VamTimeline
         public void SmoothNeighbors(int key)
         {
             if (key == -1) return;
-            x.SmoothTangents(key, 1f);
-            if (key > 0) x.SmoothTangents(key - 1, 1f);
-            if (key < x.length - 1) x.SmoothTangents(key + 1, 1f);
-
-            y.SmoothTangents(key, 1f);
-            if (key > 0) y.SmoothTangents(key - 1, 1f);
-            if (key < y.length - 1) y.SmoothTangents(key + 1, 1f);
-
-            z.SmoothTangents(key, 1f);
-            if (key > 0) z.SmoothTangents(key - 1, 1f);
-            if (key < z.length - 1) z.SmoothTangents(key + 1, 1f);
+            x.SmoothNeighbors(key);
+            y.SmoothNeighbors(key);
+            z.SmoothNeighbors(key);
+            rotX.SmoothNeighbors(key);
+            rotY.SmoothNeighbors(key);
+            rotZ.SmoothNeighbors(key);
+            rotW.SmoothNeighbors(key);
         }
     }
 }

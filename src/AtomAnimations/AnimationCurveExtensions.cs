@@ -221,6 +221,14 @@ namespace VamTimeline
             }
         }
 
+        public static void SmoothNeighbors(this AnimationCurve curve, int key)
+        {
+            if (key == -1) return;
+            curve.SmoothTangents(key, 1f);
+            if (key > 0) curve.SmoothTangents(key - 1, 1f);
+            if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
+        }
+
         public static void SmoothAllFrames(this AnimationCurve curve)
         {
             if (curve.length == 2)
