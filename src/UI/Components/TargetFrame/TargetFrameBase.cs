@@ -88,7 +88,7 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesRebuilt()
         {
-            SetTime(plugin.animation.clipTime, true);
+            SetTime(plugin.animation.clipTime, !plugin.animation.isPlaying);
         }
 
         private void CreateToggle(IAtomPlugin plugin)

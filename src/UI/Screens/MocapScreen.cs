@@ -11,14 +11,17 @@ namespace VamTimeline
     {
         public const string ScreenName = "Mocap";
         private const string _recordingLabel = "\u25A0 Waiting for recording...";
-        private const string _startRecordLabel = "\u25B6 Play and record now";
+        private const string _startRecordControllersLabel = "\u25B6 Mocap controllers now";
+        private const string _startRecordFloatParamsLabel = "\u25B6 Record float params now";
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
-        private static Coroutine _recordingCoroutine;
+        private static Coroutine _recordingControllersCoroutine;
+        private static Coroutine _recordingFloatParamsCoroutine;
         private static bool _lastResizeAnimation = false;
         private static float _lastReduceMinPosDistance = 0.04f;
         private static float _lastReduceMinRotation = 10f;
         private static float _lastReduceMaxFramesPerSecond = 5f;
-        private static bool _recordMocapOnLoad;
+        private static bool _importMocapOnLoad;
+        private static bool _simplifyFloatParamsOnLoad;
 
         public override string screenId => ScreenName;
 
@@ -29,7 +32,8 @@ namespace VamTimeline
         private JSONStorableBool _resizeAnimationJSON;
         private UIDynamicButton _importRecordedUI;
         private UIDynamicButton _reduceKeyframesUI;
-        private UIDynamicButton _playAndRecordUI;
+        private UIDynamicButton _playAndRecordControllersUI;
+        private UIDynamicButton _playAndRecordFloatParamsUI;
 
         public MocapScreen()
             : base()
@@ -90,8 +94,11 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            _playAndRecordUI = prefabFactory.CreateButton(_recordingCoroutine != null ? _recordingLabel : _startRecordLabel);
-            _playAndRecordUI.button.onClick.AddListener(() => PlayAndRecord());
+            _playAndRecordControllersUI = prefabFactory.CreateButton(_recordingControllersCoroutine != null ? _recordingLabel : _startRecordControllersLabel);
+            _playAndRecordControllersUI.button.onClick.AddListener(() => PlayAndRecordControllers());
+
+            _playAndRecordFloatParamsUI = prefabFactory.CreateButton(_recordingFloatParamsCoroutine != null ? _recordingLabel : _startRecordFloatParamsLabel);
+            _playAndRecordFloatParamsUI.button.onClick.AddListener(() => PlayAndRecordFloatParams());
 
             prefabFactory.CreateSpacer();
 
@@ -102,23 +109,29 @@ namespace VamTimeline
             animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
 
-            if (_recordMocapOnLoad)
+            if (_importMocapOnLoad)
             {
-                _recordMocapOnLoad = false;
+                _importMocapOnLoad = false;
                 ImportRecorded();
+            }
+
+            if (_simplifyFloatParamsOnLoad)
+            {
+                _simplifyFloatParamsOnLoad = false;
+                ReduceKeyframes();
             }
         }
 
         private void OnTargetsSelectionChanged()
         {
-            if (_recordingCoroutine != null)
-                _playAndRecordUI.button.interactable = true;
+            if (_recordingControllersCoroutine != null)
+                _playAndRecordControllersUI.button.interactable = true;
             else if (current.GetSelectedTargets().Any())
-                _playAndRecordUI.button.interactable = true;
+                _playAndRecordControllersUI.button.interactable = true;
             else if (plugin.containingAtom.freeControllers.Any(fc => fc.GetComponent<MotionAnimationControl>()?.armedForRecord ?? false))
-                _playAndRecordUI.button.interactable = true;
+                _playAndRecordControllersUI.button.interactable = true;
             else
-                _playAndRecordUI.button.interactable = false;
+                _playAndRecordControllersUI.button.interactable = false;
         }
 
         private void ImportRecorded()
@@ -584,13 +597,13 @@ namespace VamTimeline
             }
         }
 
-        public void PlayAndRecord()
+        public void PlayAndRecordControllers()
         {
-            if (_recordingCoroutine != null)
+            if (_recordingControllersCoroutine != null)
             {
-                plugin.StopCoroutine(_recordingCoroutine);
-                _recordingCoroutine = null;
-                _playAndRecordUI.label = _startRecordLabel;
+                plugin.StopCoroutine(_recordingControllersCoroutine);
+                _recordingControllersCoroutine = null;
+                _playAndRecordControllersUI.label = _startRecordControllersLabel;
                 SuperController.singleton.StopPlayback();
                 animation.StopAll();
                 return;
@@ -603,10 +616,10 @@ namespace VamTimeline
             }
             animation.StopAll();
             animation.ResetAll();
-            _recordingCoroutine = plugin.StartCoroutine(PlayAndRecordCoroutine());
+            _recordingControllersCoroutine = plugin.StartCoroutine(PlayAndRecordControllersCoroutine());
         }
 
-        private IEnumerator PlayAndRecordCoroutine()
+        private IEnumerator PlayAndRecordControllersCoroutine()
         {
             yield return 0;
             ClearMocapData();
@@ -615,8 +628,8 @@ namespace VamTimeline
             {
                 if (string.IsNullOrEmpty(SuperController.singleton.helpText))
                 {
-                    _recordingCoroutine = null;
-                    _playAndRecordUI.label = _startRecordLabel;
+                    _recordingControllersCoroutine = null;
+                    _playAndRecordControllersUI.label = _startRecordControllersLabel;
                     SuperController.singleton.SelectController(plugin.containingAtom.mainController);
                     yield break;
                 }
@@ -635,10 +648,10 @@ namespace VamTimeline
             foreach (var target in excludedControllers)
                 target.playbackEnabled = true;
             SuperController.singleton.motionAnimationMaster.StopPlayback();
-            _recordingCoroutine = null;
+            _recordingControllersCoroutine = null;
             if (!plugin.containingAtom.mainController.selected)
             {
-                _recordMocapOnLoad = true;
+                _importMocapOnLoad = true;
                 SuperController.singleton.SelectController(plugin.containingAtom.mainController);
             }
         }
@@ -656,6 +669,44 @@ namespace VamTimeline
             {
                 mac.ClearAnimation();
             }
+        }
+
+        public void PlayAndRecordFloatParams()
+        {
+            if (_recordingFloatParamsCoroutine != null)
+            {
+                plugin.StopCoroutine(_recordingFloatParamsCoroutine);
+                _recordingFloatParamsCoroutine = null;
+                _playAndRecordFloatParamsUI.label = _startRecordFloatParamsLabel;
+                animation.StopAll();
+                SuperController.singleton.helpText = string.Empty;
+                return;
+            }
+            if (!current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().Any())
+            {
+                SuperController.LogError("Timeline: No float params to record");
+                return;
+            }
+            animation.StopAll();
+            animation.ResetAll();
+            _recordingFloatParamsCoroutine = plugin.StartCoroutine(PlayAndRecordFloatParamsCoroutine());
+        }
+
+        private IEnumerator PlayAndRecordFloatParamsCoroutine()
+        {
+            var sctrl = SuperController.singleton;
+            sctrl.helpText = "Press Select or Spacebar to start float params recording";
+            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            while (!sctrl.GetLeftSelect() && !sctrl.GetRightSelect() && !sctrl.GetMouseSelect() && !Input.GetKeyDown(KeyCode.Space))
+                yield return 0;
+            sctrl.helpText = string.Empty;
+            animation.PlayAll(false);
+            while (animation.playTime <= current.animationLength)
+                yield return 0;
+            animation.StopAll();
+            _recordingFloatParamsCoroutine = null;
+            _simplifyFloatParamsOnLoad = true;
+            onScreenChangeRequested.Invoke(ScreenName);
         }
 
         public override void OnDestroy()

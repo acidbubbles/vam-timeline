@@ -6,6 +6,7 @@ namespace VamTimeline
     public class FloatParamTargetFrame : TargetFrameBase<FloatParamAnimationTarget>
     {
         private RectTransform _sliderFillRect;
+        private SimpleSlider _simpleSlider;
 
         public FloatParamTargetFrame()
             : base()
@@ -18,8 +19,8 @@ namespace VamTimeline
             var sliderBackground = CreateSliderBackground(slider);
             CreateSliderFill(sliderBackground);
 
-            var interactions = slider.AddComponent<SimpleSlider>();
-            interactions.OnChange.AddListener((float val) =>
+            _simpleSlider = slider.AddComponent<SimpleSlider>();
+            _simpleSlider.onChange.AddListener((float val) =>
             {
                 if (!target.EnsureAvailable()) return;
                 SetValue(target.floatParam.min + val * (target.floatParam.max - target.floatParam.min));
@@ -136,12 +137,13 @@ namespace VamTimeline
                     return;
             }
             target.SetKeyframe(time, val);
+            target.floatParam.val = val;
             if (!plugin.animation.isPlaying)
             {
-                target.floatParam.val = val;
                 SetTime(time, true);
                 ToggleKeyframe(true);
             }
+            UpdateSliderFromValue();
         }
 
         public override void SetTime(float time, bool stopped)
@@ -162,6 +164,12 @@ namespace VamTimeline
                 valueText.text = target.floatParam.val.ToString("0.00");
             }
 
+            if (!_simpleSlider.interacting)
+                UpdateSliderFromValue();
+        }
+
+        private void UpdateSliderFromValue()
+        {
             _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-target.floatParam.min + target.floatParam.val) / (target.floatParam.max - target.floatParam.min)), 1f);
         }
 
