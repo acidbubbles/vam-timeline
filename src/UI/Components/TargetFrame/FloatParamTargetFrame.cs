@@ -126,13 +126,20 @@ namespace VamTimeline
 
         private void SetValue(float val)
         {
-            if (plugin.animation.isPlaying) return;
             if (!target.EnsureAvailable(false)) return;
-            target.floatParam.val = val;
             var time = plugin.animation.clipTime.Snap();
-            target.SetKeyframe(time, target.floatParam.val);
-            SetTime(time, true);
-            ToggleKeyframe(true);
+            if (plugin.animation.isPlaying)
+            {
+                if (Mathf.Abs(target.value.Evaluate(time) - val) < 0.01)
+                    return;
+            }
+            target.SetKeyframe(time, val);
+            if (!plugin.animation.isPlaying)
+            {
+                target.floatParam.val = val;
+                SetTime(time, true);
+                ToggleKeyframe(true);
+            }
         }
 
         public override void SetTime(float time, bool stopped)
