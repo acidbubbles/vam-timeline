@@ -129,8 +129,14 @@ namespace VamTimeline
         {
             if (clips.Count == 0)
                 AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
-            current = clips[0];
+            current = GetDefaultClip();
             RebuildAnimationNow();
+        }
+
+        public AtomAnimationClip GetDefaultClip()
+        {
+            var firstLayer = clips[0].animationLayer;
+            return clips.TakeWhile(c => c.animationLayer == firstLayer).FirstOrDefault(c => c.animationLayer == firstLayer && c.autoPlay) ?? clips[0];
         }
 
         public bool IsEmpty()

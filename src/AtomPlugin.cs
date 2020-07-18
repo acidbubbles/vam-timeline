@@ -283,6 +283,9 @@ namespace VamTimeline
                 if (animation.isPlaying)
                     animation.StopAll();
                 animation.ResetAll();
+                var defaultClip = animation.GetDefaultClip();
+                if (animation.current != defaultClip)
+                    animation.SelectAnimation(defaultClip);
             });
             RegisterAction(stopAndResetJSON);
 
