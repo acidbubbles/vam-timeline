@@ -18,6 +18,7 @@ namespace VamTimeline
         private static float _lastReduceMinPosDistance = 0.04f;
         private static float _lastReduceMinRotation = 10f;
         private static float _lastReduceMaxFramesPerSecond = 5f;
+        private static bool _recordMocapOnLoad;
 
         public override string screenId => ScreenName;
 
@@ -100,6 +101,12 @@ namespace VamTimeline
 
             animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
+
+            if (_recordMocapOnLoad)
+            {
+                _recordMocapOnLoad = false;
+                ImportRecorded();
+            }
         }
 
         private void OnTargetsSelectionChanged()
@@ -593,6 +600,7 @@ namespace VamTimeline
                 {
                     _recordingCoroutine = null;
                     _playAndRecordUI.label = _startRecordLabel;
+                    SuperController.singleton.SelectController(plugin.containingAtom.mainController);
                     yield break;
                 }
                 yield return 0;
@@ -611,8 +619,11 @@ namespace VamTimeline
                 target.playbackEnabled = true;
             SuperController.singleton.motionAnimationMaster.StopPlayback();
             _recordingCoroutine = null;
-            SuperController.singleton.SelectController(plugin.containingAtom.mainController);
-            SuperController.LogMessage("Re-open Timeline's Mocap screen and import your mocap.");
+            if (!plugin.containingAtom.mainController.selected)
+            {
+                _recordMocapOnLoad = true;
+                SuperController.singleton.SelectController(plugin.containingAtom.mainController);
+            }
         }
 
         private static bool IsRecording()
