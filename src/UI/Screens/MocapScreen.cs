@@ -697,6 +697,7 @@ namespace VamTimeline
             var sctrl = SuperController.singleton;
             sctrl.helpText = "Press Select or Spacebar to start float params recording";
             onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            yield return 0; // Avoid select from same frame to interact
             while (!sctrl.GetLeftSelect() && !sctrl.GetRightSelect() && !sctrl.GetMouseSelect() && !Input.GetKeyDown(KeyCode.Space))
                 yield return 0;
             sctrl.helpText = string.Empty;
