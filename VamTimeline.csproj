@@ -51,6 +51,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>../../../../VaM_Data/Managed/UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="SteamVR">
+      <HintPath>../../../../VaM_Data/Managed/SteamVR.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>../../../../VaM_Data/Managed/Assembly-CSharp.dll</HintPath>
     </Reference>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using Valve.VR;
 
 namespace VamTimeline
 {
@@ -11,8 +12,8 @@ namespace VamTimeline
     {
         public const string ScreenName = "Mocap";
         private const string _recordingLabel = "\u25A0 Waiting for recording...";
-        private const string _startRecordControllersLabel = "\u25B6 Mocap controllers now";
-        private const string _startRecordFloatParamsLabel = "\u25B6 Record float params now";
+        private const string _startRecordControllersLabel = "\u25B6 Clear & mocap controllers now";
+        private const string _startRecordFloatParamsLabel = "\u25B6 Clear & record float params now";
         private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
         private static Coroutine _recordingControllersCoroutine;
         private static Coroutine _recordingFloatParamsCoroutine;
@@ -689,6 +690,10 @@ namespace VamTimeline
             }
             animation.StopAll();
             animation.ResetAll();
+            foreach (var target in current.GetSelectedTargets().OfType<FloatParamAnimationTarget>())
+            {
+                operations.Keyframes().RemoveAll(target);
+            }
             _recordingFloatParamsCoroutine = plugin.StartCoroutine(PlayAndRecordFloatParamsCoroutine());
         }
 
@@ -698,7 +703,7 @@ namespace VamTimeline
             sctrl.helpText = "Press Select or Spacebar to start float params recording";
             onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
             yield return 0; // Avoid select from same frame to interact
-            while (!sctrl.GetLeftSelect() && !sctrl.GetRightSelect() && !sctrl.GetMouseSelect() && !Input.GetKeyDown(KeyCode.Space))
+            while (!AreAnyStartRecordKeysDown())
                 yield return 0;
             sctrl.helpText = string.Empty;
             animation.PlayAll(false);
@@ -708,6 +713,23 @@ namespace VamTimeline
             _recordingFloatParamsCoroutine = null;
             _simplifyFloatParamsOnLoad = true;
             onScreenChangeRequested.Invoke(ScreenName);
+        }
+
+        private bool AreAnyStartRecordKeysDown()
+        {
+            var sctrl = SuperController.singleton;
+            if (sctrl.isOVR)
+            {
+                if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.Touch)) return true;
+                if (OVRInput.GetDown(OVRInput.Button.Three, OVRInput.Controller.Touch)) return true;
+            }
+            if (sctrl.isOpenVR)
+            {
+                if (sctrl.selectAction.stateDown) return true;
+            }
+            if (Input.GetMouseButtonDown(0)) return true;
+            if (Input.GetKeyDown(KeyCode.Space)) return true;
+            return false;
         }
 
         public override void OnDestroy()
