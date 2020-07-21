@@ -473,15 +473,17 @@ namespace VamTimeline
 
             if (clip.nextAnimationName == RandomizeAnimationName)
             {
-                var idx = Random.Range(0, clips.Count - 1);
-                if (idx >= clips.IndexOf(clip)) idx += 1;
-                clip.SetNext(clips[idx].animationName, nextTime);
+                var group = clips
+                    .Where(c => c.animationName != clip.animationName && c.animationLayer == clip.animationLayer)
+                    .ToList();
+                var idx = Random.Range(0, group.Count);
+                clip.SetNext(group[idx].animationName, nextTime);
             }
             else if (clip.nextAnimationName.EndsWith(RandomizeGroupSuffix))
             {
                 var prefix = clip.nextAnimationName.Substring(0, clip.nextAnimationName.Length - RandomizeGroupSuffix.Length);
                 var group = clips
-                    .Where(c => c.animationName != clip.animationName)
+                    .Where(c => c.animationName != clip.animationName && c.animationLayer == clip.animationLayer)
                     .Where(c => c.animationName.StartsWith(prefix))
                     .ToList();
                 var idx = Random.Range(0, group.Count);
