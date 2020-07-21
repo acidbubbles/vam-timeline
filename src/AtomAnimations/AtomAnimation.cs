@@ -337,6 +337,14 @@ namespace VamTimeline
             playTime = playTime;
         }
 
+        public void StopAndReset()
+        {
+            if (isPlaying) StopAll();
+            ResetAll();
+            var defaultClip = GetDefaultClip();
+            if (current != defaultClip) SelectAnimation(defaultClip);
+        }
+
         #endregion
 
         #region Animation state

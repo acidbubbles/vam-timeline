@@ -71,6 +71,9 @@ namespace VamTimeline
                     case nameof(SendSyncAnimation):
                         ReceiveSyncAnimation(e);
                         break;
+                    case nameof(SendStopAndReset):
+                        ReceiveStopAndReset(e);
+                        break;
                     default:
                         SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
                         break;
@@ -140,6 +143,19 @@ namespace VamTimeline
             else
                 animation.StopClip(clip);
             clip.clipTime = (float)e[3];
+        }
+
+        public void SendStopAndReset()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendStopAndReset)
+            });
+        }
+
+        private void ReceiveStopAndReset(object[] _)
+        {
+            animation.StopAndReset();
         }
 
         public void SendTime(AtomAnimationClip clip)
