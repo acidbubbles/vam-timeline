@@ -324,6 +324,7 @@ namespace VamTimeline
         {
             var animations = animation.clips
                 .Where(c => c.animationLayer == current.animationLayer)
+                .Where(c => c.animationName != current.animationName)
                 .Select(c => c.animationName)
                 .GroupBy(x =>
                 {
@@ -333,7 +334,6 @@ namespace VamTimeline
                 });
             return new[] { "" }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Where(n => n != current.animationName)
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
         }
