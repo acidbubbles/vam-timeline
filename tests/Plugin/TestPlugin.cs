@@ -58,8 +58,11 @@ namespace VamTimeline.Tests.Plugin
                     yield return x;
                 if (output.Length == 0)
                 {
-                    _resultBuilder.AppendLine($"{test.name} PASS {sw.ElapsedMilliseconds:0}ms");
-                    _resultJSON.val = _resultBuilder.ToString();
+                    if (sw.ElapsedMilliseconds > 5)
+                    {
+                        _resultBuilder.AppendLine($"{test.name} PASS {sw.ElapsedMilliseconds:0}ms (LONG)");
+                        _resultJSON.val = _resultBuilder.ToString();
+                    }
                 }
                 else
                 {

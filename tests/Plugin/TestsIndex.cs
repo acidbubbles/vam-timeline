@@ -1,5 +1,6 @@
 using VamTimeline.Tests.Framework;
 using VamTimeline.Tests.Specs;
+using VamTimeline.Tests.Unit;
 
 namespace VamTimeline.Tests.Plugin
 {
@@ -8,8 +9,9 @@ namespace VamTimeline.Tests.Plugin
         public static TestsEnumerator GetAllTests()
         {
             return new TestsEnumerator(new ITestClass[]{
+                new AnimationCurveExtensionsTests(),
                 new AnimationTests(),
-                new ResizeAnimationOperationTests()
+                new ResizeAnimationOperationTests(),
             });
         }
     }

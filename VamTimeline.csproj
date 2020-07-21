@@ -156,6 +156,7 @@
     <Compile Include="tests\Plugin\TestsIndex.cs" />
     <Compile Include="tests\Specs\AnimationTests.cs" />
     <Compile Include="tests\Specs\ResizeAnimationOperationTests.cs" />
+    <Compile Include="tests\Unit\AtomAnimations\AnimationCurveExtensionsTests.cs" />
     <!-- /TestFiles -->
   </ItemGroup>
 

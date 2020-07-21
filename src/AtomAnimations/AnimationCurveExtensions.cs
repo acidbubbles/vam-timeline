@@ -11,13 +11,13 @@ namespace VamTimeline
 
         public static int SetKeyframe(this AnimationCurve curve, float time, float value)
         {
-            var key = curve.AddKey(time, value);
+            if (curve.length == 0) return curve.AddKey(time, value);
+            var key = curve.KeyframeBinarySearch(time);
             if (key != -1)
-                return key;
-
-            key = curve.KeyframeBinarySearch(time);
-            if (key == -1) throw new InvalidOperationException($"Cannot find keyframe at time {time}, no keys exist at this position. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
-            SetKeyframeByKey(curve, key, value);
+                return SetKeyframeByKey(curve, key, value);
+            key = curve.AddKey(time, value);
+            if (key == -1)
+                throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
             return key;
         }
 
@@ -102,6 +102,8 @@ namespace VamTimeline
         {
             if (time == 0) return 0;
             if (time == curve[curve.length - 1].time) return curve.length - 1;
+            var timeSmall = time - 0.0001f;
+            var timeLarge = time + 0.0001f;
 
             var left = 0;
             var right = curve.length - 1;
@@ -111,11 +113,11 @@ namespace VamTimeline
                 var middle = left + (right - left) / 2;
 
                 var keyTime = curve[middle].time;
-                if (keyTime > time)
+                if (keyTime > timeLarge)
                 {
                     right = middle - 1;
                 }
-                else if (curve[middle].time < time)
+                else if (curve[middle].time < timeSmall)
                 {
                     left = middle + 1;
                 }

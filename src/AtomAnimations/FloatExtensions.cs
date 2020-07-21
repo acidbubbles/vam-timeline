@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -21,7 +22,7 @@ namespace VamTimeline
 
             if (range > 0f)
             {
-                var snapDelta = value % range;
+                var snapDelta = Mathf.Repeat(value, range);
                 if (snapDelta != 0f)
                 {
                     value -= snapDelta;

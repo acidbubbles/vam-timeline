@@ -726,7 +726,6 @@ namespace VamTimeline
             {
                 if (sctrl.selectAction.stateDown) return true;
             }
-            if (Input.GetMouseButtonDown(0)) return true;
             if (Input.GetKeyDown(KeyCode.Space)) return true;
             return false;
         }
