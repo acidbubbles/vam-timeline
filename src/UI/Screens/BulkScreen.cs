@@ -194,7 +194,7 @@ namespace VamTimeline
                 try
                 {
                     var leadCurve = target.GetLeadCurve();
-                    for (var key = leadCurve.length - 2; key > 0; key--)
+                    for (var key = 0; key < leadCurve.length; key++)
                     {
                         var keyTime = leadCurve[key].time;
                         if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)

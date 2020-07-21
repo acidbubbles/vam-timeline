@@ -136,10 +136,6 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(curveType)) return;
 
-            if (time == 0 && curveType == CurveTypeValues.CopyPrevious)
-            {
-                return;
-            }
             UpdateSetting(time, curveType, false);
             if (loop && time == 0)
             {
