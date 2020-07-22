@@ -31,13 +31,21 @@ namespace VamTimeline
         public List<UIDynamicButton> tabs = new List<UIDynamicButton>();
         public Transform buttonPrefab;
 
-        public UIDynamicButton Add(string name)
+        public UIDynamicButton Add(string name, string label = null, float preferredWidth = 0)
         {
             var rt = Instantiate(buttonPrefab);
             rt.SetParent(transform, false);
 
             var btn = rt.gameObject.GetComponent<UIDynamicButton>();
-            btn.label = name;
+            btn.name = name;
+            btn.label = label ?? name;
+
+            if (preferredWidth > 0)
+            {
+                var layout = btn.gameObject.GetComponent<LayoutElement>();
+                layout.minWidth = preferredWidth;
+                layout.preferredWidth = preferredWidth;
+            }
 
             btn.button.onClick.AddListener(() =>
             {
@@ -54,7 +62,7 @@ namespace VamTimeline
         {
             foreach (var btn in tabs)
             {
-                btn.button.interactable = btn.label != screenName;
+                btn.button.interactable = btn.name != screenName;
             }
         }
     }

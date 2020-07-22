@@ -24,16 +24,26 @@ namespace VamTimeline
 
             // Right side
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", AnimationsScreen.ScreenName);
+            CreateChangeScreenButton($"<b><</b> <i>Back to {AnimationsScreen.ScreenName}</i>", AnimationsScreen.ScreenName);
+
+            CreateHeader("Add animations", 1);
+
+            prefabFactory.CreateSpacer();
+
+            CreateHeader("Animations", 2);
 
             InitCreateAnimationUI();
 
             prefabFactory.CreateSpacer();
 
+            CreateHeader("Layers", 2);
+
             InitCreateLayerUI();
             InitSplitLayerUI();
 
             prefabFactory.CreateSpacer();
+
+            CreateHeader("More", 2);
 
             CreateChangeScreenButton("<i><b>Import</b> from file...</i>", ImportExportScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);

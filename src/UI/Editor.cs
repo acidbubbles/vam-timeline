@@ -103,7 +103,9 @@ namespace VamTimeline
             _curves = InitCurvesUI();
 
             tabs.Add(AnimationsScreen.ScreenName);
+            tabs.Add(AddAnimationScreen.ScreenName, "+", 60f);
             tabs.Add(TargetsScreen.ScreenName);
+            tabs.Add(AddRemoveTargetsScreen.ScreenName, "+", 60f);
             tabs.Add(EditAnimationScreen.ScreenName);
             tabs.Add(MoreScreen.ScreenName);
             _expandButton = tabs.Add("Collapse >");

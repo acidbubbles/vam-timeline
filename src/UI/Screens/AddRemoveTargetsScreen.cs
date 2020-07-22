@@ -33,19 +33,31 @@ namespace VamTimeline
         {
             base.Init(plugin);
 
-            CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
+            CreateChangeScreenButton($"<b><</b> <i>Back to {TargetsScreen.ScreenName}</i>", TargetsScreen.ScreenName);
+
+            CreateHeader("Add/remove targets", 1);
 
             prefabFactory.CreateSpacer();
+
+            CreateHeader("Triggers", 2);
 
             InitTriggersUI();
 
             prefabFactory.CreateSpacer();
 
+            CreateHeader("Controllers", 2);
+
             InitControllersUI();
 
             prefabFactory.CreateSpacer();
 
+            CreateHeader("Storable floats", 2);
+
             InitFloatParamsUI();
+
+            prefabFactory.CreateSpacer();
+
+            CreateHeader("Manage", 2);
 
             InitFixMissingUI();
 
