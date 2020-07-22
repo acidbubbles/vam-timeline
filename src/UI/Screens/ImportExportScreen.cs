@@ -206,11 +206,25 @@ namespace VamTimeline
                 SuperController.LogError($"VamTimeline: Imported file does not contain any animations. Are you trying to load a scene file?");
                 return false;
             }
+            var importedClips = new List<AtomAnimationClip>();
             foreach (JSONClass clipJSON in clipsJSON)
             {
                 var clip = ImportClip(clipJSON);
                 if (clip == null) continue;
                 animation.AddClip(clip);
+                importedClips.Add(clip);
+            }
+            foreach (var clip in importedClips)
+            {
+                if (clip.autoPlay && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.autoPlay))
+                {
+                    clip.autoPlay = false;
+                }
+                if (clip.nextAnimationName != null && !animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == clip.nextAnimationName))
+                {
+                    clip.nextAnimationName = null;
+                    clip.nextAnimationTime = 0f;
+                }
             }
             animation.Initialize();
             animation.RebuildAnimationNow();
@@ -254,16 +268,6 @@ namespace VamTimeline
                     SuperController.LogError($"VamTimeline: Imported clip '{clip.animationName}' already exists and will be imported with the name {newAnimationName}");
                     clip.animationName = newAnimationName;
                 }
-            }
-
-            if (clip.autoPlay && animation.clips.Any(c => c.autoPlay))
-            {
-                clip.autoPlay = false;
-            }
-            if (clip.nextAnimationName != null && !animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == clip.nextAnimationName))
-            {
-                clip.nextAnimationName = null;
-                clip.nextAnimationTime = 0f;
             }
 
             return clip;
