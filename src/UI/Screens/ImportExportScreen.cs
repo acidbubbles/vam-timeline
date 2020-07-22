@@ -257,7 +257,14 @@ namespace VamTimeline
             }
 
             if (clip.autoPlay && animation.clips.Any(c => c.autoPlay))
+            {
                 clip.autoPlay = false;
+            }
+            if (clip.nextAnimationName != null && !animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == clip.nextAnimationName))
+            {
+                clip.nextAnimationName = null;
+                clip.nextAnimationTime = 0f;
+            }
 
             return clip;
         }
