@@ -37,7 +37,7 @@ namespace VamTimeline
                 var ms = plugin.animation.clipTime.ToMilliseconds();
                 if (target.triggersMap.TryGetValue(ms, out trigger))
                 {
-                    valueText.text = $"Has Triggers";
+                    valueText.text = string.IsNullOrEmpty(trigger.displayName) ? "Has Triggers" : trigger.displayName;
                     if (_editTriggersButton != null) _editTriggersButton.label = "Edit Triggers";
                 }
                 else

@@ -27,6 +27,15 @@ namespace VamTimeline
                 trigger.Update(time);
         }
 
+        public void Refresh()
+        {
+            foreach (var trigger in triggersMap.Select(kvp => kvp.Value))
+            {
+                // Only way to refresh a missing atom (self)
+                trigger.RestoreFromJSON(trigger.GetJSON());
+            }
+        }
+
         public void Validate(float animationLength)
         {
             foreach (var trigger in _triggers)

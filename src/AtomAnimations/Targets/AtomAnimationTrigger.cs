@@ -18,6 +18,7 @@ namespace VamTimeline
         {
             if (clipTime >= startTime && clipTime < endTime)
             {
+                if (active) return;
                 active = true;
                 transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
             }

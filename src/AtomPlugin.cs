@@ -313,6 +313,11 @@ namespace VamTimeline
                 {
                     yield return 0;
                 }
+                foreach (var t in animation.clips.SelectMany(c => c.targetTriggers))
+                {
+                    // Allows accessing the self target
+                    t.Refresh();
+                }
                 StartAutoPlay();
                 yield break;
             }
