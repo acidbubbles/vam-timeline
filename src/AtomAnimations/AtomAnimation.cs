@@ -766,12 +766,25 @@ namespace VamTimeline
 
             SampleFloatParams();
             SampleTriggers();
+            ProcessAnimationSequence();
+        }
 
+        private void ProcessAnimationSequence()
+        {
             foreach (var clip in clips)
             {
                 if (clip.playbackScheduledNextAnimationName != null && playTime >= clip.playbackScheduledNextTime)
                 {
-                    TransitionAnimation(clip, GetClip(clip.playbackScheduledNextAnimationName));
+                    var nextAnimationName = clip.playbackScheduledNextAnimationName;
+                    clip.playbackScheduledNextAnimationName = null;
+                    clip.playbackScheduledNextTime = 0f;
+                    var nextClip = GetClip(nextAnimationName);
+                    if (nextClip == null)
+                    {
+                        SuperController.LogError($"VamTimeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
+                        continue;
+                    }
+                    TransitionAnimation(clip, nextClip);
                 }
             }
         }
