@@ -137,7 +137,7 @@ namespace VamTimeline
                 if (anim == null) return;
                 if (animation.clips.Count == 1)
                 {
-                    SuperController.LogError("VamTimeline: Cannot delete the only animation.");
+                    SuperController.LogError("Timeline: Cannot delete the only animation.");
                     return;
                 }
                 animation.RemoveClip(anim);
@@ -163,7 +163,7 @@ namespace VamTimeline
             {
                 if (!animation.EnumerateLayers().Skip(1).Any())
                 {
-                    SuperController.LogError("VamTimeline: Cannot delete the only layer.");
+                    SuperController.LogError("Timeline: Cannot delete the only layer.");
                     return;
                 }
                 var clips = animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList();

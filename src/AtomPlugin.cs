@@ -98,7 +98,7 @@ namespace VamTimeline
 
             var scrollRect = scriptUI.fullWidthUIContent.transform.parent.parent.parent.GetComponent<ScrollRect>();
             if (scrollRect == null)
-                SuperController.LogError("VamTimeline: Scroll rect not at the expected hierarchy position");
+                SuperController.LogError("Timeline: Scroll rect not at the expected hierarchy position");
             else
             {
                 scrollRect.elasticity = 0;
@@ -712,7 +712,7 @@ namespace VamTimeline
 
                 if (clipboard.entries.Count == 0)
                 {
-                    SuperController.LogMessage("VamTimeline: Clipboard is empty");
+                    SuperController.LogMessage("Timeline: Clipboard is empty");
                     return;
                 }
                 var time = animation.clipTime;

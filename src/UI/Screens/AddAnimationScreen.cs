@@ -208,7 +208,7 @@ namespace VamTimeline
             var targets = current.GetSelectedTargets().ToList();
             if (targets.Count == 0)
             {
-                SuperController.LogError("VamTimeline: You must select a subset of targets to split to another layer.");
+                SuperController.LogError("Timeline: You must select a subset of targets to split to another layer.");
                 return;
             }
 

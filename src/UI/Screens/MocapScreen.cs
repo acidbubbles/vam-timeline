@@ -140,14 +140,14 @@ namespace VamTimeline
             {
                 if (SuperController.singleton.motionAnimationMaster == null || plugin.containingAtom?.motionAnimationControls == null)
                 {
-                    SuperController.LogError("VamTimeline: Missing motion animation controls");
+                    SuperController.LogError("Timeline: Missing motion animation controls");
                     return;
                 }
 
                 var length = plugin.containingAtom.motionAnimationControls.Select(m => m?.clip?.clipLength ?? 0).Max().Snap(0.01f);
                 if (length < 0.01f)
                 {
-                    SuperController.LogError("VamTimeline: No motion animation to import.");
+                    SuperController.LogError("Timeline: No motion animation to import.");
                     return;
                 }
 
