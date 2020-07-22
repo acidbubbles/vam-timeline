@@ -361,12 +361,12 @@ namespace VamTimeline
         {
             try
             {
-                HandleKeyboardShortcuts();
-
-                if (Time.frameCount % 2 == 0) return;
-
                 var proxy = GetOrDispose(_selectedLink);
                 if (proxy == null) return;
+
+                HandleKeyboardShortcuts(proxy);
+
+                if (Time.frameCount % 2 == 0) return;
 
                 var time = proxy.time;
                 if (time != null && time.val != _timeJSON.val)
@@ -381,10 +381,8 @@ namespace VamTimeline
             }
         }
 
-        private void HandleKeyboardShortcuts()
+        private void HandleKeyboardShortcuts(SyncProxy proxy)
         {
-            var proxy = GetOrDispose(_selectedLink);
-            if (proxy == null) return;
             if (!_enableKeyboardShortcuts.val) return;
 
             if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -519,7 +517,15 @@ namespace VamTimeline
                 }
                 proxy.Dispose();
                 if (_selectedLink == proxy)
+                {
                     _selectedLink = null;
+                    if (_links.Count > 0)
+                    {
+                        var replacement = GetOrDispose(_links[0]);
+                        if (replacement != null && _selectedLink == null) _selectedLink = replacement;
+                        return replacement;
+                    }
+                }
                 return null;
             }
             return proxy;

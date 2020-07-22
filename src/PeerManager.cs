@@ -8,13 +8,13 @@ namespace VamTimeline
     public class PeerManager
     {
         public AtomAnimation animation;
+        public bool syncing => _sending > 0 || _receiving;
 
         private readonly List<JSONStorable> _peers = new List<JSONStorable>();
         private readonly Atom _containingAtom;
         private readonly IAtomPlugin _plugin;
-        private bool _sending = false;
         private bool _receiving = false;
-        private bool syncing => _sending || _receiving;
+        private int _sending = 0;
 
         public PeerManager(Atom containingAtom, IAtomPlugin plugin)
         {
@@ -250,7 +250,7 @@ namespace VamTimeline
 
         private void SendTimelineEvent(object[] e)
         {
-            _sending = true;
+            Begin();
             try
             {
                 foreach (var storable in _peers)
@@ -261,13 +261,23 @@ namespace VamTimeline
             }
             finally
             {
-                _sending = false;
+                Complete();
             }
         }
 
         private AtomAnimationClip GetClip(object[] e)
         {
             return animation.GetClip((string)e[1]);
+        }
+
+        public void Begin()
+        {
+            _sending++;
+        }
+
+        public void Complete()
+        {
+            _sending--;
         }
 
         #endregion

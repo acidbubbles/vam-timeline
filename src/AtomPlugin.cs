@@ -280,8 +280,8 @@ namespace VamTimeline
             stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () =>
             {
                 if (animation == null) return;
-                peers.SendStopAndReset();
                 animation.StopAndReset();
+                peers.SendStopAndReset();
             });
             RegisterAction(stopAndResetJSON);
 
