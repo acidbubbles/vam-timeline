@@ -251,7 +251,7 @@ namespace VamTimeline
                 else if (component is JSONStorableBool)
                     RemoveToggle((JSONStorableBool)component);
                 else
-                    SuperController.LogError($"VamTimeline: Cannot remove component {component}");
+                    SuperController.LogError($"Timeline: Cannot remove component {component}");
             }
         }
 

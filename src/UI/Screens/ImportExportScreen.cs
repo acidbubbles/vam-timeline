@@ -78,7 +78,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline: Failed to save file dialog: {exc}");
+                SuperController.LogError($"Timeline: Failed to save file dialog: {exc}");
             }
         }
 
@@ -100,7 +100,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline: Failed to export animation: {exc}");
+                SuperController.LogError($"Timeline: Failed to export animation: {exc}");
             }
         }
 
@@ -163,7 +163,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline: Failed to open file dialog: {exc}");
+                SuperController.LogError($"Timeline: Failed to open file dialog: {exc}");
             }
         }
 
@@ -176,7 +176,7 @@ namespace VamTimeline
                 var json = SuperController.singleton.LoadJSON(path);
                 if (json["AtomType"]?.Value != plugin.containingAtom.type)
                 {
-                    SuperController.LogError($"VamTimeline: Loaded animation for {json["AtomType"]} but current atom type is {plugin.containingAtom.type}");
+                    SuperController.LogError($"Timeline: Loaded animation for {json["AtomType"]} but current atom type is {plugin.containingAtom.type}");
                     return;
                 }
 
@@ -203,7 +203,7 @@ namespace VamTimeline
             var clipsJSON = jc["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0)
             {
-                SuperController.LogError($"VamTimeline: Imported file does not contain any animations. Are you trying to load a scene file?");
+                SuperController.LogError($"Timeline: Imported file does not contain any animations. Are you trying to load a scene file?");
                 return false;
             }
             var importedClips = new List<AtomAnimationClip>();
@@ -239,7 +239,7 @@ namespace VamTimeline
             {
                 if (animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controller == controller)))
                 {
-                    SuperController.LogError($"VamTimeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation.");
+                    SuperController.LogError($"Timeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation.");
                     return null;
                 }
             }
@@ -248,7 +248,7 @@ namespace VamTimeline
             {
                 if (animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetFloatParams.Any(t => t.name == floatParam)))
                 {
-                    SuperController.LogError($"VamTimeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation.");
+                    SuperController.LogError($"Timeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation.");
                     return null;
                 }
             }
@@ -265,7 +265,7 @@ namespace VamTimeline
                 else
                 {
                     var newAnimationName = GenerateUniqueAnimationName(animation, clip.animationName);
-                    SuperController.LogError($"VamTimeline: Imported clip '{clip.animationName}' already exists and will be imported with the name {newAnimationName}");
+                    SuperController.LogError($"Timeline: Imported clip '{clip.animationName}' already exists and will be imported with the name {newAnimationName}");
                     clip.animationName = newAnimationName;
                 }
             }
@@ -295,7 +295,7 @@ namespace VamTimeline
                     var fc = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == k);
                     if (fc == null)
                     {
-                        SuperController.LogError($"VamTimeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
+                        SuperController.LogError($"Timeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
                         continue;
                     }
                     var state = controllersState[k];

@@ -224,13 +224,13 @@ namespace VamTimeline
         {
             if (current.clipTime < _startJSON.val || current.clipTime > _endJSON.val)
             {
-                SuperController.LogError($"VamTimeline: Cannot offset, current time is outside of the bounds of the selection");
+                SuperController.LogError($"Timeline: Cannot offset, current time is outside of the bounds of the selection");
                 return;
             }
             _offsetSnapshot = current.Copy(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Cast<IAtomAnimationTarget>());
             if (_offsetSnapshot.controllers.Count == 0)
             {
-                SuperController.LogError($"VamTimeline: Cannot offset, no keyframes were found at time {current.clipTime}.");
+                SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {current.clipTime}.");
                 return;
             }
 

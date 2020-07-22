@@ -77,7 +77,7 @@ namespace VamTimeline
                     var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
                     if (controller == null)
                     {
-                        SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a controller '{controllerName}'");
+                        SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a controller '{controllerName}'");
                         continue;
                     }
                     var target = new FreeControllerAnimationTarget(controller);

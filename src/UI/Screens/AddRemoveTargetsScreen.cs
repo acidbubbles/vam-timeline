@@ -398,13 +398,13 @@ namespace VamTimeline
                 var controller = plugin.containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
-                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
                 if (current.targetControllers.Any(c => c.controller == controller))
                 {
-                    SuperController.LogError($"VamTimeline: Controller {uid} in atom {plugin.containingAtom.uid} was already added");
+                    SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} was already added");
                     return;
                 }
 
@@ -445,14 +445,14 @@ namespace VamTimeline
                 var storable = plugin.containingAtom.GetStorableByID(storableId);
                 if (storable == null)
                 {
-                    SuperController.LogError($"VamTimeline: Storable {storableId} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"Timeline: Storable {storableId} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 
                 var sourceFloatParam = storable.GetFloatJSONParam(floatParamName);
                 if (sourceFloatParam == null)
                 {
-                    SuperController.LogError($"VamTimeline: Param {floatParamName} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"Timeline: Param {floatParamName} in atom {plugin.containingAtom.uid} does not exist");
                     return;
                 }
 

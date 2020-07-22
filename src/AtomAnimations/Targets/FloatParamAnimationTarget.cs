@@ -58,7 +58,7 @@ namespace VamTimeline
             var storable = _atom.GetStorableByID(storableId);
             if (storable == null)
             {
-                if (!silent) SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a storable '{storableId}'. It might be loading, try again later.");
+                if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a storable '{storableId}'. It might be loading, try again later.");
                 return false;
             }
             if (storableId == "geometry")
@@ -67,7 +67,7 @@ namespace VamTimeline
                 var morph = (storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByDisplayName(floatParamName);
                 if (morph == null)
                 {
-                    if (!silent) SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a morph (geometry) '{floatParamName}'.");
+                    if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a morph (geometry) '{floatParamName}'.");
                     return false;
                 }
                 if (!morph.animatable)
@@ -76,7 +76,7 @@ namespace VamTimeline
             var floatParam = storable.GetFloatJSONParam(floatParamName);
             if (floatParam == null)
             {
-                if (!silent) SuperController.LogError($"VamTimeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
+                if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
                 return false;
             }
 

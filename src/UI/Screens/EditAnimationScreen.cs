@@ -383,7 +383,7 @@ namespace VamTimeline
                     operations.Resize().Loop(newLength);
                     break;
                 default:
-                    SuperController.LogError($"VamTimeline: Unknown animation length type: {_lengthModeJSON.val}");
+                    SuperController.LogError($"Timeline: Unknown animation length type: {_lengthModeJSON.val}");
                     break;
             }
 
@@ -458,7 +458,7 @@ namespace VamTimeline
             var animationPattern = SuperController.singleton.GetAtomByUid(uid)?.GetComponentInChildren<AnimationPattern>();
             if (animationPattern == null)
             {
-                SuperController.LogError($"VamTimeline: Could not find Animation Pattern '{uid}'");
+                SuperController.LogError($"Timeline: Could not find Animation Pattern '{uid}'");
                 return;
             }
             animationPattern.SetBoolParamValue("autoPlay", false);

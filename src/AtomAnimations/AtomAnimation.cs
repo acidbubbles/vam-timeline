@@ -781,7 +781,7 @@ namespace VamTimeline
                     var nextClip = GetClip(nextAnimationName);
                     if (nextClip == null)
                     {
-                        SuperController.LogError($"VamTimeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
+                        SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
                         continue;
                     }
                     TransitionAnimation(clip, nextClip);
