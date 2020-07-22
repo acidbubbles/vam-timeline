@@ -72,6 +72,8 @@ namespace VamTimeline
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             current.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
+            OnSpeedChanged();
+            OnPlaybackSettingsChanged();
             UpdateValues();
         }
 
@@ -481,6 +483,7 @@ namespace VamTimeline
             args.after.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             args.after.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
 
+            OnPlaybackSettingsChanged();
             UpdateValues();
         }
 
