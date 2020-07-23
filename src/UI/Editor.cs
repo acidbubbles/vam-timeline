@@ -102,13 +102,13 @@ namespace VamTimeline
 
             _curves = InitCurvesUI();
 
-            tabs.Add(AnimationsScreen.ScreenName);
-            tabs.Add(AddAnimationScreen.ScreenName, "+", 60f);
-            tabs.Add(TargetsScreen.ScreenName);
-            tabs.Add(AddRemoveTargetsScreen.ScreenName, "+", 60f);
-            tabs.Add(EditAnimationScreen.ScreenName);
-            tabs.Add(MoreScreen.ScreenName);
-            _expandButton = tabs.Add("Collapse >");
+            tabs.Add(AnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f));
+            tabs.Add(AddAnimationScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f), "+", 60f);
+            tabs.Add(TargetsScreen.ScreenName, new Color(0.780f, 0.899f, 0.780f));
+            tabs.Add(AddRemoveTargetsScreen.ScreenName, new Color(0.780f, 0.899f, 0.780f), "+", 60f);
+            tabs.Add(EditAnimationScreen.ScreenName, new Color(0.899f, 0.780f, 0.780f));
+            tabs.Add(MoreScreen.ScreenName, new Color(0.889f, 0.780f, 0.889f));
+            _expandButton = tabs.Add("Collapse >", new Color(0.839f, 0.839f, 0.839f));
             InitToggleRightPanelButton(_expandButton);
             tabs.onTabSelected.AddListener(screenName =>
             {

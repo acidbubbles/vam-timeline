@@ -31,7 +31,7 @@ namespace VamTimeline
         public List<UIDynamicButton> tabs = new List<UIDynamicButton>();
         public Transform buttonPrefab;
 
-        public UIDynamicButton Add(string name, string label = null, float preferredWidth = 0)
+        public UIDynamicButton Add(string name, Color color, string label = null, float preferredWidth = 0)
         {
             var rt = Instantiate(buttonPrefab);
             rt.SetParent(transform, false);
@@ -39,6 +39,8 @@ namespace VamTimeline
             var btn = rt.gameObject.GetComponent<UIDynamicButton>();
             btn.name = name;
             btn.label = label ?? name;
+            SuperController.LogMessage(btn.buttonColor.ToString());
+            btn.buttonColor = color;
 
             if (preferredWidth > 0)
             {
