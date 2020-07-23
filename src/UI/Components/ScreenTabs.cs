@@ -39,7 +39,6 @@ namespace VamTimeline
             var btn = rt.gameObject.GetComponent<UIDynamicButton>();
             btn.name = name;
             btn.label = label ?? name;
-            SuperController.LogMessage(btn.buttonColor.ToString());
             btn.buttonColor = color;
 
             if (preferredWidth > 0)

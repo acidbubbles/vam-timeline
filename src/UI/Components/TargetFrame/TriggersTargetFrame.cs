@@ -93,7 +93,7 @@ namespace VamTimeline
             trigger.atom = plugin.containingAtom;
             trigger.InitTriggerUI();
             trigger.OpenTriggerActionsPanel();
-            // When already open but in the wront parent:
+            // When already open but in the wrong parent:
             trigger.triggerActionsPanel.transform.SetParent(popupParent, false);
         }
 
