@@ -10,6 +10,7 @@ namespace VamTimeline.Tests.Specs
         public IEnumerable<Test> GetTests()
         {
             yield return new Test(nameof(ImportOperationsTests.OverwriteEmptyClip), OverwriteEmptyClip);
+            yield return new Test(nameof(ImportOperationsTests.AddToLayer), AddToLayer);
         }
 
         public IEnumerable OverwriteEmptyClip(TestContext context)
@@ -17,7 +18,7 @@ namespace VamTimeline.Tests.Specs
             var existing = context.animation.clips.Single();
             var clip = new AtomAnimationClip(existing.animationName, "new layer");
 
-            new ImportOperations(context.animation).ImportClips(new[] { clip });
+            new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 1, "When the animation is empty, replace it");
             context.Assert(clip.animationLayer, "new layer", "The imported animation layer is used");
@@ -29,7 +30,7 @@ namespace VamTimeline.Tests.Specs
             var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
             var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, existing.animationLayer), "floatparam1");
 
-            new ImportOperations(context.animation).ImportClips(new[] { clip });
+            new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 2, "The animation is added");
             context.Assert(context.animation.EnumerateLayers().Count(), 1, "They all share the same layer");
