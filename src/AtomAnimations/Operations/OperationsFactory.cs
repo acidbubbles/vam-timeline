@@ -15,24 +15,29 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public ResizeAnimationOperation Resize()
+        public ResizeAnimationOperations Resize()
         {
-            return new ResizeAnimationOperation(_clip);
+            return new ResizeAnimationOperations(_clip);
         }
 
-        public TargetsOperation Targets()
+        public TargetsOperations Targets()
         {
-            return new TargetsOperation(_animation, _clip);
+            return new TargetsOperations(_animation, _clip);
         }
 
-        public KeyframesOperation Keyframes()
+        public KeyframesOperations Keyframes()
         {
-            return new KeyframesOperation(_clip);
+            return new KeyframesOperations(_clip);
         }
 
-        public LayersOperation layers()
+        public LayersOperations layers()
         {
-            return new LayersOperation(_animation, _clip);
+            return new LayersOperations(_animation, _clip);
+        }
+
+        public ImportOperations import()
+        {
+            return new ImportOperations(_animation);
         }
     }
 }

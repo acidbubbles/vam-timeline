@@ -1,15 +1,13 @@
-﻿using System;
-using System.Linq;
-using UnityEngine;
+﻿using System.Linq;
 
 namespace VamTimeline
 {
-    public class TargetsOperation
+    public class TargetsOperations
     {
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
-        public TargetsOperation(AtomAnimation animation, AtomAnimationClip clip)
+        public TargetsOperations(AtomAnimation animation, AtomAnimationClip clip)
         {
             _animation = animation;
             _clip = clip;

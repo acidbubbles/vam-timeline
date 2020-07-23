@@ -206,83 +206,19 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Imported file does not contain any animations. Are you trying to load a scene file?");
                 return false;
             }
-            var importedClips = new List<AtomAnimationClip>();
+
+            var imported = new List<AtomAnimationClip>();
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                var clip = ImportClip(clipJSON);
-                if (clip == null) continue;
-                animation.AddClip(clip);
-                importedClips.Add(clip);
+                imported.Add(plugin.serializer.DeserializeClip(clipJSON));
             }
-            foreach (var clip in importedClips)
-            {
-                if (clip.autoPlay && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.autoPlay))
-                {
-                    clip.autoPlay = false;
-                }
-                if (clip.nextAnimationName != null && !animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == clip.nextAnimationName))
-                {
-                    clip.nextAnimationName = null;
-                    clip.nextAnimationTime = 0f;
-                }
-            }
-            animation.Initialize();
-            animation.RebuildAnimationNow();
+
+            operations.import().ImportClips(imported);
+
+            if (imported.Count > 0) animation.SelectAnimation(imported.FirstOrDefault());
+            else SuperController.LogError($"Timeline: No animations were imported.");
+
             return true;
-        }
-
-        private AtomAnimationClip ImportClip(JSONClass clipJSON)
-        {
-            var clip = plugin.serializer.DeserializeClip(clipJSON);
-
-            foreach (var controller in clip.targetControllers.Select(t => t.controller))
-            {
-                if (animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controller == controller)))
-                {
-                    SuperController.LogError($"Timeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation.");
-                    return null;
-                }
-            }
-
-            foreach (var floatParam in clip.targetFloatParams.Select(t => t.name))
-            {
-                if (animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetFloatParams.Any(t => t.name == floatParam)))
-                {
-                    SuperController.LogError($"Timeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation.");
-                    return null;
-                }
-            }
-
-            var existingClip = animation.GetClip(clip.animationName);
-            if (existingClip != null)
-            {
-                if (existingClip.IsEmpty())
-                {
-                    var clipToRemove = animation.GetClip(clip.animationName);
-                    animation.clips.Remove(clipToRemove);
-                    clipToRemove.Dispose();
-                }
-                else
-                {
-                    var newAnimationName = GenerateUniqueAnimationName(animation, clip.animationName);
-                    SuperController.LogError($"Timeline: Imported clip '{clip.animationName}' already exists and will be imported with the name {newAnimationName}");
-                    clip.animationName = newAnimationName;
-                }
-            }
-
-            return clip;
-        }
-
-        private static string GenerateUniqueAnimationName(AtomAnimation animation, string animationName)
-        {
-            var i = 1;
-            while (true)
-            {
-                var newAnimationName = $"{animationName} ({i})";
-                if (!animation.clips.Any(c => c.animationName == newAnimationName))
-                    return newAnimationName;
-                i++;
-            }
         }
 
         private void ImportControllerStates(JSONClass jc)

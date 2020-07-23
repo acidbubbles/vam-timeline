@@ -61,10 +61,11 @@
 
   <ItemGroup>
     <!-- AtomAnimationFiles -->
+    <Compile Include="src\AtomAnimations\Operations\ImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\LayersOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
-    <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperation.cs" />
+    <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />
     <Compile Include="src\AtomAnimations\Targets\AnimationTargetBase.cs" />
     <Compile Include="src\AtomAnimations\Targets\AtomAnimationTrigger.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="tests\Plugin\TestPlugin.cs" />
     <Compile Include="tests\Plugin\TestsIndex.cs" />
     <Compile Include="tests\Specs\AnimationTests.cs" />
+    <Compile Include="tests\Specs\ImportOperationsTests.cs" />
     <Compile Include="tests\Specs\ResizeAnimationOperationTests.cs" />
     <Compile Include="tests\Unit\AtomAnimations\AnimationCurveExtensionsTests.cs" />
     <!-- /TestFiles -->

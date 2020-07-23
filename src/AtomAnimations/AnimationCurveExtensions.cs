@@ -33,8 +33,8 @@ namespace VamTimeline
         {
             if (curve.length == 0)
             {
-                curve.SetKeyframeByKey(0, 0);
-                curve.SetKeyframe(animationLength, 0);
+                curve.AddKey(0, 0);
+                curve.AddKey(animationLength, 0);
                 return;
             }
             if (curve.length == 1)
@@ -43,6 +43,7 @@ namespace VamTimeline
                 keyframe.time = 0;
                 curve.MoveKey(0, keyframe);
                 curve.AddKey(animationLength, keyframe.value);
+                return;
             }
             {
                 var keyframe = curve[0];

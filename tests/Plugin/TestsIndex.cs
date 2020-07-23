@@ -12,6 +12,7 @@ namespace VamTimeline.Tests.Plugin
                 new AnimationCurveExtensionsTests(),
                 new AnimationTests(),
                 new ResizeAnimationOperationTests(),
+                new ImportOperationsTests(),
             });
         }
     }

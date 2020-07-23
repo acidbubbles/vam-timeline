@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class KeyframesOperation
+    public class KeyframesOperations
     {
         private readonly AtomAnimationClip _clip;
 
-        public KeyframesOperation(AtomAnimationClip clip)
+        public KeyframesOperations(AtomAnimationClip clip)
         {
             _clip = clip;
         }

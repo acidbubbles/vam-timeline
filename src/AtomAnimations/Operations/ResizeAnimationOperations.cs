@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ResizeAnimationOperation
+    public class ResizeAnimationOperations
     {
         private readonly AtomAnimationClip _clip;
 
-        public ResizeAnimationOperation(AtomAnimationClip clip)
+        public ResizeAnimationOperations(AtomAnimationClip clip)
         {
             _clip = clip;
         }
@@ -23,7 +23,7 @@ namespace VamTimeline
 
         public void Stretch(float newAnimationLength)
         {
-            var keyframeOps = new KeyframesOperation(_clip);
+            var keyframeOps = new KeyframesOperations(_clip);
             var originalAnimationLength = _clip.animationLength;
             _clip.animationLength = newAnimationLength;
             var ratio = newAnimationLength / originalAnimationLength;
@@ -121,7 +121,7 @@ namespace VamTimeline
 
         private void CropAt(float delta, float time)
         {
-            var keyframeOps = new KeyframesOperation(_clip);
+            var keyframeOps = new KeyframesOperations(_clip);
             foreach (var target in _clip.GetAllTargets())
             {
                 // TODO: Create new keyframe if missing from evaluate curve
@@ -147,7 +147,7 @@ namespace VamTimeline
 
         private void ExtendAt(float delta, float time)
         {
-            var keyframeOps = new KeyframesOperation(_clip);
+            var keyframeOps = new KeyframesOperations(_clip);
             var originalAnimationLength = _clip.animationLength;
             foreach (var target in _clip.GetAllTargets())
             {
@@ -171,7 +171,7 @@ namespace VamTimeline
 
         public void Loop(float newAnimationLength)
         {
-            var keyframeOps = new KeyframesOperation(_clip);
+            var keyframeOps = new KeyframesOperations(_clip);
             var originalAnimationLength = _clip.animationLength;
             _clip.animationLength = newAnimationLength;
             foreach (var target in _clip.GetAllTargets())

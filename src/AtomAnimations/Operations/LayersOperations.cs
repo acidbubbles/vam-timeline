@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace VamTimeline
 {
-    public class LayersOperation
+    public class LayersOperations
     {
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
-        public LayersOperation(AtomAnimation animation, AtomAnimationClip clip)
+        public LayersOperations(AtomAnimation animation, AtomAnimationClip clip)
         {
             _animation = animation;
             _clip = clip;
