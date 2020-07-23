@@ -44,6 +44,39 @@ namespace VamTimeline
         {
             var clips = new List<AtomAnimationClip>();
 
+            var matchingLayer = _animation.clips.FirstOrDefault(c =>
+            {
+                // We only need to match float params and controllers, targets can be in any layers
+                if (!clip.targetFloatParams.All(t => c.targetFloatParams.Any(t2 => t.TargetsSameAs(t2)))) return false;
+                if (!clip.targetControllers.All(t => c.targetControllers.Any(t2 => t.TargetsSameAs(t2)))) return false;
+                return true;
+            });
+
+            if (matchingLayer != null)
+            {
+                clip.animationLayer = matchingLayer.animationLayer;
+
+                // Add missing targets
+                foreach (var target in matchingLayer.targetFloatParams)
+                {
+                    if (!clip.targetFloatParams.Any(t => target.TargetsSameAs(t)))
+                    {
+                        var missing = new FloatParamAnimationTarget(target);
+                        missing.AddEdgeFramesIfMissing(clip.animationLength);
+                        clip.Add(missing);
+                    }
+                }
+                foreach (var target in matchingLayer.targetControllers)
+                {
+                    if (!clip.targetControllers.Any(t => target.TargetsSameAs(t)))
+                    {
+                        var missing = new FreeControllerAnimationTarget(target.controller);
+                        missing.AddEdgeFramesIfMissing(clip.animationLength);
+                        clip.Add(missing);
+                    }
+                }
+            }
+
             foreach (var controller in clip.targetControllers.Select(t => t.controller))
             {
                 if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controller == controller)))

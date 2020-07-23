@@ -10,30 +10,45 @@ namespace VamTimeline.Tests.Specs
         public IEnumerable<Test> GetTests()
         {
             yield return new Test(nameof(ImportOperationsTests.OverwriteEmptyClip), OverwriteEmptyClip);
-            yield return new Test(nameof(ImportOperationsTests.AddToLayer), AddToLayer);
+            yield return new Test(nameof(ImportOperationsTests.MatchToLayer), MatchToLayer);
+            yield return new Test(nameof(ImportOperationsTests.AddMissingTargets), AddMissingTargets);
         }
 
         public IEnumerable OverwriteEmptyClip(TestContext context)
         {
             var existing = context.animation.clips.Single();
-            var clip = new AtomAnimationClip(existing.animationName, "new layer");
+            var clip = new AtomAnimationClip(existing.animationName, "New Layer");
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 1, "When the animation is empty, replace it");
-            context.Assert(clip.animationLayer, "new layer", "The imported animation layer is used");
+            context.Assert(clip.animationLayer, "Main Layer", "The existing animation layer is used");
             yield break;
         }
 
-        public IEnumerable AddToLayer(TestContext context)
+        public IEnumerable MatchToLayer(TestContext context)
         {
             var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
-            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, existing.animationLayer), "floatparam1");
+            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, "some other layer name"), "floatparam1");
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 2, "The animation is added");
             context.Assert(context.animation.EnumerateLayers().Count(), 1, "They all share the same layer");
+            yield break;
+        }
+
+        public IEnumerable AddMissingTargets(TestContext context)
+        {
+            var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
+            WithStorable(context, existing, "floatparam2");
+            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, "any"), "floatparam1");
+
+            new ImportOperations(context.animation, true).ImportClips(new[] { clip });
+
+            context.Assert(context.animation.clips.Count, 2, "The animation is added");
+            context.Assert(context.animation.EnumerateLayers().Count(), 1, "They all share the same layer");
+            context.Assert(clip.targetFloatParams.Count, 2, "Added the float param");
             yield break;
         }
 

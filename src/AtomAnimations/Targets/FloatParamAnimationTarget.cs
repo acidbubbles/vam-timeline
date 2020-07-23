@@ -33,6 +33,23 @@ namespace VamTimeline
             _available = true;
         }
 
+        public FloatParamAnimationTarget(FloatParamAnimationTarget source)
+        {
+            if (source.storable != null)
+            {
+                storable = source.storable;
+                floatParam = source.floatParam;
+                _available = true;
+            }
+            else
+            {
+                _atom = source._atom;
+                storableId = source.storableId;
+                floatParamName = source.floatParamName;
+                _available = false;
+            }
+        }
+
         public bool EnsureAvailable(bool silent = true)
         {
             if (_available)
