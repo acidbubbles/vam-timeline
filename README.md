@@ -2,6 +2,8 @@
 
 An animation timeline with keyframe and controllable curves
 
+> Check out [Timeline on Virt-A-Mate Hub](https://hub.virtamate.com/resources/timeline.94/)
+
 ## Installing
 
 Download `AcidBubbles.Timeline.(version).var` from [Releases](https://github.com/acidbubbles/vam-timeline/releases) and put it into the `(VaM)/AddonPackages` folder. For versions before VaM 1.19, you can extract the `.var` file into your VaM install folder (so the files end up in `(VaM Install Folder)/Custom/Scripts/Acidbubbles/Timeline`).
