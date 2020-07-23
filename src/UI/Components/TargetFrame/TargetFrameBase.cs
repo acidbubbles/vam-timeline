@@ -190,7 +190,7 @@ namespace VamTimeline
             if (stopped)
             {
                 toggle.toggle.interactable = time > 0 && time < clip.animationLength;
-                SetToggle(target.HasKeyframe(time));
+                SetToggle(target.HasKeyframe(time.Snap()));
             }
             else
             {
