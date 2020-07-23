@@ -84,6 +84,8 @@ namespace VamTimeline
 
         private void EditTriggers()
         {
+            if (plugin.animation.isPlaying) return;
+
             var trigger = GetOrCreateTriggerAtCurrentTime();
 
             trigger.handler = this;
