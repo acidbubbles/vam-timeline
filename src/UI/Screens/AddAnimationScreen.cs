@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -197,7 +198,7 @@ namespace VamTimeline
 
         private void AddLayer()
         {
-            var clip = animation.CreateClip(GetNewLayerName());
+            var clip = operations.layers().Add();
 
             animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
@@ -212,34 +213,7 @@ namespace VamTimeline
                 return;
             }
 
-            var newLayerName = GetNewLayerName();
-            foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList())
-            {
-                var targetsToMove = clip.GetAllTargets().Where(t => targets.Any(t2 => t2.TargetsSameAs(t))).ToList();
-
-                foreach (var t in targetsToMove)
-                    clip.Remove(t);
-
-                var newClip = animation.CreateClip(newLayerName);
-                newClip.animationLength = clip.animationLength;
-                newClip.blendDuration = clip.blendDuration;
-                newClip.nextAnimationName = clip.nextAnimationName;
-                newClip.nextAnimationTime = clip.nextAnimationTime;
-                newClip.animationName = GetSplitAnimationName(clip.animationName);
-
-                foreach (var m in targetsToMove)
-                    newClip.Add(m);
-            }
-        }
-
-        private string GetSplitAnimationName(string animationName)
-        {
-            for (var i = 1; i < 999; i++)
-            {
-                var newName = $"{animationName} (Split {i})";
-                if (!animation.clips.Any(c => c.animationName == newName)) return newName;
-            }
-            return Guid.NewGuid().ToString();
+            operations.layers().SplitLayer(targets);
         }
 
         #endregion

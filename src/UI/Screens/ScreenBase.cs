@@ -77,17 +77,6 @@ namespace VamTimeline
             return ui;
         }
 
-        protected string GetNewLayerName()
-        {
-            var layers = new HashSet<string>(animation.clips.Select(c => c.animationLayer));
-            for (var i = 1; i < 999; i++)
-            {
-                var layerName = "Layer " + i;
-                if (!layers.Contains(layerName)) return layerName;
-            }
-            return Guid.NewGuid().ToString();
-        }
-
         public virtual void OnDestroy()
         {
             _disposing = true;

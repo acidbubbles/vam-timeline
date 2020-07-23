@@ -29,5 +29,10 @@ namespace VamTimeline
         {
             return new KeyframesOperation(_clip);
         }
+
+        public LayersOperation layers()
+        {
+            return new LayersOperation(_animation, _clip);
+        }
     }
 }
