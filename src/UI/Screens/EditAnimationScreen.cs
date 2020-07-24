@@ -334,7 +334,7 @@ namespace VamTimeline
                     if (i == -1) return null;
                     return x.Substring(0, i);
                 });
-            return new[] { "", "Oooops" }
+            return new[] { "" }
                 .Concat(animations.SelectMany(EnumerateAnimations))
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
