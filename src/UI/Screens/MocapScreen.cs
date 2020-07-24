@@ -441,6 +441,7 @@ namespace VamTimeline
                     var step = clip.steps[stepIndex];
                     var time = step.timeStep.Snap(0.01f);
                     if (time - lastRecordedFrame < frameLength) continue;
+                    if (time > current.animationLength) break;
                     var k = ControllerKeyframe.FromStep(time, step, containingAtom, ctrl);
                     target.SetKeyframe(time, k.position, k.rotation);
                     if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
@@ -465,6 +466,8 @@ namespace VamTimeline
                     batchStopwatch.Start();
                 }
             }
+
+            target.AddEdgeFramesIfMissing(current.animationLength);
         }
 
         private void ReduceKeyframes()
