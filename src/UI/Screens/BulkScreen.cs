@@ -245,7 +245,7 @@ namespace VamTimeline
 
             if (animation.clipTime != _offsetSnapshot.time)
             {
-                SuperController.LogError("Timeline: Time changed. Please move controllers within a single frame.");
+                SuperController.LogError($"Timeline: Time changed. Please move controllers within a single frame. Original time: {_offsetSnapshot.time}, current time: {animation.clipTime}");
                 return;
             }
 
