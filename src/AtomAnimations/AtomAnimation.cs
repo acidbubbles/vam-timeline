@@ -252,7 +252,7 @@ namespace VamTimeline
             }
             else
             {
-                clip.clipTime = 0f;
+                if (clip.clipTime == clip.animationLength) clip.clipTime = 0f;
                 Blend(clip, 1f, PlayBlendDuration);
                 clip.playbackMainInLayer = true;
             }
