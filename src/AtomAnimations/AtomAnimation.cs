@@ -252,6 +252,7 @@ namespace VamTimeline
             }
             else
             {
+                clip.clipTime = 0f;
                 Blend(clip, 1f, PlayBlendDuration);
                 clip.playbackMainInLayer = true;
             }
@@ -786,6 +787,12 @@ namespace VamTimeline
                         continue;
                     }
                     TransitionAnimation(clip, nextClip);
+                }
+
+                if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
+                {
+                    clip.playbackEnabled = false;
+                    clip.playbackMainInLayer = false;
                 }
             }
         }
