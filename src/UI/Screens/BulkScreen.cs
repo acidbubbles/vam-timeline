@@ -15,6 +15,10 @@ namespace VamTimeline
 
         private static bool _offsetting;
         private static string _lastOffsetMode;
+        private static string _lastAnim = null;
+        private static float _lastLength = -1f;
+        private static float _lastStart = -1f;
+        private static float _lastEnd = -1f;
         private static AtomClipboardEntry _offsetSnapshot;
 
         public override string screenId => ScreenName;
@@ -58,8 +62,13 @@ namespace VamTimeline
 
             // Init
 
-            _startJSON.valNoCallback = 0f;
-            _endJSON.valNoCallback = current.animationLength;
+            _startJSON.valNoCallback = _lastStart == -1f ? 0f : Mathf.Min(_lastStart, current.animationLength);
+            _endJSON.valNoCallback = _lastEnd == -1f ? current.animationLength : Mathf.Min(_lastEnd, current.animationLength);
+            if (_endJSON.val <= _startJSON.val || _lastAnim != current.animationName || _lastLength != current.animationLength)
+            {
+                _startJSON.valNoCallback = 0f;
+                _endJSON.valNoCallback = current.animationLength;
+            }
             current.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
@@ -149,6 +158,10 @@ namespace VamTimeline
                     sb.AppendLine($"{target.name}: {involvedKeyframes} keyframes");
             }
             _selectionJSON.val = sb.ToString();
+            _lastStart = _startJSON.val;
+            _lastEnd = _endJSON.val;
+            _lastAnim = current.animationName;
+            _lastLength = current.animationLength;
         }
 
         public void CopyDeleteSelected(bool copy, bool delete)
