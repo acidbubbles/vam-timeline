@@ -76,6 +76,10 @@ namespace VamTimeline
                     }
                 }
             }
+            else if (_animation.clips.Any(c => c.animationLayer == clip.animationLayer))
+            {
+                clip.animationLayer = new LayersOperations(_animation, clip).GetNewLayerName();
+            }
 
             foreach (var controller in clip.targetControllers.Select(t => t.controller))
             {

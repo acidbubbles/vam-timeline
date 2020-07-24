@@ -161,7 +161,7 @@ namespace VamTimeline
             return clips.FirstOrDefault(c => c.animationName == name);
         }
 
-        public void AddClip(AtomAnimationClip clip)
+        public AtomAnimationClip AddClip(AtomAnimationClip clip)
         {
             var lastIndexOfLayer = clips.FindLastIndex(c => c.animationLayer == clip.animationLayer);
             if (lastIndexOfLayer == -1)
@@ -173,6 +173,7 @@ namespace VamTimeline
             clip.onTargetsListChanged.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             onClipsListChanged.Invoke();
+            return clip;
         }
 
         public AtomAnimationClip CreateClip(string animationLayer)

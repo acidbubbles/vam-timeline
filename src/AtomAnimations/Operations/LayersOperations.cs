@@ -42,7 +42,7 @@ namespace VamTimeline
             }
         }
 
-        private string GetNewLayerName()
+        public string GetNewLayerName()
         {
             var layers = new HashSet<string>(_animation.clips.Select(c => c.animationLayer));
             for (var i = 1; i < 999; i++)
