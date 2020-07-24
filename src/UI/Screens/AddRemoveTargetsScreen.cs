@@ -124,11 +124,11 @@ namespace VamTimeline
 
         private void InitControllersUI()
         {
-            _addControllerListJSON = new JSONStorableStringChooser("Animate controller", new List<string>(), "", "Animate controller");
+            _addControllerListJSON = new JSONStorableStringChooser("Controller", new List<string>(), "", "Controller");
             _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
             _addControllerUI.popupPanelHeight = 900f;
 
-            _toggleControllerUI = prefabFactory.CreateButton("Add controller");
+            _toggleControllerUI = prefabFactory.CreateButton("Add");
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
 
             RefreshControllersList();
@@ -171,7 +171,7 @@ namespace VamTimeline
 
         private void InitFloatParamsUI()
         {
-            _addStorableListJSON = new JSONStorableStringChooser("Animate storable", new List<string>(), "", "Animate Storable", (string name) =>
+            _addStorableListJSON = new JSONStorableStringChooser("Storable", new List<string>(), "", "storable", (string name) =>
             {
                 RefreshStorableFloatsList();
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
@@ -180,12 +180,12 @@ namespace VamTimeline
             _addStorableListUI.popupPanelHeight = 700f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
-            _addParamListJSON = new JSONStorableStringChooser("Animate param", new List<string>(), "", "Animate param");
+            _addParamListJSON = new JSONStorableStringChooser("Float param", new List<string>(), "", "Float param");
             _addParamListUI = prefabFactory.CreateScrollablePopup(_addParamListJSON);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
-            _addParamListUI.popupPanelHeight = 600f;
+            _addParamListUI.popupPanelHeight = 380f;
 
-            _toggleFloatParamUI = prefabFactory.CreateButton("Add param");
+            _toggleFloatParamUI = prefabFactory.CreateButton("Add");
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
 
             RefreshStorablesList();

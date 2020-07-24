@@ -55,9 +55,33 @@ namespace VamTimeline
 
         private void InitExplanation()
         {
-            _textJSON = new JSONStorableString("Help", HelpScreen.HelpText);
+            _textJSON = new JSONStorableString("Help", @"
+<b>Welcome to Timeline!</b>
+
+For instructions on how to get started, check out Help in the More menu.
+
+You'll find a built-in guide, and links to the more detailed wiki as well as tutorial videos.
+
+" + GetRandomQuote());
             _textUI = prefabFactory.CreateTextField(_textJSON);
             _textUI.height = 1078f;
+        }
+
+        private string GetRandomQuote()
+        {
+            switch(Random.Range(0, 9))
+            {
+                case 0: return "You look nice today!";
+                case 1: return "Let's get creative!";
+                case 2: return "I believe in you!";
+                case 3: return "Show me what you got.";
+                case 4: return "Don't forget to share!";
+                case 5: return "You rock.";
+                case 6: return "Here's a hug!";
+                case 7: return "Don't forget to sleep!";
+                case 8: return "Keep being you!";
+                default: return "Hope you don't find any bugs!";
+            }
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
