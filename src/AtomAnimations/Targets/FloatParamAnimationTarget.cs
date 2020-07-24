@@ -41,13 +41,9 @@ namespace VamTimeline
                 floatParam = source.floatParam;
                 _available = true;
             }
-            else
-            {
-                _atom = source._atom;
-                storableId = source.storableId;
-                floatParamName = source.floatParamName;
-                _available = false;
-            }
+            _atom = source._atom;
+            storableId = source.storableId;
+            floatParamName = source.floatParamName;
         }
 
         public bool EnsureAvailable(bool silent = true)

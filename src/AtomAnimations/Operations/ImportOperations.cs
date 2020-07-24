@@ -46,7 +46,7 @@ namespace VamTimeline
 
             var matchingLayer = _animation.clips.FirstOrDefault(c =>
             {
-                // We only need to match float params and controllers, targets can be in any layers
+                // We only need to match float params and controllers, triggers can be in any layers
                 if (!clip.targetFloatParams.All(t => c.targetFloatParams.Any(t2 => t.TargetsSameAs(t2)))) return false;
                 if (!clip.targetControllers.All(t => c.targetControllers.Any(t2 => t.TargetsSameAs(t2)))) return false;
                 return true;
