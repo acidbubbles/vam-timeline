@@ -58,7 +58,7 @@ namespace VamTimeline
             _textJSON = new JSONStorableString("Help", @"
 <b>Welcome to Timeline!</b>
 
-For instructions on how to get started, check out Help in the More menu.
+For instructions on how to get started, check out <b>Help</b> in the <b>More</b> menu.
 
 You'll find a built-in guide, and links to the more detailed wiki as well as tutorial videos.
 
