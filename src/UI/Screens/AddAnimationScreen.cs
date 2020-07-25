@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -230,7 +228,15 @@ namespace VamTimeline
         private void RefreshButtons()
         {
             bool hasNext = current.nextAnimationName != null;
-            bool nextIsTransition = hasNext && animation.GetClip(current.nextAnimationName).transition;
+            bool nextIsTransition = false;
+            if (hasNext)
+            {
+                var nextClip = animation.GetClip(current.nextAnimationName);
+                if (nextClip != null)
+                    nextIsTransition = nextClip.transition;
+                else
+                    hasNext = false;
+            }
             _addAnimationTransitionUI.button.interactable = hasNext && !nextIsTransition;
             if (!hasNext)
                 _addAnimationTransitionUI.label = $"Create Transition (No sequence)";
