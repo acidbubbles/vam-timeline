@@ -242,8 +242,11 @@ namespace VamTimeline
 
             playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (animation == null || animation.isPlaying == true) return;
-                animation.PlayAll();
+                if (animation == null) return;
+                if (!animation.isPlaying)
+                    animation.PlayAll();
+                else if (!animation.current.playbackEnabled)
+                    animation.PlayClip(animation.current, true);
             });
             RegisterAction(playIfNotPlayingJSON);
 
