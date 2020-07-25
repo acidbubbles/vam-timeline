@@ -66,6 +66,7 @@ namespace VamTimeline
                 playTime = value;
                 if (current == null) return;
                 current.clipTime = value;
+                if (isPlaying && !current.playbackEnabled) PlayClip(current, sequencing);
                 Sample();
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
