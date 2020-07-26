@@ -279,34 +279,39 @@ namespace VamTimeline
             var selected = current.GetSelectedTargets().ToList();
             foreach (var s in selected)
             {
+                foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
                 {
-                    var target = s as FreeControllerAnimationTarget;
-                    if (target != null)
                     {
-                        _addControllerListJSON.val = target.name;
-                        current.Remove(target);
-                        continue;
+                        var target = s as FreeControllerAnimationTarget;
+                        target = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(s));
+                        if (target != null)
+                        {
+                            _addControllerListJSON.val = target.name;
+                            current.Remove(target);
+                            continue;
+                        }
                     }
-                }
-                {
-                    var target = s as FloatParamAnimationTarget;
-                    if (target != null)
                     {
-                        _addStorableListJSON.val = target.storableId;
-                        _addParamListJSON.val = target.floatParamName;
-                        current.Remove(target);
-                        continue;
+                        var target = s as FloatParamAnimationTarget;
+                        target = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(s));
+                        if (target != null)
+                        {
+                            _addStorableListJSON.val = target.storableId;
+                            _addParamListJSON.val = target.floatParamName;
+                            current.Remove(target);
+                            continue;
+                        }
                     }
-                }
-                {
-                    var target = s as TriggersAnimationTarget;
-                    if (target != null)
                     {
-                        current.Remove(target);
-                        continue;
+                        var target = s as TriggersAnimationTarget;
+                        if (target != null && clip == current)
+                        {
+                            current.Remove(target);
+                            continue;
+                        }
                     }
+                    throw new NotSupportedException($"Removing target is not supported: {s}");
                 }
-                throw new NotSupportedException($"Removing target is not supported: {s}");
             }
 
             // Ensures shows on top
