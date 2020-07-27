@@ -80,116 +80,24 @@ namespace VamTimeline
 
         private void AddAnimationAsCopy()
         {
-            var clip = animation.CreateClip(current.animationLayer);
-            clip.loop = current.loop;
-            clip.animationLength = current.animationLength;
-            clip.nextAnimationName = current.nextAnimationName;
-            clip.nextAnimationTime = current.nextAnimationTime;
-            clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
-            clip.blendDuration = current.blendDuration;
-            operations.Resize().CropOrExtendEnd(current.animationLength);
-            foreach (var origTarget in current.targetControllers)
-            {
-                var newTarget = clip.Add(origTarget.controller);
-                for (var i = 0; i < origTarget.curves.Count; i++)
-                {
-                    newTarget.curves[i].keys = origTarget.curves[i].keys.ToArray();
-                }
-                foreach (var kvp in origTarget.settings)
-                {
-                    newTarget.settings[kvp.Key] = new KeyframeSettings { curveType = kvp.Value.curveType };
-                }
-                newTarget.dirty = true;
-            }
-            foreach (var origTarget in current.targetFloatParams)
-            {
-                var newTarget = clip.Add(new FloatParamAnimationTarget(plugin.containingAtom, origTarget.storableId, origTarget.floatParamName));
-                newTarget.value.keys = origTarget.value.keys.ToArray();
-                foreach (var kvp in origTarget.settings)
-                {
-                    newTarget.settings[kvp.Key] = new KeyframeSettings { curveType = kvp.Value.curveType };
-                }
-                newTarget.dirty = true;
-            }
-            foreach (var origTarget in current.targetTriggers)
-            {
-                var newTarget = clip.Add(new TriggersAnimationTarget { name = origTarget.name });
-                foreach (var origTrigger in origTarget.triggersMap)
-                {
-                    var trigger = new AtomAnimationTrigger();
-                    trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
-                    newTarget.SetKeyframe(origTrigger.Key, trigger);
-                }
-                newTarget.dirty = true;
-            }
-
+            var clip = operations.AddAnimation().AddAnimationAsCopy();
+            if(clip == null) return;
             animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
         }
 
         private void AddAnimationFromCurrentFrame()
         {
-            var clip = animation.CreateClip(current.animationLayer);
-            clip.loop = current.loop;
-            clip.nextAnimationName = current.nextAnimationName;
-            clip.nextAnimationTime = current.nextAnimationTime;
-            clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
-            clip.blendDuration = current.blendDuration;
-            operations.Resize().CropOrExtendEnd(current.animationLength);
-            foreach (var origTarget in current.targetControllers)
-            {
-                var newTarget = clip.Add(origTarget.controller);
-                newTarget.SetKeyframeToCurrentTransform(0f);
-                newTarget.SetKeyframeToCurrentTransform(clip.animationLength);
-            }
-            foreach (var origTarget in current.targetFloatParams)
-            {
-                if (!origTarget.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
-                newTarget.SetKeyframe(0f, origTarget.floatParam.val);
-                newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);
-            }
-
+            var clip = operations.AddAnimation().AddAnimationFromCurrentFrame();
+            if(clip == null) return;
             animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
         }
 
         private void AddTransitionAnimation()
         {
-            var next = animation.GetClip(current.nextAnimationName);
-            if (next == null)
-            {
-                SuperController.LogError("There is no animation to transition to");
-                return;
-            }
-
-            var clip = animation.CreateClip(current.animationLayer);
-            clip.animationName = $"{current.animationName} > {next.animationName}";
-            clip.loop = false;
-            clip.transition = true;
-            clip.nextAnimationName = current.nextAnimationName;
-            clip.blendDuration = AtomAnimationClip.DefaultBlendDuration;
-            clip.nextAnimationTime = clip.animationLength - clip.blendDuration;
-            clip.ensureQuaternionContinuity = current.ensureQuaternionContinuity;
-
-            foreach (var origTarget in current.targetControllers)
-            {
-                var newTarget = clip.Add(origTarget.controller);
-                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(current.animationLength));
-                newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
-            }
-            foreach (var origTarget in current.targetFloatParams)
-            {
-                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
-                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(current.animationLength));
-                newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
-            }
-
-            animation.clips.Remove(clip);
-            animation.clips.Insert(animation.clips.IndexOf(current) + 1, clip);
-
-            current.nextAnimationName = clip.animationName;
-
+            var clip = operations.AddAnimation().AddTransitionAnimation();
+            if(clip == null) return;
             animation.SelectAnimation(clip.animationName);
             onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
         }

@@ -61,6 +61,7 @@
 
   <ItemGroup>
     <!-- AtomAnimationFiles -->
+    <Compile Include="src\AtomAnimations\Operations\AddAnimationOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\ImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\LayersOperations.cs" />

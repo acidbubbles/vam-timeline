@@ -39,5 +39,10 @@ namespace VamTimeline
         {
             return new ImportOperations(_animation);
         }
+
+        public AddAnimationOperations AddAnimation()
+        {
+            return new AddAnimationOperations(_animation, _clip);
+        }
     }
 }

@@ -60,15 +60,11 @@ namespace VamTimeline
             CreateHeader("Manage", 2);
 
             InitFixMissingUI();
-
-            prefabFactory.CreateSpacer();
-
             InitRemoveUI();
 
-            UpdateRemoveUI();
-
+            UpdateSelectDependentUI();
             current.onTargetsListChanged.AddListener(OnTargetsListChanged);
-            current.onTargetsSelectionChanged.AddListener(UpdateRemoveUI);
+            current.onTargetsSelectionChanged.AddListener(UpdateSelectDependentUI);
         }
 
         private void OnTargetsListChanged()
@@ -76,7 +72,7 @@ namespace VamTimeline
             RefreshControllersList();
             RefreshStorableFloatsList();
             _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
-            UpdateRemoveUI();
+            UpdateSelectDependentUI();
         }
 
         private void InitFixMissingUI()
@@ -104,8 +100,6 @@ namespace VamTimeline
                 Destroy(spacerUI);
             });
             enableAllTargetsUI.buttonColor = Color.yellow;
-
-            spacerUI = prefabFactory.CreateSpacer();
         }
 
         private void InitTriggersUI()
@@ -270,8 +264,6 @@ namespace VamTimeline
             _removeUI.buttonColor = Color.red;
             _removeUI.textColor = Color.white;
             _removeUI.button.onClick.AddListener(RemoveSelected);
-
-            UpdateRemoveUI();
         }
 
         private void RemoveSelected()
@@ -323,7 +315,7 @@ namespace VamTimeline
             _addParamListJSON.popup.visible = false;
         }
 
-        private void UpdateRemoveUI()
+        private void UpdateSelectDependentUI()
         {
             var count = current.GetSelectedTargets().Count();
             _removeUI.button.interactable = count > 0;
@@ -514,13 +506,13 @@ namespace VamTimeline
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             args.before.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            args.before.onTargetsSelectionChanged.RemoveListener(UpdateRemoveUI);
+            args.before.onTargetsSelectionChanged.RemoveListener(UpdateSelectDependentUI);
             args.after.onTargetsListChanged.AddListener(OnTargetsListChanged);
-            args.after.onTargetsSelectionChanged.AddListener(UpdateRemoveUI);
+            args.after.onTargetsSelectionChanged.AddListener(UpdateSelectDependentUI);
 
             base.OnCurrentAnimationChanged(args);
 
-            UpdateRemoveUI();
+            UpdateSelectDependentUI();
         }
 
         public void OnEnable()
@@ -532,7 +524,7 @@ namespace VamTimeline
         {
             if (_addParamListUI != null) _addParamListUI.popup.onOpenPopupHandlers -= RefreshStorableFloatsList;
             current.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            current.onTargetsSelectionChanged.RemoveListener(UpdateRemoveUI);
+            current.onTargetsSelectionChanged.RemoveListener(UpdateSelectDependentUI);
             base.OnDestroy();
         }
 

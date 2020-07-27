@@ -9,6 +9,7 @@
   "promotionalLink": "https://github.com/acidbubbles/vam-timeline",
   "programVersion": "1.19.0.5",
   "contentList": [
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\AddAnimationOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\ImportOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\KeyframesOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\LayersOperations.cs",
