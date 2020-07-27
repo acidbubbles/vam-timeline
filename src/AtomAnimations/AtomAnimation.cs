@@ -297,36 +297,36 @@ namespace VamTimeline
 
         public void StopClip(AtomAnimationClip clip)
         {
-            if (!clip.playbackEnabled) return;
-            clip.Leave();
-            clip.Reset(false);
-            if (clip.animationPattern)
-                clip.animationPattern.SetBoolParamValue("loopOnce", true);
-
-            if (!clips.Any(c => c.playbackMainInLayer))
+            if (clip.playbackEnabled)
             {
-                isPlaying = false;
-                playTime = current.clipTime;
+                clip.Leave();
+                clip.Reset(false);
+                if (clip.animationPattern)
+                    clip.animationPattern.SetBoolParamValue("loopOnce", true);
             }
 
-            onIsPlayingChanged.Invoke(clip);
+            if (isPlaying)
+            {
+                if (!clips.Any(c => c.playbackEnabled))
+                {
+                    isPlaying = false;
+                    playTime = current.clipTime;
+                }
+
+                onIsPlayingChanged.Invoke(clip);
+            }
         }
 
         public void StopAll()
         {
-            isPlaying = false;
-
             foreach (var clip in clips)
             {
-                if (clip.playbackEnabled)
-                    StopClip(clip);
+                StopClip(clip);
             }
-
             foreach (var clip in clips)
             {
                 clip.Reset(false);
             }
-            playTime = playTime.Snap(snap);
         }
 
         public void ResetAll()
