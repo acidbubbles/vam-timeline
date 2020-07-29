@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -11,7 +10,7 @@ namespace VamTimeline
         public int length => keys.Count;
         // TODO: Use correctly
         public bool loop;
-        private float[] K;
+        protected float[] K;
         protected float[] r;
         protected float[] a;
         protected float[] b;
@@ -31,7 +30,7 @@ namespace VamTimeline
             time = Mathf.Clamp(time, 0, keys[keys.Count - 1].time);
             // TODO: Bisect or better, no linear search here!
             var key = keys.FindIndex(k => k.time > time);
-            if (key == -1) throw new NotSupportedException("wtf?");
+            if (key == -1) return keys[keys.Count - 1].value;
             if (key == 0) return keys[0].value;
             var from = keys[key - 1];
             var to = keys[key];
@@ -80,40 +79,36 @@ namespace VamTimeline
             throw new NotImplementedException();
         }
 
-        #region From Virt-A-Mate
+        #region From Virt-A-Mate's CubicBezierCurve
 
         public void AutoComputeControlPoints()
         {
-            if (keys == null || keys.Count == 0)
+            var keysCount = keys.Count;
+            if (keysCount == 0)
+                return;
+            if (keysCount == 1)
             {
+                keys[0].controlPointIn = keys[0].value;
+                keys[0].controlPointOut = keys[0].value;
                 return;
             }
-            int num = keys.Count;
-            switch (num)
+            if (keysCount == 2 && !loop)
             {
-                case 1:
-                    keys[0].controlPointIn = keys[0].value;
-                    keys[0].controlPointOut = keys[0].value;
-                    return;
-                case 2:
-                    if (!loop)
-                    {
-                        keys[0].controlPointIn = keys[0].value;
-                        keys[0].controlPointOut = keys[0].value;
-                        keys[1].controlPointIn = keys[1].value;
-                        keys[1].controlPointOut = keys[1].value;
-                        return;
-                    }
-                    break;
+                keys[0].controlPointIn = keys[0].value;
+                keys[0].controlPointOut = keys[0].value;
+                keys[1].controlPointIn = keys[1].value;
+                keys[1].controlPointOut = keys[1].value;
+                return;
             }
-            int num2 = (!loop) ? (num - 1) : (num + 1);
+            if (loop) keysCount -= 1;
+            int num2 = loop ? keysCount + 1 : keysCount - 1;
             if (K == null || K.Length < num2 + 1)
             {
                 K = new float[num2 + 1];
             }
             if (loop)
             {
-                K[0] = keys[num - 1].value;
+                K[0] = keys[keysCount - 1].value;
                 for (int i = 1; i < num2; i++)
                 {
                     K[i] = keys[i - 1].value;
@@ -122,7 +117,7 @@ namespace VamTimeline
             }
             else
             {
-                for (int j = 0; j < num; j++)
+                for (int j = 0; j < keysCount; j++)
                 {
                     K[j] = keys[j].value;
                 }
@@ -143,6 +138,7 @@ namespace VamTimeline
             {
                 r = new float[num2];
             }
+            // TODO: Determine curve types here
             a[0] = 0f;
             b[0] = 2f;
             c[0] = 1f;
@@ -202,13 +198,14 @@ namespace VamTimeline
         {
             var position = keys[fromPoint].value;
             var position2 = keys[fromPoint].controlPointOut;
-            if (keys.Count == 1)
+            var keysCount = loop ? keys.Count - 1 : keys.Count;
+            if (keysCount == 1)
             {
                 return position;
             }
             float position3;
             float position4;
-            if (fromPoint == keys.Count - 1)
+            if (fromPoint == keysCount - 1)
             {
                 if (!loop)
                 {

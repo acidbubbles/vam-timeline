@@ -384,6 +384,7 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerAnimationTarget target)
         {
             if (targetControllers.Any(t => t.controller == target.controller)) return null;
+            foreach (var curve in target.curves) { curve.loop = _loop; }
             return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
         }
 
@@ -395,6 +396,7 @@ namespace VamTimeline
 
         public FloatParamAnimationTarget Add(FloatParamAnimationTarget target)
         {
+            target.value.loop = _loop;
             return Add(targetFloatParams, new FloatParamAnimationTarget.Comparer(), target);
         }
 

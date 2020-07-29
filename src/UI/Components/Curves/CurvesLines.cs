@@ -72,8 +72,6 @@ namespace VamTimeline
             }
 
             // Curves
-            // TODO: Do not iterate if we only support one.
-            // TODO: Fix the wiggly y issue (if stable value, do not draw micro movements)
             foreach (var curveInfo in _curves)
             {
                 // Common
