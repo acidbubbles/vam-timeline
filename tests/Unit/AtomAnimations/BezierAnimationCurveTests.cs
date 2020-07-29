@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using VamTimeline.Tests.Framework;
 
 namespace VamTimeline.Tests.Unit
 {
-    public class AnimationCurveExtensionsTests : ITestClass
+    public class BezierAnimationCurveTests : ITestClass
     {
         public IEnumerable<Test> GetTests()
         {
@@ -14,7 +13,7 @@ namespace VamTimeline.Tests.Unit
 
         public IEnumerable AddAndRemoveFrames(TestContext context)
         {
-            var curve = new VamAnimationCurve();
+            var curve = new BezierAnimationCurve();
 
             {
                 var key = curve.SetKeyframe(0, 123);

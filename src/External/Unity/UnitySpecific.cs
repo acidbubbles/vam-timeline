@@ -10,12 +10,12 @@ public static class UnitySpecific
     const float kDefaultWeight = 1.0f / 3.0f;
     const float kCurveTimeEpsilon = 0.00001f;
 
-    private static Quaternion GetValue(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w, int key)
+    private static Quaternion GetValue(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, int key)
     {
         return new Quaternion(x.GetKeyframe(key).value, y.GetKeyframe(key).value, z.GetKeyframe(key).value, w.GetKeyframe(key).value);
     }
 
-    private static void SetValue(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w, int key, Quaternion q)
+    private static void SetValue(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, int key, Quaternion q)
     {
         SetValue(x, key, q.x);
         SetValue(y, key, q.y);
@@ -23,14 +23,14 @@ public static class UnitySpecific
         SetValue(w, key, q.w);
     }
 
-    private static void SetValue(VamAnimationCurve curve, int key, float value)
+    private static void SetValue(BezierAnimationCurve curve, int key, float value)
     {
         var keyframe = curve.GetKeyframe(key);
         keyframe.value = value;
         curve.MoveKey(key, keyframe);
     }
 
-    public static void EnsureQuaternionContinuityAndRecalculateSlope(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w)
+    public static void EnsureQuaternionContinuityAndRecalculateSlope(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w)
     {
         var keyCount = x.length;
         if (keyCount < 2) return;
@@ -53,7 +53,7 @@ public static class UnitySpecific
         }
     }
 
-    private static void RecalculateSplineSlopeT(VamAnimationCurve curve, int key, float b = 0.0f)
+    private static void RecalculateSplineSlopeT(BezierAnimationCurve curve, int key, float b = 0.0f)
     {
         if (curve.length < 2)
             return;

@@ -9,10 +9,10 @@ namespace VamTimeline
         public SortedDictionary<int, KeyframeSettings> settings { get; } = new SortedDictionary<int, KeyframeSettings>();
         public abstract string name { get; }
 
-        public abstract VamAnimationCurve GetLeadCurve();
-        public abstract IEnumerable<VamAnimationCurve> GetCurves();
+        public abstract BezierAnimationCurve GetLeadCurve();
+        public abstract IEnumerable<BezierAnimationCurve> GetCurves();
 
-        protected void Validate(VamAnimationCurve curve, float animationLength)
+        protected void Validate(BezierAnimationCurve curve, float animationLength)
         {
             if (animationLength <= 0)
             {
@@ -84,7 +84,7 @@ namespace VamTimeline
             }
         }
 
-        protected void ReapplyCurveTypes(VamAnimationCurve curve, bool loop)
+        protected void ReapplyCurveTypes(BezierAnimationCurve curve, bool loop)
         {
             curve.AutoComputeControlPoints();
             for (var key = 0; key < curve.length; key++)

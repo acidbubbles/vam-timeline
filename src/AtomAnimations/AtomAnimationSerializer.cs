@@ -132,7 +132,7 @@ namespace VamTimeline
 
         private static void AddMissingKeyframeSettings(ICurveAnimationTarget target)
         {
-            VamAnimationCurve leadCurve = target.GetLeadCurve();
+            BezierAnimationCurve leadCurve = target.GetLeadCurve();
             for (var key = 0; key < leadCurve.length; key++)
             {
                 var time = leadCurve.GetKeyframe(key).time;
@@ -140,7 +140,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(VamAnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON is JSONArray)
                 DeserializeCurveFromArray(curve, (JSONArray)curveJSON, keyframeSettings);
@@ -169,7 +169,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromArray(VamAnimationCurve curve, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON.Count == 0) return;
 
@@ -199,7 +199,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromStringLegacy(VamAnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromStringLegacy(BezierAnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             var strFrames = curveJSON.Value.Split(';').Where(x => x != "").ToList();
             if (strFrames.Count == 0) return;
@@ -231,7 +231,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromClassLegacy(VamAnimationCurve curve, JSONNode curveJSON)
+        private void DeserializeCurveFromClassLegacy(BezierAnimationCurve curve, JSONNode curveJSON)
         {
             var keysJSON = curveJSON["keys"].AsArray;
             if (keysJSON.Count == 0) return;
@@ -376,7 +376,7 @@ namespace VamTimeline
             }
         }
 
-        private JSONNode SerializeCurve(VamAnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
+        private JSONNode SerializeCurve(BezierAnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
         {
             var curveJSON = new JSONArray();
 

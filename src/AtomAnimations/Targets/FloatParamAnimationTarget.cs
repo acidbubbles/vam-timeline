@@ -10,7 +10,7 @@ namespace VamTimeline
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
-        public readonly VamAnimationCurve value = new VamAnimationCurve();
+        public readonly BezierAnimationCurve value = new BezierAnimationCurve();
 
         public override string name => $"{storableId}/{floatParamName}";
 
@@ -128,12 +128,12 @@ namespace VamTimeline
             ReapplyCurveTypes(value, loop);
         }
 
-        public override VamAnimationCurve GetLeadCurve()
+        public override BezierAnimationCurve GetLeadCurve()
         {
             return value;
         }
 
-        public override IEnumerable<VamAnimationCurve> GetCurves()
+        public override IEnumerable<BezierAnimationCurve> GetCurves()
         {
             return new[] { value };
         }

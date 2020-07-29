@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class VamAnimationCurve
+    public class BezierAnimationCurve
     {
         public List<VamKeyframe> keys = new List<VamKeyframe>();
         public int length => keys.Count;

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -9,7 +8,7 @@ namespace VamTimeline
     {
         #region Keyframes control
 
-        public static int SetKeyframe(this VamAnimationCurve curve, float time, float value)
+        public static int SetKeyframe(this BezierAnimationCurve curve, float time, float value)
         {
             if (curve.length == 0) return curve.AddKey(time, value);
             var key = curve.KeyframeBinarySearch(time);
@@ -21,7 +20,7 @@ namespace VamTimeline
             return key;
         }
 
-        public static int SetKeyframeByKey(this VamAnimationCurve curve, int key, float value)
+        public static int SetKeyframeByKey(this BezierAnimationCurve curve, int key, float value)
         {
             var keyframe = curve.GetKeyframe(key);
             keyframe.value = value;
@@ -29,7 +28,7 @@ namespace VamTimeline
             return key;
         }
 
-        public static void AddEdgeFramesIfMissing(this VamAnimationCurve curve, float animationLength)
+        public static void AddEdgeFramesIfMissing(this BezierAnimationCurve curve, float animationLength)
         {
             if (curve.length == 0)
             {
@@ -77,7 +76,7 @@ namespace VamTimeline
             }
         }
 
-        public static void Reverse(this VamAnimationCurve curve)
+        public static void Reverse(this BezierAnimationCurve curve)
         {
             if (curve.length < 2) return;
             var currentLength = curve.GetKeyframe(curve.length - 1).time;
@@ -99,7 +98,7 @@ namespace VamTimeline
         #region Curves
 
         [MethodImpl(256)]
-        public static int KeyframeBinarySearch(this VamAnimationCurve curve, float time, bool returnClosest = false)
+        public static int KeyframeBinarySearch(this BezierAnimationCurve curve, float time, bool returnClosest = false)
         {
             if (time == 0) return 0;
             if (time == curve.GetKeyframe(curve.length - 1).time) return curve.length - 1;
@@ -138,7 +137,7 @@ namespace VamTimeline
             if (time - avg < 0) return left; else return right;
         }
 
-        public static void ApplyCurveType(this VamAnimationCurve curve, int key, string curveType, bool loop)
+        public static void ApplyCurveType(this BezierAnimationCurve curve, int key, string curveType, bool loop)
         {
             // TODO: Make this work again
             return;
@@ -228,7 +227,7 @@ namespace VamTimeline
             */
         }
 
-        public static void SmoothNeighbors(this VamAnimationCurve curve, int key)
+        public static void SmoothNeighbors(this BezierAnimationCurve curve, int key)
         {
             throw new NotImplementedException();
             // if (key == -1) return;
@@ -237,7 +236,7 @@ namespace VamTimeline
             // if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
         }
 
-        public static void SmoothAllFrames(this VamAnimationCurve curve)
+        public static void SmoothAllFrames(this BezierAnimationCurve curve)
         {
             if (curve.length == 2)
             {
@@ -275,7 +274,7 @@ namespace VamTimeline
             curve.MoveKey(curve.length - 1, cloneFirstToLastKeyframe);
         }
 
-        public static void FlatAllFrames(this VamAnimationCurve curve)
+        public static void FlatAllFrames(this BezierAnimationCurve curve)
         {
             for (int k = 0; k < curve.length; k++)
             {
@@ -283,7 +282,7 @@ namespace VamTimeline
             }
         }
 
-        public static void FlatFrame(this VamAnimationCurve curve, int key)
+        public static void FlatFrame(this BezierAnimationCurve curve, int key)
         {
             if (key == -1) return;
 
@@ -295,7 +294,7 @@ namespace VamTimeline
             curve.MoveKey(key, keyframe);
         }
 
-        public static void SmoothLoop(this VamAnimationCurve curve)
+        public static void SmoothLoop(this BezierAnimationCurve curve)
         {
             // TODO: Not useful anymore?
 //             if (curve.length == 0) return;
@@ -354,7 +353,7 @@ namespace VamTimeline
 
         #region Snapshots
 
-        public static void SetKeySnapshot(this VamAnimationCurve curve, float time, VamKeyframe keyframe)
+        public static void SetKeySnapshot(this BezierAnimationCurve curve, float time, VamKeyframe keyframe)
         {
             if (curve.length == 0)
             {

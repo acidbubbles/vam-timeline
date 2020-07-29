@@ -548,7 +548,7 @@ namespace VamTimeline
                 })
                 .ToList();
 
-            var target = new VamAnimationCurve();
+            var target = new BezierAnimationCurve();
             target.SmoothNeighbors(target.AddKey(0, source.GetKeyframe(0).value));
             target.SmoothNeighbors(target.AddKey(source.GetKeyframe(source.length - 1).time, source.GetKeyframe(source.length - 1).value));
 

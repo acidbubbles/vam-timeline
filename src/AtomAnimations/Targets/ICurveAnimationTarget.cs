@@ -7,8 +7,8 @@ namespace VamTimeline
     {
         SortedDictionary<int, KeyframeSettings> settings { get; }
 
-        VamAnimationCurve GetLeadCurve();
-        IEnumerable<VamAnimationCurve> GetCurves();
+        BezierAnimationCurve GetLeadCurve();
+        IEnumerable<BezierAnimationCurve> GetCurves();
         void ChangeCurve(float time, string curveType, bool loop);
         void EnsureKeyframeSettings(float time, string defaultCurveTypeValue);
         string GetKeyframeSettings(float time);

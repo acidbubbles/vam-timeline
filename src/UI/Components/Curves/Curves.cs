@@ -241,7 +241,7 @@ namespace VamTimeline
             }
         }
 
-        private void BindCurve(VamAnimationCurve lead, Color color, string label)
+        private void BindCurve(BezierAnimationCurve lead, Color color, string label)
         {
             var lines = CreateCurvesLines(_linesContainer, color, label);
             _lines.Add(lines);

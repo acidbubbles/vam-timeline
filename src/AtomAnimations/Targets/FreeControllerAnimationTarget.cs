@@ -6,14 +6,14 @@ namespace VamTimeline
     public class FreeControllerAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
     {
         public readonly FreeControllerV3 controller;
-        public readonly VamAnimationCurve x = new VamAnimationCurve();
-        public readonly VamAnimationCurve y = new VamAnimationCurve();
-        public readonly VamAnimationCurve z = new VamAnimationCurve();
-        public readonly VamAnimationCurve rotX = new VamAnimationCurve();
-        public readonly VamAnimationCurve rotY = new VamAnimationCurve();
-        public readonly VamAnimationCurve rotZ = new VamAnimationCurve();
-        public readonly VamAnimationCurve rotW = new VamAnimationCurve();
-        public readonly List<VamAnimationCurve> curves;
+        public readonly BezierAnimationCurve x = new BezierAnimationCurve();
+        public readonly BezierAnimationCurve y = new BezierAnimationCurve();
+        public readonly BezierAnimationCurve z = new BezierAnimationCurve();
+        public readonly BezierAnimationCurve rotX = new BezierAnimationCurve();
+        public readonly BezierAnimationCurve rotY = new BezierAnimationCurve();
+        public readonly BezierAnimationCurve rotZ = new BezierAnimationCurve();
+        public readonly BezierAnimationCurve rotW = new BezierAnimationCurve();
+        public readonly List<BezierAnimationCurve> curves;
 
         public override string name => controller.name;
 
@@ -45,7 +45,7 @@ namespace VamTimeline
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
-            curves = new List<VamAnimationCurve> {
+            curves = new List<BezierAnimationCurve> {
                 x, y, z, rotX, rotY, rotZ, rotW
             };
             this.controller = controller;
@@ -102,12 +102,12 @@ namespace VamTimeline
 
         #region Control
 
-        public override VamAnimationCurve GetLeadCurve()
+        public override BezierAnimationCurve GetLeadCurve()
         {
             return x;
         }
 
-        public override IEnumerable<VamAnimationCurve> GetCurves()
+        public override IEnumerable<BezierAnimationCurve> GetCurves()
         {
             return curves;
         }
