@@ -1,18 +1,31 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VamTimeline
 {
     public class VamAnimationCurve
     {
-        public VamKeyframe[] keys;
-        public int length => keys.Length;
+        public List<VamKeyframe> keys = new List<VamKeyframe>();
+        public int length => keys.Count;
 
         public VamKeyframe this[int key] => keys[key];
 
         public float Evaluate(float time)
         {
-            throw new NotImplementedException();
+            if (keys.Count < 2) throw new NotSupportedException("Must contain at least two keyframes");
+            // TODO: Support looping
+            // TODO: Remember the largest time and use it everywhere
+            // TODO: Remember the last checked time and bisect from there?
+            time = Mathf.Clamp(time, 0, keys[keys.Count - 1].time);
+            // TODO: Bisect or better, no linear search here!
+            var key = keys.FindIndex(k => k.time > time);
+            if (key == -1) key = 0;
+            var from = keys[key];
+            var to = keys[key + 1];
+            // TODO: Worth precalculating?
+            var t = (time - from.time) / (to.time - from.time);
+            return Mathf.Lerp(from.value, to.value, t);
         }
 
         public void MoveKey(int v, VamKeyframe keyframe)
@@ -27,7 +40,18 @@ namespace VamTimeline
 
         public int AddKey(VamKeyframe keyframe)
         {
-            throw new NotImplementedException();
+
+            var key = keys.FindIndex(k => k.time > keyframe.time);
+            if (key == -1)
+            {
+                keys.Add(keyframe);
+                return keys.Count - 1;
+            }
+            else
+            {
+                keys.Insert(key - 1, keyframe);
+                return key;
+            }
         }
 
         public void RemoveKey(int v)
