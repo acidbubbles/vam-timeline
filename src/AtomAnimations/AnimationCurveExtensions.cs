@@ -297,34 +297,36 @@ namespace VamTimeline
 
         public static void SmoothLoop(this VamAnimationCurve curve)
         {
-            if (curve.length == 0) return;
+            // TODO: Not useful anymore?
+//             if (curve.length == 0) return;
 
-            var keyframe = curve.GetKeyframe(0);
+//             var keyframe = curve.GetKeyframe(0);
 
-            if (curve.length <= 2)
-            {
-                keyframe.inTangent = 0f;
-                keyframe.outTangent = 0f;
-            }
-            else
-            {
-                var inTangent = CalculateLinearTangent(curve.GetKeyframe(curve.length - 2).value, keyframe.value, curve.GetKeyframe(curve.length - 2).time, curve.GetKeyframe(curve.length - 1).time);
-                var outTangent = CalculateLinearTangent(keyframe, curve.GetKeyframe(1));
-                var tangent = (inTangent + outTangent) / 2f;
-                keyframe.inTangent = tangent;
-                keyframe.outTangent = tangent;
-            }
+//             if (curve.length <= 2)
+//             {
+//                 keyframe.inTangent = 0f;
+//                 keyframe.outTangent = 0f;
+//             }
+//             else
+//             {
+//                 var inTangent = CalculateLinearTangent(curve.GetKeyframe(curve.length - 2).value, keyframe.value, curve.GetKeyframe(curve.length - 2).time, curve.GetKeyframe(curve.length - 1).time);
+//                 var outTangent = CalculateLinearTangent(keyframe, curve.GetKeyframe(1));
+//                 var tangent = (inTangent + outTangent) / 2f;
+//                 keyframe.inTangent = tangent;
+//                 keyframe.outTangent = tangent;
+//             }
 
-            keyframe.inWeight = 0.33f;
-            keyframe.outWeight = 0.33f;
-            curve.MoveKey(0, keyframe);
+//             keyframe.inWeight = 0.33f;
+//             keyframe.outWeight = 0.33f;
+//             curve.MoveKey(0, keyframe);
 
-            keyframe.time = curve.GetKeyframe(curve.length - 1).time;
-            curve.MoveKey(curve.length - 1, keyframe);
+// keyframe = keyframe.Clone();
+//             keyframe.time = curve.GetKeyframe(curve.length - 1).time;
+//             curve.MoveKey(curve.length - 1, keyframe);
         }
 
         [MethodImpl(256)]
-        public static float CalculateFixedMirrorTangent(VamKeyframe? from, VamKeyframe? to, float strength = 0.8f)
+        public static float CalculateFixedMirrorTangent(VamKeyframe from, VamKeyframe to, float strength = 0.8f)
         {
             var tangent = CalculateLinearTangent(from, to);
             if (tangent > 0)
@@ -336,10 +338,10 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        public static float CalculateLinearTangent(VamKeyframe? from, VamKeyframe? to)
+        public static float CalculateLinearTangent(VamKeyframe from, VamKeyframe to)
         {
             if (from == null || to == null) return 0f;
-            return (float)((from.Value.value - (double)to.Value.value) / (from.Value.time - (double)to.Value.time));
+            return (float)((from.value - (double)to.value) / (from.time - (double)to.time));
         }
 
         [MethodImpl(256)]

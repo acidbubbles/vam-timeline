@@ -287,13 +287,13 @@ namespace VamTimeline
             if (key == -1) return null;
             return new FreeControllerV3Snapshot
             {
-                x = x.GetKeyframe(key),
-                y = y.GetKeyframe(key),
-                z = z.GetKeyframe(key),
-                rotX = rotX.GetKeyframe(key),
-                rotY = rotY.GetKeyframe(key),
-                rotZ = rotZ.GetKeyframe(key),
-                rotW = rotW.GetKeyframe(key),
+                x = x.GetKeyframe(key).Clone(),
+                y = y.GetKeyframe(key).Clone(),
+                z = z.GetKeyframe(key).Clone(),
+                rotX = rotX.GetKeyframe(key).Clone(),
+                rotY = rotY.GetKeyframe(key).Clone(),
+                rotZ = rotZ.GetKeyframe(key).Clone(),
+                rotW = rotW.GetKeyframe(key).Clone(),
                 curveType = GetKeyframeSettings(time) ?? CurveTypeValues.LeaveAsIs
             };
         }

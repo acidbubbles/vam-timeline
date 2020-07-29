@@ -136,6 +136,10 @@ namespace VamTimeline
                 if (_loop == value) return;
                 _loop = value;
                 _skipNextAnimationSettingsModified = true;
+                foreach (var curve in GetAllCurveTargets().SelectMany(t => t.GetCurves()))
+                {
+                    curve.loop = value;
+                }
                 try
                 {
                     if (value)

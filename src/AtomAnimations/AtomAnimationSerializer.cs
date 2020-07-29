@@ -151,8 +151,9 @@ namespace VamTimeline
 
             if (curve.length < 2)
             {
+                SuperController.LogError("Repair");
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe { value = 0 };
+                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe(0, 0);
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;

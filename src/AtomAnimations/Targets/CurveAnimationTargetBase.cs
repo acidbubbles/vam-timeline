@@ -26,7 +26,7 @@ namespace VamTimeline
             }
             if (curve.GetKeyframe(0).time != 0)
             {
-                SuperController.LogError($"Target {name} has no start frame");
+                SuperController.LogError($"Target {name} has no start frame. Frames: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}");
                 return;
             }
             if (curve.GetKeyframe(curve.length - 1).time > animationLength)
@@ -86,6 +86,7 @@ namespace VamTimeline
 
         protected void ReapplyCurveTypes(VamAnimationCurve curve, bool loop)
         {
+            curve.AutoComputeControlPoints();
             for (var key = 0; key < curve.length; key++)
             {
                 KeyframeSettings setting;
