@@ -11,11 +11,11 @@ namespace VamTimeline
         public int length => keys.Count;
         // TODO: Use correctly
         public bool loop;
-        protected float[] K;
-        protected float[] r;
-        protected float[] a;
-        protected float[] b;
-        protected float[] c;
+        public float[] _cachedValues;
+        public float[] r;
+        public float[] a;
+        public float[] b;
+        public float[] c;
 
         public VamKeyframe GetKeyframe(int key)
         {
@@ -160,38 +160,44 @@ namespace VamTimeline
                 return;
             if (keysCount == 1)
             {
-                keys[0].controlPointIn = keys[0].value;
-                keys[0].controlPointOut = keys[0].value;
+                var key = keys[0];
+                key.controlPointIn = key.value;
+                key.controlPointOut = key.value;
+                keys[0] = key;
                 return;
             }
             if (keysCount == 2 && !loop)
             {
-                keys[0].controlPointIn = keys[0].value;
-                keys[0].controlPointOut = keys[0].value;
-                keys[1].controlPointIn = keys[1].value;
-                keys[1].controlPointOut = keys[1].value;
+                var first = keys[0];
+                first.controlPointIn = first.value;
+                first.controlPointOut = first.value;
+                keys[0] = first;
+                var last = keys[1];
+                last.controlPointIn = last.value;
+                last.controlPointOut = last.value;
+                keys[1] = last;
                 return;
             }
             if (loop) keysCount -= 1;
-            int num2 = loop ? keysCount + 1 : keysCount - 1;
-            if (K == null || K.Length < num2 + 1)
+            var num2 = loop ? keysCount + 1 : keysCount - 1;
+            if (_cachedValues == null || _cachedValues.Length < num2 + 1)
             {
-                K = new float[num2 + 1];
+                _cachedValues = new float[num2 + 1];
             }
             if (loop)
             {
-                K[0] = keys[keysCount - 1].value;
-                for (int i = 1; i < num2; i++)
+                _cachedValues[0] = keys[keysCount - 1].value;
+                for (var i = 1; i < num2; i++)
                 {
-                    K[i] = keys[i - 1].value;
+                    _cachedValues[i] = keys[i - 1].value;
                 }
-                K[num2] = keys[0].value;
+                _cachedValues[num2] = keys[0].value;
             }
             else
             {
-                for (int j = 0; j < keysCount; j++)
+                for (var j = 0; j < keysCount; j++)
                 {
-                    K[j] = keys[j].value;
+                    _cachedValues[j] = keys[j].value;
                 }
             }
             if (a == null || a.Length < num2)
@@ -214,29 +220,29 @@ namespace VamTimeline
             a[0] = 0f;
             b[0] = 2f;
             c[0] = 1f;
-            r[0] = K[0] + 2f * K[1];
-            for (int k = 1; k < num2 - 1; k++)
+            r[0] = _cachedValues[0] + 2f * _cachedValues[1];
+            for (var k = 1; k < num2 - 1; k++)
             {
                 a[k] = 1f;
                 b[k] = 4f;
                 c[k] = 1f;
-                r[k] = 4f * K[k] + 2f * K[k + 1];
+                r[k] = 4f * _cachedValues[k] + 2f * _cachedValues[k + 1];
             }
             a[num2 - 1] = 2f;
             b[num2 - 1] = 7f;
             c[num2 - 1] = 0f;
-            r[num2 - 1] = 8f * K[num2 - 1] + K[num2];
-            for (int l = 1; l < num2; l++)
+            r[num2 - 1] = 8f * _cachedValues[num2 - 1] + _cachedValues[num2];
+            for (var l = 1; l < num2; l++)
             {
-                float num3 = a[l] / b[l - 1];
+                var num3 = a[l] / b[l - 1];
                 b[l] -= num3 * c[l - 1];
                 r[l] -= num3 * r[l - 1];
             }
             if (loop)
             {
-                float vector = r[num2 - 1] / b[num2 - 1];
+                var vector = r[num2 - 1] / b[num2 - 1];
                 keys[num2 - 2].controlPointOut = (r[num2 - 1] - c[num2 - 1] * vector) / b[num2 - 1];
-                for (int num4 = num2 - 3; num4 >= 0; num4--)
+                for (var num4 = num2 - 3; num4 >= 0; num4--)
                 {
                     keys[num4].controlPointOut = (r[num4 + 1] - c[num4 + 1] * keys[num4 + 1].controlPointOut) / b[num4 + 1];
                 }
@@ -245,25 +251,25 @@ namespace VamTimeline
             {
                 keys[num2].controlPointOut = keys[num2].value;
                 keys[num2 - 1].controlPointOut = r[num2 - 1] / b[num2 - 1];
-                for (int num5 = num2 - 2; num5 >= 0; num5--)
+                for (var num5 = num2 - 2; num5 >= 0; num5--)
                 {
                     keys[num5].controlPointOut = (r[num5] - c[num5] * keys[num5 + 1].controlPointOut) / b[num5];
                 }
             }
             if (loop)
             {
-                for (int m = 0; m < num2 - 1; m++)
+                for (var m = 0; m < num2 - 1; m++)
                 {
-                    keys[m].controlPointIn = 2f * K[m + 1] - keys[m].controlPointOut;
+                    keys[m].controlPointIn = 2f * _cachedValues[m + 1] - keys[m].controlPointOut;
                 }
                 return;
             }
             keys[0].controlPointIn = keys[0].value;
-            for (int n = 1; n < num2; n++)
+            for (var n = 1; n < num2; n++)
             {
-                keys[n].controlPointIn = 2f * K[n] - keys[n].controlPointOut;
+                keys[n].controlPointIn = 2f * _cachedValues[n] - keys[n].controlPointOut;
             }
-            keys[num2].controlPointIn = 0.5f * (K[num2] + keys[num2 - 1].controlPointOut);
+            keys[num2].controlPointIn = 0.5f * (_cachedValues[num2] + keys[num2 - 1].controlPointOut);
         }
 
         public float GetPositionFromPoint(int fromPoint, float t)
@@ -302,47 +308,33 @@ namespace VamTimeline
         #endregion
     }
 
-    // TODO: Should be a struct?
+    public struct VamKeyframeCompute
+    {
+    }
+
     public class VamKeyframe
     {
         public float time;
         public float value;
-        [Obsolete]
-        public float inTangent;
-        [Obsolete]
-        public float outTangent;
-        [Obsolete]
-        public float inWeight;
-        [Obsolete]
-        public float outWeight;
         public float controlPointIn;
         public float controlPointOut;
 
         public VamKeyframe()
-        : this(0, 0)
         {
         }
 
         public VamKeyframe(float time, float value)
-            : this(time, value, 0, 0)
+            : this(time, value, value, value)
         {
 
         }
 
-        public VamKeyframe(float time, float value, int inTangent, int outTangent)
-            : this(time, value, inTangent, outTangent, 0.33333f, 0.33333f)
-        {
-
-        }
-
-        public VamKeyframe(float time, float value, int inTangent, int outTangent, float inWeight, float outWeight)
+        public VamKeyframe(float time, float value, float controlPointIn, float controlPointOut)
         {
             this.time = time;
             this.value = value;
-            this.inTangent = inTangent;
-            this.outTangent = outTangent;
-            this.inWeight = inWeight;
-            this.outWeight = outWeight;
+            this.controlPointIn = controlPointIn;
+            this.controlPointOut = controlPointOut;
         }
 
         public VamKeyframe Clone()

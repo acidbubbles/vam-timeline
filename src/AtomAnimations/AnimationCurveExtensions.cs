@@ -167,64 +167,6 @@ namespace VamTimeline
             // if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
         }
 
-        public static void SmoothAllFrames(this BezierAnimationCurve curve)
-        {
-            if (curve.length == 2)
-            {
-                var first = curve.GetKeyframe(0);
-                first.inTangent = 0f;
-                first.outTangent = 0f;
-                first.inWeight = 0.33f;
-                first.outWeight = 0.33f;
-                curve.MoveKey(0, first);
-                var last = curve.GetKeyframe(1);
-                last.inTangent = 0f;
-                last.outTangent = 0f;
-                last.inWeight = 0.33f;
-                last.outWeight = 0.33f;
-                curve.MoveKey(1, last);
-                return;
-            }
-
-            // First and last frame will be recalculated in loop smoothing
-            for (int k = 1; k < curve.length - 1; k++)
-            {
-                var keyframe = curve.GetKeyframe(k);
-                var inTangent = CalculateLinearTangent(curve.GetKeyframe(k - 1), keyframe);
-                var outTangent = CalculateLinearTangent(keyframe, curve.GetKeyframe(k + 1));
-                var tangent = inTangent + outTangent / 2f;
-                keyframe.inTangent = tangent;
-                keyframe.outTangent = tangent;
-                keyframe.inWeight = 0.33f;
-                keyframe.outWeight = 0.33f;
-                curve.MoveKey(k, keyframe);
-            }
-
-            var cloneFirstToLastKeyframe = curve.GetKeyframe(0).Clone();
-            cloneFirstToLastKeyframe.time = curve.GetKeyframe(curve.length - 1).time;
-            curve.MoveKey(curve.length - 1, cloneFirstToLastKeyframe);
-        }
-
-        public static void FlatAllFrames(this BezierAnimationCurve curve)
-        {
-            for (int k = 0; k < curve.length; k++)
-            {
-                FlatFrame(curve, k);
-            }
-        }
-
-        public static void FlatFrame(this BezierAnimationCurve curve, int key)
-        {
-            if (key == -1) return;
-
-            var keyframe = curve.GetKeyframe(key);
-            keyframe.inTangent = 0f;
-            keyframe.outTangent = 0f;
-            keyframe.inWeight = 0.33f;
-            keyframe.outWeight = 0.33f;
-            curve.MoveKey(key, keyframe);
-        }
-
         public static void SmoothLoop(this BezierAnimationCurve curve)
         {
             // TODO: Not useful anymore?

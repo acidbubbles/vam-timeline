@@ -187,8 +187,8 @@ namespace VamTimeline
                     {
                         time = time,
                         value = value,
-                        inTangent = DeserializeFloat(keyframeJSON["ti"]),
-                        outTangent = DeserializeFloat(keyframeJSON["to"])
+                        controlPointIn = DeserializeFloat(keyframeJSON["i"]),
+                        controlPointOut = DeserializeFloat(keyframeJSON["o"])
                     });
                     if (keyframeSettings != null)
                         keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.FromInt(int.Parse(keyframeJSON["c"])) });
@@ -205,6 +205,8 @@ namespace VamTimeline
             var strFrames = curveJSON.Value.Split(';').Where(x => x != "").ToList();
             if (strFrames.Count == 0) return;
 
+            SuperController.LogError("Timeline: Legacy mode. The animation may not render as initially designed. Please download the version used in this scene to get the correct representation.");
+
             var last = -1f;
             foreach (var keyframe in strFrames)
             {
@@ -218,9 +220,7 @@ namespace VamTimeline
                     curve.AddKey(new VamKeyframe
                     {
                         time = time,
-                        value = value,
-                        inTangent = DeserializeFloat(parts[3]),
-                        outTangent = DeserializeFloat(parts[4])
+                        value = value
                     });
                     if (keyframeSettings != null)
                         keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.FromInt(int.Parse(parts[2])) });
@@ -237,6 +237,8 @@ namespace VamTimeline
             var keysJSON = curveJSON["keys"].AsArray;
             if (keysJSON.Count == 0) return;
 
+            SuperController.LogError("Timeline: Legacy mode. The animation may not render as initially designed. Please download the version used in this scene to get the correct representation.");
+
             var last = -1f;
             foreach (JSONNode keyframeJSON in keysJSON)
             {
@@ -247,9 +249,7 @@ namespace VamTimeline
                 var keyframe = new VamKeyframe
                 {
                     time = time,
-                    value = value,
-                    inTangent = DeserializeFloat(keyframeJSON["inTangent"]),
-                    outTangent = DeserializeFloat(keyframeJSON["outTangent"])
+                    value = value
                 };
                 curve.AddKey(keyframe);
             }
@@ -390,8 +390,8 @@ namespace VamTimeline
                     ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
                     ["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture),
                     ["c"] = settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].curveType).ToString() : "0"),
-                    ["ti"] = keyframe.inTangent.ToString(CultureInfo.InvariantCulture),
-                    ["to"] = keyframe.outTangent.ToString(CultureInfo.InvariantCulture)
+                    ["i"] = keyframe.controlPointIn.ToString(CultureInfo.InvariantCulture),
+                    ["o"] = keyframe.controlPointOut.ToString(CultureInfo.InvariantCulture)
                 };
                 curveJSON.Add(curveEntry);
             }

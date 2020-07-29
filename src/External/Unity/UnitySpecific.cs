@@ -44,66 +44,66 @@ public static class UnitySpecific
             SetValue(x, y, z, w, i, cur);
         }
 
-        for (int i = 0; i < keyCount; i++)
-        {
-            RecalculateSplineSlopeT(x, i);
-            RecalculateSplineSlopeT(y, i);
-            RecalculateSplineSlopeT(z, i);
-            RecalculateSplineSlopeT(w, i);
-        }
+        // for (int i = 0; i < keyCount; i++)
+        // {
+        //     RecalculateSplineSlopeT(x, i);
+        //     RecalculateSplineSlopeT(y, i);
+        //     RecalculateSplineSlopeT(z, i);
+        //     RecalculateSplineSlopeT(w, i);
+        // }
     }
 
-    private static void RecalculateSplineSlopeT(BezierAnimationCurve curve, int key, float b = 0.0f)
-    {
-        if (curve.length < 2)
-            return;
+    // private static void RecalculateSplineSlopeT(BezierAnimationCurve curve, int key, float b = 0.0f)
+    // {
+    //     if (curve.length < 2)
+    //         return;
 
-        var keyframe = curve.GetKeyframe(key);
-        if (key == 0)
-        {
-            float dx = curve.GetKeyframe(1).time - curve.GetKeyframe(0).time;
-            float dy = curve.GetKeyframe(1).value - curve.GetKeyframe(0).value;
-            float m = dy / dx;
-            keyframe.inTangent = m;
-            keyframe.outTangent = m;
-            keyframe.outWeight = kDefaultWeight;
-        }
-        else if (key == curve.length - 1)
-        {
-            float dx = keyframe.time - curve.GetKeyframe(key - 1).time;
-            float dy = keyframe.value - curve.GetKeyframe(key - 1).value;
-            float m = dy / dx;
-            keyframe.inTangent = m;
-            keyframe.outTangent = m;
-            keyframe.inWeight = kDefaultWeight;
-        }
-        else
-        {
-            float dx1 = keyframe.time - curve.GetKeyframe(key - 1).time;
-            float dy1 = keyframe.value - curve.GetKeyframe(key - 1).value;
+    //     var keyframe = curve.GetKeyframe(key);
+    //     if (key == 0)
+    //     {
+    //         float dx = curve.GetKeyframe(1).time - curve.GetKeyframe(0).time;
+    //         float dy = curve.GetKeyframe(1).value - curve.GetKeyframe(0).value;
+    //         float m = dy / dx;
+    //         keyframe.inTangent = m;
+    //         keyframe.outTangent = m;
+    //         keyframe.outWeight = kDefaultWeight;
+    //     }
+    //     else if (key == curve.length - 1)
+    //     {
+    //         float dx = keyframe.time - curve.GetKeyframe(key - 1).time;
+    //         float dy = keyframe.value - curve.GetKeyframe(key - 1).value;
+    //         float m = dy / dx;
+    //         keyframe.inTangent = m;
+    //         keyframe.outTangent = m;
+    //         keyframe.inWeight = kDefaultWeight;
+    //     }
+    //     else
+    //     {
+    //         float dx1 = keyframe.time - curve.GetKeyframe(key - 1).time;
+    //         float dy1 = keyframe.value - curve.GetKeyframe(key - 1).value;
 
-            float dx2 = curve.GetKeyframe(key + 1).time - keyframe.time;
-            float dy2 = curve.GetKeyframe(key + 1).value - keyframe.value;
+    //         float dx2 = curve.GetKeyframe(key + 1).time - keyframe.time;
+    //         float dy2 = curve.GetKeyframe(key + 1).value - keyframe.value;
 
-            float m1 = SafeDiv(dy1, dx1);
-            float m2 = SafeDiv(dy2, dx2);
+    //         float m1 = SafeDiv(dy1, dx1);
+    //         float m2 = SafeDiv(dy2, dx2);
 
-            float m = (1.0f + b) * 0.5f * m1 + (1.0f - b) * 0.5f * m2;
-            keyframe.inTangent = m;
-            keyframe.outTangent = m;
-            keyframe.inWeight = kDefaultWeight;
-            keyframe.outWeight = kDefaultWeight;
-        }
+    //         float m = (1.0f + b) * 0.5f * m1 + (1.0f - b) * 0.5f * m2;
+    //         keyframe.inTangent = m;
+    //         keyframe.outTangent = m;
+    //         keyframe.inWeight = kDefaultWeight;
+    //         keyframe.outWeight = kDefaultWeight;
+    //     }
 
-        curve.MoveKey(key, keyframe);
-    }
+    //     curve.MoveKey(key, keyframe);
+    // }
 
-    private static float SafeDiv(float y, float x)
-    {
-        if (Mathf.Abs(x) > kCurveTimeEpsilon)
-            return y / x;
-        else
-            return 0;
-    }
+    // private static float SafeDiv(float y, float x)
+    // {
+    //     if (Mathf.Abs(x) > kCurveTimeEpsilon)
+    //         return y / x;
+    //     else
+    //         return 0;
+    // }
 }
 #pragma warning restore IDE1006
