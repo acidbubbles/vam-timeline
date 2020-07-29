@@ -8,26 +8,6 @@ namespace VamTimeline
     {
         #region Keyframes control
 
-        public static int SetKeyframe(this BezierAnimationCurve curve, float time, float value)
-        {
-            if (curve.length == 0) return curve.AddKey(time, value);
-            var key = curve.KeyframeBinarySearch(time);
-            if (key != -1)
-                return SetKeyframeByKey(curve, key, value);
-            key = curve.AddKey(time, value);
-            if (key == -1)
-                throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}.");
-            return key;
-        }
-
-        public static int SetKeyframeByKey(this BezierAnimationCurve curve, int key, float value)
-        {
-            var keyframe = curve.GetKeyframe(key);
-            keyframe.value = value;
-            curve.MoveKey(key, keyframe);
-            return key;
-        }
-
         public static void AddEdgeFramesIfMissing(this BezierAnimationCurve curve, float animationLength)
         {
             if (curve.length == 0)

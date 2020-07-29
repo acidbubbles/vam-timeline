@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -18,6 +19,7 @@ namespace VamTimeline
 
         public VamKeyframe GetKeyframe(int key)
         {
+            if (key == -1) throw new ArgumentException("Expected a key, received -1", nameof(key));
             return keys[key];
         }
 
@@ -52,6 +54,28 @@ namespace VamTimeline
             }
         }
 
+        // TODO: Clean this up and only use SetKeyframe, not Add/Move.
+        public int SetKeyframe(float time, float value)
+        {
+            time = time.Snap();
+            if (keys.Count == 0) return AddKey(time, value);
+            var key = this.KeyframeBinarySearch(time);
+            if (key != -1)
+                return SetKeyframeByKey(key, value);
+            key = AddKey(time, value);
+            if (key == -1)
+                throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", keys.Select(k => k.time.ToString()).ToArray())}.");
+            return key;
+        }
+
+        public int SetKeyframeByKey(int key, float value)
+        {
+            var keyframe = GetKeyframe(key);
+            keyframe.value = value;
+            MoveKey(key, keyframe);
+            return key;
+        }
+
         public int AddKey(float time, float value)
         {
             return AddKey(new VamKeyframe(time, value));
@@ -69,14 +93,14 @@ namespace VamTimeline
             }
             else
             {
-                keys.Insert(key - 1, keyframe);
+                keys.Insert(key, keyframe);
                 return key;
             }
         }
 
         public void RemoveKey(int v)
         {
-            throw new NotImplementedException();
+            keys.RemoveAt(v);
         }
 
         #region From Virt-A-Mate's CubicBezierCurve
