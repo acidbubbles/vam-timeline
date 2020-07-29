@@ -9,7 +9,7 @@ namespace VamTimeline
     {
         #region Keyframes control
 
-        public static int SetKeyframe(this AnimationCurve curve, float time, float value)
+        public static int SetKeyframe(this VamAnimationCurve curve, float time, float value)
         {
             if (curve.length == 0) return curve.AddKey(time, value);
             var key = curve.KeyframeBinarySearch(time);
@@ -21,7 +21,7 @@ namespace VamTimeline
             return key;
         }
 
-        public static int SetKeyframeByKey(this AnimationCurve curve, int key, float value)
+        public static int SetKeyframeByKey(this VamAnimationCurve curve, int key, float value)
         {
             var keyframe = curve[key];
             keyframe.value = value;
@@ -29,7 +29,7 @@ namespace VamTimeline
             return key;
         }
 
-        public static void AddEdgeFramesIfMissing(this AnimationCurve curve, float animationLength)
+        public static void AddEdgeFramesIfMissing(this VamAnimationCurve curve, float animationLength)
         {
             if (curve.length == 0)
             {
@@ -77,7 +77,7 @@ namespace VamTimeline
             }
         }
 
-        public static void Reverse(this AnimationCurve curve)
+        public static void Reverse(this VamAnimationCurve curve)
         {
             if (curve.length < 2) return;
             var currentLength = curve[curve.length - 1].time;
@@ -99,7 +99,7 @@ namespace VamTimeline
         #region Curves
 
         [MethodImpl(256)]
-        public static int KeyframeBinarySearch(this AnimationCurve curve, float time, bool returnClosest = false)
+        public static int KeyframeBinarySearch(this VamAnimationCurve curve, float time, bool returnClosest = false)
         {
             if (time == 0) return 0;
             if (time == curve[curve.length - 1].time) return curve.length - 1;
@@ -138,23 +138,25 @@ namespace VamTimeline
             if (time - avg < 0) return left; else return right;
         }
 
-        public static void ApplyCurveType(this AnimationCurve curve, int key, string curveType, bool loop)
+        public static void ApplyCurveType(this VamAnimationCurve curve, int key, string curveType, bool loop)
         {
+            throw new NotImplementedException();
+            /*
             if (curveType == CurveTypeValues.LeaveAsIs) return;
 
             var keyframe = curve[key];
-            Keyframe? before;
+            VamKeyframe? before;
             if (key > 0)
                 before = curve[key - 1];
             else if (loop && curve.length > 2)
-                before = new Keyframe(curve[curve.length - 2].time - curve[curve.length - 1].time, curve[curve.length - 2].value);
+                before = new VamKeyframe(curve[curve.length - 2].time - curve[curve.length - 1].time, curve[curve.length - 2].value);
             else
                 before = null;
-            Keyframe? next;
+            VamKeyframe? next;
             if (key < curve.length - 1)
                 next = curve[key + 1];
             else if (loop && curve.length > 2)
-                next = new Keyframe(curve[curve.length - 1].time + curve[1].time, curve[1].value);
+                next = new VamKeyframe(curve[curve.length - 1].time + curve[1].time, curve[1].value);
             else
                 next = null;
 
@@ -222,17 +224,19 @@ namespace VamTimeline
                 default:
                     throw new NotSupportedException($"Curve type {curveType} is not supported");
             }
+            */
         }
 
-        public static void SmoothNeighbors(this AnimationCurve curve, int key)
+        public static void SmoothNeighbors(this VamAnimationCurve curve, int key)
         {
-            if (key == -1) return;
-            curve.SmoothTangents(key, 1f);
-            if (key > 0) curve.SmoothTangents(key - 1, 1f);
-            if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
+            throw new NotImplementedException();
+            // if (key == -1) return;
+            // curve.SmoothTangents(key, 1f);
+            // if (key > 0) curve.SmoothTangents(key - 1, 1f);
+            // if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
         }
 
-        public static void SmoothAllFrames(this AnimationCurve curve)
+        public static void SmoothAllFrames(this VamAnimationCurve curve)
         {
             if (curve.length == 2)
             {
@@ -270,7 +274,7 @@ namespace VamTimeline
             curve.MoveKey(curve.length - 1, cloneFirstToLastKeyframe);
         }
 
-        public static void FlatAllFrames(this AnimationCurve curve)
+        public static void FlatAllFrames(this VamAnimationCurve curve)
         {
             for (int k = 0; k < curve.length; k++)
             {
@@ -278,7 +282,7 @@ namespace VamTimeline
             }
         }
 
-        public static void FlatFrame(this AnimationCurve curve, int key)
+        public static void FlatFrame(this VamAnimationCurve curve, int key)
         {
             if (key == -1) return;
 
@@ -290,7 +294,7 @@ namespace VamTimeline
             curve.MoveKey(key, keyframe);
         }
 
-        public static void SmoothLoop(this AnimationCurve curve)
+        public static void SmoothLoop(this VamAnimationCurve curve)
         {
             if (curve.length == 0) return;
 
@@ -319,7 +323,7 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        public static float CalculateFixedMirrorTangent(Keyframe? from, Keyframe? to, float strength = 0.8f)
+        public static float CalculateFixedMirrorTangent(VamKeyframe? from, VamKeyframe? to, float strength = 0.8f)
         {
             var tangent = CalculateLinearTangent(from, to);
             if (tangent > 0)
@@ -331,7 +335,7 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        public static float CalculateLinearTangent(Keyframe? from, Keyframe? to)
+        public static float CalculateLinearTangent(VamKeyframe? from, VamKeyframe? to)
         {
             if (from == null || to == null) return 0f;
             return (float)((from.Value.value - (double)to.Value.value) / (from.Value.time - (double)to.Value.time));
@@ -347,7 +351,7 @@ namespace VamTimeline
 
         #region Snapshots
 
-        public static void SetKeySnapshot(this AnimationCurve curve, float time, Keyframe keyframe)
+        public static void SetKeySnapshot(this VamAnimationCurve curve, float time, VamKeyframe keyframe)
         {
             if (curve.length == 0)
             {

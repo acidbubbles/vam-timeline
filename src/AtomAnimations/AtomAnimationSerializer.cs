@@ -132,7 +132,7 @@ namespace VamTimeline
 
         private static void AddMissingKeyframeSettings(ICurveAnimationTarget target)
         {
-            AnimationCurve leadCurve = target.GetLeadCurve();
+            VamAnimationCurve leadCurve = target.GetLeadCurve();
             for (var key = 0; key < leadCurve.length; key++)
             {
                 var time = leadCurve[key].time;
@@ -140,7 +140,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(AnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurve(VamAnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON is JSONArray)
                 DeserializeCurveFromArray(curve, (JSONArray)curveJSON, keyframeSettings);
@@ -152,7 +152,7 @@ namespace VamTimeline
             if (curve.length < 2)
             {
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve[0] : new Keyframe { value = 0 };
+                var keyframe = curve.length > 0 ? curve[0] : new VamKeyframe { value = 0 };
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
@@ -168,7 +168,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromArray(AnimationCurve curve, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromArray(VamAnimationCurve curve, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON.Count == 0) return;
 
@@ -181,7 +181,7 @@ namespace VamTimeline
                     if (time == last) continue;
                     last = time;
                     var value = DeserializeFloat(keyframeJSON["v"]);
-                    curve.AddKey(new Keyframe
+                    curve.AddKey(new VamKeyframe
                     {
                         time = time,
                         value = value,
@@ -198,7 +198,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromStringLegacy(AnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromStringLegacy(VamAnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             var strFrames = curveJSON.Value.Split(';').Where(x => x != "").ToList();
             if (strFrames.Count == 0) return;
@@ -213,7 +213,7 @@ namespace VamTimeline
                     if (time == last) continue;
                     last = time;
                     var value = DeserializeFloat(parts[1]);
-                    curve.AddKey(new Keyframe
+                    curve.AddKey(new VamKeyframe
                     {
                         time = time,
                         value = value,
@@ -230,7 +230,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromClassLegacy(AnimationCurve curve, JSONNode curveJSON)
+        private void DeserializeCurveFromClassLegacy(VamAnimationCurve curve, JSONNode curveJSON)
         {
             var keysJSON = curveJSON["keys"].AsArray;
             if (keysJSON.Count == 0) return;
@@ -242,7 +242,7 @@ namespace VamTimeline
                 if (time == last) continue;
                 last = time;
                 var value = DeserializeFloat(keyframeJSON["value"]);
-                var keyframe = new Keyframe
+                var keyframe = new VamKeyframe
                 {
                     time = time,
                     value = value,
@@ -375,7 +375,7 @@ namespace VamTimeline
             }
         }
 
-        private JSONNode SerializeCurve(AnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
+        private JSONNode SerializeCurve(VamAnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
         {
             var curveJSON = new JSONArray();
 

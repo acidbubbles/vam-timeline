@@ -14,7 +14,7 @@ namespace VamTimeline.Tests.Unit
 
         public IEnumerable AddAndRemoveFrames(TestContext context)
         {
-            var curve = new AnimationCurve();
+            var curve = new VamAnimationCurve();
 
             {
                 var key = curve.SetKeyframe(0, 123);

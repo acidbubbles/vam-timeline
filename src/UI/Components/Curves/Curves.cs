@@ -202,15 +202,15 @@ namespace VamTimeline
                 BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
                 BindCurve(t.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
                 // To display rotation as euleur angles, we have to build custom curves. But it's not that useful.
-                // var rotVX = new Keyframe[t.rotX.length];
-                // var rotVY = new Keyframe[t.rotY.length];
-                // var rotVZ = new Keyframe[t.rotZ.length];
+                // var rotVX = new VamKeyframe[t.rotX.length];
+                // var rotVY = new VamKeyframe[t.rotY.length];
+                // var rotVZ = new VamKeyframe[t.rotZ.length];
                 // for (var time = 0; time < t.rotW.length; time++)
                 // {
-                //     Keyframe keyX = t.rotX[time];
-                //     Keyframe keyY = t.rotY[time];
-                //     Keyframe keyZ = t.rotZ[time];
-                //     Keyframe keyW = t.rotW[time];
+                //     VamKeyframe keyX = t.rotX[time];
+                //     VamKeyframe keyY = t.rotY[time];
+                //     VamKeyframe keyZ = t.rotZ[time];
+                //     VamKeyframe keyW = t.rotW[time];
                 //     var rot = new Quaternion(
                 //         keyX.value,
                 //         keyY.value,
@@ -218,13 +218,13 @@ namespace VamTimeline
                 //         keyW.value
                 //     );
                 //     var eulerAngles = rot.eulerAngles;
-                //     rotVX[time] = new Keyframe(keyW.time, eulerAngles.x);
-                //     rotVY[time] = new Keyframe(keyW.time, eulerAngles.y);
-                //     rotVZ[time] = new Keyframe(keyW.time, eulerAngles.z);
+                //     rotVX[time] = new VamKeyframe(keyW.time, eulerAngles.x);
+                //     rotVY[time] = new VamKeyframe(keyW.time, eulerAngles.y);
+                //     rotVZ[time] = new VamKeyframe(keyW.time, eulerAngles.z);
                 // }
-                // AnimationCurve rotVXCurve = new AnimationCurve(rotVX);
-                // AnimationCurve rotVYCurve = new AnimationCurve(rotVY);
-                // AnimationCurve rotVZCurve = new AnimationCurve(rotVZ);
+                // VamAnimationCurve rotVXCurve = new VamAnimationCurve(rotVX);
+                // VamAnimationCurve rotVYCurve = new VamAnimationCurve(rotVY);
+                // VamAnimationCurve rotVZCurve = new VamAnimationCurve(rotVZ);
                 // BindCurve(rotVXCurve, new Color(1.0f, 0.8f, 0.8f), $"{target.GetShortName()} rot x");
                 // BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
                 // BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
@@ -241,7 +241,7 @@ namespace VamTimeline
             }
         }
 
-        private void BindCurve(AnimationCurve lead, Color color, string label)
+        private void BindCurve(VamAnimationCurve lead, Color color, string label)
         {
             var lines = CreateCurvesLines(_linesContainer, color, label);
             _lines.Add(lines);

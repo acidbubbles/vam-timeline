@@ -1,4 +1,5 @@
 using UnityEngine;
+using VamTimeline;
 
 #pragma warning disable IDE1006
 /// <summary>
@@ -9,12 +10,12 @@ public static class UnitySpecific
     const float kDefaultWeight = 1.0f / 3.0f;
     const float kCurveTimeEpsilon = 0.00001f;
 
-    private static Quaternion GetValue(AnimationCurve x, AnimationCurve y, AnimationCurve z, AnimationCurve w, int key)
+    private static Quaternion GetValue(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w, int key)
     {
         return new Quaternion(x[key].value, y[key].value, z[key].value, w[key].value);
     }
 
-    private static void SetValue(AnimationCurve x, AnimationCurve y, AnimationCurve z, AnimationCurve w, int key, Quaternion q)
+    private static void SetValue(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w, int key, Quaternion q)
     {
         SetValue(x, key, q.x);
         SetValue(y, key, q.y);
@@ -22,14 +23,14 @@ public static class UnitySpecific
         SetValue(w, key, q.w);
     }
 
-    private static void SetValue(AnimationCurve curve, int key, float value)
+    private static void SetValue(VamAnimationCurve curve, int key, float value)
     {
         var keyframe = curve[key];
         keyframe.value = value;
         curve.MoveKey(key, keyframe);
     }
 
-    public static void EnsureQuaternionContinuityAndRecalculateSlope(AnimationCurve x, AnimationCurve y, AnimationCurve z, AnimationCurve w)
+    public static void EnsureQuaternionContinuityAndRecalculateSlope(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w)
     {
         var keyCount = x.length;
         if (keyCount < 2) return;
@@ -52,7 +53,7 @@ public static class UnitySpecific
         }
     }
 
-    private static void RecalculateSplineSlopeT(AnimationCurve curve, int key, float b = 0.0f)
+    private static void RecalculateSplineSlopeT(VamAnimationCurve curve, int key, float b = 0.0f)
     {
         if (curve.length < 2)
             return;

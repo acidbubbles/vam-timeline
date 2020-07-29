@@ -7,16 +7,16 @@ namespace VamTimeline
     public class CurvesLines : MaskableGraphic
     {
         public CurvesStyle style;
-        private readonly List<KeyValuePair<Color, AnimationCurve>> _curves = new List<KeyValuePair<Color, AnimationCurve>>();
+        private readonly List<KeyValuePair<Color, VamAnimationCurve>> _curves = new List<KeyValuePair<Color, VamAnimationCurve>>();
 
         public void ClearCurves()
         {
             _curves.Clear();
         }
 
-        public void AddCurve(Color color, AnimationCurve curve)
+        public void AddCurve(Color color, VamAnimationCurve curve)
         {
-            _curves.Add(new KeyValuePair<Color, AnimationCurve>(color, curve));
+            _curves.Add(new KeyValuePair<Color, VamAnimationCurve>(color, curve));
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)

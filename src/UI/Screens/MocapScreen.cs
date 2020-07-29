@@ -544,11 +544,11 @@ namespace VamTimeline
                 .Select(g =>
                 {
                     var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
-                    return new Keyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0);
+                    return new VamKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0);
                 })
                 .ToList();
 
-            var target = new AnimationCurve();
+            var target = new VamAnimationCurve();
             target.SmoothNeighbors(target.AddKey(0, source[0].value));
             target.SmoothNeighbors(target.AddKey(source[source.length - 1].time, source[source.length - 1].value));
 

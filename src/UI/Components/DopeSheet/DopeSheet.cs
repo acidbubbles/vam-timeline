@@ -317,7 +317,7 @@ namespace VamTimeline
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
                 _keyframesRows.Add(keyframes);
-                // TODO: We could optimize here by using the AnimationCurve directly, avoiding a copy.
+                // TODO: We could optimize here by using the VamAnimationCurve directly, avoiding a copy.
                 keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
                 keyframes.SetTime(_ms);
                 keyframes.style = _style;

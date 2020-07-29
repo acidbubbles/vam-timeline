@@ -6,14 +6,14 @@ namespace VamTimeline
     public class FreeControllerAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
     {
         public readonly FreeControllerV3 controller;
-        public readonly AnimationCurve x = new AnimationCurve();
-        public readonly AnimationCurve y = new AnimationCurve();
-        public readonly AnimationCurve z = new AnimationCurve();
-        public readonly AnimationCurve rotX = new AnimationCurve();
-        public readonly AnimationCurve rotY = new AnimationCurve();
-        public readonly AnimationCurve rotZ = new AnimationCurve();
-        public readonly AnimationCurve rotW = new AnimationCurve();
-        public readonly List<AnimationCurve> curves;
+        public readonly VamAnimationCurve x = new VamAnimationCurve();
+        public readonly VamAnimationCurve y = new VamAnimationCurve();
+        public readonly VamAnimationCurve z = new VamAnimationCurve();
+        public readonly VamAnimationCurve rotX = new VamAnimationCurve();
+        public readonly VamAnimationCurve rotY = new VamAnimationCurve();
+        public readonly VamAnimationCurve rotZ = new VamAnimationCurve();
+        public readonly VamAnimationCurve rotW = new VamAnimationCurve();
+        public readonly List<VamAnimationCurve> curves;
 
         public override string name => controller.name;
 
@@ -45,7 +45,7 @@ namespace VamTimeline
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
         {
-            curves = new List<AnimationCurve> {
+            curves = new List<VamAnimationCurve> {
                 x, y, z, rotX, rotY, rotZ, rotW
             };
             this.controller = controller;
@@ -102,12 +102,12 @@ namespace VamTimeline
 
         #region Control
 
-        public override AnimationCurve GetLeadCurve()
+        public override VamAnimationCurve GetLeadCurve()
         {
             return x;
         }
 
-        public override IEnumerable<AnimationCurve> GetCurves()
+        public override IEnumerable<VamAnimationCurve> GetCurves()
         {
             return curves;
         }
