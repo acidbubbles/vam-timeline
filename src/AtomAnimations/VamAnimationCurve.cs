@@ -24,8 +24,8 @@ namespace VamTimeline
             // TODO: Bisect or better, no linear search here!
             var key = keys.FindIndex(k => k.time > time);
             if (key == -1) key = 0;
-            var from = keys[key];
-            var to = keys[key + 1];
+            var from = keys[key - 1];
+            var to = keys[key];
             // TODO: Worth precalculating?
             var t = (time - from.time) / (to.time - from.time);
             return Mathf.Lerp(from.value, to.value, t);

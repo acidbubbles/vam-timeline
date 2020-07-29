@@ -140,7 +140,8 @@ namespace VamTimeline
 
         public static void ApplyCurveType(this VamAnimationCurve curve, int key, string curveType, bool loop)
         {
-            throw new NotImplementedException();
+            // TODO: Make this work again
+            return;
             /*
             if (curveType == CurveTypeValues.LeaveAsIs) return;
 
