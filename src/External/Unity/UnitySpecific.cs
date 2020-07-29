@@ -12,7 +12,7 @@ public static class UnitySpecific
 
     private static Quaternion GetValue(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w, int key)
     {
-        return new Quaternion(x[key].value, y[key].value, z[key].value, w[key].value);
+        return new Quaternion(x.GetKeyframe(key).value, y.GetKeyframe(key).value, z.GetKeyframe(key).value, w.GetKeyframe(key).value);
     }
 
     private static void SetValue(VamAnimationCurve x, VamAnimationCurve y, VamAnimationCurve z, VamAnimationCurve w, int key, Quaternion q)
@@ -25,7 +25,7 @@ public static class UnitySpecific
 
     private static void SetValue(VamAnimationCurve curve, int key, float value)
     {
-        var keyframe = curve[key];
+        var keyframe = curve.GetKeyframe(key);
         keyframe.value = value;
         curve.MoveKey(key, keyframe);
     }
@@ -58,11 +58,11 @@ public static class UnitySpecific
         if (curve.length < 2)
             return;
 
-        var keyframe = curve[key];
+        var keyframe = curve.GetKeyframe(key);
         if (key == 0)
         {
-            float dx = curve[1].time - curve[0].time;
-            float dy = curve[1].value - curve[0].value;
+            float dx = curve.GetKeyframe(1).time - curve.GetKeyframe(0).time;
+            float dy = curve.GetKeyframe(1).value - curve.GetKeyframe(0).value;
             float m = dy / dx;
             keyframe.inTangent = m;
             keyframe.outTangent = m;
@@ -70,8 +70,8 @@ public static class UnitySpecific
         }
         else if (key == curve.length - 1)
         {
-            float dx = keyframe.time - curve[key - 1].time;
-            float dy = keyframe.value - curve[key - 1].value;
+            float dx = keyframe.time - curve.GetKeyframe(key - 1).time;
+            float dy = keyframe.value - curve.GetKeyframe(key - 1).value;
             float m = dy / dx;
             keyframe.inTangent = m;
             keyframe.outTangent = m;
@@ -79,11 +79,11 @@ public static class UnitySpecific
         }
         else
         {
-            float dx1 = keyframe.time - curve[key - 1].time;
-            float dy1 = keyframe.value - curve[key - 1].value;
+            float dx1 = keyframe.time - curve.GetKeyframe(key - 1).time;
+            float dy1 = keyframe.value - curve.GetKeyframe(key - 1).value;
 
-            float dx2 = curve[key + 1].time - keyframe.time;
-            float dy2 = curve[key + 1].value - keyframe.value;
+            float dx2 = curve.GetKeyframe(key + 1).time - keyframe.time;
+            float dy2 = curve.GetKeyframe(key + 1).value - keyframe.value;
 
             float m1 = SafeDiv(dy1, dx1);
             float m2 = SafeDiv(dy2, dx2);

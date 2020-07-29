@@ -535,7 +535,7 @@ namespace VamTimeline
             var source = t.value;
             var sw = Stopwatch.StartNew();
             var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
-            var maxIterations = (int)(source[source.length - 1].time * 10);
+            var maxIterations = (int)(source.GetKeyframe(source.length - 1).time * 10);
 
             var batchStopwatch = Stopwatch.StartNew();
             var containingAtom = plugin.containingAtom;
@@ -549,8 +549,8 @@ namespace VamTimeline
                 .ToList();
 
             var target = new VamAnimationCurve();
-            target.SmoothNeighbors(target.AddKey(0, source[0].value));
-            target.SmoothNeighbors(target.AddKey(source[source.length - 1].time, source[source.length - 1].value));
+            target.SmoothNeighbors(target.AddKey(0, source.GetKeyframe(0).value));
+            target.SmoothNeighbors(target.AddKey(source.GetKeyframe(source.length - 1).time, source.GetKeyframe(source.length - 1).value));
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
@@ -589,10 +589,10 @@ namespace VamTimeline
                 operations.Keyframes().RemoveAll(t);
                 for (var key = 0; key < target.length; key++)
                 {
-                    var keyframe = target[key];
+                    var keyframe = target.GetKeyframe(key);
                     t.SetKeyframe(keyframe.time, keyframe.value);
                 }
-                t.AddEdgeFramesIfMissing(source[source.length - 1].time);
+                t.AddEdgeFramesIfMissing(source.GetKeyframe(source.length - 1).time);
             }
             finally
             {

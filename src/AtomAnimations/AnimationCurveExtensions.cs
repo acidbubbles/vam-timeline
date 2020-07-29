@@ -23,7 +23,7 @@ namespace VamTimeline
 
         public static int SetKeyframeByKey(this VamAnimationCurve curve, int key, float value)
         {
-            var keyframe = curve[key];
+            var keyframe = curve.GetKeyframe(key);
             keyframe.value = value;
             curve.MoveKey(key, keyframe);
             return key;
@@ -39,14 +39,14 @@ namespace VamTimeline
             }
             if (curve.length == 1)
             {
-                var keyframe = curve[0];
+                var keyframe = curve.GetKeyframe(0);
                 keyframe.time = 0;
                 curve.MoveKey(0, keyframe);
                 curve.AddKey(animationLength, keyframe.value);
                 return;
             }
             {
-                var keyframe = curve[0];
+                var keyframe = curve.GetKeyframe(0);
                 if (keyframe.time > 0)
                 {
                     if (curve.length > 2)
@@ -61,7 +61,7 @@ namespace VamTimeline
                 }
             }
             {
-                var keyframe = curve[curve.length - 1];
+                var keyframe = curve.GetKeyframe(curve.length - 1);
                 if (keyframe.time < animationLength)
                 {
                     if (curve.length > 2)
@@ -80,7 +80,7 @@ namespace VamTimeline
         public static void Reverse(this VamAnimationCurve curve)
         {
             if (curve.length < 2) return;
-            var currentLength = curve[curve.length - 1].time;
+            var currentLength = curve.GetKeyframe(curve.length - 1).time;
 
             var keys = curve.keys.ToList();
 
@@ -102,7 +102,7 @@ namespace VamTimeline
         public static int KeyframeBinarySearch(this VamAnimationCurve curve, float time, bool returnClosest = false)
         {
             if (time == 0) return 0;
-            if (time == curve[curve.length - 1].time) return curve.length - 1;
+            if (time == curve.GetKeyframe(curve.length - 1).time) return curve.length - 1;
             var timeSmall = time - 0.0001f;
             var timeLarge = time + 0.0001f;
 
@@ -113,12 +113,12 @@ namespace VamTimeline
             {
                 var middle = left + (right - left) / 2;
 
-                var keyTime = curve[middle].time;
+                var keyTime = curve.GetKeyframe(middle).time;
                 if (keyTime > timeLarge)
                 {
                     right = middle - 1;
                 }
-                else if (curve[middle].time < timeSmall)
+                else if (curve.GetKeyframe(middle).time < timeSmall)
                 {
                     left = middle + 1;
                 }
@@ -134,7 +134,7 @@ namespace VamTimeline
                 left = right;
                 right = tmp;
             }
-            var avg = curve[left].time + ((curve[right].time - curve[left].time) / 2f);
+            var avg = curve.GetKeyframe(left).time + ((curve.GetKeyframe(right).time - curve.GetKeyframe(left).time) / 2f);
             if (time - avg < 0) return left; else return right;
         }
 
@@ -144,19 +144,19 @@ namespace VamTimeline
             /*
             if (curveType == CurveTypeValues.LeaveAsIs) return;
 
-            var keyframe = curve[key];
+            var keyframe = curve.GetKeyframe(key);
             VamKeyframe? before;
             if (key > 0)
-                before = curve[key - 1];
+                before = curve.GetKeyframe(key - 1);
             else if (loop && curve.length > 2)
-                before = new VamKeyframe(curve[curve.length - 2].time - curve[curve.length - 1].time, curve[curve.length - 2].value);
+                before = new VamKeyframe(curve.GetKeyframe(curve.length - 2).time - curve.GetKeyframe(curve.length - 1).time, curve.GetKeyframe(curve.length - 2).value);
             else
                 before = null;
             VamKeyframe? next;
             if (key < curve.length - 1)
-                next = curve[key + 1];
+                next = curve.GetKeyframe(key + 1);
             else if (loop && curve.length > 2)
-                next = new VamKeyframe(curve[curve.length - 1].time + curve[1].time, curve[1].value);
+                next = new VamKeyframe(curve.GetKeyframe(curve.length - 1).time + curve.GetKeyframe(1).time, curve.GetKeyframe(1).value);
             else
                 next = null;
 
@@ -240,13 +240,13 @@ namespace VamTimeline
         {
             if (curve.length == 2)
             {
-                var first = curve[0];
+                var first = curve.GetKeyframe(0);
                 first.inTangent = 0f;
                 first.outTangent = 0f;
                 first.inWeight = 0.33f;
                 first.outWeight = 0.33f;
                 curve.MoveKey(0, first);
-                var last = curve[1];
+                var last = curve.GetKeyframe(1);
                 last.inTangent = 0f;
                 last.outTangent = 0f;
                 last.inWeight = 0.33f;
@@ -258,9 +258,9 @@ namespace VamTimeline
             // First and last frame will be recalculated in loop smoothing
             for (int k = 1; k < curve.length - 1; k++)
             {
-                var keyframe = curve[k];
-                var inTangent = CalculateLinearTangent(curve[k - 1], keyframe);
-                var outTangent = CalculateLinearTangent(keyframe, curve[k + 1]);
+                var keyframe = curve.GetKeyframe(k);
+                var inTangent = CalculateLinearTangent(curve.GetKeyframe(k - 1), keyframe);
+                var outTangent = CalculateLinearTangent(keyframe, curve.GetKeyframe(k + 1));
                 var tangent = inTangent + outTangent / 2f;
                 keyframe.inTangent = tangent;
                 keyframe.outTangent = tangent;
@@ -269,8 +269,8 @@ namespace VamTimeline
                 curve.MoveKey(k, keyframe);
             }
 
-            var cloneFirstToLastKeyframe = curve[0];
-            cloneFirstToLastKeyframe.time = curve[curve.length - 1].time;
+            var cloneFirstToLastKeyframe = curve.GetKeyframe(0);
+            cloneFirstToLastKeyframe.time = curve.GetKeyframe(curve.length - 1).time;
             curve.MoveKey(curve.length - 1, cloneFirstToLastKeyframe);
         }
 
@@ -286,7 +286,7 @@ namespace VamTimeline
         {
             if (key == -1) return;
 
-            var keyframe = curve[key];
+            var keyframe = curve.GetKeyframe(key);
             keyframe.inTangent = 0f;
             keyframe.outTangent = 0f;
             keyframe.inWeight = 0.33f;
@@ -298,7 +298,7 @@ namespace VamTimeline
         {
             if (curve.length == 0) return;
 
-            var keyframe = curve[0];
+            var keyframe = curve.GetKeyframe(0);
 
             if (curve.length <= 2)
             {
@@ -307,8 +307,8 @@ namespace VamTimeline
             }
             else
             {
-                var inTangent = CalculateLinearTangent(curve[curve.length - 2].value, keyframe.value, curve[curve.length - 2].time, curve[curve.length - 1].time);
-                var outTangent = CalculateLinearTangent(keyframe, curve[1]);
+                var inTangent = CalculateLinearTangent(curve.GetKeyframe(curve.length - 2).value, keyframe.value, curve.GetKeyframe(curve.length - 2).time, curve.GetKeyframe(curve.length - 1).time);
+                var outTangent = CalculateLinearTangent(keyframe, curve.GetKeyframe(1));
                 var tangent = (inTangent + outTangent) / 2f;
                 keyframe.inTangent = tangent;
                 keyframe.outTangent = tangent;
@@ -318,7 +318,7 @@ namespace VamTimeline
             keyframe.outWeight = 0.33f;
             curve.MoveKey(0, keyframe);
 
-            keyframe.time = curve[curve.length - 1].time;
+            keyframe.time = curve.GetKeyframe(curve.length - 1).time;
             curve.MoveKey(curve.length - 1, keyframe);
         }
 

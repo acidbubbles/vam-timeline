@@ -135,7 +135,7 @@ namespace VamTimeline
             VamAnimationCurve leadCurve = target.GetLeadCurve();
             for (var key = 0; key < leadCurve.length; key++)
             {
-                var time = leadCurve[key].time;
+                var time = leadCurve.GetKeyframe(key).time;
                 target.EnsureKeyframeSettings(time, CurveTypeValues.LeaveAsIs);
             }
         }
@@ -152,7 +152,7 @@ namespace VamTimeline
             if (curve.length < 2)
             {
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve[0] : new VamKeyframe { value = 0 };
+                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe { value = 0 };
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
@@ -381,7 +381,7 @@ namespace VamTimeline
 
             for (var key = 0; key < curve.length; key++)
             {
-                var keyframe = curve[key];
+                var keyframe = curve.GetKeyframe(key);
                 var ms = keyframe.time.ToMilliseconds();
                 var curveEntry = new JSONClass
                 {

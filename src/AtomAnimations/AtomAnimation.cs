@@ -714,7 +714,7 @@ namespace VamTimeline
                 if (!target.dirty) continue;
 
                 if (clip.loop)
-                    target.value.SetKeyframe(clip.animationLength, target.value[0].value);
+                    target.value.SetKeyframe(clip.animationLength, target.value.GetKeyframe(0).value);
 
                 target.ReapplyCurveTypes(clip.loop);
 

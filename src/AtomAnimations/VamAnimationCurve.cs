@@ -9,7 +9,10 @@ namespace VamTimeline
         public List<VamKeyframe> keys = new List<VamKeyframe>();
         public int length => keys.Count;
 
-        public VamKeyframe this[int key] => keys[key];
+        public VamKeyframe GetKeyframe(int key)
+        {
+            return keys[key];
+        }
 
         public float Evaluate(float time)
         {

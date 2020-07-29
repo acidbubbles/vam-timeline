@@ -37,7 +37,7 @@ namespace VamTimeline
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];
             if (lastCurve.Value.length < 2) return;
-            var maxX = lastCurve.Value[lastCurve.Value.length - 1].time;
+            var maxX = lastCurve.Value.GetKeyframe(lastCurve.Value.length - 1).time;
             var xRatio = width / maxX;
 
             // Y ratio
@@ -77,7 +77,7 @@ namespace VamTimeline
                 // Common
                 var curve = curveInfo.Value;
                 var color = curveInfo.Key;
-                var last = curve[curve.length - 1];
+                var last = curve.GetKeyframe(curve.length - 1);
 
                 // Draw line
                 var step = maxX / width * precision;
@@ -98,7 +98,7 @@ namespace VamTimeline
                 // Draw handles
                 for (var i = 0; i < curve.length; i++)
                 {
-                    var keyframe = curve[i];
+                    var keyframe = curve.GetKeyframe(i);
                     var center = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
                     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
                     {
@@ -141,7 +141,7 @@ namespace VamTimeline
             var minY = float.MaxValue;
             var maxY = float.MinValue;
             var lead = _curves[0].Value;
-            var maxX = lead[lead.length - 1].time;
+            var maxX = lead.GetKeyframe(lead.length - 1).time;
             var boundsTestStep = maxX / boundsEvalPrecision;
             foreach (var kvp in _curves)
             {

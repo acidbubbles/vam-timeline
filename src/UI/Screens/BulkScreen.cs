@@ -201,7 +201,7 @@ namespace VamTimeline
                     var leadCurve = target.GetLeadCurve();
                     for (var key = 0; key < leadCurve.length; key++)
                     {
-                        var keyTime = leadCurve[key].time;
+                        var keyTime = leadCurve.GetKeyframe(key).time;
                         if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)
                         {
                             target.ChangeCurve(keyTime, val, current.loop);

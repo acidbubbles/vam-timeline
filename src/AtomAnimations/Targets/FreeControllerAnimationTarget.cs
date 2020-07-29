@@ -198,7 +198,7 @@ namespace VamTimeline
             var curve = x;
             var keyframes = new float[curve.length];
             for (var i = 0; i < curve.length; i++)
-                keyframes[i] = curve[i].time;
+                keyframes[i] = curve.GetKeyframe(i).time;
             return keyframes;
         }
 
@@ -213,7 +213,7 @@ namespace VamTimeline
 
         public float GetTimeClosestTo(float time)
         {
-            return x[x.KeyframeBinarySearch(time, true)].time;
+            return x.GetKeyframe(x.KeyframeBinarySearch(time, true)).time;
         }
 
         public bool HasKeyframe(float time)
@@ -246,25 +246,25 @@ namespace VamTimeline
 
         public float GetKeyframeTime(int key)
         {
-            return x[key].time;
+            return x.GetKeyframe(key).time;
         }
 
         public Vector3 GetKeyframePosition(int key)
         {
             return new Vector3(
-                x[key].value,
-                y[key].value,
-                z[key].value
+                x.GetKeyframe(key).value,
+                y.GetKeyframe(key).value,
+                z.GetKeyframe(key).value
             );
         }
 
         public Quaternion GetKeyframeRotation(int key)
         {
             return new Quaternion(
-                rotX[key].value,
-                rotY[key].value,
-                rotZ[key].value,
-                rotW[key].value
+                rotX.GetKeyframe(key).value,
+                rotY.GetKeyframe(key).value,
+                rotZ.GetKeyframe(key).value,
+                rotW.GetKeyframe(key).value
             );
         }
 
@@ -287,13 +287,13 @@ namespace VamTimeline
             if (key == -1) return null;
             return new FreeControllerV3Snapshot
             {
-                x = x[key],
-                y = y[key],
-                z = z[key],
-                rotX = rotX[key],
-                rotY = rotY[key],
-                rotZ = rotZ[key],
-                rotW = rotW[key],
+                x = x.GetKeyframe(key),
+                y = y.GetKeyframe(key),
+                z = z.GetKeyframe(key),
+                rotX = rotX.GetKeyframe(key),
+                rotY = rotY.GetKeyframe(key),
+                rotZ = rotZ.GetKeyframe(key),
+                rotW = rotW.GetKeyframe(key),
                 curveType = GetKeyframeSettings(time) ?? CurveTypeValues.LeaveAsIs
             };
         }

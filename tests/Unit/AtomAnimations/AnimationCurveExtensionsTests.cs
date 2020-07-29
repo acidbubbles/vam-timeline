@@ -19,13 +19,13 @@ namespace VamTimeline.Tests.Unit
             {
                 var key = curve.SetKeyframe(0, 123);
                 if (!context.Assert(key, 0, "First key is zero")) yield break;
-                context.Assert(curve[curve.KeyframeBinarySearch(0)].value, 123, "Set and get at time 0");
+                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0)).value, 123, "Set and get at time 0");
             }
 
             {
                 var key = curve.SetKeyframe(0.499999f, 456);
                 if (!context.Assert(key, 1, "Second key is one")) yield break;
-                context.Assert(curve[curve.KeyframeBinarySearch(0.499999f)].value, 456, "Set and get at time 0.499999");
+                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0.499999f)).value, 456, "Set and get at time 0.499999");
             }
 
             yield break;

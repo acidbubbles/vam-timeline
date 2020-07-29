@@ -191,7 +191,7 @@ namespace VamTimeline
         private void BindCurves(ICurveAnimationTarget target)
         {
             var lead = target.GetLeadCurve();
-            _animationLength = lead.length >= 2 ? lead.keys[lead.length - 1].time : 0f;
+            _animationLength = lead.length >= 2 ? lead.GetKeyframe(lead.length - 1).time : 0f;
             _targets.Add(target);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             if (target is FreeControllerAnimationTarget)
