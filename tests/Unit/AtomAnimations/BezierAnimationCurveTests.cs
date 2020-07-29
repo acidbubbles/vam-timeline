@@ -10,6 +10,7 @@ namespace VamTimeline.Tests.Unit
         public IEnumerable<Test> GetTests()
         {
             yield return new Test(nameof(AddAndRemoveFrames), AddAndRemoveFrames);
+            yield return new Test(nameof(RepairBrokenCurveTests), RepairBrokenCurveTests);
         }
 
         public IEnumerable AddAndRemoveFrames(TestContext context)
@@ -46,6 +47,18 @@ namespace VamTimeline.Tests.Unit
             }
 
             yield break;
+        }
+
+        public IEnumerable RepairBrokenCurveTests(TestContext context)
+        {
+            var curve = new BezierAnimationCurve();
+            curve.SetKeyframe(1, 2);
+            curve.SetKeyframe(2, 3);
+            curve.SetKeyframe(3, 4);
+            if (!context.Assert(curve.keys.Select(k => k.time), new[] { 1f, 2f, 3f }, "Expected broken curve")) yield break;
+
+            curve.AddEdgeFramesIfMissing(5f);
+            if (!context.Assert(curve.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 3f, 5f }, "Expected repaired curve")) yield break;
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace VamTimeline
@@ -7,54 +6,6 @@ namespace VamTimeline
     public static class AnimationCurveExtensions
     {
         #region Keyframes control
-
-        public static void AddEdgeFramesIfMissing(this BezierAnimationCurve curve, float animationLength)
-        {
-            if (curve.length == 0)
-            {
-                curve.AddKey(0, 0);
-                curve.AddKey(animationLength, 0);
-                return;
-            }
-            if (curve.length == 1)
-            {
-                var keyframe = curve.GetKeyframe(0);
-                keyframe.time = 0;
-                curve.MoveKey(0, keyframe);
-                curve.AddKey(animationLength, keyframe.value);
-                return;
-            }
-            {
-                var keyframe = curve.GetKeyframe(0);
-                if (keyframe.time > 0)
-                {
-                    if (curve.length > 2)
-                    {
-                        curve.AddKey(0, keyframe.value);
-                    }
-                    else
-                    {
-                        keyframe.time = 0;
-                        curve.MoveKey(0, keyframe);
-                    }
-                }
-            }
-            {
-                var keyframe = curve.GetKeyframe(curve.length - 1);
-                if (keyframe.time < animationLength)
-                {
-                    if (curve.length > 2)
-                    {
-                        curve.AddKey(animationLength, keyframe.value);
-                    }
-                    else
-                    {
-                        keyframe.time = animationLength;
-                        curve.MoveKey(curve.length - 1, keyframe);
-                    }
-                }
-            }
-        }
 
         public static void Reverse(this BezierAnimationCurve curve)
         {
@@ -249,7 +200,7 @@ namespace VamTimeline
                 curve.MoveKey(k, keyframe);
             }
 
-            var cloneFirstToLastKeyframe = curve.GetKeyframe(0);
+            var cloneFirstToLastKeyframe = curve.GetKeyframe(0).Clone();
             cloneFirstToLastKeyframe.time = curve.GetKeyframe(curve.length - 1).time;
             curve.MoveKey(curve.length - 1, cloneFirstToLastKeyframe);
         }
@@ -348,6 +299,7 @@ namespace VamTimeline
             }
             else
             {
+                keyframe = keyframe.Clone();
                 keyframe.time = time;
                 curve.MoveKey(index, keyframe);
             }

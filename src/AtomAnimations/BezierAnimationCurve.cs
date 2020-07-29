@@ -103,6 +103,54 @@ namespace VamTimeline
             keys.RemoveAt(v);
         }
 
+        public void AddEdgeFramesIfMissing(float animationLength)
+        {
+            if (length == 0)
+            {
+                AddKey(0, 0);
+                AddKey(animationLength, 0);
+                return;
+            }
+            if (length == 1)
+            {
+                var keyframe = GetKeyframe(0);
+                keyframe.time = 0;
+                MoveKey(0, keyframe);
+                AddKey(animationLength, keyframe.value);
+                return;
+            }
+            {
+                var keyframe = GetKeyframe(0);
+                if (keyframe.time > 0)
+                {
+                    if (length > 2)
+                    {
+                        AddKey(0, keyframe.value);
+                    }
+                    else
+                    {
+                        keyframe.time = 0;
+                        MoveKey(0, keyframe);
+                    }
+                }
+            }
+            {
+                var keyframe = GetKeyframe(length - 1);
+                if (keyframe.time < animationLength)
+                {
+                    if (length > 2)
+                    {
+                        AddKey(animationLength, keyframe.value);
+                    }
+                    else
+                    {
+                        keyframe.time = animationLength;
+                        MoveKey(length - 1, keyframe);
+                    }
+                }
+            }
+        }
+
         #region From Virt-A-Mate's CubicBezierCurve
 
         public void AutoComputeControlPoints()

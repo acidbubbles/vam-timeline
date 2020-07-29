@@ -158,6 +158,7 @@ namespace VamTimeline
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
                 curve.AddKey(keyframe);
+                keyframe = keyframe.Clone();
                 keyframe.time = length;
                 curve.AddKey(keyframe);
                 if (keyframeSettings != null)
