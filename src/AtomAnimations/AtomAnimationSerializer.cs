@@ -82,14 +82,13 @@ namespace VamTimeline
                     }
                     var target = new FreeControllerAnimationTarget(controller);
                     clip.Add(target);
-                    DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength, target.settings);
+                    DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength);
                     DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength);
                     DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength);
                     DeserializeCurve(target.rotX, controllerJSON["RotX"], clip.animationLength);
                     DeserializeCurve(target.rotY, controllerJSON["RotY"], clip.animationLength);
                     DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength);
                     DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength);
-                    AddMissingKeyframeSettings(target);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
@@ -103,8 +102,7 @@ namespace VamTimeline
                     var floatParamName = paramJSON["Name"].Value;
                     var target = new FloatParamAnimationTarget(_atom, storableId, floatParamName);
                     clip.Add(target);
-                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength, target.settings);
-                    AddMissingKeyframeSettings(target);
+                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
@@ -130,16 +128,6 @@ namespace VamTimeline
             }
         }
 
-        private static void AddMissingKeyframeSettings(ICurveAnimationTarget target)
-        {
-            BezierAnimationCurve leadCurve = target.GetLeadCurve();
-            for (var key = 0; key < leadCurve.length; key++)
-            {
-                var time = leadCurve.GetKeyframe(key).time;
-                target.EnsureKeyframeSettings(time, CurveTypeValues.LeaveAsIs);
-            }
-        }
-
         private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
         {
             if (curveJSON is JSONArray)
@@ -153,7 +141,7 @@ namespace VamTimeline
             {
                 SuperController.LogError("Repair");
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe(0, 0);
+                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe(0, 0, CurveTypeValues.Smooth_);
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
@@ -334,13 +322,13 @@ namespace VamTimeline
                 var controllerJSON = new JSONClass
                     {
                         { "Controller", controller.controller.name },
-                        { "X", SerializeCurve(controller.x, controller.settings) },
-                        { "Y", SerializeCurve(controller.y, controller.settings) },
-                        { "Z", SerializeCurve(controller.z, controller.settings) },
-                        { "RotX", SerializeCurve(controller.rotX, controller.settings) },
-                        { "RotY", SerializeCurve(controller.rotY, controller.settings) },
-                        { "RotZ", SerializeCurve(controller.rotZ, controller.settings) },
-                        { "RotW", SerializeCurve(controller.rotW, controller.settings) }
+                        { "X", SerializeCurve(controller.x) },
+                        { "Y", SerializeCurve(controller.y) },
+                        { "Z", SerializeCurve(controller.z) },
+                        { "RotX", SerializeCurve(controller.rotX) },
+                        { "RotY", SerializeCurve(controller.rotY) },
+                        { "RotZ", SerializeCurve(controller.rotZ) },
+                        { "RotW", SerializeCurve(controller.rotW) }
                     };
                 controllersJSON.Add(controllerJSON);
             }
@@ -353,7 +341,7 @@ namespace VamTimeline
                     {
                         { "Storable", target.storableId },
                         { "Name", target.floatParamName },
-                        { "Value", SerializeCurve(target.value, target.settings) },
+                        { "Value", SerializeCurve(target.value) },
                     };
                 paramsJSON.Add(paramJSON);
             }
@@ -377,7 +365,7 @@ namespace VamTimeline
             }
         }
 
-        private JSONNode SerializeCurve(BezierAnimationCurve curve, SortedDictionary<int, KeyframeSettings> settings = null)
+        private JSONNode SerializeCurve(BezierAnimationCurve curve)
         {
             var curveJSON = new JSONArray();
 
@@ -389,7 +377,7 @@ namespace VamTimeline
                 {
                     ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
                     ["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture),
-                    ["c"] = settings == null ? "0" : (settings.ContainsKey(ms) ? CurveTypeValues.ToInt(settings[ms].curveType).ToString() : "0"),
+                    ["c"] = keyframe.curveType.ToString(CultureInfo.InvariantCulture),
                     ["i"] = keyframe.controlPointIn.ToString(CultureInfo.InvariantCulture),
                     ["o"] = keyframe.controlPointOut.ToString(CultureInfo.InvariantCulture)
                 };

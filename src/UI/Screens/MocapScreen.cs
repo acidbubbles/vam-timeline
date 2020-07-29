@@ -443,12 +443,10 @@ namespace VamTimeline
                     if (time - lastRecordedFrame < frameLength) continue;
                     if (time > current.animationLength) break;
                     var k = ControllerKeyframe.FromStep(time, step, containingAtom, ctrl);
-                    target.SetKeyframe(time, k.position, k.rotation);
+                    var key = target.SetKeyframe(time, k.position, k.rotation);
                     if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                     {
-                        KeyframeSettings settings;
-                        if (target.settings.TryGetValue(previousStep.timeStep.Snap().ToMilliseconds(), out settings))
-                            target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear, current.loop);
+                        target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear, current.loop);
                     }
                     lastRecordedFrame = time;
                     previousStep = step;
@@ -544,7 +542,7 @@ namespace VamTimeline
                 .Select(g =>
                 {
                     var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
-                    return new VamKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0);
+                    return new VamKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0, keyframe.curveType);
                 })
                 .ToList();
 
@@ -579,7 +577,7 @@ namespace VamTimeline
 
                 var step = steps[keyToApply];
                 steps.RemoveAt(keyToApply);
-                var key = target.SetKeyframe(step.time, step.value);
+                var key = target.SetKeyframe(step.time, step.value, step.curveType);
                 target.SmoothNeighbors(key);
             }
 

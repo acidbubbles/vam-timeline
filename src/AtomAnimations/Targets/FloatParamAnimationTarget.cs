@@ -140,8 +140,9 @@ namespace VamTimeline
 
         public void SetKeyframe(float time, float value, bool dirty = true)
         {
-            this.value.SetKeyframe(time, value);
-            EnsureKeyframeSettings(time, CurveTypeValues.Smooth);
+            var keyframe = this.value.GetKeyframeAt(time);
+            if (keyframe != null) keyframe.value = value;
+            else this.value.AddKey(time, value, CurveTypeValues.Smooth_);
             if (dirty) base.dirty = true;
         }
 
@@ -150,7 +151,6 @@ namespace VamTimeline
             var key = value.KeyframeBinarySearch(time);
             if (key == -1) return;
             value.RemoveKey(key);
-            settings.Remove(time.ToMilliseconds());
             dirty = true;
         }
 
@@ -158,7 +158,6 @@ namespace VamTimeline
         {
             var before = value.length;
             value.AddEdgeFramesIfMissing(animationLength);
-            AddEdgeKeyframeSettingsIfMissing(animationLength);
             if (value.length != before) dirty = true;
         }
 
@@ -198,15 +197,13 @@ namespace VamTimeline
             if (key == -1) return null;
             return new FloatParamSnapshot
             {
-                value = value.GetKeyframe(key),
-                curveType = GetKeyframeSettings(time) ?? CurveTypeValues.LeaveAsIs
+                value = value.GetKeyframe(key).Clone()
             };
         }
 
         public void SetCurveSnapshot(float time, FloatParamSnapshot snapshot, bool dirty = true)
         {
             value.SetKeySnapshot(time, snapshot.value);
-            UpdateSetting(time, snapshot.curveType, true);
             if (dirty) base.dirty = true;
         }
 

@@ -48,12 +48,7 @@ namespace VamTimeline
     {
     }
 
-    public abstract class CurveSnapshot
-    {
-        public string curveType;
-    }
-
-    public class FreeControllerV3Snapshot : CurveSnapshot, ISnapshot
+    public class FreeControllerV3Snapshot : ISnapshot
     {
         public VamKeyframe x;
         public VamKeyframe y;
@@ -64,7 +59,7 @@ namespace VamTimeline
         public VamKeyframe rotW;
     }
 
-    public class FloatParamSnapshot : CurveSnapshot, ISnapshot
+    public class FloatParamSnapshot : ISnapshot
     {
         public VamKeyframe value;
     }

@@ -142,27 +142,29 @@ namespace VamTimeline
 
         public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
         {
-            var key = x.SetKeyframe(time, localPosition.x);
-            y.SetKeyframe(time, localPosition.y);
-            z.SetKeyframe(time, localPosition.z);
-            rotX.SetKeyframe(time, locationRotation.x);
-            rotY.SetKeyframe(time, locationRotation.y);
-            rotZ.SetKeyframe(time, locationRotation.z);
-            rotW.SetKeyframe(time, locationRotation.w);
-            EnsureKeyframeSettings(time, CurveTypeValues.Smooth);
+            var keyframe = x.GetKeyframeAt(time);
+            var curveType = keyframe?.curveType ?? CurveTypeValues.Smooth_;
+            var key = x.SetKeyframe(time, localPosition.x, curveType);
+            y.SetKeyframe(time, localPosition.y, curveType);
+            z.SetKeyframe(time, localPosition.z, curveType);
+            rotX.SetKeyframe(time, locationRotation.x, curveType);
+            rotY.SetKeyframe(time, locationRotation.y, curveType);
+            rotZ.SetKeyframe(time, locationRotation.z, curveType);
+            rotW.SetKeyframe(time, locationRotation.w, curveType);
             dirty = true;
             return key;
         }
 
         public int SetKeyframeByKey(int key, Vector3 localPosition, Quaternion locationRotation)
         {
-            x.SetKeyframeByKey(key, localPosition.x);
-            y.SetKeyframeByKey(key, localPosition.y);
-            z.SetKeyframeByKey(key, localPosition.z);
-            rotX.SetKeyframeByKey(key, locationRotation.x);
-            rotY.SetKeyframeByKey(key, locationRotation.y);
-            rotZ.SetKeyframeByKey(key, locationRotation.z);
-            rotW.SetKeyframeByKey(key, locationRotation.w);
+            var curveType = x.GetKeyframe(key).curveType;
+            x.SetKeyframeByKey(key, localPosition.x, curveType);
+            y.SetKeyframeByKey(key, localPosition.y, curveType);
+            z.SetKeyframeByKey(key, localPosition.z, curveType);
+            rotX.SetKeyframeByKey(key, locationRotation.x, curveType);
+            rotY.SetKeyframeByKey(key, locationRotation.y, curveType);
+            rotZ.SetKeyframeByKey(key, locationRotation.z, curveType);
+            rotW.SetKeyframeByKey(key, locationRotation.w, curveType);
             dirty = true;
             return key;
         }
@@ -175,7 +177,6 @@ namespace VamTimeline
             {
                 curve.RemoveKey(key);
             }
-            settings.Remove(time.ToMilliseconds());
             dirty = true;
         }
 
@@ -189,7 +190,6 @@ namespace VamTimeline
             rotY.AddEdgeFramesIfMissing(animationLength);
             rotZ.AddEdgeFramesIfMissing(animationLength);
             rotW.AddEdgeFramesIfMissing(animationLength);
-            AddEdgeKeyframeSettingsIfMissing(animationLength);
             if (x.length != before) dirty = true;
         }
 
@@ -294,7 +294,6 @@ namespace VamTimeline
                 rotY = rotY.GetKeyframe(key).Clone(),
                 rotZ = rotZ.GetKeyframe(key).Clone(),
                 rotW = rotW.GetKeyframe(key).Clone(),
-                curveType = GetKeyframeSettings(time) ?? CurveTypeValues.LeaveAsIs
             };
         }
 
@@ -307,7 +306,6 @@ namespace VamTimeline
             rotY.SetKeySnapshot(time, snapshot.rotY);
             rotZ.SetKeySnapshot(time, snapshot.rotZ);
             rotW.SetKeySnapshot(time, snapshot.rotW);
-            UpdateSetting(time, snapshot.curveType, true);
             if (dirty) base.dirty = true;
         }
 

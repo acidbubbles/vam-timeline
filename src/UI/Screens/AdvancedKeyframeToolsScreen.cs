@@ -68,14 +68,6 @@ namespace VamTimeline
                         {
                             curve.Reverse();
                         }
-
-                        var settings = targetWithCurves.settings.ToList();
-                        var length = settings.Last().Key;
-                        targetWithCurves.settings.Clear();
-                        foreach (var setting in settings)
-                        {
-                            targetWithCurves.settings.Add(length - setting.Key, setting.Value);
-                        }
                     }
                     else if (target is TriggersAnimationTarget)
                     {

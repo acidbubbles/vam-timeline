@@ -7,6 +7,7 @@ namespace VamTimeline
 {
     public class BezierAnimationCurve
     {
+        // TODO: Instead of a keys array, work with four independent arrays: time, value, in, out
         public List<VamKeyframe> keys = new List<VamKeyframe>();
         public int length => keys.Count;
         // TODO: Use correctly
@@ -16,6 +17,24 @@ namespace VamTimeline
         public float[] a;
         public float[] b;
         public float[] c;
+
+        public VamKeyframe GetFirstFrame()
+        {
+            return keys[0];
+        }
+
+        public VamKeyframe GetLastFrame()
+        {
+            return keys[keys.Count - 1];
+        }
+
+        public VamKeyframe GetKeyframeAt(float time)
+        {
+            if (keys.Count == 0) return null;
+            var key = this.KeyframeBinarySearch(time);
+            if (key == -1) return null;
+            return keys[key];
+        }
 
         public VamKeyframe GetKeyframe(int key)
         {
@@ -55,30 +74,31 @@ namespace VamTimeline
         }
 
         // TODO: Clean this up and only use SetKeyframe, not Add/Move.
-        public int SetKeyframe(float time, float value)
+        public int SetKeyframe(float time, float value, int curveType)
         {
             time = time.Snap();
-            if (keys.Count == 0) return AddKey(time, value);
+            if (keys.Count == 0) return AddKey(time, value, curveType);
             var key = this.KeyframeBinarySearch(time);
             if (key != -1)
-                return SetKeyframeByKey(key, value);
+                return SetKeyframeByKey(key, value, curveType);
             key = AddKey(time, value);
             if (key == -1)
                 throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", keys.Select(k => k.time.ToString()).ToArray())}.");
             return key;
         }
 
-        public int SetKeyframeByKey(int key, float value)
+        public int SetKeyframeByKey(int key, float value, int curveType)
         {
             var keyframe = GetKeyframe(key);
             keyframe.value = value;
+            keyframe.curveType = curveType;
             MoveKey(key, keyframe);
             return key;
         }
 
-        public int AddKey(float time, float value)
+        public int AddKey(float time, float value, int curveType = 0)
         {
-            return AddKey(new VamKeyframe(time, value));
+            return AddKey(new VamKeyframe(time, value, curveType));
         }
 
         public int AddKey(VamKeyframe keyframe)
@@ -318,21 +338,23 @@ namespace VamTimeline
         public float value;
         public float controlPointIn;
         public float controlPointOut;
+        public int curveType;
 
         public VamKeyframe()
         {
         }
 
-        public VamKeyframe(float time, float value)
-            : this(time, value, value, value)
+        public VamKeyframe(float time, float value, int curveType)
+            : this(time, value, curveType, value, value)
         {
 
         }
 
-        public VamKeyframe(float time, float value, float controlPointIn, float controlPointOut)
+        public VamKeyframe(float time, float value, int curveType, float controlPointIn, float controlPointOut)
         {
             this.time = time;
             this.value = value;
+            this.curveType = curveType;
             this.controlPointIn = controlPointIn;
             this.controlPointOut = controlPointOut;
         }
@@ -344,6 +366,7 @@ namespace VamTimeline
             {
                 time = time,
                 value = value,
+                curveType = curveType,
                 controlPointIn = controlPointIn,
                 controlPointOut = controlPointOut
             };

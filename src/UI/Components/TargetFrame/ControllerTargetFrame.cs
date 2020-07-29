@@ -171,8 +171,9 @@ namespace VamTimeline
 
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
-            plugin.animation.SetKeyframeToCurrentTransform(target, time);
-            if (target.settings[time.ToMilliseconds()]?.curveType == CurveTypeValues.CopyPrevious)
+            var key = plugin.animation.SetKeyframeToCurrentTransform(target, time);
+            var keyframe = target.x.keys[key];
+            if (keyframe.curveType == CurveTypeValues.CopyPrevious_)
                 target.ChangeCurve(time, CurveTypeValues.Smooth, clip.loop);
         }
 

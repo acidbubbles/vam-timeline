@@ -21,6 +21,17 @@ namespace VamTimeline
         // Used for display. Reorder as needed.
         public static readonly List<string> DisplayCurveTypes = new List<string> { LeaveAsIs, Flat, FlatLong, Linear, Smooth, Constant, Bounce, LinearFlat, FlatLinear, CopyPrevious };
 
+        public static readonly int LeaveAsIs_ = _indexedCurveTypes.IndexOf(LeaveAsIs);
+        public static readonly int Flat_ = _indexedCurveTypes.IndexOf(Flat);
+        public static readonly int FlatLong_ = _indexedCurveTypes.IndexOf(FlatLong);
+        public static readonly int Linear_ = _indexedCurveTypes.IndexOf(Linear);
+        public static readonly int Smooth_ = _indexedCurveTypes.IndexOf(Smooth);
+        public static readonly int Constant_ = _indexedCurveTypes.IndexOf(Constant);
+        public static readonly int Bounce_ = _indexedCurveTypes.IndexOf(Bounce);
+        public static readonly int LinearFlat_ = _indexedCurveTypes.IndexOf(LinearFlat);
+        public static readonly int FlatLinear_ = _indexedCurveTypes.IndexOf(FlatLinear);
+        public static readonly int CopyPrevious_ = _indexedCurveTypes.IndexOf(CopyPrevious);
+
         public static string FromInt(int v)
         {
             if (v < 0 || v >= _indexedCurveTypes.Count) return Smooth;

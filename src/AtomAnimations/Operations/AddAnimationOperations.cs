@@ -23,20 +23,12 @@ namespace VamTimeline
                 {
                     newTarget.curves[i].keys = origTarget.curves[i].keys.ToList();
                 }
-                foreach (var kvp in origTarget.settings)
-                {
-                    newTarget.settings[kvp.Key] = new KeyframeSettings { curveType = kvp.Value.curveType };
-                }
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
                 var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
                 newTarget.value.keys = origTarget.value.keys.ToList();
-                foreach (var kvp in origTarget.settings)
-                {
-                    newTarget.settings[kvp.Key] = new KeyframeSettings { curveType = kvp.Value.curveType };
-                }
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetTriggers)

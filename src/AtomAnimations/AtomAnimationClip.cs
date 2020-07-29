@@ -146,8 +146,11 @@ namespace VamTimeline
                     {
                         foreach (var target in targetControllers)
                         {
-                            if (target.settings.Count == 2)
-                                target.settings[animationLength.ToMilliseconds()].curveType = CurveTypeValues.LeaveAsIs;
+                            foreach (var curve in target.GetCurves())
+                            {
+                                if (curve.length == 2)
+                                    curve.GetLastFrame().curveType = curve.GetFirstFrame().curveType;
+                            }
                         }
                         transition = false;
                     }
@@ -155,8 +158,11 @@ namespace VamTimeline
                     {
                         foreach (var target in targetControllers)
                         {
-                            if (target.settings.Count == 2)
-                                target.settings[animationLength.ToMilliseconds()].curveType = CurveTypeValues.CopyPrevious;
+                            foreach (var curve in target.GetCurves())
+                            {
+                                if (curve.length == 2)
+                                    curve.GetLastFrame().curveType = CurveTypeValues.CopyPrevious_;
+                            }
                         }
                     }
                 }

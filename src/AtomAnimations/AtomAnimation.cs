@@ -148,12 +148,12 @@ namespace VamTimeline
             return false;
         }
 
-        public void SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
+        public int SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
         {
             time = time.Snap();
             if (time > current.animationLength)
                 time = current.animationLength;
-            target.SetKeyframeToCurrentTransform(time);
+            return target.SetKeyframeToCurrentTransform(time);
         }
 
         #region Clips
@@ -706,7 +706,8 @@ namespace VamTimeline
                         target.rotW);
                 }
 
-                RebuildClipLoop(clip, target);
+                foreach (var curve in target.GetCurves())
+                    curve.AutoComputeControlPoints();
             }
 
             foreach (var target in clip.targetFloatParams)
@@ -714,11 +715,9 @@ namespace VamTimeline
                 if (!target.dirty) continue;
 
                 if (clip.loop)
-                    target.value.SetKeyframe(clip.animationLength, target.value.GetKeyframe(0).value);
+                    target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0), false);
 
-                target.ReapplyCurveTypes(clip.loop);
-
-                RebuildClipLoop(clip, target);
+                target.value.AutoComputeControlPoints();
             }
 
             foreach (var target in clip.targetTriggers)
@@ -726,16 +725,6 @@ namespace VamTimeline
                 if (!target.dirty) continue;
 
                 target.RebuildKeyframes(clip.animationLength);
-            }
-        }
-
-        private static void RebuildClipLoop(AtomAnimationClip clip, ICurveAnimationTarget target)
-        {
-            KeyframeSettings settings;
-            if (clip.loop && target.settings.TryGetValue(0, out settings) && settings.curveType == CurveTypeValues.Smooth)
-            {
-                foreach (var curve in target.GetCurves())
-                    curve.SmoothLoop();
             }
         }
 
