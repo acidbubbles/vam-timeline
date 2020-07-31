@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
+    /// <see>https://pomax.github.io/bezierinfo/</see>
     public class BezierAnimationCurve
     {
         // TODO: Instead of a keys array, work with four independent arrays: time, value, in, out
@@ -12,7 +13,7 @@ namespace VamTimeline
         public int length => keys.Count;
         // TODO: Use correctly
         public bool loop;
-        public float[] _cachedValues;
+        public float[] _computeValues;
         public float[] r;
         public float[] a;
         public float[] b;
@@ -25,6 +26,7 @@ namespace VamTimeline
 
         public VamKeyframe GetLastFrame()
         {
+            // TODO: Add a animationLength property
             return keys[keys.Count - 1];
         }
 
@@ -57,7 +59,7 @@ namespace VamTimeline
             var to = keys[key];
             // TODO: Worth precalculating?
             var t = (time - from.time) / (to.time - from.time);
-            return GetPositionFromPoint(key - 1, t);
+            return ComputeBezierValue(key - 1, t);
         }
 
         public void MoveKey(int key, VamKeyframe keyframe)
@@ -173,6 +175,31 @@ namespace VamTimeline
 
         #region From Virt-A-Mate's CubicBezierCurve
 
+        public void ComputeCurves()
+        {
+            AutoComputeControlPoints();
+            for (var key = 0; key < keys.Count; key++)
+            {
+                var previous = key >= 1 ? keys[key - 1] : (loop ? keys[keys.Count - 2] : null);
+                var current = keys[key];
+                var next = key < keys.Count - 1 ? keys[key + 1] : (loop ? keys[1] : null);
+
+                switch (current.curveType)
+                {
+                    case 2:
+                        if (previous != null)
+                            current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                        if (next != null)
+                            current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+                        // TODO: Implement linear
+                        break;
+                    default:
+                        // TODO: Implement others
+                        continue;
+                }
+            }
+        }
+
         public void AutoComputeControlPoints()
         {
             var keysCount = keys.Count;
@@ -198,131 +225,122 @@ namespace VamTimeline
                 keys[1] = last;
                 return;
             }
+
             if (loop) keysCount -= 1;
-            var num2 = loop ? keysCount + 1 : keysCount - 1;
-            if (_cachedValues == null || _cachedValues.Length < num2 + 1)
+            var valuesCount = loop ? keysCount + 1 : keysCount - 1;
+            if (_computeValues == null || _computeValues.Length < valuesCount + 1)
             {
-                _cachedValues = new float[num2 + 1];
+                _computeValues = new float[valuesCount + 1];
             }
             if (loop)
             {
-                _cachedValues[0] = keys[keysCount - 1].value;
-                for (var i = 1; i < num2; i++)
+                _computeValues[0] = keys[keysCount - 1].value;
+                for (var i = 1; i < valuesCount; i++)
                 {
-                    _cachedValues[i] = keys[i - 1].value;
+                    _computeValues[i] = keys[i - 1].value;
                 }
-                _cachedValues[num2] = keys[0].value;
+                _computeValues[valuesCount] = keys[0].value;
             }
             else
             {
-                for (var j = 0; j < keysCount; j++)
+                for (var i = 0; i < keysCount; i++)
                 {
-                    _cachedValues[j] = keys[j].value;
+                    _computeValues[i] = keys[i].value;
                 }
             }
-            if (a == null || a.Length < num2)
-            {
-                a = new float[num2];
-            }
-            if (b == null || b.Length < num2)
-            {
-                b = new float[num2];
-            }
-            if (c == null || c.Length < num2)
-            {
-                c = new float[num2];
-            }
-            if (r == null || r.Length < num2)
-            {
-                r = new float[num2];
-            }
-            // TODO: Determine curve types here
+            if (a == null || a.Length < valuesCount) a = new float[valuesCount];
+            if (b == null || b.Length < valuesCount) b = new float[valuesCount];
+            if (c == null || c.Length < valuesCount) c = new float[valuesCount];
+            if (r == null || r.Length < valuesCount) r = new float[valuesCount];
+
             a[0] = 0f;
             b[0] = 2f;
             c[0] = 1f;
-            r[0] = _cachedValues[0] + 2f * _cachedValues[1];
-            for (var k = 1; k < num2 - 1; k++)
+            r[0] = _computeValues[0] + 2f * _computeValues[1];
+            for (var i = 1; i < valuesCount - 1; i++)
             {
-                a[k] = 1f;
-                b[k] = 4f;
-                c[k] = 1f;
-                r[k] = 4f * _cachedValues[k] + 2f * _cachedValues[k + 1];
+                a[i] = 1f;
+                b[i] = 4f;
+                c[i] = 1f;
+                r[i] = 4f * _computeValues[i] + 2f * _computeValues[i + 1];
             }
-            a[num2 - 1] = 2f;
-            b[num2 - 1] = 7f;
-            c[num2 - 1] = 0f;
-            r[num2 - 1] = 8f * _cachedValues[num2 - 1] + _cachedValues[num2];
-            for (var l = 1; l < num2; l++)
+            a[valuesCount - 1] = 2f;
+            b[valuesCount - 1] = 7f;
+            c[valuesCount - 1] = 0f;
+            r[valuesCount - 1] = 8f * _computeValues[valuesCount - 1] + _computeValues[valuesCount];
+            for (var i = 1; i < valuesCount; i++)
             {
-                var num3 = a[l] / b[l - 1];
-                b[l] -= num3 * c[l - 1];
-                r[l] -= num3 * r[l - 1];
+                var n = a[i] / b[i - 1];
+                b[i] -= n * c[i - 1];
+                r[i] -= n * r[i - 1];
             }
             if (loop)
             {
-                var vector = r[num2 - 1] / b[num2 - 1];
-                keys[num2 - 2].controlPointOut = (r[num2 - 1] - c[num2 - 1] * vector) / b[num2 - 1];
-                for (var num4 = num2 - 3; num4 >= 0; num4--)
+                var vector = r[valuesCount - 1] / b[valuesCount - 1];
+                keys[valuesCount - 2].controlPointOut = (r[valuesCount - 1] - c[valuesCount - 1] * vector) / b[valuesCount - 1];
+                for (var i = valuesCount - 3; i >= 0; i--)
                 {
-                    keys[num4].controlPointOut = (r[num4 + 1] - c[num4 + 1] * keys[num4 + 1].controlPointOut) / b[num4 + 1];
+                    keys[i].controlPointOut = (r[i + 1] - c[i + 1] * keys[i + 1].controlPointOut) / b[i + 1];
                 }
             }
             else
             {
-                keys[num2].controlPointOut = keys[num2].value;
-                keys[num2 - 1].controlPointOut = r[num2 - 1] / b[num2 - 1];
-                for (var num5 = num2 - 2; num5 >= 0; num5--)
+                keys[valuesCount].controlPointOut = keys[valuesCount].value;
+                keys[valuesCount - 1].controlPointOut = r[valuesCount - 1] / b[valuesCount - 1];
+                for (var i = valuesCount - 2; i >= 0; i--)
                 {
-                    keys[num5].controlPointOut = (r[num5] - c[num5] * keys[num5 + 1].controlPointOut) / b[num5];
+                    keys[i].controlPointOut = (r[i] - c[i] * keys[i + 1].controlPointOut) / b[i];
                 }
             }
             if (loop)
             {
-                for (var m = 0; m < num2 - 1; m++)
+                for (var i = 0; i < valuesCount - 1; i++)
                 {
-                    keys[m].controlPointIn = 2f * _cachedValues[m + 1] - keys[m].controlPointOut;
+                    keys[i].controlPointIn = 2f * _computeValues[i + 1] - keys[i].controlPointOut;
                 }
                 return;
             }
             keys[0].controlPointIn = keys[0].value;
-            for (var n = 1; n < num2; n++)
+            for (var i = 1; i < valuesCount; i++)
             {
-                keys[n].controlPointIn = 2f * _cachedValues[n] - keys[n].controlPointOut;
+                keys[i].controlPointIn = 2f * _computeValues[i] - keys[i].controlPointOut;
             }
-            keys[num2].controlPointIn = 0.5f * (_cachedValues[num2] + keys[num2 - 1].controlPointOut);
+            keys[valuesCount].controlPointIn = 0.5f * (_computeValues[valuesCount] + keys[valuesCount - 1].controlPointOut);
         }
 
-        public float GetPositionFromPoint(int fromPoint, float t)
+        public float ComputeBezierValue(int key, float t)
         {
-            var position = keys[fromPoint].value;
-            var position2 = keys[fromPoint].controlPointOut;
+            var w0 = keys[key].value;
+            var w1 = keys[key].controlPointOut;
             var keysCount = loop ? keys.Count - 1 : keys.Count;
             if (keysCount == 1)
             {
-                return position;
+                return w0;
             }
-            float position3;
-            float position4;
-            if (fromPoint == keysCount - 1)
+            float w2;
+            float w3;
+            if (key == keysCount - 1)
             {
                 if (!loop)
                 {
-                    return position;
+                    return w0;
                 }
-                position3 = keys[0].controlPointIn;
-                position4 = keys[0].value;
+                w2 = keys[0].controlPointIn;
+                w3 = keys[0].value;
             }
             else
             {
-                position3 = keys[fromPoint + 1].controlPointIn;
-                position4 = keys[fromPoint + 1].value;
+                w2 = keys[key + 1].controlPointIn;
+                w3 = keys[key + 1].value;
             }
-            float num = 1f - t;
-            float num2 = num * num;
-            float d = num2 * num;
-            float num3 = t * t;
-            float d2 = num3 * t;
-            return position * d + 3f * position2 * num2 * t + 3f * position3 * num * num3 + position4 * d2;
+
+            // See https://pomax.github.io/bezierinfo/#how-to-implement-the-weighted-basis-function
+            float mt = 1f - t;
+            float mt2 = mt * mt;
+            float mt3 = mt2 * mt;
+            float t2 = t * t;
+            float t3 = t2 * t;
+            return w0 * mt3 + 3f * w1 * mt2 * t + 3f * w2 * mt * t2 + w3 * t3;
         }
 
         #endregion

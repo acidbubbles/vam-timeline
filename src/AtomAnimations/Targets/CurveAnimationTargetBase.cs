@@ -51,7 +51,7 @@ namespace VamTimeline
 
         protected void ReapplyCurveTypes(BezierAnimationCurve curve, bool loop)
         {
-            curve.AutoComputeControlPoints();
+            curve.ComputeCurves();
         }
 
         public void ChangeCurve(float time, string curveType, bool loop)

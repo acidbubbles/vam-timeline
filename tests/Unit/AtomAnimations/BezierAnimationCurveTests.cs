@@ -10,7 +10,8 @@ namespace VamTimeline.Tests.Unit
         public IEnumerable<Test> GetTests()
         {
             yield return new Test(nameof(AddAndRemoveFrames), AddAndRemoveFrames);
-            yield return new Test(nameof(RepairBrokenCurveTests), RepairBrokenCurveTests);
+            yield return new Test(nameof(Evaluate), Evaluate);
+            yield return new Test(nameof(RepairBrokenCurve), RepairBrokenCurve);
         }
 
         public IEnumerable AddAndRemoveFrames(TestContext context)
@@ -49,7 +50,21 @@ namespace VamTimeline.Tests.Unit
             yield break;
         }
 
-        public IEnumerable RepairBrokenCurveTests(TestContext context)
+        public IEnumerable Evaluate(TestContext context)
+        {
+            var curve = new BezierAnimationCurve();
+            curve.SetKeyframe(0, 10, CurveTypeValues.Linear_);
+            curve.SetKeyframe(1, 20, CurveTypeValues.Linear_);
+            curve.SetKeyframe(2, 30, CurveTypeValues.Linear_);
+
+            if (!context.Assert(curve.Evaluate(0.0f), 10f, "Linear/0")) yield break;
+            if (!context.Assert(curve.Evaluate(0.5f), 15f, "Linear/1")) yield break;
+            if (!context.Assert(curve.Evaluate(1.0f), 20f, "Linear/2")) yield break;
+            if (!context.Assert(curve.Evaluate(1.5f), 25f, "Linear/3")) yield break;
+            if (!context.Assert(curve.Evaluate(2.0f), 30f, "Linear/4")) yield break;
+        }
+
+        public IEnumerable RepairBrokenCurve(TestContext context)
         {
             var curve = new BezierAnimationCurve();
             curve.SetKeyframe(1, 2, CurveTypeValues.Linear_);

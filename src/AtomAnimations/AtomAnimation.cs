@@ -707,7 +707,7 @@ namespace VamTimeline
                 }
 
                 foreach (var curve in target.GetCurves())
-                    curve.AutoComputeControlPoints();
+                    curve.ComputeCurves();
             }
 
             foreach (var target in clip.targetFloatParams)
@@ -717,7 +717,7 @@ namespace VamTimeline
                 if (clip.loop)
                     target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0), false);
 
-                target.value.AutoComputeControlPoints();
+                target.value.ComputeCurves();
             }
 
             foreach (var target in clip.targetTriggers)
