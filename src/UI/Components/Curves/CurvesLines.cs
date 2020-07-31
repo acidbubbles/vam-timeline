@@ -45,7 +45,7 @@ namespace VamTimeline
             var maxY = range.y;
             var yRatio = height / (maxY - minY);
             var offsetY = (-minY - (maxY - minY) / 2f) * yRatio;
-            if (float.IsInfinity(yRatio) || maxY - minY <= float.Epsilon)
+            if (float.IsInfinity(yRatio) || maxY - minY < 0.00001f)
             {
                 yRatio = 1f;
                 offsetY = 0f;
