@@ -587,6 +587,7 @@ namespace VamTimeline
             foreach (var target in targets.OfType<TriggersAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
+                if(snapshot == null) continue;
                 triggers.Add(new TriggersClipboardEntry
                 {
                     name = target.name,
