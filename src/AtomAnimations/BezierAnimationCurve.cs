@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    /// <see>https://pomax.github.io/bezierinfo/</see>
     public class BezierAnimationCurve
     {
         public float duration => keys.Count == 0 ? -1 : keys[keys.Count - 1].time;
@@ -216,8 +215,6 @@ namespace VamTimeline
             }
         }
 
-        #region From Virt-A-Mate's CubicBezierCurve
-
         public void AutoComputeControlPoints()
         {
             var keysCount = keys.Count;
@@ -244,6 +241,9 @@ namespace VamTimeline
                 return;
             }
 
+            // Adapted from Virt-A-Mate's implementation with permission from MeshedVR
+            // https://www.particleincell.com/wp-content/uploads/2012/06/bezier-spline.js
+            // https://www.particleincell.com/2012/bezier-splines/
             if (loop) keysCount -= 1;
             var valuesCount = loop ? keysCount + 1 : keysCount - 1;
             if (_computeValues == null || _computeValues.Length < valuesCount + 1) _computeValues = new float[valuesCount + 1];
@@ -334,6 +334,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         public float ComputeBezierValue(BezierKeyframe current, BezierKeyframe next, float time)
         {
             var w0 = current.value;
@@ -351,8 +352,6 @@ namespace VamTimeline
             float t3 = t2 * t;
             return w0 * mt3 + 3f * w1 * mt2 * t + 3f * w2 * mt * t2 + w3 * t3;
         }
-
-        #endregion
 
         [MethodImpl(256)]
         public int KeyframeBinarySearch(float time, bool returnClosest = false)
