@@ -141,7 +141,7 @@ namespace VamTimeline
             {
                 SuperController.LogError("Repair");
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe(0, 0, CurveTypeValues.Smooth);
+                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new BezierKeyframe(0, 0, CurveTypeValues.Smooth);
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
@@ -165,7 +165,7 @@ namespace VamTimeline
                     if (time == last) continue;
                     last = time;
                     var value = DeserializeFloat(keyframeJSON["v"]);
-                    curve.AddKey(new VamKeyframe
+                    curve.AddKey(new BezierKeyframe
                     {
                         time = time,
                         value = value,
@@ -196,7 +196,7 @@ namespace VamTimeline
                     if (time == last) continue;
                     last = time;
                     var value = DeserializeFloat(parts[1]);
-                    curve.AddKey(new VamKeyframe
+                    curve.AddKey(new BezierKeyframe
                     {
                         time = time,
                         value = value,
@@ -222,7 +222,7 @@ namespace VamTimeline
                 if (time == last) continue;
                 last = time;
                 var value = DeserializeFloat(keyframeJSON["value"]);
-                var keyframe = new VamKeyframe
+                var keyframe = new BezierKeyframe
                 {
                     time = time,
                     value = value,

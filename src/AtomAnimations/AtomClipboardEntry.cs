@@ -48,18 +48,18 @@ namespace VamTimeline
 
     public class FreeControllerV3Snapshot : ISnapshot
     {
-        public VamKeyframe x;
-        public VamKeyframe y;
-        public VamKeyframe z;
-        public VamKeyframe rotX;
-        public VamKeyframe rotY;
-        public VamKeyframe rotZ;
-        public VamKeyframe rotW;
+        public BezierKeyframe x;
+        public BezierKeyframe y;
+        public BezierKeyframe z;
+        public BezierKeyframe rotX;
+        public BezierKeyframe rotY;
+        public BezierKeyframe rotZ;
+        public BezierKeyframe rotW;
     }
 
     public class FloatParamSnapshot : ISnapshot
     {
-        public VamKeyframe value;
+        public BezierKeyframe value;
     }
 
     public class TriggerSnapshot : ISnapshot

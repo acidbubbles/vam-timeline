@@ -27,7 +27,6 @@ public static class UnitySpecific
     {
         var keyframe = curve.GetKeyframe(key);
         keyframe.value = value;
-        curve.MoveKey(key, keyframe);
     }
 
     public static void EnsureQuaternionContinuityAndRecalculateSlope(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w)

@@ -542,13 +542,13 @@ namespace VamTimeline
                 .Select(g =>
                 {
                     var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
-                    return new VamKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0, keyframe.curveType);
+                    return new BezierKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0, keyframe.curveType);
                 })
                 .ToList();
 
             var target = new BezierAnimationCurve();
-            target.SmoothNeighbors(target.AddKey(0, source.GetKeyframe(0).value));
-            target.SmoothNeighbors(target.AddKey(source.GetKeyframe(source.length - 1).time, source.GetKeyframe(source.length - 1).value));
+            target.SmoothNeighbors(target.AddKey(0, source.GetFirstFrame().value, source.GetFirstFrame().curveType));
+            target.SmoothNeighbors(target.AddKey(source.GetLastFrame().time, source.GetLastFrame().value, source.GetLastFrame().curveType));
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
@@ -659,7 +659,7 @@ namespace VamTimeline
 
         private static bool IsRecording()
         {
-            // TODO: There's a bool but it's protected.
+            // There's a bool but it's protected.
             return SuperController.singleton.helpText?.StartsWith("Recording...") ?? false;
         }
 

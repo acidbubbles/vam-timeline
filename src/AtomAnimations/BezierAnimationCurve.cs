@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace VamTimeline
@@ -8,37 +9,41 @@ namespace VamTimeline
     /// <see>https://pomax.github.io/bezierinfo/</see>
     public class BezierAnimationCurve
     {
+        public float duration => keys.Count == 0 ? -1 : keys[keys.Count - 1].time;
+        // TODO: Add a times array and work with this for the dope sheet
         // TODO: Instead of a keys array, work with four independent arrays: time, value, in, out
-        public List<VamKeyframe> keys = new List<VamKeyframe>();
+        public List<BezierKeyframe> keys = new List<BezierKeyframe>();
         public int length => keys.Count;
-        // TODO: Use correctly
         public bool loop;
-        public float[] _computeValues;
-        public float[] r;
-        public float[] a;
-        public float[] b;
-        public float[] c;
 
-        public VamKeyframe GetFirstFrame()
+        private float[] _computeValues;
+        private float[] _r;
+        private float[] _a;
+        private float[] _b;
+        private float[] _c;
+
+        private int _lastIndex;
+
+        public BezierKeyframe GetFirstFrame()
         {
             return keys[0];
         }
 
-        public VamKeyframe GetLastFrame()
+        public BezierKeyframe GetLastFrame()
         {
             // TODO: Add a animationLength property
             return keys[keys.Count - 1];
         }
 
-        public VamKeyframe GetKeyframeAt(float time)
+        public BezierKeyframe GetKeyframeAt(float time)
         {
             if (keys.Count == 0) return null;
-            var key = this.KeyframeBinarySearch(time);
+            var key = KeyframeBinarySearch(time);
             if (key == -1) return null;
             return keys[key];
         }
 
-        public VamKeyframe GetKeyframe(int key)
+        public BezierKeyframe GetKeyframe(int key)
         {
             if (key == -1) throw new ArgumentException("Expected a key, received -1", nameof(key));
             return keys[key];
@@ -46,46 +51,60 @@ namespace VamTimeline
 
         public float Evaluate(float time)
         {
-            if (keys.Count < 2) throw new NotSupportedException("Must contain at least two keyframes");
-            // TODO: Support looping
-            // TODO: Remember the largest time and use it everywhere
-            // TODO: Remember the last checked time and bisect from there?
-            time = Mathf.Clamp(time, 0, keys[keys.Count - 1].time);
-            // TODO: Bisect or better, no linear search here!
-            var key = keys.FindIndex(k => k.time > time);
+            BezierKeyframe current;
+            BezierKeyframe next;
+            // Attempt last portion
+            if (_lastIndex < keys.Count - 1)
+            {
+                current = _lastIndex < keys.Count ? keys[_lastIndex] : null;
+                next = _lastIndex < keys.Count - 1 ? keys[_lastIndex + 1] : null;
+                if (time >= current.time && time < next.time)
+                {
+                    return ComputeBezierValue(current, next, time);
+                }
+                // Attempt next portion
+                if (_lastIndex < keys.Count - 2)
+                {
+                    current = next;
+                    next = _lastIndex < keys.Count - 2 ? keys[_lastIndex + 2] : null;
+                    if (time >= current.time && time < next.time)
+                    {
+                        _lastIndex++;
+                        return ComputeBezierValue(current, next, time);
+                    }
+                }
+            }
+            // Attempt first portion
+            next = keys[1];
+            if (time < next.time)
+            {
+                _lastIndex = 0;
+                return ComputeBezierValue(keys[0], next, time);
+            }
+
+            // Search for portion
+            var key = KeyframeBinarySearch(time, true);
             if (key == -1) return keys[keys.Count - 1].value;
             if (key == 0) return keys[0].value;
-            var from = keys[key - 1];
-            var to = keys[key];
-            // TODO: Worth precalculating?
-            var t = (time - from.time) / (to.time - from.time);
-            return ComputeBezierValue(key - 1, t);
+            current = keys[key];
+            if (time < current.time)
+            {
+                key++;
+                current = keys[key];
+            }
+            next = keys[key + 1];
+            _lastIndex = key;
+            return ComputeBezierValue(current, next, time);
         }
 
-        public void MoveKey(int key, VamKeyframe keyframe)
-        {
-            if (keys[key].time == keyframe.time)
-            {
-                keys[key] = keyframe;
-            }
-            else
-            {
-                keys.RemoveAt(key);
-                AddKey(keyframe);
-            }
-        }
-
-        // TODO: Clean this up and only use SetKeyframe, not Add/Move.
         public int SetKeyframe(float time, float value, int curveType)
         {
             time = time.Snap();
             if (keys.Count == 0) return AddKey(time, value, curveType);
-            var key = this.KeyframeBinarySearch(time);
-            if (key != -1)
-                return SetKeyframeByKey(key, value, curveType);
-            key = AddKey(time, value);
-            if (key == -1)
-                throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", keys.Select(k => k.time.ToString()).ToArray())}.");
+            var key = KeyframeBinarySearch(time);
+            if (key != -1) return SetKeyframeByKey(key, value, curveType);
+            key = AddKey(time, value, curveType);
+            if (key == -1) throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", keys.Select(k => k.time.ToString()).ToArray())}.");
             return key;
         }
 
@@ -94,30 +113,32 @@ namespace VamTimeline
             var keyframe = GetKeyframe(key);
             keyframe.value = value;
             keyframe.curveType = curveType;
-            MoveKey(key, keyframe);
             return key;
         }
 
-        public int AddKey(float time, float value, int curveType = 0)
+        public int AddKey(float time, float value, int curveType)
         {
-            return AddKey(new VamKeyframe(time, value, curveType));
+            return AddKey(new BezierKeyframe(time, value, curveType));
         }
 
-        public int AddKey(VamKeyframe keyframe)
+        public int AddKey(BezierKeyframe keyframe)
         {
-            // TODO Avoid double browsing
-            if (keys.FindIndex(k => k.time == keyframe.time) > -1) return -1;
-            var key = keys.FindIndex(k => k.time > keyframe.time);
-            if (key == -1)
+            if (keyframe.time > duration)
             {
                 keys.Add(keyframe);
                 return keys.Count - 1;
             }
-            else
+            var nearestKey = KeyframeBinarySearch(keyframe.time, true);
+            var nearestKeyframe = keys[nearestKey];
+            if (Mathf.Approximately(nearestKeyframe.time, keyframe.time)) return -1;
+            if (nearestKeyframe.time < keyframe.time)
             {
+                var key = nearestKey + 1;
                 keys.Insert(key, keyframe);
                 return key;
             }
+            keys.Insert(nearestKey, keyframe);
+            return nearestKey;
         }
 
         public void RemoveKey(int v)
@@ -127,53 +148,48 @@ namespace VamTimeline
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
-            if (length == 0)
+            if (keys.Count == 0)
             {
-                AddKey(0, 0);
-                AddKey(animationLength, 0);
+                AddKey(0, 0, CurveTypeValues.Smooth);
+                AddKey(animationLength, 0, CurveTypeValues.Smooth);
                 return;
             }
-            if (length == 1)
+            if (keys.Count == 1)
             {
                 var keyframe = GetKeyframe(0);
                 keyframe.time = 0;
-                MoveKey(0, keyframe);
-                AddKey(animationLength, keyframe.value);
+                AddKey(animationLength, keyframe.value, keyframe.curveType);
                 return;
             }
             {
                 var keyframe = GetKeyframe(0);
                 if (keyframe.time > 0)
                 {
-                    if (length > 2)
+                    if (keys.Count > 2)
                     {
-                        AddKey(0, keyframe.value);
+                        AddKey(0, keyframe.value, CurveTypeValues.Smooth);
                     }
                     else
                     {
                         keyframe.time = 0;
-                        MoveKey(0, keyframe);
                     }
                 }
             }
             {
-                var keyframe = GetKeyframe(length - 1);
+                var keyframe = GetLastFrame();
                 if (keyframe.time < animationLength)
                 {
                     if (length > 2)
                     {
-                        AddKey(animationLength, keyframe.value);
+                        AddKey(animationLength, keyframe.value, CurveTypeValues.Smooth);
                     }
                     else
                     {
                         keyframe.time = animationLength;
-                        MoveKey(length - 1, keyframe);
                     }
                 }
             }
         }
-
-        #region From Virt-A-Mate's CubicBezierCurve
 
         public void ComputeCurves()
         {
@@ -199,6 +215,8 @@ namespace VamTimeline
                 }
             }
         }
+
+        #region From Virt-A-Mate's CubicBezierCurve
 
         public void AutoComputeControlPoints()
         {
@@ -228,10 +246,12 @@ namespace VamTimeline
 
             if (loop) keysCount -= 1;
             var valuesCount = loop ? keysCount + 1 : keysCount - 1;
-            if (_computeValues == null || _computeValues.Length < valuesCount + 1)
-            {
-                _computeValues = new float[valuesCount + 1];
-            }
+            if (_computeValues == null || _computeValues.Length < valuesCount + 1) _computeValues = new float[valuesCount + 1];
+            if (_a == null || _a.Length < valuesCount) _a = new float[valuesCount];
+            if (_b == null || _b.Length < valuesCount) _b = new float[valuesCount];
+            if (_c == null || _c.Length < valuesCount) _c = new float[valuesCount];
+            if (_r == null || _r.Length < valuesCount) _r = new float[valuesCount];
+
             if (loop)
             {
                 _computeValues[0] = keys[keysCount - 1].value;
@@ -248,91 +268,80 @@ namespace VamTimeline
                     _computeValues[i] = keys[i].value;
                 }
             }
-            if (a == null || a.Length < valuesCount) a = new float[valuesCount];
-            if (b == null || b.Length < valuesCount) b = new float[valuesCount];
-            if (c == null || c.Length < valuesCount) c = new float[valuesCount];
-            if (r == null || r.Length < valuesCount) r = new float[valuesCount];
 
-            a[0] = 0f;
-            b[0] = 2f;
-            c[0] = 1f;
-            r[0] = _computeValues[0] + 2f * _computeValues[1];
+            _a[0] = 0f;
+            _b[0] = 2f;
+            _c[0] = 1f;
+            _r[0] = _computeValues[0] + 2f * _computeValues[1];
             for (var i = 1; i < valuesCount - 1; i++)
             {
-                a[i] = 1f;
-                b[i] = 4f;
-                c[i] = 1f;
-                r[i] = 4f * _computeValues[i] + 2f * _computeValues[i + 1];
+                _a[i] = 1f;
+                _b[i] = 4f;
+                _c[i] = 1f;
+                _r[i] = 4f * _computeValues[i] + 2f * _computeValues[i + 1];
             }
-            a[valuesCount - 1] = 2f;
-            b[valuesCount - 1] = 7f;
-            c[valuesCount - 1] = 0f;
-            r[valuesCount - 1] = 8f * _computeValues[valuesCount - 1] + _computeValues[valuesCount];
+            _a[valuesCount - 1] = 2f;
+            _b[valuesCount - 1] = 7f;
+            _c[valuesCount - 1] = 0f;
+            _r[valuesCount - 1] = 8f * _computeValues[valuesCount - 1] + _computeValues[valuesCount];
             for (var i = 1; i < valuesCount; i++)
             {
-                var n = a[i] / b[i - 1];
-                b[i] -= n * c[i - 1];
-                r[i] -= n * r[i - 1];
+                var n = _a[i] / _b[i - 1];
+                _b[i] -= n * _c[i - 1];
+                _r[i] -= n * _r[i - 1];
             }
+
             if (loop)
             {
-                var vector = r[valuesCount - 1] / b[valuesCount - 1];
-                keys[valuesCount - 2].controlPointOut = (r[valuesCount - 1] - c[valuesCount - 1] * vector) / b[valuesCount - 1];
+                var vector = _r[valuesCount - 1] / _b[valuesCount - 1];
+                keys[valuesCount - 2].controlPointOut = (_r[valuesCount - 1] - _c[valuesCount - 1] * vector) / _b[valuesCount - 1];
                 for (var i = valuesCount - 3; i >= 0; i--)
                 {
-                    keys[i].controlPointOut = (r[i + 1] - c[i + 1] * keys[i + 1].controlPointOut) / b[i + 1];
+                    keys[i].controlPointOut = (_r[i + 1] - _c[i + 1] * keys[i + 1].controlPointOut) / _b[i + 1];
                 }
             }
             else
             {
                 keys[valuesCount].controlPointOut = keys[valuesCount].value;
-                keys[valuesCount - 1].controlPointOut = r[valuesCount - 1] / b[valuesCount - 1];
+                keys[valuesCount - 1].controlPointOut = _r[valuesCount - 1] / _b[valuesCount - 1];
                 for (var i = valuesCount - 2; i >= 0; i--)
                 {
-                    keys[i].controlPointOut = (r[i] - c[i] * keys[i + 1].controlPointOut) / b[i];
+                    keys[i].controlPointOut = (_r[i] - _c[i] * keys[i + 1].controlPointOut) / _b[i];
                 }
             }
+
             if (loop)
             {
                 for (var i = 0; i < valuesCount - 1; i++)
                 {
                     keys[i].controlPointIn = 2f * _computeValues[i + 1] - keys[i].controlPointOut;
                 }
-                return;
-            }
-            keys[0].controlPointIn = keys[0].value;
-            for (var i = 1; i < valuesCount; i++)
-            {
-                keys[i].controlPointIn = 2f * _computeValues[i] - keys[i].controlPointOut;
-            }
-            keys[valuesCount].controlPointIn = 0.5f * (_computeValues[valuesCount] + keys[valuesCount - 1].controlPointOut);
-        }
-
-        public float ComputeBezierValue(int key, float t)
-        {
-            var w0 = keys[key].value;
-            var w1 = keys[key].controlPointOut;
-            var keysCount = loop ? keys.Count - 1 : keys.Count;
-            if (keysCount == 1)
-            {
-                return w0;
-            }
-            float w2;
-            float w3;
-            if (key == keysCount - 1)
-            {
-                if (!loop)
-                {
-                    return w0;
-                }
-                w2 = keys[0].controlPointIn;
-                w3 = keys[0].value;
             }
             else
             {
-                w2 = keys[key + 1].controlPointIn;
-                w3 = keys[key + 1].value;
+                keys[0].controlPointIn = keys[0].value;
+                for (var i = 1; i < valuesCount; i++)
+                {
+                    keys[i].controlPointIn = 2f * _computeValues[i] - keys[i].controlPointOut;
+                }
+                keys[valuesCount].controlPointIn = 0.5f * (_computeValues[valuesCount] + keys[valuesCount - 1].controlPointOut);
             }
+
+            if (loop)
+            {
+                keys[keys.Count - 1].controlPointIn = keys[0].controlPointIn;
+                keys[keys.Count - 1].controlPointOut = keys[0].controlPointOut;
+            }
+        }
+
+        public float ComputeBezierValue(BezierKeyframe current, BezierKeyframe next, float time)
+        {
+            var w0 = current.value;
+            var w1 = current.controlPointOut;
+            var w2 = next.controlPointIn;
+            var w3 = next.value;
+
+            var t = (time - current.time) / (next.time - current.time);
 
             // See https://pomax.github.io/bezierinfo/#how-to-implement-the-weighted-basis-function
             float mt = 1f - t;
@@ -344,50 +353,87 @@ namespace VamTimeline
         }
 
         #endregion
-    }
 
-    public struct VamKeyframeCompute
-    {
-    }
-
-    public class VamKeyframe
-    {
-        public float time;
-        public float value;
-        public float controlPointIn;
-        public float controlPointOut;
-        public int curveType;
-
-        public VamKeyframe()
+        [MethodImpl(256)]
+        public int KeyframeBinarySearch(float time, bool returnClosest = false)
         {
-        }
+            if (time == 0) return 0;
+            var timeSmall = time - 0.0001f;
+            var timeLarge = time + 0.0001f;
 
-        public VamKeyframe(float time, float value, int curveType)
-            : this(time, value, curveType, value, value)
-        {
+            var left = 0;
+            var right = length - 1;
 
-        }
-
-        public VamKeyframe(float time, float value, int curveType, float controlPointIn, float controlPointOut)
-        {
-            this.time = time;
-            this.value = value;
-            this.curveType = curveType;
-            this.controlPointIn = controlPointIn;
-            this.controlPointOut = controlPointOut;
-        }
-
-        public VamKeyframe Clone()
-        {
-            // TODO: Untangle AnimationCurve struct references
-            return new VamKeyframe
+            while (left <= right)
             {
-                time = time,
-                value = value,
-                curveType = curveType,
-                controlPointIn = controlPointIn,
-                controlPointOut = controlPointOut
-            };
+                var middle = left + (right - left) / 2;
+
+                // TODO: Use the times array
+                var keyTime = keys[middle].time;
+                if (keyTime > timeLarge)
+                {
+                    right = middle - 1;
+                }
+                else if (keyTime < timeSmall)
+                {
+                    left = middle + 1;
+                }
+                else
+                {
+                    return middle;
+                }
+            }
+            if (!returnClosest) return -1;
+            if (left > right)
+            {
+                var tmp = left;
+                left = right;
+                right = tmp;
+            }
+            var avg = keys[left].time + ((keys[right].time - keys[left].time) / 2f);
+            if (time - avg < 0) return left; else return right;
+        }
+
+        public void Reverse()
+        {
+            if (length < 2) return;
+
+            var currentLength = duration;
+
+            keys.Reverse();
+
+            foreach (var key in keys)
+            {
+                key.time = currentLength - key.time.Snap();
+            }
+        }
+
+        public void SmoothNeighbors(int key)
+        {
+            throw new NotImplementedException();
+            // if (key == -1) return;
+            // SmoothTangents(key, 1f);
+            // if (key > 0) curve.SmoothTangents(key - 1, 1f);
+            // if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
+        }
+
+        public void SetKeySnapshot(float time, BezierKeyframe keyframe)
+        {
+            if (length == 0)
+            {
+                AddKey(time, keyframe.value, keyframe.curveType);
+                return;
+            }
+
+            var index = KeyframeBinarySearch(time);
+            if (index == -1)
+            {
+                AddKey(time, keyframe.value, keyframe.curveType);
+            }
+            else
+            {
+                keys[index] = keyframe.Clone();
+            }
         }
     }
 }

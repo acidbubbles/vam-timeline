@@ -73,9 +73,9 @@ namespace VamTimeline
             _curveTypes.Clear();
             foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
-                var curveType = target.GetKeyframeSettings(time);
-                if (curveType == null) continue;
-                _curveTypes.Add(curveType);
+                var curveType = target.GetKeyframeCurveType(time);
+                if (curveType == -1) continue;
+                _curveTypes.Add(CurveTypeValues.FromInt(curveType));
             }
 
             if (_curveTypes.Count == 0)

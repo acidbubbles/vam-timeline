@@ -27,24 +27,23 @@ namespace VamTimeline
                 SuperController.LogError($"Target {name} has no start frame. Frames: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}");
                 return;
             }
-            if (curve.GetKeyframe(curve.length - 1).time > animationLength)
+            if (curve.duration > animationLength)
             {
                 var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
-                SuperController.LogError($"Target {name} has  duration of {curve.GetKeyframe(curve.length - 1).time} but the animation should be {animationLength}. Auto-repairing extraneous keys.");
+                SuperController.LogError($"Target {name} has  duration of {curve.duration} but the animation should be {animationLength}. Auto-repairing extraneous keys.");
                 foreach (var c in GetCurves())
                     while (c.GetKeyframe(c.length - 1).time > animationLength && c.length > 2)
                         c.RemoveKey(c.length - 1);
             }
-            if (curve.GetKeyframe(curve.length - 1).time != animationLength)
+            if (curve.duration != animationLength)
             {
-                SuperController.LogError($"Target {name} ends with frame {curve.GetKeyframe(curve.length - 1).time} instead of expected {animationLength}. Auto-repairing last frame.");
-                var lastTime = curve.GetKeyframe(curve.length - 1).time;
+                SuperController.LogError($"Target {name} ends with frame {curve.duration} instead of expected {animationLength}. Auto-repairing last frame.");
+                var lastTime = curve.duration;
                 foreach (var c in GetCurves())
                 {
-                    var keyframe = c.GetKeyframe(c.length - 1);
+                    var keyframe = c.GetLastFrame();
                     if (keyframe.time == animationLength) continue;
                     keyframe.time = animationLength;
-                    c.MoveKey(c.length - 1, keyframe);
                 }
             }
         }
@@ -70,12 +69,11 @@ namespace VamTimeline
             dirty = true;
         }
 
-        public string GetKeyframeSettings(float time)
+        public int GetKeyframeCurveType(float time)
         {
-            // TODO: Replace by int
             var keyframe = GetLeadCurve().GetKeyframeAt(time);
-            if (keyframe == null) return null;
-            return CurveTypeValues.FromInt(keyframe.curveType);
+            if (keyframe == null) return -1;
+            return keyframe.curveType;
         }
     }
 }
