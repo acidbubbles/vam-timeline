@@ -126,7 +126,7 @@ namespace VamTimeline
 
         private void InitChangeCurveUI()
         {
-            _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.DisplayCurveTypes, "", "Change curve", ChangeCurve);
+            _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.labels.Select(l => l.Value).ToList(), "", "Change curve", ChangeCurve);
             var curveTypeUI = prefabFactory.CreatePopup(_changeCurveJSON, false);
             curveTypeUI.popupPanelHeight = 280f;
         }
@@ -204,7 +204,7 @@ namespace VamTimeline
                         var keyTime = leadCurve.GetKeyframe(key).time;
                         if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)
                         {
-                            target.ChangeCurve(keyTime, val, current.loop);
+                            target.ChangeCurve(keyTime, CurveTypeValues.ToInt(val), current.loop);
                         }
                     }
                 }

@@ -23,7 +23,6 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\FloatParamAnimationTarget.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\FreeControllerAnimationTarget.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\ICurveAnimationTarget.cs",
-    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\KeyframeSettings.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Targets\\TriggersAnimationTarget.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AnimationCurveExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomAnimation.cs",

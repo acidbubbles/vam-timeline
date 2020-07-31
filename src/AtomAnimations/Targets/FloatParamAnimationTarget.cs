@@ -141,7 +141,7 @@ namespace VamTimeline
         {
             var keyframe = this.value.GetKeyframeAt(time);
             if (keyframe != null) keyframe.value = value;
-            else this.value.AddKey(time, value, CurveTypeValues.Smooth_);
+            else this.value.AddKey(time, value, CurveTypeValues.Smooth);
             if (dirty) base.dirty = true;
         }
 

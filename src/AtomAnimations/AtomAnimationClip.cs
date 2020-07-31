@@ -161,7 +161,7 @@ namespace VamTimeline
                             foreach (var curve in target.GetCurves())
                             {
                                 if (curve.length == 2)
-                                    curve.GetLastFrame().curveType = CurveTypeValues.CopyPrevious_;
+                                    curve.GetLastFrame().curveType = CurveTypeValues.CopyPrevious;
                             }
                         }
                     }

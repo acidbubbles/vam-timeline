@@ -54,19 +54,17 @@ namespace VamTimeline
             curve.ComputeCurves();
         }
 
-        public void ChangeCurve(float time, string curveType, bool loop)
+        public void ChangeCurve(float time, int curveType, bool loop)
         {
-            if (string.IsNullOrEmpty(curveType)) return;
-
             foreach (var curve in GetCurves())
             {
                 // TODO: Lookup once instead of for each frame (shared access?)
                 var keyframe = curve.GetKeyframeAt(time);
                 if (keyframe == null) continue;
-                keyframe.curveType = CurveTypeValues.ToInt(curveType);
+                keyframe.curveType = curveType;
                 if (loop && time == 0)
                 {
-                    curve.keys[curve.keys.Count - 1].curveType = CurveTypeValues.ToInt(curveType);
+                    curve.keys[curve.keys.Count - 1].curveType = curveType;
                 }
             }
             dirty = true;

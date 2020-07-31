@@ -128,20 +128,20 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length)
         {
             if (curveJSON is JSONArray)
-                DeserializeCurveFromArray(curve, (JSONArray)curveJSON, keyframeSettings);
+                DeserializeCurveFromArray(curve, (JSONArray)curveJSON);
             if (curveJSON is JSONClass)
                 DeserializeCurveFromClassLegacy(curve, curveJSON);
             else
-                DeserializeCurveFromStringLegacy(curve, curveJSON, keyframeSettings);
+                DeserializeCurveFromStringLegacy(curve, curveJSON);
 
             if (curve.length < 2)
             {
                 SuperController.LogError("Repair");
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe(0, 0, CurveTypeValues.Smooth_);
+                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new VamKeyframe(0, 0, CurveTypeValues.Smooth);
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;
@@ -149,16 +149,10 @@ namespace VamTimeline
                 keyframe = keyframe.Clone();
                 keyframe.time = length;
                 curve.AddKey(keyframe);
-                if (keyframeSettings != null)
-                {
-                    keyframeSettings.Clear();
-                    keyframeSettings.Add(0, new KeyframeSettings { curveType = CurveTypeValues.Smooth });
-                    keyframeSettings.Add(length.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.Smooth });
-                }
             }
         }
 
-        private void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON)
         {
             if (curveJSON.Count == 0) return;
 
@@ -175,11 +169,10 @@ namespace VamTimeline
                     {
                         time = time,
                         value = value,
+                        curveType = int.Parse(keyframeJSON["c"]),
                         controlPointIn = DeserializeFloat(keyframeJSON["i"]),
                         controlPointOut = DeserializeFloat(keyframeJSON["o"])
                     });
-                    if (keyframeSettings != null)
-                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.FromInt(int.Parse(keyframeJSON["c"])) });
                 }
                 catch (IndexOutOfRangeException exc)
                 {
@@ -188,12 +181,10 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromStringLegacy(BezierAnimationCurve curve, JSONNode curveJSON, SortedDictionary<int, KeyframeSettings> keyframeSettings = null)
+        private void DeserializeCurveFromStringLegacy(BezierAnimationCurve curve, JSONNode curveJSON)
         {
             var strFrames = curveJSON.Value.Split(';').Where(x => x != "").ToList();
             if (strFrames.Count == 0) return;
-
-            SuperController.LogError("Timeline: Legacy mode. The animation may not render as initially designed. Please download the version used in this scene to get the correct representation.");
 
             var last = -1f;
             foreach (var keyframe in strFrames)
@@ -208,10 +199,9 @@ namespace VamTimeline
                     curve.AddKey(new VamKeyframe
                     {
                         time = time,
-                        value = value
+                        value = value,
+                        curveType = int.Parse(parts[2])
                     });
-                    if (keyframeSettings != null)
-                        keyframeSettings.Add(time.ToMilliseconds(), new KeyframeSettings { curveType = CurveTypeValues.FromInt(int.Parse(parts[2])) });
                 }
                 catch (IndexOutOfRangeException exc)
                 {
@@ -225,8 +215,6 @@ namespace VamTimeline
             var keysJSON = curveJSON["keys"].AsArray;
             if (keysJSON.Count == 0) return;
 
-            SuperController.LogError("Timeline: Legacy mode. The animation may not render as initially designed. Please download the version used in this scene to get the correct representation.");
-
             var last = -1f;
             foreach (JSONNode keyframeJSON in keysJSON)
             {
@@ -237,7 +225,8 @@ namespace VamTimeline
                 var keyframe = new VamKeyframe
                 {
                     time = time,
-                    value = value
+                    value = value,
+                    curveType = CurveTypeValues.Smooth
                 };
                 curve.AddKey(keyframe);
             }

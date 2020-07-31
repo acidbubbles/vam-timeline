@@ -173,7 +173,7 @@ namespace VamTimeline
         {
             var key = plugin.animation.SetKeyframeToCurrentTransform(target, time);
             var keyframe = target.x.keys[key];
-            if (keyframe.curveType == CurveTypeValues.CopyPrevious_)
+            if (keyframe.curveType == CurveTypeValues.CopyPrevious)
                 target.ChangeCurve(time, CurveTypeValues.Smooth, clip.loop);
         }
 

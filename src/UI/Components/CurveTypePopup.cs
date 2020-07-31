@@ -12,7 +12,7 @@ namespace VamTimeline
 
         public static CurveTypePopup Create(VamPrefabFactory prefabFactory)
         {
-            var curveTypeJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.DisplayCurveTypes, "", "Change curve");
+            var curveTypeJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.labels.Select(l => l.Value).ToList(), "", "Change curve");
             var curveTypeUI = prefabFactory.CreatePopup(curveTypeJSON, false);
             curveTypeUI.popupPanelHeight = 260f;
 
@@ -36,7 +36,7 @@ namespace VamTimeline
             OnEnable();
         }
 
-        private void ChangeCurve(string curveType)
+        private void ChangeCurve(string val)
         {
             if (_animation.isPlaying) return;
 
@@ -46,12 +46,14 @@ namespace VamTimeline
                 return;
             }
 
-            if (string.IsNullOrEmpty(curveType) || curveType.StartsWith("("))
+            if (string.IsNullOrEmpty(val) || val.StartsWith("("))
             {
                 RefreshCurrentCurveType(_animation.clipTime);
                 return;
             }
             float time = _animation.clipTime.Snap();
+
+            var curveType = CurveTypeValues.ToInt(val);
 
             foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
                 target.ChangeCurve(time, curveType, _current.loop);
