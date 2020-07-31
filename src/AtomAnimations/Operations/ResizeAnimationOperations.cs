@@ -80,7 +80,7 @@ namespace VamTimeline
                 while (target.triggersMap.Count > 0)
                 {
                     var lastTrigger = target.triggersMap.Keys.Last();
-                    if (lastTrigger * 1000f > newAnimationLength)
+                    if (lastTrigger / 1000f > newAnimationLength)
                     {
                         target.triggersMap.Remove(lastTrigger);
                         continue;
