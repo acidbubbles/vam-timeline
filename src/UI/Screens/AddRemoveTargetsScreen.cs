@@ -171,7 +171,7 @@ namespace VamTimeline
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
             });
             _addStorableListUI = prefabFactory.CreateScrollablePopup(_addStorableListJSON);
-            _addStorableListUI.popupPanelHeight = 700f;
+            _addStorableListUI.popupPanelHeight = 490f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
             _addParamListJSON = new JSONStorableStringChooser("Float param", new List<string>(), "", "Float param");
