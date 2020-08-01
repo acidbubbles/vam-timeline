@@ -9,8 +9,6 @@ namespace VamTimeline
     public class BezierAnimationCurve
     {
         public float duration => keys.Count == 0 ? -1 : keys[keys.Count - 1].time;
-        // TODO: Add a times array and work with this for the dope sheet
-        // TODO: Instead of a keys array, work with four independent arrays: time, value, in, out
         public List<BezierKeyframe> keys = new List<BezierKeyframe>();
         public int length => keys.Count;
         public bool loop;
@@ -30,7 +28,6 @@ namespace VamTimeline
 
         public BezierKeyframe GetLastFrame()
         {
-            // TODO: Add a animationLength property
             return keys[keys.Count - 1];
         }
 
@@ -50,6 +47,7 @@ namespace VamTimeline
 
         public float Evaluate(float time)
         {
+            if (keys.Count < 2) return 0f;
             BezierKeyframe current;
             BezierKeyframe next;
             // Attempt last portion
@@ -59,7 +57,7 @@ namespace VamTimeline
                 next = _lastIndex < keys.Count - 1 ? keys[_lastIndex + 1] : null;
                 if (time >= current.time && time < next.time)
                 {
-                    return ComputeBezierValue(current, next, time);
+                    return ComputeValue(current, next, time);
                 }
                 // Attempt next portion
                 if (_lastIndex < keys.Count - 2)
@@ -69,7 +67,7 @@ namespace VamTimeline
                     if (time >= current.time && time < next.time)
                     {
                         _lastIndex++;
-                        return ComputeBezierValue(current, next, time);
+                        return ComputeValue(current, next, time);
                     }
                 }
             }
@@ -78,7 +76,7 @@ namespace VamTimeline
             if (time < next.time)
             {
                 _lastIndex = 0;
-                return ComputeBezierValue(keys[0], next, time);
+                return ComputeValue(keys[0], next, time);
             }
 
             // Search for portion
@@ -93,7 +91,7 @@ namespace VamTimeline
             }
             next = keys[key + 1];
             _lastIndex = key;
-            return ComputeBezierValue(current, next, time);
+            return ComputeValue(current, next, time);
         }
 
         public int SetKeyframe(float time, float value, int curveType)
@@ -201,12 +199,15 @@ namespace VamTimeline
 
                 switch (current.curveType)
                 {
-                    case 2:
+                    case CurveTypeValues.Linear:
                         if (previous != null)
                             current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
                         if (next != null)
                             current.controlPointOut = current.value + ((next.value - current.value) / 3f);
-                        // TODO: Implement linear
+                        break;
+                    case CurveTypeValues.Flat:
+                        current.controlPointIn = ((next?.value ?? current.value) - (previous?.value ?? current.value)) * 0.333f;
+                        current.controlPointIn = ((next?.value ?? current.value) - (previous?.value ?? current.value)) * 0.666f;
                         break;
                     default:
                         // TODO: Implement others
@@ -335,8 +336,17 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        public float ComputeBezierValue(BezierKeyframe current, BezierKeyframe next, float time)
+        public float ComputeValue(BezierKeyframe current, BezierKeyframe next, float time)
         {
+            switch (current.curveType)
+            {
+                case CurveTypeValues.Constant:
+                    return current.value;
+                case CurveTypeValues.Linear:
+                case CurveTypeValues.FlatLinear:
+                    return current.value + (next.value - current.value) * time;
+            }
+
             var w0 = current.value;
             var w1 = current.controlPointOut;
             var w2 = next.controlPointIn;
