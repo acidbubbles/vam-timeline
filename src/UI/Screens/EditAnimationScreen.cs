@@ -69,6 +69,9 @@ namespace VamTimeline
             CreateHeader("Links", 1);
             InitAnimationPatternLinkUI();
 
+            // To allow selecting in the popup
+            prefabFactory.CreateSpacer().height = 200f;
+
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             current.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
@@ -169,7 +172,7 @@ namespace VamTimeline
                 ChangeLengthModeLoop
              }, ChangeLengthModeCropExtendEnd, "Change Length Mode");
             var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
-            lengthModeUI.popupPanelHeight = 550f;
+            lengthModeUI.popupPanelHeight = 350f;
 
             _lengthJSON = new JSONStorableFloat(
                 "Change Length To (s)",
@@ -221,7 +224,7 @@ namespace VamTimeline
                 isStorable = false
             };
             var linkedAnimationPatternUI = prefabFactory.CreateScrollablePopup(_linkedAnimationPatternJSON);
-            linkedAnimationPatternUI.popupPanelHeight = 800f;
+            linkedAnimationPatternUI.popupPanelHeight = 240f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
         }
 
@@ -229,7 +232,7 @@ namespace VamTimeline
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
             var nextAnimationUI = prefabFactory.CreateScrollablePopup(_nextAnimationJSON);
-            nextAnimationUI.popupPanelHeight = 260f;
+            nextAnimationUI.popupPanelHeight = 360f;
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {

@@ -120,7 +120,7 @@ namespace VamTimeline
         {
             _addControllerListJSON = new JSONStorableStringChooser("Controller", new List<string>(), "", "Controller");
             _addControllerUI = prefabFactory.CreateScrollablePopup(_addControllerListJSON);
-            _addControllerUI.popupPanelHeight = 900f;
+            _addControllerUI.popupPanelHeight = 740f;
 
             _toggleControllerUI = prefabFactory.CreateButton("Add");
             _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
