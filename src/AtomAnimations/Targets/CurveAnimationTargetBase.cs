@@ -57,7 +57,6 @@ namespace VamTimeline
         {
             foreach (var curve in GetCurves())
             {
-                // TODO: Lookup once instead of for each frame (shared access?)
                 var keyframe = curve.GetKeyframeAt(time);
                 if (keyframe == null) continue;
                 keyframe.curveType = curveType;

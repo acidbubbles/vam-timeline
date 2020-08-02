@@ -33,11 +33,18 @@ namespace VamTimeline
             var precision = 2f; // Draw at every N pixels
             var minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
+            var halfWidth = rectTransform.rect.width / 2;
+            var halfHeight = rectTransform.rect.height / 2;
 
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];
             if (lastCurve.Value.length < 2) return;
-            var maxX = lastCurve.Value.GetKeyframe(lastCurve.Value.length - 1).time;
+            var maxX = lastCurve.Value.duration;
+            if (maxX == 0)
+            {
+                DrawBorder(vh, halfWidth, halfHeight);
+                return;
+            }
             var xRatio = width / maxX;
 
             // Y ratio
@@ -52,7 +59,6 @@ namespace VamTimeline
             }
 
             // Zero line
-            var halfWidth = rectTransform.rect.width / 2;
             vh.DrawLine(new[]
             {
                 new Vector2(-halfWidth, offsetY),
@@ -60,7 +66,6 @@ namespace VamTimeline
             }, style.ZeroLineSize, style.ZeroLineColor);
 
             // Seconds
-            var halfHeight = rectTransform.rect.height / 2;
             for (var t = 0f; t <= maxX; t += 1f)
             {
                 var x = offsetX + t * xRatio;
@@ -110,7 +115,11 @@ namespace VamTimeline
                 }
             }
 
-            // Border
+            DrawBorder(vh, halfWidth, halfHeight);
+        }
+
+        private void DrawBorder(VertexHelper vh, float halfWidth, float halfHeight)
+        {
             var halfBorder = style.BorderSize / 2f;
             var quarterBorder = halfBorder / 2f;
             vh.DrawLine(new[]

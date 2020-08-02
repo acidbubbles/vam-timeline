@@ -47,20 +47,20 @@ namespace VamTimeline
 
         public float Evaluate(float time)
         {
-            if (keys.Count < 2) return 0f;
+            if (keys.Count < 2) throw new InvalidOperationException($"Cannot evalue curve, at least two keyframes are needed");
             BezierKeyframe current;
             BezierKeyframe next;
-            // Attempt last portion
+            // Attempt last evaluated portion
             if (_lastIndex < keys.Count - 1)
             {
-                current = _lastIndex < keys.Count ? keys[_lastIndex] : null;
+                current = keys[_lastIndex];
                 next = _lastIndex < keys.Count - 1 ? keys[_lastIndex + 1] : null;
                 if (time >= current.time && time < next.time)
                 {
                     return ComputeValue(current, next, time);
                 }
                 // Attempt next portion
-                if (_lastIndex < keys.Count - 2)
+                if (next != null && _lastIndex < keys.Count - 2)
                 {
                     current = next;
                     next = _lastIndex < keys.Count - 2 ? keys[_lastIndex + 2] : null;
@@ -89,7 +89,7 @@ namespace VamTimeline
                 key++;
                 current = keys[key];
             }
-            next = keys[key + 1];
+            next = key < keys.Count - 1 ? keys[key + 1] : null;
             _lastIndex = key;
             return ComputeValue(current, next, time);
         }
@@ -206,8 +206,11 @@ namespace VamTimeline
                             current.controlPointOut = current.value + ((next.value - current.value) / 3f);
                         break;
                     case CurveTypeValues.Flat:
-                        current.controlPointIn = ((next?.value ?? current.value) - (previous?.value ?? current.value)) * 0.333f;
-                        current.controlPointIn = ((next?.value ?? current.value) - (previous?.value ?? current.value)) * 0.666f;
+                    case CurveTypeValues.FlatLong:
+                    case CurveTypeValues.LinearFlat:
+                    case CurveTypeValues.FlatLinear:
+                        current.controlPointIn = current.value;
+                        current.controlPointIn = current.value;
                         break;
                     default:
                         // TODO: Implement others
@@ -338,21 +341,23 @@ namespace VamTimeline
         [MethodImpl(256)]
         public float ComputeValue(BezierKeyframe current, BezierKeyframe next, float time)
         {
+            if (next == null) return current.value;
+            var t = (time - current.time) / (next.time - current.time);
             switch (current.curveType)
             {
                 case CurveTypeValues.Constant:
                     return current.value;
                 case CurveTypeValues.Linear:
                 case CurveTypeValues.FlatLinear:
-                    return current.value + (next.value - current.value) * time;
+                {
+                    return current.value + (next.value - current.value) * t;
+                }
             }
 
             var w0 = current.value;
             var w1 = current.controlPointOut;
             var w2 = next.controlPointIn;
             var w3 = next.value;
-
-            var t = (time - current.time) / (next.time - current.time);
 
             // See https://pomax.github.io/bezierinfo/#how-to-implement-the-weighted-basis-function
             float mt = 1f - t;
@@ -371,7 +376,7 @@ namespace VamTimeline
             var timeLarge = time + 0.0001f;
 
             var left = 0;
-            var right = length - 1;
+            var right = keys.Count - 1;
 
             while (left <= right)
             {
@@ -392,13 +397,17 @@ namespace VamTimeline
                     return middle;
                 }
             }
-            if (!returnClosest) return -1;
+            if (!returnClosest)
+            {
+                return -1;
+            }
             if (left > right)
             {
                 var tmp = left;
                 left = right;
                 right = tmp;
             }
+            if (right >= keys.Count) return left;
             var avg = keys[left].time + ((keys[right].time - keys[left].time) / 2f);
             if (time - avg < 0) return left; else return right;
         }
@@ -428,21 +437,20 @@ namespace VamTimeline
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)
         {
+            var clone = keyframe.Clone();
+            clone.time = time;
+
             if (length == 0)
             {
-                AddKey(time, keyframe.value, keyframe.curveType);
+                AddKey(clone);
                 return;
             }
 
             var index = KeyframeBinarySearch(time);
             if (index == -1)
-            {
-                AddKey(time, keyframe.value, keyframe.curveType);
-            }
+                AddKey(clone);
             else
-            {
-                keys[index] = keyframe.Clone();
-            }
+                keys[index] = clone;
         }
     }
 }

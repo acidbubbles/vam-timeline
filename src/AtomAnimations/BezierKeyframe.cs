@@ -39,5 +39,10 @@ namespace VamTimeline
                 controlPointOut = controlPointOut
             };
         }
+
+        public override string ToString()
+        {
+            return $"{time: 0.000}: {value:0.000} ({CurveTypeValues.FromInt(curveType)}, {controlPointIn:0.0}/{controlPointOut:0.0})";
+        }
     }
 }
