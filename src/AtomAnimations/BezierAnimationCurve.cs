@@ -205,15 +205,23 @@ namespace VamTimeline
                         if (next != null)
                             current.controlPointOut = current.value + ((next.value - current.value) / 3f);
                         break;
+                    case CurveTypeValues.LinearFlat:
+                        if (previous != null)
+                            current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                        break;
                     case CurveTypeValues.Flat:
                     case CurveTypeValues.FlatLong:
-                    case CurveTypeValues.LinearFlat:
                     case CurveTypeValues.FlatLinear:
                         current.controlPointIn = current.value;
                         current.controlPointIn = current.value;
                         break;
+                    case CurveTypeValues.Bounce:
+                        if (previous != null)
+                            current.controlPointIn = current.value - ((current.value - next.value) / 1.4f);
+                        if (next != null)
+                            current.controlPointOut = current.value + ((previous.value - current.value) / 1.8f);
+                        break;
                     default:
-                        // TODO: Implement others
                         continue;
                 }
             }
