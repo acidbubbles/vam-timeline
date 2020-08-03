@@ -120,6 +120,13 @@ namespace VamTimeline
             group.childAlignment = TextAnchor.MiddleCenter;
 
             CreateExpandButton(group.transform, "Select", () => SuperController.singleton.SelectController(target.controller));
+
+            CreateExpandButton(group.transform, "Parent", () =>
+            {
+                // TODO: Instead make an argument to ChangeScreen
+                ControllerParentScreen.target = target;
+                plugin.ui.screensManager.ChangeScreen(ControllerParentScreen.ScreenName);
+            });
         }
 
         public override void SetTime(float time, bool stopped)

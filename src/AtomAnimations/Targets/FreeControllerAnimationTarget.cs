@@ -18,6 +18,8 @@ namespace VamTimeline
         public override string name => controller.name;
 
         public bool playbackEnabled = true;
+        public Atom parentAtom;
+        public Rigidbody parentRigidbody;
 
         private Rigidbody _lastLinkedRigidbody;
         public Rigidbody GetLinkedRigidbody()

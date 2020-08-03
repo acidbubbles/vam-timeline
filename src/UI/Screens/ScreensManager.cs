@@ -55,7 +55,7 @@ namespace VamTimeline
 
         public string GetDefaultScreen()
         {
-            if(SuperController.singleton.gameMode != SuperController.GameMode.Edit)
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit)
                 return LockedScreen.ScreenName;
             if (_currentScreen != null && _currentScreen != LockedScreen.ScreenName)
                 return _currentScreen;
@@ -161,6 +161,9 @@ namespace VamTimeline
                     break;
                 case HelpScreen.ScreenName:
                     _current = screenContainer.AddComponent<HelpScreen>();
+                    break;
+                case ControllerParentScreen.ScreenName:
+                    _current = screenContainer.AddComponent<ControllerParentScreen>();
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");

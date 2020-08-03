@@ -76,6 +76,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AdvancedKeyframeToolsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AnimationsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\BulkScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ControllerParentScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\EditAnimationScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\HelpScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ImportExportScreen.cs",
