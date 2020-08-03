@@ -47,7 +47,10 @@ namespace VamTimeline
         private LineDrawer CreateLine()
         {
             var go = new GameObject();
-            go.transform.SetParent(target.GetParent(), false);
+            // TODO: Allow changing parent, make sure this still works when the parent is null
+            var parent = target.GetParent();
+            if (parent == null) return null;
+            go.transform.SetParent(parent, false);
 
             var line = go.AddComponent<LineDrawer>();
             line.colorGradient = new Gradient

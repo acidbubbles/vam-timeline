@@ -235,7 +235,13 @@ namespace VamTimeline
             _offsetSnapshot = current.Copy(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Cast<IAtomAnimationTarget>());
             if (_offsetSnapshot.controllers.Count == 0)
             {
+                _offsetSnapshot = null;
                 SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {current.clipTime}.");
+                return;
+            }
+            if (_offsetSnapshot.controllers.Select(c => current.targetControllers.First(t => t.controller == c.controller)).Any(t => !t.EnsureParentAvailable(false)))
+            {
+                _offsetSnapshot = null;
                 return;
             }
 
@@ -257,6 +263,7 @@ namespace VamTimeline
             foreach (var snap in _offsetSnapshot.controllers)
             {
                 var target = current.targetControllers.First(t => t.controller == snap.controller);
+                if (!target.EnsureParentAvailable(false)) continue;
                 var rb = target.GetLinkedRigidbody();
 
                 Vector3 pivot;

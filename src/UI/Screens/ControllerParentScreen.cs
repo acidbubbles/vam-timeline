@@ -43,18 +43,19 @@ namespace VamTimeline
             _atomJSON = new JSONStorableStringChooser("Atom", SuperController.singleton.GetAtomUIDs(), "", "Atom", (string val) => SyncAtom());
             var atomUI = prefabFactory.CreateScrollablePopup(_atomJSON);
             atomUI.popupPanelHeight = 700f;
-            _atomJSON.valNoCallback = target.parentAtom?.name ?? "";
+            _atomJSON.valNoCallback = target.parentAtomId ?? "";
 
             _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string>(), "", "Rigidbody", (string val) => SyncRigidbody());
             var rigidbodyUI = prefabFactory.CreateScrollablePopup(_rigidbodyJSON);
             atomUI.popupPanelHeight = 700f;
-            _rigidbodyJSON.valNoCallback = target.parentRigidbody?.name ?? "";
+            _rigidbodyJSON.valNoCallback = target.parentRigidbodyId ?? "";
         }
 
         private void SyncAtom()
         {
             if (string.IsNullOrEmpty(_atomJSON.val))
             {
+                target.SetParent(null, null);
                 _rigidbodyJSON.valNoCallback = "";
                 return;
             }
@@ -65,7 +66,10 @@ namespace VamTimeline
 
         private void SyncRigidbody()
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(_rigidbodyJSON.val))
+                target.SetParent(null, null);
+            else
+                target.SetParent(_atomJSON.val, _rigidbodyJSON.val);
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)

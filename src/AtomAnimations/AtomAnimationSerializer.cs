@@ -81,7 +81,9 @@ namespace VamTimeline
                         continue;
                     }
                     var target = new FreeControllerAnimationTarget(controller);
-                    clip.Add(target);
+                    var parentJSON = controllerJSON["Parent"].AsObject;
+                    if (parentJSON != null)
+                        target.SetParent(parentJSON["Atom"], parentJSON["Rigidbody"]);
                     DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength);
                     DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength);
                     DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength);
@@ -90,6 +92,7 @@ namespace VamTimeline
                     DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength);
                     DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
+                    clip.Add(target);
                 }
             }
 
@@ -319,6 +322,13 @@ namespace VamTimeline
                         { "RotZ", SerializeCurve(controller.rotZ) },
                         { "RotW", SerializeCurve(controller.rotW) }
                     };
+                if (controller.parentRigidbodyId != null)
+                {
+                    controllerJSON["Parent"] = new JSONClass{
+                        {"Atom", controller.parentAtomId },
+                        {"Rigidbody", controller.parentRigidbodyId},
+                    };
+                }
                 controllersJSON.Add(controllerJSON);
             }
 

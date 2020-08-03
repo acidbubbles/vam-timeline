@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -18,12 +19,66 @@ namespace VamTimeline
         public override string name => controller.name;
 
         public bool playbackEnabled = true;
-        public Atom parentAtom;
+
+        // TODO: Implement late binding like we did for the float params
+        private bool _parentAvailable;
+        private int _lastParentAvailableCheck = 0;
+        public string parentAtomId;
+        public string parentRigidbodyId;
         public Rigidbody parentRigidbody;
+        public void SetParent(string atomId, string rigidbodyId)
+        {
+            _parentAvailable = false;
+            parentAtomId = atomId;
+            parentRigidbodyId = rigidbodyId;
+            parentRigidbody = null;
+            TryBindParent(false);
+        }
+
+        public bool EnsureParentAvailable(bool silent = true)
+        {
+            if (parentRigidbodyId == null) return true;
+            if (_parentAvailable)
+            {
+                if (parentRigidbody == null)
+                {
+                    _parentAvailable = false;
+                    parentRigidbody = null;
+                    return false;
+                }
+                return true;
+            }
+            if (Time.frameCount == _lastParentAvailableCheck) return false;
+            if (TryBindParent(silent)) return true;
+            _lastParentAvailableCheck = Time.frameCount;
+            return false;
+        }
+
+        public bool TryBindParent(bool silent)
+        {
+            if (SuperController.singleton.isLoading) return false;
+            var atom = SuperController.singleton.GetAtomByUid(parentAtomId);
+            if (atom == null)
+            {
+                if (!silent) SuperController.LogError($"Timeline: Atom '{parentAtomId}' defined as a parent of {controller.name} was not found in the scene. You can remove the parenting, but the animation will not show in the expected position.");
+                return false;
+            }
+            var rigidbody = atom.linkableRigidbodies.FirstOrDefault(rb => rb.name == parentRigidbodyId);
+            if (rigidbody == null)
+            {
+                if (!silent) SuperController.LogError($"Timeline: Atom '{parentAtomId}' does not have a rigidbody '{parentRigidbodyId}'.");
+                return false;
+            }
+
+            parentRigidbody = rigidbody;
+            _parentAvailable = true;
+            return true;
+        }
 
         private Rigidbody _lastLinkedRigidbody;
         public Rigidbody GetLinkedRigidbody()
         {
+            if (parentRigidbody != null) return parentRigidbody;
             var rb = controller.linkToRB;
             if (rb == _lastLinkedRigidbody) return _lastLinkedRigidbody;
             if (rb == null)
@@ -42,6 +97,7 @@ namespace VamTimeline
 
         public Transform GetParent()
         {
+            if (!EnsureParentAvailable()) return null;
             return GetLinkedRigidbody()?.transform ?? controller.transform.parent;
         }
 
@@ -67,6 +123,7 @@ namespace VamTimeline
             var control = controller?.control;
             if (control == null) return;
             if (controller.possessed) return;
+            if (!EnsureParentAvailable()) return;
             Rigidbody link = GetLinkedRigidbody();
 
             if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
@@ -135,6 +192,8 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrentTransform(float time)
         {
+            // TODO: Can this happen? Should we handle this higher?
+            if (!EnsureParentAvailable(false)) return -1;
             var rb = GetLinkedRigidbody();
             if (rb != null)
                 return SetKeyframe(time, rb.transform.InverseTransformPoint(controller.transform.position), Quaternion.Inverse(rb.rotation) * controller.transform.rotation);
