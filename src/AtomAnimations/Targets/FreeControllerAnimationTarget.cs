@@ -208,7 +208,7 @@ namespace VamTimeline
             return SetKeyframe(time, controller.transform.localPosition, controller.transform.localRotation);
         }
 
-        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation)
+        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, bool dirty = true)
         {
             var keyframe = x.GetKeyframeAt(time);
             var curveType = keyframe?.curveType ?? CurveTypeValues.Smooth;
@@ -219,7 +219,7 @@ namespace VamTimeline
             rotY.SetKeyframe(time, locationRotation.y, curveType);
             rotZ.SetKeyframe(time, locationRotation.z, curveType);
             rotW.SetKeyframe(time, locationRotation.w, curveType);
-            dirty = true;
+            if (dirty) this.dirty = true;
             return key;
         }
 

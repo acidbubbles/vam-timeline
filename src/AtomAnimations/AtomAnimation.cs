@@ -662,7 +662,25 @@ namespace VamTimeline
                 var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
                 if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                 {
-                    clip.Paste(0f, previous.Copy(previous.animationLength, previous.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
+                    foreach (var previousTarget in previous.targetControllers)
+                    {
+                        if (!previousTarget.EnsureParentAvailable()) continue;
+                        var currentTarget = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(previousTarget));
+                        if (currentTarget == null) continue;
+                        if (!currentTarget.EnsureParentAvailable()) continue;
+                        var previousParent = previousTarget.GetParent();
+                        var position = previousParent.TransformPoint(previousTarget.EvaluatePosition(previous.animationLength));
+                        var rotation = Quaternion.Inverse(previousParent.rotation) * previousTarget.EvaluateRotation(previous.animationLength);
+                        var currentParent = currentTarget.GetParent();
+                        currentTarget.SetKeyframe(0f, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, false);
+                    }
+                    foreach (var previousTarget in previous.targetFloatParams)
+                    {
+                        var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(previousTarget));
+                        if (currentTarget == null) continue;
+                        currentTarget.value.SetKeySnapshot(0, currentTarget.value.GetLastFrame());
+                    }
+                    // clip.Paste(0f, previous.Copy(previous.animationLength, previous.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
                     realign = true;
                 }
             }
