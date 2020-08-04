@@ -20,7 +20,6 @@ namespace VamTimeline
 
         public bool playbackEnabled = true;
 
-        // TODO: Implement late binding like we did for the float params
         private bool _parentAvailable;
         private int _lastParentAvailableCheck = 0;
         public string parentAtomId;
@@ -28,6 +27,14 @@ namespace VamTimeline
         public Rigidbody parentRigidbody;
         public void SetParent(string atomId, string rigidbodyId)
         {
+            if (string.IsNullOrEmpty(rigidbodyId))
+            {
+                parentAtomId = null;
+                parentRigidbodyId = null;
+                parentRigidbody = null;
+                _parentAvailable = true;
+                return;
+            }
             _parentAvailable = false;
             parentAtomId = atomId;
             parentRigidbodyId = rigidbodyId;
@@ -57,6 +64,7 @@ namespace VamTimeline
         public bool TryBindParent(bool silent)
         {
             if (SuperController.singleton.isLoading) return false;
+            if (parentRigidbodyId == null) return true;
             var atom = SuperController.singleton.GetAtomByUid(parentAtomId);
             if (atom == null)
             {
@@ -192,7 +200,6 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrentTransform(float time)
         {
-            // TODO: Can this happen? Should we handle this higher?
             if (!EnsureParentAvailable(false)) return -1;
             var rb = GetLinkedRigidbody();
             if (rb != null)

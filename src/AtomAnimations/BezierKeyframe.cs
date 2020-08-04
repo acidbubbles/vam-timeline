@@ -29,7 +29,6 @@ namespace VamTimeline
 
         public BezierKeyframe Clone()
         {
-            // TODO: Untangle AnimationCurve struct references
             return new BezierKeyframe
             {
                 time = time,

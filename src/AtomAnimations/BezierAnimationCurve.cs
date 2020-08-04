@@ -390,7 +390,6 @@ namespace VamTimeline
             {
                 var middle = left + (right - left) / 2;
 
-                // TODO: Use the times array
                 var keyTime = keys[middle].time;
                 if (keyTime > timeLarge)
                 {
@@ -436,11 +435,7 @@ namespace VamTimeline
 
         public void SmoothNeighbors(int key)
         {
-            throw new NotImplementedException();
-            // if (key == -1) return;
-            // SmoothTangents(key, 1f);
-            // if (key > 0) curve.SmoothTangents(key - 1, 1f);
-            // if (key < curve.length - 1) curve.SmoothTangents(key + 1, 1f);
+            AutoComputeControlPoints();
         }
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)

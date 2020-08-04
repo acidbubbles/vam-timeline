@@ -81,9 +81,11 @@ namespace VamTimeline
                         continue;
                     }
                     var target = new FreeControllerAnimationTarget(controller);
-                    var parentJSON = controllerJSON["Parent"].AsObject;
-                    if (parentJSON != null)
+                    if (controllerJSON.HasKey("Parent"))
+                    {
+                        var parentJSON = controllerJSON["Parent"].AsObject;
                         target.SetParent(parentJSON["Atom"], parentJSON["Rigidbody"]);
+                    }
                     DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength);
                     DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength);
                     DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength);
