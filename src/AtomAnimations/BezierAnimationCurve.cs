@@ -84,7 +84,7 @@ namespace VamTimeline
             if (key == -1) return keys[keys.Count - 1].value;
             if (key == 0) return keys[0].value;
             current = keys[key];
-            if (time < current.time)
+            if (time < current.time && key < keys.Count - 2)
             {
                 key++;
                 current = keys[key];
@@ -357,9 +357,9 @@ namespace VamTimeline
                     return current.value;
                 case CurveTypeValues.Linear:
                 case CurveTypeValues.FlatLinear:
-                {
-                    return current.value + (next.value - current.value) * t;
-                }
+                    {
+                        return current.value + (next.value - current.value) * t;
+                    }
             }
 
             var w0 = current.value;
