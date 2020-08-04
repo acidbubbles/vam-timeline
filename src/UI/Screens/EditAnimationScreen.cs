@@ -255,10 +255,10 @@ namespace VamTimeline
 
         private void InitTransitionUI()
         {
-            _transitionPreviousJSON = new JSONStorableBool("Transition (Previous)", false, (bool val) => ChangeTransition(val));
+            _transitionPreviousJSON = new JSONStorableBool("Transition (Previous)", false, (bool val) => ChangeTransitionPrevious(val));
             prefabFactory.CreateToggle(_transitionPreviousJSON);
 
-            _transitionNextJSON = new JSONStorableBool("Transition (Next)", false, (bool val) => ChangeTransition(val));
+            _transitionNextJSON = new JSONStorableBool("Transition (Next)", false, (bool val) => ChangeTransitionNext(val));
             prefabFactory.CreateToggle(_transitionNextJSON);
         }
 
@@ -417,7 +417,14 @@ namespace VamTimeline
             current.blendDuration = v;
         }
 
-        private void ChangeTransition(bool val)
+        private void ChangeTransitionPrevious(bool val)
+        {
+            current.autoTransitionPrevious = val;
+            RefreshTransitionUI();
+            plugin.animation.Sample();
+        }
+
+        private void ChangeTransitionNext(bool val)
         {
             current.autoTransitionNext = val;
             RefreshTransitionUI();
