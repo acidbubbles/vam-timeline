@@ -662,25 +662,7 @@ namespace VamTimeline
                 var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
                 if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                 {
-                    foreach (var previousTarget in previous.targetControllers)
-                    {
-                        if (!previousTarget.EnsureParentAvailable()) continue;
-                        var currentTarget = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(previousTarget));
-                        if (currentTarget == null) continue;
-                        if (!currentTarget.EnsureParentAvailable()) continue;
-                        var previousParent = previousTarget.GetParent();
-                        var position = previousParent.TransformPoint(previousTarget.EvaluatePosition(previous.animationLength));
-                        var rotation = Quaternion.Inverse(previousParent.rotation) * previousTarget.EvaluateRotation(previous.animationLength);
-                        var currentParent = currentTarget.GetParent();
-                        currentTarget.SetKeyframe(0f, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, false);
-                    }
-                    foreach (var previousTarget in previous.targetFloatParams)
-                    {
-                        var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(previousTarget));
-                        if (currentTarget == null) continue;
-                        currentTarget.value.SetKeySnapshot(0, currentTarget.value.GetLastFrame());
-                    }
-                    // clip.Paste(0f, previous.Copy(previous.animationLength, previous.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
+                    CopySourceFrameToClip(previous, previous.animationLength, clip, 0f);
                     realign = true;
                 }
             }
@@ -689,7 +671,7 @@ namespace VamTimeline
                 var next = GetClip(clip.nextAnimationName);
                 if (next != null && (next.IsDirty() || clip.IsDirty()))
                 {
-                    clip.Paste(clip.animationLength, next.Copy(0f, next.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
+                    CopySourceFrameToClip(next, 0f, clip, clip.animationLength);
                     realign = true;
                 }
             }
@@ -706,6 +688,28 @@ namespace VamTimeline
                             target.rotW);
                     }
                 }
+            }
+        }
+
+        private void CopySourceFrameToClip(AtomAnimationClip source, float sourceTime, AtomAnimationClip clip, float clipTime)
+        {
+            foreach (var sourceTarget in source.targetControllers)
+            {
+                if (!sourceTarget.EnsureParentAvailable()) continue;
+                var currentTarget = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
+                if (currentTarget == null) continue;
+                if (!currentTarget.EnsureParentAvailable()) continue;
+                var previousParent = sourceTarget.GetParent();
+                var position = previousParent.TransformPoint(sourceTarget.EvaluatePosition(sourceTime));
+                var rotation = Quaternion.Inverse(previousParent.rotation) * sourceTarget.EvaluateRotation(sourceTime);
+                var currentParent = currentTarget.GetParent();
+                currentTarget.SetKeyframe(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, false);
+            }
+            foreach (var previousTarget in source.targetFloatParams)
+            {
+                var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(previousTarget));
+                if (currentTarget == null) continue;
+                currentTarget.value.SetKeySnapshot(clipTime, previousTarget.value.GetKeyframeAt(sourceTime));
             }
         }
 
