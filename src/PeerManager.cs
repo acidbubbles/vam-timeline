@@ -204,9 +204,10 @@ namespace VamTimeline
                  clip.blendDuration, // 6
                  clip.autoPlay, // 7
                  clip.loop, // 8
-                 clip.transition, // 9
-                 clip.speed, // 10
-                 clip.weight // 11
+                 clip.autoTransitionPrevious, // 9
+                 clip.autoTransitionNext, // 10
+                 clip.speed, // 11
+                 clip.weight // 12
             });
         }
 
@@ -220,9 +221,10 @@ namespace VamTimeline
             clip.blendDuration = (float)e[6];
             clip.autoPlay = (bool)e[7];
             clip.loop = (bool)e[8];
-            clip.transition = (bool)e[9];
-            clip.speed = (float)e[10];
-            clip.weight = (float)e[11];
+            clip.autoTransitionPrevious = (bool)e[9];
+            clip.autoTransitionNext = (bool)e[10];
+            clip.speed = (float)e[11];
+            clip.weight = (float)e[12];
             animation.SelectAnimation(clip);
         }
 

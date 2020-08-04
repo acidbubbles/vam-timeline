@@ -89,7 +89,8 @@ namespace VamTimeline
             var clip = _animation.CreateClip(_clip.animationLayer);
             clip.animationName = $"{_clip.animationName} > {next.animationName}";
             clip.loop = false;
-            clip.transition = true;
+            clip.autoTransitionPrevious = _animation.clips.Any(c => c.animationLayer == _clip.animationLayer && c.nextAnimationName == _clip.animationName);
+            clip.autoTransitionNext = _clip.nextAnimationName != null;
             clip.nextAnimationName = _clip.nextAnimationName;
             clip.blendDuration = AtomAnimationClip.DefaultBlendDuration;
             clip.nextAnimationTime = clip.animationLength - clip.blendDuration;

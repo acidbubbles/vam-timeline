@@ -17,7 +17,8 @@ namespace VamTimeline
         private bool _loop = true;
         private string _nextAnimationName;
         private float _animationLength = DefaultAnimationLength;
-        private bool _transition;
+        private bool _autoTransitionPrevious;
+        private bool _autoTransitionNext;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
         private string _animationName;
@@ -152,7 +153,7 @@ namespace VamTimeline
                                     curve.GetLastFrame().curveType = curve.GetFirstFrame().curveType;
                             }
                         }
-                        transition = false;
+                        autoTransitionNext = false;
                     }
                     else
                     {
@@ -175,16 +176,32 @@ namespace VamTimeline
                 DirtyAll();
             }
         }
-        public bool transition
+
+        public bool autoTransitionPrevious
         {
             get
             {
-                return _transition;
+                return _autoTransitionPrevious;
             }
             set
             {
-                if (_transition == value) return;
-                _transition = value;
+                if (_autoTransitionPrevious == value) return;
+                _autoTransitionPrevious = value;
+                onAnimationSettingsChanged.Invoke(nameof(autoTransitionPrevious));
+                DirtyAll();
+            }
+        }
+
+        public bool autoTransitionNext
+        {
+            get
+            {
+                return _autoTransitionNext;
+            }
+            set
+            {
+                if (_autoTransitionNext == value) return;
+                _autoTransitionNext = value;
                 _skipNextAnimationSettingsModified = true;
                 try
                 {
@@ -194,10 +211,11 @@ namespace VamTimeline
                 {
                     _skipNextAnimationSettingsModified = false;
                 }
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(transition));
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(autoTransitionNext));
                 DirtyAll();
             }
         }
+
         public float blendDuration
         {
             get

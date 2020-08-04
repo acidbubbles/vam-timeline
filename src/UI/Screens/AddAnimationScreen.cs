@@ -141,7 +141,7 @@ namespace VamTimeline
             {
                 var nextClip = animation.GetClip(current.nextAnimationName);
                 if (nextClip != null)
-                    nextIsTransition = nextClip.transition;
+                    nextIsTransition = nextClip.autoTransitionPrevious;
                 else
                     hasNext = false;
             }
@@ -149,7 +149,7 @@ namespace VamTimeline
             if (!hasNext)
                 _addAnimationTransitionUI.label = $"Create Transition (No sequence)";
             else if (nextIsTransition)
-                _addAnimationTransitionUI.label = $"Create Transition (Already transition)";
+                _addAnimationTransitionUI.label = $"Create Transition (Next is transition)";
             else
                 _addAnimationTransitionUI.label = $"Create Transition (Current -> Next)";
         }

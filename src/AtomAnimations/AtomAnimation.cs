@@ -626,7 +626,6 @@ namespace VamTimeline
             }
             foreach (var clip in clips)
             {
-                if (!clip.transition) continue;
                 RebuildTransition(clip);
             }
             foreach (var clip in clips)
@@ -658,17 +657,23 @@ namespace VamTimeline
         private void RebuildTransition(AtomAnimationClip clip)
         {
             bool realign = false;
-            var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
-            if (previous != null && (previous.IsDirty() || clip.IsDirty()))
+            if (clip.autoTransitionPrevious)
             {
-                clip.Paste(0f, previous.Copy(previous.animationLength, previous.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
-                realign = true;
+                var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
+                if (previous != null && (previous.IsDirty() || clip.IsDirty()))
+                {
+                    clip.Paste(0f, previous.Copy(previous.animationLength, previous.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
+                    realign = true;
+                }
             }
-            var next = GetClip(clip.nextAnimationName);
-            if (next != null && (next.IsDirty() || clip.IsDirty()))
+            if (clip.autoTransitionNext)
             {
-                clip.Paste(clip.animationLength, next.Copy(0f, next.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
-                realign = true;
+                var next = GetClip(clip.nextAnimationName);
+                if (next != null && (next.IsDirty() || clip.IsDirty()))
+                {
+                    clip.Paste(clip.animationLength, next.Copy(0f, next.GetAllCurveTargets().Cast<IAtomAnimationTarget>()), false);
+                    realign = true;
+                }
             }
             if (realign)
             {

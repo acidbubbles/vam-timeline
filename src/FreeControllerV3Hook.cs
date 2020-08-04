@@ -121,8 +121,10 @@ namespace VamTimeline
                 animation.SetKeyframeToCurrentTransform(target, time);
             }
 
-            if (animation.current.transition && (time == 0 || time == animation.current.animationLength))
-                animation.Sample();
+                if (animation.current.autoTransitionPrevious && time == 0)
+                    animation.Sample();
+                else if (animation.current.autoTransitionNext && time == animation.current.animationLength)
+                    animation.Sample();
         }
     }
 }

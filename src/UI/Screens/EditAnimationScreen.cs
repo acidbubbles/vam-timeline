@@ -28,8 +28,8 @@ namespace VamTimeline
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
-        private JSONStorableBool _transitionJSON;
-        private UIDynamicToggle _transitionUI;
+        private JSONStorableBool _transitionPreviousJSON;
+        private JSONStorableBool _transitionNextJSON;
         private UIDynamicToggle _loopUI;
         private JSONStorableFloat _animationSpeedJSON;
         private JSONStorableFloat _clipSpeedJSON;
@@ -255,8 +255,11 @@ namespace VamTimeline
 
         private void InitTransitionUI()
         {
-            _transitionJSON = new JSONStorableBool("Transition", false, (bool val) => ChangeTransition(val));
-            _transitionUI = prefabFactory.CreateToggle(_transitionJSON);
+            _transitionPreviousJSON = new JSONStorableBool("Transition (Previous)", false, (bool val) => ChangeTransition(val));
+            prefabFactory.CreateToggle(_transitionPreviousJSON);
+
+            _transitionNextJSON = new JSONStorableBool("Transition (Next)", false, (bool val) => ChangeTransition(val));
+            prefabFactory.CreateToggle(_transitionNextJSON);
         }
 
         private void InitLoopUI()
@@ -272,33 +275,36 @@ namespace VamTimeline
 
         private void RefreshTransitionUI()
         {
-            if (!current.transition)
-            {
-                if (current.loop)
-                {
-                    _transitionUI.toggle.interactable = false;
-                    _loopUI.toggle.interactable = true;
-                    return;
-                }
-                var clipsPointingToHere = animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
-                var targetClip = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
-                if (clipsPointingToHere.Count == 0 || targetClip == null)
-                {
-                    _transitionUI.toggle.interactable = false;
-                    _loopUI.toggle.interactable = true;
-                    return;
-                }
+            _transitionPreviousJSON.toggle.interactable = true;
+            _transitionNextJSON.toggle.interactable = true;
+            _loopUI.toggle.interactable = false;
 
-                if (clipsPointingToHere.Any(c => c.transition) || targetClip?.transition == true)
+            if (!current.autoTransitionPrevious)
+            {
+                var clipsPointingToHere = animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
+                if (clipsPointingToHere.Count == 0 || clipsPointingToHere.Any(c => c.autoTransitionNext))
                 {
-                    _transitionUI.toggle.interactable = false;
-                    _loopUI.toggle.interactable = true;
-                    return;
+                    _transitionPreviousJSON.toggle.interactable = false;
                 }
             }
 
-            _transitionUI.toggle.interactable = true;
-            _loopUI.toggle.interactable = !_transitionUI.toggle.isOn;
+            if (!current.autoTransitionNext)
+            {
+                if (current.loop)
+                {
+                    _transitionNextJSON.toggle.interactable = false;
+                    _loopUI.toggle.interactable = true;
+                }
+                else
+                {
+                    var targetClip = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
+                    if (targetClip == null || targetClip.autoTransitionNext == true)
+                    {
+                        _transitionNextJSON.toggle.interactable = false;
+                        _loopUI.toggle.interactable = true;
+                    }
+                }
+            }
         }
 
         private void UpdateNextAnimationPreview()
@@ -413,7 +419,7 @@ namespace VamTimeline
 
         private void ChangeTransition(bool val)
         {
-            current.transition = val;
+            current.autoTransitionNext = val;
             RefreshTransitionUI();
             plugin.animation.Sample();
         }
@@ -517,7 +523,8 @@ namespace VamTimeline
             _autoPlayJSON.valNoCallback = current.autoPlay;
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
             _blendDurationJSON.valNoCallback = current.blendDuration;
-            _transitionJSON.valNoCallback = current.transition;
+            _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
+            _transitionNextJSON.valNoCallback = current.autoTransitionNext;
             _nextAnimationJSON.valNoCallback = current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;

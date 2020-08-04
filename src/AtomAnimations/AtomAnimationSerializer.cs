@@ -39,11 +39,17 @@ namespace VamTimeline
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
+            bool? legacyTransition = null;
+            if (clipJSON.HasKey("Transition"))
+            {
+                legacyTransition = DeserializeBool(clipJSON["Transition"], false);
+            }
             var clip = new AtomAnimationClip(animationName, animationLayer)
             {
                 blendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                 loop = DeserializeBool(clipJSON["Loop"], true),
-                transition = DeserializeBool(clipJSON["Transition"], false),
+                autoTransitionPrevious = legacyTransition ?? DeserializeBool(clipJSON["AutoTransitionPrevious"], false),
+                autoTransitionNext = legacyTransition ?? DeserializeBool(clipJSON["AutoTransitionNext"], false),
                 ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                 nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                 nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
@@ -287,7 +293,8 @@ namespace VamTimeline
                     { "AnimationLength", clip.animationLength.ToString(CultureInfo.InvariantCulture) },
                     { "BlendDuration", clip.blendDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.loop ? "1" : "0" },
-                    { "Transition", clip.transition ? "1" : "0" },
+                    { "AutoTransitionPrevious", clip.autoTransitionPrevious ? "1" : "0" },
+                    { "AutoTransitionNext", clip.autoTransitionNext ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" },
                     { "AnimationLayer", clip.animationLayer },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },

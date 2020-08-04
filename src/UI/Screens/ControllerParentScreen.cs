@@ -73,6 +73,7 @@ namespace VamTimeline
 
         private void SyncRigidbody()
         {
+            // TODO: Recalculate animation
             if (string.IsNullOrEmpty(_rigidbodyJSON.val))
                 _target.SetParent(null, null);
             else
