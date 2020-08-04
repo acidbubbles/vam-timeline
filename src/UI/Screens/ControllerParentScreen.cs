@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +10,7 @@ namespace VamTimeline
         public const string ScreenName = "Controller Parent";
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _rigidbodyJSON;
+        private FreeControllerAnimationTarget _target;
 
         public override string screenId => ScreenName;
 
@@ -21,9 +21,16 @@ namespace VamTimeline
 
         public override void Init(IAtomPlugin plugin)
         {
+            _target = target;
+            target = null;
+
             base.Init(plugin);
 
-            // Right side
+            if(_target == null)
+            {
+                onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+                return;
+            }
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
@@ -34,28 +41,28 @@ namespace VamTimeline
 
         private void InitParentUI()
         {
-            if (target == null || !current.targetControllers.Contains(target))
+            if (!current.targetControllers.Contains(_target))
             {
-                SuperController.LogError($"Target {target?.name ?? "(null)"} is not in the clip {current.animationName}");
+                SuperController.LogError($"Target {_target?.name ?? "(null)"} is not in the clip {current.animationName}");
                 return;
             }
 
             _atomJSON = new JSONStorableStringChooser("Atom", SuperController.singleton.GetAtomUIDs(), "", "Atom", (string val) => SyncAtom());
             var atomUI = prefabFactory.CreateScrollablePopup(_atomJSON);
             atomUI.popupPanelHeight = 700f;
-            _atomJSON.valNoCallback = target.parentAtomId ?? "";
+            _atomJSON.valNoCallback = _target.parentAtomId ?? "";
 
             _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string>(), "", "Rigidbody", (string val) => SyncRigidbody());
             var rigidbodyUI = prefabFactory.CreateScrollablePopup(_rigidbodyJSON);
             atomUI.popupPanelHeight = 700f;
-            _rigidbodyJSON.valNoCallback = target.parentRigidbodyId ?? "";
+            _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "";
         }
 
         private void SyncAtom()
         {
             if (string.IsNullOrEmpty(_atomJSON.val))
             {
-                target.SetParent(null, null);
+                _target.SetParent(null, null);
                 _rigidbodyJSON.valNoCallback = "";
                 return;
             }
@@ -67,9 +74,9 @@ namespace VamTimeline
         private void SyncRigidbody()
         {
             if (string.IsNullOrEmpty(_rigidbodyJSON.val))
-                target.SetParent(null, null);
+                _target.SetParent(null, null);
             else
-                target.SetParent(_atomJSON.val, _rigidbodyJSON.val);
+                _target.SetParent(_atomJSON.val, _rigidbodyJSON.val);
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
