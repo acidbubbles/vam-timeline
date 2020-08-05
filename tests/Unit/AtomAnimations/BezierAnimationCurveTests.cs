@@ -10,6 +10,7 @@ namespace VamTimeline.Tests.Unit
         public IEnumerable<Test> GetTests()
         {
             yield return new Test(nameof(AddAndRemoveFrames), AddAndRemoveFrames);
+            yield return new Test(nameof(KeyframeBinarySearch), KeyframeBinarySearch);
             yield return new Test(nameof(Evaluate), Evaluate);
             yield return new Test(nameof(RepairBrokenCurve), RepairBrokenCurve);
         }
@@ -48,6 +49,20 @@ namespace VamTimeline.Tests.Unit
             }
 
             yield break;
+        }
+
+        public IEnumerable KeyframeBinarySearch(TestContext context)
+        {
+            var curve = new BezierAnimationCurve();
+            curve.SetKeyframe(0, 10, CurveTypeValues.Linear);
+            curve.SetKeyframe(1, 20, CurveTypeValues.Linear);
+            curve.SetKeyframe(2, 30, CurveTypeValues.Linear);
+
+            if (!context.Assert(curve.KeyframeBinarySearch(0.0f), 0, "0.0f")) yield break;
+            if (!context.Assert(curve.KeyframeBinarySearch(0.5f, true), 1, "0.5f")) yield break;
+            if (!context.Assert(curve.KeyframeBinarySearch(1.0f), 1, "1.0f")) yield break;
+            if (!context.Assert(curve.KeyframeBinarySearch(1.5f, true), 2, "1.5f")) yield break;
+            if (!context.Assert(curve.KeyframeBinarySearch(2.0f), 2, "2.0f")) yield break;
         }
 
         public IEnumerable Evaluate(TestContext context)

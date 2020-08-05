@@ -84,11 +84,8 @@ namespace VamTimeline
             if (key == -1) return keys[keys.Count - 1].value;
             if (key == 0) return keys[0].value;
             current = keys[key];
-            if (time < current.time && key < keys.Count - 2)
-            {
-                key++;
-                current = keys[key];
-            }
+            if (time < current.time)
+                current = keys[--key];
             next = key < keys.Count - 1 ? keys[key + 1] : null;
             _lastIndex = key;
             return ComputeValue(current, next, time);
@@ -216,10 +213,11 @@ namespace VamTimeline
                         current.controlPointIn = current.value;
                         break;
                     case CurveTypeValues.Bounce:
-                        if (previous != null)
+                        if (previous != null && next != null)
+                        {
                             current.controlPointIn = current.value - ((current.value - next.value) / 1.4f);
-                        if (next != null)
                             current.controlPointOut = current.value + ((previous.value - current.value) / 1.8f);
+                        }
                         break;
                     default:
                         continue;
