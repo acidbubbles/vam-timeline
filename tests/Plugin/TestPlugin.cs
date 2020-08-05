@@ -8,6 +8,7 @@ namespace VamTimeline.Tests.Plugin
     public class TestPlugin : MVRScript
     {
         private StringBuilder _resultBuilder;
+        private JSONStorableString _testFilterJSON;
         private JSONStorableString _resultJSON;
         private UIDynamicButton _runUI;
 
@@ -18,6 +19,7 @@ namespace VamTimeline.Tests.Plugin
             _runUI = CreateButton("Run", false);
             _runUI.button.onClick.AddListener(Run);
 
+            _testFilterJSON = new JSONStorableString("Test Filter", "");
             _resultJSON = new JSONStorableString("Test Results", "Running...");
 
             Run();
@@ -52,6 +54,8 @@ namespace VamTimeline.Tests.Plugin
             yield return 0;
             foreach (Test test in TestsIndex.GetAllTests())
             {
+                if (!string.IsNullOrEmpty(_testFilterJSON.val) && !test.name.Contains(_testFilterJSON.val)) continue;
+
                 var output = new StringBuilder();
                 var sw = Stopwatch.StartNew();
                 foreach (var x in test.Run(this, output))
