@@ -15,31 +15,43 @@ namespace VamTimeline
         public const int LinearFlat = 5;
         public const int FlatLinear = 6;
         public const int CopyPrevious = 7;
-        public const int Auto = 7;
+        public const int Auto = 10;
 
-        public static readonly List<KeyValuePair<int, string>> labels = new List<KeyValuePair<int, string>>
+        private static readonly Dictionary<int, string> _labelMap = new Dictionary<int, string>
         {
-            new KeyValuePair<int, string>(Auto, "Auto"),
-            new KeyValuePair<int, string>(Smooth, "Smooth"),
-            new KeyValuePair<int, string>(Linear, "Linear"),
-            new KeyValuePair<int, string>(Constant, "Constant"),
-            new KeyValuePair<int, string>(Flat, "Flat"),
-            new KeyValuePair<int, string>(FlatLong, "Flat (Long)"),
-            new KeyValuePair<int, string>(Bounce, "Bounce"),
-            new KeyValuePair<int, string>(LinearFlat, "Linear -> Flat"),
-            new KeyValuePair<int, string>(FlatLinear, "Flat -> Linear"),
-            new KeyValuePair<int, string>(CopyPrevious, "Copy Previous Keyframe"),
-            new KeyValuePair<int, string>(LeaveAsIs, "Leave As-Is"),
+            {Auto, "Auto"},
+            {Smooth, "Smooth"},
+            {Linear, "Linear"},
+            {Constant, "Constant"},
+            {Flat, "Flat"},
+            {FlatLong, "Flat (Long)"},
+            {Bounce, "Bounce"},
+            {LinearFlat, "Linear -> Flat"},
+            {FlatLinear, "Flat -> Linear"},
+            {CopyPrevious, "Copy Previous Keyframe"},
+            {LeaveAsIs, "Leave As-Is"},
+        };
+
+        public static readonly List<string> labels2 = new List<string>
+        {
+            FromInt(Auto),
+            FromInt(Smooth),
+            FromInt(Linear),
+            FromInt(Constant),
+            FromInt(Flat),
+            FromInt(Bounce),
+            FromInt(LinearFlat),
+            FromInt(FlatLinear),
         };
 
         public static string FromInt(int v)
         {
-            return labels.FirstOrDefault(l => l.Key == v)?.Value ?? "?";
+            return _labelMap[v];
         }
 
         public static int ToInt(string v)
         {
-            return labels.FirstOrDefault(l => l.Value == v)?.Key ?? Smooth;
+            return _labelMap.FirstOrDefault(l => l.Value == v)?.Key ?? Smooth;
         }
     }
 }

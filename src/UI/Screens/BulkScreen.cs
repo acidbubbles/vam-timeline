@@ -126,7 +126,7 @@ namespace VamTimeline
 
         private void InitChangeCurveUI()
         {
-            _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.labels.Select(l => l.Value).ToList(), "", "Change curve", ChangeCurve);
+            _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.labels2, "", "Change curve", ChangeCurve);
             var curveTypeUI = prefabFactory.CreatePopup(_changeCurveJSON, false);
             curveTypeUI.popupPanelHeight = 280f;
         }
