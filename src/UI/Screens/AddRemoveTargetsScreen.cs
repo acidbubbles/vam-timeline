@@ -278,8 +278,9 @@ namespace VamTimeline
                         target = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(s));
                         if (target != null)
                         {
-                            _addControllerListJSON.val = target.name;
-                            current.Remove(target);
+                            if (clip == current)
+                                _addControllerListJSON.val = target.name;
+                            clip.Remove(target);
                             continue;
                         }
                     }
@@ -288,9 +289,12 @@ namespace VamTimeline
                         target = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(s));
                         if (target != null)
                         {
-                            _addStorableListJSON.val = target.storableId;
-                            _addParamListJSON.val = target.floatParamName;
-                            current.Remove(target);
+                            if (clip == current)
+                            {
+                                _addStorableListJSON.val = target.storableId;
+                                _addParamListJSON.val = target.floatParamName;
+                            }
+                            clip.Remove(target);
                             continue;
                         }
                     }
@@ -298,7 +302,7 @@ namespace VamTimeline
                         var target = s as TriggersAnimationTarget;
                         if (target != null && clip == current)
                         {
-                            current.Remove(target);
+                            clip.Remove(target);
                             continue;
                         }
                     }
