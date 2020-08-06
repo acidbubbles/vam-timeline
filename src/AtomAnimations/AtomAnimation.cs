@@ -66,7 +66,7 @@ namespace VamTimeline
                 playTime = value;
                 if (current == null) return;
                 current.clipTime = value;
-                if (isPlaying && !current.playbackEnabled) PlayClip(current, sequencing);
+                if (isPlaying && !current.playbackEnabled && current.playbackMainInLayer) PlayClip(current, sequencing);
                 Sample();
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
@@ -304,12 +304,17 @@ namespace VamTimeline
                 if (clip.animationPattern)
                     clip.animationPattern.SetBoolParamValue("loopOnce", true);
             }
+            else
+            {
+                clip.playbackMainInLayer = false;
+            }
 
             if (isPlaying)
             {
-                if (!clips.Any(c => c.playbackEnabled))
+                if (!clips.Any(c => c.playbackMainInLayer))
                 {
                     isPlaying = false;
+                    sequencing = false;
                     playTime = current.clipTime;
                 }
 
@@ -776,7 +781,7 @@ namespace VamTimeline
         {
             foreach (var clip in clips)
             {
-                if (clip.playbackScheduledNextAnimationName != null && playTime >= clip.playbackScheduledNextTime)
+                if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimationName != null && playTime >= clip.playbackScheduledNextTime)
                 {
                     var nextAnimationName = clip.playbackScheduledNextAnimationName;
                     clip.playbackScheduledNextAnimationName = null;
@@ -793,7 +798,6 @@ namespace VamTimeline
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
                 {
                     clip.playbackEnabled = false;
-                    clip.playbackMainInLayer = false;
                 }
             }
         }
