@@ -492,7 +492,7 @@ namespace VamTimeline
                 var group = clips
                     .Where(c => c.animationName != clip.animationName && c.animationLayer == clip.animationLayer)
                     .ToList();
-                if (group.Count == 1) return;
+                if (group.Count == 0) return;
                 var idx = Random.Range(0, group.Count);
                 clip.SetNext(group[idx].animationName, nextTime);
             }
@@ -503,7 +503,7 @@ namespace VamTimeline
                     .Where(c => c.animationName != clip.animationName && c.animationLayer == clip.animationLayer)
                     .Where(c => c.animationName.StartsWith(prefix))
                     .ToList();
-                if (group.Count == 1) return;
+                if (group.Count == 0) return;
                 var idx = Random.Range(0, group.Count);
                 clip.SetNext(group[idx].animationName, nextTime);
             }
