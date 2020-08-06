@@ -21,14 +21,14 @@ namespace VamTimeline
                 var newTarget = clip.Add(origTarget.controller);
                 for (var i = 0; i < origTarget.curves.Count; i++)
                 {
-                    newTarget.curves[i].keys = origTarget.curves[i].keys.ToList();
+                    newTarget.curves[i].keys = origTarget.curves[i].keys.Select(k => k.Clone()).ToList();
                 }
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
                 var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
-                newTarget.value.keys = origTarget.value.keys.ToList();
+                newTarget.value.keys = origTarget.value.keys.Select(k => k.Clone()).ToList();
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetTriggers)
