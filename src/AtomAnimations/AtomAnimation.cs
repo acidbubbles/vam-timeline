@@ -699,17 +699,24 @@ namespace VamTimeline
                 var currentTarget = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
                 if (currentTarget == null) continue;
                 if (!currentTarget.EnsureParentAvailable()) continue;
-                var previousParent = sourceTarget.GetParent();
-                var position = previousParent.TransformPoint(sourceTarget.EvaluatePosition(sourceTime));
-                var rotation = Quaternion.Inverse(previousParent.rotation) * sourceTarget.EvaluateRotation(sourceTime);
+                var sourceParent = sourceTarget.GetParent();
                 var currentParent = currentTarget.GetParent();
-                currentTarget.SetKeyframe(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, false);
+                if (sourceParent == currentParent)
+                {
+                    currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(clipTime), false);
+                }
+                else
+                {
+                    var position = sourceParent.TransformPoint(sourceTarget.EvaluatePosition(sourceTime));
+                    var rotation = Quaternion.Inverse(sourceParent.rotation) * sourceTarget.EvaluateRotation(sourceTime);
+                    currentTarget.SetKeyframe(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, false);
+                }
             }
-            foreach (var previousTarget in source.targetFloatParams)
+            foreach (var sourceTarget in source.targetFloatParams)
             {
-                var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(previousTarget));
+                var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
                 if (currentTarget == null) continue;
-                currentTarget.value.SetKeySnapshot(clipTime, previousTarget.value.GetKeyframeAt(sourceTime));
+                currentTarget.value.SetKeySnapshot(clipTime, sourceTarget.value.GetKeyframeAt(sourceTime));
             }
         }
 
