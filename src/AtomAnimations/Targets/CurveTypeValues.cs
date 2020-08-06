@@ -15,9 +15,11 @@ namespace VamTimeline
         public const int LinearFlat = 5;
         public const int FlatLinear = 6;
         public const int CopyPrevious = 7;
+        public const int Auto = 7;
 
         public static readonly List<KeyValuePair<int, string>> labels = new List<KeyValuePair<int, string>>
         {
+            new KeyValuePair<int, string>(Auto, "Auto"),
             new KeyValuePair<int, string>(Smooth, "Smooth"),
             new KeyValuePair<int, string>(Linear, "Linear"),
             new KeyValuePair<int, string>(Constant, "Constant"),

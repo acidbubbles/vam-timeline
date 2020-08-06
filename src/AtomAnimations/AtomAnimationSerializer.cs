@@ -92,13 +92,13 @@ namespace VamTimeline
                         var parentJSON = controllerJSON["Parent"].AsObject;
                         target.SetParent(parentJSON["Atom"], parentJSON["Rigidbody"]);
                     }
-                    DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength);
-                    DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength);
-                    DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength);
-                    DeserializeCurve(target.rotX, controllerJSON["RotX"], clip.animationLength);
-                    DeserializeCurve(target.rotY, controllerJSON["RotY"], clip.animationLength);
-                    DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength);
-                    DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength);
+                    DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength, CurveTypeValues.Auto);
+                    DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength, CurveTypeValues.Auto);
+                    DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength, CurveTypeValues.Auto);
+                    DeserializeCurve(target.rotX, controllerJSON["RotX"], clip.animationLength, CurveTypeValues.Auto);
+                    DeserializeCurve(target.rotY, controllerJSON["RotY"], clip.animationLength, CurveTypeValues.Auto);
+                    DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength, CurveTypeValues.Auto);
+                    DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength, CurveTypeValues.Auto);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(target);
                 }
@@ -113,7 +113,7 @@ namespace VamTimeline
                     var floatParamName = paramJSON["Name"].Value;
                     var target = new FloatParamAnimationTarget(_atom, storableId, floatParamName);
                     clip.Add(target);
-                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength);
+                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength, CurveTypeValues.Smooth);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                 }
             }
@@ -139,7 +139,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length)
+        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length, int defaultCurveType)
         {
             if (curveJSON is JSONArray)
                 DeserializeCurveFromArray(curve, (JSONArray)curveJSON);
@@ -152,7 +152,7 @@ namespace VamTimeline
             {
                 SuperController.LogError("Repair");
                 // Attempt repair
-                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new BezierKeyframe(0, 0, CurveTypeValues.Smooth);
+                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new BezierKeyframe(0, 0, defaultCurveType);
                 if (curve.length > 0)
                     curve.RemoveKey(0);
                 keyframe.time = 0f;

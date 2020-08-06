@@ -140,12 +140,12 @@ namespace VamTimeline
             keys.RemoveAt(v);
         }
 
-        public void AddEdgeFramesIfMissing(float animationLength)
+        public void AddEdgeFramesIfMissing(float animationLength, int curveType)
         {
             if (keys.Count == 0)
             {
-                AddKey(0, 0, CurveTypeValues.Smooth);
-                AddKey(animationLength, 0, CurveTypeValues.Smooth);
+                AddKey(0, 0, curveType);
+                AddKey(animationLength, 0, curveType);
                 return;
             }
             if (keys.Count == 1)
@@ -161,7 +161,7 @@ namespace VamTimeline
                 {
                     if (keys.Count > 2)
                     {
-                        AddKey(0, keyframe.value, CurveTypeValues.Smooth);
+                        AddKey(0, keyframe.value, curveType);
                     }
                     else
                     {
@@ -175,7 +175,7 @@ namespace VamTimeline
                 {
                     if (length > 2)
                     {
-                        AddKey(animationLength, keyframe.value, CurveTypeValues.Smooth);
+                        AddKey(animationLength, keyframe.value, curveType);
                     }
                     else
                     {
@@ -187,7 +187,9 @@ namespace VamTimeline
 
         public void ComputeCurves()
         {
-            AutoComputeControlPoints();
+            if (keys.Any(k => k.curveType == CurveTypeValues.Auto))
+                AutoComputeControlPoints();
+
             for (var key = 0; key < keys.Count; key++)
             {
                 var previous = key >= 1 ? keys[key - 1] : (loop ? keys[keys.Count - 2] : null);
@@ -199,8 +201,32 @@ namespace VamTimeline
                     case CurveTypeValues.Linear:
                         if (previous != null)
                             current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                        else
+                            current.controlPointIn = current.value;
                         if (next != null)
                             current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+                        else
+                            current.controlPointOut = current.value;
+                        break;
+                    case CurveTypeValues.Smooth:
+                        {
+                            if (next != null && previous != null)
+                            {
+                                var avg = (next.value - previous.value) / 3f;
+                                current.controlPointIn = current.value - avg;
+                                current.controlPointOut = current.value + avg;
+                            }
+                            else if (previous == null)
+                            {
+                                current.controlPointIn = current.value;
+                                current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+                            }
+                            else if (previous == null)
+                            {
+                                current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                                current.controlPointOut = current.value;
+                            }
+                        }
                         break;
                     case CurveTypeValues.LinearFlat:
                         if (previous != null)

@@ -156,7 +156,7 @@ namespace VamTimeline
         public void AddEdgeFramesIfMissing(float animationLength)
         {
             var before = value.length;
-            value.AddEdgeFramesIfMissing(animationLength);
+            value.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Smooth);
             if (value.length != before) dirty = true;
         }
 

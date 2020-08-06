@@ -67,7 +67,8 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                 {
-                    var key = curve.AddKey(newAnimationLength, curve.Evaluate(newAnimationLength), CurveTypeValues.Smooth);
+                    var lastCurveType = curve.GetLastFrame()?.curveType ?? CurveTypeValues.Auto;
+                    var key = curve.AddKey(newAnimationLength, curve.Evaluate(newAnimationLength), lastCurveType);
                 }
                 target.dirty = true;
                 var keyframesToDelete = target.GetAllKeyframesTime().Where(t => t > newAnimationLength);

@@ -87,7 +87,7 @@ namespace VamTimeline.Tests.Unit
             curve.SetKeyframe(3, 4, CurveTypeValues.Linear);
             if (!context.Assert(curve.keys.Select(k => k.time), new[] { 1f, 2f, 3f }, "Expected broken curve")) yield break;
 
-            curve.AddEdgeFramesIfMissing(5f);
+            curve.AddEdgeFramesIfMissing(5f, CurveTypeValues.Linear);
             if (!context.Assert(curve.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 3f, 5f }, "Expected repaired curve")) yield break;
         }
     }
