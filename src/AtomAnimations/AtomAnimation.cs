@@ -703,7 +703,7 @@ namespace VamTimeline
                 var currentParent = currentTarget.GetParent();
                 if (sourceParent == currentParent)
                 {
-                    currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(clipTime), false);
+                    currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(sourceTime), false);
                 }
                 else
                 {

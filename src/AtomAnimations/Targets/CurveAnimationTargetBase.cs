@@ -22,7 +22,7 @@ namespace VamTimeline
                 SuperController.LogError($"Target {name} has {curve.length} frames");
                 return;
             }
-            if (curve.GetKeyframe(0).time != 0)
+            if (curve.GetFirstFrame().time != 0)
             {
                 SuperController.LogError($"Target {name} has no start frame. Frames: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}");
                 return;
@@ -38,7 +38,6 @@ namespace VamTimeline
             if (curve.duration != animationLength)
             {
                 SuperController.LogError($"Target {name} ends with frame {curve.duration} instead of expected {animationLength}. Auto-repairing last frame.");
-                var lastTime = curve.duration;
                 foreach (var c in GetCurves())
                 {
                     var keyframe = c.GetLastFrame();
