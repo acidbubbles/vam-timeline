@@ -171,7 +171,7 @@ namespace VamTimeline
                 ChangeLengthModeStretch,
                 ChangeLengthModeLoop
              }, ChangeLengthModeCropExtendEnd, "Change Length Mode");
-            var lengthModeUI = prefabFactory.CreateScrollablePopup(_lengthModeJSON);
+            var lengthModeUI = prefabFactory.CreatePopup(_lengthModeJSON, false);
             lengthModeUI.popupPanelHeight = 350f;
 
             _lengthJSON = new JSONStorableFloat(
@@ -223,7 +223,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            var linkedAnimationPatternUI = prefabFactory.CreateScrollablePopup(_linkedAnimationPatternJSON);
+            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true);
             linkedAnimationPatternUI.popupPanelHeight = 240f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
         }
@@ -231,7 +231,7 @@ namespace VamTimeline
         private void InitSequenceUI()
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
-            var nextAnimationUI = prefabFactory.CreateScrollablePopup(_nextAnimationJSON);
+            var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true);
             nextAnimationUI.popupPanelHeight = 360f;
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)

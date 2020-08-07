@@ -7,6 +7,8 @@
     <RootNamespace>VamTimeline</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>6</LangVersion>
+
+    <DefineConstants>VAM_1_20</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Platform)' == 'Unity' ">

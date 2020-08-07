@@ -59,7 +59,7 @@ namespace VamTimeline
                 {
                     isStorable = false
                 };
-            var importRecordedOptionsUI = prefabFactory.CreateScrollablePopup(_importRecordedOptionsJSON);
+            var importRecordedOptionsUI = prefabFactory.CreatePopup(_importRecordedOptionsJSON, false);
 
             _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", _lastResizeAnimation, (bool val) => _lastResizeAnimation = val);
             var resizeAnimationUI = prefabFactory.CreateToggle(_resizeAnimationJSON);

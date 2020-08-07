@@ -67,7 +67,7 @@ namespace VamTimeline
         private void InitOffsetUI()
         {
             _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { _changePivotMode, _offsetMode }, _lastOffsetMode ?? _changePivotMode, "Offset mode", (string val) => _lastOffsetMode = val);
-            var offsetModeUI = prefabFactory.CreateScrollablePopup(_offsetModeJSON);
+            var offsetModeUI = prefabFactory.CreatePopup(_offsetModeJSON, false);
             offsetModeUI.popupPanelHeight = 160f;
 
             _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
@@ -127,7 +127,7 @@ namespace VamTimeline
         private void InitChangeCurveUI()
         {
             _changeCurveJSON = new JSONStorableStringChooser("Change curve", CurveTypeValues.DisplayCurveTypes, "", "Change curve", ChangeCurve);
-            var curveTypeUI = prefabFactory.CreateScrollablePopup(_changeCurveJSON);
+            var curveTypeUI = prefabFactory.CreatePopup(_changeCurveJSON, false);
             curveTypeUI.popupPanelHeight = 280f;
         }
 

@@ -167,10 +167,17 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicPopup CreateScrollablePopup(JSONStorableStringChooser jsc)
+        public UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool filterable)
         {
             RegisterStorable(jsc);
-            var ui = Instantiate(plugin.manager.configurableScrollablePopupPrefab).GetComponent<UIDynamicPopup>();
+            Transform prefab;
+            #if(VAM_1_20)
+            if(filterable)
+                prefab = plugin.manager.configurableFilterablePopupPrefab;
+            else
+            #endif
+                prefab = plugin.manager.configurableScrollablePopupPrefab;
+            var ui = Instantiate(prefab).GetComponent<UIDynamicPopup>();
             ui.gameObject.transform.SetParent(transform, false);
             ui.label = jsc.name;
             jsc.popup = ui.popup;
