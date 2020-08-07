@@ -48,12 +48,12 @@ namespace VamTimeline
             }
 
             _atomJSON = new JSONStorableStringChooser("Atom", SuperController.singleton.GetAtomUIDs(), "", "Atom", (string val) => SyncAtom());
-            var atomUI = prefabFactory.CreateScrollablePopup(_atomJSON);
+            var atomUI = prefabFactory.CreatePopup(_atomJSON, true);
             atomUI.popupPanelHeight = 700f;
             _atomJSON.valNoCallback = _target.parentAtomId ?? "";
 
             _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string>(), "", "Rigidbody", (string val) => SyncRigidbody());
-            var rigidbodyUI = prefabFactory.CreateScrollablePopup(_rigidbodyJSON);
+            var rigidbodyUI = prefabFactory.CreatePopup(_rigidbodyJSON, true);
             atomUI.popupPanelHeight = 700f;
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "";
         }
