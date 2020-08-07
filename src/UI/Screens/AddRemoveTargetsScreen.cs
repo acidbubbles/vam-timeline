@@ -185,6 +185,7 @@ namespace VamTimeline
             RefreshStorablesList();
             RefreshStorableFloatsList();
 
+            #if(!VAM_1_20)
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
@@ -202,6 +203,7 @@ namespace VamTimeline
                         selector.SetActiveTab("Female Morphs");
                 });
             }
+            #endif
         }
 
         private void RefreshStorablesList()
