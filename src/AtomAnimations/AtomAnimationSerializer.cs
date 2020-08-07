@@ -176,14 +176,18 @@ namespace VamTimeline
                     if (time == last) continue;
                     last = time;
                     var value = DeserializeFloat(keyframeJSON["v"]);
-                    curve.AddKey(new BezierKeyframe
+                    var keyframe = new BezierKeyframe
                     {
                         time = time,
                         value = value,
                         curveType = int.Parse(keyframeJSON["c"]),
                         controlPointIn = DeserializeFloat(keyframeJSON["i"]),
                         controlPointOut = DeserializeFloat(keyframeJSON["o"])
-                    });
+                    };
+                    // Backward compatibility, tangents are not supported since bezier conversion.
+                    if(keyframe.curveType == CurveTypeValues.LeaveAsIs && keyframeJSON.HasKey("ti"))
+                        keyframe.curveType = CurveTypeValues.Smooth;
+                    curve.AddKey(keyframe);
                 }
                 catch (IndexOutOfRangeException exc)
                 {
@@ -198,25 +202,29 @@ namespace VamTimeline
             if (strFrames.Count == 0) return;
 
             var last = -1f;
-            foreach (var keyframe in strFrames)
+            foreach (var strFrame in strFrames)
             {
-                var parts = keyframe.Split(',');
+                var parts = strFrame.Split(',');
                 try
                 {
                     var time = float.Parse(parts[0], CultureInfo.InvariantCulture).Snap();
                     if (time == last) continue;
                     last = time;
                     var value = DeserializeFloat(parts[1]);
-                    curve.AddKey(new BezierKeyframe
+                    var keyframe = new BezierKeyframe
                     {
                         time = time,
                         value = value,
                         curveType = int.Parse(parts[2])
-                    });
+                    };
+                    // Backward compatibility, tangents are not supported since bezier conversion.
+                    if(keyframe.curveType == CurveTypeValues.LeaveAsIs)
+                        keyframe.curveType = CurveTypeValues.Smooth;
+                    curve.AddKey(keyframe);
                 }
                 catch (IndexOutOfRangeException exc)
                 {
-                    throw new InvalidOperationException($"Failed to read curve: {keyframe}", exc);
+                    throw new InvalidOperationException($"Failed to read curve: {strFrame}", exc);
                 }
             }
         }
