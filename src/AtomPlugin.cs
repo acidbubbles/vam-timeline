@@ -301,7 +301,7 @@ namespace VamTimeline
             copyJSON = new JSONStorableAction("Copy", () => Copy());
             pasteJSON = new JSONStorableAction("Paste", () => Paste());
 
-            speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => UpdateAnimationSpeed(v), 0f, 5f, false)
+            speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => animation.speed = v, -1f, 5f, false)
             {
                 isStorable = false,
                 isRestorable = false
@@ -560,7 +560,7 @@ namespace VamTimeline
             var speedJSON = new JSONStorableFloat($"Speed {animationName}", 1f, (float val) =>
             {
                 clip.speed = val;
-            }, 0.1f, 10f)
+            }, -1f, 5f, false)
             {
                 valNoCallback = clip.speed,
                 isStorable = false,
@@ -748,12 +748,6 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Paste)}: {exc}");
             }
-        }
-
-        private void UpdateAnimationSpeed(float v)
-        {
-            if (v < 0) speedJSON.valNoCallback = v = 0f;
-            animation.speed = v;
         }
 
         #endregion

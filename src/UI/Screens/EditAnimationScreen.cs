@@ -82,14 +82,14 @@ namespace VamTimeline
 
         private void InitPlaybackUI()
         {
-            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, (float val) => animation.speed = val, 0f, 10f, false)
+            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, (float val) => animation.speed = val, -1f, 5f, false)
             {
                 valNoCallback = animation.speed
             };
             var animationSpeedUI = prefabFactory.CreateSlider(_animationSpeedJSON);
             animationSpeedUI.valueFormat = "F3";
 
-            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => current.speed = val, 0f, 10f, false)
+            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => current.speed = val, -1f, 5f, false)
             {
                 valNoCallback = current.speed
             };
