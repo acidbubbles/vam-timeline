@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -31,7 +32,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
-            prefabFactory.CreateSpacer();
+            CreateHeader($"Parent: {_target.name}", 1);
 
             InitParentUI();
         }
@@ -41,12 +42,15 @@ namespace VamTimeline
             _atomJSON = new JSONStorableStringChooser("Atom", SuperController.singleton.GetAtomUIDs(), "", "Atom", (string val) => SyncAtom());
             var atomUI = prefabFactory.CreatePopup(_atomJSON, true);
             atomUI.popupPanelHeight = 700f;
-            _atomJSON.valNoCallback = _target.parentAtomId ?? "";
+            _atomJSON.valNoCallback = _target.parentAtomId ?? plugin.containingAtom.uid;
 
             _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string>(), "", "Rigidbody", (string val) => SyncRigidbody());
             var rigidbodyUI = prefabFactory.CreatePopup(_rigidbodyJSON, true);
             atomUI.popupPanelHeight = 700f;
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "";
+
+            if (string.IsNullOrEmpty(_rigidbodyJSON.val) && !string.IsNullOrEmpty(_atomJSON.val))
+                SyncAtom();
         }
 
         private void SyncAtom()
@@ -58,7 +62,12 @@ namespace VamTimeline
                 return;
             }
             var atom = SuperController.singleton.GetAtomByUid(_atomJSON.val);
-            _rigidbodyJSON.choices = atom.linkableRigidbodies.Select(r => r.name).ToList();
+            var selfRigidbodyControl = _target.controller.GetComponent<Rigidbody>().name;
+            var selfRigidbodyTarget = selfRigidbodyControl.EndsWith("Control") ? selfRigidbodyControl.Substring(0, selfRigidbodyControl.Length - "Control".Length) : null;
+            _rigidbodyJSON.choices = atom.linkableRigidbodies
+                .Select(rb => rb.name)
+                .Where(n => n != selfRigidbodyControl && n != selfRigidbodyTarget)
+                .ToList();
             _rigidbodyJSON.valNoCallback = "";
         }
 
