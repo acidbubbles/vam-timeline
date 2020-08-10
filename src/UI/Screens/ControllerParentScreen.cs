@@ -28,7 +28,6 @@ namespace VamTimeline
 
             if(_target == null)
             {
-                onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
                 return;
             }
 
