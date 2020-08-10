@@ -40,15 +40,15 @@ namespace VamTimeline
 
         private void InitParentUI()
         {
-            _atomJSON = new JSONStorableStringChooser("Atom", SuperController.singleton.GetAtomUIDs(), "", "Atom", (string val) => SyncAtom());
+            _atomJSON = new JSONStorableStringChooser("Atom", new[] { "None" }.Concat(SuperController.singleton.GetAtomUIDs()).ToList(), "None", "Atom", (string val) => SyncAtom());
             var atomUI = prefabFactory.CreatePopup(_atomJSON, true);
             atomUI.popupPanelHeight = 700f;
-            _atomJSON.valNoCallback = _target.parentAtomId ?? plugin.containingAtom.uid;
+            _atomJSON.valNoCallback = _target.parentAtomId ?? "None";
 
-            _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string>(), "", "Rigidbody", (string val) => SyncRigidbody());
+            _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string> { "None" }, "None", "Rigidbody", (string val) => SyncRigidbody());
             var rigidbodyUI = prefabFactory.CreatePopup(_rigidbodyJSON, true);
             atomUI.popupPanelHeight = 700f;
-            _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "";
+            _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
 
             if (string.IsNullOrEmpty(_rigidbodyJSON.val) && !string.IsNullOrEmpty(_atomJSON.val))
                 SyncAtom();
@@ -56,20 +56,22 @@ namespace VamTimeline
 
         private void SyncAtom()
         {
-            if (string.IsNullOrEmpty(_atomJSON.val))
+            if (string.IsNullOrEmpty(_atomJSON.val) || _atomJSON.val == "None")
             {
                 _target.SetParent(null, null);
-                _rigidbodyJSON.valNoCallback = "";
+                _rigidbodyJSON.valNoCallback = "None";
                 return;
             }
             var atom = SuperController.singleton.GetAtomByUid(_atomJSON.val);
             var selfRigidbodyControl = _target.controller.GetComponent<Rigidbody>().name;
             var selfRigidbodyTarget = selfRigidbodyControl.EndsWith("Control") ? selfRigidbodyControl.Substring(0, selfRigidbodyControl.Length - "Control".Length) : null;
-            _rigidbodyJSON.choices = atom.linkableRigidbodies
+            var choices = atom.linkableRigidbodies
                 .Select(rb => rb.name)
                 .Where(n => n != selfRigidbodyControl && n != selfRigidbodyTarget)
                 .ToList();
-            _rigidbodyJSON.valNoCallback = "";
+            choices.Insert(0, "None");
+            _rigidbodyJSON.choices = choices;
+            _rigidbodyJSON.valNoCallback = "None";
         }
 
         private void SyncRigidbody()
@@ -79,7 +81,7 @@ namespace VamTimeline
             var previousParentRotation = previousParent.transform.rotation;
             var snapshot = operations.Offset().Start(0f, new[] { _target });
 
-            if (string.IsNullOrEmpty(_rigidbodyJSON.val))
+            if (string.IsNullOrEmpty(_rigidbodyJSON.val) || _rigidbodyJSON.val == "None")
                 _target.SetParent(null, null);
             else
                 _target.SetParent(_atomJSON.val, _rigidbodyJSON.val);
