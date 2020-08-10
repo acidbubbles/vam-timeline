@@ -32,7 +32,8 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
-            CreateHeader($"Parent: {_target.name}", 1);
+            CreateHeader($"Parenting", 1);
+            CreateHeader(_target.name, 2);
 
             InitParentUI();
         }
@@ -73,11 +74,29 @@ namespace VamTimeline
 
         private void SyncRigidbody()
         {
-            // TODO: Recalculate animation
+            var previousParent = _target.GetParent();
+            var previousParentPosition = previousParent.transform.position;
+            var previousParentRotation = previousParent.transform.rotation;
+            var snapshot = operations.Offset().Start(0f, new[] { _target });
+
             if (string.IsNullOrEmpty(_rigidbodyJSON.val))
                 _target.SetParent(null, null);
             else
                 _target.SetParent(_atomJSON.val, _rigidbodyJSON.val);
+
+            var newParent = _target.GetParent();
+            var newParentPosition = newParent.transform.position;
+            var newParentRotation = newParent.transform.rotation;
+
+            var positionOffset = newParentPosition - previousParentPosition;
+            var rotationOffset = Quaternion.Inverse(previousParentRotation) * newParentRotation;
+
+            var localPosition = _target.GetKeyframePosition(0);
+            var localRotation = _target.GetKeyframeRotation(0);
+
+            _target.SetKeyframe(0f, localPosition - positionOffset, Quaternion.Inverse(rotationOffset) * localRotation);
+
+            operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
