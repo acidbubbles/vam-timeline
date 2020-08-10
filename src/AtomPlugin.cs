@@ -112,10 +112,10 @@ namespace VamTimeline
             ui.popupParent = UITransform;
             ui.Bind(this);
             if (animation != null) ui.Bind(animation);
-            ui.screensManager.onScreenChanged.AddListener(screen =>
+            ui.screensManager.onScreenChanged.AddListener(args =>
             {
-                if (controllerInjectedUI != null) controllerInjectedUI.screensManager.ChangeScreen(screen);
-                peers.SendScreen(screen);
+                if (controllerInjectedUI != null) controllerInjectedUI.screensManager.ChangeScreen(args.screenName, args.screenArg);
+                peers.SendScreen(args.screenName, args.screenArg);
             });
         }
 
@@ -750,6 +750,18 @@ namespace VamTimeline
             }
         }
 
+        public void ChangeScreen(string screenName, object screenArg)
+        {
+            if (ui == null) return;
+
+            ui.screensManager.ChangeScreen(screenName, screenArg);
+            // If the selection cannot be dispatched, change the controller injected ui up front
+            if (!ui.isActiveAndEnabled && controllerInjectedUI != null)
+            {
+                controllerInjectedUI.screensManager.ChangeScreen(screenName, screenArg);
+            }
+        }
+
         #endregion
 
         #region Controller integration
@@ -787,10 +799,10 @@ namespace VamTimeline
                 controllerInjectedUI = Editor.Configure(container);
                 controllerInjectedUI.popupParent = controllerInjectedUI.transform.parent;
                 controllerInjectedUI.Bind(this, ui.screensManager.GetDefaultScreen());
-                controllerInjectedUI.screensManager.onScreenChanged.AddListener(screen =>
+                controllerInjectedUI.screensManager.onScreenChanged.AddListener(args =>
                 {
-                    ui.screensManager.ChangeScreen(screen);
-                    peers.SendScreen(screen);
+                    ui.screensManager.ChangeScreen(args.screenName, args.screenArg);
+                    peers.SendScreen(args.screenName, args.screenArg);
                 });
             }
             if (controllerInjectedUI.animation != animation)

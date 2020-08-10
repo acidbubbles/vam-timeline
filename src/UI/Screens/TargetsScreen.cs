@@ -34,9 +34,9 @@ namespace VamTimeline
         {
 
         }
-        public override void Init(IAtomPlugin plugin)
+        public override void Init(IAtomPlugin plugin, object arg)
         {
-            base.Init(plugin);
+            base.Init(plugin, arg);
 
             _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, (bool val) => { _lastFilterVal = val; OnSelectionChanged(); });
 

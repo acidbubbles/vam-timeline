@@ -22,9 +22,9 @@ namespace VamTimeline
 
         #region Init
 
-        public override void Init(IAtomPlugin plugin)
+        public override void Init(IAtomPlugin plugin, object arg)
         {
-            base.Init(plugin);
+            base.Init(plugin, arg);
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", AnimationsScreen.ScreenName);
 

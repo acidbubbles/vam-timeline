@@ -5,8 +5,6 @@ namespace VamTimeline
 {
     public class ControllerParentScreen : ScreenBase
     {
-        public static FreeControllerAnimationTarget target;
-
         public const string ScreenName = "Controller Parent";
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _rigidbodyJSON;
@@ -19,15 +17,15 @@ namespace VamTimeline
         {
         }
 
-        public override void Init(IAtomPlugin plugin)
+        public override void Init(IAtomPlugin plugin, object arg)
         {
-            _target = target;
-            target = null;
+            base.Init(plugin, arg);
 
-            base.Init(plugin);
+            _target = current.targetControllers.FirstOrDefault(t => t.name == (string)arg);
 
-            if(_target == null)
+            if (_target == null)
             {
+                prefabFactory.CreateTextField(new JSONStorableString("", "Please leave and re-enter this screen."));
                 return;
             }
 
@@ -40,12 +38,6 @@ namespace VamTimeline
 
         private void InitParentUI()
         {
-            if (!current.targetControllers.Contains(_target))
-            {
-                SuperController.LogError($"Target {_target?.name ?? "(null)"} is not in the clip {current.animationName}");
-                return;
-            }
-
             _atomJSON = new JSONStorableStringChooser("Atom", SuperController.singleton.GetAtomUIDs(), "", "Atom", (string val) => SyncAtom());
             var atomUI = prefabFactory.CreatePopup(_atomJSON, true);
             atomUI.popupPanelHeight = 700f;
@@ -82,7 +74,7 @@ namespace VamTimeline
         protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            ChangeScreen(TargetsScreen.ScreenName);
         }
 
         public override void OnDestroy()

@@ -112,12 +112,12 @@ namespace VamTimeline
             InitToggleRightPanelButton(_expandButton);
             tabs.onTabSelected.AddListener(screenName =>
             {
-                screensManager.ChangeScreen(screenName);
+                screensManager.ChangeScreen(screenName, null);
                 Expand(true);
             });
 
             screensManager = InitScreensManager(rightPanel);
-            screensManager.onScreenChanged.AddListener(screenName => tabs.Select(screenName));
+            screensManager.onScreenChanged.AddListener(args => tabs.Select(args.screenName));
             screensManager.Bind(plugin, defaultScreen);
         }
 

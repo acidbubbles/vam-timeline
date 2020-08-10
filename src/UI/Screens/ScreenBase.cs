@@ -6,7 +6,8 @@ namespace VamTimeline
 {
     public abstract class ScreenBase : MonoBehaviour
     {
-        public class ScreenChangeRequestedEvent : UnityEvent<string> { }
+        public class ScreenChangeRequestEventArgs { public string screenName; public object screenArg; }
+        public class ScreenChangeRequestedEvent : UnityEvent<ScreenChangeRequestEventArgs> { }
 
         protected static readonly Color navButtonColor = new Color(0.8f, 0.7f, 0.8f);
         private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
@@ -27,7 +28,7 @@ namespace VamTimeline
         {
         }
 
-        public virtual void Init(IAtomPlugin plugin)
+        public virtual void Init(IAtomPlugin plugin, object arg)
         {
             this.plugin = plugin;
             prefabFactory = gameObject.AddComponent<VamPrefabFactory>();
@@ -69,9 +70,14 @@ namespace VamTimeline
         protected UIDynamicButton CreateChangeScreenButton(string label, string screenName)
         {
             var ui = prefabFactory.CreateButton(label);
-            ui.button.onClick.AddListener(() => onScreenChangeRequested.Invoke(screenName));
+            ui.button.onClick.AddListener(() => ChangeScreen(screenName));
             ui.buttonColor = navButtonColor;
             return ui;
+        }
+
+        public void ChangeScreen(string screenName, object screenArg = null)
+        {
+            onScreenChangeRequested.Invoke(new ScreenChangeRequestEventArgs { screenName = screenName, screenArg = screenArg });
         }
 
         public virtual void OnDestroy()

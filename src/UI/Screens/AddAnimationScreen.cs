@@ -17,9 +17,9 @@ namespace VamTimeline
 
         #region Init
 
-        public override void Init(IAtomPlugin plugin)
+        public override void Init(IAtomPlugin plugin, object arg)
         {
-            base.Init(plugin);
+            base.Init(plugin, arg);
 
             // Right side
 
@@ -83,7 +83,7 @@ namespace VamTimeline
             var clip = operations.AddAnimation().AddAnimationAsCopy();
             if(clip == null) return;
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
+            ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void AddAnimationFromCurrentFrame()
@@ -91,7 +91,7 @@ namespace VamTimeline
             var clip = operations.AddAnimation().AddAnimationFromCurrentFrame();
             if(clip == null) return;
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
+            ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void AddTransitionAnimation()
@@ -99,7 +99,7 @@ namespace VamTimeline
             var clip = operations.AddAnimation().AddTransitionAnimation();
             if(clip == null) return;
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
+            ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void AddLayer()
@@ -107,7 +107,7 @@ namespace VamTimeline
             var clip = operations.layers().Add();
 
             animation.SelectAnimation(clip.animationName);
-            onScreenChangeRequested.Invoke(EditAnimationScreen.ScreenName);
+            ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void SplitLayer()

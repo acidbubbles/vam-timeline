@@ -10,7 +10,8 @@ namespace VamTimeline
 {
     public class ScreensManager : MonoBehaviour
     {
-        public class ScreenChangedEvent : UnityEvent<string> { }
+        public class ScreenChangedEventArgs { public string screenName; public object screenArg; }
+        public class ScreenChangedEvent : UnityEvent<ScreenChangedEventArgs> { }
 
         public static ScreensManager Configure(GameObject go)
         {
@@ -26,22 +27,35 @@ namespace VamTimeline
         private bool _uiRefreshInProgress;
         private bool _uiRefreshInvalidated;
         private string _currentScreen;
+        private object _currentScreenArg;
         private Coroutine _uiRefreshCoroutine;
 
         public void Bind(IAtomPlugin plugin, string defaultScreen)
         {
             _plugin = plugin;
             _currentScreen = defaultScreen;
+            _currentScreenArg = null;
             if (enabled && plugin.animation != null)
-                ChangeScreen(GetDefaultScreen());
+                ChangeScreen(GetDefaultScreen(), null);
         }
 
-        public void ChangeScreen(string screen)
+        public void ChangeScreen(ScreenBase.ScreenChangeRequestEventArgs args)
+        {
+            ChangeScreen(args.screenName, args.screenArg);
+        }
+
+        public void ChangeScreen(string screen, object screenArg)
         {
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit)
+            {
                 _currentScreen = LockedScreen.ScreenName;
+                _currentScreenArg = null;
+            }
             else
+            {
                 _currentScreen = screen;
+                _currentScreenArg = screenArg;
+            }
             if (!isActiveAndEnabled) return;
             RefreshCurrentUI(_currentScreen);
         }
@@ -174,8 +188,8 @@ namespace VamTimeline
                 _current.transform.SetParent(transform, false);
                 _current.popupParent = popupParent;
                 _current.onScreenChangeRequested.AddListener(ChangeScreen);
-                _current.Init(_plugin);
-                onScreenChanged.Invoke(_current.screenId);
+                _current.Init(_plugin, _currentScreenArg);
+                onScreenChanged.Invoke(new ScreenChangedEventArgs { screenName = _current.screenId, screenArg = _currentScreenArg });
             }
             catch (Exception exc)
             {
@@ -218,7 +232,8 @@ namespace VamTimeline
         public void OnEnable()
         {
             if (_plugin == null) return;
-            ChangeScreen(GetDefaultScreen());
+            // TODO: In both instances in this file, use "last screen" with it's arg if there was one
+            ChangeScreen(GetDefaultScreen(), null);
         }
 
         public void OnDisable()

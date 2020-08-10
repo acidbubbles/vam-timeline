@@ -126,9 +126,7 @@ namespace VamTimeline
 
             CreateExpandButton(group.transform, "Parent", () =>
             {
-                // TODO: Instead make an argument to ChangeScreen
-                ControllerParentScreen.target = target;
-                plugin.ui.screensManager.ChangeScreen(ControllerParentScreen.ScreenName);
+                plugin.ChangeScreen(ControllerParentScreen.ScreenName, target.name);
             });
         }
 

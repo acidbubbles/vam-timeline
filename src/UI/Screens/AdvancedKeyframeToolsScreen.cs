@@ -20,9 +20,9 @@ namespace VamTimeline
         {
         }
 
-        public override void Init(IAtomPlugin plugin)
+        public override void Init(IAtomPlugin plugin, object arg)
         {
-            base.Init(plugin);
+            base.Init(plugin, arg);
 
             // Right side
 

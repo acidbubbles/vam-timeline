@@ -40,9 +40,9 @@ namespace VamTimeline
         {
         }
 
-        public override void Init(IAtomPlugin plugin)
+        public override void Init(IAtomPlugin plugin, object arg)
         {
-            base.Init(plugin);
+            base.Init(plugin, arg);
 
             // Right side
 
@@ -701,7 +701,7 @@ namespace VamTimeline
         {
             var sctrl = SuperController.singleton;
             sctrl.helpText = "Press Select or Spacebar to start float params recording";
-            onScreenChangeRequested.Invoke(TargetsScreen.ScreenName);
+            ChangeScreen(TargetsScreen.ScreenName);
             yield return 0; // Avoid select from same frame to interact
             while (!AreAnyStartRecordKeysDown())
                 yield return 0;
@@ -712,7 +712,7 @@ namespace VamTimeline
             animation.StopAll();
             _recordingFloatParamsCoroutine = null;
             _simplifyFloatParamsOnLoad = true;
-            onScreenChangeRequested.Invoke(ScreenName);
+            ChangeScreen(ScreenName);
         }
 
         private bool AreAnyStartRecordKeysDown()

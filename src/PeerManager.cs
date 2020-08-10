@@ -228,26 +228,19 @@ namespace VamTimeline
             animation.SelectAnimation(clip);
         }
 
-        public void SendScreen(string screen)
+        public void SendScreen(string screenName, object screenArg)
         {
             if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendScreen),
-                 screen,
+                 screenName,
+                 screenArg,
             });
         }
 
         private void ReceiveScreen(object[] e)
         {
-            if (_plugin.ui != null)
-            {
-                _plugin.ui.screensManager.ChangeScreen((string)e[1]);
-                // If the selection cannot be dispatched, change the controller injected ui up front
-                if (!_plugin.ui.isActiveAndEnabled && _plugin.controllerInjectedUI != null)
-                {
-                    _plugin.controllerInjectedUI.screensManager.ChangeScreen((string)e[1]);
-                }
-            }
+            _plugin.ChangeScreen((string)e[1], e[2]);
         }
 
         private void SendTimelineEvent(object[] e)
