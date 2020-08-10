@@ -75,6 +75,7 @@
     <Compile Include="src\AtomAnimations\Operations\ImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\LayersOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\OffsetOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
     <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />

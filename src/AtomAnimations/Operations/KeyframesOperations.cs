@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using UnityEngine;
-
-namespace VamTimeline
+﻿namespace VamTimeline
 {
     public class KeyframesOperations
     {

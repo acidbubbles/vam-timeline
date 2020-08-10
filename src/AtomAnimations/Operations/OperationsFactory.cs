@@ -44,5 +44,10 @@ namespace VamTimeline
         {
             return new AddAnimationOperations(_animation, _clip);
         }
+
+        public OffsetOperations Offset()
+        {
+            return new OffsetOperations(_animation, _clip);
+        }
     }
 }

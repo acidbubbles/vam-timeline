@@ -29,8 +29,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _changeCurveJSON;
         private JSONStorableStringChooser _offsetModeJSON;
         private UIDynamicButton _offsetControllerUI;
-        private const string _changePivotMode = "Change pivot";
-        private const string _offsetMode = "Offset";
 
         public BulkScreen()
             : base()
@@ -66,7 +64,7 @@ namespace VamTimeline
 
         private void InitOffsetUI()
         {
-            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { _changePivotMode, _offsetMode }, _lastOffsetMode ?? _changePivotMode, "Offset mode", (string val) => _lastOffsetMode = val);
+            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode }, _lastOffsetMode ?? OffsetOperations.ChangePivotMode, "Offset mode", (string val) => _lastOffsetMode = val);
             var offsetModeUI = prefabFactory.CreatePopup(_offsetModeJSON, false);
             offsetModeUI.popupPanelHeight = 160f;
 
@@ -232,18 +230,10 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Cannot offset, current time is outside of the bounds of the selection");
                 return;
             }
-            _offsetSnapshot = current.Copy(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Cast<IAtomAnimationTarget>());
-            if (_offsetSnapshot.controllers.Count == 0)
-            {
-                _offsetSnapshot = null;
-                SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {current.clipTime}.");
-                return;
-            }
-            if (_offsetSnapshot.controllers.Select(c => current.targetControllers.First(t => t.controller == c.controller)).Any(t => !t.EnsureParentAvailable(false)))
-            {
-                _offsetSnapshot = null;
-                return;
-            }
+
+            _offsetSnapshot = operations.Offset().Start(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>());
+
+            if (_offsetSnapshot == null) return;
 
             _offsetControllerUI.label = _offsetControllerUIOfsettingLabel;
             _offsetting = true;
@@ -260,53 +250,7 @@ namespace VamTimeline
                 return;
             }
 
-            foreach (var snap in _offsetSnapshot.controllers)
-            {
-                var target = current.targetControllers.First(t => t.controller == snap.controller);
-                if (!target.EnsureParentAvailable(false)) continue;
-                var rb = target.GetLinkedRigidbody();
-
-                Vector3 pivot;
-                Vector3 positionDelta;
-                Quaternion rotationDelta;
-
-                {
-                    var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
-                    var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
-
-                    var positionAfter = rb == null ? snap.controller.control.localPosition : rb.transform.InverseTransformPoint(snap.controller.transform.position);
-                    var rotationAfter = rb == null ? snap.controller.control.localRotation : Quaternion.Inverse(rb.rotation) * snap.controller.transform.rotation;
-
-                    pivot = positionBefore;
-                    positionDelta = positionAfter - positionBefore;
-                    rotationDelta = Quaternion.Inverse(rotationBefore) * rotationAfter;
-                }
-
-                foreach (var key in target.GetAllKeyframesKeys())
-                {
-                    var time = target.GetKeyframeTime(key);
-                    if (time < _startJSON.valNoCallback || time > _endJSON.valNoCallback) continue;
-                    // Do not double-apply
-                    if (time == _offsetSnapshot.time) continue;
-
-                    var positionBefore = target.GetKeyframePosition(key);
-                    var rotationBefore = target.GetKeyframeRotation(key);
-
-                    if (_offsetModeJSON.val == _changePivotMode)
-                    {
-                        var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
-                        target.SetKeyframeByKey(key, positionAfter, rotationDelta * rotationBefore);
-                    }
-                    else if (_offsetModeJSON.val == _offsetMode)
-                    {
-                        target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationDelta * rotationBefore);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException($"Offset mode '{_offsetModeJSON.val}' is not implemented");
-                    }
-                }
-            }
+            operations.Offset().Apply(_offsetSnapshot, _startJSON.val, _endJSON.val, _offsetModeJSON.val);
         }
 
         #endregion
