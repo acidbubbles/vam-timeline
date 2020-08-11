@@ -196,7 +196,10 @@ namespace VamTimeline
         private void OnClipsListChanged()
         {
             if (_ignoreAnimationChange) return;
-            StartCoroutine(SyncAnimationsList());
+            if (isActiveAndEnabled)
+                StartCoroutine(SyncAnimationsList());
+            else
+                SyncAnimationsListNow();
         }
 
         private IEnumerator SyncAnimationsList()

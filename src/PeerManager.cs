@@ -214,15 +214,30 @@ namespace VamTimeline
         private void ReceiveSyncAnimation(object[] e)
         {
             var clip = GetClip(e);
-            if (clip == null) clip = animation.CreateClip((string)e[2], (string)e[1]);
+            if (clip == null)
+            {
+                string animationName = (string)e[1];
+                string animationLayer = (string)e[2];
+                if (animation.clips.Any(c => c.animationLayer == animationLayer))
+                    clip = new OperationsFactory(animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
+                else
+                    clip = animation.CreateClip(animationLayer, animationName);
+            }
             new OperationsFactory(animation, clip).Resize().CropOrExtendEnd((float)e[3]);
-            clip.nextAnimationName = (string)e[4];
-            clip.nextAnimationTime = (float)e[5];
+            var nextAnimationName = (string)e[4];
+            if (!string.IsNullOrEmpty(nextAnimationName) && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == nextAnimationName))
+            {
+                clip.nextAnimationName = nextAnimationName;
+                clip.nextAnimationTime = (float)e[5];
+                clip.autoTransitionNext = (bool)e[10];
+            }
+            if (animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.nextAnimationName == clip.animationName))
+            {
+                clip.autoTransitionPrevious = (bool)e[9];
+            }
             clip.blendDuration = (float)e[6];
             clip.autoPlay = (bool)e[7];
             clip.loop = (bool)e[8];
-            clip.autoTransitionPrevious = (bool)e[9];
-            clip.autoTransitionNext = (bool)e[10];
             clip.speed = (float)e[11];
             clip.weight = (float)e[12];
             animation.SelectAnimation(clip);
