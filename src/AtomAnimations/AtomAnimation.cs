@@ -132,7 +132,10 @@ namespace VamTimeline
             if (clips.Count == 0)
                 AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
             current = GetDefaultClip();
-            RebuildAnimationNow();
+            if (clips.Any(c => c.IsDirty()))
+            {
+                RebuildAnimationNow();
+            }
         }
 
         public AtomAnimationClip GetDefaultClip()
@@ -175,6 +178,7 @@ namespace VamTimeline
             clip.onTargetsListChanged.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             onClipsListChanged.Invoke();
+            if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
             return clip;
         }
 
@@ -653,7 +657,7 @@ namespace VamTimeline
             }
             if (sw.ElapsedMilliseconds > 1000)
             {
-                SuperController.LogError($"Timeline.{nameof(RebuildAnimationNow)}: Suspiciously long animation rebuild ({sw.Elapsed})");
+                SuperController.LogError($"Timeline.{nameof(RebuildAnimationNowImpl)}: Suspiciously long animation rebuild ({sw.Elapsed})");
             }
 
             if (_sampleAfterRebuild)

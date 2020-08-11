@@ -187,14 +187,38 @@ namespace VamTimeline
 
         public void ComputeCurves()
         {
+            var keysCount = keys.Count;
+            if (keysCount == 0)
+                return;
+            if (keysCount == 1)
+            {
+                var key = keys[0];
+                key.controlPointIn = key.value;
+                key.controlPointOut = key.value;
+                keys[0] = key;
+                return;
+            }
+            if (keysCount == 2 && !loop)
+            {
+                var first = keys[0];
+                first.controlPointIn = first.value;
+                first.controlPointOut = first.value;
+                keys[0] = first;
+                var last = keys[1];
+                last.controlPointIn = last.value;
+                last.controlPointOut = last.value;
+                keys[1] = last;
+                return;
+            }
+
             if (keys.Any(k => k.curveType == CurveTypeValues.Auto))
                 AutoComputeControlPoints();
 
-            for (var key = 0; key < keys.Count; key++)
+            for (var key = 0; key < keysCount; key++)
             {
-                var previous = key >= 1 ? keys[key - 1] : (loop ? keys[keys.Count - 2] : null);
+                var previous = key >= 1 ? keys[key - 1] : (loop ? keys[keysCount - 2] : null);
                 var current = keys[key];
-                var next = key < keys.Count - 1 ? keys[key + 1] : (loop ? keys[1] : null);
+                var next = key < keysCount - 1 ? keys[key + 1] : (loop ? keys[1] : null);
 
                 switch (current.curveType)
                 {
@@ -253,33 +277,10 @@ namespace VamTimeline
 
         public void AutoComputeControlPoints()
         {
-            var keysCount = keys.Count;
-            if (keysCount == 0)
-                return;
-            if (keysCount == 1)
-            {
-                var key = keys[0];
-                key.controlPointIn = key.value;
-                key.controlPointOut = key.value;
-                keys[0] = key;
-                return;
-            }
-            if (keysCount == 2 && !loop)
-            {
-                var first = keys[0];
-                first.controlPointIn = first.value;
-                first.controlPointOut = first.value;
-                keys[0] = first;
-                var last = keys[1];
-                last.controlPointIn = last.value;
-                last.controlPointOut = last.value;
-                keys[1] = last;
-                return;
-            }
-
             // Adapted from Virt-A-Mate's implementation with permission from MeshedVR
             // https://www.particleincell.com/wp-content/uploads/2012/06/bezier-spline.js
             // https://www.particleincell.com/2012/bezier-splines/
+            var keysCount = keys.Count;
             if (loop) keysCount -= 1;
             var valuesCount = loop ? keysCount + 1 : keysCount - 1;
             if (_computeValues == null || _computeValues.Length < valuesCount + 1) _computeValues = new float[valuesCount + 1];

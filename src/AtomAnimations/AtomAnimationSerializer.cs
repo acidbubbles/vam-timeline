@@ -30,8 +30,6 @@ namespace VamTimeline
                 var clip = DeserializeClip(clipJSON);
                 animation.AddClip(clip);
             }
-            animation.Initialize();
-            animation.RebuildAnimationNow();
         }
 
         public AtomAnimationClip DeserializeClip(JSONClass clipJSON)
@@ -92,15 +90,17 @@ namespace VamTimeline
                         var parentJSON = controllerJSON["Parent"].AsObject;
                         target.SetParent(parentJSON["Atom"], parentJSON["Rigidbody"]);
                     }
-                    DeserializeCurve(target.x, controllerJSON["X"], clip.animationLength, CurveTypeValues.Auto);
-                    DeserializeCurve(target.y, controllerJSON["Y"], clip.animationLength, CurveTypeValues.Auto);
-                    DeserializeCurve(target.z, controllerJSON["Z"], clip.animationLength, CurveTypeValues.Auto);
-                    DeserializeCurve(target.rotX, controllerJSON["RotX"], clip.animationLength, CurveTypeValues.Auto);
-                    DeserializeCurve(target.rotY, controllerJSON["RotY"], clip.animationLength, CurveTypeValues.Auto);
-                    DeserializeCurve(target.rotZ, controllerJSON["RotZ"], clip.animationLength, CurveTypeValues.Auto);
-                    DeserializeCurve(target.rotW, controllerJSON["RotW"], clip.animationLength, CurveTypeValues.Auto);
+                    var dirty = false;
+                    DeserializeCurve(target.x, controllerJSON["X"], ref dirty);
+                    DeserializeCurve(target.y, controllerJSON["Y"], ref dirty);
+                    DeserializeCurve(target.z, controllerJSON["Z"], ref dirty);
+                    DeserializeCurve(target.rotX, controllerJSON["RotX"], ref dirty);
+                    DeserializeCurve(target.rotY, controllerJSON["RotY"], ref dirty);
+                    DeserializeCurve(target.rotZ, controllerJSON["RotZ"], ref dirty);
+                    DeserializeCurve(target.rotW, controllerJSON["RotW"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(target);
+                    if (dirty) target.dirty = true;
                 }
             }
 
@@ -112,9 +112,11 @@ namespace VamTimeline
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
                     var target = new FloatParamAnimationTarget(_atom, storableId, floatParamName);
-                    clip.Add(target);
-                    DeserializeCurve(target.value, paramJSON["Value"], clip.animationLength, CurveTypeValues.Smooth);
+                    var dirty = false;
+                    DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
+                    clip.Add(target);
+                    if (dirty) target.dirty = true;
                 }
             }
 
@@ -139,31 +141,25 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, float length, int defaultCurveType)
+        private void DeserializeCurve(BezierAnimationCurve curve, JSONNode curveJSON, ref bool dirty)
         {
             if (curveJSON is JSONArray)
-                DeserializeCurveFromArray(curve, (JSONArray)curveJSON);
-            if (curveJSON is JSONClass)
-                DeserializeCurveFromClassLegacy(curve, curveJSON);
-            else
-                DeserializeCurveFromStringLegacy(curve, curveJSON);
-
-            if (curve.length < 2)
             {
-                SuperController.LogError("Repair");
-                // Attempt repair
-                var keyframe = curve.length > 0 ? curve.GetKeyframe(0) : new BezierKeyframe(0, 0, defaultCurveType);
-                if (curve.length > 0)
-                    curve.RemoveKey(0);
-                keyframe.time = 0f;
-                curve.AddKey(keyframe);
-                keyframe = keyframe.Clone();
-                keyframe.time = length;
-                curve.AddKey(keyframe);
+                DeserializeCurveFromArray(curve, (JSONArray)curveJSON, ref dirty);
+            }
+            if (curveJSON is JSONClass)
+            {
+                DeserializeCurveFromClassLegacy(curve, curveJSON);
+                dirty = true;
+            }
+            else
+            {
+                DeserializeCurveFromStringLegacy(curve, curveJSON);
+                dirty = true;
             }
         }
 
-        private void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON)
+        private void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON, ref bool dirty)
         {
             if (curveJSON.Count == 0) return;
 
@@ -185,8 +181,12 @@ namespace VamTimeline
                         controlPointOut = DeserializeFloat(keyframeJSON["o"])
                     };
                     // Backward compatibility, tangents are not supported since bezier conversion.
-                    if(keyframe.curveType == CurveTypeValues.LeaveAsIs && keyframeJSON.HasKey("ti"))
-                        keyframe.curveType = CurveTypeValues.Smooth;
+                    if (keyframeJSON.HasKey("ti"))
+                    {
+                        dirty = true;
+                        if (keyframe.curveType == CurveTypeValues.LeaveAsIs)
+                            keyframe.curveType = CurveTypeValues.Smooth;
+                    }
                     curve.AddKey(keyframe);
                 }
                 catch (IndexOutOfRangeException exc)
@@ -218,7 +218,7 @@ namespace VamTimeline
                         curveType = int.Parse(parts[2])
                     };
                     // Backward compatibility, tangents are not supported since bezier conversion.
-                    if(keyframe.curveType == CurveTypeValues.LeaveAsIs)
+                    if (keyframe.curveType == CurveTypeValues.LeaveAsIs)
                         keyframe.curveType = CurveTypeValues.Smooth;
                     curve.AddKey(keyframe);
                 }
