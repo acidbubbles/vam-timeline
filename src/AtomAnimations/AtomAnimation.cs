@@ -250,7 +250,14 @@ namespace VamTimeline
             var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == clip.animationLayer);
             if (previousMain != null && previousMain != clip)
             {
-                TransitionAnimation(previousMain, clip);
+                if (clip.syncTransitionTime && previousMain.loop && !clip.loop)
+                {
+                    previousMain.SetNext(clip.animationName, playTime + (previousMain.animationLength - previousMain.clipTime));
+                }
+                else
+                {
+                    TransitionAnimation(previousMain, clip);
+                }
             }
             else
             {
@@ -460,7 +467,7 @@ namespace VamTimeline
             to.playbackMainInLayer = true;
             if (to.playbackWeight == 0)
             {
-                to.clipTime = to.loop ? from.clipTime : 0f;
+                to.clipTime = to.loop && to.syncTransitionTime ? from.clipTime : 0f;
             }
 
             if (sequencing)

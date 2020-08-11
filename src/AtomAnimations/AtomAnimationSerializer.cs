@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using SimpleJSON;
@@ -50,6 +49,7 @@ namespace VamTimeline
                 loop = DeserializeBool(clipJSON["Loop"], true),
                 autoTransitionPrevious = legacyTransition ?? DeserializeBool(clipJSON["AutoTransitionPrevious"], false),
                 autoTransitionNext = legacyTransition ?? DeserializeBool(clipJSON["AutoTransitionNext"], false),
+                syncTransitionTime = DeserializeBool(clipJSON["SyncTransitionTime"], false),
                 ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                 nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                 nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
@@ -303,6 +303,7 @@ namespace VamTimeline
                     { "Loop", clip.loop ? "1" : "0" },
                     { "AutoTransitionPrevious", clip.autoTransitionPrevious ? "1" : "0" },
                     { "AutoTransitionNext", clip.autoTransitionNext ? "1" : "0" },
+                    { "SyncTransitionTime", clip.syncTransitionTime ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" },
                     { "AnimationLayer", clip.animationLayer },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },

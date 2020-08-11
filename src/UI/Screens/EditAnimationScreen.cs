@@ -30,6 +30,7 @@ namespace VamTimeline
         private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
+        private JSONStorableBool _transitionSyncTime;
         private UIDynamicToggle _loopUI;
         private JSONStorableFloat _animationSpeedJSON;
         private JSONStorableFloat _clipSpeedJSON;
@@ -260,6 +261,9 @@ namespace VamTimeline
 
             _transitionNextJSON = new JSONStorableBool("Transition (Next)", false, (bool val) => ChangeTransitionNext(val));
             prefabFactory.CreateToggle(_transitionNextJSON);
+
+            _transitionSyncTime = new JSONStorableBool("Transition (Sync Time)", true, (bool val) => current.syncTransitionTime = val);
+            prefabFactory.CreateToggle(_transitionSyncTime);
         }
 
         private void InitLoopUI()
@@ -532,6 +536,7 @@ namespace VamTimeline
             _blendDurationJSON.valNoCallback = current.blendDuration;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
+            _transitionSyncTime.valNoCallback = current.syncTransitionTime;
             _nextAnimationJSON.valNoCallback = current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;

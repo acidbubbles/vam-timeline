@@ -19,6 +19,7 @@ namespace VamTimeline
         private float _animationLength = DefaultAnimationLength;
         private bool _autoTransitionPrevious;
         private bool _autoTransitionNext;
+        private bool _syncTransitionTime = true;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
         private string _animationName;
@@ -213,6 +214,20 @@ namespace VamTimeline
                 }
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(autoTransitionNext));
                 DirtyAll();
+            }
+        }
+
+        public bool syncTransitionTime
+        {
+            get
+            {
+                return _syncTransitionTime;
+            }
+            set
+            {
+                if (_syncTransitionTime == value) return;
+                _syncTransitionTime = value;
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(syncTransitionTime));
             }
         }
 
@@ -621,7 +636,7 @@ namespace VamTimeline
             foreach (var target in targets.OfType<TriggersAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
-                if(snapshot == null) continue;
+                if (snapshot == null) continue;
                 triggers.Add(new TriggersClipboardEntry
                 {
                     name = target.name,
