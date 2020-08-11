@@ -76,27 +76,31 @@ namespace VamTimeline
 
         private void SyncRigidbody()
         {
+            var parentAtomId = string.IsNullOrEmpty(_atomJSON.val) || _atomJSON.val == "None" ? null : _atomJSON.val;
+            var parentRigidbodyId = string.IsNullOrEmpty(_rigidbodyJSON.val) || _rigidbodyJSON.val == "None" ? null : _rigidbodyJSON.val;
+
+            if (_target.parentAtomId == parentAtomId && _target.parentRigidbodyId == parentRigidbodyId) return;
+
             var previousParent = _target.GetParent();
             var previousParentPosition = previousParent.transform.position;
             var previousParentRotation = previousParent.transform.rotation;
+
             var snapshot = operations.Offset().Start(0f, new[] { _target });
 
-            if (string.IsNullOrEmpty(_rigidbodyJSON.val) || _rigidbodyJSON.val == "None")
-                _target.SetParent(null, null);
-            else
-                _target.SetParent(_atomJSON.val, _rigidbodyJSON.val);
+            _target.SetParent(parentAtomId, parentRigidbodyId);
+            if (!_target.EnsureParentAvailable()) return;
 
             var newParent = _target.GetParent();
             var newParentPosition = newParent.transform.position;
             var newParentRotation = newParent.transform.rotation;
 
-            var positionOffset = newParentPosition - previousParentPosition;
-            var rotationOffset = Quaternion.Inverse(previousParentRotation) * newParentRotation;
+            var positionDelta = newParentPosition - previousParentPosition;
+            var rotationDelta = Quaternion.Inverse(previousParentRotation) * newParentRotation;
 
             var localPosition = _target.GetKeyframePosition(0);
             var localRotation = _target.GetKeyframeRotation(0);
 
-            _target.SetKeyframe(0f, localPosition - positionOffset, Quaternion.Inverse(rotationOffset) * localRotation);
+            _target.SetKeyframe(0f, localPosition - positionDelta, rotationDelta * localRotation);
 
             operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);
         }
