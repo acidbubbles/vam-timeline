@@ -458,7 +458,10 @@ namespace VamTimeline
             from.playbackMainInLayer = false;
             Blend(to, 1f, current.blendDuration);
             to.playbackMainInLayer = true;
-            if (to.playbackWeight == 0) to.clipTime = 0f;
+            if (to.playbackWeight == 0)
+            {
+                to.clipTime = to.loop ? from.clipTime : 0f;
+            }
 
             if (sequencing)
             {
@@ -615,6 +618,7 @@ namespace VamTimeline
                 _animationRebuildInProgress = false;
             }
         }
+
         private void RebuildAnimationNowImpl()
         {
             if (current == null) throw new NullReferenceException("No current animation set");
