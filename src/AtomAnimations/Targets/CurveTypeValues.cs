@@ -23,12 +23,15 @@ namespace VamTimeline
 
         public static string FromInt(int v)
         {
+            if (v < 0 || v >= _indexedCurveTypes.Count) return Smooth;
             return _indexedCurveTypes[v];
         }
 
         public static int ToInt(string v)
         {
-            return _indexedCurveTypes.IndexOf(v);
+            var idx = _indexedCurveTypes.IndexOf(v);
+            if (idx == -1) return _indexedCurveTypes.IndexOf(Smooth);
+            return idx;
         }
     }
 }
