@@ -81,7 +81,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(PeerManager)}.{nameof(OnTimelineEvent)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(PeerManager)}.{nameof(OnTimelineEvent)}: {exc}");
             }
             finally
             {

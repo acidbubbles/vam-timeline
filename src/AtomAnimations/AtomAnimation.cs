@@ -599,7 +599,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AtomAnimation)}.{nameof(RebuildAnimationNow)}: " + exc);
+                SuperController.LogError($"Timeline.{nameof(AtomAnimation)}.{nameof(RebuildAnimationNow)}: " + exc);
             }
             finally
             {
@@ -634,7 +634,7 @@ namespace VamTimeline
             }
             if (sw.ElapsedMilliseconds > 1000)
             {
-                SuperController.LogError($"VamTimeline.{nameof(RebuildAnimationNow)}: Suspiciously long animation rebuild ({sw.Elapsed})");
+                SuperController.LogError($"Timeline.{nameof(RebuildAnimationNow)}: Suspiciously long animation rebuild ({sw.Elapsed})");
             }
 
             if (_sampleAfterRebuild)

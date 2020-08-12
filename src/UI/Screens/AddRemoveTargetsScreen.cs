@@ -371,7 +371,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddMissingTargets)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddMissingTargets)}: {exc}");
             }
         }
 
@@ -415,7 +415,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddAnimatedController)}: " + exc);
+                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddAnimatedController)}: " + exc);
             }
         }
 
@@ -459,7 +459,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
+                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
             }
         }
 
@@ -472,7 +472,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AddRemoveTargetsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
+                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
             }
         }
 
@@ -485,7 +485,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(AddRemoveTargetsScreen)}.{nameof(RemoveFloatParam)}: " + exc);
+                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(RemoveFloatParam)}: " + exc);
             }
         }
 

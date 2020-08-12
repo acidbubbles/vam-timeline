@@ -176,7 +176,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ImportRecorded)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ImportRecorded)}: {exc}");
             }
         }
 
@@ -222,7 +222,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ImportRecordedCoroutine)}[Init]: {exc}");
+                    SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ImportRecordedCoroutine)}[Init]: {exc}");
                     target?.EndBulkUpdates();
                     yield break;
                 }
@@ -455,7 +455,7 @@ namespace VamTimeline
                 }
                 catch (Exception exc)
                 {
-                    SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
+                    SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ImportRecordedCoroutine)}[Step]: {exc}");
                     yield break;
                 }
 
@@ -492,7 +492,7 @@ namespace VamTimeline
                 {
                     _reduceKeyframesUI.button.interactable = true;
                     _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
-                    SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[Controller]: {exc}");
+                    SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[Controller]: {exc}");
                     yield break;
                 }
                 finally
@@ -515,7 +515,7 @@ namespace VamTimeline
                 {
                     _reduceKeyframesUI.button.interactable = true;
                     _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
-                    SuperController.LogError($"VamTimeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[FloatParam]: {exc}");
+                    SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[FloatParam]: {exc}");
                     yield break;
                 }
                 finally
