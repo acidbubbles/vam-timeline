@@ -275,40 +275,24 @@ namespace VamTimeline
             {
                 foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
                 {
+                    var target = clip.GetAllTargets().FirstOrDefault(t => t.TargetsSameAs(s));
+                    clip.Remove(target);
+                }
+
+                {
+                    var target = s as FreeControllerAnimationTarget;
+                    if (target != null)
                     {
-                        var target = s as FreeControllerAnimationTarget;
-                        target = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(s));
-                        if (target != null)
-                        {
-                            if (clip == current)
-                                _addControllerListJSON.val = target.name;
-                            clip.Remove(target);
-                            continue;
-                        }
+                        _addControllerListJSON.val = target.name;
                     }
+                }
+                {
+                    var target = s as FloatParamAnimationTarget;
+                    if (target != null)
                     {
-                        var target = s as FloatParamAnimationTarget;
-                        target = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(s));
-                        if (target != null)
-                        {
-                            if (clip == current)
-                            {
-                                _addStorableListJSON.val = target.storableId;
-                                _addParamListJSON.val = target.floatParamName;
-                            }
-                            clip.Remove(target);
-                            continue;
-                        }
+                        _addStorableListJSON.val = target.storableId;
+                        _addParamListJSON.val = target.floatParamName;
                     }
-                    {
-                        var target = s as TriggersAnimationTarget;
-                        if (target != null && clip == current)
-                        {
-                            clip.Remove(target);
-                            continue;
-                        }
-                    }
-                    throw new NotSupportedException($"Removing target is not supported: {s}");
                 }
             }
 
