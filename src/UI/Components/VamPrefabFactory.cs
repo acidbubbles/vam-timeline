@@ -171,7 +171,7 @@ namespace VamTimeline
         {
             RegisterStorable(jsc);
             Transform prefab;
-            #if(VAM_1_20)
+            #if(VAM_GT_1_20)
             if(filterable)
                 prefab = plugin.manager.configurableFilterablePopupPrefab;
             else

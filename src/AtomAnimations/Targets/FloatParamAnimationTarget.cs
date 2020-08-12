@@ -74,7 +74,7 @@ namespace VamTimeline
                 if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a storable '{storableId}'. It might be loading, try again later.");
                 return false;
             }
-            #if(!VAM_1_20)
+            #if(!VAM_GT_1_20)
             if (storableId == "geometry")
             {
                 // This allows loading an animation even though the animatable option was checked off (e.g. loading a pose)

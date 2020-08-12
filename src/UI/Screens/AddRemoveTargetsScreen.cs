@@ -185,7 +185,7 @@ namespace VamTimeline
             RefreshStorablesList();
             RefreshStorableFloatsList();
 
-            #if(!VAM_1_20)
+            #if(!VAM_GT_1_20)
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
