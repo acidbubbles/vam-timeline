@@ -245,7 +245,7 @@ namespace VamTimeline
                                 current.controlPointIn = current.value;
                                 current.controlPointOut = current.value + ((next.value - current.value) / 3f);
                             }
-                            else if (previous == null)
+                            else if (next == null)
                             {
                                 current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
                                 current.controlPointOut = current.value;
