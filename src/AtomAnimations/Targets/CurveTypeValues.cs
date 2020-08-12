@@ -46,12 +46,14 @@ namespace VamTimeline
 
         public static string FromInt(int v)
         {
-            return _labelMap[v];
+            string r;
+            if (_labelMap.TryGetValue(v, out r)) return r;
+            return "?";
         }
 
         public static int ToInt(string v)
         {
-            return _labelMap.FirstOrDefault(l => l.Value == v)?.Key ?? Smooth;
+            return _labelMap.FirstOrDefault(l => l.Value == v).Key;
         }
     }
 }
