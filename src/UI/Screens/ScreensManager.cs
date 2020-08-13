@@ -176,8 +176,8 @@ namespace VamTimeline
                 case HelpScreen.ScreenName:
                     _current = screenContainer.AddComponent<HelpScreen>();
                     break;
-                case ControllerParentScreen.ScreenName:
-                    _current = screenContainer.AddComponent<ControllerParentScreen>();
+                case ControllerTargetSettingsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<ControllerTargetSettingsScreen>();
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");

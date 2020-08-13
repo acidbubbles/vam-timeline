@@ -90,6 +90,7 @@ namespace VamTimeline
                         var parentJSON = controllerJSON["Parent"].AsObject;
                         target.SetParent(parentJSON["Atom"], parentJSON["Rigidbody"]);
                     }
+                    target.weight = DeserializeFloat(controllerJSON["Weight"], 1f);
                     var dirty = false;
                     DeserializeCurve(target.x, controllerJSON["X"], ref dirty);
                     DeserializeCurve(target.y, controllerJSON["Y"], ref dirty);
@@ -346,6 +347,10 @@ namespace VamTimeline
                         {"Atom", controller.parentAtomId },
                         {"Rigidbody", controller.parentRigidbodyId},
                     };
+                }
+                if (controller.weight != 1f)
+                {
+                    controllerJSON["Weight"] = controller.weight.ToString(CultureInfo.InvariantCulture);
                 }
                 controllersJSON.Add(controllerJSON);
             }

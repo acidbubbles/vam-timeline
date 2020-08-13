@@ -4,16 +4,16 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ControllerParentScreen : ScreenBase
+    public class ControllerTargetSettingsScreen : ScreenBase
     {
-        public const string ScreenName = "Controller Parent";
+        public const string ScreenName = "Controller Settings";
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _rigidbodyJSON;
         private FreeControllerAnimationTarget _target;
 
         public override string screenId => ScreenName;
 
-        public ControllerParentScreen()
+        public ControllerTargetSettingsScreen()
             : base()
         {
         }
@@ -51,6 +51,12 @@ namespace VamTimeline
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
 
             PopulateRigidbodies();
+
+            var parentWeight = new JSONStorableFloat("Weight", 1f, (float val) => _target.weight = val, 0f, 1f)
+            {
+                valNoCallback = _target.weight
+            };
+            prefabFactory.CreateSlider(parentWeight);
         }
 
         private void SyncAtom()

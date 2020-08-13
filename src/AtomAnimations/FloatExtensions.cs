@@ -39,5 +39,15 @@ namespace VamTimeline
         {
             return (int)(Math.Round(value * 1000f));
         }
+
+        [MethodImpl(256)]
+        public static float ExponentialScale(this float value, float midValue, float maxValue)
+        {
+            var m = maxValue / midValue;
+            var c = Mathf.Log(Mathf.Pow(m - 1, 2));
+            var b = maxValue / (Mathf.Exp(c) - 1);
+            var a = -1 * b;
+            return a + b * Mathf.Exp(c * value);
+        }
     }
 }

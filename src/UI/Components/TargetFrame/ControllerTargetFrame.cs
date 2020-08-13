@@ -124,9 +124,9 @@ namespace VamTimeline
 
             CreateExpandButton(group.transform, "Select", () => SuperController.singleton.SelectController(target.controller));
 
-            CreateExpandButton(group.transform, "Parent", () =>
+            CreateExpandButton(group.transform, "Settings", () =>
             {
-                plugin.ChangeScreen(ControllerParentScreen.ScreenName, target.name);
+                plugin.ChangeScreen(ControllerTargetSettingsScreen.ScreenName, target.name);
             });
         }
 

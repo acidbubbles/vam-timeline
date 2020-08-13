@@ -18,6 +18,22 @@ namespace VamTimeline
 
         public override string name => controller.name;
 
+        private float _weight;
+        private float _scaledWeight;
+        public float weight
+        {
+            get
+            {
+                return _weight;
+            }
+
+            set
+            {
+                _weight = value;
+                _scaledWeight = value.ExponentialScale(0.1f, 1f);
+            }
+        }
+
         public bool playbackEnabled = true;
 
         private bool _parentAvailable;
@@ -84,6 +100,7 @@ namespace VamTimeline
         }
 
         private Rigidbody _lastLinkedRigidbody;
+
         public Rigidbody GetLinkedRigidbody()
         {
             if (parentRigidbody != null) return parentRigidbody;
@@ -127,6 +144,8 @@ namespace VamTimeline
         public void Sample(float clipTime, float weight)
         {
             if (!playbackEnabled) return;
+            weight *= _scaledWeight;
+            if (weight == 0) return;
 
             var control = controller?.control;
             if (control == null) return;

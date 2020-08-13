@@ -138,7 +138,7 @@
     <Compile Include="src\UI\Screens\AdvancedKeyframeToolsScreen.cs" />
     <Compile Include="src\UI\Screens\AnimationsScreen.cs" />
     <Compile Include="src\UI\Screens\BulkScreen.cs" />
-    <Compile Include="src\UI\Screens\ControllerParentScreen.cs" />
+    <Compile Include="src\UI\Screens\ControllerTargetSettingsScreen.cs" />
     <Compile Include="src\UI\Screens\EditAnimationScreen.cs" />
     <Compile Include="src\UI\Screens\HelpScreen.cs" />
     <Compile Include="src\UI\Screens\ImportExportScreen.cs" />
