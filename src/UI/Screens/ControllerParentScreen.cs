@@ -50,8 +50,7 @@ namespace VamTimeline
             atomUI.popupPanelHeight = 700f;
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
 
-            if (string.IsNullOrEmpty(_rigidbodyJSON.val) && !string.IsNullOrEmpty(_atomJSON.val))
-                SyncAtom();
+            PopulateRigidbodies();
         }
 
         private void SyncAtom()
@@ -60,6 +59,17 @@ namespace VamTimeline
             {
                 _target.SetParent(null, null);
                 _rigidbodyJSON.valNoCallback = "None";
+                return;
+            }
+            PopulateRigidbodies();
+            _rigidbodyJSON.valNoCallback = "None";
+        }
+
+        private void PopulateRigidbodies()
+        {
+            if (string.IsNullOrEmpty(_atomJSON.val) || _atomJSON.val == "None")
+            {
+                _rigidbodyJSON.choices = new List<string> { "None" };
                 return;
             }
             var atom = SuperController.singleton.GetAtomByUid(_atomJSON.val);
@@ -71,7 +81,6 @@ namespace VamTimeline
                 .ToList();
             choices.Insert(0, "None");
             _rigidbodyJSON.choices = choices;
-            _rigidbodyJSON.valNoCallback = "None";
         }
 
         private void SyncRigidbody()
