@@ -20,6 +20,7 @@ namespace VamTimeline
             {
                 var newTarget = clip.Add(origTarget.controller);
                 newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
+                newTarget.weight = origTarget.weight;
                 for (var i = 0; i < origTarget.curves.Count; i++)
                 {
                     newTarget.curves[i].keys = origTarget.curves[i].keys.Select(k => k.Clone()).ToList();
@@ -66,6 +67,7 @@ namespace VamTimeline
             {
                 var newTarget = clip.Add(origTarget.controller);
                 newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
+                newTarget.weight = origTarget.weight;
                 newTarget.SetKeyframeToCurrentTransform(0f);
                 newTarget.SetKeyframeToCurrentTransform(clip.animationLength);
             }

@@ -18,8 +18,8 @@ namespace VamTimeline
 
         public override string name => controller.name;
 
-        private float _weight;
-        private float _scaledWeight;
+        private float _weight = 1f;
+        private float _scaledWeight = 1f;
         public float weight
         {
             get
