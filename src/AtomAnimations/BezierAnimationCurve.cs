@@ -216,9 +216,41 @@ namespace VamTimeline
 
             for (var key = 0; key < keysCount; key++)
             {
-                var previous = key >= 1 ? keys[key - 1] : (loop ? keys[keysCount - 2] : null);
+                BezierKeyframe previous;
+                float previousTime;
+                if (key >= 1)
+                {
+                    previous = keys[key - 1];
+                    previousTime = previous.time;
+                }
+                else if (loop)
+                {
+                    previous = keys[keysCount - 2];
+                    previousTime = previous.time - keys[keysCount - 1].time;
+                }
+                else
+                {
+                    previous = null;
+                    previousTime = 0f;
+                }
                 var current = keys[key];
-                var next = key < keysCount - 1 ? keys[key + 1] : (loop ? keys[1] : null);
+                BezierKeyframe next;
+                float nextTime;
+                if (key < keysCount - 1)
+                {
+                    next = keys[key + 1];
+                    nextTime = next.time;
+                }
+                else if (loop)
+                {
+                    next = keys[1];
+                    nextTime = current.time + next.time;
+                }
+                else
+                {
+                    next = null;
+                    nextTime = keys[keysCount - 1].time;
+                }
 
                 switch (current.curveType)
                 {
@@ -236,7 +268,7 @@ namespace VamTimeline
                         {
                             if (next != null && previous != null)
                             {
-                                var avg = (next.value - previous.value) / 3f;
+                                var avg = (next.value * (nextTime - current.time) - previous.value * (current.time - previousTime)) / ((nextTime - previousTime) * 1.5f);
                                 current.controlPointIn = current.value - avg;
                                 current.controlPointOut = current.value + avg;
                             }
@@ -255,18 +287,26 @@ namespace VamTimeline
                     case CurveTypeValues.LinearFlat:
                         if (previous != null)
                             current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                        else
+                            current.controlPointIn = current.value;
+                        current.controlPointOut = current.value;
                         break;
                     case CurveTypeValues.Flat:
                     case CurveTypeValues.FlatLong:
                     case CurveTypeValues.FlatLinear:
                         current.controlPointIn = current.value;
-                        current.controlPointIn = current.value;
+                        current.controlPointOut = current.value;
                         break;
                     case CurveTypeValues.Bounce:
                         if (previous != null && next != null)
                         {
                             current.controlPointIn = current.value - ((current.value - next.value) / 1.4f);
                             current.controlPointOut = current.value + ((previous.value - current.value) / 1.8f);
+                        }
+                        else
+                        {
+                            current.controlPointIn = current.value;
+                            current.controlPointOut = current.value;
                         }
                         break;
                     default:
