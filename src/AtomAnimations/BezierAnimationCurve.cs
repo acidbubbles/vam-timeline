@@ -268,9 +268,14 @@ namespace VamTimeline
                         {
                             if (next != null && previous != null)
                             {
-                                var avg = (next.value * (nextTime - current.time) - previous.value * (current.time - previousTime)) / ((nextTime - previousTime) * 1.5f);
-                                current.controlPointIn = current.value - avg;
-                                current.controlPointOut = current.value + avg;
+                                var bothSegmentsDuration = nextTime - previousTime;
+                                var previousRatio = (current.time - previousTime) / bothSegmentsDuration;
+                                var nextRatio = (nextTime - current.time) / bothSegmentsDuration;
+                                var previousHandle = (current.value - previous.value) * previousRatio / 3f;
+                                var nextHandle = (next.value - current.value) * nextRatio / 3f;
+                                var combined = previousHandle + nextHandle;
+                                current.controlPointIn = current.value - combined;
+                                current.controlPointOut = current.value + combined;
                             }
                             else if (previous == null)
                             {
