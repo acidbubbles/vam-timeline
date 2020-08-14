@@ -31,6 +31,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomAnimationTargetsList.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\AtomClipboardEntry.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\BezierAnimationCurve.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\BezierAnimationCurveSmoothing.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\BezierKeyframe.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\DictionaryExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\FloatExtensions.cs",

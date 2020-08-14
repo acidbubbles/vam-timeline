@@ -93,6 +93,7 @@
     <Compile Include="src\AtomAnimations\AtomAnimationTargetsList.cs" />
     <Compile Include="src\AtomAnimations\AtomClipboardEntry.cs" />
     <Compile Include="src\AtomAnimations\BezierAnimationCurve.cs" />
+    <Compile Include="src\AtomAnimations\BezierAnimationCurveSmoothing.cs" />
     <Compile Include="src\AtomAnimations\BezierKeyframe.cs" />
     <Compile Include="src\AtomAnimations\DictionaryExtensions.cs" />
     <Compile Include="src\AtomAnimations\FloatExtensions.cs" />
