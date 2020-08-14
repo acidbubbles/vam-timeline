@@ -13,7 +13,9 @@ namespace VamTimeline
         public int length => keys.Count;
         public bool loop;
 
-        private float[] _computeValues;
+        private float[] _k;
+        private float[] _p1;
+        private float[] _p2;
         private float[] _r;
         private float[] _a;
         private float[] _b;
@@ -331,96 +333,80 @@ namespace VamTimeline
         public void AutoComputeControlPoints()
         {
             // Adapted from Virt-A-Mate's implementation with permission from MeshedVR
-            // https://www.particleincell.com/wp-content/uploads/2012/06/bezier-spline.js
-            // https://www.particleincell.com/2012/bezier-splines/
-            var keysCount = keys.Count;
-            if (loop) keysCount -= 1;
-            var valuesCount = loop ? keysCount + 1 : keysCount - 1;
-            if (_computeValues == null || _computeValues.Length < valuesCount + 1) _computeValues = new float[valuesCount + 1];
-            if (_a == null || _a.Length < valuesCount) _a = new float[valuesCount];
-            if (_b == null || _b.Length < valuesCount) _b = new float[valuesCount];
-            if (_c == null || _c.Length < valuesCount) _c = new float[valuesCount];
-            if (_r == null || _r.Length < valuesCount) _r = new float[valuesCount];
-
-            if (loop)
+            // Original implementation: https://www.particleincell.com/wp-content/uploads/2012/06/bezier-spline.js
+            // Based on: https://www.particleincell.com/2012/bezier-splines/
+            // Using improvements on near keyframes: http://www.jacos.nl/jacos_html/spline/
+            var n = keys.Count - 1;
+            if (_k == null || _k.Length < keys.Count)
             {
-                _computeValues[0] = keys[keysCount - 1].value;
-                for (var i = 1; i < valuesCount; i++)
-                {
-                    _computeValues[i] = keys[i - 1].value;
-                }
-                _computeValues[valuesCount] = keys[0].value;
+                _k = new float[keys.Count];
+                _p1 = new float[keys.Count];
+                _p2 = new float[keys.Count];
+                // rhs vector
+                _a = new float[n];
+                _b = new float[n];
+                _c = new float[n];
+                _r = new float[n];
             }
-            else
+            for (var i = 0; i < keys.Count; i++)
             {
-                for (var i = 0; i < keysCount; i++)
-                {
-                    _computeValues[i] = keys[i].value;
-                }
+                _k[i] = keys[i].value;
             }
 
-            _a[0] = 0f;
+            // leftmost segment
+            _a[0] = 0f; // outside the matrix
             _b[0] = 2f;
             _c[0] = 1f;
-            _r[0] = _computeValues[0] + 2f * _computeValues[1];
-            for (var i = 1; i < valuesCount - 1; i++)
+            _r[0] = _k[0] + 2f * _k[1];
+
+            // internal segments
+            for (var i = 1; i < n - 1; i++)
             {
                 _a[i] = 1f;
                 _b[i] = 4f;
                 _c[i] = 1f;
-                _r[i] = 4f * _computeValues[i] + 2f * _computeValues[i + 1];
-            }
-            _a[valuesCount - 1] = 2f;
-            _b[valuesCount - 1] = 7f;
-            _c[valuesCount - 1] = 0f;
-            _r[valuesCount - 1] = 8f * _computeValues[valuesCount - 1] + _computeValues[valuesCount];
-            for (var i = 1; i < valuesCount; i++)
-            {
-                var n = _a[i] / _b[i - 1];
-                _b[i] -= n * _c[i - 1];
-                _r[i] -= n * _r[i - 1];
+                _r[i] = 4f * _k[i] + 2f * _k[i + 1];
             }
 
-            if (loop)
+            // right segment
+            _a[n - 1] = 2f;
+            _b[n - 1] = 7f;
+            _c[n - 1] = 0f;
+            _r[n - 1] = 8f * _k[n - 1] + _k[n];
+
+            // solves Ax=b with the Thomas algorithm
+            for (var i = 1; i < n; i++)
             {
-                var vector = _r[valuesCount - 1] / _b[valuesCount - 1];
-                keys[valuesCount - 2].controlPointOut = (_r[valuesCount - 1] - _c[valuesCount - 1] * vector) / _b[valuesCount - 1];
-                for (var i = valuesCount - 3; i >= 0; i--)
-                {
-                    keys[i].controlPointOut = (_r[i + 1] - _c[i + 1] * keys[i + 1].controlPointOut) / _b[i + 1];
-                }
-            }
-            else
-            {
-                keys[valuesCount].controlPointOut = keys[valuesCount].value;
-                keys[valuesCount - 1].controlPointOut = _r[valuesCount - 1] / _b[valuesCount - 1];
-                for (var i = valuesCount - 2; i >= 0; i--)
-                {
-                    keys[i].controlPointOut = (_r[i] - _c[i] * keys[i + 1].controlPointOut) / _b[i];
-                }
+                var m = _a[i] / _b[i - 1];
+                _b[i] -= m * _c[i - 1];
+                _r[i] -= m * _r[i - 1];
             }
 
-            if (loop)
+            _p1[n - 1] = _r[n - 1] / _b[n - 1];
+            for (var i = n - 2; i >= 0; --i)
             {
-                for (var i = 0; i < valuesCount - 1; i++)
-                {
-                    keys[i].controlPointIn = 2f * _computeValues[i + 1] - keys[i].controlPointOut;
-                }
-            }
-            else
-            {
-                keys[0].controlPointIn = keys[0].value;
-                for (var i = 1; i < valuesCount; i++)
-                {
-                    keys[i].controlPointIn = 2f * _computeValues[i] - keys[i].controlPointOut;
-                }
-                keys[valuesCount].controlPointIn = 0.5f * (_computeValues[valuesCount] + keys[valuesCount - 1].controlPointOut);
+                _p1[i] = (_r[i] - _c[i] * _p1[i + 1]) / _b[i];
             }
 
+            // we have p1, now compute p2
+            for (var i = 0; i < n - 1; i++)
+            {
+                _p2[i] = 2f * _k[i + 1] - _p1[i + 1];
+            }
+            _p2[n - 1] = 0.5f * (_k[n] + _p1[n - 1]);
+
+            // Assign the control points to the keyframes
+            for (var i = 1; i < n - 1; i++)
+            {
+                keys[i].controlPointIn = _p2[i - 1];
+                keys[i].controlPointOut = _p1[i];
+            }
             if (loop)
             {
-                keys[keys.Count - 1].controlPointIn = keys[0].controlPointIn;
-                keys[keys.Count - 1].controlPointOut = keys[0].controlPointOut;
+                var avgIn = (keys[0].controlPointIn + keys[keys.Count - 1].controlPointIn) / 2f;
+                keys[0].controlPointIn = keys[keys.Count - 1].controlPointIn = avgIn;
+                var avgOut = (keys[0].controlPointOut + keys[keys.Count - 1].controlPointOut) / 2f;
+                keys[0].controlPointOut = keys[keys.Count - 1].controlPointOut = avgOut;
             }
         }
 
