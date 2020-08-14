@@ -269,13 +269,21 @@ namespace VamTimeline
                             if (next != null && previous != null)
                             {
                                 var bothSegmentsDuration = nextTime - previousTime;
-                                var previousRatio = (current.time - previousTime) / bothSegmentsDuration;
-                                var nextRatio = (nextTime - current.time) / bothSegmentsDuration;
-                                var previousHandle = (current.value - previous.value) * previousRatio / 3f;
-                                var nextHandle = (next.value - current.value) * nextRatio / 3f;
-                                var combined = previousHandle + nextHandle;
-                                current.controlPointIn = current.value - combined;
-                                current.controlPointOut = current.value + combined;
+                                var inRatio = (current.time - previousTime) / bothSegmentsDuration;
+                                var outRatio = (nextTime - current.time) / bothSegmentsDuration;
+                                var inHandle = (current.value - previous.value) / 3f;
+                                var outHandle = (next.value - current.value) / 3f;
+                                var avg = (inHandle + outHandle) / 2f;
+                                if (inRatio > outRatio)
+                                {
+                                    current.controlPointIn = current.value - avg;
+                                    current.controlPointOut = current.value + avg * (outRatio / inRatio);
+                                }
+                                else
+                                {
+                                    current.controlPointIn = current.value - avg * (inRatio / outRatio);
+                                    current.controlPointOut = current.value + avg;
+                                }
                             }
                             else if (previous == null)
                             {

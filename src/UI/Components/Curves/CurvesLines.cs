@@ -104,14 +104,41 @@ namespace VamTimeline
                 for (var i = 0; i < curve.length; i++)
                 {
                     var keyframe = curve.GetKeyframe(i);
-                    var center = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
+                    var handlePos = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
                     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
                     {
-                        center - new Vector2(-handleSize, -handleSize),
-                        center - new Vector2(-handleSize, handleSize),
-                        center - new Vector2(handleSize, handleSize),
-                        center - new Vector2(handleSize, -handleSize)
-                    }));
+                            handlePos - new Vector2(-handleSize, -handleSize),
+                            handlePos - new Vector2(-handleSize, handleSize),
+                            handlePos - new Vector2(handleSize, handleSize),
+                            handlePos - new Vector2(handleSize, -handleSize)
+                        }));
+                    // Render handles
+                    // if (i > 0)
+                    // {
+                    //     var previous = curve.GetKeyframe(i - 1);
+                    //     var previousPos = new Vector2(offsetX + (keyframe.time - (keyframe.time - previous.time) / 3f) * xRatio, offsetY + keyframe.controlPointIn * yRatio);
+                    //     vh.DrawLine(new[] { handlePos, previousPos }, 2f, Color.white);
+                    //     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
+                    //     {
+                    //         previousPos - new Vector2(-handleSize / 2f, -handleSize / 2f),
+                    //         previousPos - new Vector2(-handleSize / 2f, handleSize / 2f),
+                    //         previousPos - new Vector2(handleSize / 2f, handleSize / 2f),
+                    //         previousPos - new Vector2(handleSize / 2f, -handleSize / 2f)
+                    //     }));
+                    // }
+                    // if (i < curve.length - 1)
+                    // {
+                    //     var next = curve.GetKeyframe(i + 1);
+                    //     var nextPos = new Vector2(offsetX + (keyframe.time + (next.time - keyframe.time) / 3f) * xRatio, offsetY + keyframe.controlPointOut * yRatio);
+                    //     vh.DrawLine(new[] { handlePos, nextPos }, 2f, Color.white);
+                    //     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
+                    //     {
+                    //         nextPos - new Vector2(-handleSize / 2f, -handleSize / 2f),
+                    //         nextPos - new Vector2(-handleSize / 2f, handleSize / 2f),
+                    //         nextPos - new Vector2(handleSize / 2f, handleSize / 2f),
+                    //         nextPos - new Vector2(handleSize / 2f, -handleSize / 2f)
+                    //     }));
+                    // }
                 }
             }
 
