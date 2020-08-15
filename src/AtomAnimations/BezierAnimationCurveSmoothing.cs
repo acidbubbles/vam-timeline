@@ -62,6 +62,8 @@ namespace VamTimeline
             }
 
             // Assign the control points to the keyframes
+            keys[0].controlPointIn = _p2[n-1];
+            keys[0].controlPointOut = _p1[0];
             for (var i = 1; i < n; i++)
             {
                 keys[i].controlPointIn = _p2[i - 1];
