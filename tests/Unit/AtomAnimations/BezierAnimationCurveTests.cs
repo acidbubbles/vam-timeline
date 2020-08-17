@@ -11,7 +11,8 @@ namespace VamTimeline.Tests.Unit
         {
             yield return new Test(nameof(AddAndRemoveFrames), AddAndRemoveFrames);
             yield return new Test(nameof(KeyframeBinarySearch), KeyframeBinarySearch);
-            yield return new Test(nameof(Evaluate), Evaluate);
+            yield return new Test(nameof(EvaluateLinear), EvaluateLinear);
+            yield return new Test(nameof(EvaluateAuto), EvaluateAuto);
             yield return new Test(nameof(RepairBrokenCurve), RepairBrokenCurve);
         }
 
@@ -65,9 +66,9 @@ namespace VamTimeline.Tests.Unit
             if (!context.Assert(curve.KeyframeBinarySearch(2.0f), 2, "2.0f")) yield break;
         }
 
-        public IEnumerable Evaluate(TestContext context)
+        public IEnumerable EvaluateLinear(TestContext context)
         {
-            var curve = new BezierAnimationCurve();
+            var curve = new BezierAnimationCurve { loop = false };
             curve.SetKeyframe(0, 10, CurveTypeValues.Linear);
             curve.SetKeyframe(1, 20, CurveTypeValues.Linear);
             curve.SetKeyframe(2, 30, CurveTypeValues.Linear);
@@ -77,6 +78,27 @@ namespace VamTimeline.Tests.Unit
             if (!context.Assert(curve.Evaluate(1.0f), 20f, "Linear/2")) yield break;
             if (!context.Assert(curve.Evaluate(1.5f), 25f, "Linear/3")) yield break;
             if (!context.Assert(curve.Evaluate(2.0f), 30f, "Linear/4")) yield break;
+        }
+
+        public IEnumerable EvaluateAuto(TestContext context)
+        {
+            var curve = new BezierAnimationCurve { loop = true };
+            curve.SetKeyframe(0, 100, CurveTypeValues.Auto);
+            curve.SetKeyframe(1, 200, CurveTypeValues.Auto);
+            curve.SetKeyframe(2, 300, CurveTypeValues.Auto);
+            curve.SetKeyframe(3, 200, CurveTypeValues.Auto);
+            curve.SetKeyframe(4, 100, CurveTypeValues.Auto);
+            curve.ComputeCurves();
+
+            if (!context.Assert(curve.Evaluate(0.0f), 100f, "Auto/0.0")) yield break;
+            if (!context.Assert(curve.Evaluate(0.5f), 131.25f, "Auto/0.5")) yield break;
+            if (!context.Assert(curve.Evaluate(1.0f), 200f, "Auto/1.0")) yield break;
+            if (!context.Assert(curve.Evaluate(1.5f), 268.75f, "Auto/1.5")) yield break;
+            if (!context.Assert(curve.Evaluate(2.0f), 300f, "Auto/2.0")) yield break;
+            if (!context.Assert(curve.Evaluate(2.5f), 268.75f, "Auto/2.5")) yield break;
+            if (!context.Assert(curve.Evaluate(3.0f), 200f, "Auto/3.0")) yield break;
+            if (!context.Assert(curve.Evaluate(3.5f), 131.25f, "Auto/3.5")) yield break;
+            if (!context.Assert(curve.Evaluate(4.0f), 100f, "Auto/4.0")) yield break;
         }
 
         public IEnumerable RepairBrokenCurve(TestContext context)
