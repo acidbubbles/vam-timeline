@@ -190,19 +190,16 @@ namespace VamTimeline
                 var key = keys[0];
                 key.controlPointIn = key.value;
                 key.controlPointOut = key.value;
-                keys[0] = key;
                 return;
             }
-            if (keysCount == 2 && !loop)
+            if (keysCount == 2)
             {
                 var first = keys[0];
                 first.controlPointIn = first.value;
                 first.controlPointOut = first.value;
-                keys[0] = first;
                 var last = keys[1];
                 last.controlPointIn = last.value;
                 last.controlPointOut = last.value;
-                keys[1] = last;
                 return;
             }
 
