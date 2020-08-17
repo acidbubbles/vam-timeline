@@ -34,7 +34,7 @@ namespace VamTimeline
             {
                 _w = new float[n + 1];
                 _p1 = new float[n + 1];
-                _p2 = new float[n + 1];
+                _p2 = new float[n];
                 // rhs vector
                 _a = new float[n];
                 _b = new float[n];
@@ -66,8 +66,6 @@ namespace VamTimeline
                 _r[i] = Mathf.Pow(_w[prev_i] + _w[i], 2) * keys[i].value + Mathf.Pow(_w[prev_i], 2) * (1 + frac_i) * keys[i + 1].value;
             }
         }
-
-
 
         private void ThomasAlgorithm(int n)
         /* solves Ax=r by Guassian elimination (for a matrix that has many zeros)
@@ -173,15 +171,13 @@ namespace VamTimeline
 
         private void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)
         {
-            keys[0].controlPointIn = _p2[n - 1];
             keys[0].controlPointOut = _p1[0];
             for (var i = 1; i < n; i++)
             {
                 keys[i].controlPointIn = _p2[i - 1];
                 keys[i].controlPointOut = _p1[i];
             }
-            keys[n].controlPointIn = keys[0].controlPointIn;
-            keys[n].controlPointOut = keys[0].controlPointOut;
+            keys[n].controlPointIn = _p2[n - 1];
         }
     }
 }
