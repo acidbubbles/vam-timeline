@@ -171,13 +171,13 @@ namespace VamTimeline
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
             });
             _addStorableListUI = prefabFactory.CreatePopup(_addStorableListJSON, true);
-            _addStorableListUI.popupPanelHeight = 490f;
+            _addStorableListUI.popupPanelHeight = 450f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
             _addParamListJSON = new JSONStorableStringChooser("Float param", new List<string>(), "", "Float param");
             _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
-            _addParamListUI.popupPanelHeight = 380f;
+            _addParamListUI.popupPanelHeight = 320f;
 
             _toggleFloatParamUI = prefabFactory.CreateButton("Add");
             _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
@@ -185,12 +185,10 @@ namespace VamTimeline
             RefreshStorablesList();
             RefreshStorableFloatsList();
 
-            #if(!VAM_GT_1_20)
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                prefabFactory.CreateSpacer();
-                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Go to <b>morphs</b> (animatable)</i>");
+                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Go to <b>morphs</b> (fav)</i>");
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
                     SuperController.singleton.SelectController(plugin.containingAtom.freeControllers.First(f => f.name == "control"));
@@ -203,7 +201,6 @@ namespace VamTimeline
                         selector.SetActiveTab("Female Morphs");
                 });
             }
-            #endif
         }
 
         private void RefreshStorablesList()
