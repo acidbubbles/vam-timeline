@@ -16,13 +16,13 @@ namespace VamTimeline
 
         private FreeControllerAnimationTarget _grabbedTarget;
 
-#if(VAM_GT_1_20)
+#if (VAM_GT_1_20)
         private Coroutine _waitForControllerReleaseCoroutine;
 
         public void OnEnable()
         {
-            if(containingAtom == null) return;
-            foreach(var fc in containingAtom.freeControllers)
+            if (containingAtom == null) return;
+            foreach (var fc in containingAtom.freeControllers)
             {
                 fc.onRotationChangeHandlers += OnFreeControllerPositionChanged;
                 fc.onPositionChangeHandlers += OnFreeControllerPositionChanged;
@@ -31,13 +31,13 @@ namespace VamTimeline
 
         public void OnDisable()
         {
-            if(_waitForControllerReleaseCoroutine != null)
+            if (_waitForControllerReleaseCoroutine != null)
             {
                 StopCoroutine(_waitForControllerReleaseCoroutine);
                 _waitForControllerReleaseCoroutine = null;
                 _grabbedTarget = null;
             }
-            if(containingAtom == null) return;
+            if (containingAtom == null) return;
             foreach (var fc in containingAtom.freeControllers)
             {
                 fc.onRotationChangeHandlers -= OnFreeControllerPositionChanged;
@@ -47,9 +47,16 @@ namespace VamTimeline
 
         private void OnFreeControllerPositionChanged(FreeControllerV3 controller)
         {
-            if(_waitForControllerReleaseCoroutine != null) return;
+            // Wait for the current transform to be complete before starting another
+            if (_waitForControllerReleaseCoroutine != null) return;
+
+            // Only track animated targets
             var target = animation.current.targetControllers.FirstOrDefault(t => t.controller == controller);
             if (target == null) return;
+
+            // Only handle transformations initiated by a user action
+            if (GetCurrentlyGrabbing() != target.controller) return;
+
             _grabbedTarget = target;
             _waitForControllerReleaseCoroutine = StartCoroutine(WaitForControllerRelease());
         }
@@ -62,10 +69,10 @@ namespace VamTimeline
                 yield break;
             }
 
-            while(GetCurrentlyGrabbing() == _grabbedTarget.controller)
+            while (GetCurrentlyGrabbing() == _grabbedTarget.controller)
                 yield return 0;
 
-            if(!_grabbedTarget.controller.possessed && !animation.isPlaying)
+            if (!_grabbedTarget.controller.possessed && !animation.isPlaying)
             {
                 RecordFreeControllerPosition(_grabbedTarget);
                 _waitForControllerReleaseCoroutine = null;
@@ -131,7 +138,7 @@ namespace VamTimeline
                 animation.SetKeyframeToCurrentTransform(target, time);
             }
 
-            if (animation.current.transition && (animation.clipTime == 0 || animation.clipTime == animation.current.animationLength))
+            if (animation.current.transition && (time == 0 || time == animation.current.animationLength))
                 animation.Sample();
         }
     }
