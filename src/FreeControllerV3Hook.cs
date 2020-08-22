@@ -65,9 +65,12 @@ namespace VamTimeline
             while(GetCurrentlyGrabbing() == _grabbedTarget.controller)
                 yield return 0;
 
-            RecordFreeControllerPosition(_grabbedTarget);
-            _waitForControllerReleaseCoroutine = null;
-            _grabbedTarget = null;
+            if(!_grabbedTarget.controller.possessed && !animation.isPlaying)
+            {
+                RecordFreeControllerPosition(_grabbedTarget);
+                _waitForControllerReleaseCoroutine = null;
+                _grabbedTarget = null;
+            }
         }
 
 #else
@@ -128,7 +131,7 @@ namespace VamTimeline
                 animation.SetKeyframeToCurrentTransform(target, time);
             }
 
-                if (animation.current.transition && (animation.clipTime == 0 || animation.clipTime == animation.current.animationLength))
+            if (animation.current.transition && (animation.clipTime == 0 || animation.clipTime == animation.current.animationLength))
                 animation.Sample();
         }
     }
