@@ -79,6 +79,14 @@ namespace VamTimeline
         {
             if (animation.clips.Where(c => c.animationLayer == current.animationLayer).Count() <= 1) return;
 
+            foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+            {
+                foreach (var target in clip.targetFloatParams)
+                {
+                    target.EnsureAvailable(false);
+                }
+            }
+
             var clipList = current.GetAllTargets().Select(t => t.name).OrderBy(x => x);
             var otherList = animation.clips
                 .Where(c => c != current && c.animationLayer == current.animationLayer)
