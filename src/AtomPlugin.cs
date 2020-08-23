@@ -334,10 +334,12 @@ namespace VamTimeline
             animation = gameObject.AddComponent<AtomAnimation>();
             animation.Initialize();
             BindAnimation();
+            animation.enabled = enabled;
 
             yield return 0;
 
-            animation.Sample();
+            if (enabled)
+                animation.Sample();
         }
 
         private void StartAutoPlay()
@@ -430,6 +432,7 @@ namespace VamTimeline
                 if (animation == null) throw new NullReferenceException("Animation deserialized to null");
                 animation.Initialize();
                 BindAnimation();
+                animation.enabled = enabled;
             }
             catch (Exception exc)
             {
