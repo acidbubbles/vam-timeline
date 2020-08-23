@@ -87,10 +87,13 @@ namespace VamTimeline
                 }
             }
 
-            var clipList = current.GetAllTargets().Select(t => t.name).OrderBy(x => x);
+            var clipList = current.GetAllTargets()
+                .Where(t => !(t is TriggersAnimationTarget))
+                .Select(t => t.name)
+                .OrderBy(x => x);
             var otherList = animation.clips
                 .Where(c => c != current && c.animationLayer == current.animationLayer)
-                .SelectMany(c => c.GetAllTargets())
+                .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersAnimationTarget)))
                 .Select(t => t.name)
                 .Distinct()
                 .OrderBy(x => x);
@@ -278,10 +281,20 @@ namespace VamTimeline
             var selected = current.GetSelectedTargets().ToList();
             foreach (var s in selected)
             {
+                // We remove every selected target on every clip on the current layer, except triggers
                 foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
                 {
-                    var target = clip.GetAllTargets().FirstOrDefault(t => t.TargetsSameAs(s));
+                    var target = clip.GetAllTargets().Where(t => !(t is TriggersAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
+                    if (target == null) continue;
                     clip.Remove(target);
+                }
+
+                // We remove the selected  trigger targets
+                if (s is TriggersAnimationTarget)
+                {
+                    // So other clips won't keep the deleted selection
+                    s.selected = false;
+                    current.Remove(s);
                 }
 
                 {

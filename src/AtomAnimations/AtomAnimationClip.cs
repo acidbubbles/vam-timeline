@@ -413,6 +413,10 @@ namespace VamTimeline
 
         public void Remove(IAtomAnimationTarget target)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
             if (target is FreeControllerAnimationTarget)
             {
                 Remove((FreeControllerAnimationTarget)target);
