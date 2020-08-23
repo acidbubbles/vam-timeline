@@ -385,7 +385,7 @@ namespace VamTimeline
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
-            if (targetFloatParams.Any(t => t.storableId == storable.storeId && t.floatParamName == jsf.name)) return null;
+            if (targetFloatParams.Any(t => t.Targets(storable.storeId, jsf.name))) return null;
             return Add(new FloatParamAnimationTarget(storable, jsf));
         }
 
@@ -622,7 +622,7 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.storableId == entry.storableId && c.floatParamName == entry.floatParamName);
+                var target = targetFloatParams.FirstOrDefault(c => c.Targets(entry.storableId, entry.floatParamName));
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste storable {entry.storableId}/{entry.floatParamName} in animation [{animationLayer}] {animationName} because the target was not added.");

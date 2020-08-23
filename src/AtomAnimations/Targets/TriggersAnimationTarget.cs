@@ -177,6 +177,11 @@ namespace VamTimeline
                 target.Dispose();
         }
 
+        public override string ToString()
+        {
+            return $"[Trigger Target: {name}]";
+        }
+
         public class Comparer : IComparer<TriggersAnimationTarget>
         {
             public int Compare(TriggersAnimationTarget t1, TriggersAnimationTarget t2)

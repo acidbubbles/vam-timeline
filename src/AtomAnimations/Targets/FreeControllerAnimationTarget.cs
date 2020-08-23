@@ -350,6 +350,11 @@ namespace VamTimeline
             return t.controller == controller;
         }
 
+        public override string ToString()
+        {
+            return $"[FreeControllerV3 Target: {name}]";
+        }
+
         public class Comparer : IComparer<FreeControllerAnimationTarget>
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)

@@ -216,7 +216,21 @@ namespace VamTimeline
         {
             var t = target as FloatParamAnimationTarget;
             if (t == null) return false;
-            return t.storableId == storableId && t.floatParamName == floatParamName;
+            return Targets(t.storableId, t.floatParamName);
+        }
+
+        public bool Targets(string storableId, string floatParamName)
+        {
+            if (this.storableId != storableId) return false;
+            if (this.floatParamName == floatParamName) return true;
+            if (floatParamName.StartsWith("morph: ")) floatParamName = floatParamName.Substring("morph: ".Length);
+            if (floatParamName.StartsWith("morphOtherGender: ")) floatParamName = floatParamName.Substring("morphOtherGender: ".Length);
+            return this.floatParamName == floatParamName;
+        }
+
+        public override string ToString()
+        {
+            return $"[Float Param Target: {name}]";
         }
 
         public class Comparer : IComparer<FloatParamAnimationTarget>
