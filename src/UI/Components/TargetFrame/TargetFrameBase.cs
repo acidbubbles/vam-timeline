@@ -31,7 +31,7 @@ namespace VamTimeline
             this.target = target;
 
             CreateToggle(plugin);
-            toggle.label = target.name;
+            toggle.label = target.GetShortName();
 
             CreateCustom();
 

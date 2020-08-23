@@ -8,7 +8,7 @@ namespace VamTimeline
     {
         public readonly string storableId;
         public JSONStorable storable { get; private set; }
-        public readonly string floatParamName;
+        public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
         public readonly AnimationCurve value = new AnimationCurve();
 
@@ -74,7 +74,7 @@ namespace VamTimeline
                 if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a storable '{storableId}'. It might be loading, try again later.");
                 return false;
             }
-            #if(!VAM_GT_1_20)
+#if (!VAM_GT_1_20)
             if (storableId == "geometry")
             {
                 // This allows loading an animation even though the animatable option was checked off (e.g. loading a pose)
@@ -87,7 +87,7 @@ namespace VamTimeline
                 if (!morph.animatable)
                     morph.animatable = true;
             }
-            #endif
+#endif
             var floatParam = storable.GetFloatJSONParam(floatParamName);
             if (floatParam == null)
             {
@@ -97,12 +97,16 @@ namespace VamTimeline
 
             this.storable = storable;
             this.floatParam = floatParam;
+            // May be replaced (might use alt name)
+            this.floatParamName = floatParam.name;
             _available = true;
             return true;
         }
 
         public string GetShortName()
         {
+            if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
+                return floatParam.altName;
             return floatParamName;
         }
 
