@@ -188,7 +188,7 @@ namespace VamTimeline
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
-                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Go to <b>morphs</b> (fav)</i>");
+                var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Fav morphs & Resync in Control tab</i>");
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {
                     SuperController.singleton.SelectController(plugin.containingAtom.freeControllers.First(f => f.name == "control"));
