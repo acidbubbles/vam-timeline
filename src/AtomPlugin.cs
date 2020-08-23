@@ -66,7 +66,7 @@ namespace VamTimeline
                 _freeControllerHook.enabled = false;
                 _freeControllerHook.containingAtom = base.containingAtom;
                 InitStorables();
-                StartCoroutine(DeferredInit());
+                SuperController.singleton.StartCoroutine(DeferredInit());
             }
             catch (Exception exc)
             {
@@ -82,7 +82,7 @@ namespace VamTimeline
             {
                 if (UITransform == null) return;
 
-                StartCoroutine(InitUIDeferred());
+                SuperController.singleton.StartCoroutine(InitUIDeferred());
             }
             catch (Exception exc)
             {
@@ -92,7 +92,9 @@ namespace VamTimeline
 
         private IEnumerator InitUIDeferred()
         {
-            yield return StartCoroutine(VamPrefabFactory.LoadUIAssets());
+            if (ui != null || this == null) yield break;
+            yield return SuperController.singleton.StartCoroutine(VamPrefabFactory.LoadUIAssets());
+            if (this == null) yield break;
 
             var scriptUI = UITransform.GetComponentInChildren<MVRScriptUI>();
 
@@ -310,11 +312,13 @@ namespace VamTimeline
         private IEnumerator DeferredInit()
         {
             yield return new WaitForEndOfFrame();
+            if (this == null) yield break;
             if (animation != null)
             {
                 while (SuperController.singleton.isLoading)
                 {
                     yield return 0;
+                    if (this == null) yield break;
                 }
                 foreach (var t in animation.clips.SelectMany(c => c.targetTriggers))
                 {
@@ -328,6 +332,7 @@ namespace VamTimeline
             if (animation != null)
             {
                 yield return 0;
+                if (this == null) yield break;
                 animation.Sample();
                 yield break;
             }
@@ -337,6 +342,7 @@ namespace VamTimeline
             animation.enabled = enabled;
 
             yield return 0;
+            if (this == null) yield break;
 
             if (enabled)
                 animation.Sample();
