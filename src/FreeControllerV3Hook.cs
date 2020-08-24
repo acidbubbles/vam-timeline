@@ -1,4 +1,4 @@
-#if(VAM_GT_1_20_TEMPORARILY_DISABLED)
+#if(VAM_GT_1_20)
 using System.Collections;
 #endif
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace VamTimeline
 
         private FreeControllerAnimationTarget _grabbedTarget;
 
-#if (VAM_GT_1_20_TEMPORARILY_DISABLED)
+#if (VAM_GT_1_20)
         private Coroutine _waitForControllerReleaseCoroutine;
 
         public void OnEnable()
