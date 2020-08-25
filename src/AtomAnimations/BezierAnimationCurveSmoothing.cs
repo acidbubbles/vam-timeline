@@ -51,7 +51,7 @@ namespace VamTimeline
             {
                 _w[i] = keys[i + 1].time - keys[i].time;
             }
-            _w[n] = keys[1].time - keys[0].time;
+            _w[n] = _w[0];
         }
 
         private void InternalSegments(List<BezierKeyframe> keys, int n)
@@ -59,7 +59,7 @@ namespace VamTimeline
             for (var i = 0; i < n; i++)
             {
                 var frac_i = _w[i] / _w[i + 1];
-                var prev_i = i == 0 ? n : i - 1;
+                var prev_i = i == 0 ? n - 1 : i - 1;
                 _a[i] = 1 * _w[i] * _w[i];
                 _b[i] = 2 * _w[prev_i] * (_w[prev_i] + _w[i]);
                 _c[i] = _w[prev_i] * _w[prev_i] * frac_i;
