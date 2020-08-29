@@ -1,4 +1,4 @@
-#if(VAM_GT_1_20)
+#if(VAM_GT_1_20_0_9)
 using System.Collections;
 #endif
 using System.Collections.Generic;
@@ -9,15 +9,14 @@ namespace VamTimeline
 {
     public class FreeControllerV3Hook : MonoBehaviour
     {
+#if (!VAM_GT_1_20_0_9)
         private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
+#endif
 
         public Atom containingAtom;
         public AtomAnimation animation;
 
-        private FreeControllerAnimationTarget _grabbedTarget;
-
-#if (VAM_GT_1_20)
-        private Coroutine _waitForControllerReleaseCoroutine;
+#if (VAM_GT_1_20_0_9)
 
         public void OnEnable()
         {
@@ -26,62 +25,39 @@ namespace VamTimeline
             {
                 fc.onRotationChangeHandlers += OnFreeControllerPositionChanged;
                 fc.onPositionChangeHandlers += OnFreeControllerPositionChanged;
+                fc.onGrabEndHandlers += OnFreeControllerPositionChanged;
             }
         }
 
         public void OnDisable()
         {
-            if (_waitForControllerReleaseCoroutine != null)
-            {
-                StopCoroutine(_waitForControllerReleaseCoroutine);
-                _waitForControllerReleaseCoroutine = null;
-                _grabbedTarget = null;
-            }
             if (containingAtom == null) return;
             foreach (var fc in containingAtom.freeControllers)
             {
                 fc.onRotationChangeHandlers -= OnFreeControllerPositionChanged;
                 fc.onPositionChangeHandlers -= OnFreeControllerPositionChanged;
+                fc.onGrabEndHandlers -= OnFreeControllerPositionChanged;
             }
         }
 
         private void OnFreeControllerPositionChanged(FreeControllerV3 controller)
         {
-            // Wait for the current transform to be complete before starting another
-            if (_waitForControllerReleaseCoroutine != null) return;
+            // Ignore grabbed event, we will receive the grab end later
+            if (controller.isGrabbing || controller.possessed) return;
+
+            // Ignore comply nodes, since they will dispatch during the animation
+            if (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply) return;
 
             // Only track animated targets
             var target = animation.current.targetControllers.FirstOrDefault(t => t.controller == controller);
             if (target == null) return;
 
-            // Only handle transformations initiated by a user action
-            if (GetCurrentlyGrabbing() != target.controller) return;
-
-            _grabbedTarget = target;
-            _waitForControllerReleaseCoroutine = StartCoroutine(WaitForControllerRelease());
-        }
-
-        private IEnumerator WaitForControllerRelease()
-        {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                _waitForControllerReleaseCoroutine = null;
-                yield break;
-            }
-
-            while (GetCurrentlyGrabbing() == _grabbedTarget.controller)
-                yield return 0;
-
-            if (!_grabbedTarget.controller.possessed && !animation.isPlaying)
-            {
-                RecordFreeControllerPosition(_grabbedTarget);
-                _waitForControllerReleaseCoroutine = null;
-                _grabbedTarget = null;
-            }
+            RecordFreeControllerPosition(target);
         }
 
 #else
 
+        private FreeControllerAnimationTarget _grabbedTarget;
         private bool _cancelNextGrabbedControllerRelease;
 
         public void Update()
@@ -112,7 +88,6 @@ namespace VamTimeline
                 RecordFreeControllerPosition(grabbedTarget);
             }
         }
-#endif
 
         private FreeControllerV3 GetCurrentlyGrabbing()
         {
@@ -124,6 +99,8 @@ namespace VamTimeline
                 return containingAtom.freeControllers.FirstOrDefault(c => _grabbingControllers.Contains(c.linkToRB?.gameObject.name));
             return grabbing;
         }
+
+#endif
 
         public void RecordFreeControllerPosition(FreeControllerAnimationTarget target)
         {
