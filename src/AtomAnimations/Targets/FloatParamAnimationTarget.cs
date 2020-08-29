@@ -141,7 +141,7 @@ namespace VamTimeline
         {
             var keyframe = this.value.GetKeyframeAt(time);
             if (keyframe != null) keyframe.value = value;
-            else this.value.AddKey(time, value, CurveTypeValues.Smooth);
+            else this.value.AddKey(time, value, CurveTypeValues.SmoothLocal);
             if (dirty) base.dirty = true;
         }
 
@@ -156,7 +156,7 @@ namespace VamTimeline
         public void AddEdgeFramesIfMissing(float animationLength)
         {
             var before = value.length;
-            value.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Smooth);
+            value.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
             if (value.length != before) dirty = true;
         }
 

@@ -186,7 +186,7 @@ namespace VamTimeline
                     {
                         dirty = true;
                         if (keyframe.curveType == CurveTypeValues.LeaveAsIs)
-                            keyframe.curveType = CurveTypeValues.Smooth;
+                            keyframe.curveType = CurveTypeValues.SmoothLocal;
                     }
                     curve.AddKey(keyframe);
                 }
@@ -220,7 +220,7 @@ namespace VamTimeline
                     };
                     // Backward compatibility, tangents are not supported since bezier conversion.
                     if (keyframe.curveType == CurveTypeValues.LeaveAsIs)
-                        keyframe.curveType = CurveTypeValues.Smooth;
+                        keyframe.curveType = CurveTypeValues.SmoothLocal;
                     curve.AddKey(keyframe);
                 }
                 catch (IndexOutOfRangeException exc)
@@ -246,7 +246,7 @@ namespace VamTimeline
                 {
                     time = time,
                     value = value,
-                    curveType = CurveTypeValues.Smooth
+                    curveType = CurveTypeValues.SmoothLocal
                 };
                 curve.AddKey(keyframe);
             }

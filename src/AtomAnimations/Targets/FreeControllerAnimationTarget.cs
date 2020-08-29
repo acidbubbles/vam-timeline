@@ -230,7 +230,7 @@ namespace VamTimeline
         public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, bool dirty = true)
         {
             var keyframe = x.GetKeyframeAt(time);
-            var curveType = keyframe?.curveType ?? CurveTypeValues.Auto;
+            var curveType = keyframe?.curveType ?? CurveTypeValues.SmoothGlobal;
             var key = x.SetKeyframe(time, localPosition.x, curveType);
             y.SetKeyframe(time, localPosition.y, curveType);
             z.SetKeyframe(time, localPosition.z, curveType);
@@ -270,13 +270,13 @@ namespace VamTimeline
         public void AddEdgeFramesIfMissing(float animationLength)
         {
             var before = x.length;
-            x.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
-            y.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
-            z.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
-            rotX.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
-            rotY.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
-            rotZ.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
-            rotW.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.Auto);
+            x.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
+            y.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
+            z.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
+            rotX.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
+            rotY.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
+            rotZ.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
+            rotW.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothGlobal);
             if (x.length != before) dirty = true;
         }
 

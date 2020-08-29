@@ -12,7 +12,7 @@ namespace VamTimeline.Tests.Unit
             yield return new Test(nameof(AddAndRemoveFrames), AddAndRemoveFrames);
             yield return new Test(nameof(KeyframeBinarySearch), KeyframeBinarySearch);
             yield return new Test(nameof(EvaluateLinear), EvaluateLinear);
-            yield return new Test(nameof(EvaluateAuto), EvaluateAuto);
+            yield return new Test(nameof(EvaluateSmoothGlobal), EvaluateSmoothGlobal);
             yield return new Test(nameof(RepairBrokenCurve), RepairBrokenCurve);
         }
 
@@ -80,25 +80,25 @@ namespace VamTimeline.Tests.Unit
             if (!context.Assert(curve.Evaluate(2.0f), 30f, "Linear/4")) yield break;
         }
 
-        public IEnumerable EvaluateAuto(TestContext context)
+        public IEnumerable EvaluateSmoothGlobal(TestContext context)
         {
             var curve = new BezierAnimationCurve { loop = true };
-            curve.SetKeyframe(0, 100, CurveTypeValues.Auto);
-            curve.SetKeyframe(1, 200, CurveTypeValues.Auto);
-            curve.SetKeyframe(2, 300, CurveTypeValues.Auto);
-            curve.SetKeyframe(3, 200, CurveTypeValues.Auto);
-            curve.SetKeyframe(4, 100, CurveTypeValues.Auto);
+            curve.SetKeyframe(0, 100, CurveTypeValues.SmoothGlobal);
+            curve.SetKeyframe(1, 200, CurveTypeValues.SmoothGlobal);
+            curve.SetKeyframe(2, 300, CurveTypeValues.SmoothGlobal);
+            curve.SetKeyframe(3, 200, CurveTypeValues.SmoothGlobal);
+            curve.SetKeyframe(4, 100, CurveTypeValues.SmoothGlobal);
             curve.ComputeCurves();
 
-            if (!context.Assert(curve.Evaluate(0.0f), 100f, "Auto/0.0")) yield break;
-            if (!context.Assert(curve.Evaluate(0.5f), 131.25f, "Auto/0.5")) yield break;
-            if (!context.Assert(curve.Evaluate(1.0f), 200f, "Auto/1.0")) yield break;
-            if (!context.Assert(curve.Evaluate(1.5f), 268.75f, "Auto/1.5")) yield break;
-            if (!context.Assert(curve.Evaluate(2.0f), 300f, "Auto/2.0")) yield break;
-            if (!context.Assert(curve.Evaluate(2.5f), 268.75f, "Auto/2.5")) yield break;
-            if (!context.Assert(curve.Evaluate(3.0f), 200f, "Auto/3.0")) yield break;
-            if (!context.Assert(curve.Evaluate(3.5f), 131.25f, "Auto/3.5")) yield break;
-            if (!context.Assert(curve.Evaluate(4.0f), 100f, "Auto/4.0")) yield break;
+            if (!context.Assert(curve.Evaluate(0.0f), 100f, "SmoothGlobal/0.0")) yield break;
+            if (!context.Assert(curve.Evaluate(0.5f), 131.25f, "SmoothGlobal/0.5")) yield break;
+            if (!context.Assert(curve.Evaluate(1.0f), 200f, "SmoothGlobal/1.0")) yield break;
+            if (!context.Assert(curve.Evaluate(1.5f), 268.75f, "SmoothGlobal/1.5")) yield break;
+            if (!context.Assert(curve.Evaluate(2.0f), 300f, "SmoothGlobal/2.0")) yield break;
+            if (!context.Assert(curve.Evaluate(2.5f), 268.75f, "SmoothGlobal/2.5")) yield break;
+            if (!context.Assert(curve.Evaluate(3.0f), 200f, "SmoothGlobal/3.0")) yield break;
+            if (!context.Assert(curve.Evaluate(3.5f), 131.25f, "SmoothGlobal/3.5")) yield break;
+            if (!context.Assert(curve.Evaluate(4.0f), 100f, "SmoothGlobal/4.0")) yield break;
         }
 
         public IEnumerable RepairBrokenCurve(TestContext context)

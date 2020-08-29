@@ -203,7 +203,7 @@ namespace VamTimeline
                 return;
             }
 
-            if (keys.Any(k => k.curveType == CurveTypeValues.Auto))
+            if (keys.Any(k => k.curveType == CurveTypeValues.SmoothGlobal))
                 _compute.AutoComputeControlPoints(keys, loop);
 
             for (var key = 0; key < keysCount; key++)
@@ -256,7 +256,7 @@ namespace VamTimeline
                         else
                             current.controlPointOut = current.value;
                         break;
-                    case CurveTypeValues.Smooth:
+                    case CurveTypeValues.SmoothLocal:
                         {
                             if (next != null && previous != null)
                             {
