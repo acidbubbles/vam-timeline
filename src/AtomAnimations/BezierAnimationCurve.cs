@@ -203,8 +203,12 @@ namespace VamTimeline
                 return;
             }
 
-            if (keys.Any(k => k.curveType == CurveTypeValues.SmoothGlobal))
+            var globalSmoothing = false;
+            if (keys.Any(k => k.curveType == CurveTypeValues.SmoothGlobal) && keys.Count > 3)
+            {
                 _compute.AutoComputeControlPoints(keys, loop);
+                globalSmoothing = true;
+            }
 
             for (var key = 0; key < keysCount; key++)
             {
@@ -257,7 +261,9 @@ namespace VamTimeline
                             current.controlPointOut = current.value;
                         break;
                     case CurveTypeValues.SmoothLocal:
+                    case CurveTypeValues.SmoothGlobal:
                         {
+                            if (current.curveType == CurveTypeValues.SmoothGlobal && globalSmoothing) continue;
                             if (next != null && previous != null)
                             {
                                 var bothSegmentsDuration = nextTime - previousTime;
