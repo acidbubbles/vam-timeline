@@ -1,3 +1,4 @@
+// #define RENDER_BEZIER_CONTROL_POINTS
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,6 +32,7 @@ namespace VamTimeline
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
             var precision = 2f; // Draw at every N pixels
+            var maxVertexXDelta = 3f; // Whenever that distance is reached an additional point is drawn for constant curves
             var minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
             var halfWidth = rectTransform.rect.width / 2;
@@ -87,17 +89,21 @@ namespace VamTimeline
                 // Draw line
                 var step = maxX / width * precision;
                 var points = new List<Vector2>(curve.length);
-                var previousY = Mathf.Infinity;
+                var previous = new Vector2(Mathf.NegativeInfinity, Mathf.Infinity);
                 for (var time = 0f; time < maxX; time += step)
                 {
                     var value = curve.Evaluate(time);
-                    var y = offsetY + value * yRatio;
-                    if (Mathf.Abs(y - previousY) < minVertexYDelta) continue;
-                    var cur = new Vector2(offsetX + time * xRatio, y);
-                    previousY = y;
+                    var cur = new Vector2(offsetX + time * xRatio, offsetY + value * yRatio);
+                    if (Mathf.Abs(cur.y - previous.y) < minVertexYDelta) continue;
+                    if (Mathf.Abs(cur.x - previous.x) > maxVertexXDelta)
+                        points.Add(new Vector2(cur.x, previous.y));
+                    previous = cur;
                     points.Add(cur);
                 }
-                points.Add(new Vector2(offsetX + last.time * xRatio, offsetY + last.value * yRatio));
+                var curN = new Vector2(offsetX + last.time * xRatio, offsetY + last.value * yRatio);
+                if (Mathf.Abs(curN.x - previous.x) > maxVertexXDelta)
+                    points.Add(new Vector2(curN.x, previous.y));
+                points.Add(curN);
                 vh.DrawLine(points, style.CurveLineSize, color);
 
                 // Draw handles
@@ -105,40 +111,43 @@ namespace VamTimeline
                 {
                     var keyframe = curve.GetKeyframe(i);
                     var handlePos = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
+                    // Render bezier control points
+#if (RENDER_BEZIER_CONTROL_POINTS)
+                    if (i > 0)
+                    {
+                        var previousKey = curve.GetKeyframe(i - 1);
+                        var previousPos = new Vector2(offsetX + (keyframe.time - (keyframe.time - previousKey.time) / 3f) * xRatio, offsetY + keyframe.controlPointIn * yRatio);
+                        vh.DrawLine(new[] { handlePos, previousPos }, 1f, Color.white);
+                        vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
+                        {
+                            previousPos - new Vector2(-handleSize / 2f, -handleSize / 2f),
+                            previousPos - new Vector2(-handleSize / 2f, handleSize / 2f),
+                            previousPos - new Vector2(handleSize / 2f, handleSize / 2f),
+                            previousPos - new Vector2(handleSize / 2f, -handleSize / 2f)
+                        }));
+                    }
+                    if (i < curve.length - 1)
+                    {
+                        var next = curve.GetKeyframe(i + 1);
+                        var nextPos = new Vector2(offsetX + (keyframe.time + (next.time - keyframe.time) / 3f) * xRatio, offsetY + keyframe.controlPointOut * yRatio);
+                        vh.DrawLine(new[] { handlePos, nextPos }, 1f, Color.white);
+                        vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
+                        {
+                            nextPos - new Vector2(-handleSize / 2f, -handleSize / 2f),
+                            nextPos - new Vector2(-handleSize / 2f, handleSize / 2f),
+                            nextPos - new Vector2(handleSize / 2f, handleSize / 2f),
+                            nextPos - new Vector2(handleSize / 2f, -handleSize / 2f)
+                        }));
+                    }
+                    // Render keyframe
                     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
                     {
-                            handlePos - new Vector2(-handleSize, -handleSize),
-                            handlePos - new Vector2(-handleSize, handleSize),
-                            handlePos - new Vector2(handleSize, handleSize),
-                            handlePos - new Vector2(handleSize, -handleSize)
-                        }));
-                    // Render handles
-                    // if (i > 0)
-                    // {
-                    //     var previous = curve.GetKeyframe(i - 1);
-                    //     var previousPos = new Vector2(offsetX + (keyframe.time - (keyframe.time - previous.time) / 3f) * xRatio, offsetY + keyframe.controlPointIn * yRatio);
-                    //     vh.DrawLine(new[] { handlePos, previousPos }, 2f, Color.white);
-                    //     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
-                    //     {
-                    //         previousPos - new Vector2(-handleSize / 2f, -handleSize / 2f),
-                    //         previousPos - new Vector2(-handleSize / 2f, handleSize / 2f),
-                    //         previousPos - new Vector2(handleSize / 2f, handleSize / 2f),
-                    //         previousPos - new Vector2(handleSize / 2f, -handleSize / 2f)
-                    //     }));
-                    // }
-                    // if (i < curve.length - 1)
-                    // {
-                    //     var next = curve.GetKeyframe(i + 1);
-                    //     var nextPos = new Vector2(offsetX + (keyframe.time + (next.time - keyframe.time) / 3f) * xRatio, offsetY + keyframe.controlPointOut * yRatio);
-                    //     vh.DrawLine(new[] { handlePos, nextPos }, 2f, Color.white);
-                    //     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
-                    //     {
-                    //         nextPos - new Vector2(-handleSize / 2f, -handleSize / 2f),
-                    //         nextPos - new Vector2(-handleSize / 2f, handleSize / 2f),
-                    //         nextPos - new Vector2(handleSize / 2f, handleSize / 2f),
-                    //         nextPos - new Vector2(handleSize / 2f, -handleSize / 2f)
-                    //     }));
-                    // }
+                        handlePos - new Vector2(-handleSize, -handleSize),
+                        handlePos - new Vector2(-handleSize, handleSize),
+                        handlePos - new Vector2(handleSize, handleSize),
+                        handlePos - new Vector2(handleSize, -handleSize)
+                    }));
+#endif
                 }
             }
 
