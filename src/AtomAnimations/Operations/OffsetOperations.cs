@@ -10,12 +10,10 @@ namespace VamTimeline
         public const string ChangePivotMode = "Change pivot";
         public const string OffsetMode = "Offset";
 
-        private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
-        public OffsetOperations(AtomAnimation animation, AtomAnimationClip clip)
+        public OffsetOperations(AtomAnimationClip clip)
         {
-            _animation = animation;
             _clip = clip;
         }
 
@@ -70,7 +68,7 @@ namespace VamTimeline
             }
         }
 
-        internal AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerAnimationTarget> enumerable)
+        public AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerAnimationTarget> enumerable)
         {
             var snapshot = _clip.Copy(clipTime, enumerable.Cast<IAtomAnimationTarget>());
             if (snapshot.controllers.Count == 0)

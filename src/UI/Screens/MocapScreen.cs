@@ -478,36 +478,13 @@ namespace VamTimeline
 
         private IEnumerator ReduceKeyframesCoroutine()
         {
-            /*
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            var enumerator = operations.ParamKeyframeReduction().ReduceKeyframes(_reduceMaxFramesPerSecondJSON.val, _reduceMinPosDistanceJSON.val);
+            while (true)
             {
-                target.StartBulkUpdates();
                 try
                 {
-                    // ReduceKeyframes(target.X, target.Y, target.Z, target.RotX, target.RotY, target.RotZ, target.RotW);
-                }
-                catch (Exception exc)
-                {
-                    _reduceKeyframesUI.button.interactable = true;
-                    _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
-                    SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[Controller]: {exc}");
-                    yield break;
-                }
-                finally
-                {
-                    target.dirty = true;
-                    target.EndBulkUpdates();
-                }
-                yield return 0;
-            }
-            */
-
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
-            {
-                target.StartBulkUpdates();
-                try
-                {
-                    ReduceKeyframes(target);
+                    if (!enumerator.MoveNext())
+                        break;
                 }
                 catch (Exception exc)
                 {
@@ -516,86 +493,11 @@ namespace VamTimeline
                     SuperController.LogError($"Timeline.{nameof(MocapScreen)}.{nameof(ReduceKeyframesCoroutine)}[FloatParam]: {exc}");
                     yield break;
                 }
-                finally
-                {
-                    target.dirty = true;
-                    target.EndBulkUpdates();
-                }
-                yield return 0;
+                yield return enumerator.Current;
             }
 
             _reduceKeyframesUI.button.interactable = true;
             _reduceKeyframesUI.buttonText.text = "Reduce float params keyframes";
-        }
-
-        private void ReduceKeyframes(FloatParamAnimationTarget t)
-        {
-            var source = t.value;
-            var sw = Stopwatch.StartNew();
-            var minFrameDistance = 1f / _reduceMaxFramesPerSecondJSON.val;
-            var maxIterations = (int)(source.GetKeyframe(source.length - 1).time * 10);
-
-            var batchStopwatch = Stopwatch.StartNew();
-            var containingAtom = plugin.containingAtom;
-            var steps = source.keys
-                .GroupBy(s => s.time.Snap(minFrameDistance).ToMilliseconds())
-                .Select(g =>
-                {
-                    var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
-                    return new BezierKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0, keyframe.curveType);
-                })
-                .ToList();
-
-            var target = new BezierAnimationCurve();
-            target.SmoothNeighbors(target.AddKey(0, source.GetFirstFrame().value, source.GetFirstFrame().curveType));
-            target.SmoothNeighbors(target.AddKey(source.GetLastFrame().time, source.GetLastFrame().value, source.GetLastFrame().curveType));
-
-            for (var iteration = 0; iteration < maxIterations; iteration++)
-            {
-                // Scan for largest difference with curve
-                // TODO: Use the buckets strategy
-                var keyWithLargestDiff = -1;
-                var largestDiff = 0f;
-                for (var i = 1; i < steps.Count - 1; i++)
-                {
-                    var diff = Mathf.Abs(target.Evaluate(steps[i].time) - steps[i].value);
-
-                    if (diff > largestDiff)
-                    {
-                        largestDiff = diff;
-                        keyWithLargestDiff = i;
-                    }
-                }
-
-                // Cannot find large enough diffs, exit
-                if (keyWithLargestDiff == -1) break;
-                var inRange = largestDiff >= _reduceMinPosDistanceJSON.val;
-                if (!inRange) break;
-
-                // This is an attempt to compare translations and rotations
-                var keyToApply = keyWithLargestDiff;
-
-                var step = steps[keyToApply];
-                steps.RemoveAt(keyToApply);
-                var key = target.SetKeyframe(step.time, step.value, step.curveType);
-                target.SmoothNeighbors(key);
-            }
-
-            t.StartBulkUpdates();
-            try
-            {
-                operations.Keyframes().RemoveAll(t);
-                for (var key = 0; key < target.length; key++)
-                {
-                    var keyframe = target.GetKeyframe(key);
-                    t.SetKeyframe(keyframe.time, keyframe.value);
-                }
-                t.AddEdgeFramesIfMissing(source.GetKeyframe(source.length - 1).time);
-            }
-            finally
-            {
-                t.EndBulkUpdates();
-            }
         }
 
         public void PlayAndRecordControllers()

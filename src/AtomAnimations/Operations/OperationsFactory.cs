@@ -30,12 +30,12 @@ namespace VamTimeline
             return new KeyframesOperations(_clip);
         }
 
-        public LayersOperations layers()
+        public LayersOperations Layers()
         {
             return new LayersOperations(_animation, _clip);
         }
 
-        public ImportOperations import()
+        public ImportOperations Import()
         {
             return new ImportOperations(_animation);
         }
@@ -47,7 +47,12 @@ namespace VamTimeline
 
         public OffsetOperations Offset()
         {
-            return new OffsetOperations(_animation, _clip);
+            return new OffsetOperations(_clip);
+        }
+
+        public ParamKeyframeReductionOperations ParamKeyframeReduction()
+        {
+            return new ParamKeyframeReductionOperations(_clip);
         }
     }
 }

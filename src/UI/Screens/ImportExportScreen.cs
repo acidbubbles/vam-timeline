@@ -214,7 +214,7 @@ namespace VamTimeline
                 imported.Add(plugin.serializer.DeserializeClip(clipJSON));
             }
 
-            operations.import().ImportClips(imported);
+            operations.Import().ImportClips(imported);
 
             if (imported.Count > 0) animation.SelectAnimation(imported.FirstOrDefault());
             else SuperController.LogError($"Timeline: No animations were imported.");

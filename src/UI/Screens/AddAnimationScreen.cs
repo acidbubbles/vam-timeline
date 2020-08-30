@@ -104,7 +104,7 @@ namespace VamTimeline
 
         private void AddLayer()
         {
-            var clip = operations.layers().Add();
+            var clip = operations.Layers().Add();
 
             animation.SelectAnimation(clip.animationName);
             ChangeScreen(EditAnimationScreen.ScreenName);
@@ -119,7 +119,7 @@ namespace VamTimeline
                 return;
             }
 
-            operations.layers().SplitLayer(targets);
+            operations.Layers().SplitLayer(targets);
         }
 
         #endregion
