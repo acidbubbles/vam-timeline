@@ -17,7 +17,7 @@ namespace VamTimeline
         public abstract string screenId { get; }
 
         protected AtomAnimation animation => plugin.animation;
-        protected OperationsFactory operations => new OperationsFactory(animation, current);
+        protected OperationsFactory operations => new OperationsFactory(plugin.containingAtom, animation, current);
 
         protected IAtomPlugin plugin;
         protected VamPrefabFactory prefabFactory;

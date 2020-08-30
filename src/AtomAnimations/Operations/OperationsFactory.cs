@@ -4,11 +4,14 @@ namespace VamTimeline
 {
     public class OperationsFactory
     {
+        private readonly Atom _containingAtom;
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
-        public OperationsFactory(AtomAnimation animation, AtomAnimationClip clip)
+        public OperationsFactory(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
         {
+            if (containingAtom == null) throw new ArgumentNullException(nameof(containingAtom));
+            _containingAtom = containingAtom;
             if (animation == null) throw new ArgumentNullException(nameof(animation));
             _animation = animation;
             if (clip == null) throw new ArgumentNullException(nameof(clip));
@@ -48,6 +51,16 @@ namespace VamTimeline
         public OffsetOperations Offset()
         {
             return new OffsetOperations(_clip);
+        }
+
+        public MocapImportOperations MocapImport(MocapImportSettings settings)
+        {
+            return new MocapImportOperations(_containingAtom, _animation, _clip, settings);
+        }
+
+        public MocapReduceOperations MocapReduce(MocapReduceSettings settings)
+        {
+            return new MocapReduceOperations(_containingAtom, _animation, _clip, settings);
         }
 
         public ParamKeyframeReductionOperations ParamKeyframeReduction()

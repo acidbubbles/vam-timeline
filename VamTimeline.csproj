@@ -75,6 +75,9 @@
     <Compile Include="src\AtomAnimations\Operations\ImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\LayersOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\MocapImportOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\MocapOperationsBase.cs" />
+    <Compile Include="src\AtomAnimations\Operations\MocapReduceOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OffsetOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
     <Compile Include="src\AtomAnimations\Operations\ParamKeyframeReductionOperations.cs" />

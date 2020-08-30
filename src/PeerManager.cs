@@ -219,11 +219,11 @@ namespace VamTimeline
                 string animationName = (string)e[1];
                 string animationLayer = (string)e[2];
                 if (animation.clips.Any(c => c.animationLayer == animationLayer))
-                    clip = new OperationsFactory(animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
+                    clip = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
                 else
                     clip = animation.CreateClip(animationLayer, animationName);
             }
-            new OperationsFactory(animation, clip).Resize().CropOrExtendEnd((float)e[3]);
+            new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd((float)e[3]);
             var nextAnimationName = (string)e[4];
             if (!string.IsNullOrEmpty(nextAnimationName) && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == nextAnimationName))
             {
