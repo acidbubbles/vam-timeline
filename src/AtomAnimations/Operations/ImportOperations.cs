@@ -29,11 +29,6 @@ namespace VamTimeline
                 {
                     clip.autoPlay = false;
                 }
-                if (clip.nextAnimationName != null && !_animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == clip.nextAnimationName))
-                {
-                    clip.nextAnimationName = null;
-                    clip.nextAnimationTime = 0f;
-                }
             }
 
             _animation.Initialize();
