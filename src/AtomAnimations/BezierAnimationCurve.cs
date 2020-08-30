@@ -261,39 +261,10 @@ namespace VamTimeline
                             current.controlPointOut = current.value;
                         break;
                     case CurveTypeValues.SmoothLocal:
+                        SmoothLocal(previous, previousTime, current, next, nextTime);
+                        break;
                     case CurveTypeValues.SmoothGlobal:
-                        {
-                            if (current.curveType == CurveTypeValues.SmoothGlobal && globalSmoothing) continue;
-                            if (next != null && previous != null)
-                            {
-                                var bothSegmentsDuration = nextTime - previousTime;
-                                var inRatio = (current.time - previousTime) / bothSegmentsDuration;
-                                var outRatio = (nextTime - current.time) / bothSegmentsDuration;
-                                var inHandle = (current.value - previous.value) / 3f;
-                                var outHandle = (next.value - current.value) / 3f;
-                                var avg = (inHandle + outHandle) / 2f;
-                                if (inRatio > outRatio)
-                                {
-                                    current.controlPointIn = current.value - avg;
-                                    current.controlPointOut = current.value + avg * (outRatio / inRatio);
-                                }
-                                else
-                                {
-                                    current.controlPointIn = current.value - avg * (inRatio / outRatio);
-                                    current.controlPointOut = current.value + avg;
-                                }
-                            }
-                            else if (previous == null)
-                            {
-                                current.controlPointIn = current.value;
-                                current.controlPointOut = current.value + ((next.value - current.value) / 3f);
-                            }
-                            else if (next == null)
-                            {
-                                current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
-                                current.controlPointOut = current.value;
-                            }
-                        }
+                        if (!globalSmoothing) SmoothLocal(previous, previousTime, current, next, nextTime);
                         break;
                     case CurveTypeValues.LinearFlat:
                         if (previous != null)
@@ -323,6 +294,39 @@ namespace VamTimeline
                     default:
                         continue;
                 }
+            }
+        }
+
+        private static void SmoothLocal(BezierKeyframe previous, float previousTime, BezierKeyframe current, BezierKeyframe next, float nextTime)
+        {
+            if (next != null && previous != null)
+            {
+                var bothSegmentsDuration = nextTime - previousTime;
+                var inRatio = (current.time - previousTime) / bothSegmentsDuration;
+                var outRatio = (nextTime - current.time) / bothSegmentsDuration;
+                var inHandle = (current.value - previous.value) / 3f;
+                var outHandle = (next.value - current.value) / 3f;
+                var avg = (inHandle + outHandle) / 2f;
+                if (inRatio > outRatio)
+                {
+                    current.controlPointIn = current.value - avg;
+                    current.controlPointOut = current.value + avg * (outRatio / inRatio);
+                }
+                else
+                {
+                    current.controlPointIn = current.value - avg * (inRatio / outRatio);
+                    current.controlPointOut = current.value + avg;
+                }
+            }
+            else if (previous == null)
+            {
+                current.controlPointIn = current.value;
+                current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+            }
+            else if (next == null)
+            {
+                current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                current.controlPointOut = current.value;
             }
         }
 
@@ -415,7 +419,10 @@ namespace VamTimeline
 
         public void SmoothNeighbors(int key)
         {
-            _compute.AutoComputeControlPoints(keys, loop);
+            var previous = key > 0 ? keys[key - 1] : null;
+            var current = keys[key];
+            var next = key < keys.Count - 1 ? keys[key + 1] : null;
+            SmoothLocal(previous, previous?.time ?? 0f, current, next, next?.time ?? 0f);
         }
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)
