@@ -42,6 +42,8 @@ namespace VamTimeline
 
         private void OnFreeControllerPositionChanged(FreeControllerV3 controller)
         {
+            if (animation.isPlaying || animation.isSampling) return;
+
             // Ignore grabbed event, we will receive the grab end later
             if (controller.isGrabbing || controller.possessed) return;
 

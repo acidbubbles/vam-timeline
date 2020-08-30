@@ -51,6 +51,7 @@ namespace VamTimeline
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
         public bool isPlaying { get; private set; }
+        public bool isSampling { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
         public AtomAnimationClip current { get; private set; }
@@ -532,9 +533,17 @@ namespace VamTimeline
                 clip.playbackEnabled = true;
                 clip.playbackWeight = 1f;
             }
-            SampleTriggers();
-            SampleFloatParams();
-            SampleControllers();
+            isSampling = true;
+            try
+            {
+                SampleTriggers();
+                SampleFloatParams();
+                SampleControllers();
+            }
+            finally
+            {
+                isSampling = false;
+            }
             foreach (var clip in GetMainClipPerLayer())
             {
                 clip.playbackEnabled = false;
