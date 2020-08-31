@@ -230,7 +230,7 @@ namespace VamTimeline
         public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, bool dirty = true)
         {
             var keyframe = x.GetKeyframeAt(time);
-            var curveType = keyframe?.curveType ?? CurveTypeValues.SmoothLocal;
+            var curveType = (keyframe == null || keyframe.curveType == CurveTypeValues.CopyPrevious) ? CurveTypeValues.SmoothLocal : keyframe.curveType;
             var key = x.SetKeyframe(time, localPosition.x, curveType);
             y.SetKeyframe(time, localPosition.y, curveType);
             z.SetKeyframe(time, localPosition.z, curveType);

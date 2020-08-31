@@ -248,7 +248,14 @@ namespace VamTimeline
                     nextTime = keys[keysCount - 1].time;
                 }
 
-                switch (current.curveType)
+                var curveType = current.curveType;
+                if (curveType == CurveTypeValues.CopyPrevious && previous != null)
+                {
+                    current.value = previous.value;
+                    curveType = previous.curveType == CurveTypeValues.CopyPrevious ? CurveTypeValues.SmoothLocal : previous.curveType;
+                }
+
+                switch (curveType)
                 {
                     case CurveTypeValues.Linear:
                         if (previous != null)
