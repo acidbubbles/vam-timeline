@@ -67,7 +67,7 @@ namespace VamTimeline
             {
                 foreach (var curve in target.GetCurves())
                 {
-                    var lastCurveType = curve.GetLastFrame()?.curveType ?? CurveTypeValues.SmoothGlobal;
+                    var lastCurveType = curve.GetLastFrame()?.curveType ?? CurveTypeValues.SmoothLocal;
                     var key = curve.AddKey(newAnimationLength, curve.Evaluate(newAnimationLength), lastCurveType);
                 }
                 target.dirty = true;
