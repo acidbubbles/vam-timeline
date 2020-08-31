@@ -258,20 +258,13 @@ namespace VamTimeline
                 switch (curveType)
                 {
                     case CurveTypeValues.Linear:
-                        if (previous != null)
-                            current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
-                        else
-                            current.controlPointIn = current.value;
-                        if (next != null)
-                            current.controlPointOut = current.value + ((next.value - current.value) / 3f);
-                        else
-                            current.controlPointOut = current.value;
+                        LinearInterpolation(previous, current, next);
                         break;
                     case CurveTypeValues.SmoothLocal:
-                        SmoothLocal(previous, previousTime, current, next, nextTime);
+                        SmoothLocalInterpolation(previous, previousTime, current, next, nextTime);
                         break;
                     case CurveTypeValues.SmoothGlobal:
-                        if (!globalSmoothing) SmoothLocal(previous, previousTime, current, next, nextTime);
+                        if (!globalSmoothing) SmoothLocalInterpolation(previous, previousTime, current, next, nextTime);
                         break;
                     case CurveTypeValues.LinearFlat:
                         if (previous != null)
@@ -304,7 +297,19 @@ namespace VamTimeline
             }
         }
 
-        private static void SmoothLocal(BezierKeyframe previous, float previousTime, BezierKeyframe current, BezierKeyframe next, float nextTime)
+        private static void LinearInterpolation(BezierKeyframe previous, BezierKeyframe current, BezierKeyframe next)
+        {
+            if (previous != null)
+                current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+            else
+                current.controlPointIn = current.value;
+            if (next != null)
+                current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+            else
+                current.controlPointOut = current.value;
+        }
+
+        private static void SmoothLocalInterpolation(BezierKeyframe previous, float previousTime, BezierKeyframe current, BezierKeyframe next, float nextTime)
         {
             if (next != null && previous != null)
             {
@@ -429,7 +434,7 @@ namespace VamTimeline
             var previous = key > 0 ? keys[key - 1] : null;
             var current = keys[key];
             var next = key < keys.Count - 1 ? keys[key + 1] : null;
-            SmoothLocal(previous, previous?.time ?? 0f, current, next, next?.time ?? 0f);
+            SmoothLocalInterpolation(previous, previous?.time ?? 0f, current, next, next?.time ?? 0f);
         }
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)

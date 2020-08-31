@@ -744,7 +744,7 @@ namespace VamTimeline
                 if (clip.loop)
                     target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
 
-                target.ReapplyCurveTypes(clip.loop);
+                target.ComputeCurves(clip.loop);
 
                 if (clip.ensureQuaternionContinuity)
                 {

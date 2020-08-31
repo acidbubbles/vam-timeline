@@ -74,25 +74,30 @@ namespace VamTimeline
         {
             var containingAtom = _containingAtom;
             var totalStopwatch = Stopwatch.StartNew();
+            var keyOps = new KeyframesOperations(_clip);
+            var targetOps = new TargetsOperations(_animation, _clip);
 
             yield return 0;
 
             var controlCounter = 0;
             var filterSelected = _clip.targetControllers.Any(c => c.selected);
-            foreach (var mot in containingAtom.motionAnimationControls)
+            var motControls = containingAtom.motionAnimationControls
+                .Where(m => m?.clip?.clipLength > 0.1f)
+                .Where(m => !filterSelected || _clip.targetControllers.Any(t => t.selected && t.controller == m.controller))
+                .Where(m => m.clip.steps.Any(s => s.positionOn || s.rotationOn))
+                .ToList();
+
+            foreach (var mot in motControls)
             {
                 FreeControllerAnimationTarget target = null;
                 FreeControllerV3 ctrl;
 
-                yield return new Progress { controllersProcessed = ++controlCounter, controllersTotal = _containingAtom.motionAnimationControls.Length };
+                yield return new Progress { controllersProcessed = ++controlCounter, controllersTotal = motControls.Count };
 
                 try
                 {
-                    if (mot == null || mot.clip == null) continue;
-                    if (mot.clip.clipLength <= 0.1) continue;
                     ctrl = mot.controller;
                     target = _clip.targetControllers.FirstOrDefault(t => t.controller == ctrl);
-                    if (filterSelected && (target == null || !target.selected)) continue;
 
                     if (_animation.EnumerateLayers().Where(l => l != _clip.animationLayer).Select(l => _animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == ctrl))
                     {
@@ -102,33 +107,24 @@ namespace VamTimeline
 
                     if (target == null)
                     {
-                        if (!mot.clip.steps.Any(s => s.positionOn || s.rotationOn)) continue;
-                        target = new TargetsOperations(_animation, _clip).Add(ctrl);
+                        target = targetOps.Add(ctrl);
                         target.AddEdgeFramesIfMissing(_clip.animationLength);
+                    }
+                    else
+                    {
+                        keyOps.RemoveAll(target);
                     }
                     target.Validate(_clip.animationLength);
                     target.StartBulkUpdates();
-                    new KeyframesOperations(_clip).RemoveAll(target);
+
+                    var enumerator = ProcessController(mot.clip, target, ctrl).GetEnumerator();
+                    while (TryMoveNext(enumerator, target))
+                        yield return enumerator.Current;
                 }
                 finally
                 {
                     target?.EndBulkUpdates();
                 }
-
-                IEnumerator enumerator;
-                try
-                {
-                    enumerator = ProcessController(mot.clip, target, ctrl).GetEnumerator();
-                }
-                finally
-                {
-                    target.EndBulkUpdates();
-                }
-
-                while (TryMoveNext(enumerator, target))
-                    yield return 0;
-
-                target.EndBulkUpdates();
             }
         }
 

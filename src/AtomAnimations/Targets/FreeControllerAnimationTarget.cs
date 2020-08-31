@@ -203,13 +203,13 @@ namespace VamTimeline
             Validate(GetLeadCurve(), animationLength);
         }
 
-        public void ReapplyCurveTypes(bool loop)
+        public void ComputeCurves(bool loop)
         {
             if (x.length < 2) return;
 
             foreach (var curve in curves)
             {
-                ReapplyCurveTypes(curve, loop);
+                ComputeCurves(curve, loop);
             }
         }
 

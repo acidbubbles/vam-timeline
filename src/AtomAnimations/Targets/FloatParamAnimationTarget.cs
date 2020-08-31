@@ -124,7 +124,7 @@ namespace VamTimeline
         {
             if (value.length < 2) return;
 
-            ReapplyCurveTypes(value, loop);
+            ComputeCurves(value, loop);
         }
 
         public override BezierAnimationCurve GetLeadCurve()

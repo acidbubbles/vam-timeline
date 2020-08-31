@@ -44,6 +44,7 @@ namespace VamTimeline
         }
         public void EndBulkUpdates()
         {
+            if(_bulk == 0) throw new InvalidOperationException("There is no bulk update in progress");
             _bulk--;
             if (_bulk == 0 && dirty) onAnimationKeyframesDirty.Invoke();
         }

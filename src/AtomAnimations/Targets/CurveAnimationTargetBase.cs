@@ -47,7 +47,7 @@ namespace VamTimeline
             }
         }
 
-        protected void ReapplyCurveTypes(BezierAnimationCurve curve, bool loop)
+        protected void ComputeCurves(BezierAnimationCurve curve, bool loop)
         {
             curve.ComputeCurves();
         }
