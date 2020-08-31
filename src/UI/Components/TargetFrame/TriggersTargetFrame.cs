@@ -48,16 +48,8 @@ namespace VamTimeline
             }
         }
 
-        public override void ToggleKeyframe(bool enable)
+        protected override void ToggleKeyframeImpl(float time, bool enable)
         {
-            if (plugin.animation.isPlaying) return;
-            var time = plugin.animation.clipTime.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
-            {
-                if (!enable)
-                    SetToggle(true);
-                return;
-            }
             if (enable)
             {
                 GetOrCreateTriggerAtCurrentTime();

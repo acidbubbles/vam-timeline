@@ -121,13 +121,21 @@ namespace VamTimeline
 
             ui.gameObject.SetActive(true);
 
-            toggle.toggle.onValueChanged.AddListener(ToggleKeyframeInternal);
+            toggle.toggle.onValueChanged.AddListener(ToggleKeyframe);
         }
 
-        private void ToggleKeyframeInternal(bool on)
+        public void ToggleKeyframe(bool on)
         {
             if (_ignoreNextToggleEvent > 0) return;
-            ToggleKeyframe(on);
+            if (plugin.animation.isPlaying) return;
+            var time = plugin.animation.clipTime.Snap();
+            if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
+            {
+                if (!on)
+                    SetToggle(true);
+                return;
+            }
+            ToggleKeyframeImpl(time, on);
         }
 
         protected Text CreateValueText()
@@ -232,7 +240,7 @@ namespace VamTimeline
 
         protected abstract void CreateCustom();
         protected abstract void CreateExpandPanel(RectTransform container);
-        public abstract void ToggleKeyframe(bool enable);
+        protected abstract void ToggleKeyframeImpl(float time, bool enable);
 
         public virtual void OnDestroy()
         {
