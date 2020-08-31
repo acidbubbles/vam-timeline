@@ -139,6 +139,7 @@ namespace VamTimeline
                             nextPos - new Vector2(handleSize / 2f, -handleSize / 2f)
                         }));
                     }
+#endif
                     // Render keyframe
                     vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
                     {
@@ -147,7 +148,6 @@ namespace VamTimeline
                         handlePos - new Vector2(handleSize, handleSize),
                         handlePos - new Vector2(handleSize, -handleSize)
                     }));
-#endif
                 }
             }
 
