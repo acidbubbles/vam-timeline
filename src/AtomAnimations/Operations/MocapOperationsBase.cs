@@ -20,10 +20,10 @@ namespace VamTimeline
             public Vector3 position;
             public Quaternion rotation;
 
-            public static ControllerKeyframe FromStep(float time, MotionAnimationStep s, Atom containingAtom, FreeControllerV3 ctrl)
+            public static ControllerKeyframe FromStep(float time, MotionAnimationStep s, Transform parent, FreeControllerV3 ctrl)
             {
-                var localPosition = s.positionOn ? s.position - containingAtom.transform.position : ctrl.transform.localPosition;
-                var locationRotation = s.rotationOn ? Quaternion.Inverse(containingAtom.transform.rotation) * s.rotation : ctrl.transform.localRotation;
+                var localPosition = s.positionOn ? s.position - parent.position : ctrl.transform.localPosition;
+                var locationRotation = s.rotationOn ? Quaternion.Inverse(parent.rotation) * s.rotation : ctrl.transform.localRotation;
                 return new ControllerKeyframe
                 {
                     time = time,
@@ -33,9 +33,9 @@ namespace VamTimeline
             }
         }
 
-        protected readonly Atom _containingAtom;
         protected readonly AtomAnimation _animation;
         protected readonly AtomAnimationClip _clip;
+        private readonly Atom _containingAtom;
 
         public MocapOperationsBase(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
         {

@@ -59,10 +59,7 @@ namespace VamTimeline
             if (target == null) return;
 
             // Ignore grab release at the end of a mocap recording
-            if(target.ignoreGrabEnd) {
-                SuperController.LogMessage($"Ignoed grab");
-                return;
-                }
+            if(target.ignoreGrabEnd) return;
 
             RecordFreeControllerPosition(target);
         }

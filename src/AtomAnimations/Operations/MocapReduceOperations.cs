@@ -38,7 +38,6 @@ namespace VamTimeline
             var minFrameDistance = 1f / _settings.maxFramesPerSecond;
             var maxIterations = (int)(_clip.animationLength * 10);
 
-            var containingAtom = _containingAtom;
             var steps = clip.steps
                 .Where(s => s.positionOn || s.rotationOn)
                 .TakeWhile(s => s.timeStep <= _clip.animationLength)
@@ -46,7 +45,7 @@ namespace VamTimeline
                 .Select(g =>
                 {
                     var step = g.OrderBy(s => Math.Abs(g.Key - s.timeStep)).First();
-                    return ControllerKeyframe.FromStep((g.Key / 1000f).Snap(), step, containingAtom, ctrl);
+                    return ControllerKeyframe.FromStep((g.Key / 1000f).Snap(), step, target.GetParent(), ctrl);
                 })
                 .ToList();
 

@@ -21,7 +21,6 @@ namespace VamTimeline
         protected override IEnumerable ProcessController(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var minPositionDistanceForFlat = 0.01f;
-            var containingAtom = _containingAtom;
             var frameLength = 1f / _settings.maxFramesPerSecond;
 
             var lastRecordedFrame = float.MinValue;
@@ -32,7 +31,7 @@ namespace VamTimeline
                 var time = step.timeStep.Snap(0.01f);
                 if (time - lastRecordedFrame < frameLength) continue;
                 if (time > _clip.animationLength) break;
-                var k = ControllerKeyframe.FromStep(time, step, containingAtom, ctrl);
+                var k = ControllerKeyframe.FromStep(time, step, target.GetParent(), ctrl);
                 var key = target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
                 if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                 {
