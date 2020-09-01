@@ -431,10 +431,14 @@ namespace VamTimeline
 
         public void SmoothNeighbors(int key)
         {
+            var previous2 = key > 1 ? keys[key - 2] : null;
             var previous = key > 0 ? keys[key - 1] : null;
             var current = keys[key];
             var next = key < keys.Count - 1 ? keys[key + 1] : null;
+            var next2 = key < keys.Count - 2 ? keys[key + 2] : null;
+            if (previous != null) SmoothLocalInterpolation(previous2, previous2?.time ?? 0f, previous, current, current.time);
             SmoothLocalInterpolation(previous, previous?.time ?? 0f, current, next, next?.time ?? 0f);
+            if (next != null) SmoothLocalInterpolation(current, current.time, next, next2, next2?.time ?? 0f);
         }
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)

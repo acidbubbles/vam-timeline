@@ -61,7 +61,7 @@ namespace VamTimeline
                 };
             var importRecordedOptionsUI = prefabFactory.CreatePopup(_importRecordedOptionsJSON, false);
 
-            _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", _lastResizeAnimation, (bool val) => _lastResizeAnimation = val);
+            _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", current.targetControllers.Count == 0 || _lastResizeAnimation, (bool val) => _lastResizeAnimation = val);
             var resizeAnimationUI = prefabFactory.CreateToggle(_resizeAnimationJSON);
 
             _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, (float val) => _lastReduceMinPosDistance = val, 0.001f, 0.5f, true)
