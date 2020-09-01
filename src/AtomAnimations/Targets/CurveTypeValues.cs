@@ -5,6 +5,7 @@ namespace VamTimeline
 {
     public static class CurveTypeValues
     {
+        public const int Undefined = -1;
         public const int LeaveAsIs = 0;
         public const int Flat = 1;
         public const int FlatLong = 9;
@@ -19,8 +20,8 @@ namespace VamTimeline
 
         private static readonly Dictionary<int, string> _labelMap = new Dictionary<int, string>
         {
-            {SmoothGlobal, "Smooth (Global)"},
             {SmoothLocal, "Smooth (Local)"},
+            {SmoothGlobal, "Smooth (Global)"},
             {Linear, "Linear"},
             {Constant, "Constant"},
             {Flat, "Flat"},

@@ -227,10 +227,11 @@ namespace VamTimeline
             return SetKeyframe(time, controller.transform.localPosition, controller.transform.localRotation);
         }
 
-        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, bool dirty = true)
+        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool dirty = true)
         {
             var keyframe = x.GetKeyframeAt(time);
-            var curveType = (keyframe == null || keyframe.curveType == CurveTypeValues.CopyPrevious) ? CurveTypeValues.SmoothLocal : keyframe.curveType;
+            if (curveType == CurveTypeValues.Undefined)
+                curveType = (keyframe == null || keyframe.curveType == CurveTypeValues.CopyPrevious) ? CurveTypeValues.SmoothLocal : keyframe.curveType;
             var key = x.SetKeyframe(time, localPosition.x, curveType);
             y.SetKeyframe(time, localPosition.y, curveType);
             z.SetKeyframe(time, localPosition.z, curveType);
