@@ -31,7 +31,7 @@ namespace VamTimeline
                 var time = step.timeStep.Snap(0.01f);
                 if (time - lastRecordedFrame < frameLength) continue;
                 if (time > _clip.animationLength) break;
-                var k = ControllerKeyframe.FromStep(time, step, target.GetParent(), ctrl);
+                var k = ControllerKeyframe.FromStep(time, step, ctrl);
                 var key = target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
                 if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                 {

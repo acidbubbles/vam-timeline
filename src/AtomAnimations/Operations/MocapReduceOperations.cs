@@ -6,12 +6,12 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-        public class MocapReduceSettings
-        {
-            public float maxFramesPerSecond;
-            public float minPosDelta;
-            public float minRotDelta;
-        }
+    public class MocapReduceSettings
+    {
+        public float maxFramesPerSecond;
+        public float minPosDelta;
+        public float minRotDelta;
+    }
 
     public class MocapReduceOperations : MocapOperationsBase
     {
@@ -45,7 +45,7 @@ namespace VamTimeline
                 .Select(g =>
                 {
                     var step = g.OrderBy(s => Math.Abs(g.Key - s.timeStep)).First();
-                    return ControllerKeyframe.FromStep((g.Key / 1000f).Snap(), step, target.GetParent(), ctrl);
+                    return ControllerKeyframe.FromStep((g.Key / 1000f).Snap(), step, ctrl);
                 })
                 .ToList();
 
@@ -117,7 +117,7 @@ namespace VamTimeline
                         buckets.Insert(bucketToSplitIndex, Scan(steps, target, keyToApply + 1, bucketToSplit.to));
                     if (keyToApply - 1 - bucketToSplit.from > 2)
                         buckets.Insert(bucketToSplitIndex, Scan(steps, target, bucketToSplit.from, keyToApply - 1));
-                }
+                    }
 
                 yield return 0;
             }
