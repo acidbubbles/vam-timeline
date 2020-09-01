@@ -15,6 +15,8 @@ namespace VamTimeline
         public readonly BezierAnimationCurve rotZ = new BezierAnimationCurve();
         public readonly BezierAnimationCurve rotW = new BezierAnimationCurve();
         public readonly List<BezierAnimationCurve> curves;
+        // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
+        internal bool ignoreGrabEnd;
 
         public override string name => controller.name;
 

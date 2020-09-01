@@ -58,6 +58,12 @@ namespace VamTimeline
             var target = animation.current.targetControllers.FirstOrDefault(t => t.controller == controller);
             if (target == null) return;
 
+            // Ignore grab release at the end of a mocap recording
+            if(target.ignoreGrabEnd) {
+                SuperController.LogMessage($"Ignoed grab");
+                return;
+                }
+
             RecordFreeControllerPosition(target);
         }
 

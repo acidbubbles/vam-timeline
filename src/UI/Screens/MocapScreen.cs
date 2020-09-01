@@ -289,6 +289,7 @@ namespace VamTimeline
                 target.playbackEnabled = true;
             SuperController.singleton.motionAnimationMaster.StopPlayback();
             _recordingControllersCoroutine = null;
+            ClearAllGrabbedControllers();
             if (!plugin.containingAtom.mainController.selected)
             {
                 _importMocapOnLoad = true;
@@ -300,6 +301,23 @@ namespace VamTimeline
         {
             // There's a bool but it's protected.
             return SuperController.singleton.helpText?.StartsWith("Recording...") ?? false;
+        }
+
+        private void ClearAllGrabbedControllers()
+        {
+            foreach (var target in current.targetControllers.Where(t => t.controller.isGrabbing))
+            {
+                target.ignoreGrabEnd = true;
+                try
+                {
+                    target.controller.RestorePreLinkState();
+                    target.controller.isGrabbing = false;
+                }
+                finally
+                {
+                    target.ignoreGrabEnd = false;
+                }
+            }
         }
 
         private void ClearMocapData()
