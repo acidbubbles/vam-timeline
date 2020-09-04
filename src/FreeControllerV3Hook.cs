@@ -59,7 +59,7 @@ namespace VamTimeline
             if (target == null) return;
 
             // Ignore grab release at the end of a mocap recording
-            if(target.ignoreGrabEnd) return;
+            if (target.ignoreGrabEnd) return;
 
             RecordFreeControllerPosition(target);
         }

@@ -231,9 +231,7 @@ namespace VamTimeline
 
         public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool dirty = true)
         {
-            var keyframe = x.GetKeyframeAt(time);
-            if (curveType == CurveTypeValues.Undefined)
-                curveType = (keyframe == null || keyframe.curveType == CurveTypeValues.CopyPrevious) ? CurveTypeValues.SmoothLocal : keyframe.curveType;
+            curveType = SelectCurveType(time, curveType);
             var key = x.SetKeyframe(time, localPosition.x, curveType);
             y.SetKeyframe(time, localPosition.y, curveType);
             z.SetKeyframe(time, localPosition.z, curveType);

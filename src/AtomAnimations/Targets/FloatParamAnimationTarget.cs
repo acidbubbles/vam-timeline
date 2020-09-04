@@ -139,9 +139,8 @@ namespace VamTimeline
 
         public void SetKeyframe(float time, float value, bool dirty = true)
         {
-            var keyframe = this.value.GetKeyframeAt(time);
-            if (keyframe != null) keyframe.value = value;
-            else this.value.AddKey(time, value, CurveTypeValues.SmoothLocal);
+            var curveType = SelectCurveType(time, CurveTypeValues.Undefined);
+            this.value.SetKeyframe(time, value, curveType);
             if (dirty) base.dirty = true;
         }
 

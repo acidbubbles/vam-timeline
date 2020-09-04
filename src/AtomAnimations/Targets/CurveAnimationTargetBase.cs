@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -65,6 +66,22 @@ namespace VamTimeline
                 }
             }
             dirty = true;
+        }
+
+        protected int SelectCurveType(float time, int curveType)
+        {
+            if (curveType != CurveTypeValues.Undefined)
+                return curveType;
+            var curve = GetLeadCurve();
+            if (curve.keys.Count == 0)
+                return CurveTypeValues.SmoothLocal;
+            var key = curve.KeyframeBinarySearch(time, true);
+            if (key == -1)
+                return CurveTypeValues.SmoothLocal;
+            var keyframe = curve.keys[key];
+            if (keyframe.curveType != CurveTypeValues.CopyPrevious)
+                return keyframe.curveType;
+            return CurveTypeValues.SmoothLocal;
         }
 
         public int GetKeyframeCurveType(float time)
