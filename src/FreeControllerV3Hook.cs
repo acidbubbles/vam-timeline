@@ -42,6 +42,10 @@ namespace VamTimeline
 
         private void OnFreeControllerPositionChanged(FreeControllerV3 controller)
         {
+            // Only record moves in edit mode
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
+
+            // Ignore when something else is happening that takes precedence
             if (animation.isPlaying || animation.isSampling) return;
 
             // Ignore grabbed event, we will receive the grab end later
