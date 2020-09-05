@@ -458,9 +458,7 @@ namespace VamTimeline
         {
             foreach (var action in _clipStorables)
             {
-                DeregisterAction(action.playJSON);
-                DeregisterFloat(action.speedJSON);
-                DeregisterFloat(action.weightJSON);
+                DeregisterAction(action);
             }
             _clipStorables.Clear();
 
@@ -481,6 +479,13 @@ namespace VamTimeline
 
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+        }
+
+        private void DeregisterAction(AnimStorableActionMap action)
+        {
+            DeregisterAction(action.playJSON);
+            DeregisterFloat(action.speedJSON);
+            DeregisterFloat(action.weightJSON);
         }
 
         private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
@@ -520,12 +525,16 @@ namespace VamTimeline
                     if (_clipStorables.Any(a => a.animationName == animName)) continue;
                     CreateAndRegisterClipStorables(animName);
                 }
-                if (animationJSON.choices.Count > _clipStorables.Count)
+
+                if (_clipStorables.Count > animationJSON.choices.Count)
                 {
                     foreach (var action in _clipStorables.ToArray())
                     {
                         if (!animationJSON.choices.Contains(action.animationName))
+                        {
+                            DeregisterAction(action);
                             _clipStorables.Remove(action);
+                        }
                     }
                 }
 
