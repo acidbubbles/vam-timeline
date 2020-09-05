@@ -27,7 +27,7 @@
 		"scope": "csharp",
 		"prefix": "loga",
 		"body": [
-			"SuperController.LogMessage($\"${1:prefix}: {string.Join(\", \", ${2:list}.Select(x => $\"${3:prop}\".ToArray()}\");"
+			"SuperController.LogMessage($\"${1:prefix}: {string.Join(\", \", ${2:list}.Select(x => $\"{${3:prop}}\").ToArray())}\");"
 		],
 		"description": "Write an array's values to VaM's log"
 	}
