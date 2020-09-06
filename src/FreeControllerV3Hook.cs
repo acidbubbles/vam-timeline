@@ -51,6 +51,9 @@ namespace VamTimeline
             // Ignore grabbed event, we will receive the grab end later
             if (controller.isGrabbing || controller.possessed) return;
 
+            // Do not create a keyframe when loading a preset
+            if (controller.isPresetRestore) return;
+
             // Ignore comply nodes, since they will dispatch during the animation
             if (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply) return;
 
