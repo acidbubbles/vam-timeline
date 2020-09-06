@@ -470,9 +470,9 @@ namespace VamTimeline
             if (to == null) throw new ArgumentNullException(nameof(to));
 
             from.SetNext(null, 0);
-            Blend(from, 0f, current.blendDuration);
+            Blend(from, 0f, to.blendDuration);
             from.playbackMainInLayer = false;
-            Blend(to, 1f, current.blendDuration);
+            Blend(to, 1f, to.blendDuration);
             to.playbackMainInLayer = true;
             if (to.playbackWeight == 0)
             {
