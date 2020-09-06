@@ -231,7 +231,7 @@ namespace VamTimeline
             }
         }
 
-        public float blendDuration
+        public float blendInDuration
         {
             get
             {
@@ -242,7 +242,7 @@ namespace VamTimeline
                 if (_blendDuration == value) return;
                 _blendDuration = value;
                 UpdateForcedNextAnimationTime();
-                onAnimationSettingsChanged.Invoke(nameof(blendDuration));
+                onAnimationSettingsChanged.Invoke(nameof(blendInDuration));
             }
         }
         public string nextAnimationName
@@ -704,7 +704,7 @@ namespace VamTimeline
                 {
                     nextAnimationTime = 0;
                 }
-                nextAnimationTime = (animationLength - blendDuration).Snap();
+                nextAnimationTime = (animationLength - blendInDuration).Snap();
             }
             finally
             {

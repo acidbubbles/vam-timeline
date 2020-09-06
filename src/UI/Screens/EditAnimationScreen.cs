@@ -243,27 +243,27 @@ namespace VamTimeline
             var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
 
-            _blendDurationJSON = new JSONStorableFloat("Blend duration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
+            _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
         }
 
         private void InitPreviewUI()
         {
-            _nextAnimationPreviewJSON = new JSONStorableString("Next Preview", "");
+            _nextAnimationPreviewJSON = new JSONStorableString("Next preview", "");
             var nextAnimationResultUI = prefabFactory.CreateTextField(_nextAnimationPreviewJSON);
             nextAnimationResultUI.height = 50f;
         }
 
         private void InitTransitionUI()
         {
-            _transitionPreviousJSON = new JSONStorableBool("Transition (Previous)", false, (bool val) => ChangeTransitionPrevious(val));
+            _transitionPreviousJSON = new JSONStorableBool("Transition (previous)", false, (bool val) => ChangeTransitionPrevious(val));
             prefabFactory.CreateToggle(_transitionPreviousJSON);
 
-            _transitionNextJSON = new JSONStorableBool("Transition (Next)", false, (bool val) => ChangeTransitionNext(val));
+            _transitionNextJSON = new JSONStorableBool("Transition (next)", false, (bool val) => ChangeTransitionNext(val));
             prefabFactory.CreateToggle(_transitionNextJSON);
 
-            _transitionSyncTime = new JSONStorableBool("Transition (Sync Time)", true, (bool val) => current.syncTransitionTime = val);
+            _transitionSyncTime = new JSONStorableBool("Transition (sync time)", true, (bool val) => current.syncTransitionTime = val);
             prefabFactory.CreateToggle(_transitionSyncTime);
         }
 
@@ -332,7 +332,7 @@ namespace VamTimeline
             }
             else
             {
-                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.nextAnimationTime + current.blendDuration) / current.animationLength, 2)} times including blending";
+                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.nextAnimationTime + current.blendInDuration) / current.animationLength, 2)} times including blending";
             }
         }
 
@@ -419,7 +419,7 @@ namespace VamTimeline
             v = v.Snap();
             if (!current.loop && v >= (current.animationLength - 0.001f))
                 _blendDurationJSON.valNoCallback = v = (current.animationLength - 0.001f).Snap();
-            current.blendDuration = v;
+            current.blendInDuration = v;
         }
 
         private void ChangeTransitionPrevious(bool val)
@@ -442,7 +442,7 @@ namespace VamTimeline
             current.nextAnimationName = val;
             SetNextAnimationTime(
                 current.nextAnimationTime == 0
-                ? current.nextAnimationTime = current.animationLength - current.blendDuration
+                ? current.nextAnimationTime = current.animationLength - current.blendInDuration
                 : current.nextAnimationTime
             );
             RefreshTransitionUI();
@@ -458,7 +458,7 @@ namespace VamTimeline
             }
             else if (!current.loop)
             {
-                nextTime = (current.animationLength - current.blendDuration).Snap();
+                nextTime = (current.animationLength - current.blendInDuration).Snap();
                 current.nextAnimationTime = nextTime;
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
                 return;
@@ -535,7 +535,7 @@ namespace VamTimeline
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _autoPlayJSON.valNoCallback = current.autoPlay;
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
-            _blendDurationJSON.valNoCallback = current.blendDuration;
+            _blendDurationJSON.valNoCallback = current.blendInDuration;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
             _transitionSyncTime.valNoCallback = current.syncTransitionTime;

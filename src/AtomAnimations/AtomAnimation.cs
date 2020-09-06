@@ -21,7 +21,6 @@ namespace VamTimeline
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
         public const string RandomizeGroupSuffix = "/*";
-        public const float PlayBlendDuration = 0.25f;
 
         public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
@@ -266,7 +265,7 @@ namespace VamTimeline
             else
             {
                 if (clip.clipTime == clip.animationLength) clip.clipTime = 0f;
-                Blend(clip, 1f, PlayBlendDuration);
+                Blend(clip, 1f, clip.blendInDuration);
                 clip.playbackMainInLayer = true;
             }
             if (clip.animationPattern)
@@ -470,9 +469,9 @@ namespace VamTimeline
             if (to == null) throw new ArgumentNullException(nameof(to));
 
             from.SetNext(null, 0);
-            Blend(from, 0f, to.blendDuration);
+            Blend(from, 0f, to.blendInDuration);
             from.playbackMainInLayer = false;
-            Blend(to, 1f, to.blendDuration);
+            Blend(to, 1f, to.blendInDuration);
             to.playbackMainInLayer = true;
             if (to.playbackWeight == 0)
             {

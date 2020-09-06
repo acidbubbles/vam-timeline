@@ -43,7 +43,7 @@ namespace VamTimeline
             }
             var clip = new AtomAnimationClip(animationName, animationLayer)
             {
-                blendDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
+                blendInDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                 loop = DeserializeBool(clipJSON["Loop"], true),
                 autoTransitionPrevious = legacyTransition ?? DeserializeBool(clipJSON["AutoTransitionPrevious"], false),
                 autoTransitionNext = legacyTransition ?? DeserializeBool(clipJSON["AutoTransitionNext"], false),
@@ -300,7 +300,7 @@ namespace VamTimeline
                 {
                     { "AnimationName", clip.animationName },
                     { "AnimationLength", clip.animationLength.ToString(CultureInfo.InvariantCulture) },
-                    { "BlendDuration", clip.blendDuration.ToString(CultureInfo.InvariantCulture) },
+                    { "BlendDuration", clip.blendInDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.loop ? "1" : "0" },
                     { "AutoTransitionPrevious", clip.autoTransitionPrevious ? "1" : "0" },
                     { "AutoTransitionNext", clip.autoTransitionNext ? "1" : "0" },

@@ -56,7 +56,7 @@ namespace VamTimeline
             clip.nextAnimationName = _clip.nextAnimationName;
             clip.nextAnimationTime = _clip.nextAnimationTime;
             clip.ensureQuaternionContinuity = _clip.ensureQuaternionContinuity;
-            clip.blendDuration = _clip.blendDuration;
+            clip.blendInDuration = _clip.blendInDuration;
             return clip;
         }
 
@@ -96,8 +96,8 @@ namespace VamTimeline
             clip.autoTransitionPrevious = _animation.clips.Any(c => c.animationLayer == _clip.animationLayer && c.nextAnimationName == _clip.animationName);
             clip.autoTransitionNext = _clip.nextAnimationName != null;
             clip.nextAnimationName = _clip.nextAnimationName;
-            clip.blendDuration = AtomAnimationClip.DefaultBlendDuration;
-            clip.nextAnimationTime = clip.animationLength - clip.blendDuration;
+            clip.blendInDuration = AtomAnimationClip.DefaultBlendDuration;
+            clip.nextAnimationTime = clip.animationLength - clip.blendInDuration;
             clip.ensureQuaternionContinuity = _clip.ensureQuaternionContinuity;
 
             foreach (var origTarget in _clip.targetControllers)

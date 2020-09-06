@@ -201,7 +201,7 @@ namespace VamTimeline
                  clip.animationLength, // 3
                  clip.nextAnimationName, // 4
                  clip.nextAnimationTime, // 5
-                 clip.blendDuration, // 6
+                 clip.blendInDuration, // 6
                  clip.autoPlay, // 7
                  clip.loop, // 8
                  clip.autoTransitionPrevious, // 9
@@ -235,7 +235,7 @@ namespace VamTimeline
             {
                 clip.autoTransitionPrevious = (bool)e[9];
             }
-            clip.blendDuration = (float)e[6];
+            clip.blendInDuration = (float)e[6];
             clip.autoPlay = (bool)e[7];
             clip.loop = (bool)e[8];
             clip.speed = (float)e[11];
