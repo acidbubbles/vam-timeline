@@ -20,6 +20,7 @@ namespace VamTimeline
             return go.AddComponent<AnimationControlPanel>();
         }
 
+        private VamPrefabFactory _prefabFactory;
         private DopeSheet _dopeSheet;
         private Scrubber _scrubber;
         private AtomAnimation _animation;
@@ -28,7 +29,9 @@ namespace VamTimeline
 
         public void Bind(IAtomPlugin plugin)
         {
-            _animationsJSON = InitAnimationSelectorUI(plugin.manager.configurableScrollablePopupPrefab);
+            _prefabFactory = gameObject.AddComponent<VamPrefabFactory>();
+            _prefabFactory.plugin = plugin;
+            _animationsJSON = InitAnimationSelectorUI();
             _scrubber = InitScrubber();
             InitFrameNav(plugin.manager.configurableButtonPrefab);
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab);
@@ -45,7 +48,7 @@ namespace VamTimeline
             SyncAnimationsListNow();
         }
 
-        private JSONStorableStringChooser InitAnimationSelectorUI(Transform configurableScrollablePopupPrefab)
+        private JSONStorableStringChooser InitAnimationSelectorUI()
         {
             var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) =>
             {
@@ -53,14 +56,8 @@ namespace VamTimeline
                 _animation?.SelectAnimation(val);
             });
 
-            var popup = Instantiate(configurableScrollablePopupPrefab);
-            popup.SetParent(transform, false);
-
-            var ui = popup.GetComponent<UIDynamicPopup>();
-            ui.label = "Play";
-            ui.popupPanelHeight = GetComponent<UIDynamic>()?.height ?? 500;
-
-            jsc.popup = ui.popup;
+            var popup = _prefabFactory.CreatePopup(jsc, false, true);
+            popup.popupPanelHeight = GetComponent<UIDynamic>()?.height ?? 500;
 
             return jsc;
         }

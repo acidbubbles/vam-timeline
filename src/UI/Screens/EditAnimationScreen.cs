@@ -13,6 +13,7 @@ namespace VamTimeline
         public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend (Time)";
         public const string ChangeLengthModeStretch = "Stretch";
         public const string ChangeLengthModeLoop = "Loop";
+        public const string NoNextAnimation = "[None]";
 
         public override string screenId => ScreenName;
 
@@ -67,7 +68,7 @@ namespace VamTimeline
             InitTransitionUI();
             InitPreviewUI();
 
-            CreateHeader("Links", 1);
+            CreateHeader("Animation Pattern Link", 1);
             InitAnimationPatternLinkUI();
 
             // To allow selecting in the popup
@@ -165,18 +166,18 @@ namespace VamTimeline
         {
             UIDynamicButton applyLengthUI = null;
 
-            _lengthModeJSON = new JSONStorableStringChooser("Change Length Mode", new List<string> {
+            _lengthModeJSON = new JSONStorableStringChooser("Length mode", new List<string> {
                 ChangeLengthModeCropExtendEnd,
                 ChangeLengthModeCropExtendBegin,
                 ChangeLengthModeCropExtendAtTime,
                 ChangeLengthModeStretch,
                 ChangeLengthModeLoop
-             }, ChangeLengthModeCropExtendEnd, "Change Length Mode");
-            var lengthModeUI = prefabFactory.CreatePopup(_lengthModeJSON, false);
+             }, ChangeLengthModeCropExtendEnd, "Length mode");
+            var lengthModeUI = prefabFactory.CreatePopup(_lengthModeJSON, false, true);
             lengthModeUI.popupPanelHeight = 350f;
 
             _lengthJSON = new JSONStorableFloat(
-                "Change Length To (s)",
+                "Change length to (s)",
                 AtomAnimationClip.DefaultAnimationLength,
                 (float val) =>
                 {
@@ -220,29 +221,29 @@ namespace VamTimeline
 
         private void InitAnimationPatternLinkUI()
         {
-            _linkedAnimationPatternJSON = new JSONStorableStringChooser("Linked Animation Pattern", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Linked Animation Pattern", (string uid) => LinkAnimationPattern(uid))
+            _linkedAnimationPatternJSON = new JSONStorableStringChooser("Link", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Link", (string uid) => LinkAnimationPattern(uid))
             {
                 isStorable = false
             };
-            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true);
+            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true, true);
             linkedAnimationPatternUI.popupPanelHeight = 240f;
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
         }
 
         private void InitSequenceUI()
         {
-            _nextAnimationJSON = new JSONStorableStringChooser("Next Animation", GetEligibleNextAnimations(), "", "Next Animation", (string val) => ChangeNextAnimation(val));
-            var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true);
+            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => ChangeNextAnimation(val));
+            var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true, true);
             nextAnimationUI.popupPanelHeight = 360f;
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("Next Blend After Seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
+            _nextAnimationTimeJSON = new JSONStorableFloat("Play after seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTime
             };
             var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
 
-            _blendDurationJSON = new JSONStorableFloat("BlendDuration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
+            _blendDurationJSON = new JSONStorableFloat("Blend duration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
         }
@@ -347,7 +348,7 @@ namespace VamTimeline
                     if (i == -1) return null;
                     return x.Substring(0, i);
                 });
-            return new[] { "" }
+            return new[] { NoNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
@@ -437,6 +438,7 @@ namespace VamTimeline
 
         private void ChangeNextAnimation(string val)
         {
+            if (val == NoNextAnimation) val = "";
             current.nextAnimationName = val;
             SetNextAnimationTime(
                 current.nextAnimationTime == 0
@@ -537,7 +539,7 @@ namespace VamTimeline
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
             _transitionSyncTime.valNoCallback = current.syncTransitionTime;
-            _nextAnimationJSON.valNoCallback = current.nextAnimationName;
+            _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? NoNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             RefreshTransitionUI();

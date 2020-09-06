@@ -167,20 +167,79 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool filterable)
+        public UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool filterable, bool navButtons)
         {
             RegisterStorable(jsc);
             Transform prefab;
-            #if(VAM_GT_1_20)
+#if (VAM_GT_1_20)
             if(filterable)
                 prefab = plugin.manager.configurableFilterablePopupPrefab;
             else
-            #endif
-                prefab = plugin.manager.configurableScrollablePopupPrefab;
+#endif
+            prefab = plugin.manager.configurableScrollablePopupPrefab;
+
             var ui = Instantiate(prefab).GetComponent<UIDynamicPopup>();
             ui.gameObject.transform.SetParent(transform, false);
             ui.label = jsc.name;
             jsc.popup = ui.popup;
+
+
+            if (navButtons)
+            {
+                ui.popup.labelText.alignment = TextAnchor.UpperCenter;
+                var labelTextRect = ui.popup.labelText.GetComponent<RectTransform>();
+                float btnAnchorOffsetMaxY;
+                if (filterable)
+                {
+                    ui.popup.labelText.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0.89f);
+                    btnAnchorOffsetMaxY = 70;
+                }
+                else
+                {
+                    ui.popup.labelText.fontSize = 24;
+                    labelTextRect.anchorMax = new Vector2(0.03f, 0.95f);
+                    btnAnchorOffsetMaxY = 65f;
+                }
+
+                {
+                    var btn = Instantiate(plugin.manager.configurableButtonPrefab);
+                    btn.SetParent(ui.transform, false);
+                    Destroy(btn.GetComponent<LayoutElement>());
+                    btn.GetComponent<UIDynamicButton>().label = "<";
+                    btn.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>
+                    {
+                        ui.popup.SetPreviousValue();
+                    });
+                    var prevBtnRect = btn.GetComponent<RectTransform>();
+                    prevBtnRect.pivot = new Vector2(0, 0);
+                    prevBtnRect.anchoredPosition = new Vector2(10f, 0);
+                    prevBtnRect.sizeDelta = new Vector2(0f, 0f);
+                    prevBtnRect.offsetMin = new Vector2(5f, 5f);
+                    prevBtnRect.offsetMax = new Vector2(80f, btnAnchorOffsetMaxY);
+                    prevBtnRect.anchorMin = new Vector2(0f, 0f);
+                    prevBtnRect.anchorMax = new Vector2(0f, 0f);
+                }
+
+                {
+                    var btn = Instantiate(plugin.manager.configurableButtonPrefab);
+                    btn.SetParent(ui.transform, false);
+                    Destroy(btn.GetComponent<LayoutElement>());
+                    btn.GetComponent<UIDynamicButton>().label = ">";
+                    btn.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>
+                    {
+                        ui.popup.SetNextValue();
+                    });
+                    var prevBtnRect = btn.GetComponent<RectTransform>();
+                    prevBtnRect.pivot = new Vector2(0, 0);
+                    prevBtnRect.anchoredPosition = new Vector2(10f, 0);
+                    prevBtnRect.sizeDelta = new Vector2(0f, 0f);
+                    prevBtnRect.offsetMin = new Vector2(82f, 5f);
+                    prevBtnRect.offsetMax = new Vector2(157f, btnAnchorOffsetMaxY);
+                    prevBtnRect.anchorMin = new Vector2(0f, 0f);
+                    prevBtnRect.anchorMax = new Vector2(0f, 0f);
+                }
+            }
+
             return ui;
         }
 
