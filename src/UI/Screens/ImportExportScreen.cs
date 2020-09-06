@@ -186,11 +186,7 @@ namespace VamTimeline
                 ImportControllerStates(jc);
 
                 var lastAnimation = animation.clips.Select(c => c.animationName).LastOrDefault();
-                // NOTE: Because the animation instance changes, we'll end up with the _old_ "current" not being updated.
-                if (lastAnimation != animation.current.animationName)
-                    plugin.ChangeAnimation(lastAnimation);
-                else
-                    animation.SelectAnimation(lastAnimation);
+                animation.SelectAnimation(lastAnimation);
                 animation.Sample();
             }
             catch (Exception exc)

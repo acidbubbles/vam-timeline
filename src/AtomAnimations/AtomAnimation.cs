@@ -280,12 +280,17 @@ namespace VamTimeline
             onIsPlayingChanged.Invoke(clip);
         }
 
-        public void PlayAll(bool sequencing = true)
+        public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
+        {
+            PlayOneAndOtherMainsInLayers(current, sequencing);
+        }
+
+        public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
         {
             foreach (var clip in GetMainClipPerLayer())
             {
-                if (clip.animationLayer == current.animationLayer)
-                    PlayClip(current, sequencing);
+                if (clip.animationLayer == selected.animationLayer)
+                    PlayClip(selected, sequencing);
                 else
                     PlayClip(clip, sequencing);
             }

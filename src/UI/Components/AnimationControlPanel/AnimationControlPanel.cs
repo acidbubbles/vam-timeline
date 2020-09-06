@@ -90,7 +90,7 @@ namespace VamTimeline
             var playAll = Instantiate(buttonPrefab);
             playAll.SetParent(container.transform, false);
             playAll.GetComponent<UIDynamicButton>().label = "\u25B6 Seq";
-            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayAll());
+            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayCurrentAndOtherMainsInLayers());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
 

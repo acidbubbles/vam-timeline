@@ -278,7 +278,7 @@ namespace VamTimeline
             var excludedControllers = current.targetControllers.Where(t => t.controller.GetComponent<MotionAnimationControl>()?.armedForRecord == true).ToList();
             foreach (var target in excludedControllers)
                 target.playbackEnabled = false;
-            animation.PlayAll(false);
+            animation.PlayCurrentAndOtherMainsInLayers(false);
             while ((_lastResizeAnimation || animation.playTime <= animation.clipTime) && IsRecording())
             {
                 yield return 0;
@@ -363,7 +363,7 @@ namespace VamTimeline
             while (!AreAnyStartRecordKeysDown())
                 yield return 0;
             sctrl.helpText = string.Empty;
-            animation.PlayAll(false);
+            animation.PlayCurrentAndOtherMainsInLayers(false);
             while (animation.playTime <= current.animationLength)
                 yield return 0;
             animation.StopAll();

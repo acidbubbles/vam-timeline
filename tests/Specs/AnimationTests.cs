@@ -15,7 +15,7 @@ namespace VamTimeline.Tests.Specs
         {
             context.Assert(context.animation.clips.Count, 1, "Only one clip");
             context.Assert(context.animation.clips.Count, 1, "Only one clip state");
-            context.animation.PlayAll();
+            context.animation.PlayCurrentAndOtherMainsInLayers();
             yield return 0f;
             context.Assert(context.animation.isPlaying, "Play should set isPlaying to true");
             context.Assert(context.animation.clips[0].playbackEnabled, "Clips is enabled");

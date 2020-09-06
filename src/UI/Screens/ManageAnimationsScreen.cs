@@ -149,7 +149,7 @@ namespace VamTimeline
                         clip.nextAnimationTime = 0;
                     }
                 }
-                plugin.ChangeAnimation(animation.clips[0].animationName);
+                animation.SelectAnimation(animation.clips[0].animationName);
             }
             catch (Exception exc)
             {

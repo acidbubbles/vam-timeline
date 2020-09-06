@@ -152,7 +152,7 @@ namespace VamTimeline
                 _baking = true;
                 _bakeUI.label = "Click or press Esc to stop...";
 
-                animation.PlayAll();
+                animation.PlayCurrentAndOtherMainsInLayers();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
 
                 StartCoroutine(StopWhenPlaybackIsComplete());

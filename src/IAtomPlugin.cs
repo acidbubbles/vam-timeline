@@ -33,7 +33,6 @@ namespace VamTimeline
 
         void Load(JSONNode animationJSON);
         JSONClass GetAnimationJSON(string animationName = null);
-        void ChangeAnimation(string animationName);
         void ChangeScreen(string screenName, object screenArg);
     }
 }

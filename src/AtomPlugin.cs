@@ -21,9 +21,9 @@ namespace VamTimeline
         public AtomClipboard clipboard { get; private set; } = new AtomClipboard();
         public PeerManager peers { get; private set; }
 
-        public JSONStorableStringChooser animationJSON { get; private set; }
-        public JSONStorableAction nextAnimationJSON { get; private set; }
-        public JSONStorableAction previousAnimationJSON { get; private set; }
+        public JSONStorableStringChooser animationLegacyJSON { get; private set; }
+        public JSONStorableAction nextAnimationLegacyJSON { get; private set; }
+        public JSONStorableAction previousAnimationLegacyJSON { get; private set; }
         public JSONStorableFloat scrubberJSON { get; private set; }
         public JSONStorableFloat timeJSON { get; private set; }
         public JSONStorableAction playJSON { get; private set; }
@@ -199,28 +199,28 @@ namespace VamTimeline
 
         public void InitStorables()
         {
-            animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimation(val))
+            animationLegacyJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimationLegacy(val))
             {
                 isStorable = false,
                 isRestorable = false
             };
-            RegisterStringChooser(animationJSON);
+            RegisterStringChooser(animationLegacyJSON);
 
-            nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
+            nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
-                var i = animationJSON.choices.IndexOf(animationJSON.val);
-                if (i < 0 || i > animationJSON.choices.Count - 2) return;
-                animationJSON.val = animationJSON.choices[i + 1];
+                var i = animationLegacyJSON.choices.IndexOf(animationLegacyJSON.val);
+                if (i < 0 || i > animationLegacyJSON.choices.Count - 2) return;
+                animationLegacyJSON.val = animationLegacyJSON.choices[i + 1];
             });
-            RegisterAction(nextAnimationJSON);
+            RegisterAction(nextAnimationLegacyJSON);
 
-            previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
+            previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
-                var i = animationJSON.choices.IndexOf(animationJSON.val);
-                if (i < 1 || i > animationJSON.choices.Count - 1) return;
-                animationJSON.val = animationJSON.choices[i - 1];
+                var i = animationLegacyJSON.choices.IndexOf(animationLegacyJSON.val);
+                if (i < 1 || i > animationLegacyJSON.choices.Count - 1) return;
+                animationLegacyJSON.val = animationLegacyJSON.choices[i - 1];
             });
-            RegisterAction(previousAnimationJSON);
+            RegisterAction(previousAnimationLegacyJSON);
 
             scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animation.clipTime = v.Snap(animation.snap), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
@@ -238,17 +238,19 @@ namespace VamTimeline
 
             playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                animation?.PlayAll();
+                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.current : animation.GetClip(animationLegacyJSON.val);
+                animation?.PlayOneAndOtherMainsInLayers(selected);
             });
             RegisterAction(playJSON);
 
             playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
                 if (animation == null) return;
+                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.current : animation.GetClip(animationLegacyJSON.val);
                 if (!animation.isPlaying)
-                    animation.PlayAll();
-                else if (!animation.current.playbackEnabled)
-                    animation.PlayClip(animation.current, true);
+                    animation?.PlayOneAndOtherMainsInLayers(selected);
+                else if (!selected.playbackEnabled)
+                    animation.PlayClip(selected, true);
             });
             RegisterAction(playIfNotPlayingJSON);
 
@@ -508,7 +510,6 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
         {
-            animationJSON.valNoCallback = args.after.animationName;
             peers.SendCurrentAnimation(animation.current);
             OnAnimationParametersChanged();
         }
@@ -517,20 +518,21 @@ namespace VamTimeline
         {
             try
             {
-                animationJSON.choices = animation.clips.Select(c => c.animationName).ToList();
-                animationJSON.valNoCallback = animation.current.animationName;
+                var animationNames = animation.clips.Select(c => c.animationName).ToList();
+                animationLegacyJSON.choices = animationNames;
+                if (!animationLegacyJSON.choices.Contains(animationLegacyJSON.val)) animationLegacyJSON.valNoCallback = string.Empty;
 
-                foreach (var animName in animationJSON.choices)
+                foreach (var animName in animationNames)
                 {
                     if (_clipStorables.Any(a => a.animationName == animName)) continue;
                     CreateAndRegisterClipStorables(animName);
                 }
 
-                if (_clipStorables.Count > animationJSON.choices.Count)
+                if (_clipStorables.Count > animationNames.Count)
                 {
                     foreach (var action in _clipStorables.ToArray())
                     {
-                        if (!animationJSON.choices.Contains(action.animationName))
+                        if (!animationNames.Contains(action.animationName))
                         {
                             DeregisterAction(action);
                             _clipStorables.Remove(action);
@@ -645,18 +647,17 @@ namespace VamTimeline
 
         #region Callbacks
 
-        public void ChangeAnimation(string animationName)
+        public void ChangeAnimationLegacy(string animationName)
         {
             if (string.IsNullOrEmpty(animationName)) return;
 
             try
             {
-                animation.SelectAnimation(animationName);
-                animationJSON.valNoCallback = animation.current.animationName;
+                if (animation.isPlaying) animation.PlayClip(animationName, true);
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(ChangeAnimation)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(ChangeAnimationLegacy)}: {exc}");
             }
         }
 
@@ -770,7 +771,7 @@ namespace VamTimeline
         {
             var proxy = SyncProxy.Wrap(dict);
             // TODO: This or just use the storables dict already on storable??
-            proxy.animation = animationJSON;
+            proxy.animation = animationLegacyJSON;
             proxy.isPlaying = isPlayingJSON;
             proxy.nextFrame = nextFrameJSON;
             proxy.play = playJSON;
