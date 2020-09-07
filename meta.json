@@ -93,6 +93,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\OptionsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ScreenBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ScreensManager.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\SequencingScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\TargetsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Editor.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomPlugin.cs",
