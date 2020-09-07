@@ -145,17 +145,17 @@ namespace VamTimeline
         }
         void IAtomAnimationTarget.SetSnapshot(float time, ISnapshot snapshot)
         {
-            SetCurveSnapshot(time, (TriggerSnapshot)snapshot);
+            SetCurveSnapshot(time, (TriggerTargetSnapshot)snapshot);
         }
 
-        public TriggerSnapshot GetCurveSnapshot(float time)
+        public TriggerTargetSnapshot GetCurveSnapshot(float time)
         {
             AtomAnimationTrigger trigger;
             if (!triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) return null;
-            return new TriggerSnapshot { json = trigger.GetJSON() };
+            return new TriggerTargetSnapshot { json = trigger.GetJSON() };
         }
 
-        public void SetCurveSnapshot(float time, TriggerSnapshot snapshot)
+        public void SetCurveSnapshot(float time, TriggerTargetSnapshot snapshot)
         {
             AtomAnimationTrigger trigger;
             var ms = time.ToMilliseconds();

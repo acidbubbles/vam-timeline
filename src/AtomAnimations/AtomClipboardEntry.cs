@@ -27,26 +27,26 @@ namespace VamTimeline
     {
         public string storableId;
         public string floatParamName;
-        public FloatParamSnapshot snapshot;
+        public FloatParamTargetSnapshot snapshot;
     }
 
     public class FreeControllerV3ClipboardEntry
     {
         public FreeControllerV3 controller;
-        public FreeControllerV3Snapshot snapshot;
+        public TransformTargetSnapshot snapshot;
     }
 
     public class TriggersClipboardEntry : ISnapshot
     {
         public string name;
-        public TriggerSnapshot snapshot;
+        public TriggerTargetSnapshot snapshot;
     }
 
     public interface ISnapshot
     {
     }
 
-    public class FreeControllerV3Snapshot : ISnapshot
+    public class TransformTargetSnapshot : ISnapshot
     {
         public BezierKeyframe x;
         public BezierKeyframe y;
@@ -57,12 +57,12 @@ namespace VamTimeline
         public BezierKeyframe rotW;
     }
 
-    public class FloatParamSnapshot : ISnapshot
+    public class FloatParamTargetSnapshot : ISnapshot
     {
         public BezierKeyframe value;
     }
 
-    public class TriggerSnapshot : ISnapshot
+    public class TriggerTargetSnapshot : ISnapshot
     {
         public JSONClass json;
     }

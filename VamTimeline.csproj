@@ -90,6 +90,7 @@
     <Compile Include="src\AtomAnimations\Targets\FloatParamAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Targets\FreeControllerAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Targets\ICurveAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Targets\TransformAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Targets\TriggersAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimation.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationClip.cs" />

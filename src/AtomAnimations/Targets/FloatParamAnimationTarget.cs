@@ -186,20 +186,20 @@ namespace VamTimeline
         }
         void IAtomAnimationTarget.SetSnapshot(float time, ISnapshot snapshot)
         {
-            SetCurveSnapshot(time, (FloatParamSnapshot)snapshot);
+            SetCurveSnapshot(time, (FloatParamTargetSnapshot)snapshot);
         }
 
-        public FloatParamSnapshot GetCurveSnapshot(float time)
+        public FloatParamTargetSnapshot GetCurveSnapshot(float time)
         {
             var key = value.KeyframeBinarySearch(time);
             if (key == -1) return null;
-            return new FloatParamSnapshot
+            return new FloatParamTargetSnapshot
             {
                 value = value.GetKeyframe(key).Clone()
             };
         }
 
-        public void SetCurveSnapshot(float time, FloatParamSnapshot snapshot, bool dirty = true)
+        public void SetCurveSnapshot(float time, FloatParamTargetSnapshot snapshot, bool dirty = true)
         {
             value.SetKeySnapshot(time, snapshot.value);
             if (dirty) base.dirty = true;
