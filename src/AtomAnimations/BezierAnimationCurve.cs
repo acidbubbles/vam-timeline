@@ -188,18 +188,27 @@ namespace VamTimeline
             if (keysCount == 1)
             {
                 var key = keys[0];
-                key.controlPointIn = key.value;
-                key.controlPointOut = key.value;
+                if (key.curveType != CurveTypeValues.LeaveAsIs)
+                {
+                    key.controlPointIn = key.value;
+                    key.controlPointOut = key.value;
+                }
                 return;
             }
             if (keysCount == 2)
             {
                 var first = keys[0];
-                first.controlPointIn = first.value;
-                first.controlPointOut = first.value;
+                if (first.curveType != CurveTypeValues.LeaveAsIs)
+                {
+                    first.controlPointIn = first.value;
+                    first.controlPointOut = first.value;
+                }
                 var last = keys[1];
-                last.controlPointIn = last.value;
-                last.controlPointOut = last.value;
+                if (last.curveType != CurveTypeValues.LeaveAsIs)
+                {
+                    last.controlPointIn = last.value;
+                    last.controlPointOut = last.value;
+                }
                 return;
             }
 
@@ -290,6 +299,8 @@ namespace VamTimeline
                             current.controlPointIn = current.value;
                             current.controlPointOut = current.value;
                         }
+                        break;
+                    case CurveTypeValues.LeaveAsIs:
                         break;
                     default:
                         continue;

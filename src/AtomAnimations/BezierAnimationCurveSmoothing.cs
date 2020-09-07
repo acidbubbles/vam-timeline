@@ -171,13 +171,22 @@ namespace VamTimeline
 
         private void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)
         {
-            keys[0].controlPointOut = _p1[0];
+            if (keys[0].curveType != CurveTypeValues.LeaveAsIs)
+            {
+                keys[0].controlPointOut = _p1[0];
+            }
             for (var i = 1; i < n; i++)
             {
-                keys[i].controlPointIn = _p2[i - 1];
-                keys[i].controlPointOut = _p1[i];
+                if (keys[i].curveType != CurveTypeValues.LeaveAsIs)
+                {
+                    keys[i].controlPointIn = _p2[i - 1];
+                    keys[i].controlPointOut = _p1[i];
+                }
             }
-            keys[n].controlPointIn = _p2[n - 1];
+            if (keys[n].curveType != CurveTypeValues.LeaveAsIs)
+            {
+                keys[n].controlPointIn = _p2[n - 1];
+            }
         }
     }
 }
