@@ -53,7 +53,7 @@ namespace VamTimeline
             CreateHeader("Length", 1);
             InitAnimationLengthUI();
 
-            CreateHeader("Animation Pattern Link", 1);
+            CreateHeader("Animation pattern link", 1);
             InitAnimationPatternLinkUI();
 
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
@@ -318,6 +318,7 @@ namespace VamTimeline
             _lengthJSON.valNoCallback = current.animationLength;
             _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
             _loop.valNoCallback = current.loop;
+            _loopUI.toggle.interactable = !current.autoTransitionNext;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
         }

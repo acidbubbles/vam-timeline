@@ -34,11 +34,20 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            CreateHeader("Sequencing", 1);
+            CreateHeader("Auto play", 1);
             InitAutoPlayUI();
+
+            CreateHeader("Blending", 1);
+            InitBlendUI();
+
+            CreateHeader("Sequence", 1);
             InitSequenceUI();
+
+            CreateHeader("Transition (auto keyframes)", 1);
             InitLoopUI();
             InitTransitionUI();
+
+            CreateHeader("Result", 1);
             InitPreviewUI();
 
             // To allow selecting in the popup
@@ -61,22 +70,28 @@ namespace VamTimeline
             var autoPlayUI = prefabFactory.CreateToggle(_autoPlayJSON);
         }
 
+        private void InitBlendUI()
+        {
+            _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
+            var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
+            blendDurationUI.valueFormat = "F3";
+
+            _transitionSyncTime = new JSONStorableBool("Blend in sync", true, (bool val) => current.syncTransitionTime = val);
+            prefabFactory.CreateToggle(_transitionSyncTime);
+        }
+
         private void InitSequenceUI()
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => ChangeNextAnimation(val));
             var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true, true);
             nextAnimationUI.popupPanelHeight = 360f;
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("Play after seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
+            _nextAnimationTimeJSON = new JSONStorableFloat("... after seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTime
             };
             var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
-
-            _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
-            var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
-            blendDurationUI.valueFormat = "F3";
         }
 
         private void InitPreviewUI()
@@ -88,14 +103,11 @@ namespace VamTimeline
 
         private void InitTransitionUI()
         {
-            _transitionPreviousJSON = new JSONStorableBool("Transition (previous)", false, (bool val) => ChangeTransitionPrevious(val));
+            _transitionPreviousJSON = new JSONStorableBool("Sync first frame with previous", false, (bool val) => ChangeTransitionPrevious(val));
             prefabFactory.CreateToggle(_transitionPreviousJSON);
 
-            _transitionNextJSON = new JSONStorableBool("Transition (next)", false, (bool val) => ChangeTransitionNext(val));
+            _transitionNextJSON = new JSONStorableBool("Sync last frame with next", false, (bool val) => ChangeTransitionNext(val));
             prefabFactory.CreateToggle(_transitionNextJSON);
-
-            _transitionSyncTime = new JSONStorableBool("Transition (sync time)", true, (bool val) => current.syncTransitionTime = val);
-            prefabFactory.CreateToggle(_transitionSyncTime);
         }
 
         private void InitLoopUI()
@@ -126,10 +138,11 @@ namespace VamTimeline
 
             if (!current.autoTransitionNext)
             {
+                _loopUI.toggle.interactable = true;
+
                 if (current.loop)
                 {
                     _transitionNextJSON.toggle.interactable = false;
-                    _loopUI.toggle.interactable = true;
                 }
                 else
                 {
@@ -137,7 +150,6 @@ namespace VamTimeline
                     if (targetClip == null || targetClip.autoTransitionNext == true)
                     {
                         _transitionNextJSON.toggle.interactable = false;
-                        _loopUI.toggle.interactable = true;
                     }
                 }
             }
@@ -277,6 +289,7 @@ namespace VamTimeline
             _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? NoNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
+            _nextAnimationTimeJSON.slider.enabled = string.IsNullOrEmpty(_nextAnimationJSON.val);
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }
