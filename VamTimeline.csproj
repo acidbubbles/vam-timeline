@@ -94,6 +94,7 @@
     <Compile Include="src\AtomAnimations\Targets\TriggersAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimation.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationClip.cs" />
+    <Compile Include="src\AtomAnimations\AtomAnimationEditContext.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationSerializer.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationTargetsList.cs" />
     <Compile Include="src\AtomAnimations\AtomClipboardEntry.cs" />

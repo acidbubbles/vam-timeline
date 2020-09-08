@@ -7,7 +7,8 @@ namespace VamTimeline
 {
     public class PeerManager
     {
-        public AtomAnimation animation;
+        public AtomAnimationEditContext animationEditContext;
+        public AtomAnimation animation => animationEditContext.animation;
         public bool syncing => _sending > 0 || _receiving;
 
         private readonly List<JSONStorable> _peers = new List<JSONStorable>();
@@ -171,8 +172,8 @@ namespace VamTimeline
         private void ReceiveTime(object[] e)
         {
             var clip = GetClip(e);
-            if (clip != animation.current) return;
-            animation.clipTime = (float)e[2];
+            if (clip != animationEditContext.current) return;
+            animationEditContext.clipTime = (float)e[2];
         }
 
         public void SendCurrentAnimation(AtomAnimationClip clip)
@@ -188,7 +189,7 @@ namespace VamTimeline
         {
             var clip = GetClip(e);
             if (clip == null) return;
-            animation.SelectAnimation(clip);
+            animationEditContext.SelectAnimation(clip);
         }
 
         public void SendSyncAnimation(AtomAnimationClip clip)
@@ -240,7 +241,7 @@ namespace VamTimeline
             clip.loop = (bool)e[8];
             clip.speed = (float)e[11];
             clip.weight = (float)e[12];
-            animation.SelectAnimation(clip);
+            animationEditContext.SelectAnimation(clip);
         }
 
         public void SendScreen(string screenName, object screenArg)

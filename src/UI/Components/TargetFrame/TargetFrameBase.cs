@@ -7,7 +7,6 @@ namespace VamTimeline
 {
     public abstract class TargetFrameBase<T> : MonoBehaviour, ITargetFrame
         where T : IAtomAnimationTarget
-
     {
         protected readonly StyleBase style = new StyleBase();
         protected IAtomPlugin plugin;
@@ -41,8 +40,8 @@ namespace VamTimeline
             var expandListener = _expandButton.AddComponent<Clickable>();
             expandListener.onClick.AddListener(pointerEvent => ToggleExpanded());
 
-            this.plugin.animation.onTimeChanged.AddListener(this.OnTimeChanged);
-            OnTimeChanged(this.plugin.animation.timeArgs);
+            this.plugin.animationEditContext.onTimeChanged.AddListener(this.OnTimeChanged);
+            OnTimeChanged(this.plugin.animationEditContext.timeArgs);
 
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
 
@@ -88,7 +87,7 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesRebuilt()
         {
-            SetTime(plugin.animation.clipTime, !plugin.animation.isPlaying);
+            SetTime(plugin.animationEditContext.clipTime, !plugin.animation.isPlaying);
         }
 
         private void CreateToggle(IAtomPlugin plugin)
@@ -128,7 +127,7 @@ namespace VamTimeline
         {
             if (_ignoreNextToggleEvent > 0) return;
             if (plugin.animation.isPlaying) return;
-            var time = plugin.animation.clipTime.Snap();
+            var time = plugin.animationEditContext.clipTime.Snap();
             if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {
                 if (!on)
@@ -185,10 +184,10 @@ namespace VamTimeline
             if (UIPerformance.ShouldSkip()) return;
             if (!plugin.animation.isPlaying) return;
 
-            SetTime(plugin.animation.clipTime, false);
+            SetTime(plugin.animationEditContext.clipTime, false);
         }
 
-        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)
+        private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs args)
         {
             SetTime(args.currentClipTime, true);
         }
@@ -244,7 +243,7 @@ namespace VamTimeline
 
         public virtual void OnDestroy()
         {
-            plugin.animation.onTimeChanged.RemoveListener(OnTimeChanged);
+            plugin.animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
             target.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
         }
     }

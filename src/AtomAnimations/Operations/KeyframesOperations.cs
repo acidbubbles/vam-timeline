@@ -1,4 +1,6 @@
-﻿namespace VamTimeline
+﻿using System.Collections.Generic;
+
+namespace VamTimeline
 {
     public class KeyframesOperations
     {
@@ -9,9 +11,9 @@
             _clip = clip;
         }
 
-        public void RemoveAll()
+        public void RemoveAll(IEnumerable<IAtomAnimationTarget> targets)
         {
-            foreach (var target in _clip.GetAllOrSelectedTargets())
+            foreach (var target in targets)
             {
                 RemoveAll(target);
             }

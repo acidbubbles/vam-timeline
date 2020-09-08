@@ -64,7 +64,7 @@ namespace VamTimeline
 
             UpdateSelectDependentUI();
             current.onTargetsListChanged.AddListener(OnTargetsListChanged);
-            current.onTargetsSelectionChanged.AddListener(UpdateSelectDependentUI);
+            animationEditContext.onTargetsSelectionChanged.AddListener(UpdateSelectDependentUI);
         }
 
         private void OnTargetsListChanged()
@@ -278,7 +278,7 @@ namespace VamTimeline
 
         private void RemoveSelected()
         {
-            var selected = current.GetSelectedTargets().ToList();
+            var selected = animationEditContext.GetSelectedTargets().ToList();
             foreach (var s in selected)
             {
                 // We remove every selected target on every clip on the current layer, except triggers
@@ -293,7 +293,7 @@ namespace VamTimeline
                 if (s is TriggersAnimationTarget)
                 {
                     // So other clips won't keep the deleted selection
-                    s.selected = false;
+                    animationEditContext.SetSelected(s, false);
                     current.Remove(s);
                 }
 
@@ -325,7 +325,7 @@ namespace VamTimeline
 
         private void UpdateSelectDependentUI()
         {
-            var count = current.GetSelectedTargets().Count();
+            var count = animationEditContext.GetSelectedTargets().Count();
             _removeUI.button.interactable = count > 0;
             _removeUI.buttonText.text = count == 0 ? "Remove selected targets" : $"Remove {count} targets";
         }
@@ -511,12 +511,10 @@ namespace VamTimeline
 
         #region Events
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             args.before.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            args.before.onTargetsSelectionChanged.RemoveListener(UpdateSelectDependentUI);
             args.after.onTargetsListChanged.AddListener(OnTargetsListChanged);
-            args.after.onTargetsSelectionChanged.AddListener(UpdateSelectDependentUI);
 
             base.OnCurrentAnimationChanged(args);
 
@@ -532,7 +530,7 @@ namespace VamTimeline
         {
             if (_addParamListUI != null) _addParamListUI.popup.onOpenPopupHandlers -= RefreshStorableFloatsList;
             current.onTargetsListChanged.RemoveListener(OnTargetsListChanged);
-            current.onTargetsSelectionChanged.RemoveListener(UpdateSelectDependentUI);
+            animationEditContext.onTargetsSelectionChanged.RemoveListener(UpdateSelectDependentUI);
             base.OnDestroy();
         }
 

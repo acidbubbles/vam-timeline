@@ -22,10 +22,14 @@ namespace VamTimeline.Tests.Framework
             go.transform.SetParent(testPlugin.gameObject.transform, false);
 
             var animation = go.AddComponent<AtomAnimation>();
-            animation.Initialize();
+            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
+            animation.RebuildAnimationNow();
+
             var context = new TestContext(go, output, animation);
+
             foreach (var x in _run(context))
                 yield return x;
+
             UnityEngine.Object.Destroy(go);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
@@ -70,7 +71,7 @@ namespace VamTimeline
             }
         }
 
-        public IEnumerator Execute()
+        public IEnumerator Execute(List<FreeControllerV3> controllers)
         {
             var containingAtom = _containingAtom;
             var totalStopwatch = Stopwatch.StartNew();
@@ -80,10 +81,9 @@ namespace VamTimeline
             yield return 0;
 
             var controlCounter = 0;
-            var filterSelected = _clip.targetControllers.Any(c => c.selected);
             var motControls = containingAtom.motionAnimationControls
                 .Where(m => m?.clip?.clipLength > 0.1f)
-                .Where(m => !filterSelected || _clip.targetControllers.Any(t => t.selected && t.controller == m.controller))
+                .Where(m => controllers.Contains(m.controller))
                 .Where(m => m.clip.steps.Any(s => s.positionOn || s.rotationOn))
                 .ToList();
 

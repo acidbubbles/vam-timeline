@@ -18,7 +18,7 @@ namespace VamTimeline
         private readonly IList<ICurveAnimationTarget> _targets = new List<ICurveAnimationTarget>();
         private readonly IList<CurvesLines> _lines = new List<CurvesLines>();
         private float _animationLength;
-        private AtomAnimation _animation;
+        private AtomAnimationEditContext _animationEditContext;
         private float _clipTime;
 
         public Curves()
@@ -150,19 +150,19 @@ namespace VamTimeline
             return go;
         }
 
-        public void Bind(AtomAnimation animation)
+        public void Bind(AtomAnimationEditContext animationEditContext)
         {
-            if (_animation != null) throw new InvalidOperationException("Cannot bind to animation twice");
-            _animation = animation;
-            _animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            if (_animationEditContext != null) throw new InvalidOperationException("Cannot bind to animation twice");
+            _animationEditContext = animationEditContext;
+            _animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
 
         private void OnTargetsSelectionChanged()
         {
-            Bind(_animation.current.GetAllCurveTargets().Count() == 1
-                ? _animation.current.GetAllCurveTargets().ToList()
-                : _animation.current.GetAllCurveTargets().Where(t => t.selected).ToList()
+            Bind(_animationEditContext.current.GetAllCurveTargets().Count() == 1
+                ? _animationEditContext.current.GetAllCurveTargets().ToList()
+                : _animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList()
             );
         }
 
@@ -275,20 +275,20 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (_animation == null) return;
-            if (_animation.clipTime == _clipTime) return;
+            if (_animationEditContext == null) return;
+            if (_animationEditContext.clipTime == _clipTime) return;
             if (UIPerformance.ShouldSkip()) return;
 
-            _clipTime = _animation.clipTime;
-            var ratio = Mathf.Clamp01(_animation.clipTime / _animationLength);
+            _clipTime = _animationEditContext.clipTime;
+            var ratio = Mathf.Clamp01(_animationEditContext.clipTime / _animationLength);
             _scrubberLineRect.anchorMin = new Vector2(ratio, 0);
             _scrubberLineRect.anchorMax = new Vector2(ratio, 1);
         }
 
         public void OnDestroy()
         {
-            if (_animation != null)
-                _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            if (_animationEditContext != null)
+                _animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
 
             foreach (var t in _targets)
                 t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);

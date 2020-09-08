@@ -31,14 +31,14 @@ namespace VamTimeline
 
             InitAutoKeyframeUI();
 
-            animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+            animationEditContext.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
         }
 
         private void InitSnapUI()
         {
-            _snapJSON = new JSONStorableFloat("Snap", 0.001f, (float val) => animation.snap = val.Snap(), 0.1f, 1f)
+            _snapJSON = new JSONStorableFloat("Snap", 0.001f, (float val) => animationEditContext.snap = val.Snap(), 0.1f, 1f)
             {
-                valNoCallback = animation.snap
+                valNoCallback = animationEditContext.snap
             };
             var snapUI = prefabFactory.CreateSlider(_snapJSON);
             snapUI.valueFormat = "F3";
@@ -46,7 +46,7 @@ namespace VamTimeline
 
         private void InitAutoKeyframeUI()
         {
-            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", animation.autoKeyframeAllControllers, (bool val) => animation.autoKeyframeAllControllers = val);
+            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", animationEditContext.autoKeyframeAllControllers, (bool val) => animationEditContext.autoKeyframeAllControllers = val);
             var autoKeyframeAllControllersUI = prefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
         }
 
@@ -54,8 +54,8 @@ namespace VamTimeline
 
         private void OnEditorSettingsChanged(string _)
         {
-            _snapJSON.valNoCallback = animation.snap;
-            _autoKeyframeAllControllersJSON.valNoCallback = animation.autoKeyframeAllControllers;
+            _snapJSON.valNoCallback = animationEditContext.snap;
+            _autoKeyframeAllControllersJSON.valNoCallback = animationEditContext.autoKeyframeAllControllers;
         }
 
         public override void OnDestroy()

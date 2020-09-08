@@ -7,8 +7,6 @@ namespace VamTimeline
     public class FreeControllerAnimationTarget : TransformAnimationTargetBase, ICurveAnimationTarget
     {
         public readonly FreeControllerV3 controller;
-        // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
-        internal bool ignoreGrabEnd;
 
         public override string name => controller.name;
 

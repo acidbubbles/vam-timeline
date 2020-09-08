@@ -7,9 +7,7 @@ namespace VamTimeline
     {
         UnityEvent onAnimationKeyframesDirty { get; }
         UnityEvent onAnimationKeyframesRebuilt { get; }
-        UnityEvent onSelectedChanged { get; }
         bool dirty { get; set; }
-        bool selected { get; set; }
         string name { get; }
 
         void Validate(float animationLength);

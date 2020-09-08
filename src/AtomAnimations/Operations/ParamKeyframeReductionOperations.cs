@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -14,10 +15,10 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator ReduceKeyframes(float maxFramesPerSecond, float minValueDelta)
+        public IEnumerator ReduceKeyframes(List<FloatParamAnimationTarget> targets, float maxFramesPerSecond, float minValueDelta)
         {
             /*
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
@@ -33,7 +34,7 @@ namespace VamTimeline
             }
             */
 
-            foreach (var target in _clip.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in targets)
             {
                 target.StartBulkUpdates();
                 try

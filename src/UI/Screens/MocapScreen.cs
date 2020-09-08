@@ -106,7 +106,7 @@ namespace VamTimeline
             clearMocapUI.button.onClick.AddListener(() => ClearMocapData());
             clearMocapUI.buttonColor = Color.yellow;
 
-            animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
 
             if (_importMocapOnLoad)
@@ -126,7 +126,7 @@ namespace VamTimeline
         {
             if (_recordingControllersCoroutine != null)
                 _playAndRecordControllersUI.button.interactable = true;
-            else if (current.GetSelectedTargets().Any())
+            else if (animationEditContext.GetSelectedTargets().Any())
                 _playAndRecordControllersUI.button.interactable = true;
             else if (plugin.containingAtom.freeControllers.Any(fc => fc.GetComponent<MotionAnimationControl>()?.armedForRecord ?? false))
                 _playAndRecordControllersUI.button.interactable = true;
@@ -155,7 +155,7 @@ namespace VamTimeline
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            IEnumerator enumerator = GetMocapImportOp().Execute();
+            IEnumerator enumerator = GetMocapImportOp().Execute(animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.controller).ToList());
 
             while (true)
             {
@@ -215,7 +215,7 @@ namespace VamTimeline
 
         private IEnumerator ReduceKeyframesCoroutine()
         {
-            var enumerator = operations.ParamKeyframeReduction().ReduceKeyframes(_reduceMaxFramesPerSecondJSON.val, _reduceMinPosDistanceJSON.val);
+            var enumerator = operations.ParamKeyframeReduction().ReduceKeyframes(animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().ToList(), _reduceMaxFramesPerSecondJSON.val, _reduceMinPosDistanceJSON.val);
             while (true)
             {
                 try
@@ -248,7 +248,7 @@ namespace VamTimeline
                 animation.StopAll();
                 return;
             }
-            foreach (var target in current.GetSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var mac = target.controller.GetComponent<MotionAnimationControl>();
                 if (mac == null) continue;
@@ -278,8 +278,8 @@ namespace VamTimeline
             var excludedControllers = current.targetControllers.Where(t => t.controller.GetComponent<MotionAnimationControl>()?.armedForRecord == true).ToList();
             foreach (var target in excludedControllers)
                 target.playbackEnabled = false;
-            animation.PlayCurrentAndOtherMainsInLayers(false);
-            while ((_lastResizeAnimation || animation.playTime <= animation.clipTime) && IsRecording())
+            animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
+            while ((_lastResizeAnimation || animationEditContext.playTime <= animationEditContext.clipTime) && IsRecording())
             {
                 yield return 0;
             }
@@ -305,18 +305,18 @@ namespace VamTimeline
 
         private void ClearAllGrabbedControllers()
         {
-            foreach (var target in current.targetControllers.Where(t => t.controller.isGrabbing))
+            animationEditContext.ignoreGrabEnd = true;
+            try
             {
-                target.ignoreGrabEnd = true;
-                try
+                foreach (var target in current.targetControllers.Where(t => t.controller.isGrabbing))
                 {
                     target.controller.RestorePreLinkState();
                     target.controller.isGrabbing = false;
                 }
-                finally
-                {
-                    target.ignoreGrabEnd = false;
-                }
+            }
+            finally
+            {
+                animationEditContext.ignoreGrabEnd = false;
             }
         }
 
@@ -340,14 +340,14 @@ namespace VamTimeline
                 SuperController.singleton.helpText = string.Empty;
                 return;
             }
-            if (!current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().Any())
+            if (!animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().Any())
             {
                 SuperController.LogError("Timeline: No float params to record");
                 return;
             }
             animation.StopAll();
             animation.ResetAll();
-            foreach (var target in current.GetSelectedTargets().OfType<FloatParamAnimationTarget>())
+            foreach (var target in animationEditContext.GetSelectedTargets().OfType<FloatParamAnimationTarget>())
             {
                 operations.Keyframes().RemoveAll(target);
             }
@@ -363,7 +363,7 @@ namespace VamTimeline
             while (!AreAnyStartRecordKeysDown())
                 yield return 0;
             sctrl.helpText = string.Empty;
-            animation.PlayCurrentAndOtherMainsInLayers(false);
+            animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
             while (animation.playTime <= current.animationLength)
                 yield return 0;
             animation.StopAll();
@@ -390,7 +390,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
-            animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }
     }
 }

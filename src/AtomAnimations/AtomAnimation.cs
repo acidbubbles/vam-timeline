@@ -11,68 +11,23 @@ namespace VamTimeline
 {
     public class AtomAnimation : MonoBehaviour
     {
-        public struct TimeChangedEventArgs { public float time; public float currentClipTime; }
-        public class TimeChangedEvent : UnityEvent<TimeChangedEventArgs> { }
-        public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
-        public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
-        public class AnimationSettingsChanged : UnityEvent<string> { }
         public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
 
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
         public const string RandomizeGroupSuffix = "/*";
 
-        public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
-        public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
-        public AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
         public UnityEvent onSpeedChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
-        public UnityEvent onTargetsSelectionChanged = new UnityEvent();
         public UnityEvent onAnimationRebuilt = new UnityEvent();
         public IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
 
-        #region Editor Settings
-        private float _snap = 0.1f;
-        public float snap
-        {
-            get { return _snap; }
-            set { _snap = value; onEditorSettingsChanged.Invoke(nameof(snap)); }
-        }
-        private bool _autoKeyframeAllControllers;
-        public bool autoKeyframeAllControllers
-        {
-            get { return _autoKeyframeAllControllers; }
-            set { _autoKeyframeAllControllers = value; onEditorSettingsChanged.Invoke(nameof(autoKeyframeAllControllers)); }
-        }
-        #endregion
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
-        public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
         public bool isPlaying { get; private set; }
         public bool isSampling { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
-
-        public AtomAnimationClip current { get; private set; }
-
-        public float clipTime
-        {
-            get
-            {
-                return current.clipTime;
-            }
-            set
-            {
-                playTime = value;
-                if (current == null) return;
-                current.clipTime = value;
-                if (isPlaying && !current.playbackEnabled && current.playbackMainInLayer) PlayClip(current, sequencing);
-                Sample();
-                if (current.animationPattern != null)
-                    current.animationPattern.SetFloatParamValue("currentTime", playTime);
-                onTimeChanged.Invoke(timeArgs);
-            }
-        }
 
         private float _playTime;
         public float playTime
@@ -84,15 +39,11 @@ namespace VamTimeline
             set
             {
                 SetPlayTime(value);
-                if (!current.playbackEnabled)
-                    current.clipTime = value;
-                Sample();
                 foreach (var clip in clips)
                 {
                     if (clip.animationPattern != null)
                         clip.animationPattern.SetFloatParamValue("currentTime", clip.clipTime);
                 }
-                onTimeChanged.Invoke(timeArgs);
             }
         }
 
@@ -126,17 +77,6 @@ namespace VamTimeline
         {
         }
 
-        public void Initialize()
-        {
-            if (clips.Count == 0)
-                AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
-            current = GetDefaultClip();
-            if (clips.Any(c => c.IsDirty()))
-            {
-                RebuildAnimationNow();
-            }
-        }
-
         public AtomAnimationClip GetDefaultClip()
         {
             var firstLayer = clips[0].animationLayer;
@@ -148,14 +88,6 @@ namespace VamTimeline
             if (clips.Count == 0) return true;
             if (clips.Count == 1 && clips[0].IsEmpty()) return true;
             return false;
-        }
-
-        public int SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
-        {
-            time = time.Snap();
-            if (time > current.animationLength)
-                time = current.animationLength;
-            return target.SetKeyframeToCurrentTransform(time);
         }
 
         #region Clips
@@ -175,7 +107,6 @@ namespace VamTimeline
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnAnimationKeyframesDirty);
-            clip.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             onClipsListChanged.Invoke();
             if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
             return clip;
@@ -231,6 +162,16 @@ namespace VamTimeline
             }
         }
 
+        public void Clear()
+        {
+            foreach (var clip in clips.ToList())
+                RemoveClip(clip);
+
+            speed = 1f;
+            _playTime = 0f;
+            _sampleAfterRebuild = false;
+        }
+
         #endregion
 
         #region Playback
@@ -279,11 +220,6 @@ namespace VamTimeline
             onIsPlayingChanged.Invoke(clip);
         }
 
-        public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
-        {
-            PlayOneAndOtherMainsInLayers(current, sequencing);
-        }
-
         public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
         {
             foreach (var clip in GetMainClipPerLayer())
@@ -301,7 +237,7 @@ namespace VamTimeline
                 .GroupBy(c => c.animationLayer)
                 .Select(g =>
                 {
-                    return g.FirstOrDefault(c => c == current || c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First();
+                    return g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First();
                 });
         }
 
@@ -331,7 +267,6 @@ namespace VamTimeline
                 {
                     isPlaying = false;
                     sequencing = false;
-                    playTime = current.clipTime;
                 }
 
                 onIsPlayingChanged.Invoke(clip);
@@ -359,14 +294,13 @@ namespace VamTimeline
                 clip.Reset(true);
             }
             playTime = playTime;
+            Sample();
         }
 
         public void StopAndReset()
         {
             if (isPlaying) StopAll();
             ResetAll();
-            var defaultClip = GetDefaultClip();
-            if (current != defaultClip) SelectAnimation(defaultClip);
         }
 
         #endregion
@@ -409,54 +343,6 @@ namespace VamTimeline
             if (!clip.playbackEnabled) clip.playbackWeight = 0;
             clip.playbackEnabled = true;
             clip.playbackBlendRate = (weight - clip.playbackWeight) / duration;
-        }
-
-        #endregion
-
-        #region Selection
-
-        public void SelectAnimation(string animationName)
-        {
-            var clip = GetClip(animationName);
-            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", clips.Select(c => c.animationName).ToArray())}'.");
-            if (current == clip)
-            {
-                clipTime = 0;
-                return;
-            }
-
-            SelectAnimation(clip);
-        }
-
-        public void SelectAnimation(AtomAnimationClip clip)
-        {
-            var previous = current;
-            current = clip;
-
-            if (previous != null) previous.Leave();
-
-            if (previous.animationLayer != current.animationLayer)
-                onClipsListChanged.Invoke();
-            onTargetsSelectionChanged.Invoke();
-            onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
-            {
-                before = previous,
-                after = current
-            });
-
-            if (isPlaying)
-            {
-                var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == current.animationLayer);
-                if (previousMain != null)
-                {
-                    TransitionAnimation(previousMain, current);
-                }
-            }
-            else
-            {
-                clipTime = 0f;
-                Sample();
-            }
         }
 
         #endregion
@@ -641,7 +527,6 @@ namespace VamTimeline
 
         private void RebuildAnimationNowImpl()
         {
-            if (current == null) throw new NullReferenceException("No current animation set");
             var sw = Stopwatch.StartNew();
             foreach (var clip in clips)
             {
@@ -790,21 +675,6 @@ namespace VamTimeline
 
         #region Event Handlers
 
-        private void OnTargetsSelectionChanged()
-        {
-            foreach (var target in current.GetAllTargets())
-            {
-                foreach (var clip in clips.Where(c => c != current))
-                {
-                    var t = clip.GetAllTargets().FirstOrDefault(x => x.TargetsSameAs(target));
-                    if (t == null) continue;
-                    t.selected = target.selected;
-                }
-            }
-
-            onTargetsSelectionChanged.Invoke();
-        }
-
         private void OnAnimationSettingsChanged(string param)
         {
             onAnimationSettingsChanged.Invoke();
@@ -873,11 +743,8 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
-            onTimeChanged.RemoveAllListeners();
-            onCurrentAnimationChanged.RemoveAllListeners();
             onAnimationSettingsChanged.RemoveAllListeners();
             onIsPlayingChanged.RemoveAllListeners();
-            onEditorSettingsChanged.RemoveAllListeners();
             onSpeedChanged.RemoveAllListeners();
             onClipsListChanged.RemoveAllListeners();
             onAnimationRebuilt.RemoveAllListeners();

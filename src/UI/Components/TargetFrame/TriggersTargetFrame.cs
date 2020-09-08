@@ -34,7 +34,7 @@ namespace VamTimeline
             if (stopped)
             {
                 AtomAnimationTrigger trigger;
-                var ms = plugin.animation.clipTime.ToMilliseconds();
+                var ms = plugin.animationEditContext.clipTime.ToMilliseconds();
                 if (target.triggersMap.TryGetValue(ms, out trigger))
                 {
                     valueText.text = string.IsNullOrEmpty(trigger.displayName) ? "Has Triggers" : trigger.displayName;
@@ -70,7 +70,7 @@ namespace VamTimeline
 
             _editTriggersButton = CreateExpandButton(
                 group.transform,
-                target.triggersMap.ContainsKey(plugin.animation.clipTime.ToMilliseconds()) ? "Edit Triggers" : "Create Trigger",
+                target.triggersMap.ContainsKey(plugin.animationEditContext.clipTime.ToMilliseconds()) ? "Edit Triggers" : "Create Trigger",
                 EditTriggers);
         }
 
@@ -92,7 +92,7 @@ namespace VamTimeline
         private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
         {
             AtomAnimationTrigger trigger;
-            var ms = plugin.animation.clipTime.Snap().ToMilliseconds();
+            var ms = plugin.animationEditContext.clipTime.Snap().ToMilliseconds();
             if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
                 trigger = new AtomAnimationTrigger();

@@ -16,14 +16,15 @@ namespace VamTimeline
 
         protected override void CreateCustom()
         {
-            target.onSelectedChanged.AddListener(OnSelectedChanged);
+            plugin.animationEditContext.onTargetsSelectionChanged.AddListener(OnSelectedChanged);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             OnSelectedChanged();
         }
 
         private void OnSelectedChanged()
         {
-            if (!target.selected && _line != null)
+            var selected = plugin.animationEditContext.IsSelected(target);
+            if (!selected && _line != null)
             {
                 Destroy(_line);
                 foreach (var t in _handles)
@@ -31,7 +32,7 @@ namespace VamTimeline
                 _handles.Clear();
                 _line = null;
             }
-            else if (target.selected && _line == null)
+            else if (selected && _line == null)
             {
                 _line = CreateLine();
                 UpdateLine();
@@ -40,7 +41,7 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesRebuilt()
         {
-            if (!target.selected) return;
+            if (!plugin.animationEditContext.IsSelected(target)) return;
             if (_line != null) UpdateLine();
         }
 
@@ -145,7 +146,7 @@ namespace VamTimeline
         {
             if (enable)
             {
-                if (plugin.animation.autoKeyframeAllControllers)
+                if (plugin.animationEditContext.autoKeyframeAllControllers)
                 {
                     foreach (var target1 in clip.targetControllers)
                         SetControllerKeyframe(time, target1);
@@ -157,7 +158,7 @@ namespace VamTimeline
             }
             else
             {
-                if (plugin.animation.autoKeyframeAllControllers)
+                if (plugin.animationEditContext.autoKeyframeAllControllers)
                 {
                     foreach (var target1 in clip.targetControllers)
                         target1.DeleteFrame(time);
@@ -171,7 +172,7 @@ namespace VamTimeline
 
         private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
         {
-            var key = plugin.animation.SetKeyframeToCurrentTransform(target, time);
+            var key = plugin.animationEditContext.SetKeyframeToCurrentTransform(target, time);
             var keyframe = target.x.keys[key];
             if (keyframe.curveType == CurveTypeValues.CopyPrevious)
                 target.ChangeCurve(time, CurveTypeValues.SmoothLocal, clip.loop);
@@ -179,7 +180,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
-            target?.onSelectedChanged.RemoveListener(OnSelectedChanged);
+            plugin.animationEditContext.onTargetsSelectionChanged.RemoveListener(OnSelectedChanged);
             if (_line != null) Destroy(_line.gameObject);
             foreach (var t in _handles)
                 Destroy(t);

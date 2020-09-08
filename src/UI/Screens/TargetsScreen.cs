@@ -40,7 +40,7 @@ namespace VamTimeline
 
             _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, (bool val) => { _lastFilterVal = val; OnSelectionChanged(); });
 
-            current.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
+            animationEditContext.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
 
             if (animation.IsEmpty())
             {
@@ -69,7 +69,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
 
         private string GetRandomQuote()
         {
-            switch(Random.Range(0, 9))
+            switch (Random.Range(0, 9))
             {
                 case 0: return "You look nice today!";
                 case 1: return "Let's get creative!";
@@ -84,11 +84,9 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
             }
         }
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-            args.before.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
-            args.after.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
             RefreshTargetsList();
         }
 
@@ -113,17 +111,17 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
             RemoveTargets();
             RemoveTargetSiblingComponents();
 
-            var time = animation.clipTime;
+            var time = animationEditContext.clipTime;
             var hasTargets = false;
 
-            foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>() : current.targetTriggers)
+            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>() : current.targetTriggers)
             {
                 hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<TriggersTargetFrame>();
                 component.popupParent = popupParent;
-                component.Bind(plugin, animation.current, target);
+                component.Bind(plugin, animationEditContext.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -131,13 +129,13 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 });
             }
 
-            foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>() : current.targetControllers)
+            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>() : current.targetControllers)
             {
                 hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
-                component.Bind(plugin, animation.current, target);
+                component.Bind(plugin, animationEditContext.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -145,13 +143,13 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 });
             }
 
-            foreach (var target in _filterJSON.val ? current.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>() : current.targetFloatParams)
+            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>() : current.targetFloatParams)
             {
                 hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
-                component.Bind(plugin, animation.current, target);
+                component.Bind(plugin, animationEditContext.current, target);
                 _targets.Add(new TargetRef
                 {
                     Component = component,
@@ -188,7 +186,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
 
         public override void OnDestroy()
         {
-            current.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
             Destroy(_manageTargetsUI);
             RemoveTargets();
             base.OnDestroy();

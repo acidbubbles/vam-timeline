@@ -25,43 +25,43 @@ namespace VamTimeline
 
         public JSONStorableStringChooser curveTypeJSON;
         public UIDynamicPopup curveTypeUI;
-        private AtomAnimation _animation;
-        private AtomAnimationClip _current => _animation.current;
+        private AtomAnimationEditContext _animationEditContext;
+        private AtomAnimationClip _current => _animationEditContext.current;
         private bool _listening;
 
-        public void Bind(AtomAnimation animation)
+        public void Bind(AtomAnimationEditContext animationEditContext)
         {
-            _animation = animation;
+            _animationEditContext = animationEditContext;
             curveTypeJSON.setCallbackFunction = ChangeCurve;
             OnEnable();
         }
 
         private void ChangeCurve(string val)
         {
-            if (_animation.isPlaying) return;
+            if (_animationEditContext.animation.isPlaying) return;
 
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit)
             {
-                RefreshCurrentCurveType(_animation.clipTime);
+                RefreshCurrentCurveType(_animationEditContext.clipTime);
                 return;
             }
 
             if (string.IsNullOrEmpty(val) || val.StartsWith("("))
             {
-                RefreshCurrentCurveType(_animation.clipTime);
+                RefreshCurrentCurveType(_animationEditContext.clipTime);
                 return;
             }
-            float time = _animation.clipTime.Snap();
+            float time = _animationEditContext.clipTime.Snap();
 
             var curveType = CurveTypeValues.ToInt(val);
 
-            foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
+            foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
                 target.ChangeCurve(time, curveType, _current.loop);
 
             if (curveType == CurveTypeValues.CopyPrevious)
-                _animation.Sample();
+                _animationEditContext.animation.Sample();
 
-            RefreshCurrentCurveType(_animation.clipTime);
+            RefreshCurrentCurveType(_animationEditContext.clipTime);
         }
 
         private void RefreshCurrentCurveType(float currentClipTime)
@@ -71,7 +71,7 @@ namespace VamTimeline
             var time = currentClipTime.Snap();
             var ms = time.ToMilliseconds();
             _curveTypes.Clear();
-            foreach (var target in _current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
+            foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
                 var curveType = target.GetKeyframeCurveType(time);
                 if (curveType == -1) continue;
@@ -95,37 +95,37 @@ namespace VamTimeline
             }
         }
 
-        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)
+        private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs args)
         {
             RefreshCurrentCurveType(args.currentClipTime);
         }
 
         private void OnTargetsSelectionChanged()
         {
-            RefreshCurrentCurveType(_animation.clipTime);
+            RefreshCurrentCurveType(_animationEditContext.clipTime);
         }
 
         private void OnAnimationRebuilt()
         {
-            RefreshCurrentCurveType(_animation.clipTime);
+            RefreshCurrentCurveType(_animationEditContext.clipTime);
         }
 
         public void OnEnable()
         {
-            if (_listening || _animation == null) return;
+            if (_listening || _animationEditContext == null) return;
             _listening = true;
-            _animation.onTimeChanged.AddListener(OnTimeChanged);
-            _animation.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
-            _animation.onAnimationRebuilt.AddListener(OnAnimationRebuilt);
-            OnTimeChanged(_animation.timeArgs);
+            _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
+            _animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            _animationEditContext.animation.onAnimationRebuilt.AddListener(OnAnimationRebuilt);
+            OnTimeChanged(_animationEditContext.timeArgs);
         }
 
         public void OnDisable()
         {
-            if (!_listening || _animation == null) return;
-            _animation.onTimeChanged.RemoveListener(OnTimeChanged);
-            _animation.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
-            _animation.onAnimationRebuilt.RemoveListener(OnAnimationRebuilt);
+            if (!_listening || _animationEditContext == null) return;
+            _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
+            _animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            _animationEditContext.animation.onAnimationRebuilt.RemoveListener(OnAnimationRebuilt);
             _listening = false;
         }
     }

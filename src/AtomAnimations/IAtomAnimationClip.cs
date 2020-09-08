@@ -8,7 +8,6 @@ namespace VamTimeline
     {
         bool loop { get; }
         float animationLength { get; }
-        UnityEvent onTargetsSelectionChanged { get; }
         UnityEvent onTargetsListChanged { get; }
         UnityEvent onAnimationKeyframesDirty { get; }
         UnityEvent onAnimationKeyframesRebuilt { get; }

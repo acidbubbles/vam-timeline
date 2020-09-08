@@ -72,7 +72,8 @@ namespace VamTimeline
             return go;
         }
 
-        public AtomAnimation animation;
+        public AtomAnimationEditContext animationEditContext;
+        public AtomAnimation animation => animationEditContext.animation;
         public ScreenTabs tabs;
         public GameObject leftPanel;
         public GameObject rightPanel;
@@ -227,13 +228,13 @@ namespace VamTimeline
             return screensManager;
         }
 
-        public void Bind(AtomAnimation animation)
+        public void Bind(AtomAnimationEditContext animationEditContext)
         {
-            this.animation = animation;
+            this.animationEditContext = animationEditContext;
 
-            _controlPanel.Bind(animation);
-            _curveType.Bind(animation);
-            _curves.Bind(animation);
+            _controlPanel.Bind(animationEditContext);
+            _curveType.Bind(animationEditContext);
+            _curves.Bind(animationEditContext);
         }
     }
 }

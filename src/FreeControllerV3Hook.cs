@@ -14,7 +14,7 @@ namespace VamTimeline
 #endif
 
         public Atom containingAtom;
-        public AtomAnimation animation;
+        public AtomAnimationEditContext animationEditContext;
 
 #if (VAM_GT_1_20_0_9)
 
@@ -46,7 +46,7 @@ namespace VamTimeline
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
 
             // Ignore when something else is happening that takes precedence
-            if (animation.isPlaying || animation.isSampling) return;
+            if (animationEditContext.animation.isPlaying || animationEditContext.animation.isSampling) return;
 
             // Ignore grabbed event, we will receive the grab end later
             if (controller.isGrabbing || controller.possessed) return;
@@ -58,11 +58,11 @@ namespace VamTimeline
             if (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply) return;
 
             // Only track animated targets
-            var target = animation.current.targetControllers.FirstOrDefault(t => t.controller == controller);
+            var target = animationEditContext.current.targetControllers.FirstOrDefault(t => t.controller == controller);
             if (target == null) return;
 
             // Ignore grab release at the end of a mocap recording
-            if (target.ignoreGrabEnd) return;
+            if (animationEditContext.ignoreGrabEnd) return;
 
             RecordFreeControllerPosition(target);
         }
@@ -80,7 +80,7 @@ namespace VamTimeline
 
             if (_grabbedTarget == null && grabbing != null && !grabbing.possessed)
             {
-                _grabbedTarget = animation.current.targetControllers.FirstOrDefault(c => c.controller == grabbing);
+                _grabbedTarget = animationEditContext.current.targetControllers.FirstOrDefault(c => c.controller == grabbing);
             }
             if (_grabbedTarget != null && grabbing != null)
             {
@@ -116,21 +116,21 @@ namespace VamTimeline
 
         public void RecordFreeControllerPosition(FreeControllerAnimationTarget target)
         {
-            var time = animation.clipTime.Snap();
-            if (animation.autoKeyframeAllControllers)
+            var time = animationEditContext.clipTime.Snap();
+            if (animationEditContext.autoKeyframeAllControllers)
             {
-                foreach (var t in animation.current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
-                    animation.SetKeyframeToCurrentTransform(target, time);
+                foreach (var t in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+                    animationEditContext.SetKeyframeToCurrentTransform(target, time);
             }
             else
             {
-                animation.SetKeyframeToCurrentTransform(target, time);
+                animationEditContext.SetKeyframeToCurrentTransform(target, time);
             }
 
-            if (animation.current.autoTransitionPrevious && time == 0)
-                animation.Sample();
-            else if (animation.current.autoTransitionNext && time == animation.current.animationLength)
-                animation.Sample();
+            if (animationEditContext.current.autoTransitionPrevious && time == 0)
+                animationEditContext.animation.Sample();
+            else if (animationEditContext.current.autoTransitionNext && time == animationEditContext.current.animationLength)
+                animationEditContext.animation.Sample();
         }
     }
 }

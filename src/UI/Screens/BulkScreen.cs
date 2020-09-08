@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -58,7 +57,7 @@ namespace VamTimeline
                 _startJSON.valNoCallback = 0f;
                 _endJSON.valNoCallback = current.animationLength;
             }
-            current.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
 
@@ -91,7 +90,7 @@ namespace VamTimeline
         {
             _startJSON = new JSONStorableFloat("Selection starts at", 0f, (float val) =>
             {
-                var closest = current.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
+                var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
                 _startJSON.valNoCallback = closest;
                 if (_startJSON.val > _endJSON.val) _endJSON.valNoCallback = _startJSON.val;
                 SelectionModified();
@@ -101,7 +100,7 @@ namespace VamTimeline
 
             _endJSON = new JSONStorableFloat("Selection ends at", 0f, (float val) =>
             {
-                var closest = current.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
+                var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
                 _endJSON.valNoCallback = closest;
                 if (_endJSON.val < _startJSON.val) _startJSON.valNoCallback = _endJSON.val;
                 SelectionModified();
@@ -112,7 +111,7 @@ namespace VamTimeline
             markSelectionStartUI.button.onClick.AddListener(() => _startJSON.val = current.clipTime);
 
             var markSelectionEndUI = prefabFactory.CreateButton("End at current time");
-            markSelectionEndUI.button.onClick.AddListener(() => _endJSON.val = animation.clipTime);
+            markSelectionEndUI.button.onClick.AddListener(() => _endJSON.val = animationEditContext.clipTime);
 
             _selectionJSON = new JSONStorableString("Selected frames", "")
             {
@@ -134,7 +133,7 @@ namespace VamTimeline
         private void SelectionModified()
         {
             var sb = new StringBuilder();
-            foreach (var target in current.GetAllOrSelectedTargets())
+            foreach (var target in animationEditContext.GetAllOrSelectedTargets())
             {
                 var involvedKeyframes = 0;
                 var keyframes = target.GetAllKeyframesTime();
@@ -158,7 +157,7 @@ namespace VamTimeline
         {
             plugin.clipboard.Clear();
             plugin.clipboard.time = _startJSON.valNoCallback;
-            foreach (var target in current.GetAllOrSelectedTargets())
+            foreach (var target in animationEditContext.GetAllOrSelectedTargets())
             {
                 target.StartBulkUpdates();
                 try
@@ -171,7 +170,7 @@ namespace VamTimeline
 
                         if (copy)
                         {
-                            plugin.clipboard.entries.Insert(0, current.Copy(keyTime, current.GetAllOrSelectedTargets()));
+                            plugin.clipboard.entries.Insert(0, current.Copy(keyTime, animationEditContext.GetAllOrSelectedTargets()));
                         }
                         if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
                         {
@@ -191,7 +190,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(val)) return;
             _changeCurveJSON.valNoCallback = "";
 
-            foreach (var target in current.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
+            foreach (var target in animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
@@ -231,7 +230,7 @@ namespace VamTimeline
                 return;
             }
 
-            _offsetSnapshot = operations.Offset().Start(current.clipTime, current.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>());
+            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>());
 
             if (_offsetSnapshot == null) return;
 
@@ -244,9 +243,9 @@ namespace VamTimeline
             _offsetting = false;
             _offsetControllerUI.label = _offsetControllerUILabel;
 
-            if (animation.clipTime != _offsetSnapshot.time)
+            if (animationEditContext.clipTime != _offsetSnapshot.time)
             {
-                SuperController.LogError($"Timeline: Time changed. Please move controllers within a single frame. Original time: {_offsetSnapshot.time}, current time: {animation.clipTime}");
+                SuperController.LogError($"Timeline: Time changed. Please move controllers within a single frame. Original time: {_offsetSnapshot.time}, current time: {animationEditContext.clipTime}");
                 return;
             }
 
@@ -260,12 +259,9 @@ namespace VamTimeline
             SelectionModified();
         }
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-
-            args.before.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
-            args.after.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
 
             if (current.animationLength < _endJSON.valNoCallback)
             {
@@ -280,7 +276,7 @@ namespace VamTimeline
         {
             base.OnDestroy();
 
-            current.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }
     }
 }

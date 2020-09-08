@@ -14,7 +14,7 @@ namespace VamTimeline
         private Vector2 _lastTextUpdate = new Vector2(-1, -1);
         private ScrubberMarkers _markers;
 
-        public AtomAnimation animation;
+        public AtomAnimationEditContext animationEditContext;
 
         public Scrubber()
         {
@@ -104,7 +104,7 @@ namespace VamTimeline
         {
             if (UIPerformance.ShouldSkip()) return;
 
-            var currentUpdate = new Vector2(animation.clipTime, animation.current.animationLength);
+            var currentUpdate = new Vector2(animationEditContext.clipTime, animationEditContext.current.animationLength);
 
             if (_lastScrubberUpdate != currentUpdate)
             {
@@ -120,7 +120,7 @@ namespace VamTimeline
             if (_lastTextUpdate != currentUpdate && UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
             {
                 _lastTextUpdate = currentUpdate;
-                _timeText.text = $"{animation.clipTime:0.000}s / {animation.current.animationLength:0.000}s";
+                _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
             }
         }
 
@@ -133,12 +133,12 @@ namespace VamTimeline
 
         public void OnEnable()
         {
-            if (animation == null) return;
+            if (animationEditContext == null) return;
 
-            var ratio = Mathf.Clamp01(animation.clipTime / animation.current.animationLength);
+            var ratio = Mathf.Clamp01(animationEditContext.clipTime / animationEditContext.current.animationLength);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
-            _timeText.text = $"{animation.clipTime:0.000}s / {animation.current.animationLength:0.000}s";
+            _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -164,21 +164,21 @@ namespace VamTimeline
 
         private void UpdateScrubberFromView(PointerEventData eventData, bool final = false)
         {
-            if (animation == null) return;
+            if (animationEditContext == null) return;
             Vector2 localPosition;
             var rect = GetComponent<RectTransform>();
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
-            var time = (animation.current.animationLength * ratio).Snap(final ? animation.snap : 0);
-            if (time >= animation.current.animationLength - 0.001f)
+            var time = (animationEditContext.current.animationLength * ratio).Snap(final ? animationEditContext.snap : 0);
+            if (time >= animationEditContext.current.animationLength - 0.001f)
             {
-                if (animation.current.loop)
+                if (animationEditContext.current.loop)
                     time = 0f;
                 else
-                    time = animation.current.animationLength;
+                    time = animationEditContext.current.animationLength;
             }
-            animation.clipTime = time;
+            animationEditContext.clipTime = time;
         }
     }
 }

@@ -17,11 +17,12 @@ namespace VamTimeline
         public abstract string screenId { get; }
 
         protected AtomAnimation animation => plugin.animation;
+        protected AtomAnimationEditContext animationEditContext => plugin.animationEditContext;
+        protected AtomAnimationClip current => animationEditContext?.current;
         protected OperationsFactory operations => new OperationsFactory(plugin.containingAtom, animation, current);
 
         protected IAtomPlugin plugin;
         protected VamPrefabFactory prefabFactory;
-        protected AtomAnimationClip current;
         protected bool _disposing;
 
         protected ScreenBase()
@@ -33,13 +34,11 @@ namespace VamTimeline
             this.plugin = plugin;
             prefabFactory = gameObject.AddComponent<VamPrefabFactory>();
             prefabFactory.plugin = plugin;
-            plugin.animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            current = plugin.animation?.current;
+            plugin.animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
         }
 
-        protected virtual void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected virtual void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
-            current = plugin.animation?.current;
         }
 
         protected Text CreateHeader(string val, int level)
@@ -84,7 +83,7 @@ namespace VamTimeline
         {
             _disposing = true;
             onScreenChangeRequested.RemoveAllListeners();
-            plugin.animation.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            plugin.animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
         }
     }
 }

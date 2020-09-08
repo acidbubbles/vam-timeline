@@ -11,6 +11,7 @@ namespace VamTimeline
     public class AtomPlugin : MVRScript, IAtomPlugin
     {
         public AtomAnimation animation { get; private set; }
+        public AtomAnimationEditContext animationEditContext { get; private set; }
         public new Atom containingAtom => base.containingAtom;
         public new Transform UITransform => base.UITransform;
         public new MVRPluginManager manager => base.manager;
@@ -111,7 +112,7 @@ namespace VamTimeline
             ui = Editor.AddTo(scriptUI.fullWidthUIContent);
             ui.popupParent = UITransform;
             ui.Bind(this);
-            if (animation != null) ui.Bind(animation);
+            if (animationEditContext != null) ui.Bind(animationEditContext);
             ui.screensManager.onScreenChanged.AddListener(args =>
             {
                 if (controllerInjectedUI != null) controllerInjectedUI.screensManager.ChangeScreen(args.screenName, args.screenArg);
@@ -128,7 +129,7 @@ namespace VamTimeline
             if (animation == null) return;
             if (animation.isPlaying)
             {
-                scrubberJSON.valNoCallback = animation.clipTime;
+                scrubberJSON.valNoCallback = animationEditContext.clipTime;
                 timeJSON.valNoCallback = animation.playTime;
             }
         }
@@ -222,14 +223,14 @@ namespace VamTimeline
             });
             RegisterAction(previousAnimationLegacyJSON);
 
-            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animation.clipTime = v.Snap(animation.snap), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animationEditContext.clipTime = v.Snap(animationEditContext.snap), 0f, AtomAnimationClip.DefaultAnimationLength, true)
             {
                 isStorable = false,
                 isRestorable = false
             };
             RegisterFloat(scrubberJSON);
 
-            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animation.playTime = v.Snap(), 0f, float.MaxValue, true)
+            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animationEditContext.playTime = v.Snap(), 0f, float.MaxValue, true)
             {
                 isStorable = false,
                 isRestorable = false
@@ -238,7 +239,7 @@ namespace VamTimeline
 
             playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.current : animation.GetClip(animationLegacyJSON.val);
+                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClip(animationLegacyJSON.val);
                 animation?.PlayOneAndOtherMainsInLayers(selected);
             });
             RegisterAction(playJSON);
@@ -246,7 +247,7 @@ namespace VamTimeline
             playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
                 if (animation == null) return;
-                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.current : animation.GetClip(animationLegacyJSON.val);
+                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClip(animationLegacyJSON.val);
                 if (!animation.isPlaying)
                     animation?.PlayOneAndOtherMainsInLayers(selected);
                 else if (!selected.playbackEnabled)
@@ -338,8 +339,8 @@ namespace VamTimeline
                 animation.Sample();
                 yield break;
             }
-            animation = gameObject.AddComponent<AtomAnimation>();
-            animation.Initialize();
+            AddAnimationComponents();
+            animationEditContext.Initialize();
             BindAnimation();
             animation.enabled = enabled;
 
@@ -348,6 +349,16 @@ namespace VamTimeline
 
             if (enabled)
                 animation.Sample();
+        }
+
+        private void AddAnimationComponents()
+        {
+            if (animation != null) return;
+            animation = gameObject.AddComponent<AtomAnimation>();
+            if(animation == null) throw new InvalidOperationException("Could not add animation component");
+            animationEditContext = gameObject.AddComponent<AtomAnimationEditContext>();
+            if(animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
+            animationEditContext.animation = animation;
         }
 
         private void StartAutoPlay()
@@ -367,7 +378,7 @@ namespace VamTimeline
             try
             {
                 animation.StopAll();
-                animation.playTime = animation.playTime.Snap(animation.snap);
+                animationEditContext.playTime = animationEditContext.playTime.Snap(animationEditContext.snap);
             }
             catch (Exception exc)
             {
@@ -429,16 +440,12 @@ namespace VamTimeline
             _restoring = true;
             try
             {
-                if (animation != null)
-                {
-                    Destroy(animation);
-                    animation = null;
-                }
-
-                animation = gameObject.AddComponent<AtomAnimation>();
+                // TODO: Test
+                AddAnimationComponents();
+                animation.Clear();
                 serializer.DeserializeAnimation(animation, animationJSON.AsObject);
                 if (animation == null) throw new NullReferenceException("Animation deserialized to null");
-                animation.Initialize();
+                animationEditContext.Initialize();
                 BindAnimation();
                 animation.enabled = enabled;
             }
@@ -464,19 +471,20 @@ namespace VamTimeline
             }
             _clipStorables.Clear();
 
-            animation.onTimeChanged.AddListener(OnTimeChanged);
+            animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
+            animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            animationEditContext.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+
             animation.onClipsListChanged.AddListener(OnClipsListChanged);
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
-            animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            animation.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
             animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
 
-            ui?.Bind(animation);
-            peers.animation = animation;
-            if (_freeControllerHook != null) _freeControllerHook.animation = animation;
+            ui?.Bind(animationEditContext);
+            peers.animationEditContext = animationEditContext;
+            if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
 
             peers.Ready();
@@ -490,7 +498,7 @@ namespace VamTimeline
             DeregisterFloat(action.weightJSON);
         }
 
-        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs time)
+        private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs time)
         {
             if (base.containingAtom == null) return; // Plugin destroyed
             try
@@ -499,7 +507,7 @@ namespace VamTimeline
                 scrubberJSON.valNoCallback = time.currentClipTime;
                 timeJSON.valNoCallback = time.time;
 
-                peers.SendTime(animation.current);
+                peers.SendTime(animationEditContext.current);
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineTimeChanged));
             }
             catch (Exception exc)
@@ -508,9 +516,9 @@ namespace VamTimeline
             }
         }
 
-        private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
-            peers.SendCurrentAnimation(animation.current);
+            peers.SendCurrentAnimation(animationEditContext.current);
             OnAnimationParametersChanged();
         }
 
@@ -595,9 +603,9 @@ namespace VamTimeline
             try
             {
                 // Update UI
-                scrubberJSON.max = animation.current.animationLength;
-                scrubberJSON.valNoCallback = animation.clipTime;
-                timeJSON.valNoCallback = animation.playTime;
+                scrubberJSON.max = animationEditContext.current.animationLength;
+                scrubberJSON.valNoCallback = animationEditContext.clipTime;
+                timeJSON.valNoCallback = animationEditContext.playTime;
                 speedJSON.valNoCallback = animation.speed;
 
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
@@ -663,12 +671,12 @@ namespace VamTimeline
 
         private void NextFrame()
         {
-            animation.clipTime = animation.current.GetNextFrame(animation.clipTime);
+            animationEditContext.clipTime = animationEditContext.GetNextFrame(animationEditContext.clipTime);
         }
 
         private void PreviousFrame()
         {
-            animation.clipTime = animation.current.GetPreviousFrame(animation.clipTime);
+            animationEditContext.clipTime = animationEditContext.GetPreviousFrame(animationEditContext.clipTime);
         }
 
         private void Delete()
@@ -676,9 +684,9 @@ namespace VamTimeline
             try
             {
                 if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
-                var time = animation.clipTime;
-                if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
-                foreach (var target in animation.current.GetAllOrSelectedTargets())
+                var time = animationEditContext.clipTime;
+                if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
+                foreach (var target in animationEditContext.GetAllOrSelectedTargets())
                 {
                     target.DeleteFrame(time);
                 }
@@ -695,11 +703,11 @@ namespace VamTimeline
             {
                 if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
                 clipboard.Clear();
-                var time = animation.clipTime;
+                var time = animationEditContext.clipTime;
                 clipboard.time = time;
-                clipboard.entries.Add(animation.current.Copy(clipboard.time, animation.current.GetAllOrSelectedTargets()));
-                if (time.IsSameFrame(0f) || time.IsSameFrame(animation.current.animationLength)) return;
-                foreach (var target in animation.current.GetAllOrSelectedTargets())
+                clipboard.entries.Add(animationEditContext.current.Copy(clipboard.time, animationEditContext.GetAllOrSelectedTargets()));
+                if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
+                foreach (var target in animationEditContext.GetAllOrSelectedTargets())
                 {
                     target.DeleteFrame(time);
                 }
@@ -717,8 +725,8 @@ namespace VamTimeline
                 if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
 
                 clipboard.Clear();
-                clipboard.time = animation.clipTime;
-                clipboard.entries.Add(animation.current.Copy(clipboard.time, animation.current.GetAllOrSelectedTargets()));
+                clipboard.time = animationEditContext.clipTime;
+                clipboard.entries.Add(animationEditContext.current.Copy(clipboard.time, animationEditContext.GetAllOrSelectedTargets()));
             }
             catch (Exception exc)
             {
@@ -737,11 +745,11 @@ namespace VamTimeline
                     SuperController.LogMessage("Timeline: Clipboard is empty");
                     return;
                 }
-                var time = animation.clipTime;
+                var time = animationEditContext.clipTime;
                 var timeOffset = clipboard.time;
                 foreach (var entry in clipboard.entries)
                 {
-                    animation.current.Paste(animation.clipTime + entry.time - timeOffset, entry);
+                    animationEditContext.current.Paste(animationEditContext.clipTime + entry.time - timeOffset, entry);
                 }
                 animation.Sample();
             }
@@ -806,8 +814,8 @@ namespace VamTimeline
                     peers.SendScreen(args.screenName, args.screenArg);
                 });
             }
-            if (controllerInjectedUI.animation != animation)
-                controllerInjectedUI.Bind(animation);
+            if (controllerInjectedUI.animationEditContext != animationEditContext)
+                controllerInjectedUI.Bind(animationEditContext);
         }
 
         private void DestroyControllerPanel()

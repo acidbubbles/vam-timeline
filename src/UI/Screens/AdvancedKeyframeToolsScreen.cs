@@ -52,14 +52,14 @@ namespace VamTimeline
 
         private void RemoveAllKeyframes()
         {
-            operations.Keyframes().RemoveAll();
+            operations.Keyframes().RemoveAll(animationEditContext.GetAllOrSelectedTargets());
         }
 
         private void ReverseAnimation()
         {
             try
             {
-                foreach (var target in current.GetAllOrSelectedTargets())
+                foreach (var target in animationEditContext.GetAllOrSelectedTargets())
                 {
                     if (target is ICurveAnimationTarget)
                     {
@@ -104,7 +104,7 @@ namespace VamTimeline
         {
             try
             {
-                var time = animation.clipTime.Snap();
+                var time = animationEditContext.clipTime.Snap();
                 foreach (var fc in plugin.containingAtom.freeControllers)
                 {
                     if (fc.name == "control") continue;
@@ -123,7 +123,7 @@ namespace VamTimeline
                         }
                         target = operations.Targets().Add(fc);
                     }
-                    animation.SetKeyframeToCurrentTransform(target, time);
+                    animationEditContext.SetKeyframeToCurrentTransform(target, time);
                 }
             }
             catch (Exception exc)
@@ -152,7 +152,7 @@ namespace VamTimeline
                 _baking = true;
                 _bakeUI.label = "Click or press Esc to stop...";
 
-                animation.PlayCurrentAndOtherMainsInLayers();
+                animationEditContext.PlayCurrentAndOtherMainsInLayers();
                 SuperController.singleton.motionAnimationMaster.StartRecord();
 
                 StartCoroutine(StopWhenPlaybackIsComplete());

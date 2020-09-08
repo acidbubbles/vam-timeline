@@ -15,7 +15,7 @@ namespace VamTimeline
         private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
         private readonly RectTransform _content;
-        private AtomAnimation _animation;
+        private AtomAnimationEditContext _animationEditContext;
         private IAtomAnimationClip _clip;
         private bool _bound;
         private int _ms;
@@ -107,44 +107,45 @@ namespace VamTimeline
             return line;
         }
 
-        public void Bind(AtomAnimation animation)
+        public void Bind(AtomAnimationEditContext animationEditContext)
         {
             UnbindAnimation();
 
-            _animation = animation;
-            _animation.onTimeChanged.AddListener(OnTimeChanged);
-            _animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
-            _animation.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
-            BindClip(_animation.current);
-            SetScrubberPosition(_animation.clipTime, true);
+            _animationEditContext = animationEditContext;
+            _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
+            _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            _animationEditContext.animation.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+
+            BindClip(_animationEditContext.current);
+            SetScrubberPosition(_animationEditContext.clipTime, true);
         }
 
         private void UnbindAnimation()
         {
-            if (_animation == null) return;
+            if (_animationEditContext == null) return;
 
-            _animation.onTimeChanged.RemoveListener(OnTimeChanged);
-            _animation.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
-            _animation = null;
+            _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
+            _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            _animationEditContext = null;
 
             UnbindClip();
         }
 
         public void Update()
         {
-            if (_animation == null) return;
-            if (!_animation.isPlaying) return;
+            if (_animationEditContext == null) return;
+            if (!_animationEditContext.animation.isPlaying) return;
             if (UIPerformance.ShouldSkip()) return;
 
-            SetScrubberPosition(_animation.clipTime, false);
+            SetScrubberPosition(_animationEditContext.clipTime, false);
         }
 
-        private void OnTimeChanged(AtomAnimation.TimeChangedEventArgs args)
+        private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs args)
         {
             SetScrubberPosition(args.currentClipTime, true);
         }
 
-        private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             UnbindClip();
             BindClip(args.after);
@@ -153,7 +154,7 @@ namespace VamTimeline
         private void OnAnimationSettingsChanged()
         {
             UnbindClip();
-            BindClip(_animation.current);
+            BindClip(_animationEditContext.current);
         }
 
         private void BindClip(IAtomAnimationClip clip)
@@ -240,9 +241,9 @@ namespace VamTimeline
                 click.onClick.AddListener(_ =>
                 {
                     var targets = group.GetTargets().ToList();
-                    var selected = !targets.Any(t => t.selected);
+                    var selected = targets.Any(t => _animationEditContext.IsSelected(t));
                     foreach (var target in targets)
-                        target.selected = selected;
+                        _animationEditContext.SetSelected(target, !selected);
                 });
             }
         }
@@ -273,15 +274,16 @@ namespace VamTimeline
                 labelBackgroundImage.raycastTarget = true;
 
                 var listener = child.AddComponent<Listener>();
+                // TODO: Change this for a dictionary and listen once instead of once per row!
                 listener.Bind(
-                    target.onSelectedChanged,
+                    _animationEditContext.onTargetsSelectionChanged,
                     () => UpdateSelected(target, keyframes, labelBackgroundImage)
                 );
 
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(_ =>
                 {
-                    target.selected = !target.selected;
+                    _animationEditContext.SetSelected(target, !_animationEditContext.IsSelected(target));
                 });
             }
 
@@ -343,7 +345,10 @@ namespace VamTimeline
 
         private void UpdateSelected(IAtomAnimationTarget target, DopeSheetKeyframes keyframes, GradientImage image)
         {
-            if (target.selected)
+            var selected = _animationEditContext.IsSelected(target);
+            if (keyframes.selected == selected) return;
+
+            if (selected)
             {
                 keyframes.selected = true;
                 image.top = _style.LabelBackgroundColorTopSelected;
@@ -367,24 +372,24 @@ namespace VamTimeline
             var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
             var clickedTime = ratio * _clip.animationLength;
-            var previousClipTime = _animation.clipTime;
-            _animation.clipTime = target.GetTimeClosestTo(clickedTime);
-            if (!target.selected)
+            var previousClipTime = _animationEditContext.clipTime;
+            _animationEditContext.clipTime = target.GetTimeClosestTo(clickedTime);
+            if (!_animationEditContext.IsSelected(target))
             {
-                target.selected = true;
+                _animationEditContext.SetSelected(target, true);
                 if (!Input.GetKey(KeyCode.LeftControl))
                 {
-                    foreach (var t in _clip.GetAllTargets().Where(x => x.selected && x != target))
-                        t.selected = false;
+                    foreach (var t in _animationEditContext.selectedTargets.Where(x => x != target).ToList())
+                        _animationEditContext.SetSelected(t, false);
                 }
             }
-            else if (previousClipTime == _animation.clipTime)
+            else if (previousClipTime == _animationEditContext.clipTime)
             {
-                target.selected = false;
+                _animationEditContext.SetSelected(target, false);
                 if (!Input.GetKey(KeyCode.LeftControl))
                 {
-                    foreach (var t in _clip.GetAllTargets().Where(x => x.selected && x != target))
-                        t.selected = false;
+                    foreach (var t in _animationEditContext.selectedTargets.Where(x => x != target).ToList())
+                        _animationEditContext.SetSelected(t, false);
                 }
             }
         }

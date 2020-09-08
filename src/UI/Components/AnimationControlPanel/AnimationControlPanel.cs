@@ -23,7 +23,7 @@ namespace VamTimeline
         private VamPrefabFactory _prefabFactory;
         private DopeSheet _dopeSheet;
         private Scrubber _scrubber;
-        private AtomAnimation _animation;
+        private AtomAnimationEditContext _animationEditContext;
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
 
@@ -38,13 +38,13 @@ namespace VamTimeline
             _dopeSheet = InitDopeSheet();
         }
 
-        public void Bind(AtomAnimation animation)
+        public void Bind(AtomAnimationEditContext animationEditContext)
         {
-            _animation = animation;
-            if (_scrubber != null) _scrubber.animation = animation;
-            if (_dopeSheet != null) _dopeSheet.Bind(animation);
-            _animation.onClipsListChanged.AddListener(OnClipsListChanged);
-            _animation.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            _animationEditContext = animationEditContext;
+            if (_scrubber != null) _scrubber.animationEditContext = animationEditContext;
+            if (_dopeSheet != null) _dopeSheet.Bind(animationEditContext);
+            _animationEditContext.animation.onClipsListChanged.AddListener(OnClipsListChanged);
+            _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             SyncAnimationsListNow();
         }
 
@@ -53,7 +53,7 @@ namespace VamTimeline
             var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) =>
             {
                 if (_ignoreAnimationChange) return;
-                _animation?.SelectAnimation(val);
+                _animationEditContext?.SelectAnimation(val);
             });
 
             var popup = _prefabFactory.CreatePopup(jsc, false, true);
@@ -87,21 +87,28 @@ namespace VamTimeline
             var playAll = Instantiate(buttonPrefab);
             playAll.SetParent(container.transform, false);
             playAll.GetComponent<UIDynamicButton>().label = "\u25B6 Seq";
-            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayCurrentAndOtherMainsInLayers());
+            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayCurrentAndOtherMainsInLayers());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
 
             var playClip = Instantiate(buttonPrefab);
             playClip.SetParent(container.transform, false);
             playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
-            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animation.PlayClip(_animation.current, false));
+            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.animation.PlayClip(_animationEditContext.current, false));
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
 
             var stop = Instantiate(buttonPrefab);
             stop.SetParent(container.transform, false);
             stop.GetComponent<UIDynamicButton>().label = "\u25A0 Stop";
-            stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => { if (_animation.isPlaying) _animation.StopAll(); else _animation.ResetAll(); });
+            stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>
+            {
+                if (_animationEditContext.animation.isPlaying)
+                    _animationEditContext.animation.StopAll();
+                else
+                    _animationEditContext.animation.ResetAll();
+                _animationEditContext.onTimeChanged.Invoke(_animationEditContext.timeArgs);
+            });
             stop.GetComponent<LayoutElement>().preferredWidth = 0;
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
         }
@@ -118,49 +125,49 @@ namespace VamTimeline
 
             CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () =>
             {
-                _animation.clipTime = _animation.current.GetPreviousFrame(_animation.clipTime);
+                _animationEditContext.clipTime = _animationEditContext.GetPreviousFrame(_animationEditContext.clipTime);
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
             {
-                var time = _animation.clipTime - 1f;
+                var time = _animationEditContext.clipTime - 1f;
                 if (time < 0)
                     time = 0;
-                _animation.clipTime = time;
+                _animationEditContext.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "-.1s", () =>
             {
-                var time = _animation.clipTime - 0.1f;
+                var time = _animationEditContext.clipTime - 0.1f;
                 if (time < 0)
                     time = 0;
-                _animation.clipTime = time;
+                _animationEditContext.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, ">|<", () =>
             {
-                _animation.clipTime = _animation.clipTime.Snap(1f);
+                _animationEditContext.clipTime = _animationEditContext.clipTime.Snap(1f);
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+.1s", () =>
             {
-                var time = _animation.clipTime + 0.1f;
-                if (time >= _animation.current.animationLength - 0.001f)
-                    time = _animation.current.loop ? _animation.current.animationLength - 0.1f : _animation.current.animationLength;
-                _animation.clipTime = time;
+                var time = _animationEditContext.clipTime + 0.1f;
+                if (time >= _animationEditContext.current.animationLength - 0.001f)
+                    time = _animationEditContext.current.loop ? _animationEditContext.current.animationLength - 0.1f : _animationEditContext.current.animationLength;
+                _animationEditContext.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "+1s", () =>
             {
-                var time = _animation.clipTime + 1f;
-                if (time >= _animation.current.animationLength - 0.001f)
-                    time = _animation.current.loop ? _animation.current.animationLength - 1f : _animation.current.animationLength;
-                _animation.clipTime = time;
+                var time = _animationEditContext.clipTime + 1f;
+                if (time >= _animationEditContext.current.animationLength - 0.001f)
+                    time = _animationEditContext.current.loop ? _animationEditContext.current.animationLength - 1f : _animationEditContext.current.animationLength;
+                _animationEditContext.clipTime = time;
             });
 
             CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () =>
             {
-                _animation.clipTime = _animation.current.GetNextFrame(_animation.clipTime);
+                _animationEditContext.clipTime = _animationEditContext.GetNextFrame(_animationEditContext.clipTime);
             });
         }
 
@@ -210,14 +217,14 @@ namespace VamTimeline
             _ignoreAnimationChange = true;
             try
             {
-                var hasLayers = _animation.EnumerateLayers().Skip(1).Any();
-                _animationsJSON.choices = _animation.clips.Select(c => c.animationName).ToList();
+                var hasLayers = _animationEditContext.animation.EnumerateLayers().Skip(1).Any();
+                _animationsJSON.choices = _animationEditContext.animation.clips.Select(c => c.animationName).ToList();
                 if (hasLayers)
-                    _animationsJSON.displayChoices = _animation.clips.Select(c => $"[{c.animationLayer}] {c.animationName}").ToList();
+                    _animationsJSON.displayChoices = _animationEditContext.animation.clips.Select(c => $"[{c.animationLayer}] {c.animationName}").ToList();
                 else
                     _animationsJSON.displayChoices = _animationsJSON.choices;
                 _animationsJSON.valNoCallback = null;
-                _animationsJSON.valNoCallback = _animation.current.animationName;
+                _animationsJSON.valNoCallback = _animationEditContext.current.animationName;
             }
             finally
             {
@@ -225,17 +232,17 @@ namespace VamTimeline
             }
         }
 
-        private void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             _animationsJSON.valNoCallback = args.after.animationName;
         }
 
         public void OnDestroy()
         {
-            if (_animation != null)
+            if (_animationEditContext != null)
             {
-                _animation.onClipsListChanged.RemoveListener(OnClipsListChanged);
-                _animation.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+                _animationEditContext.animation.onClipsListChanged.RemoveListener(OnClipsListChanged);
+                _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
             }
         }
     }

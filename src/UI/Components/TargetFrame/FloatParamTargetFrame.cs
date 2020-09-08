@@ -98,14 +98,14 @@ namespace VamTimeline
                 {
                     target.floatParam.min *= 0.1f;
                     target.floatParam.max *= 0.1f;
-                    SetTime(plugin.animation.clipTime, true);
+                    SetTime(plugin.animationEditContext.clipTime, true);
                 }).button.interactable = !target.floatParam.constrained;
 
                 CreateExpandButton(group.transform, "Range 10X", () =>
                 {
                     target.floatParam.min *= 10f;
                     target.floatParam.max *= 10f;
-                    SetTime(plugin.animation.clipTime, true);
+                    SetTime(plugin.animationEditContext.clipTime, true);
                 }).button.interactable = !target.floatParam.constrained;
             }
             else
@@ -115,13 +115,13 @@ namespace VamTimeline
                     morph.ResetRange();
                     if (target.floatParam.val < target.floatParam.min) SetValue(target.floatParam.min);
                     if (target.floatParam.val > target.floatParam.max) SetValue(target.floatParam.max);
-                    SetTime(plugin.animation.clipTime, true);
+                    SetTime(plugin.animationEditContext.clipTime, true);
                 });
 
                 CreateExpandButton(group.transform, "+ Range", () =>
                 {
                     morph.IncreaseRange();
-                    SetTime(plugin.animation.clipTime, true);
+                    SetTime(plugin.animationEditContext.clipTime, true);
                 });
             }
         }
@@ -129,7 +129,7 @@ namespace VamTimeline
         private void SetValue(float val)
         {
             if (!target.EnsureAvailable(false)) return;
-            var time = plugin.animation.clipTime.Snap();
+            var time = plugin.animationEditContext.clipTime.Snap();
             if (plugin.animation.isPlaying)
             {
                 time = time.Snap(0.01f);

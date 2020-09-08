@@ -272,7 +272,7 @@ namespace VamTimeline
 
         #region Events
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
 

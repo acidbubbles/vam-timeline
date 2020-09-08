@@ -149,7 +149,7 @@ namespace VamTimeline
                         clip.nextAnimationTime = 0;
                     }
                 }
-                animation.SelectAnimation(animation.clips[0].animationName);
+                animationEditContext.SelectAnimation(animation.clips[0].animationName);
             }
             catch (Exception exc)
             {
@@ -167,7 +167,7 @@ namespace VamTimeline
                     return;
                 }
                 var clips = animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList();
-                animation.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer).animationName);
+                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer).animationName);
                 foreach (var clip in clips)
                     animation.RemoveClip(clip);
             }
@@ -186,7 +186,7 @@ namespace VamTimeline
 
         #region Events
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
 

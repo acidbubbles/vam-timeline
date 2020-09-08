@@ -186,8 +186,7 @@ namespace VamTimeline
                 ImportControllerStates(jc);
 
                 var lastAnimation = animation.clips.Select(c => c.animationName).LastOrDefault();
-                animation.SelectAnimation(lastAnimation);
-                animation.Sample();
+                animationEditContext.SelectAnimation(lastAnimation);
             }
             catch (Exception exc)
             {
@@ -212,7 +211,7 @@ namespace VamTimeline
 
             operations.Import().ImportClips(imported);
 
-            if (imported.Count > 0) animation.SelectAnimation(imported.FirstOrDefault());
+            if (imported.Count > 0) animationEditContext.SelectAnimation(imported.FirstOrDefault());
             else SuperController.LogError($"Timeline: No animations were imported.");
 
             return true;

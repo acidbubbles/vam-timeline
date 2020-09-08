@@ -120,7 +120,7 @@ namespace VamTimeline
             operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);
         }
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
             ChangeScreen(TargetsScreen.ScreenName);

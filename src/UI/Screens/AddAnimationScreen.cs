@@ -82,7 +82,7 @@ namespace VamTimeline
         {
             var clip = operations.AddAnimation().AddAnimationAsCopy();
             if(clip == null) return;
-            animation.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip.animationName);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -90,7 +90,7 @@ namespace VamTimeline
         {
             var clip = operations.AddAnimation().AddAnimationFromCurrentFrame();
             if(clip == null) return;
-            animation.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip.animationName);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -98,7 +98,7 @@ namespace VamTimeline
         {
             var clip = operations.AddAnimation().AddTransitionAnimation();
             if(clip == null) return;
-            animation.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip.animationName);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -106,13 +106,13 @@ namespace VamTimeline
         {
             var clip = operations.Layers().Add();
 
-            animation.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip.animationName);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void SplitLayer()
         {
-            var targets = current.GetSelectedTargets().ToList();
+            var targets = animationEditContext.GetSelectedTargets().ToList();
             if (targets.Count == 0)
             {
                 SuperController.LogError("Timeline: You must select a subset of targets to split to another layer.");
@@ -126,7 +126,7 @@ namespace VamTimeline
 
         #region Events
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
 

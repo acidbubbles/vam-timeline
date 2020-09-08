@@ -31,7 +31,6 @@ namespace VamTimeline
                 }
             }
 
-            _animation.Initialize();
             _animation.RebuildAnimationNow();
         }
 

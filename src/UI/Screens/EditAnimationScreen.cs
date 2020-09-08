@@ -163,7 +163,7 @@ namespace VamTimeline
                 AtomAnimationClip.DefaultAnimationLength,
                 (float val) =>
                 {
-                    _lengthJSON.valNoCallback = val.Snap(animation.snap);
+                    _lengthJSON.valNoCallback = val.Snap(animationEditContext.snap);
                     if (_lengthJSON.valNoCallback < 0.1f)
                         _lengthJSON.valNoCallback = 0.1f;
                 },
@@ -219,9 +219,9 @@ namespace VamTimeline
                 return;
             }
 
-            newLength = newLength.Snap(animation.snap);
+            newLength = newLength.Snap(animationEditContext.snap);
             if (newLength < 0.1f) newLength = 0.1f;
-            var time = animation.clipTime.Snap();
+            var time = animationEditContext.clipTime.Snap();
 
             switch (_lengthModeJSON.val)
             {
@@ -248,7 +248,7 @@ namespace VamTimeline
             _lengthJSON.valNoCallback = current.animationLength;
             current.DirtyAll();
 
-            animation.clipTime = Math.Min(time, newLength);
+            animationEditContext.clipTime = Math.Min(time, newLength);
         }
 
         private void SetEnsureQuaternionContinuity(bool val)
@@ -282,7 +282,7 @@ namespace VamTimeline
 
         #region Events
 
-        protected override void OnCurrentAnimationChanged(AtomAnimation.CurrentAnimationChangedEventArgs args)
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
 

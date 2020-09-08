@@ -20,6 +20,7 @@ namespace VamTimeline
     public interface IAtomPlugin : IMVRScript, IRemoteAtomPlugin
     {
         AtomAnimation animation { get; }
+        AtomAnimationEditContext animationEditContext { get; }
         AtomAnimationSerializer serializer { get; }
         Editor ui { get; }
         Editor controllerInjectedUI { get; }

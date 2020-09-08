@@ -28,7 +28,6 @@ namespace VamTimeline
         private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
 
-        public UnityEvent onTargetsSelectionChanged { get; } = new UnityEvent();
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
@@ -449,10 +448,8 @@ namespace VamTimeline
             if (target == null) throw new NullReferenceException(nameof(target));
             list.Add(target);
             list.Sort(comparer);
-            target.onSelectedChanged.AddListener(OnTargetSelectionChanged);
             target.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             onTargetsListChanged.Invoke();
-            onTargetsSelectionChanged.Invoke();
             return target;
         }
 
@@ -511,17 +508,11 @@ namespace VamTimeline
             list.Remove(target);
             target.Dispose();
             onTargetsListChanged.Invoke();
-            onTargetsSelectionChanged.Invoke();
         }
 
         #endregion
 
         #region Event callbacks
-
-        private void OnTargetSelectionChanged()
-        {
-            onTargetsSelectionChanged.Invoke();
-        }
 
         private void OnAnimationKeyframesDirty()
         {
@@ -529,81 +520,6 @@ namespace VamTimeline
         }
 
         #endregion
-
-        #region Frame Nav
-
-        public float GetNextFrame(float time)
-        {
-            time = time.Snap();
-            if (time.IsSameFrame(animationLength))
-                return 0f;
-            var nextTime = animationLength;
-            foreach (var controller in GetAllOrSelectedTargets())
-            {
-                // TODO: Use bisect for more efficient navigation
-                var keyframes = controller.GetAllKeyframesTime();
-                for (var key = 0; key < keyframes.Length; key++)
-                {
-                    var potentialNextTime = keyframes[key];
-                    if (potentialNextTime <= time) continue;
-                    if (potentialNextTime > nextTime) continue;
-                    nextTime = potentialNextTime;
-                    break;
-                }
-            }
-            if (nextTime.IsSameFrame(animationLength) && loop)
-                return 0f;
-            else
-                return nextTime;
-        }
-
-        public float GetPreviousFrame(float time)
-        {
-            time = time.Snap();
-            if (time.IsSameFrame(0))
-            {
-                try
-                {
-                    return GetAllOrSelectedTargets().Select(t => t.GetAllKeyframesTime()).Select(c => c[c.Length - (loop ? 2 : 1)]).Max();
-                }
-                catch (InvalidOperationException)
-                {
-                    return 0f;
-                }
-            }
-            var previousTime = 0f;
-            foreach (var controller in GetAllOrSelectedTargets())
-            {
-                // TODO: Use bisect for more efficient navigation
-                var keyframes = controller.GetAllKeyframesTime();
-                for (var key = keyframes.Length - 2; key >= 0; key--)
-                {
-                    var potentialPreviousTime = keyframes[key];
-                    if (potentialPreviousTime >= time) continue;
-                    if (potentialPreviousTime < previousTime) continue;
-                    previousTime = potentialPreviousTime;
-                    break;
-                }
-            }
-            return previousTime;
-        }
-
-        #endregion
-
-        public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
-        {
-            var result = GetAllTargets()
-                .Where(t => t.selected)
-                .ToList();
-            return result.Count > 0 ? result : GetAllTargets();
-        }
-
-        public IEnumerable<IAtomAnimationTarget> GetSelectedTargets()
-        {
-            return GetAllTargets()
-                .Where(t => t.selected)
-                .ToList();
-        }
 
         #region Clipboard
 
@@ -714,7 +630,6 @@ namespace VamTimeline
 
         public void Dispose()
         {
-            onTargetsSelectionChanged.RemoveAllListeners();
             onAnimationKeyframesDirty.RemoveAllListeners();
             onAnimationKeyframesRebuilt.RemoveAllListeners();
             onAnimationSettingsChanged.RemoveAllListeners();
