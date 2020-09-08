@@ -26,6 +26,10 @@ namespace VamTimeline
         private AtomAnimationEditContext _animationEditContext;
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
+        private UIDynamicButton _playAll;
+        private UIDynamicButton _stop;
+
+        public UIDynamicButton _playClip { get; private set; }
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -44,7 +48,9 @@ namespace VamTimeline
             if (_scrubber != null) _scrubber.animationEditContext = animationEditContext;
             if (_dopeSheet != null) _dopeSheet.Bind(animationEditContext);
             _animationEditContext.animation.onClipsListChanged.AddListener(OnClipsListChanged);
+            _animationEditContext.animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
             _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
+            _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
             SyncAnimationsListNow();
         }
 
@@ -90,6 +96,7 @@ namespace VamTimeline
             playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayCurrentAndOtherMainsInLayers());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
+            _playAll = playAll.GetComponent<UIDynamicButton>();
 
             var playClip = Instantiate(buttonPrefab);
             playClip.SetParent(container.transform, false);
@@ -97,6 +104,7 @@ namespace VamTimeline
             playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.animation.PlayClip(_animationEditContext.current, false));
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
+            _playClip = playClip.GetComponent<UIDynamicButton>();
 
             var stop = Instantiate(buttonPrefab);
             stop.SetParent(container.transform, false);
@@ -111,6 +119,7 @@ namespace VamTimeline
             });
             stop.GetComponent<LayoutElement>().preferredWidth = 0;
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
+            _stop = stop.GetComponent<UIDynamicButton>();
         }
 
         private void InitFrameNav(Transform buttonPrefab)
@@ -235,6 +244,19 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             _animationsJSON.valNoCallback = args.after.animationName;
+            OnTimeChanged(_animationEditContext.timeArgs);
+        }
+
+        private void OnIsPlayingChanged(AtomAnimationClip clip)
+        {
+            OnTimeChanged(_animationEditContext.timeArgs);
+        }
+
+        private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs args)
+        {
+            _playAll.button.interactable = !_animationEditContext.current.playbackMainInLayer;
+            _playClip.button.interactable = !_animationEditContext.current.playbackMainInLayer;
+            _stop.button.interactable = _animationEditContext.animation.isPlaying || args.currentClipTime > 0f;
         }
 
         public void OnDestroy()
@@ -243,6 +265,7 @@ namespace VamTimeline
             {
                 _animationEditContext.animation.onClipsListChanged.RemoveListener(OnClipsListChanged);
                 _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+                _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
             }
         }
     }
