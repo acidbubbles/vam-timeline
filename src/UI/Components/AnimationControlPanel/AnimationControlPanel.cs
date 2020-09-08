@@ -48,7 +48,7 @@ namespace VamTimeline
             if (_scrubber != null) _scrubber.animationEditContext = animationEditContext;
             if (_dopeSheet != null) _dopeSheet.Bind(animationEditContext);
             _animationEditContext.animation.onClipsListChanged.AddListener(OnClipsListChanged);
-            _animationEditContext.animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
+            _animationEditContext.animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
             _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
             SyncAnimationsListNow();
@@ -247,15 +247,15 @@ namespace VamTimeline
             OnTimeChanged(_animationEditContext.timeArgs);
         }
 
-        private void OnIsPlayingChanged(AtomAnimationClip clip)
+        private void OnClipIsPlayingChanged(AtomAnimationClip clip)
         {
             OnTimeChanged(_animationEditContext.timeArgs);
         }
 
         private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs args)
         {
-            _playAll.button.interactable = !_animationEditContext.current.playbackMainInLayer;
-            _playClip.button.interactable = !_animationEditContext.current.playbackMainInLayer;
+            _playAll.button.interactable = !_animationEditContext.current.playbackEnabled;
+            _playClip.button.interactable = !_animationEditContext.current.playbackEnabled;
             _stop.button.interactable = _animationEditContext.animation.isPlaying || args.currentClipTime > 0f;
         }
 
@@ -264,6 +264,7 @@ namespace VamTimeline
             if (_animationEditContext != null)
             {
                 _animationEditContext.animation.onClipsListChanged.RemoveListener(OnClipsListChanged);
+                _animationEditContext.animation.onClipIsPlayingChanged.RemoveListener(OnClipIsPlayingChanged);
                 _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
                 _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
             }

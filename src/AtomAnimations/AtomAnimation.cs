@@ -22,6 +22,7 @@ namespace VamTimeline
         public UnityEvent onClipsListChanged = new UnityEvent();
         public UnityEvent onAnimationRebuilt = new UnityEvent();
         public IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
+        public IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
@@ -216,8 +217,6 @@ namespace VamTimeline
             }
             if (sequencing && clip.nextAnimationName != null)
                 AssignNextAnimation(clip);
-
-            onIsPlayingChanged.Invoke(clip);
         }
 
         public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
@@ -333,6 +332,7 @@ namespace VamTimeline
                         clip.playbackWeight = 0f;
                         clip.Leave();
                         clip.playbackEnabled = false;
+                        onClipIsPlayingChanged.Invoke(clip);
                     }
                 }
             }
@@ -343,6 +343,7 @@ namespace VamTimeline
             if (!clip.playbackEnabled) clip.playbackWeight = 0;
             clip.playbackEnabled = true;
             clip.playbackBlendRate = (weight - clip.playbackWeight) / duration;
+            onClipIsPlayingChanged.Invoke(clip);
         }
 
         #endregion
@@ -724,6 +725,7 @@ namespace VamTimeline
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
                 {
                     clip.playbackEnabled = false;
+                    onClipIsPlayingChanged.Invoke(clip);
                 }
             }
         }
