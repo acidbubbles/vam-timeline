@@ -69,7 +69,7 @@ namespace VamTimeline
                 if (current == null) return;
                 current.clipTime = value;
                 if (animation.isPlaying && !current.playbackEnabled && current.playbackMainInLayer) animation.PlayClip(current, animation.sequencing);
-                animation.Sample();
+                Sample();
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
                 onTimeChanged.Invoke(timeArgs);
@@ -87,7 +87,7 @@ namespace VamTimeline
                 animation.playTime = value;
                 if (!current.playbackEnabled)
                     current.clipTime = value;
-                animation.Sample();
+                Sample();
                 onTimeChanged.Invoke(timeArgs);
             }
         }
@@ -103,6 +103,8 @@ namespace VamTimeline
             }
         }
 
+        #region Keyframing
+
         public int SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
         {
             time = time.Snap();
@@ -111,10 +113,47 @@ namespace VamTimeline
             return target.SetKeyframeToCurrentTransform(time);
         }
 
+        #endregion
+
+        #region Playback
+
         public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
         {
-            animation.PlayOneAndOtherMainsInLayers(current, sequencing);
+            foreach (var clip in GetMainClipPerLayer())
+            {
+                animation.PlayClip(clip, sequencing);
+            }
         }
+
+        public void Sample()
+        {
+            if (animation.isPlaying || !enabled) return;
+
+            var clips = GetMainClipPerLayer();
+            foreach (var clip in clips)
+            {
+                clip.playbackEnabled = true;
+                clip.playbackWeight = 1f;
+            }
+            animation.Sample();
+            foreach (var clip in clips)
+            {
+                clip.playbackEnabled = false;
+                clip.playbackWeight = 0f;
+            }
+        }
+
+        private IEnumerable<AtomAnimationClip> GetMainClipPerLayer()
+        {
+            return animation.clips
+                .GroupBy(c => c.animationLayer)
+                .Select(g =>
+                {
+                    return g.Key == current.animationLayer ? current : (g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First());
+                });
+        }
+
+        #endregion
 
         #region Selection
 
@@ -146,8 +185,15 @@ namespace VamTimeline
                 before = previous,
                 after = current
             });
-            // TODO: This was not there, validate
-            animation.Sample();
+
+            if (animation.isPlaying)
+            {
+                animation.PlayClip(current, animation.sequencing);
+            }
+            else
+            {
+                Sample();
+            }
         }
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()

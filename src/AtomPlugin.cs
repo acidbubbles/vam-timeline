@@ -147,6 +147,10 @@ namespace VamTimeline
                 if (animation != null)
                 {
                     animation.enabled = true;
+                }
+                if (animationEditContext != null)
+                {
+                    animationEditContext.enabled = true;
                     if (_freeControllerHook != null)
                         _freeControllerHook.enabled = !animation.isPlaying;
                     if (base.containingAtom != null)
@@ -167,6 +171,7 @@ namespace VamTimeline
             try
             {
                 if (animation != null) animation.enabled = false;
+                if (animationEditContext != null) animationEditContext.enabled = false;
                 if (ui != null) ui.enabled = false;
                 if (_freeControllerHook != null) _freeControllerHook.enabled = false;
                 if (peers != null) peers.Unready();
@@ -336,7 +341,7 @@ namespace VamTimeline
             {
                 yield return 0;
                 if (this == null) yield break;
-                animation.Sample();
+                animationEditContext.Sample();
                 yield break;
             }
             AddAnimationComponents();
@@ -348,16 +353,16 @@ namespace VamTimeline
             if (this == null) yield break;
 
             if (enabled)
-                animation.Sample();
+                animationEditContext.Sample();
         }
 
         private void AddAnimationComponents()
         {
             if (animation != null) return;
             animation = gameObject.AddComponent<AtomAnimation>();
-            if(animation == null) throw new InvalidOperationException("Could not add animation component");
+            if (animation == null) throw new InvalidOperationException("Could not add animation component");
             animationEditContext = gameObject.AddComponent<AtomAnimationEditContext>();
-            if(animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
+            if (animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
             animationEditContext.animation = animation;
         }
 
@@ -751,7 +756,7 @@ namespace VamTimeline
                 {
                     animationEditContext.current.Paste(animationEditContext.clipTime + entry.time - timeOffset, entry);
                 }
-                animation.Sample();
+                animationEditContext.Sample();
             }
             catch (Exception exc)
             {

@@ -224,14 +224,14 @@ namespace VamTimeline
         {
             current.autoTransitionPrevious = val;
             RefreshTransitionUI();
-            plugin.animation.Sample();
+            plugin.animationEditContext.Sample();
         }
 
         private void ChangeTransitionNext(bool val)
         {
             current.autoTransitionNext = val;
             RefreshTransitionUI();
-            plugin.animation.Sample();
+            plugin.animationEditContext.Sample();
         }
 
         private void ChangeNextAnimation(string val)

@@ -217,6 +217,8 @@ namespace VamTimeline
             }
             if (sequencing && clip.nextAnimationName != null)
                 AssignNextAnimation(clip);
+
+            onIsPlayingChanged.Invoke(clip);
         }
 
         public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
@@ -428,37 +430,19 @@ namespace VamTimeline
 
         #region Sampling
 
-        public void Sample(bool ignoreRebuild = false)
+        public void Sample()
         {
             if (isPlaying || !enabled) return;
 
-            if (!ignoreRebuild && (_animationRebuildRequestPending || _animationRebuildInProgress))
+            if (_animationRebuildRequestPending || _animationRebuildInProgress)
             {
                 _sampleAfterRebuild = true;
                 return;
             }
 
-            foreach (var clip in GetMainClipPerLayer())
-            {
-                clip.playbackEnabled = true;
-                clip.playbackWeight = 1f;
-            }
-            isSampling = true;
-            try
-            {
-                SampleTriggers();
-                SampleFloatParams();
-                SampleControllers();
-            }
-            finally
-            {
-                isSampling = false;
-            }
-            foreach (var clip in GetMainClipPerLayer())
-            {
-                clip.playbackEnabled = false;
-                clip.playbackWeight = 0f;
-            }
+            SampleTriggers();
+            SampleFloatParams();
+            SampleControllers();
         }
 
         private void SampleTriggers()
@@ -524,6 +508,14 @@ namespace VamTimeline
             {
                 _animationRebuildInProgress = false;
             }
+
+            if (_sampleAfterRebuild)
+            {
+                _sampleAfterRebuild = false;
+                Sample();
+            }
+
+            onAnimationRebuilt.Invoke();
         }
 
         private void RebuildAnimationNowImpl()
@@ -554,14 +546,6 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(RebuildAnimationNowImpl)}: Suspiciously long animation rebuild ({sw.Elapsed})");
             }
-
-            if (_sampleAfterRebuild)
-            {
-                _sampleAfterRebuild = false;
-                Sample(true);
-            }
-
-            onAnimationRebuilt.Invoke();
         }
 
         private void RebuildTransition(AtomAnimationClip clip)
