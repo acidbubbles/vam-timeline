@@ -72,7 +72,6 @@ namespace VamTimeline
 
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
-        private bool _sampleAfterRebuild;
 
         public AtomAnimation()
         {
@@ -170,7 +169,6 @@ namespace VamTimeline
 
             speed = 1f;
             _playTime = 0f;
-            _sampleAfterRebuild = false;
         }
 
         #endregion
@@ -430,15 +428,14 @@ namespace VamTimeline
 
         #region Sampling
 
+        public bool RebuildPending()
+        {
+            return _animationRebuildRequestPending || _animationRebuildInProgress;
+        }
+
         public void Sample()
         {
             if (isPlaying || !enabled) return;
-
-            if (_animationRebuildRequestPending || _animationRebuildInProgress)
-            {
-                _sampleAfterRebuild = true;
-                return;
-            }
 
             SampleTriggers();
             SampleFloatParams();
@@ -507,12 +504,6 @@ namespace VamTimeline
             finally
             {
                 _animationRebuildInProgress = false;
-            }
-
-            if (_sampleAfterRebuild)
-            {
-                _sampleAfterRebuild = false;
-                Sample();
             }
 
             onAnimationRebuilt.Invoke();

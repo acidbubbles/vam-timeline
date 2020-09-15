@@ -21,6 +21,8 @@ namespace VamTimeline
 
         public HashSet<IAtomAnimationTarget> selectedTargets = new HashSet<IAtomAnimationTarget>();
 
+        private bool _sampleAfterRebuild;
+
         private float _snap = 0.1f;
         public float snap
         {
@@ -47,14 +49,22 @@ namespace VamTimeline
             }
             set
             {
+                if (_animation != null)
+                {
+                    _animation.onAnimationRebuilt.RemoveListener(OnAnimationRebuilt);
+                }
                 _animation = value;
-                _animation.onClipsListChanged.AddListener(OnClipsListChanged);
+                _animation.onAnimationRebuilt.AddListener(OnAnimationRebuilt);
             }
         }
 
-        private void OnClipsListChanged()
+        private void OnAnimationRebuilt()
         {
-            onTargetsSelectionChanged.Invoke();
+            if (_sampleAfterRebuild)
+            {
+                _sampleAfterRebuild = false;
+                Sample();
+            }
         }
 
         public float clipTime
@@ -127,7 +137,11 @@ namespace VamTimeline
 
         public void Sample()
         {
-            if (animation.isPlaying || !enabled) return;
+            if (animation.RebuildPending())
+            {
+                _sampleAfterRebuild = true;
+                return;
+            }
 
             var clips = GetMainClipPerLayer();
             foreach (var clip in clips)
@@ -286,6 +300,11 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
+            if (_animation != null)
+            {
+                _animation.onAnimationRebuilt.RemoveListener(OnAnimationRebuilt);
+            }
+
             onTimeChanged.RemoveAllListeners();
             onCurrentAnimationChanged.RemoveAllListeners();
             onEditorSettingsChanged.RemoveAllListeners();
