@@ -52,6 +52,8 @@ namespace VamTimeline
             _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
             SyncAnimationsListNow();
+            if (_animationEditContext.current != null) _animationEditContext.current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));
         }
 
         private JSONStorableStringChooser InitAnimationSelectorUI()
@@ -92,7 +94,7 @@ namespace VamTimeline
 
             var playAll = Instantiate(buttonPrefab);
             playAll.SetParent(container.transform, false);
-            playAll.GetComponent<UIDynamicButton>().label = "\u25B6 Seq";
+            playAll.GetComponent<UIDynamicButton>().label = "\u25B6 All";
             playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayCurrentAndOtherMainsInLayers());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
@@ -116,6 +118,7 @@ namespace VamTimeline
                 else
                     _animationEditContext.animation.ResetAll();
                 _animationEditContext.onTimeChanged.Invoke(_animationEditContext.timeArgs);
+                _animationEditContext.Sample();
             });
             stop.GetComponent<LayoutElement>().preferredWidth = 0;
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
@@ -244,7 +247,15 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             _animationsJSON.valNoCallback = args.after.animationName;
+            if (args.before != null) args.before.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
+            if (args.after != null) args.after.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));
             OnTimeChanged(_animationEditContext.timeArgs);
+        }
+
+        private void OnAnimationSettingsChanged(string prop)
+        {
+            _playClip.label = $"\u25B6 {_animationEditContext.current.animationName}";
         }
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)
@@ -267,6 +278,7 @@ namespace VamTimeline
                 _animationEditContext.animation.onClipIsPlayingChanged.RemoveListener(OnClipIsPlayingChanged);
                 _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
                 _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
+                if (_animationEditContext.current != null) _animationEditContext.current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             }
         }
     }
