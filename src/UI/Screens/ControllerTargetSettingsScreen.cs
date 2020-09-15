@@ -63,12 +63,11 @@ namespace VamTimeline
         {
             if (string.IsNullOrEmpty(_atomJSON.val) || _atomJSON.val == "None")
             {
-                _target.SetParent(null, null);
-                _rigidbodyJSON.valNoCallback = "None";
+                _rigidbodyJSON.val = "None";
                 return;
             }
             PopulateRigidbodies();
-            _rigidbodyJSON.valNoCallback = "None";
+            _rigidbodyJSON.val = "None";
         }
 
         private void PopulateRigidbodies()
@@ -94,6 +93,7 @@ namespace VamTimeline
             var parentAtomId = string.IsNullOrEmpty(_atomJSON.val) || _atomJSON.val == "None" ? null : _atomJSON.val;
             var parentRigidbodyId = string.IsNullOrEmpty(_rigidbodyJSON.val) || _rigidbodyJSON.val == "None" ? null : _rigidbodyJSON.val;
 
+            if (_target.parentRigidbodyId == null && parentRigidbodyId == null) return;
             if (_target.parentAtomId == parentAtomId && _target.parentRigidbodyId == parentRigidbodyId) return;
 
             var previousParent = _target.GetParent();

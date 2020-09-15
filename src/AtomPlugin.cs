@@ -445,7 +445,6 @@ namespace VamTimeline
             _restoring = true;
             try
             {
-                // TODO: Test
                 AddAnimationComponents();
                 animation.Clear();
                 serializer.DeserializeAnimation(animation, animationJSON.AsObject);

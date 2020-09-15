@@ -48,7 +48,6 @@ namespace VamTimeline
         private LineDrawer CreateLine()
         {
             var go = new GameObject();
-            // TODO: Allow changing parent, make sure this still works when the parent is null
             var parent = target.GetParent();
             if (parent == null) return null;
             go.transform.SetParent(parent, false);

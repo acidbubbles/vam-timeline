@@ -190,9 +190,6 @@ namespace VamTimeline
                 if (t == null) continue;
                 selectedTargets.Add(t);
             }
-            // TODO: Check if this makes sense or not
-            if (previous.animationLayer != current.animationLayer)
-                animation.onClipsListChanged.Invoke();
             onTargetsSelectionChanged.Invoke();
             onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
             {
