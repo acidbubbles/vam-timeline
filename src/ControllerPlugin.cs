@@ -258,7 +258,7 @@ namespace VamTimeline
             {
                 _ui = new SimpleSignUI(_atom, this);
                 _ui.CreateUIPopupInCanvas(_atomsJSON);
-                _injectedUIContainer = _ui.CreateUISpacerInCanvas(1060f);
+                _injectedUIContainer = _ui.CreateUISpacerInCanvas(1200f);
                 ScanForAtoms();
                 if (_selectedLink != null)
                     RequestControlPanelInjection();
