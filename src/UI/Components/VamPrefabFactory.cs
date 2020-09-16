@@ -183,7 +183,6 @@ namespace VamTimeline
             ui.label = jsc.name;
             jsc.popup = ui.popup;
 
-
             if (navButtons)
             {
                 ui.popup.labelText.alignment = TextAnchor.UpperCenter;
@@ -191,7 +190,7 @@ namespace VamTimeline
                 float btnAnchorOffsetMaxY;
                 if (filterable)
                 {
-                    ui.popup.labelText.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0.89f);
+                    ui.popup.labelText.GetComponent<RectTransform>().anchorMax = new Vector2(0.03f, 0.91f);
                     btnAnchorOffsetMaxY = 70;
                 }
                 else

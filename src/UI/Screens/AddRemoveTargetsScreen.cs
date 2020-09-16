@@ -176,7 +176,7 @@ namespace VamTimeline
 
         private void InitFloatParamsUI()
         {
-            _addStorableListJSON = new JSONStorableStringChooser("Storable", new List<string>(), "", "storable", (string name) =>
+            _addStorableListJSON = new JSONStorableStringChooser("Storable", new List<string>(), "", "Storable", (string name) =>
             {
                 RefreshStorableFloatsList();
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
@@ -185,7 +185,7 @@ namespace VamTimeline
             _addStorableListUI.popupPanelHeight = 450f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
-            _addParamListJSON = new JSONStorableStringChooser("Float param", new List<string>(), "", "Float param");
+            _addParamListJSON = new JSONStorableStringChooser("Params", new List<string>(), "", "Param");
             _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
             _addParamListUI.popupPanelHeight = 320f;
