@@ -22,6 +22,7 @@ namespace VamTimeline
             _simpleSlider = slider.AddComponent<SimpleSlider>();
             _simpleSlider.onChange.AddListener((float val) =>
             {
+                if (clip.playbackEnabled) return;
                 if (!target.EnsureAvailable()) return;
                 SetValue(target.floatParam.min + val * (target.floatParam.max - target.floatParam.min));
             });
