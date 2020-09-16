@@ -349,7 +349,7 @@ namespace VamTimeline
         public bool playbackMainInLayer;
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;
-        public float playbackScheduledNextTime;
+        public float playbackScheduledNextTimeLeft;
 
         public float clipTime
         {
@@ -367,7 +367,7 @@ namespace VamTimeline
         public void SetNext(string nextAnimationName, float nextTime)
         {
             playbackScheduledNextAnimationName = nextAnimationName;
-            playbackScheduledNextTime = nextAnimationName != null ? nextTime : float.MaxValue;
+            playbackScheduledNextTimeLeft = nextTime;
         }
 
         public void Reset(bool resetTime)

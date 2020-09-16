@@ -195,7 +195,7 @@ namespace VamTimeline
             {
                 if (clip.syncTransitionTime && previousMain.loop && !clip.loop)
                 {
-                    previousMain.SetNext(clip.animationName, playTime + (previousMain.animationLength - previousMain.clipTime));
+                    previousMain.SetNext(clip.animationName, Mathf.Max(previousMain.animationLength - previousMain.clipTime, 0f));
                 }
                 else
                 {
@@ -355,7 +355,7 @@ namespace VamTimeline
             if (from == null) throw new ArgumentNullException(nameof(from));
             if (to == null) throw new ArgumentNullException(nameof(to));
 
-            from.SetNext(null, 0);
+            from.SetNext(null, float.NaN);
             Blend(from, 0f, to.blendInDuration);
             from.playbackMainInLayer = false;
             Blend(to, 1f, to.blendInDuration);
@@ -393,7 +393,7 @@ namespace VamTimeline
 
             var next = FindClip(source.nextAnimationName, source);
 
-            if (next != null) source.SetNext(next.animationName, (playTime + source.nextAnimationTime).Snap());
+            if (next != null) source.SetNext(next.animationName, source.nextAnimationTime);
         }
 
         public AtomAnimationClip FindClip(string animationName, AtomAnimationClip source)
@@ -676,31 +676,34 @@ namespace VamTimeline
 
             SampleFloatParams();
             SampleTriggers();
-            ProcessAnimationSequence();
+            ProcessAnimationSequence(Time.deltaTime * speed);
         }
 
-        private void ProcessAnimationSequence()
+        private void ProcessAnimationSequence(float deltaTime)
         {
             foreach (var clip in clips)
             {
-                if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimationName != null && playTime >= clip.playbackScheduledNextTime)
-                {
-                    var nextAnimationName = clip.playbackScheduledNextAnimationName;
-                    clip.playbackScheduledNextAnimationName = null;
-                    clip.playbackScheduledNextTime = 0f;
-                    var nextClip = GetClip(nextAnimationName);
-                    if (nextClip == null)
-                    {
-                        SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
-                        continue;
-                    }
-                    TransitionAnimation(clip, nextClip);
-                }
-
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
                 {
                     clip.playbackEnabled = false;
                     onClipIsPlayingChanged.Invoke(clip);
+                }
+
+                if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimationName != null)
+                {
+                    clip.playbackScheduledNextTimeLeft = Mathf.Max(clip.playbackScheduledNextTimeLeft - deltaTime * clip.speed, 0f);
+                    if (clip.playbackScheduledNextTimeLeft == 0)
+                    {
+                        var nextAnimationName = clip.playbackScheduledNextAnimationName;
+                        clip.SetNext(null, float.NaN);
+                        var nextClip = GetClip(nextAnimationName);
+                        if (nextClip == null)
+                        {
+                            SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
+                            continue;
+                        }
+                        TransitionAnimation(clip, nextClip);
+                    }
                 }
             }
         }
