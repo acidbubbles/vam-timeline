@@ -14,7 +14,7 @@ namespace VamTimeline
         public bool loop;
 
         private int _lastIndex;
-        private readonly BezierAnimationCurveSmoothing _compute = new BezierAnimationCurveSmoothing();
+        private IBezierAnimationCurveSmoothing _compute;
 
         public BezierKeyframe GetFirstFrame()
         {
@@ -215,7 +215,13 @@ namespace VamTimeline
             var globalSmoothing = false;
             if (keys.Any(k => k.curveType == CurveTypeValues.SmoothGlobal) && keys.Count > 3)
             {
-                _compute.AutoComputeControlPoints(keys, loop);
+                if (_compute == null || _compute.looping != loop)
+                {
+                    _compute = loop
+                        ? (IBezierAnimationCurveSmoothing)new BezierAnimationCurveSmoothingLooping()
+                        : new BezierAnimationCurveSmoothingNonLooping();
+                }
+                _compute.AutoComputeControlPoints(keys);
                 globalSmoothing = true;
             }
 

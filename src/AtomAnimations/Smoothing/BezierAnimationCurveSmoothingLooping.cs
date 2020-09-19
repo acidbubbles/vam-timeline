@@ -3,22 +3,18 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class BezierAnimationCurveSmoothing
+    public class BezierAnimationCurveSmoothingLooping : BezierAnimationCurveSmoothingBase, IBezierAnimationCurveSmoothing
     {
-        private float[] _w; // Weights
-        private float[] _p1; // Out
-        private float[] _p2; // In
-        private float[] _r; // rhs vector
-        private float[] _a;
-        private float[] _b;
-        private float[] _c;
+        public bool looping => true;
+
         private float[] _lc; // last column
 
-        public void AutoComputeControlPoints(List<BezierKeyframe> keys, bool loop)
+        public void AutoComputeControlPoints(List<BezierKeyframe> keys)
         {
             // Original implementation: https://www.particleincell.com/wp-content/uploads/2012/06/bezier-spline.js
             // Based on: https://www.particleincell.com/2012/bezier-splines/
             // Using improvements on near keyframes: http://www.jacos.nl/jacos_html/spline/
+            // Looped version: http://www.jacos.nl/jacos_html/spline/circular/index.html
             var n = keys.Count - 1;
             InitializeArrays(n);
             Weighting(keys, n);
@@ -166,26 +162,6 @@ namespace VamTimeline
             for (var i = 0; i < n; i++)
             {
                 _p2[i] = keys[i + 1].value * (1 + _w[i] / _w[i + 1]) - _p1[i + 1] * (_w[i] / _w[i + 1]);
-            }
-        }
-
-        private void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)
-        {
-            if (keys[0].curveType != CurveTypeValues.LeaveAsIs)
-            {
-                keys[0].controlPointOut = _p1[0];
-            }
-            for (var i = 1; i < n; i++)
-            {
-                if (keys[i].curveType != CurveTypeValues.LeaveAsIs)
-                {
-                    keys[i].controlPointIn = _p2[i - 1];
-                    keys[i].controlPointOut = _p1[i];
-                }
-            }
-            if (keys[n].curveType != CurveTypeValues.LeaveAsIs)
-            {
-                keys[n].controlPointIn = _p2[n - 1];
             }
         }
     }
