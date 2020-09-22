@@ -444,8 +444,8 @@ namespace VamTimeline
                 AddAnimationComponents();
                 animation.Clear();
                 serializer.DeserializeAnimation(animation, animationJSON.AsObject);
-                if(animationEditContextJSON != null)
-                serializer.DeserializeAnimationEditContext(animationEditContext, animationEditContextJSON.AsObject);
+                if (animationEditContextJSON != null)
+                    serializer.DeserializeAnimationEditContext(animationEditContext, animationEditContextJSON.AsObject);
                 animationEditContext.Initialize();
                 BindAnimation();
                 animation.enabled = enabled;
@@ -479,6 +479,7 @@ namespace VamTimeline
             animation.onClipsListChanged.AddListener(OnClipsListChanged);
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
+            animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
@@ -636,6 +637,12 @@ namespace VamTimeline
             isPlayingJSON.valNoCallback = animation.isPlaying;
             _freeControllerHook.enabled = !animation.isPlaying;
             peers.SendPlaybackState(clip);
+        }
+
+        private void OnClipIsPlayingChanged(AtomAnimationClip clip)
+        {
+            if (animation.master && clip.playbackEnabled)
+                peers.SendMasterClipState(clip);
         }
 
         private void BroadcastToControllers(string methodName)

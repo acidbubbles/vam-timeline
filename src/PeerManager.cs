@@ -60,6 +60,9 @@ namespace VamTimeline
                     case nameof(SendPlaybackState):
                         ReceivePlaybackState(e);
                         break;
+                    case nameof(SendMasterClipState):
+                        ReceiveMasterClipState(e);
+                        break;
                     case nameof(SendTime):
                         ReceiveTime(e);
                         break;
@@ -144,6 +147,27 @@ namespace VamTimeline
             else
                 animation.StopClip(clip);
             clip.clipTime = (float)e[3];
+        }
+
+        public void SendMasterClipState(AtomAnimationClip clip)
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendMasterClipState),
+                 clip.animationName
+            });
+        }
+
+        private void ReceiveMasterClipState(object[] e)
+        {
+            if (animation.master)
+            {
+                SuperController.LogError($"Atom {_containingAtom.name} received a master clip state from another atom. Please make sure only one of your atoms is a sequence master during playback.");
+                return;
+            }
+            var clip = GetClip(e);
+            if (clip == null || clip.playbackEnabled) return;
+            animation.PlayClip(clip, true);
         }
 
         public void SendStopAndReset()
