@@ -394,7 +394,8 @@ namespace VamTimeline
 
             try
             {
-                json["Animation"] = GetAnimationJSON();
+                json["Animation"] = serializer.SerializeAnimation(animation);
+                json["Options"] = serializer.SerializeEditContext(animationEditContext);
                 needsStore = true;
             }
             catch (Exception exc)
@@ -403,11 +404,6 @@ namespace VamTimeline
             }
 
             return json;
-        }
-
-        public JSONClass GetAnimationJSON(string animationName = null)
-        {
-            return serializer.SerializeAnimation(animation, animationName);
         }
 
         public override void RestoreFromJSON(JSONClass jc, bool restorePhysical = true, bool restoreAppearance = true, JSONArray presetAtoms = null, bool setMissingToDefault = true)
@@ -422,14 +418,14 @@ namespace VamTimeline
                 var animationJSON = jc["Animation"];
                 if (animationJSON != null && animationJSON.AsObject != null)
                 {
-                    Load(animationJSON);
+                    Load(animationJSON, jc["Options"]);
                     return;
                 }
 
                 var legacyStr = jc["Save"];
                 if (!string.IsNullOrEmpty(legacyStr))
                 {
-                    Load(JSONNode.Parse(legacyStr) as JSONClass);
+                    Load(JSONNode.Parse(legacyStr) as JSONClass, null);
                     return;
                 }
             }
@@ -439,7 +435,7 @@ namespace VamTimeline
             }
         }
 
-        public void Load(JSONNode animationJSON)
+        public void Load(JSONNode animationJSON, JSONNode animationEditContextJSON)
         {
             if (_restoring) return;
             _restoring = true;
@@ -448,7 +444,8 @@ namespace VamTimeline
                 AddAnimationComponents();
                 animation.Clear();
                 serializer.DeserializeAnimation(animation, animationJSON.AsObject);
-                if (animation == null) throw new NullReferenceException("Animation deserialized to null");
+                if(animationEditContextJSON != null)
+                serializer.DeserializeAnimationEditContext(animationEditContext, animationEditContextJSON.AsObject);
                 animationEditContext.Initialize();
                 BindAnimation();
                 animation.enabled = enabled;

@@ -17,6 +17,14 @@ namespace VamTimeline
 
         #region Deserialize JSON
 
+        public void DeserializeAnimationEditContext(AtomAnimationEditContext animationEditContext, JSONClass animationEditContextJSON)
+        {
+            if (animationEditContext == null) throw new ArgumentNullException(nameof(animationEditContext));
+
+            animationEditContext.autoKeyframeAllControllers = DeserializeBool(animationEditContextJSON["AutoKeyframeAllControllers"], false);
+            animationEditContext.snap = DeserializeFloat(animationEditContextJSON["Snap"], 0.1f);
+        }
+
         public void DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON)
         {
             if (animation == null) throw new ArgumentNullException(nameof(animation));
@@ -279,6 +287,16 @@ namespace VamTimeline
         #endregion
 
         #region Serialize JSON
+
+        public JSONClass SerializeEditContext(AtomAnimationEditContext animationEditContext)
+        {
+            var animationEditContextJSON = new JSONClass
+            {
+                { "AutoKeyframeAllControllers", animationEditContext.autoKeyframeAllControllers ? "1" : "0" },
+                { "Snap", animationEditContext.snap.ToString(CultureInfo.InvariantCulture)}
+            };
+            return animationEditContextJSON;
+        }
 
         public JSONClass SerializeAnimation(AtomAnimation animation, string animationNameFilter = null)
         {

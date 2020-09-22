@@ -32,8 +32,6 @@ namespace VamTimeline
         JSONStorableAction copyJSON { get; }
         JSONStorableAction pasteJSON { get; }
 
-        void Load(JSONNode animationJSON);
-        JSONClass GetAnimationJSON(string animationName = null);
         void ChangeScreen(string screenName, object screenArg);
     }
 }
