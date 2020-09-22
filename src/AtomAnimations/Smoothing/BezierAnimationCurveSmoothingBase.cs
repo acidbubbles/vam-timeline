@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -11,6 +12,12 @@ namespace VamTimeline
         protected float[] _a;
         protected float[] _b;
         protected float[] _c;
+
+        protected static float Weighting(BezierKeyframe k1, BezierKeyframe k2)
+        {
+            // return _w[i] = keys[i + 1].time - keys[i].time;
+            return Vector2.Distance(new Vector2(k1.time, k1.value), new Vector2(k2.time, k2.value));
+        }
 
         protected void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)
         {

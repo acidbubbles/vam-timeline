@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -45,7 +46,7 @@ namespace VamTimeline
         {
             for (var i = 0; i < n; i++)
             {
-                _w[i] = keys[i + 1].time - keys[i].time;
+                _w[i] = Weighting(keys[i+1], keys[i]);
             }
             _w[n] = _w[n - 1];
         }
