@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace VamTimeline
 {
@@ -12,6 +11,7 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
+        private JSONStorableBool _masterJSON;
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableBool _loop;
         private UIDynamicToggle _loopUI;
@@ -33,6 +33,9 @@ namespace VamTimeline
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
+
+            CreateHeader("Sequence master", 1);
+            InitSequenceMasterUI();
 
             CreateHeader("Auto play", 1);
             InitAutoPlayUI();
@@ -56,9 +59,21 @@ namespace VamTimeline
             UpdateValues();
         }
 
+        private void InitSequenceMasterUI()
+        {
+            _masterJSON = new JSONStorableBool("Master (atom controls others)", false, (bool val) =>
+            {
+                animation.master = val;
+            })
+            {
+                isStorable = false
+            };
+            var masterUI = prefabFactory.CreateToggle(_masterJSON);
+        }
+
         private void InitAutoPlayUI()
         {
-            _autoPlayJSON = new JSONStorableBool("Auto Play On Load", false, (bool val) =>
+            _autoPlayJSON = new JSONStorableBool("Auto play on load", false, (bool val) =>
             {
                 foreach (var c in animation.clips.Where(c => c != current && c.animationLayer == current.animationLayer))
                     c.autoPlay = false;

@@ -30,6 +30,8 @@ namespace VamTimeline
         public bool isSampling { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
+        public bool master { get; set; }
+
         private float _playTime;
         public float playTime
         {

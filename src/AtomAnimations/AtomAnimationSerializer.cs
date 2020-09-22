@@ -22,6 +22,7 @@ namespace VamTimeline
             if (animation == null) throw new ArgumentNullException(nameof(animation));
 
             animation.speed = DeserializeFloat(animationJSON["Speed"], 1f);
+            animation.master = DeserializeBool(animationJSON["Master"], false);
 
             var clipsJSON = animationJSON["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
@@ -283,7 +284,8 @@ namespace VamTimeline
         {
             var animationJSON = new JSONClass
             {
-                { "Speed", animation.speed.ToString(CultureInfo.InvariantCulture) }
+                { "Speed", animation.speed.ToString(CultureInfo.InvariantCulture) },
+                { "Master", animation.master ? "1" : "0" }
             };
             var clipsJSON = new JSONArray();
             foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))
