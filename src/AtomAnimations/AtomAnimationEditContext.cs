@@ -77,9 +77,13 @@ namespace VamTimeline
             {
                 playTime = value;
                 if (current == null) return;
-                current.clipTime = value;
-                if (animation.isPlaying && !current.playbackEnabled && current.playbackMainInLayer) animation.PlayClip(current, animation.sequencing);
-                Sample();
+                foreach (var clip in animation.GetClips(current.animationName))
+                {
+                    clip.clipTime = value;
+                    if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
+                }
+                if (!animation.isPlaying)
+                    Sample();
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
                 onTimeChanged.Invoke(timeArgs);
