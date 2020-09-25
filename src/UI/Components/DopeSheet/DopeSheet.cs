@@ -149,6 +149,7 @@ namespace VamTimeline
         {
             UnbindClip();
             BindClip(args.after);
+            SetScrubberPosition(_animationEditContext.clipTime, true);
         }
 
         private void OnAnimationSettingsChanged()

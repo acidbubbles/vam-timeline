@@ -94,9 +94,19 @@ namespace VamTimeline
 
         #region Clips
 
-        public AtomAnimationClip GetClip(string name)
+        public AtomAnimationClip GetClip(string layer, string name)
         {
-            return clips.FirstOrDefault(c => c.animationName == name);
+            return clips.FirstOrDefault(c => c.animationLayer == layer && c.animationName == name);
+        }
+
+        public IEnumerable<AtomAnimationClip> GetClips(string name)
+        {
+            return clips.Where(c => c.animationName == name);
+        }
+
+        public AtomAnimationClip GetClipQualified(string animationNameQualified)
+        {
+            return clips.FirstOrDefault(c => c.animationNameQualified == animationNameQualified);
         }
 
         public AtomAnimationClip AddClip(AtomAnimationClip clip)
@@ -177,10 +187,10 @@ namespace VamTimeline
 
         #region Playback
 
-        public void PlayClip(string animationName, bool sequencing)
+        public void PlayClips(string animationName, bool sequencing)
         {
-            var clip = GetClip(animationName);
-            PlayClip(clip, sequencing);
+            foreach(var clip in GetClips(animationName))
+                PlayClip(clip, sequencing);
         }
 
         public void PlayClip(AtomAnimationClip clip, bool sequencing)
@@ -242,10 +252,10 @@ namespace VamTimeline
                 });
         }
 
-        public void StopClip(string animationName)
+        public void StopClips(string animationName)
         {
-            var clip = GetClip(animationName);
-            StopClip(clip);
+            foreach(var clip in GetClips(animationName))
+                StopClip(clip);
         }
 
         public void StopClip(AtomAnimationClip clip)
@@ -422,7 +432,7 @@ namespace VamTimeline
             }
             else
             {
-                return GetClip(animationName);
+                return GetClip(source.animationLayer, animationName);
             }
         }
 
@@ -555,7 +565,7 @@ namespace VamTimeline
             }
             if (clip.autoTransitionNext)
             {
-                var next = GetClip(clip.nextAnimationName);
+                var next = GetClip(clip.animationLayer, clip.nextAnimationName);
                 if (next != null && (next.IsDirty() || clip.IsDirty()))
                 {
                     CopySourceFrameToClip(next, 0f, clip, clip.animationLength);
@@ -698,7 +708,7 @@ namespace VamTimeline
                     {
                         var nextAnimationName = clip.playbackScheduledNextAnimationName;
                         clip.SetNext(null, float.NaN);
-                        var nextClip = GetClip(nextAnimationName);
+                        var nextClip = GetClip(clip.animationLayer, nextAnimationName);
                         if (nextClip == null)
                         {
                             SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");

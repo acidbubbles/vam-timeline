@@ -93,19 +93,18 @@ namespace VamTimeline
                 }
             }
 
-            var existingClip = _animation.GetClip(clip.animationName);
+            var existingClip = _animation.GetClip(clip.animationLayer, clip.animationName);
             if (existingClip != null)
             {
                 if (existingClip.IsEmpty())
                 {
-                    var clipToRemove = _animation.GetClip(clip.animationName);
-                    _animation.clips.Remove(clipToRemove);
-                    clipToRemove.Dispose();
+                    _animation.clips.Remove(existingClip);
+                    existingClip.Dispose();
                 }
                 else
                 {
-                    var newAnimationName = GenerateUniqueAnimationName(clip.animationName);
-                    if (!_silent) SuperController.LogError($"Timeline: Imported clip '{clip.animationName}' already exists and will be imported with the name {newAnimationName}");
+                    var newAnimationName = GenerateUniqueAnimationName(clip.animationLayer, clip.animationName);
+                    if (!_silent) SuperController.LogError($"Timeline: Imported clip '{clip.animationNameQualified}' already exists and will be imported with the name {newAnimationName}");
                     clip.animationName = newAnimationName;
                 }
             }
@@ -114,13 +113,14 @@ namespace VamTimeline
             return clips;
         }
 
-        private string GenerateUniqueAnimationName(string animationName)
+        private string GenerateUniqueAnimationName(string animationLayer, string animationName)
         {
             var i = 1;
+            var layerClips = _animation.clips.Where(c => c.animationLayer == animationLayer).ToList();
             while (true)
             {
                 var newAnimationName = $"{animationName} ({i})";
-                if (!_animation.clips.Any(c => c.animationName == newAnimationName))
+                if (!layerClips.Any(c => c.animationName == newAnimationName))
                     return newAnimationName;
                 i++;
             }

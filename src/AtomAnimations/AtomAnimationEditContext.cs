@@ -163,7 +163,7 @@ namespace VamTimeline
                 .GroupBy(c => c.animationLayer)
                 .Select(g =>
                 {
-                    return g.Key == current.animationLayer ? current : (g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First());
+                    return g.Key == current.animationLayer ? current : (g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.animationName == current.animationName) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First());
                 });
         }
 
@@ -171,10 +171,10 @@ namespace VamTimeline
 
         #region Selection
 
-        public void SelectAnimation(string animationName)
+        public void SelectAnimation(string animationNameQualified)
         {
-            var clip = animation.GetClip(animationName);
-            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationName}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationName).ToArray())}'.");
+            var clip = animation.GetClipQualified(animationNameQualified);
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationNameQualified}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationNameQualified).ToArray())}'.");
             SelectAnimation(clip);
         }
 

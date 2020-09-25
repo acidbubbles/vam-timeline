@@ -65,7 +65,7 @@ namespace VamTimeline
                 }
                 else if (!clip.playbackEnabled)
                 {
-                    animation.PlayClip(clip, true);
+                    animation.PlayClips(clip.animationName, true);
                 }
             });
             StartCoroutine(UpdateAnimButton(btn, clip));

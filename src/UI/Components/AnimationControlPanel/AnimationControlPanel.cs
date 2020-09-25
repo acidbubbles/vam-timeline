@@ -103,7 +103,7 @@ namespace VamTimeline
             var playClip = Instantiate(buttonPrefab);
             playClip.SetParent(container.transform, false);
             playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
-            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.animation.PlayClip(_animationEditContext.current, false));
+            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.animation.PlayClips(_animationEditContext.current.animationName, false));
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
             _playClip = playClip.GetComponent<UIDynamicButton>();
@@ -230,13 +230,13 @@ namespace VamTimeline
             try
             {
                 var hasLayers = _animationEditContext.animation.EnumerateLayers().Skip(1).Any();
-                _animationsJSON.choices = _animationEditContext.animation.clips.Select(c => c.animationName).ToList();
+                _animationsJSON.choices = _animationEditContext.animation.clips.Select(c => c.animationNameQualified).ToList();
                 if (hasLayers)
                     _animationsJSON.displayChoices = _animationEditContext.animation.clips.Select(c => $"[{c.animationLayer}] {c.animationName}").ToList();
                 else
                     _animationsJSON.displayChoices = _animationsJSON.choices;
                 _animationsJSON.valNoCallback = null;
-                _animationsJSON.valNoCallback = _animationEditContext.current.animationName;
+                _animationsJSON.valNoCallback = _animationEditContext.current.animationNameQualified;
             }
             finally
             {
@@ -246,7 +246,7 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
-            _animationsJSON.valNoCallback = args.after.animationName;
+            _animationsJSON.valNoCallback = args.after.animationNameQualified;
             if (args.before != null) args.before.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
             if (args.after != null) args.after.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));

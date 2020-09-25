@@ -72,6 +72,9 @@ namespace VamTimeline
             return targetTriggers.Count + targetControllers.Count + targetFloatParams.Count;
         }
 
+        public string animationNameQualified { get; private set; }
+        private void UpdateAnimationNameQualified() => animationNameQualified = $"{_animationLayer}::{_animationName}";
+
         public string animationLayer
         {
             get
@@ -82,6 +85,7 @@ namespace VamTimeline
             {
                 if (_animationLayer == value) return;
                 _animationLayer = value;
+                UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationLayer));
             }
         }
@@ -108,6 +112,7 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
+                UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
             }
         }

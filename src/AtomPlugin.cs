@@ -244,15 +244,15 @@ namespace VamTimeline
 
             playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClip(animationLegacyJSON.val);
-                animation?.PlayOneAndOtherMainsInLayers(selected);
+                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(animationLegacyJSON.val).FirstOrDefault();
+                animation.PlayOneAndOtherMainsInLayers(selected);
             });
             RegisterAction(playJSON);
 
             playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
                 if (animation == null) return;
-                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClip(animationLegacyJSON.val);
+                var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(animationLegacyJSON.val).FirstOrDefault();
                 if (!animation.isPlaying)
                     animation?.PlayOneAndOtherMainsInLayers(selected);
                 else if (!selected.playbackEnabled)
@@ -560,21 +560,19 @@ namespace VamTimeline
 
         private void CreateAndRegisterClipStorables(string animationName)
         {
-            var clip = animation.GetClip(animationName);
-            if (clip == null) return;
-
             var playJSON = new JSONStorableAction($"Play {animationName}", () =>
             {
-                animation.PlayClip(animationName, true);
+                animation.PlayClips(animationName, true);
             });
             RegisterAction(playJSON);
 
             var speedJSON = new JSONStorableFloat($"Speed {animationName}", 1f, (float val) =>
             {
-                clip.speed = val;
+                foreach (var clip in animation.GetClips(animationName))
+                    clip.speed = val;
             }, -1f, 5f, false)
             {
-                valNoCallback = clip.speed,
+                valNoCallback = animation.GetClips(animationName).First().speed,
                 isStorable = false,
                 isRestorable = false
             };
@@ -582,10 +580,11 @@ namespace VamTimeline
 
             var weightJSON = new JSONStorableFloat($"Weight {animationName}", 1f, (float val) =>
             {
-                clip.weight = val;
+                foreach (var clip in animation.GetClips(animationName))
+                    clip.weight = val;
             }, 0f, 1f)
             {
-                valNoCallback = clip.weight,
+                valNoCallback = animation.GetClips(animationName).First().weight,
                 isStorable = false,
                 isRestorable = false
             };
@@ -669,7 +668,7 @@ namespace VamTimeline
 
             try
             {
-                if (animation.isPlaying) animation.PlayClip(animationName, true);
+                if (animation.isPlaying) animation.PlayClips(animationName, true);
             }
             catch (Exception exc)
             {

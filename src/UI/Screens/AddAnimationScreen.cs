@@ -82,7 +82,7 @@ namespace VamTimeline
         {
             var clip = operations.AddAnimation().AddAnimationAsCopy();
             if(clip == null) return;
-            animationEditContext.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -90,7 +90,7 @@ namespace VamTimeline
         {
             var clip = operations.AddAnimation().AddAnimationFromCurrentFrame();
             if(clip == null) return;
-            animationEditContext.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -98,7 +98,7 @@ namespace VamTimeline
         {
             var clip = operations.AddAnimation().AddTransitionAnimation();
             if(clip == null) return;
-            animationEditContext.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -106,7 +106,7 @@ namespace VamTimeline
         {
             var clip = operations.Layers().Add();
 
-            animationEditContext.SelectAnimation(clip.animationName);
+            animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -139,7 +139,7 @@ namespace VamTimeline
             bool nextIsTransition = false;
             if (hasNext)
             {
-                var nextClip = animation.GetClip(current.nextAnimationName);
+                var nextClip = animation.GetClip(current.animationLayer, current.nextAnimationName);
                 if (nextClip != null)
                     nextIsTransition = nextClip.autoTransitionPrevious;
                 else

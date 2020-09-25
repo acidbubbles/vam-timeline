@@ -149,7 +149,7 @@ namespace VamTimeline
                         clip.nextAnimationTime = 0;
                     }
                 }
-                animationEditContext.SelectAnimation(animation.clips[0].animationName);
+                animationEditContext.SelectAnimation(animation.clips[0]);
             }
             catch (Exception exc)
             {
@@ -167,7 +167,7 @@ namespace VamTimeline
                     return;
                 }
                 var clips = animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList();
-                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer).animationName);
+                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer));
                 foreach (var clip in clips)
                     animation.RemoveClip(clip);
             }

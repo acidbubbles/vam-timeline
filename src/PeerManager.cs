@@ -140,13 +140,15 @@ namespace VamTimeline
 
         private void ReceivePlaybackState(object[] e)
         {
-            var clip = GetClip(e);
-            if (clip == null) return;
-            if ((bool)e[2])
-                animation.PlayClip(clip, (bool)e[4]);
-            else
-                animation.StopClip(clip);
-            clip.clipTime = (float)e[3];
+            foreach (var clip in GetClips(e))
+            {
+                if (clip == null) return;
+                if ((bool)e[2])
+                    animation.PlayClip(clip, (bool)e[4]);
+                else
+                    animation.StopClip(clip);
+                clip.clipTime = (float)e[3];
+            }
         }
 
         public void SendMasterClipState(AtomAnimationClip clip)
@@ -165,9 +167,11 @@ namespace VamTimeline
                 SuperController.LogError($"Atom {_containingAtom.name} received a master clip state from another atom. Please make sure only one of your atoms is a sequence master during playback.");
                 return;
             }
-            var clip = GetClip(e);
-            if (clip == null || clip.playbackEnabled) return;
-            animation.PlayClip(clip, true);
+            foreach (var clip in GetClips(e))
+            {
+                if (clip == null || clip.playbackEnabled) return;
+                animation.PlayClip(clip, true);
+            }
         }
 
         public void SendStopAndReset()
@@ -195,9 +199,11 @@ namespace VamTimeline
 
         private void ReceiveTime(object[] e)
         {
-            var clip = GetClip(e);
-            if (clip != animationEditContext.current) return;
-            animationEditContext.clipTime = (float)e[2];
+            foreach (var clip in GetClips(e))
+            {
+                if (clip != animationEditContext.current) return;
+                animationEditContext.clipTime = (float)e[2];
+            }
         }
 
         public void SendCurrentAnimation(AtomAnimationClip clip)
@@ -211,9 +217,11 @@ namespace VamTimeline
 
         private void ReceiveCurrentAnimation(object[] e)
         {
-            var clip = GetClip(e);
-            if (clip == null) return;
-            animationEditContext.SelectAnimation(clip);
+            foreach (var clip in GetClips(e))
+            {
+                if (clip == null) return;
+                animationEditContext.SelectAnimation(clip);
+            }
         }
 
         public void SendSyncAnimation(AtomAnimationClip clip)
@@ -238,11 +246,11 @@ namespace VamTimeline
 
         private void ReceiveSyncAnimation(object[] e)
         {
-            var clip = GetClip(e);
+            string animationName = (string)e[1];
+            string animationLayer = (string)e[2];
+            var clip = animation.GetClip(animationLayer, animationName);
             if (clip == null)
             {
-                string animationName = (string)e[1];
-                string animationLayer = (string)e[2];
                 if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     clip = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
                 else
@@ -300,9 +308,9 @@ namespace VamTimeline
             }
         }
 
-        private AtomAnimationClip GetClip(object[] e)
+        private IEnumerable<AtomAnimationClip> GetClips(object[] e)
         {
-            return animation.GetClip((string)e[1]);
+            return animation.GetClips((string)e[1]);
         }
 
         public void Begin()

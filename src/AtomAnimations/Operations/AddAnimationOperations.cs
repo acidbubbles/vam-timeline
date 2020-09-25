@@ -83,7 +83,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddTransitionAnimation()
         {
-            var next = _animation.GetClip(_clip.nextAnimationName);
+            var next = _animation.GetClip(_clip.animationLayer, _clip.nextAnimationName);
             if (next == null)
             {
                 SuperController.LogError("There is no animation to transition to");

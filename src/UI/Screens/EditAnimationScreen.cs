@@ -131,7 +131,7 @@ namespace VamTimeline
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
-            if (animation.clips.Any(c => c.animationName == val))
+            if (animation.clips.Any(c => c.animationLayer == current.animationLayer && c.animationName == val))
             {
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
