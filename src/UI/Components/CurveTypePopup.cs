@@ -38,8 +38,6 @@ namespace VamTimeline
 
         private void ChangeCurve(string val)
         {
-            if (_animationEditContext.animation.isPlaying) return;
-
             if (!_animationEditContext.CanEdit())
             {
                 RefreshCurrentCurveType(_animationEditContext.clipTime);

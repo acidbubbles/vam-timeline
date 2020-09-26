@@ -76,7 +76,7 @@ namespace VamTimeline
 
         private void EditTriggers()
         {
-            if (plugin.animation.isPlaying) return;
+            if (!plugin.animationEditContext.CanEdit()) return;
 
             var trigger = GetOrCreateTriggerAtCurrentTime();
 

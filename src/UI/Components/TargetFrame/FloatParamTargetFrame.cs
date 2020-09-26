@@ -129,6 +129,7 @@ namespace VamTimeline
 
         private void SetValue(float val)
         {
+            if (plugin.animationEditContext.locked) return;
             if (!target.EnsureAvailable(false)) return;
             var time = plugin.animationEditContext.clipTime.Snap();
             if (plugin.animation.isPlaying)

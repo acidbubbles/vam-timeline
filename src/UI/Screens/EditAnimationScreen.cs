@@ -215,7 +215,7 @@ namespace VamTimeline
 
         private void UpdateAnimationLength(float newLength)
         {
-            if (animation.isPlaying)
+            if (!animationEditContext.CanEdit())
             {
                 _lengthJSON.valNoCallback = current.animationLength;
                 return;

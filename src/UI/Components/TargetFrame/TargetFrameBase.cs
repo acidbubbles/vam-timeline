@@ -126,7 +126,7 @@ namespace VamTimeline
         public void ToggleKeyframe(bool on)
         {
             if (_ignoreNextToggleEvent > 0) return;
-            if (plugin.animation.isPlaying) return;
+            if (!plugin.animationEditContext.CanEdit()) return;
             var time = plugin.animationEditContext.clipTime.Snap();
             if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
             {

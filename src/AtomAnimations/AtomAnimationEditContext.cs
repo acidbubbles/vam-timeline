@@ -125,11 +125,9 @@ namespace VamTimeline
 
         public bool CanEdit()
         {
-            SuperController.LogMessage($"{SuperController.singleton.gameMode}, {animation.isPlaying}, {animation.isSampling}, {gameObject.activeInHierarchy}");
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return false;
             if (locked) return false;
             if (animation.isPlaying || animation.isSampling) return false;
-            if (!gameObject.activeInHierarchy) return false;
             return true;
         }
 
