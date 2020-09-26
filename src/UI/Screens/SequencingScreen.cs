@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -56,6 +57,8 @@ namespace VamTimeline
             // To allow selecting in the popup
             prefabFactory.CreateSpacer().height = 200f;
 
+            current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+
             UpdateValues();
         }
 
@@ -97,11 +100,11 @@ namespace VamTimeline
 
         private void InitSequenceUI()
         {
-            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => ChangeNextAnimation(val));
+            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => ChangeNextAnimation());
             var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true, true);
             nextAnimationUI.popupPanelHeight = 360f;
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("... after seconds", 0f, (float val) => SetNextAnimationTime(val), 0f, 60f, false)
+            _nextAnimationTimeJSON = new JSONStorableFloat("... after seconds", 0f, (float val) => ChangeNextAnimation(), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTime
             };
@@ -249,38 +252,29 @@ namespace VamTimeline
             plugin.animationEditContext.Sample();
         }
 
-        private void ChangeNextAnimation(string val)
+        private void ChangeNextAnimation()
         {
-            if (val == NoNextAnimation) val = "";
-            current.nextAnimationName = val;
-            SetNextAnimationTime(
-                current.nextAnimationTime == 0
-                ? current.nextAnimationTime = current.animationLength - current.blendInDuration
-                : current.nextAnimationTime
-            );
+            var nextTime = _nextAnimationTimeJSON.val.Snap();
+            var nextName = _nextAnimationJSON.val;
+
+            foreach (var clip in animation.GetClips(current.animationName))
+            {
+                if (nextName == NoNextAnimation)
+                {
+                    clip.nextAnimationName = null;
+                    clip.nextAnimationTime = 0f;
+                }
+                else
+                {
+                    if (clip.nextAnimationName == null)
+                        nextTime = Mathf.Max((clip.animationLength - clip.blendInDuration).Snap(), 0f);
+                    else
+                        nextTime = clip.loop ? nextTime : Mathf.Min(nextTime, clip.animationLength);
+                    clip.nextAnimationName = _nextAnimationJSON.val;
+                    clip.nextAnimationTime = nextTime;
+                }
+            }
             RefreshTransitionUI();
-        }
-
-        private void SetNextAnimationTime(float nextTime)
-        {
-            if (current.nextAnimationName == null)
-            {
-                _nextAnimationTimeJSON.valNoCallback = 0f;
-                current.nextAnimationTime = 0f;
-                return;
-            }
-            else if (!current.loop)
-            {
-                nextTime = (current.animationLength - current.blendInDuration).Snap();
-                current.nextAnimationTime = nextTime;
-                _nextAnimationTimeJSON.valNoCallback = nextTime;
-                return;
-            }
-
-            nextTime = nextTime.Snap();
-
-            _nextAnimationTimeJSON.valNoCallback = nextTime;
-            current.nextAnimationTime = nextTime;
         }
 
         #endregion
@@ -291,6 +285,14 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
+            args.before.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
+            args.after.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+
+            UpdateValues();
+        }
+
+        private void OnAnimationSettingsChanged(string arg0)
+        {
             UpdateValues();
         }
 
@@ -304,13 +306,14 @@ namespace VamTimeline
             _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? NoNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
-            _nextAnimationTimeJSON.slider.enabled = string.IsNullOrEmpty(_nextAnimationJSON.val);
+            _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }
 
         public override void OnDestroy()
         {
+            current.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
             base.OnDestroy();
         }
 

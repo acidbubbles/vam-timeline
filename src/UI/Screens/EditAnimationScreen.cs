@@ -73,7 +73,7 @@ namespace VamTimeline
             var animationSpeedUI = prefabFactory.CreateSlider(_animationSpeedJSON);
             animationSpeedUI.valueFormat = "F3";
 
-            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => current.speed = val, -1f, 5f, false)
+            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
             {
                 valNoCallback = current.speed
             };
@@ -135,6 +135,14 @@ namespace VamTimeline
             {
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
+            }
+            var existing = animation.clips.FirstOrDefault(c => c.animationName == val);
+            if (existing != null)
+            {
+                current.nextAnimationName = existing.nextAnimationName;
+                current.nextAnimationTime = existing.nextAnimationTime;
+                current.speed = existing.speed;
+                SuperController.LogMessage($"Timeline: Animation name exists on another layer. Sequencing and speed will be synced.");
             }
             current.animationName = val;
             foreach (var other in animation.clips)
