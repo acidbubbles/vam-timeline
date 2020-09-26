@@ -321,6 +321,8 @@ namespace VamTimeline
             _addStorableListJSON.popup.visible = false;
             _addParamListJSON.popup.visible = true;
             _addParamListJSON.popup.visible = false;
+
+            animationEditContext.DeselectAll();
         }
 
         private void UpdateSelectDependentUI()

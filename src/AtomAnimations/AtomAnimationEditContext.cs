@@ -237,6 +237,12 @@ namespace VamTimeline
             return selectedTargets;
         }
 
+        public void DeselectAll()
+        {
+            selectedTargets.Clear();
+            onTargetsSelectionChanged.Invoke();
+        }
+
         public void SetSelected(IAtomAnimationTarget target, bool selected)
         {
             if (selected && !selectedTargets.Contains(target))
