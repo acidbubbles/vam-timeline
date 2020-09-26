@@ -449,7 +449,6 @@ namespace VamTimeline
         {
             if (isPlaying || !enabled) return;
 
-            SampleTriggers();
             SampleFloatParams();
             SampleControllers();
         }

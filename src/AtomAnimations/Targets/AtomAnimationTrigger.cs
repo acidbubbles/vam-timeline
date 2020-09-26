@@ -29,9 +29,8 @@ namespace VamTimeline
             }
         }
 
-        public void Leave(float clipTime)
+        public void Leave()
         {
-            transitionInterpValue = clipTime < startTime ? 1f : 1f;
             if (active) active = false;
         }
 

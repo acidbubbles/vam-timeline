@@ -398,7 +398,7 @@ namespace VamTimeline
             {
                 foreach (var trigger in target.triggersMap.Values)
                 {
-                    trigger.Leave(clipTime);
+                    trigger.Leave();
                 }
             }
         }
