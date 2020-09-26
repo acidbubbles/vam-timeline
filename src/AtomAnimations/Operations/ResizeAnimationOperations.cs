@@ -127,10 +127,10 @@ namespace VamTimeline
                 // TODO: Create new keyframe if missing from evaluate curve
                 var snapshots = target
                     .GetAllKeyframesTime()
-                    .Where(t => t < time || t >= time - delta)
+                    .Where(t => t <= time || t >= time - delta)
                     .Select(t =>
                     {
-                        var newTime = t < time ? t : t + delta;
+                        var newTime = t <= time ? t : t + delta;
                         return new SnapshotAt { time = newTime, snapshot = target.GetSnapshot(t) };
                     })
                     .ToList();
@@ -154,7 +154,7 @@ namespace VamTimeline
                 // TODO: Create new keyframe if missing from evaluate curve
                 var snapshots = target
                     .GetAllKeyframesTime()
-                    .Select(t => new SnapshotAt { time = t < time ? t : t + delta, snapshot = target.GetSnapshot(t) })
+                    .Select(t => new SnapshotAt { time = t <= time ? t : t + delta, snapshot = target.GetSnapshot(t) })
                     .ToList();
                 keyframeOps.RemoveAll(target, true);
 

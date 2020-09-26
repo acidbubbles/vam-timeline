@@ -166,6 +166,8 @@ namespace VamTimeline
                     _lengthJSON.valNoCallback = val.Snap(animationEditContext.snap);
                     if (_lengthJSON.valNoCallback < 0.1f)
                         _lengthJSON.valNoCallback = 0.1f;
+                    if (_lengthModeJSON.val == ChangeLengthModeCropExtendAtTime && _lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
+                        _lengthJSON.valNoCallback = animationEditContext.clipTime + animationEditContext.snap;
                 },
                 0f,
                 Mathf.Max((current.animationLength * 5f).Snap(10f), 10f),
@@ -235,6 +237,8 @@ namespace VamTimeline
                     operations.Resize().CropOrExtendAt(newLength, 0f);
                     break;
                 case ChangeLengthModeCropExtendAtTime:
+                    if (_lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
+                        _lengthJSON.valNoCallback = animationEditContext.clipTime + animationEditContext.snap;
                     operations.Resize().CropOrExtendAt(newLength, time);
                     break;
                 case ChangeLengthModeLoop:
