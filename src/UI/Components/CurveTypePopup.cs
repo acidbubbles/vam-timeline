@@ -40,7 +40,7 @@ namespace VamTimeline
         {
             if (_animationEditContext.animation.isPlaying) return;
 
-            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit)
+            if (!_animationEditContext.CanEdit())
             {
                 RefreshCurrentCurveType(_animationEditContext.clipTime);
                 return;

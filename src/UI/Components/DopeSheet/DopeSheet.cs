@@ -364,7 +364,7 @@ namespace VamTimeline
 
         private void OnClick(IAtomAnimationTarget target, RectTransform rect, PointerEventData eventData)
         {
-            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
+            if (!_animationEditContext.CanEdit()) return;
 
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))

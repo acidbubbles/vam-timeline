@@ -35,6 +35,12 @@ namespace VamTimeline
             get { return _autoKeyframeAllControllers; }
             set { _autoKeyframeAllControllers = value; onEditorSettingsChanged.Invoke(nameof(autoKeyframeAllControllers)); }
         }
+        private bool _locked;
+        public bool locked
+        {
+            get { return _locked; }
+            set { _locked = value; onEditorSettingsChanged.Invoke(nameof(locked)); }
+        }
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
         public AtomAnimationClip current { get; private set; }
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
@@ -115,6 +121,16 @@ namespace VamTimeline
             {
                 animation.RebuildAnimationNow();
             }
+        }
+
+        public bool CanEdit()
+        {
+            SuperController.LogMessage($"{SuperController.singleton.gameMode}, {animation.isPlaying}, {animation.isSampling}, {gameObject.activeInHierarchy}");
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return false;
+            if (locked) return false;
+            if (animation.isPlaying || animation.isSampling) return false;
+            if (!gameObject.activeInHierarchy) return false;
+            return true;
         }
 
         #region Keyframing

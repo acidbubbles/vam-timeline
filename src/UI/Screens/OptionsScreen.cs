@@ -3,6 +3,7 @@ namespace VamTimeline
     public class OptionsScreen : ScreenBase
     {
         public const string ScreenName = "Settings";
+        private JSONStorableBool _lockedJSON;
         private JSONStorableFloat _snapJSON;
         private JSONStorableBool _autoKeyframeAllControllersJSON;
 
@@ -25,6 +26,10 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            InitLockedUI();
+
+            prefabFactory.CreateSpacer();
+
             InitSnapUI();
 
             prefabFactory.CreateSpacer();
@@ -32,6 +37,12 @@ namespace VamTimeline
             InitAutoKeyframeUI();
 
             animationEditContext.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+        }
+
+        private void InitLockedUI()
+        {
+            _lockedJSON = new JSONStorableBool("Lock edits", animationEditContext.locked, (bool val) => animationEditContext.locked = val);
+            prefabFactory.CreateToggle(_lockedJSON);
         }
 
         private void InitSnapUI()
@@ -46,14 +57,15 @@ namespace VamTimeline
 
         private void InitAutoKeyframeUI()
         {
-            _autoKeyframeAllControllersJSON = new JSONStorableBool("Auto keyframe all controllers", animationEditContext.autoKeyframeAllControllers, (bool val) => animationEditContext.autoKeyframeAllControllers = val);
-            var autoKeyframeAllControllersUI = prefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
+            _autoKeyframeAllControllersJSON = new JSONStorableBool("Keyframe all controllers at once", animationEditContext.autoKeyframeAllControllers, (bool val) => animationEditContext.autoKeyframeAllControllers = val);
+            prefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
         }
 
         #endregion
 
         private void OnEditorSettingsChanged(string _)
         {
+            _lockedJSON.valNoCallback = animationEditContext.locked;
             _snapJSON.valNoCallback = animationEditContext.snap;
             _autoKeyframeAllControllersJSON.valNoCallback = animationEditContext.autoKeyframeAllControllers;
         }

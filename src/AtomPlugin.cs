@@ -690,7 +690,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
+                if (!animationEditContext.CanEdit()) return;
                 var time = animationEditContext.clipTime;
                 if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
                 foreach (var target in animationEditContext.GetAllOrSelectedTargets())
@@ -708,7 +708,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
+                if (!animationEditContext.CanEdit()) return;
                 clipboard.Clear();
                 var time = animationEditContext.clipTime;
                 clipboard.time = time;
@@ -729,8 +729,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
-
+                if (!animationEditContext.CanEdit()) return;
                 clipboard.Clear();
                 clipboard.time = animationEditContext.clipTime;
                 clipboard.entries.Add(animationEditContext.current.Copy(clipboard.time, animationEditContext.GetAllOrSelectedTargets()));
@@ -745,8 +744,7 @@ namespace VamTimeline
         {
             try
             {
-                if (animation.isPlaying || SuperController.singleton.gameMode != SuperController.GameMode.Edit) return;
-
+                if (!animationEditContext.CanEdit()) return;
                 if (clipboard.entries.Count == 0)
                 {
                     SuperController.LogMessage("Timeline: Clipboard is empty");
