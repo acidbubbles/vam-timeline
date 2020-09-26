@@ -16,11 +16,11 @@ namespace VamTimeline.Tests.Plugin
         {
             base.Init();
 
-            _runUI = CreateButton("Run", false);
-            _runUI.button.onClick.AddListener(Run);
-
             _testFilterJSON = new JSONStorableString("Test Filter", "");
             _resultJSON = new JSONStorableString("Test Results", "Running...");
+
+            _runUI = CreateButton("Run", false);
+            _runUI.button.onClick.AddListener(Run);
 
             Run();
         }
@@ -51,6 +51,7 @@ namespace VamTimeline.Tests.Plugin
         {
             var globalSW = Stopwatch.StartNew();
             var success = true;
+            var counter = 0;
             yield return 0;
             foreach (Test test in TestsIndex.GetAllTests())
             {
@@ -60,9 +61,10 @@ namespace VamTimeline.Tests.Plugin
                 var sw = Stopwatch.StartNew();
                 foreach (var x in test.Run(this, output))
                     yield return x;
+                counter++;
                 if (output.Length == 0)
                 {
-                    if (sw.ElapsedMilliseconds > 5)
+                    if (sw.ElapsedMilliseconds > 20)
                     {
                         _resultBuilder.AppendLine($"{test.name} PASS {sw.ElapsedMilliseconds:0}ms (LONG)");
                         _resultJSON.val = _resultBuilder.ToString();
@@ -80,7 +82,7 @@ namespace VamTimeline.Tests.Plugin
                 }
             }
             globalSW.Stop();
-            _resultBuilder.AppendLine($"DONE {globalSW.Elapsed}");
+            _resultBuilder.AppendLine($"{(success ? "SUCCESS" : "FAIL")}; ran {counter} tests in {globalSW.Elapsed}");
             _resultJSON.val = _resultBuilder.ToString();
             pluginLabelJSON.val = (success ? "Success" : "Failed") + $" (ran in {globalSW.Elapsed.TotalSeconds:0.00}s)";
         }
