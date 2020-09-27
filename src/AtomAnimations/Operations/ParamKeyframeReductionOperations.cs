@@ -66,8 +66,9 @@ namespace VamTimeline
                 .ToList();
 
             var target = new BezierAnimationCurve();
-            target.SmoothNeighbors(target.AddKey(0, source.GetFirstFrame().value, source.GetFirstFrame().curveType));
-            target.SmoothNeighbors(target.AddKey(source.GetLastFrame().time, source.GetLastFrame().value, source.GetLastFrame().curveType));
+            target.AddKey(0, source.GetFirstFrame().value, source.GetFirstFrame().curveType);
+            target.AddKey(source.GetLastFrame().time, source.GetLastFrame().value, source.GetLastFrame().curveType);
+            target.SmoothNeighbors(0);
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
