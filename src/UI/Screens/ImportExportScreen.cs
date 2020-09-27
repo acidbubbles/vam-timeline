@@ -185,7 +185,7 @@ namespace VamTimeline
                 if (!ImportClips(jc)) return;
                 ImportControllerStates(jc);
 
-                var lastAnimation = animation.clips.Select(c => c.animationName).LastOrDefault();
+                var lastAnimation = animation.clips.Select(c => c.animationNameQualified).LastOrDefault();
                 animationEditContext.SelectAnimation(lastAnimation);
             }
             catch (Exception exc)
@@ -202,6 +202,9 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Imported file does not contain any animations. Are you trying to load a scene file?");
                 return false;
             }
+
+            if (animation.clips.Count == 1 && animation.clips[0].IsEmpty())
+                animation.RemoveClip(animation.clips[0]);
 
             var imported = new List<AtomAnimationClip>();
             foreach (JSONClass clipJSON in clipsJSON)
