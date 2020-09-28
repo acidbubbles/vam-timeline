@@ -90,7 +90,7 @@ namespace VamTimeline
 
         private void InitRenameLayer()
         {
-            _layerNameJSON = new JSONStorableString("Layer Name", "", (string val) => UpdateLayerName(val));
+            _layerNameJSON = new JSONStorableString("Layer name (share targets)", "", (string val) => UpdateLayerName(val));
             var layerNameUI = prefabFactory.CreateTextInput(_layerNameJSON);
             _layerNameJSON.valNoCallback = current.animationLayer;
         }
@@ -118,7 +118,7 @@ namespace VamTimeline
 
         private void InitRenameAnimation()
         {
-            _animationNameJSON = new JSONStorableString("Animation Name", "", (string val) => UpdateAnimationName(val));
+            _animationNameJSON = new JSONStorableString("Animation name (group with 'group/anim')", "", (string val) => UpdateAnimationName(val));
             var animationNameUI = prefabFactory.CreateTextInput(_animationNameJSON);
             _animationNameJSON.valNoCallback = current.animationName;
         }
