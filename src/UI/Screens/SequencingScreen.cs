@@ -16,6 +16,7 @@ namespace VamTimeline
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableBool _loop;
         private UIDynamicToggle _loopUI;
+        private JSONStorableBool _uninterruptible;
         private JSONStorableFloat _blendDurationJSON;
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
@@ -46,6 +47,7 @@ namespace VamTimeline
 
             CreateHeader("Sequence", 1);
             InitSequenceUI();
+            InitUninterruptibleUI();
 
             CreateHeader("Transition (auto keyframes)", 1);
             InitLoopUI();
@@ -137,6 +139,15 @@ namespace VamTimeline
                 RefreshTransitionUI();
             });
             _loopUI = prefabFactory.CreateToggle(_loop);
+        }
+
+        private void InitUninterruptibleUI()
+        {
+            _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, (bool val) =>
+            {
+                current.uninterruptible = val;
+            });
+            prefabFactory.CreateToggle(_uninterruptible);
         }
 
         private void RefreshTransitionUI()

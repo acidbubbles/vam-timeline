@@ -205,6 +205,10 @@ namespace VamTimeline
             var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == clip.animationLayer);
             if (previousMain != null && previousMain != clip)
             {
+                if (previousMain.uninterruptible)
+                {
+                    return;
+                }
                 if (clip.syncTransitionTime && previousMain.loop && !clip.loop)
                 {
                     previousMain.SetNext(clip.animationName, Mathf.Max(previousMain.animationLength - previousMain.clipTime, 0f));

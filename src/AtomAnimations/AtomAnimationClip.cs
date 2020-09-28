@@ -131,6 +131,7 @@ namespace VamTimeline
             }
         }
         public bool autoPlay { get; set; } = false;
+        public bool uninterruptible { get; set; } = false;
         public bool loop
         {
             get
