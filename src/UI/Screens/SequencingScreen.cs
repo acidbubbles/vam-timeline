@@ -48,13 +48,11 @@ namespace VamTimeline
             CreateHeader("Sequence", 1);
             InitSequenceUI();
             InitUninterruptibleUI();
+            InitPreviewUI();
 
             CreateHeader("Transition (auto keyframes)", 1);
             InitLoopUI();
             InitTransitionUI();
-
-            CreateHeader("Result", 1);
-            InitPreviewUI();
 
             // To allow selecting in the popup
             prefabFactory.CreateSpacer().height = 200f;
