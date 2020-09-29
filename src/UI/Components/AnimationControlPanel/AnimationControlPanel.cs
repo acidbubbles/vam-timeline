@@ -267,7 +267,6 @@ namespace VamTimeline
         {
             _playAll.button.interactable = !_animationEditContext.current.playbackEnabled;
             _playClip.button.interactable = !_animationEditContext.current.playbackEnabled;
-            _stop.button.interactable = _animationEditContext.animation.isPlaying || args.currentClipTime > 0f;
         }
 
         public void OnDestroy()
