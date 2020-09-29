@@ -145,7 +145,8 @@ namespace VamTimeline
         {
             _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, (bool val) =>
             {
-                current.uninterruptible = val;
+                foreach (var clip in animation.GetClips(current.animationName))
+                    clip.uninterruptible = val;
             });
             prefabFactory.CreateToggle(_uninterruptible);
         }
