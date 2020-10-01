@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -46,6 +47,7 @@ namespace VamTimeline
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
         public bool ignoreGrabEnd;
         private AtomAnimation _animation;
+        private Coroutine _lateSample;
 
         public AtomAnimation animation
         {
@@ -154,6 +156,21 @@ namespace VamTimeline
         }
 
         public void Sample()
+        {
+            SampleNow();
+            if (!GetMainClipPerLayer().SelectMany(c => c.targetControllers).Any(t => t.parentRigidbodyId != null)) return;
+            if (_lateSample != null) StopCoroutine(_lateSample);
+            _lateSample = StartCoroutine(LateSample());
+        }
+
+        private IEnumerator LateSample()
+        {
+            // Give a little bit of time for physics to settle and re-sample
+            yield return new WaitForSeconds(0.1f);
+            SampleNow();
+        }
+
+        private void SampleNow()
         {
             if (animation.RebuildPending())
             {
