@@ -601,12 +601,13 @@ namespace VamTimeline
                 if (sourceParent == currentParent)
                 {
                     currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(sourceTime), false);
+                    currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, clip.loop);
                 }
                 else
                 {
                     var position = sourceParent.TransformPoint(sourceTarget.EvaluatePosition(sourceTime));
                     var rotation = Quaternion.Inverse(sourceParent.rotation) * sourceTarget.EvaluateRotation(sourceTime);
-                    currentTarget.SetKeyframe(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, CurveTypeValues.Undefined, false);
+                    currentTarget.SetKeyframe(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, CurveTypeValues.Linear, false);
                 }
             }
             foreach (var sourceTarget in source.targetFloatParams)
@@ -614,6 +615,7 @@ namespace VamTimeline
                 var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
                 if (currentTarget == null) continue;
                 currentTarget.value.SetKeySnapshot(clipTime, sourceTarget.value.GetKeyframeAt(sourceTime));
+                currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, clip.loop);
             }
         }
 
