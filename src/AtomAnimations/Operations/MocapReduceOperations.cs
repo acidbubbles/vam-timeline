@@ -53,7 +53,7 @@ namespace VamTimeline
 
             target.SetKeyframe(0f, steps[0].position, steps[0].rotation, CurveTypeValues.SmoothLocal);
             target.SetKeyframe(_clip.animationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation, CurveTypeValues.SmoothLocal);
-            target.ComputeCurves(false);
+            target.ComputeCurves();
 
             var buckets = new List<ReducerBucket>
             {

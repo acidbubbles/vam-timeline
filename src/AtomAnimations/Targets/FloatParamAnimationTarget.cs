@@ -123,11 +123,11 @@ namespace VamTimeline
             Validate(value, animationLength);
         }
 
-        public void ReapplyCurveTypes(bool loop)
+        public void ReapplyCurveTypes()
         {
             if (value.length < 2) return;
 
-            ComputeCurves(value, loop);
+            ComputeCurves(value);
         }
 
         public override BezierAnimationCurve GetLeadCurve()

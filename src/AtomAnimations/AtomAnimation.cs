@@ -601,7 +601,7 @@ namespace VamTimeline
                 if (sourceParent == currentParent)
                 {
                     currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(sourceTime), false);
-                    currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, clip.loop);
+                    currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, false);
                 }
                 else
                 {
@@ -615,7 +615,7 @@ namespace VamTimeline
                 var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
                 if (currentTarget == null) continue;
                 currentTarget.value.SetKeySnapshot(clipTime, sourceTarget.value.GetKeyframeAt(sourceTime));
-                currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, clip.loop);
+                currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, false);
             }
         }
 
@@ -628,7 +628,7 @@ namespace VamTimeline
                 if (clip.loop)
                     target.SetCurveSnapshot(clip.animationLength, target.GetCurveSnapshot(0f), false);
 
-                target.ComputeCurves(clip.loop);
+                target.ComputeCurves();
 
                 if (clip.ensureQuaternionContinuity)
                 {

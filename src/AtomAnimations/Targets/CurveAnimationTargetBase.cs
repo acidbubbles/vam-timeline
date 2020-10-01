@@ -48,24 +48,24 @@ namespace VamTimeline
             }
         }
 
-        protected void ComputeCurves(BezierAnimationCurve curve, bool loop)
+        protected void ComputeCurves(BezierAnimationCurve curve)
         {
             curve.ComputeCurves();
         }
 
-        public void ChangeCurve(float time, int curveType, bool loop)
+        public void ChangeCurve(float time, int curveType, bool dirty = true)
         {
             foreach (var curve in GetCurves())
             {
                 var keyframe = curve.GetKeyframeAt(time);
                 if (keyframe == null) continue;
                 keyframe.curveType = curveType;
-                if (loop && time == 0)
+                if (curve.loop && time == 0)
                 {
                     curve.keys[curve.keys.Count - 1].curveType = curveType;
                 }
             }
-            dirty = true;
+            if (dirty) this.dirty = true;
         }
 
         protected int SelectCurveType(float time, int curveType)
