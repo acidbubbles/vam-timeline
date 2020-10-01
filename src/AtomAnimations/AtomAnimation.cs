@@ -189,8 +189,25 @@ namespace VamTimeline
 
         public void PlayClips(string animationName, bool sequencing)
         {
-            foreach (var clip in GetClips(animationName))
-                PlayClip(clip, sequencing);
+			if (animationName.EndsWith(RandomizeGroupSuffix))
+			{
+                var prefix = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
+                var group = clips
+                    .Where(c => c.animationName.StartsWith(prefix))
+                    .ToList();
+
+                if (group.Count == 0)
+                	return;
+
+                var idx = Random.Range(0, group.Count);
+                var next = group[idx];
+				PlayClip(next, sequencing);
+            }
+			else
+			{
+				foreach (var clip in GetClips(animationName))
+					PlayClip(clip, sequencing);
+			}
         }
 
         public void PlayClip(AtomAnimationClip clip, bool sequencing)

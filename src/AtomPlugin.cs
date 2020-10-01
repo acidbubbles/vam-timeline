@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
@@ -565,6 +566,21 @@ namespace VamTimeline
                 animation.PlayClips(animationName, true);
             });
             RegisterAction(playJSON);
+
+
+			var match = Regex.Match(animationName, @"(.*)/\d+");
+			if (match.Success)
+			{
+				var groupName = match.Groups[1].Value;
+				var randomizeGroupName = groupName + AtomAnimation.RandomizeGroupSuffix;
+
+				var playRandomJSON = new JSONStorableAction($"Play {randomizeGroupName}", () =>
+				{
+					animation.PlayClips(randomizeGroupName, true);
+				});
+				
+				RegisterAction(playRandomJSON);
+			}
 
             var speedJSON = new JSONStorableFloat($"Speed {animationName}", 1f, (float val) =>
             {
