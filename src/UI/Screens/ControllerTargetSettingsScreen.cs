@@ -24,16 +24,16 @@ namespace VamTimeline
 
             _target = current.targetControllers.FirstOrDefault(t => t.name == (string)arg);
 
-            if (_target == null)
-            {
-                prefabFactory.CreateTextField(new JSONStorableString("", "Please leave and re-enter this screen."));
-                return;
-            }
-
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
             CreateHeader($"Parenting", 1);
             CreateHeader(_target.name, 2);
+
+            if (_target == null)
+            {
+                prefabFactory.CreateTextField(new JSONStorableString("", "Cannot show the selected target settings.\nPlease go back and re-enter this screen."));
+                return;
+            }
 
             InitParentUI();
         }
