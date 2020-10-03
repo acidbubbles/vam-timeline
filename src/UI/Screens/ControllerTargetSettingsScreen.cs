@@ -7,6 +7,7 @@ namespace VamTimeline
     public class ControllerTargetSettingsScreen : ScreenBase
     {
         public const string ScreenName = "Controller Settings";
+        private static string _lastArg;
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _rigidbodyJSON;
         private FreeControllerAnimationTarget _target;
@@ -22,18 +23,18 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
+            if (arg == null) arg = _lastArg; else _lastArg = (string)arg;
             _target = current.targetControllers.FirstOrDefault(t => t.name == (string)arg);
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
-            CreateHeader($"Parenting", 1);
-            CreateHeader(_target.name, 2);
-
+            CreateHeader($"Controller Settings", 1);
             if (_target == null)
             {
                 prefabFactory.CreateTextField(new JSONStorableString("", "Cannot show the selected target settings.\nPlease go back and re-enter this screen."));
                 return;
             }
+            CreateHeader(_target.name, 2);
 
             InitParentUI();
         }
