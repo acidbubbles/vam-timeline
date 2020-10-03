@@ -91,32 +91,36 @@ namespace VamTimeline
 
         private void SyncRigidbody()
         {
+            if (!animationEditContext.CanEdit())
+            {
+                _atomJSON.valNoCallback = _target.parentAtomId ?? "None";
+                _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
+                return;
+            }
+
             var parentAtomId = string.IsNullOrEmpty(_atomJSON.val) || _atomJSON.val == "None" ? null : _atomJSON.val;
             var parentRigidbodyId = string.IsNullOrEmpty(_rigidbodyJSON.val) || _rigidbodyJSON.val == "None" ? null : _rigidbodyJSON.val;
 
             if (_target.parentRigidbodyId == null && parentRigidbodyId == null) return;
             if (_target.parentAtomId == parentAtomId && _target.parentRigidbodyId == parentRigidbodyId) return;
 
-            var previousParent = _target.GetParent();
-            var previousParentPosition = previousParent.transform.position;
-            var previousParentRotation = previousParent.transform.rotation;
+            animationEditContext.clipTime = 0f;
+
+            var previousPosition = _target.controller.transform.position;
+            var previousRotation = _target.controller.transform.rotation;
 
             var snapshot = operations.Offset().Start(0f, new[] { _target });
 
             _target.SetParent(parentAtomId, parentRigidbodyId);
-            if (!_target.EnsureParentAvailable()) return;
+            if (!_target.EnsureParentAvailable())
+            {
+                SuperController.LogError($"Timeline: Cannot automatically adjust from {_target.parentAtomId ?? "None"}/{_target.parentRigidbodyId ?? "None"} to {parentAtomId ?? "None"}/{parentRigidbodyId ?? "None"} because the current parent is not available.");
+                return;
+            }
 
-            var newParent = _target.GetParent();
-            var newParentPosition = newParent.transform.position;
-            var newParentRotation = newParent.transform.rotation;
-
-            var positionDelta = newParentPosition - previousParentPosition;
-            var rotationDelta = Quaternion.Inverse(previousParentRotation) * newParentRotation;
-
-            var localPosition = _target.GetKeyframePosition(0);
-            var localRotation = _target.GetKeyframeRotation(0);
-
-            _target.SetKeyframe(0f, localPosition - positionDelta, rotationDelta * localRotation);
+            _target.controller.transform.position = previousPosition;
+            _target.controller.transform.rotation = previousRotation;
+            animationEditContext.SetKeyframeToCurrentTransform(_target, 0f);
 
             operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);
         }
