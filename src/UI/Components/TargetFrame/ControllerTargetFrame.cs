@@ -122,7 +122,7 @@ namespace VamTimeline
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
 
-            CreateExpandButton(group.transform, "Select", () => SuperController.singleton.SelectController(target.controller));
+            CreateExpandButton(group.transform, "Select", () => target.SelectInVam());
 
             CreateExpandButton(group.transform, "Settings", () =>
             {

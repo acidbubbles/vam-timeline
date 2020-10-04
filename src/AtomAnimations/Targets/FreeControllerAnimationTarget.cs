@@ -158,6 +158,11 @@ namespace VamTimeline
             }
         }
 
+		public void SelectInVam()
+		{
+            SuperController.singleton.SelectController(controller);
+		}
+
         #region Keyframes control
 
         public int SetKeyframeToCurrentTransform(float time)

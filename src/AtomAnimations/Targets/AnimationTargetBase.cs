@@ -36,6 +36,11 @@ namespace VamTimeline
             if (_bulk == 0 && dirty) onAnimationKeyframesDirty.Invoke();
         }
 
+		public void SelectInVam()
+		{
+			// no-op
+		}
+
         public virtual void Dispose()
         {
             onAnimationKeyframesDirty.RemoveAllListeners();

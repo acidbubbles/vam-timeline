@@ -282,9 +282,15 @@ namespace VamTimeline
                 );
 
                 var click = child.AddComponent<Clickable>();
-                click.onClick.AddListener(_ =>
+
+                click.onLeftClick.AddListener(_ =>
                 {
                     _animationEditContext.SetSelected(target, !_animationEditContext.IsSelected(target));
+                });
+
+                click.onRightClick.AddListener(_ =>
+                {
+					target.SelectInVam();
                 });
             }
 
