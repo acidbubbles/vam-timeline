@@ -280,25 +280,40 @@ namespace VamTimeline
             {
                 foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
                 {
-                    var next = animation.clips.FirstOrDefault(c => c.animationLayer == clip.animationLayer && c.animationName == nextName);
-                    if (next == null)
+                    if (!NextExists(clip, nextName))
                         continue;
+
                     if (!clip.loop)
                         nextTime = Mathf.Min(nextTime, Mathf.Max((clip.animationLength - clip.blendInDuration).Snap(), 0f));
                 }
 
                 foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
                 {
-                    var next = animation.clips.FirstOrDefault(c => c.animationLayer == clip.animationLayer && c.animationName == nextName);
-                    if (next == null)
+                    if (!NextExists(clip, nextName))
                         continue;
+
                     clip.nextAnimationName = _nextAnimationJSON.val;
                     clip.nextAnimationTime = nextTime;
                 }
+
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
             }
 
+            SuperController.LogMessage($"Nexts: {string.Join(", ", animation.clips.Select(x => $"{x.nextAnimationName}").ToArray())}");
             RefreshTransitionUI();
+        }
+
+        private bool NextExists(AtomAnimationClip clip, string nextName)
+        {
+            if (nextName == AtomAnimation.RandomizeAnimationName)
+                return true;
+
+            string group;
+            if (AtomAnimation.TryGetRandomizedGroup(nextName, out group))
+                return true;
+
+            var next = animation.clips.FirstOrDefault(c => c.animationLayer == clip.animationLayer && c.animationName == nextName);
+            return next != null;
         }
 
         #endregion

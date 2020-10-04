@@ -187,27 +187,36 @@ namespace VamTimeline
 
         #region Playback
 
+        public static bool TryGetRandomizedGroup(string animationName, out string groupName)
+        {
+            if (!animationName.EndsWith(RandomizeGroupSuffix))
+            {
+                groupName = null;
+                return false;
+            }
+
+            groupName = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
+            return true;
+        }
+
+        public void PlayRandom(string groupName = null)
+        {
+            var candidates = clips
+                .Where(c => !c.playbackMainInLayer && (groupName == null || c.animationNameGroup == groupName))
+                .ToList();
+
+            if (candidates.Count == 0)
+                return;
+
+            var idx = Random.Range(0, candidates.Count);
+            var clip = candidates[idx];
+            PlayClips(clip.animationName, true);
+        }
+
         public void PlayClips(string animationName, bool sequencing)
         {
-			if (animationName.EndsWith(RandomizeGroupSuffix))
-			{
-                var prefix = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
-                var group = clips
-                    .Where(c => c.animationName.StartsWith(prefix))
-                    .ToList();
-
-                if (group.Count == 0)
-                	return;
-
-                var idx = Random.Range(0, group.Count);
-                var next = group[idx];
-				PlayClip(next, sequencing);
-            }
-			else
-			{
-				foreach (var clip in GetClips(animationName))
-					PlayClip(clip, sequencing);
-			}
+            foreach (var clip in GetClips(animationName))
+                PlayClip(clip, sequencing);
         }
 
         public void PlayClip(AtomAnimationClip clip, bool sequencing)
@@ -426,32 +435,33 @@ namespace VamTimeline
 
             if (source.nextAnimationName == RandomizeAnimationName)
             {
-                var group = clips
-                    .Where(c => source == null || c.animationName != source.animationName && c.animationLayer == source.animationLayer)
+                var candidates = clips
+                    .Where(c => c.animationName != source.animationName && c.animationLayer == source.animationLayer)
                     .ToList();
-                if (group.Count == 0) return;
-                var idx = Random.Range(0, group.Count);
-                var next = group[idx];
+                if (candidates.Count == 0) return;
+                var idx = Random.Range(0, candidates.Count);
+                var next = candidates[idx];
                 source.SetNext(next.animationName, source.nextAnimationTime);
+                return;
             }
-            else if (source.nextAnimationName.EndsWith(RandomizeGroupSuffix))
+
+            string group;
+            if (TryGetRandomizedGroup(source.nextAnimationName, out group))
             {
-                var prefix = source.nextAnimationName.Substring(0, source.nextAnimationName.Length - RandomizeGroupSuffix.Length);
-                var group = clips
-                    .Where(c => source == null || c.animationName != source.animationName && c.animationLayer == source.animationLayer)
-                    .Where(c => c.animationName.StartsWith(prefix))
+                var candidates = clips
+                    .Where(c => c.animationName != source.animationName && c.animationLayer == source.animationLayer)
+                    .Where(c => c.animationNameGroup == group)
                     .ToList();
-                if (group.Count == 0) return;
-                var idx = Random.Range(0, group.Count);
-                var next = group[idx];
+                if (candidates.Count == 0) return;
+                var idx = Random.Range(0, candidates.Count);
+                var next = candidates[idx];
                 source.SetNext(next.animationName, source.nextAnimationTime);
+                return;
             }
-            else
-            {
-                var next = GetClip(source.animationLayer, source.nextAnimationName);
-                if (next == null) return;
-                source.SetNext(next.animationName, source.nextAnimationTime);
-            }
+
+            var clip = GetClip(source.animationLayer, source.nextAnimationName);
+            if (clip == null) return;
+            source.SetNext(clip.animationName, source.nextAnimationTime);
         }
 
         #endregion

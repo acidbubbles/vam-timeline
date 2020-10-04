@@ -102,6 +102,7 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(ensureQuaternionContinuity));
             }
         }
+        public string animationNameGroup { get; private set; }
         public string animationName
         {
             get
@@ -112,6 +113,11 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
+                var idxOfGroupSeparator = _animationName.IndexOf('/');
+                if (idxOfGroupSeparator > -1)
+                {
+                    animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
+                }
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
             }

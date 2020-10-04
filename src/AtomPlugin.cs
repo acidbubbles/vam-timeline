@@ -539,6 +539,14 @@ namespace VamTimeline
                     CreateAndRegisterClipStorables(animName);
                 }
 
+                foreach (var group in animation.clips.GroupBy(c => c.animationNameGroup).Where(g => g.Key != null && g.Count() > 1))
+                {
+                    RegisterAction(new JSONStorableAction($"Play {group.Key}{AtomAnimation.RandomizeGroupSuffix}", () =>
+                    {
+                        animation.PlayRandom(group.Key);
+                    }));
+                }
+
                 if (_clipStorables.Count > animationNames.Count)
                 {
                     foreach (var action in _clipStorables.ToArray())
@@ -566,21 +574,6 @@ namespace VamTimeline
                 animation.PlayClips(animationName, true);
             });
             RegisterAction(playJSON);
-
-
-			var match = Regex.Match(animationName, @"(.*)/\d+");
-			if (match.Success)
-			{
-				var groupName = match.Groups[1].Value;
-				var randomizeGroupName = groupName + AtomAnimation.RandomizeGroupSuffix;
-
-				var playRandomJSON = new JSONStorableAction($"Play {randomizeGroupName}", () =>
-				{
-					animation.PlayClips(randomizeGroupName, true);
-				});
-				
-				RegisterAction(playRandomJSON);
-			}
 
             var speedJSON = new JSONStorableFloat($"Speed {animationName}", 1f, (float val) =>
             {
