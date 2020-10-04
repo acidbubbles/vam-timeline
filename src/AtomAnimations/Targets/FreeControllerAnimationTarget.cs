@@ -160,7 +160,17 @@ namespace VamTimeline
 
         public override void SelectInVam()
         {
-            SuperController.singleton.SelectController(controller);
+            base.SelectInVam();
+            if (SuperController.singleton.GetSelectedController() == controller)
+            {
+                var selector = controller.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
+                if (selector != null)
+                    selector.SetActiveTab(selector.startingTabName);
+            }
+            else
+            {
+                SuperController.singleton.SelectController(controller);
+            }
         }
 
         #region Keyframes control

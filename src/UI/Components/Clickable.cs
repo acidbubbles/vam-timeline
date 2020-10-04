@@ -12,7 +12,7 @@ namespace VamTimeline
         public void OnPointerClick(PointerEventData eventData)
         {
             if (eventData.button == PointerEventData.InputButton.Right)
-                onRightClick?.Invoke(eventData);
+                onRightClick.Invoke(eventData);
             else
                 onClick.Invoke(eventData);
         }
@@ -20,6 +20,7 @@ namespace VamTimeline
         public void OnDestroy()
         {
             onClick.RemoveAllListeners();
+            onRightClick.RemoveAllListeners();
         }
 
         public class ClickableEvent : UnityEvent<PointerEventData>
