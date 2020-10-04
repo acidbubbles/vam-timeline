@@ -236,7 +236,7 @@ namespace VamTimeline
             {
                 animation.PlayClip(current, animation.sequencing);
             }
-            else
+            else if (!SuperController.singleton.freezeAnimation)
             {
                 Sample();
             }
