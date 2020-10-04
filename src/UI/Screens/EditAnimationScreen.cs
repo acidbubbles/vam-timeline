@@ -39,21 +39,21 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            CreateHeader("Playback", 1);
-            InitPlaybackUI();
-
-            CreateHeader("Name", 1);
             InitRenameLayer();
             InitRenameAnimation();
 
+            CreateHeader("Speed", 1);
+            InitPlaybackUI();
+
             CreateHeader("Options", 1);
             InitLoopUI();
-            InitEnsureQuaternionContinuityUI();
 
             CreateHeader("Length", 1);
             InitAnimationLengthUI();
 
-            CreateHeader("Animation pattern link", 1);
+            CreateHeader("Advanced", 1);
+            InitWeightUI();
+            InitEnsureQuaternionContinuityUI();
             InitAnimationPatternLinkUI();
 
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
@@ -79,7 +79,10 @@ namespace VamTimeline
             };
             var clipSpeedUI = prefabFactory.CreateSlider(_clipSpeedJSON);
             clipSpeedUI.valueFormat = "F3";
+        }
 
+        private void InitWeightUI()
+        {
             _clipWeightJSON = new JSONStorableFloat("Weight", 1f, (float val) => current.weight = val, 0f, 1f, true)
             {
                 valNoCallback = current.weight
