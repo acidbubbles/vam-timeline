@@ -17,7 +17,7 @@ namespace VamTimeline
 
         public AtomAnimationClip Add()
         {
-            return _animation.CreateClip(GetNewLayerName());
+            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName());
         }
 
         public void SplitLayer(List<IAtomAnimationTarget> targets)
@@ -43,6 +43,16 @@ namespace VamTimeline
             {
                 var layerName = "Layer " + i;
                 if (!layers.Contains(layerName)) return layerName;
+            }
+            return Guid.NewGuid().ToString();
+        }
+
+        private string GetNewAnimationName()
+        {
+            for (var i = _animation.clips.Count + 1; i < 999; i++)
+            {
+                var animationName = "Anim " + i;
+                if (!_animation.clips.Any(c => c.animationName == animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();
         }

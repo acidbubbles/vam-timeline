@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -12,6 +13,8 @@ namespace VamTimeline
     public class AtomAnimation : MonoBehaviour
     {
         public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
+
+        private static readonly Regex _lastDigitsRegex = new Regex(@"^(?<name>.+)(?<index>[0-9]+)$", RegexOptions.Compiled);
 
         public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
@@ -124,10 +127,10 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip CreateClip(string animationLayer)
+        public AtomAnimationClip CreateClip(AtomAnimationClip source)
         {
-            string animationName = GetNewAnimationName();
-            return CreateClip(animationLayer, animationName);
+            string animationName = GetNewAnimationName(source);
+            return CreateClip(source.animationLayer, animationName);
         }
 
         public AtomAnimationClip CreateClip(string animationLayer, string animationName)
@@ -146,11 +149,15 @@ namespace VamTimeline
             OnAnimationKeyframesDirty();
         }
 
-        private string GetNewAnimationName()
+        private string GetNewAnimationName(AtomAnimationClip source)
         {
-            for (var i = clips.Count + 1; i < 999; i++)
+            var match = _lastDigitsRegex.Match(source.animationName);
+            if (!match.Success) return source.animationName + " 2";
+            var name = match.Groups["name"].Value;
+            var index = int.Parse(match.Groups["index"].Value);
+            for (var i = index + 1; i < 999; i++)
             {
-                var animationName = "Anim " + i;
+                var animationName = name + i;
                 if (!clips.Any(c => c.animationName == animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();

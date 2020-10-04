@@ -49,7 +49,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationWithSameSettings()
         {
-            var clip = _animation.CreateClip(_clip.animationLayer);
+            var clip = _animation.CreateClip(_clip);
             clip.loop = _clip.loop;
             clip.animationLength = _clip.animationLength;
             clip.animationLayer = _clip.animationLayer;
@@ -62,7 +62,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationFromCurrentFrame()
         {
-            var clip = _animation.CreateClip(_clip.animationLayer);
+            var clip = _animation.CreateClip(_clip);
             foreach (var origTarget in _clip.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
@@ -90,7 +90,7 @@ namespace VamTimeline
                 return null;
             }
 
-            var clip = _animation.CreateClip(_clip.animationLayer);
+            var clip = _animation.CreateClip(_clip);
             clip.animationName = $"{_clip.animationName} > {next.animationName}";
             clip.loop = false;
             clip.autoTransitionPrevious = _animation.clips.Any(c => c.animationLayer == _clip.animationLayer && c.nextAnimationName == _clip.animationName);
