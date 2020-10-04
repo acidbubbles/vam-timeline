@@ -44,9 +44,10 @@ namespace VamTimeline
                 foreach (var key in target.GetAllKeyframesKeys())
                 {
                     var time = target.GetKeyframeTime(key);
-                    if (time < from || time > to) continue;
+                    if (time < from - 0.0001f || time > to + 0.001f) continue;
                     // Do not double-apply
-                    if (time == _offsetSnapshot.time) continue;
+                    if (Math.Abs(time - _offsetSnapshot.time) < 0.0001) continue;
+                    SuperController.LogMessage($"Apply on frame {time} (snapshot is {_offsetSnapshot.time})");
 
                     var positionBefore = target.GetKeyframePosition(key);
                     var rotationBefore = target.GetKeyframeRotation(key);
@@ -68,9 +69,9 @@ namespace VamTimeline
             }
         }
 
-        public AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerAnimationTarget> enumerable)
+        public AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerAnimationTarget> targets)
         {
-            var snapshot = _clip.Copy(clipTime, enumerable.Cast<IAtomAnimationTarget>());
+            var snapshot = _clip.Copy(clipTime, targets.Cast<IAtomAnimationTarget>());
             if (snapshot.controllers.Count == 0)
             {
                 SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {clipTime}.");

@@ -267,23 +267,37 @@ namespace VamTimeline
             var nextTime = _nextAnimationTimeJSON.val.Snap();
             var nextName = _nextAnimationJSON.val;
 
-            foreach (var clip in animation.GetClips(current.animationName))
+            if (nextName == NoNextAnimation)
             {
-                if (nextName == NoNextAnimation)
+
+                foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
                 {
                     clip.nextAnimationName = null;
                     clip.nextAnimationTime = 0f;
                 }
-                else
+            }
+            else
+            {
+                foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
                 {
-                    if (clip.nextAnimationName == null)
-                        nextTime = Mathf.Max((clip.animationLength - clip.blendInDuration).Snap(), 0f);
-                    else
-                        nextTime = clip.loop ? nextTime : Mathf.Min(nextTime, clip.animationLength);
+                    var next = animation.clips.FirstOrDefault(c => c.animationLayer == clip.animationLayer && c.animationName == nextName);
+                    if (next == null)
+                        continue;
+                    if (!clip.loop)
+                        nextTime = Mathf.Min(nextTime, Mathf.Max((clip.animationLength - clip.blendInDuration).Snap(), 0f));
+                }
+
+                foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
+                {
+                    var next = animation.clips.FirstOrDefault(c => c.animationLayer == clip.animationLayer && c.animationName == nextName);
+                    if (next == null)
+                        continue;
                     clip.nextAnimationName = _nextAnimationJSON.val;
                     clip.nextAnimationTime = nextTime;
                 }
+                _nextAnimationTimeJSON.valNoCallback = nextTime;
             }
+
             RefreshTransitionUI();
         }
 

@@ -56,13 +56,13 @@ namespace VamTimeline
             Validate(GetLeadCurve(), animationLength);
         }
 
-        public void ComputeCurves(bool loop)
+        public void ComputeCurves()
         {
             if (x.length < 2) return;
 
             foreach (var curve in curves)
             {
-                ComputeCurves(curve, loop);
+                ComputeCurves(curve);
             }
         }
 

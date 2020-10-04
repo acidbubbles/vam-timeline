@@ -103,6 +103,8 @@ namespace VamTimeline
             foreach (var origTarget in _clip.targetControllers)
             {
                 var newTarget = clip.Add(origTarget.controller);
+                newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
+                newTarget.weight = origTarget.weight;
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }

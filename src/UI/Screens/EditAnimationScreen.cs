@@ -136,19 +136,24 @@ namespace VamTimeline
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
-            var existing = animation.clips.FirstOrDefault(c => c.animationName == val);
-            if (existing != null)
-            {
-                current.nextAnimationName = existing.nextAnimationName;
-                current.nextAnimationTime = existing.nextAnimationTime;
-                current.speed = existing.speed;
-                SuperController.LogMessage($"Timeline: Animation name exists on another layer. Sequencing and speed will be synced.");
-            }
             current.animationName = val;
+            var existing = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.animationName);
+            if (existing != null && existing.nextAnimationName != null)
+            {
+                var next = animation.clips.FirstOrDefault(c => c.animationLayer == current.animationLayer && c.animationName == existing.nextAnimationName);
+                if (next != null)
+                {
+                    current.nextAnimationName = next.nextAnimationName;
+                    current.nextAnimationTime = next.nextAnimationTime;
+                }
+            }
             foreach (var other in animation.clips)
             {
-                if (other.nextAnimationName == previousAnimationName)
+                if (other == current) continue;
+                if (other.nextAnimationName == previousAnimationName && other.animationLayer == current.animationLayer)
+                {
                     other.nextAnimationName = val;
+                }
             }
         }
 
