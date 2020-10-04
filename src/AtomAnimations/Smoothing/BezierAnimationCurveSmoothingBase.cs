@@ -12,11 +12,25 @@ namespace VamTimeline
         protected float[] _a;
         protected float[] _b;
         protected float[] _c;
+        // protected float _totalTime;
+        // protected float _totalDistance;
 
-        protected static float Weighting(BezierKeyframe k1, BezierKeyframe k2)
+        protected float Weighting(BezierKeyframe k1, BezierKeyframe k2)
         {
-            // return _w[i] = keys[i + 1].time - keys[i].time;
-            return Vector2.Distance(new Vector2(k1.time, k1.value), new Vector2(k2.time, k2.value));
+            return k2.time - k1.time;
+            // if (_totalDistance == 0) return 1f;
+            // return Vector2.Distance(new Vector2(1f - (k1.time / _totalTime), k1.value / _totalDistance), new Vector2(1f - (k2.time / _totalTime), k2.value / _totalDistance));
+        }
+
+        protected void ComputeTimeAndDistance(List<BezierKeyframe> keys)
+        {
+            // _totalTime = 0f;
+            // _totalDistance = 0f;
+            // for (var i = 1; i < keys.Count; i++)
+            // {
+            //     _totalTime += keys[i].time - keys[i - 1].time;
+            //     _totalDistance += Mathf.Abs(keys[i].value - keys[i - 1].value);
+            // }
         }
 
         protected void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)

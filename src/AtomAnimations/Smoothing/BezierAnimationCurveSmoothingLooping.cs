@@ -16,6 +16,7 @@ namespace VamTimeline
             // Using improvements on near keyframes: http://www.jacos.nl/jacos_html/spline/
             // Looped version: http://www.jacos.nl/jacos_html/spline/circular/index.html
             var n = keys.Count - 1;
+            ComputeTimeAndDistance(keys);
             InitializeArrays(n);
             Weighting(keys, n);
             InternalSegments(keys, n);
@@ -24,7 +25,6 @@ namespace VamTimeline
             AssignComputedControlPointsToKeyframes(keys, n);
         }
         private void InitializeArrays(int n)
-
         {
             if (_w == null || _w.Length < n + 1)
             {

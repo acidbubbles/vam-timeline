@@ -16,6 +16,7 @@ namespace VamTimeline
             // Based on: https://www.particleincell.com/2012/bezier-splines/
             // Using improvements on near keyframes: http://www.jacos.nl/jacos_html/spline/
             var n = keys.Count - 1;
+            ComputeTimeAndDistance(keys);
             InitializeArrays(n);
             Weighting(keys, n);
             InternalSegments(keys, n);
