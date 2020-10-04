@@ -27,6 +27,7 @@ namespace VamTimeline
         private JSONStorableFloat _animationSpeedJSON;
         private JSONStorableFloat _clipSpeedJSON;
         private JSONStorableFloat _clipWeightJSON;
+        private UIDynamicButton _applyLengthUI;
 
         public EditAnimationScreen()
             : base()
@@ -162,8 +163,6 @@ namespace VamTimeline
 
         private void InitAnimationLengthUI()
         {
-            UIDynamicButton applyLengthUI = null;
-
             _lengthModeJSON = new JSONStorableStringChooser("Length mode", new List<string> {
                 ChangeLengthModeCropExtendEnd,
                 ChangeLengthModeCropExtendBegin,
@@ -184,6 +183,7 @@ namespace VamTimeline
                         _lengthJSON.valNoCallback = 0.1f;
                     if (_lengthModeJSON.val == ChangeLengthModeCropExtendAtTime && _lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
                         _lengthJSON.valNoCallback = animationEditContext.clipTime + animationEditContext.snap;
+                    _applyLengthUI.button.interactable = !_lengthJSON.val.IsSameFrame(current.animationLength);
                 },
                 0f,
                 Mathf.Max((current.animationLength * 5f).Snap(10f), 10f),
@@ -192,11 +192,13 @@ namespace VamTimeline
             var lengthUI = prefabFactory.CreateSlider(_lengthJSON);
             lengthUI.valueFormat = "F3";
 
-            applyLengthUI = prefabFactory.CreateButton("Apply");
-            applyLengthUI.button.onClick.AddListener(() =>
+            _applyLengthUI = prefabFactory.CreateButton("Apply");
+            _applyLengthUI.button.onClick.AddListener(() =>
             {
                 UpdateAnimationLength(_lengthJSON.val);
+                _applyLengthUI.button.interactable = false;
             });
+            _applyLengthUI.button.interactable = false;
         }
 
         private void InitEnsureQuaternionContinuityUI()
