@@ -27,6 +27,6 @@ namespace VamTimeline
         ISnapshot GetSnapshot(float time);
         void SetSnapshot(float time, ISnapshot snapshot);
 
-		void SelectInVam();
+        void SelectInVam();
     }
 }

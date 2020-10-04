@@ -158,10 +158,10 @@ namespace VamTimeline
             }
         }
 
-		public void SelectInVam()
-		{
+        public override void SelectInVam()
+        {
             SuperController.singleton.SelectController(controller);
-		}
+        }
 
         #region Keyframes control
 
