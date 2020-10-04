@@ -718,15 +718,25 @@ namespace VamTimeline
             try
             {
                 if (!animationEditContext.CanEdit()) return;
-                clipboard.Clear();
-                var time = animationEditContext.clipTime;
-                clipboard.time = time;
-                clipboard.entries.Add(animationEditContext.current.Copy(clipboard.time, animationEditContext.GetAllOrSelectedTargets()));
-                if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
-                foreach (var target in animationEditContext.GetAllOrSelectedTargets())
-                {
-                    target.DeleteFrame(time);
-                }
+
+				var time = animationEditContext.clipTime;
+				var entry = animationEditContext.current.Copy(time, animationEditContext.GetAllOrSelectedTargets());
+
+				if (entry.Empty)
+				{
+                    SuperController.LogMessage("Timeline: Nothing to cut");
+				}
+				else
+				{
+					clipboard.Clear();
+					clipboard.time = time;
+					clipboard.entries.Add(entry);
+					if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
+					foreach (var target in animationEditContext.GetAllOrSelectedTargets())
+					{
+						target.DeleteFrame(time);
+					}
+				}
             }
             catch (Exception exc)
             {
@@ -739,9 +749,20 @@ namespace VamTimeline
             try
             {
                 if (!animationEditContext.CanEdit()) return;
-                clipboard.Clear();
-                clipboard.time = animationEditContext.clipTime;
-                clipboard.entries.Add(animationEditContext.current.Copy(clipboard.time, animationEditContext.GetAllOrSelectedTargets()));
+
+				var time = animationEditContext.clipTime;
+				var entry = animationEditContext.current.Copy(time, animationEditContext.GetAllOrSelectedTargets());
+
+				if (entry.Empty)
+				{
+                    SuperController.LogMessage("Timeline: Nothing to copy");
+				}
+				else
+				{
+					clipboard.Clear();
+					clipboard.time = time;
+					clipboard.entries.Add(entry);
+				}
             }
             catch (Exception exc)
             {

@@ -21,6 +21,17 @@ namespace VamTimeline
         public List<FreeControllerV3ClipboardEntry> controllers;
         public List<FloatParamValClipboardEntry> floatParams;
         public List<TriggersClipboardEntry> triggers;
+
+		public bool Empty
+		{
+			get
+			{
+				return
+					controllers.Count == 0 &&
+					floatParams.Count == 0 &&
+					triggers.Count == 0;
+			}
+		}
     }
 
     public class FloatParamValClipboardEntry
