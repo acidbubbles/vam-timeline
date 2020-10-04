@@ -155,8 +155,8 @@ namespace VamTimeline
         {
             if (syncing) return;
             SendTimelineEvent(new object[]{
-                 nameof(SendMasterClipState),
-                 clip.animationName
+                 nameof(SendMasterClipState), // 0
+                 clip.animationName, // 1
             });
         }
 
@@ -178,7 +178,7 @@ namespace VamTimeline
         {
             if (syncing) return;
             SendTimelineEvent(new object[]{
-                 nameof(SendStopAndReset)
+                 nameof(SendStopAndReset) // 0
             });
         }
 
@@ -191,9 +191,9 @@ namespace VamTimeline
         {
             if (syncing) return;
             SendTimelineEvent(new object[]{
-                 nameof(SendTime),
-                 clip.animationName,
-                 clip.clipTime,
+                 nameof(SendTime), // 0
+                 clip.animationName, // 1
+                 clip.clipTime, // 2
             });
         }
 
@@ -240,7 +240,9 @@ namespace VamTimeline
                  clip.autoTransitionPrevious, // 9
                  clip.autoTransitionNext, // 10
                  clip.speed, // 11
-                 clip.weight // 12
+                 clip.weight, // 12
+                 clip.uninterruptible, // 13
+                 clip.preserveLoops // 14
             });
         }
 
@@ -248,32 +250,47 @@ namespace VamTimeline
         {
             string animationName = (string)e[1];
             string animationLayer = (string)e[2];
-            var clip = animation.GetClip(animationLayer, animationName);
-            if (clip == null)
+
+            var existing = animation.GetClip(animationLayer, animationName);
+            if (existing == null)
             {
-                if (animation.clips.Any(c => c.animationLayer == animationLayer))
-                    clip = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
-                else
-                    clip = animation.CreateClip(animationLayer, animationName);
+                existing = animation.clips.FirstOrDefault(c => c.animationName == animationName);
+                if (existing == null)
+                {
+                    if (animation.clips.Any(c => c.animationLayer == animationLayer))
+                    {
+                        existing = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
+                        existing.animationName = animationName;
+                    }
+                    else
+                    {
+                        existing = animation.CreateClip(animationLayer, animationName);
+                    }
+                }
             }
-            new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd((float)e[3]);
-            var nextAnimationName = (string)e[4];
-            if (!string.IsNullOrEmpty(nextAnimationName) && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == nextAnimationName))
+
+            foreach (var clip in animation.GetClips(animationName))
             {
-                clip.nextAnimationName = nextAnimationName;
-                clip.nextAnimationTime = (float)e[5];
-                clip.autoTransitionNext = (bool)e[10];
+                new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd((float)e[3]);
+                var nextAnimationName = (string)e[4];
+                if (!string.IsNullOrEmpty(nextAnimationName) && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == nextAnimationName))
+                {
+                    clip.nextAnimationName = nextAnimationName;
+                    clip.nextAnimationTime = 0f; // Will be managed by the master setting
+                    clip.autoTransitionNext = (bool)e[10];
+                }
+                if (animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.nextAnimationName == clip.animationName))
+                {
+                    clip.autoTransitionPrevious = (bool)e[9];
+                }
+                clip.blendInDuration = (float)e[6];
+                clip.loop = (bool)e[8];
+                clip.speed = (float)e[11];
+                clip.weight = (float)e[12];
+                clip.uninterruptible = (bool)e[13];
+                clip.preserveLoops = (bool)e[14];
+                animationEditContext.SelectAnimation(clip);
             }
-            if (animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.nextAnimationName == clip.animationName))
-            {
-                clip.autoTransitionPrevious = (bool)e[9];
-            }
-            clip.blendInDuration = (float)e[6];
-            clip.autoPlay = (bool)e[7];
-            clip.loop = (bool)e[8];
-            clip.speed = (float)e[11];
-            clip.weight = (float)e[12];
-            animationEditContext.SelectAnimation(clip);
         }
 
         public void SendScreen(string screenName, object screenArg)
