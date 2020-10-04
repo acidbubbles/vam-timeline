@@ -242,7 +242,7 @@ namespace VamTimeline
                 {
                     return;
                 }
-                if (clip.syncTransitionTime && previousMain.loop && !clip.loop)
+                if (clip.preserveLoops && previousMain.loop && !clip.loop)
                 {
                     previousMain.SetNext(clip.animationName, Mathf.Max(previousMain.animationLength - previousMain.clipTime, 0f));
                 }
@@ -411,7 +411,7 @@ namespace VamTimeline
             to.playbackMainInLayer = true;
             if (to.playbackWeight == 0)
             {
-                to.clipTime = to.loop && to.syncTransitionTime ? from.clipTime : 0f;
+                to.clipTime = to.loop && to.preserveLoops ? from.clipTime : 0f;
             }
 
             if (sequencing)
@@ -440,6 +440,9 @@ namespace VamTimeline
             if (source.nextAnimationTime <= 0)
                 return;
 
+            AtomAnimationClip next;
+
+            string group;
             if (source.nextAnimationName == RandomizeAnimationName)
             {
                 var candidates = clips
@@ -447,13 +450,9 @@ namespace VamTimeline
                     .ToList();
                 if (candidates.Count == 0) return;
                 var idx = Random.Range(0, candidates.Count);
-                var next = candidates[idx];
-                source.SetNext(next.animationName, source.nextAnimationTime);
-                return;
+                next = candidates[idx];
             }
-
-            string group;
-            if (TryGetRandomizedGroup(source.nextAnimationName, out group))
+            else if (TryGetRandomizedGroup(source.nextAnimationName, out group))
             {
                 var candidates = clips
                     .Where(c => c.animationName != source.animationName && c.animationLayer == source.animationLayer)
@@ -461,14 +460,23 @@ namespace VamTimeline
                     .ToList();
                 if (candidates.Count == 0) return;
                 var idx = Random.Range(0, candidates.Count);
-                var next = candidates[idx];
-                source.SetNext(next.animationName, source.nextAnimationTime);
-                return;
+                next = candidates[idx];
+            }
+            else
+            {
+                next = GetClip(source.animationLayer, source.nextAnimationName);
             }
 
-            var clip = GetClip(source.animationLayer, source.nextAnimationName);
-            if (clip == null) return;
-            source.SetNext(clip.animationName, source.nextAnimationTime);
+            if (next == null) return;
+
+            var nextTime = source.nextAnimationTime;
+            if (next.preserveLoops && source.loop && next.loop)
+            {
+                var half = source.animationLength / 2;
+                nextTime = nextTime + half - (nextTime + half) % source.animationLength;
+                nextTime -= next.blendInDuration + source.clipTime;
+            }
+            source.SetNext(next.animationName, nextTime);
         }
 
         #endregion

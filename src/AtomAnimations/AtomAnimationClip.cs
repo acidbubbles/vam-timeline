@@ -19,7 +19,7 @@ namespace VamTimeline
         private float _animationLength = DefaultAnimationLength;
         private bool _autoTransitionPrevious;
         private bool _autoTransitionNext;
-        private bool _syncTransitionTime = true;
+        private bool _preserveLoops = true;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
         private string _animationName;
@@ -228,17 +228,17 @@ namespace VamTimeline
             }
         }
 
-        public bool syncTransitionTime
+        public bool preserveLoops
         {
             get
             {
-                return _syncTransitionTime;
+                return _preserveLoops;
             }
             set
             {
-                if (_syncTransitionTime == value) return;
-                _syncTransitionTime = value;
-                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(syncTransitionTime));
+                if (_preserveLoops == value) return;
+                _preserveLoops = value;
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(preserveLoops));
             }
         }
 

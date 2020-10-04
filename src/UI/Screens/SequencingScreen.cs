@@ -23,7 +23,8 @@ namespace VamTimeline
         private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
-        private JSONStorableBool _transitionSyncTime;
+        private JSONStorableBool _preserveLoopsJSON;
+        private UIDynamicToggle _preserveLoopsUI;
 
         public SequencingScreen()
             : base()
@@ -36,18 +37,14 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            CreateHeader("Sequence master", 1);
+            CreateHeader("Options", 1);
             InitSequenceMasterUI();
-
-            CreateHeader("Auto play", 1);
             InitAutoPlayUI();
 
-            CreateHeader("Blending", 1);
-            InitBlendUI();
-
-            CreateHeader("Sequence", 1);
+            CreateHeader("Sequencing", 1);
             InitSequenceUI();
             InitUninterruptibleUI();
+            InitBlendUI();
             InitPreviewUI();
 
             CreateHeader("Transition (auto keyframes)", 1);
@@ -94,8 +91,8 @@ namespace VamTimeline
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
 
-            _transitionSyncTime = new JSONStorableBool("Blend in sync", true, (bool val) => current.syncTransitionTime = val);
-            prefabFactory.CreateToggle(_transitionSyncTime);
+            _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, (bool val) => current.preserveLoops = val);
+            _preserveLoopsUI = prefabFactory.CreateToggle(_preserveLoopsJSON);
         }
 
         private void InitSequenceUI()
@@ -154,6 +151,7 @@ namespace VamTimeline
             _transitionPreviousJSON.toggle.interactable = true;
             _transitionNextJSON.toggle.interactable = true;
             _loopUI.toggle.interactable = false;
+            _preserveLoopsUI.toggle.interactable = current.loop;
 
             if (!current.autoTransitionPrevious)
             {
@@ -341,7 +339,7 @@ namespace VamTimeline
             _blendDurationJSON.valNoCallback = current.blendInDuration;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
-            _transitionSyncTime.valNoCallback = current.syncTransitionTime;
+            _preserveLoopsJSON.valNoCallback = current.preserveLoops;
             _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? NoNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
