@@ -49,5 +49,11 @@ namespace VamTimeline
             var a = -1 * b;
             return a + b * Mathf.Exp(c * value);
         }
+
+        public static float RoundToNearest(this float value, float multiple)
+        {
+            var half = multiple / 2;
+            return value + half - (value + half) % multiple;
+        }
     }
 }

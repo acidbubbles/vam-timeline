@@ -242,7 +242,7 @@ namespace VamTimeline
                 {
                     return;
                 }
-                if (clip.preserveLoops && previousMain.loop && !clip.loop)
+                if (clip.loop && clip.preserveLoops && previousMain.loop)
                 {
                     previousMain.SetNext(clip.animationName, Mathf.Max(previousMain.animationLength - previousMain.clipTime, 0f));
                 }
@@ -472,9 +472,7 @@ namespace VamTimeline
             var nextTime = source.nextAnimationTime;
             if (next.preserveLoops && source.loop && next.loop)
             {
-                var half = source.animationLength / 2;
-                nextTime = nextTime + half - (nextTime + half) % source.animationLength;
-                nextTime -= next.blendInDuration + source.clipTime;
+                nextTime = nextTime.RoundToNearest(source.animationLength) - next.blendInDuration + source.clipTime;
             }
             source.SetNext(next.animationName, nextTime);
         }

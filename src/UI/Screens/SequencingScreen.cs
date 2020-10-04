@@ -91,8 +91,21 @@ namespace VamTimeline
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
 
-            _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, (bool val) => current.preserveLoops = val);
+            _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, (bool val) =>
+            {
+                current.preserveLoops = val;
+                RoundNextTimeToNearestLoop();
+            });
             _preserveLoopsUI = prefabFactory.CreateToggle(_preserveLoopsJSON);
+        }
+
+        private void RoundNextTimeToNearestLoop()
+        {
+            if (current.loop && current.preserveLoops)
+            {
+                _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.RoundToNearest(current.animationLength);
+            }
+            _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.Snap();
         }
 
         private void InitSequenceUI()
@@ -201,7 +214,7 @@ namespace VamTimeline
             }
             else
             {
-                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round((current.nextAnimationTime + current.blendInDuration) / current.animationLength, 2)} times including blending";
+                _nextAnimationPreviewJSON.val = $"Will loop {Math.Round(current.nextAnimationTime / current.animationLength, 2)} times";
             }
         }
 
@@ -262,7 +275,8 @@ namespace VamTimeline
 
         private void ChangeNextAnimation()
         {
-            var nextTime = _nextAnimationTimeJSON.val.Snap();
+            RoundNextTimeToNearestLoop();
+            var nextTime = _nextAnimationTimeJSON.val;
             var nextName = _nextAnimationJSON.val;
 
             if (nextName == NoNextAnimation)
