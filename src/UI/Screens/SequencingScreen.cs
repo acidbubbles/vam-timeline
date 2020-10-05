@@ -25,6 +25,7 @@ namespace VamTimeline
         private JSONStorableBool _transitionNextJSON;
         private JSONStorableBool _preserveLoopsJSON;
         private UIDynamicToggle _preserveLoopsUI;
+        private JSONStorableFloat _randomizeRangeJSON;
 
         public SequencingScreen()
             : base()
@@ -45,6 +46,7 @@ namespace VamTimeline
             InitSequenceUI();
             InitUninterruptibleUI();
             InitBlendUI();
+            InitRandomizeLengthUI();
             InitPreviewUI();
 
             prefabFactory.CreateHeader("Transition (auto keyframes)", 1);
@@ -114,12 +116,28 @@ namespace VamTimeline
             var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true, true);
             nextAnimationUI.popupPanelHeight = 360f;
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("... after seconds", 0f, (float val) => ChangeNextAnimation(), 0f, 60f, false)
+            _nextAnimationTimeJSON = new JSONStorableFloat("Play next in (seconds)", 0f, (float val) => ChangeNextAnimation(), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTime
             };
             var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
+        }
+
+        protected void InitRandomizeLengthUI()
+        {
+            _randomizeRangeJSON = new JSONStorableFloat("Randomize time range (seconds)", 0f, (float val) => ChangeRandomizeLength(val), 0f, 60f, false)
+            {
+                valNoCallback = current.nextAnimationTimeRandomize
+            };
+            var randomizeRangeUI = prefabFactory.CreateSlider(_randomizeRangeJSON);
+            randomizeRangeUI.valueFormat = "F3";
+        }
+
+        private void ChangeRandomizeLength(float val)
+        {
+            current.nextAnimationTimeRandomize = current.preserveLoops ? val.RoundToNearest(current.animationLength) : val.Snap(animationEditContext.snap);
+            _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
         }
 
         private void InitPreviewUI()
@@ -215,6 +233,11 @@ namespace VamTimeline
             else
             {
                 _nextAnimationPreviewJSON.val = $"Will loop {Math.Round(current.nextAnimationTime / current.animationLength, 2)} times";
+            }
+
+            if (current.nextAnimationTimeRandomize > 0f)
+            {
+                _nextAnimationPreviewJSON.val += $"\nRandomized up to {Math.Round((current.nextAnimationTime + current.nextAnimationTimeRandomize) / current.animationLength, 2)} times";
             }
         }
 
@@ -358,6 +381,8 @@ namespace VamTimeline
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
+            _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
+            _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }

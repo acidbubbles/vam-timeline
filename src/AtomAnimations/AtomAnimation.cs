@@ -470,9 +470,13 @@ namespace VamTimeline
             if (next == null) return;
 
             var nextTime = source.nextAnimationTime;
-            if (next.preserveLoops && source.loop && next.loop)
+            if (source.preserveLoops && source.loop)
             {
                 nextTime = nextTime.RoundToNearest(source.animationLength) - next.blendInDuration + source.clipTime;
+            }
+            if (source.nextAnimationTimeRandomize > 0f)
+            {
+                nextTime = Random.Range(nextTime, nextTime + (source.preserveLoops ? source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) : source.nextAnimationTimeRandomize));
             }
             source.SetNext(next.animationName, nextTime);
         }

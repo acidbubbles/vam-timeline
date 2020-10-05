@@ -22,6 +22,7 @@ namespace VamTimeline
         private bool _preserveLoops = true;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
+        private float _nextAnimationTimeRandomize;
         private string _animationName;
         private string _animationLayer;
         private bool _ensureQuaternionContinuity = true;
@@ -281,6 +282,19 @@ namespace VamTimeline
                 if (_nextAnimationTime == value) return;
                 _nextAnimationTime = value;
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(nextAnimationTime));
+            }
+        }
+        public float nextAnimationTimeRandomize
+        {
+            get
+            {
+                return _nextAnimationTimeRandomize;
+            }
+            set
+            {
+                if (_nextAnimationTimeRandomize == value) return;
+                _nextAnimationTimeRandomize = value;
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(nextAnimationTimeRandomize));
             }
         }
         private float _speed = 1f;
