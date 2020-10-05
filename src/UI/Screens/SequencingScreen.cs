@@ -37,17 +37,17 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            CreateHeader("Options", 1);
+            prefabFactory.CreateHeader("Options", 1);
             InitSequenceMasterUI();
             InitAutoPlayUI();
 
-            CreateHeader("Sequencing", 1);
+            prefabFactory.CreateHeader("Sequencing", 1);
             InitSequenceUI();
             InitUninterruptibleUI();
             InitBlendUI();
             InitPreviewUI();
 
-            CreateHeader("Transition (auto keyframes)", 1);
+            prefabFactory.CreateHeader("Transition (auto keyframes)", 1);
             InitLoopUI();
             InitTransitionUI();
 

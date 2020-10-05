@@ -43,16 +43,16 @@ namespace VamTimeline
             InitRenameLayer();
             InitRenameAnimation();
 
-            CreateHeader("Speed", 1);
+            prefabFactory.CreateHeader("Speed", 1);
             InitPlaybackUI();
 
-            CreateHeader("Options", 1);
+            prefabFactory.CreateHeader("Options", 1);
             InitLoopUI();
 
-            CreateHeader("Length", 1);
+            prefabFactory.CreateHeader("Length", 1);
             InitAnimationLengthUI();
 
-            CreateHeader("Advanced", 1);
+            prefabFactory.CreateHeader("Advanced", 1);
             InitWeightUI();
             InitEnsureQuaternionContinuityUI();
             InitAnimationPatternLinkUI();

@@ -159,7 +159,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
 
             if (!hasTargets)
             {
-                _noTargetsUI = CreateHeader("No targets", 2);
+                _noTargetsUI = prefabFactory.CreateHeader("No targets", 2);
             }
             else
             {

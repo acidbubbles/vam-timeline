@@ -28,13 +28,13 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
-            CreateHeader($"Controller Settings", 1);
+            prefabFactory.CreateHeader($"Controller Settings", 1);
             if (_target == null)
             {
                 prefabFactory.CreateTextField(new JSONStorableString("", "Cannot show the selected target settings.\nPlease go back and re-enter this screen."));
                 return;
             }
-            CreateHeader(_target.name, 2);
+            prefabFactory.CreateHeader(_target.name, 2);
 
             InitParentUI();
         }

@@ -131,6 +131,11 @@ namespace VamTimeline
 
         private void DeleteAnimation()
         {
+            prefabFactory.CreateConfirm("Delete current animation", DeleteAnimationConfirm);
+        }
+
+        private void DeleteAnimationConfirm()
+        {
             try
             {
                 var anim = current;

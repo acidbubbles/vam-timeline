@@ -10,7 +10,6 @@ namespace VamTimeline
         public class ScreenChangeRequestedEvent : UnityEvent<ScreenChangeRequestEventArgs> { }
 
         protected static readonly Color navButtonColor = new Color(0.8f, 0.7f, 0.8f);
-        private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
 
         public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
         public Transform popupParent;
@@ -41,31 +40,6 @@ namespace VamTimeline
         {
         }
 
-        protected Text CreateHeader(string val, int level)
-        {
-            var headerUI = prefabFactory.CreateSpacer();
-            headerUI.height = 40f;
-
-            var text = headerUI.gameObject.AddComponent<Text>();
-            text.text = val;
-            text.font = _font;
-            switch (level)
-            {
-                case 1:
-                    text.fontSize = 30;
-                    text.fontStyle = FontStyle.Bold;
-                    text.color = new Color(0.95f, 0.9f, 0.92f);
-                    break;
-                case 2:
-                    text.fontSize = 28;
-                    text.fontStyle = FontStyle.Bold;
-                    text.color = new Color(0.85f, 0.8f, 0.82f);
-                    break;
-            }
-
-            return text;
-        }
-
         protected UIDynamicButton CreateChangeScreenButton(string label, string screenName)
         {
             var ui = prefabFactory.CreateButton(label);
@@ -81,6 +55,7 @@ namespace VamTimeline
 
         public virtual void OnDestroy()
         {
+            prefabFactory.ClearConfirm();
             _disposing = true;
             onScreenChangeRequested.RemoveAllListeners();
             plugin.animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);

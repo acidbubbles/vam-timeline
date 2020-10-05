@@ -19,13 +19,13 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            CreateHeader("Animations", 1);
+            prefabFactory.CreateHeader("Animations", 1);
 
             InitClipsUI();
 
             prefabFactory.CreateSpacer();
 
-            CreateHeader("Operations", 1);
+            prefabFactory.CreateHeader("Operations", 1);
 
             CreateChangeScreenButton("<i><b>Add</b> animations/layers...</i>", AddAnimationScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
@@ -39,14 +39,14 @@ namespace VamTimeline
 
             var layerName = animation.clips[0].animationLayer;
             if (hasLayers)
-                CreateHeader($"Layer: [{layerName}]", 2);
+                prefabFactory.CreateHeader($"Layer: [{layerName}]", 2);
 
             foreach (var clip in animation.clips)
             {
                 if (hasLayers && clip.animationLayer != layerName)
                 {
                     layerName = clip.animationLayer;
-                    CreateHeader($"Layer: [{layerName}]", 2);
+                    prefabFactory.CreateHeader($"Layer: [{layerName}]", 2);
                 }
 
                 InitAnimButton(clip);

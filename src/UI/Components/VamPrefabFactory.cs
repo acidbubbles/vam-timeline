@@ -115,7 +115,10 @@ namespace VamTimeline
             return go;
         }
 
+        private static readonly Font _font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+
         public IAtomPlugin plugin;
+        private GameObject _currentContainer;
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
 
         public VamPrefabFactory()
@@ -296,6 +299,103 @@ namespace VamTimeline
             }
 
             return textfield;
+        }
+
+        public Text CreateHeader(string val, int level)
+        {
+            var headerUI = CreateSpacer();
+            headerUI.height = 40f;
+
+            var text = headerUI.gameObject.AddComponent<Text>();
+            text.text = val;
+            text.font = _font;
+            switch (level)
+            {
+                case 1:
+                    text.fontSize = 30;
+                    text.fontStyle = FontStyle.Bold;
+                    text.color = new Color(0.95f, 0.9f, 0.92f);
+                    break;
+                case 2:
+                    text.fontSize = 28;
+                    text.fontStyle = FontStyle.Bold;
+                    text.color = new Color(0.85f, 0.8f, 0.82f);
+                    break;
+            }
+
+            return text;
+        }
+
+        public void ClearConfirm()
+        {
+            Destroy(_currentContainer);
+            _currentContainer = null;
+        }
+
+        public void CreateConfirm(string message, Action fn)
+        {
+            if (_currentContainer != null) throw new InvalidOperationException("Only one container can be shown at a time.");
+
+            var container = new GameObject();
+            container.transform.SetParent(transform.parent.parent, false);
+
+            {
+                var rect = container.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0f, 0f);
+                rect.anchorMax = new Vector2(1f, 1f);
+
+                var bg = container.AddComponent<Image>();
+                bg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+            }
+
+            var group = new GameObject();
+            group.transform.SetParent(container.transform, false);
+
+            {
+                var rect = group.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(1f, 0.5f);
+                rect.sizeDelta = new Vector2(0f, 200f);
+
+                var layout = group.AddComponent<VerticalLayoutGroup>();
+                layout.childControlHeight = true;
+                layout.childForceExpandHeight = true;
+                layout.spacing = 10f;
+            }
+
+            {
+                var text = CreateHeader(message, 2);
+                text.alignment = TextAnchor.MiddleCenter;
+                text.transform.SetParent(group.transform, false);
+            }
+
+            {
+                var btn = CreateButton("Confirm");
+                btn.transform.SetParent(group.transform, false);
+
+                btn.buttonColor = new Color(1f, 0f, 0f);
+                btn.textColor = new Color(1f, 1f, 1f);
+
+                btn.button.onClick.AddListener(() =>
+                {
+                    _currentContainer = null;
+                    Destroy(container);
+                    fn();
+                });
+            }
+
+            {
+                var btn = CreateButton("Cancel");
+                btn.transform.SetParent(group.transform, false);
+
+                btn.button.onClick.AddListener(() =>
+                {
+                    _currentContainer = null;
+                    Destroy(container);
+                });
+            }
+
+            _currentContainer = container;
         }
 
         public void OnDestroy()

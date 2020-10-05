@@ -35,29 +35,29 @@ namespace VamTimeline
 
             CreateChangeScreenButton($"<b><</b> <i>Back to {TargetsScreen.ScreenName}</i>", TargetsScreen.ScreenName);
 
-            CreateHeader("Add/remove targets", 1);
+            prefabFactory.CreateHeader("Add/remove targets", 1);
 
             prefabFactory.CreateSpacer();
 
-            CreateHeader("Triggers", 2);
+            prefabFactory.CreateHeader("Triggers", 2);
 
             InitTriggersUI();
 
             prefabFactory.CreateSpacer();
 
-            CreateHeader("Controllers", 2);
+            prefabFactory.CreateHeader("Controllers", 2);
 
             InitControllersUI();
 
             prefabFactory.CreateSpacer();
 
-            CreateHeader("Storable floats", 2);
+            prefabFactory.CreateHeader("Storable floats", 2);
 
             InitFloatParamsUI();
 
             prefabFactory.CreateSpacer();
 
-            CreateHeader("Manage", 2);
+            prefabFactory.CreateHeader("Manage", 2);
 
             InitFixMissingUI();
             InitRemoveUI();

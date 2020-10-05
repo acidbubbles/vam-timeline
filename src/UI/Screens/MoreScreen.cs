@@ -18,7 +18,7 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            CreateHeader("More options", 1);
+            prefabFactory.CreateHeader("More options", 1);
 
             CreateChangeScreenButton("<b>Import / export</b> animations...", ImportExportScreen.ScreenName);
             CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName);
