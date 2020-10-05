@@ -371,6 +371,7 @@ namespace VamTimeline
 
         private void UpdateValues()
         {
+            _masterJSON.valNoCallback = animation.master;
             _autoPlayJSON.valNoCallback = current.autoPlay;
             _blendDurationJSON.valNoCallback = current.blendInDuration;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
