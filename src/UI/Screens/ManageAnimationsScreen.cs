@@ -164,6 +164,11 @@ namespace VamTimeline
 
         private void DeleteLayer()
         {
+            prefabFactory.CreateConfirm("Delete current layer", DeleteLayerConfirm);
+        }
+
+        private void DeleteLayerConfirm()
+        {
             try
             {
                 if (!animation.EnumerateLayers().Skip(1).Any())

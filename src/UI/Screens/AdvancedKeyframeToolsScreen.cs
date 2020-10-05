@@ -52,7 +52,7 @@ namespace VamTimeline
 
         private void RemoveAllKeyframes()
         {
-            operations.Keyframes().RemoveAll(animationEditContext.GetAllOrSelectedTargets());
+            prefabFactory.CreateConfirm("Delete all keyframes", () => operations.Keyframes().RemoveAll(animationEditContext.GetAllOrSelectedTargets()));
         }
 
         private void ReverseAnimation()
