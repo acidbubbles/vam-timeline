@@ -43,11 +43,22 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove all keyframes");
-            removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
-
             var reverseAnimationUI = prefabFactory.CreateButton("Reverse keyframes");
             reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
+
+            prefabFactory.CreateSpacer();
+
+            var removeAllKeyframesUI = prefabFactory.CreateButton("Remove all keyframes");
+            removeAllKeyframesUI.buttonColor = Color.yellow;
+            removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
+
+            prefabFactory.CreateSpacer();
+
+            var clearAllUI = prefabFactory.CreateButton("Delete all animations (reset)");
+            clearAllUI.buttonColor = new Color(1f, 0f, 0f);
+            clearAllUI.textColor = new Color(1f, 1f, 1f);
+            clearAllUI.button.onClick.AddListener(() => ClearAll());
+
         }
 
         private void RemoveAllKeyframes()
@@ -180,6 +191,20 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(StopWhenPlaybackIsComplete)}: {exc}");
             }
+        }
+
+        private void ClearAll()
+        {
+            if (!animationEditContext.CanEdit()) return;
+            prefabFactory.CreateConfirm("Delete all animations", ClearAllConfirm);
+        }
+
+        private void ClearAllConfirm()
+        {
+            while (animation.clips.Count > 0)
+                animation.RemoveClip(animation.clips[0]);
+            animationEditContext.Initialize();
+            animationEditContext.SelectAnimation(animation.clips[0]);
         }
     }
 }
