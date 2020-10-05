@@ -334,7 +334,6 @@ namespace VamTimeline
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
             }
 
-            SuperController.LogMessage($"Nexts: {string.Join(", ", animation.clips.Select(x => $"{x.nextAnimationName}").ToArray())}");
             RefreshTransitionUI();
         }
 
