@@ -157,6 +157,7 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendMasterClipState), // 0
                  clip.animationName, // 1
+                 clip.clipTime, //2
             });
         }
 

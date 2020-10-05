@@ -405,14 +405,16 @@ namespace VamTimeline
             if (to == null) throw new ArgumentNullException(nameof(to));
 
             from.SetNext(null, float.NaN);
-            Blend(from, 0f, to.blendInDuration);
-            from.playbackMainInLayer = false;
-            Blend(to, 1f, to.blendInDuration);
-            to.playbackMainInLayer = true;
+
             if (to.playbackWeight == 0)
             {
                 to.clipTime = to.loop && to.preserveLoops ? from.clipTime : 0f;
             }
+
+            Blend(from, 0f, to.blendInDuration);
+            from.playbackMainInLayer = false;
+            Blend(to, 1f, to.blendInDuration);
+            to.playbackMainInLayer = true;
 
             if (sequencing)
             {

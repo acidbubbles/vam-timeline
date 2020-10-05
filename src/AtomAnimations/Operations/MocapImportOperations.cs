@@ -35,7 +35,7 @@ namespace VamTimeline
                 var key = target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
                 if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
                 {
-                    target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear, _clip.loop);
+                    target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);
                 }
                 lastRecordedFrame = time;
                 previousStep = step;

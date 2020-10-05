@@ -6,7 +6,7 @@ namespace VamTimeline
     {
         BezierAnimationCurve GetLeadCurve();
         IEnumerable<BezierAnimationCurve> GetCurves();
-        void ChangeCurve(float time, int curveType, bool loop);
+        void ChangeCurve(float time, int curveType, bool dirty = true);
         int GetKeyframeCurveType(float time);
     }
 }

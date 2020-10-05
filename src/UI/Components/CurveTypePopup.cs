@@ -54,7 +54,7 @@ namespace VamTimeline
             var curveType = CurveTypeValues.ToInt(val);
 
             foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
-                target.ChangeCurve(time, curveType, _current.loop);
+                target.ChangeCurve(time, curveType);
 
             if (curveType == CurveTypeValues.CopyPrevious)
                 _animationEditContext.Sample();

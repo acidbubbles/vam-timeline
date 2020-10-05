@@ -201,7 +201,7 @@ namespace VamTimeline
                         var keyTime = leadCurve.GetKeyframe(key).time;
                         if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)
                         {
-                            target.ChangeCurve(keyTime, CurveTypeValues.ToInt(val), current.loop);
+                            target.ChangeCurve(keyTime, CurveTypeValues.ToInt(val));
                         }
                     }
                 }
