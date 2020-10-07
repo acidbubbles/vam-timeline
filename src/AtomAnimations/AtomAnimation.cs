@@ -545,6 +545,12 @@ namespace VamTimeline
         {
             if (controller == null) return;
             if (controller.possessed) return;
+            var control = controller.control;
+            if (control == null) return;
+
+            var weightedPositionSum = Vector3.zero;
+            var totalWeight = 0f;
+            var count = 0f;
 
             foreach (var target in targets)
             {
@@ -554,8 +560,6 @@ namespace VamTimeline
                 var weight = clip.playbackWeight * target.scaledWeight;
                 if (weight == 0) continue;
 
-                var control = controller.control;
-                if (control == null) continue;
                 if (!target.EnsureParentAvailable()) return;
                 Rigidbody link = target.GetLinkedRigidbody();
 
@@ -579,17 +583,21 @@ namespace VamTimeline
                 {
                     var targetPosition = target.EvaluatePosition(clip.clipTime);
                     if (link != null)
-                    {
                         targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
-                        var position = Vector3.Lerp(control.position, targetPosition, weight);
-                        control.position = position;
-                    }
                     else
-                    {
-                        var localPosition = Vector3.Lerp(control.localPosition, targetPosition, weight);
-                        control.localPosition = localPosition;
-                    }
+                        targetPosition = controller.transform.parent.position + controller.transform.parent.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
+                    weightedPositionSum += targetPosition * clip.playbackWeight;
+                    totalWeight += clip.playbackWeight;
+                    count++;
                 }
+            }
+
+            if (totalWeight > 0 && controller.currentPositionState != FreeControllerV3.PositionState.Off)
+            {
+                var targetPosition = weightedPositionSum / totalWeight;
+                var targetWeight = totalWeight / count;
+                var position = Vector3.Lerp(control.position, targetPosition, targetWeight);
+                control.position = position;
             }
         }
 
