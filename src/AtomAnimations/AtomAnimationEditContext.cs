@@ -194,11 +194,13 @@ namespace VamTimeline
 
         private IEnumerable<AtomAnimationClip> GetMainClipPerLayer()
         {
-            return animation.clips
-                .GroupBy(c => c.animationLayer)
+            return animation.index
+                .ByLayer()
                 .Select(g =>
                 {
-                    return g.Key == current.animationLayer ? current : (g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.animationName == current.animationName) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First());
+                    return g.Key == current.animationLayer
+                        ? current
+                        : (g.Value.FirstOrDefault(c => c.playbackMainInLayer) ?? g.Value.FirstOrDefault(c => c.animationName == current.animationName) ?? g.Value.FirstOrDefault(c => c.autoPlay) ?? g.Value[0]);
                 });
         }
 

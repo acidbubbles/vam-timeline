@@ -90,8 +90,7 @@ namespace VamTimeline
 
         public AtomAnimationClip GetDefaultClip()
         {
-            var firstLayer = clips[0].animationLayer;
-            return clips.TakeWhile(c => c.animationLayer == firstLayer).FirstOrDefault(c => c.animationLayer == firstLayer && c.autoPlay) ?? clips[0];
+            return index.ByLayer(clips[0].animationLayer).FirstOrDefault(c => c.autoPlay) ?? clips[0];
         }
 
         public bool IsEmpty()
@@ -243,7 +242,7 @@ namespace VamTimeline
                 this.sequencing = this.sequencing || sequencing;
             }
             if (sequencing && !clip.playbackEnabled) clip.clipTime = 0;
-            var previousMain = clips.FirstOrDefault(c => c.playbackMainInLayer && c.animationLayer == clip.animationLayer);
+            var previousMain = index.ByLayer(clip.animationLayer).FirstOrDefault(c => c.playbackMainInLayer);
             if (previousMain != null && previousMain != clip)
             {
                 if (previousMain.uninterruptible)
@@ -455,8 +454,9 @@ namespace VamTimeline
             string group;
             if (source.nextAnimationName == RandomizeAnimationName)
             {
-                var candidates = clips
-                    .Where(c => c.animationName != source.animationName && c.animationLayer == source.animationLayer)
+                var candidates = index
+                    .ByLayer(source.animationLayer)
+                    .Where(c => c.animationName != source.animationName)
                     .ToList();
                 if (candidates.Count == 0) return;
                 var idx = Random.Range(0, candidates.Count);
@@ -464,8 +464,9 @@ namespace VamTimeline
             }
             else if (TryGetRandomizedGroup(source.nextAnimationName, out group))
             {
-                var candidates = clips
-                    .Where(c => c.animationName != source.animationName && c.animationLayer == source.animationLayer)
+                var candidates = index
+                    .ByLayer(source.animationLayer)
+                    .Where(c => c.animationName != source.animationName)
                     .Where(c => c.animationNameGroup == group)
                     .ToList();
                 if (candidates.Count == 0) return;

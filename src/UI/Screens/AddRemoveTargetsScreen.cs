@@ -77,9 +77,9 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            if (animation.clips.Where(c => c.animationLayer == current.animationLayer).Count() <= 1) return;
+            if (animation.index.ByLayer(current.animationLayer).Count() <= 1) return;
 
-            foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+            foreach (var clip in animation.index.ByLayer(current.animationLayer))
             {
                 foreach (var target in clip.targetFloatParams)
                 {
@@ -91,8 +91,9 @@ namespace VamTimeline
                 .Where(t => !(t is TriggersAnimationTarget))
                 .Select(t => t.name)
                 .OrderBy(x => x);
-            var otherList = animation.clips
-                .Where(c => c != current && c.animationLayer == current.animationLayer)
+            var otherList = animation.index
+                .ByLayer(current.animationLayer)
+                .Where(c => c != current)
                 .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersAnimationTarget)))
                 .Select(t => t.name)
                 .Distinct()
@@ -282,7 +283,7 @@ namespace VamTimeline
             foreach (var s in selected)
             {
                 // We remove every selected target on every clip on the current layer, except triggers
-                foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayer))
                 {
                     var target = clip.GetAllTargets().Where(t => !(t is TriggersAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
                     if (target == null) continue;
@@ -346,15 +347,15 @@ namespace VamTimeline
         {
             try
             {
-                var allControllers = animation.clips
-                    .Where(c => c.animationLayer == current.animationLayer)
+                var allControllers = animation.index
+                    .ByLayer(current.animationLayer)
                     .SelectMany(c => c.targetControllers)
                     .Select(t => t.controller)
                     .Distinct()
                     .ToList();
                 var h = new HashSet<JSONStorableFloat>();
-                var allFloatParams = animation.clips
-                    .Where(c => c.animationLayer == current.animationLayer)
+                var allFloatParams = animation.index
+                    .ByLayer(current.animationLayer)
                     .SelectMany(c => c.targetFloatParams)
                     .Where(t => t.EnsureAvailable(false))
                     .Where(t => h.Add(t.floatParam))
@@ -421,7 +422,7 @@ namespace VamTimeline
                     controller.currentRotationState = FreeControllerV3.RotationState.On;
                 }
 
-                foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayer))
                 {
                     var added = clip.Add(controller);
                     if (added != null)
@@ -468,7 +469,7 @@ namespace VamTimeline
                 if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
 
-                foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayer))
                 {
                     var added = clip.Add(storable, sourceFloatParam);
                     if (added == null) continue;
@@ -487,7 +488,7 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayer))
                     clip.Remove(target.controller);
             }
             catch (Exception exc)
@@ -500,7 +501,7 @@ namespace VamTimeline
         {
             try
             {
-                foreach (var clip in animation.clips.Where(c => c.animationLayer == current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayer))
                     clip.Remove(target.storable, target.floatParam);
             }
             catch (Exception exc)

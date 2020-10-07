@@ -274,13 +274,13 @@ namespace VamTimeline
             {
                 new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd((float)e[3]);
                 var nextAnimationName = (string)e[4];
-                if (!string.IsNullOrEmpty(nextAnimationName) && animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.animationName == nextAnimationName))
+                if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextAnimationName))
                 {
                     clip.nextAnimationName = nextAnimationName;
                     clip.nextAnimationTime = 0f; // Will be managed by the master setting
                     clip.autoTransitionNext = (bool)e[10];
                 }
-                if (animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.nextAnimationName == clip.animationName))
+                if (animation.index.ByLayer(clip.animationLayer).Any(c => c.nextAnimationName == clip.animationName))
                 {
                     clip.autoTransitionPrevious = (bool)e[9];
                 }

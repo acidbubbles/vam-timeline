@@ -176,10 +176,18 @@ namespace VamTimeline
                     SuperController.LogError("Timeline: Cannot delete the only layer.");
                     return;
                 }
-                var clips = animation.clips.Where(c => c.animationLayer == current.animationLayer).ToList();
+                var clips = animation.index.ByLayer(current.animationLayer);
                 animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer));
-                foreach (var clip in clips)
-                    animation.RemoveClip(clip);
+                animation.index.StartBulkUpdates();
+                try
+                {
+                    foreach (var clip in clips)
+                        animation.RemoveClip(clip);
+                }
+                finally
+                {
+                    animation.index.EndBulkUpdates();
+                }
             }
             catch (Exception exc)
             {

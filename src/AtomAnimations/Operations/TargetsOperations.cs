@@ -17,7 +17,7 @@ namespace VamTimeline
         {
             FreeControllerAnimationTarget target = _clip.targetControllers.FirstOrDefault(t => t.controller == fc);
             if (target != null) return target;
-            foreach (var clip in _animation.clips.Where(c => c.animationLayer == _clip.animationLayer))
+            foreach (var clip in _animation.index.ByLayer(_clip.animationLayer))
             {
                 var t = clip.Add(fc);
                 if (t == null) continue;

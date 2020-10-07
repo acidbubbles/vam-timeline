@@ -33,7 +33,7 @@ namespace VamTimeline
 
             foreach (var clip in importedClips)
             {
-                if (clip.autoPlay && _animation.clips.Any(c => c.animationLayer == clip.animationLayer && c.autoPlay))
+                if (clip.autoPlay && _animation.index.ByLayer(clip.animationLayer).Any(c => c.autoPlay))
                 {
                     clip.autoPlay = false;
                 }
@@ -78,7 +78,7 @@ namespace VamTimeline
                     }
                 }
             }
-            else if (_animation.clips.Any(c => c.animationLayer == clip.animationLayer))
+            else if (_animation.index.ByLayer(clip.animationLayer).Any())
             {
                 clip.animationLayer = new LayersOperations(_animation, clip).GetNewLayerName();
             }
