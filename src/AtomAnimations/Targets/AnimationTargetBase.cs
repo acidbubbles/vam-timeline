@@ -8,6 +8,8 @@ namespace VamTimeline
         public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
 
+        public AtomAnimationClip clip;
+
         private int _bulk;
         private bool _dirty = true;
 

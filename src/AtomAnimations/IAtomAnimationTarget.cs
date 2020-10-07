@@ -9,6 +9,7 @@ namespace VamTimeline
         UnityEvent onAnimationKeyframesRebuilt { get; }
         bool dirty { get; set; }
         string name { get; }
+        IAtomAnimationClip clip { get; set; }
 
         void Validate(float animationLength);
 
