@@ -10,6 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace VamTimeline
 {
+
     public class AtomAnimation : MonoBehaviour
     {
         public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
@@ -28,7 +29,8 @@ namespace VamTimeline
         public IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
 
-        public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
+        private readonly List<AtomAnimationClip> _clips = new List<AtomAnimationClip>();
+        public List<AtomAnimationClip> clips { get { return _clips; } }
         public bool isPlaying { get; private set; }
         public bool isSampling { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
@@ -78,8 +80,12 @@ namespace VamTimeline
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
 
+        private readonly AtomAnimationsClipsIndex _index;
+        public AtomAnimationsClipsIndex index { get { return _index; } }
+
         public AtomAnimation()
         {
+            _index = new AtomAnimationsClipsIndex(_clips);
         }
 
         public AtomAnimationClip GetDefaultClip()
@@ -121,9 +127,10 @@ namespace VamTimeline
                 clips.Insert(lastIndexOfLayer + 1, clip);
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
-            clip.onTargetsListChanged.AddListener(OnAnimationKeyframesDirty);
+            clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
             onClipsListChanged.Invoke();
             if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
+            index.Rebuild();
             return clip;
         }
 
@@ -147,6 +154,7 @@ namespace VamTimeline
             clip.Dispose();
             onClipsListChanged.Invoke();
             OnAnimationKeyframesDirty();
+            index.Rebuild();
         }
 
         private string GetNewAnimationName(AtomAnimationClip source)
@@ -713,6 +721,7 @@ namespace VamTimeline
 
         private void OnAnimationSettingsChanged(string param)
         {
+            index.Rebuild();
             onAnimationSettingsChanged.Invoke();
             if (param == nameof(AtomAnimationClip.animationName) || param == nameof(AtomAnimationClip.animationLayer))
                 onClipsListChanged.Invoke();
@@ -724,6 +733,12 @@ namespace VamTimeline
             if (_animationRebuildRequestPending) return;
             _animationRebuildRequestPending = true;
             StartCoroutine(RebuildDeferred());
+        }
+
+        private void OnTargetsListChanged()
+        {
+            index.Rebuild();
+            OnAnimationKeyframesDirty();
         }
 
         #endregion

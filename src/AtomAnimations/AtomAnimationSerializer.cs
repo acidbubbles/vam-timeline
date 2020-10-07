@@ -32,12 +32,20 @@ namespace VamTimeline
             animation.speed = DeserializeFloat(animationJSON["Speed"], 1f);
             animation.master = DeserializeBool(animationJSON["Master"], false);
 
-            var clipsJSON = animationJSON["Clips"].AsArray;
-            if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
-            foreach (JSONClass clipJSON in clipsJSON)
+            animation.index.StartBulkUpdates();
+            try
             {
-                var clip = DeserializeClip(clipJSON);
-                animation.AddClip(clip);
+                var clipsJSON = animationJSON["Clips"].AsArray;
+                if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
+                foreach (JSONClass clipJSON in clipsJSON)
+                {
+                    var clip = DeserializeClip(clipJSON);
+                    animation.AddClip(clip);
+                }
+            }
+            finally
+            {
+                animation.index.EndBulkUpdates();
             }
         }
 

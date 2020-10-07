@@ -17,10 +17,18 @@ namespace VamTimeline
         public void ImportClips(IEnumerable<AtomAnimationClip> clips)
         {
             var importedClips = new List<AtomAnimationClip>();
-            foreach (var clip in clips.SelectMany(c => ImportClip(c)))
+            _animation.index.StartBulkUpdates();
+            try
             {
-                _animation.AddClip(clip);
-                importedClips.Add(clip);
+                foreach (var clip in clips.SelectMany(c => ImportClip(c)))
+                {
+                    _animation.AddClip(clip);
+                    importedClips.Add(clip);
+                }
+            }
+            finally
+            {
+                _animation.index.EndBulkUpdates();
             }
 
             foreach (var clip in importedClips)
