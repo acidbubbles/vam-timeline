@@ -82,5 +82,10 @@ namespace VamTimeline
         {
             return _clipsByLayer[layer];
         }
+
+        public IEnumerable<KeyValuePair<FreeControllerV3, List<FreeControllerAnimationTarget>>> ByController()
+        {
+            return _clipsByController;
+        }
     }
 }

@@ -15,22 +15,21 @@ namespace VamTimeline
         public readonly List<BezierAnimationCurve> curves;
 
         private float _weight = 1f;
-        protected float _scaledWeight = 1f;
+        public float scaledWeight { get; private set; } = 1f;
         public float weight
         {
             get
             {
                 return _weight;
             }
-
             set
             {
                 _weight = value;
-                _scaledWeight = value.ExponentialScale(0.1f, 1f);
+                scaledWeight = value.ExponentialScale(0.1f, 1f);
             }
         }
 
-        public bool playbackEnabled = true;
+        public bool playbackEnabled { get; set; } = true;
 
         public TransformAnimationTargetBase()
         {

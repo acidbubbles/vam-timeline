@@ -113,51 +113,6 @@ namespace VamTimeline
             return name;
         }
 
-        public void Sample(float clipTime, float weight)
-        {
-            if (!playbackEnabled) return;
-            weight *= _scaledWeight;
-            if (weight == 0) return;
-
-            var control = controller?.control;
-            if (control == null) return;
-            if (controller.possessed) return;
-            if (!EnsureParentAvailable()) return;
-            Rigidbody link = GetLinkedRigidbody();
-
-            if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
-            {
-                var targetRotation = EvaluateRotation(clipTime);
-                if (link != null)
-                {
-                    targetRotation = link.rotation * targetRotation;
-                    var rotation = Quaternion.Slerp(control.rotation, targetRotation, weight);
-                    control.rotation = rotation;
-                }
-                else
-                {
-                    var localRotation = Quaternion.Slerp(control.localRotation, targetRotation, weight);
-                    control.localRotation = localRotation;
-                }
-            }
-
-            if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
-            {
-                var targetPosition = EvaluatePosition(clipTime);
-                if (link != null)
-                {
-                    targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
-                    var position = Vector3.Lerp(control.position, targetPosition, weight);
-                    control.position = position;
-                }
-                else
-                {
-                    var localPosition = Vector3.Lerp(control.localPosition, targetPosition, weight);
-                    control.localPosition = localPosition;
-                }
-            }
-        }
-
         public override void SelectInVam()
         {
             base.SelectInVam();

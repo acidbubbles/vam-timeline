@@ -370,8 +370,8 @@ namespace VamTimeline
         #region Animation State
 
         private float _clipTime;
-        public float playbackWeight;
-        public bool playbackEnabled;
+        public float playbackWeight { get; set; }
+        public bool playbackEnabled { get; set; }
         public bool playbackMainInLayer;
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;

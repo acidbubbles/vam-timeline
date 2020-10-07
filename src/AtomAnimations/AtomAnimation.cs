@@ -535,12 +535,60 @@ namespace VamTimeline
 
         private void SampleControllers()
         {
-            foreach (var clip in clips)
+            foreach (var x in index.ByController())
             {
+                SampleController(x.Key, x.Value);
+            }
+        }
+
+        private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets)
+        {
+            if (controller == null) return;
+            if (controller.possessed) return;
+
+            foreach (var target in targets)
+            {
+                var clip = target.clip;
                 if (!clip.playbackEnabled) continue;
-                foreach (var target in clip.targetControllers)
+                if (!target.playbackEnabled) continue;
+                var weight = clip.playbackWeight * target.scaledWeight;
+                if (weight == 0) continue;
+
+                var control = controller.control;
+                if (control == null) continue;
+                if (!target.EnsureParentAvailable()) return;
+                Rigidbody link = target.GetLinkedRigidbody();
+
+                if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
-                    target.Sample(clip.clipTime, clip.playbackWeight);
+                    var targetRotation = target.EvaluateRotation(clip.clipTime);
+                    if (link != null)
+                    {
+                        targetRotation = link.rotation * targetRotation;
+                        var rotation = Quaternion.Slerp(control.rotation, targetRotation, weight);
+                        control.rotation = rotation;
+                    }
+                    else
+                    {
+                        var localRotation = Quaternion.Slerp(control.localRotation, targetRotation, weight);
+                        control.localRotation = localRotation;
+                    }
+                }
+
+                if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
+                {
+                    var targetPosition = target.EvaluatePosition(clip.clipTime);
+                    if (link != null)
+                    {
+                        targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
+                        var position = Vector3.Lerp(control.position, targetPosition, weight);
+                        control.position = position;
+                    }
+                    else
+                    {
+                        var localPosition = Vector3.Lerp(control.localPosition, targetPosition, weight);
+                        control.localPosition = localPosition;
+                    }
                 }
             }
         }
