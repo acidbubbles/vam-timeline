@@ -546,8 +546,9 @@ namespace VamTimeline
                 if (weight < float.Epsilon) continue;
 
                 var value = target.value.Evaluate(clip.clipTime);
-                weightedSum += value * clip.playbackBlendWeight;
-                totalBlendWeights += clip.playbackBlendWeight;
+                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
+                weightedSum += value * smoothBlendWeight;
+                totalBlendWeights += smoothBlendWeight;
             }
             if (totalBlendWeights > 0)
                 floatParam.val = weightedSum / totalBlendWeights;
@@ -596,6 +597,8 @@ namespace VamTimeline
                 if (!target.EnsureParentAvailable()) return;
                 Rigidbody link = target.GetLinkedRigidbody();
 
+                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
+
                 if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
                     var targetRotation = target.EvaluateRotation(clip.clipTime);
@@ -609,9 +612,9 @@ namespace VamTimeline
                         // TODO: Make absolute
                         _rotations[rotationCount] = control.transform.parent.rotation * targetRotation;
                     }
-                    _rotationBlendWeights[rotationCount] = clip.playbackBlendWeight;
-                    totalRotationBlendWeights += clip.playbackBlendWeight;
-                    totalRotationControlWeights += weight * clip.playbackBlendWeight;
+                    _rotationBlendWeights[rotationCount] = smoothBlendWeight;
+                    totalRotationBlendWeights += smoothBlendWeight;
+                    totalRotationControlWeights += weight * smoothBlendWeight;
                     rotationCount++;
                 }
 
@@ -622,9 +625,9 @@ namespace VamTimeline
                         targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
                     else
                         targetPosition = controller.transform.parent.position + controller.transform.parent.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
-                    weightedPositionSum += targetPosition * clip.playbackBlendWeight;
-                    totalPositionBlendWeights += clip.playbackBlendWeight;
-                    totalPositionControlWeights += weight * clip.playbackBlendWeight;
+                    weightedPositionSum += targetPosition * smoothBlendWeight;
+                    totalPositionBlendWeights += smoothBlendWeight;
+                    totalPositionControlWeights += weight * smoothBlendWeight;
                 }
             }
 
