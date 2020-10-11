@@ -149,6 +149,7 @@ namespace VamTimeline
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            animationEditContext.animation.paused = true;
             UpdateScrubberFromView(eventData);
         }
 
@@ -159,6 +160,7 @@ namespace VamTimeline
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            animationEditContext.animation.paused = false;
             UpdateScrubberFromView(eventData, true);
         }
 

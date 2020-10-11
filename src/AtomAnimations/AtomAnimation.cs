@@ -32,6 +32,7 @@ namespace VamTimeline
         private readonly List<AtomAnimationClip> _clips = new List<AtomAnimationClip>();
         public List<AtomAnimationClip> clips { get { return _clips; } }
         public bool isPlaying { get; private set; }
+        public bool paused { get; set; }
         public bool isSampling { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
@@ -503,7 +504,7 @@ namespace VamTimeline
 
         public void Sample()
         {
-            if (isPlaying || !enabled) return;
+            if ((isPlaying && !paused) || !enabled) return;
 
             SampleFloatParams();
             SampleControllers();
@@ -841,7 +842,7 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (!allowAnimationProcessing) return;
+            if (!allowAnimationProcessing || paused) return;
 
             SampleFloatParams();
             SampleTriggers();
@@ -879,7 +880,7 @@ namespace VamTimeline
 
         public void FixedUpdate()
         {
-            if (!allowAnimationProcessing) return;
+            if (!allowAnimationProcessing || paused) return;
 
             SetPlayTime(playTime + Time.fixedDeltaTime * _speed);
 

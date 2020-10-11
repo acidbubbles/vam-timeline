@@ -90,7 +90,7 @@ namespace VamTimeline
                     clip.clipTime = value;
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
                 }
-                if (!animation.isPlaying)
+                if (!animation.isPlaying || animation.paused)
                     Sample();
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
