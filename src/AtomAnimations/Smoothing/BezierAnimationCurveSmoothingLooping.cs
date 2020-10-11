@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace VamTimeline
@@ -16,7 +17,7 @@ namespace VamTimeline
             // Using improvements on near keyframes: http://www.jacos.nl/jacos_html/spline/
             // Looped version: http://www.jacos.nl/jacos_html/spline/circular/index.html
             var n = keys.Count - 1;
-            ComputeTimeAndDistance(keys);
+            // ComputeTimeAndDistance(keys);
             InitializeArrays(n);
             Weighting(keys, n);
             InternalSegments(keys, n);
@@ -24,6 +25,8 @@ namespace VamTimeline
             ComputeP2FromP1(keys, n);
             AssignComputedControlPointsToKeyframes(keys, n);
         }
+
+        [MethodImpl(256)]
         private void InitializeArrays(int n)
         {
             if (_w == null || _w.Length < n + 1)
@@ -41,6 +44,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         private void Weighting(List<BezierKeyframe> keys, int n)
         {
             for (var i = 0; i < n; i++)
@@ -50,6 +54,7 @@ namespace VamTimeline
             _w[n] = _w[0];
         }
 
+        [MethodImpl(256)]
         private void InternalSegments(List<BezierKeyframe> keys, int n)
         {
             for (var i = 0; i < n; i++)
@@ -63,6 +68,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         private void ThomasAlgorithm(int n)
         /* solves Ax=r by Guassian elimination (for a matrix that has many zeros)
            r: right-hand vector
@@ -156,6 +162,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         private void ComputeP2FromP1(List<BezierKeyframe> keys, int n)
         {
             _p1[n] = _p1[0];

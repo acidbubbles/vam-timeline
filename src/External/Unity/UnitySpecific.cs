@@ -7,8 +7,8 @@ using VamTimeline;
 /// </summary>
 public static class UnitySpecific
 {
-    const float kDefaultWeight = 1.0f / 3.0f;
-    const float kCurveTimeEpsilon = 0.00001f;
+    // const float kDefaultWeight = 1.0f / 3.0f;
+    // const float kCurveTimeEpsilon = 0.00001f;
 
     private static Quaternion GetValue(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, int key)
     {

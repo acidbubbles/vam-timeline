@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using UnityEngine;
+using System.Runtime.CompilerServices;
 
 namespace VamTimeline
 {
@@ -15,6 +15,7 @@ namespace VamTimeline
         // protected float _totalTime;
         // protected float _totalDistance;
 
+        [MethodImpl(256)]
         protected float Weighting(BezierKeyframe k1, BezierKeyframe k2)
         {
             return k2.time - k1.time;
@@ -22,17 +23,18 @@ namespace VamTimeline
             // return Vector2.Distance(new Vector2(1f - (k1.time / _totalTime), k1.value / _totalDistance), new Vector2(1f - (k2.time / _totalTime), k2.value / _totalDistance));
         }
 
-        protected void ComputeTimeAndDistance(List<BezierKeyframe> keys)
-        {
-            // _totalTime = 0f;
-            // _totalDistance = 0f;
-            // for (var i = 1; i < keys.Count; i++)
-            // {
-            //     _totalTime += keys[i].time - keys[i - 1].time;
-            //     _totalDistance += Mathf.Abs(keys[i].value - keys[i - 1].value);
-            // }
-        }
+        // protected void ComputeTimeAndDistance(List<BezierKeyframe> keys)
+        // {
+        //     _totalTime = 0f;
+        //     _totalDistance = 0f;
+        //     for (var i = 1; i < keys.Count; i++)
+        //     {
+        //         _totalTime += keys[i].time - keys[i - 1].time;
+        //         _totalDistance += Mathf.Abs(keys[i].value - keys[i - 1].value);
+        //     }
+        // }
 
+        [MethodImpl(256)]
         protected void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)
         {
             if (keys[0].curveType != CurveTypeValues.LeaveAsIs)

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
@@ -522,6 +523,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         private void SampleFloatParams()
         {
             foreach (var clip in clips)
@@ -544,6 +546,7 @@ namespace VamTimeline
 
         private Quaternion[] _rotations = new Quaternion[0];
         private float[] _rotationBlendWeights = new float[0];
+        [MethodImpl(256)]
         private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets)
         {
             if (controller == null) return;
@@ -626,9 +629,9 @@ namespace VamTimeline
                     var cumulative = Vector4.zero;
                     for (var i = 0; i < rotationCount; i++)
                     {
-                        QuaternionExtensions.AverageQuaternion(ref cumulative, _rotations[i], _rotations[0], _rotationBlendWeights[i] / totalRotationBlendWeights);
+                        QuaternionUtil.AverageQuaternion(ref cumulative, _rotations[i], _rotations[0], _rotationBlendWeights[i] / totalRotationBlendWeights);
                     }
-                    targetRotation = QuaternionExtensions.FromVector(cumulative);
+                    targetRotation = QuaternionUtil.FromVector(cumulative);
                 }
                 else
                 {

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using UnityEngine;
+using System.Runtime.CompilerServices;
 
 namespace VamTimeline
 {
@@ -16,7 +16,7 @@ namespace VamTimeline
             // Based on: https://www.particleincell.com/2012/bezier-splines/
             // Using improvements on near keyframes: http://www.jacos.nl/jacos_html/spline/
             var n = keys.Count - 1;
-            ComputeTimeAndDistance(keys);
+            // ComputeTimeAndDistance(keys);
             InitializeArrays(n);
             Weighting(keys, n);
             InternalSegments(keys, n);
@@ -25,6 +25,7 @@ namespace VamTimeline
             AssignComputedControlPointsToKeyframes(keys, n);
         }
 
+        [MethodImpl(256)]
         private void InitializeArrays(int n)
         {
             if (_w == null || _w.Length < n + 1)
@@ -43,6 +44,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         private void Weighting(List<BezierKeyframe> keys, int n)
         {
             for (var i = 0; i < n; i++)
@@ -52,6 +54,7 @@ namespace VamTimeline
             _w[n] = _w[n - 1];
         }
 
+        [MethodImpl(256)]
         private void InternalSegments(List<BezierKeyframe> keys, int n)
         {
             // left most segment
@@ -88,6 +91,7 @@ namespace VamTimeline
             _d[2 * n - 1] = 0; // outside the matrix
         }
 
+        [MethodImpl(256)]
         private void ThomasAlgorithm()
         {
             var n = _r.Length;
@@ -116,6 +120,7 @@ namespace VamTimeline
             }
         }
 
+        [MethodImpl(256)]
         private void Rearrange(int n)
         {
             for (var i = 0; i < n; i++)

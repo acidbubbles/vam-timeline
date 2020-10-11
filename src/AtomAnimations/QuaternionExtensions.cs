@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public static class QuaternionExtensions
+    public static class QuaternionUtil
     {
         // https://wiki.unity3d.com/index.php/Averaging_Quaternions_and_Vectors
 

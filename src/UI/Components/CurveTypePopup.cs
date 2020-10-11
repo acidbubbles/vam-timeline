@@ -26,7 +26,6 @@ namespace VamTimeline
         public JSONStorableStringChooser curveTypeJSON;
         public UIDynamicPopup curveTypeUI;
         private AtomAnimationEditContext _animationEditContext;
-        private AtomAnimationClip _current => _animationEditContext.current;
         private bool _listening;
 
         public void Bind(AtomAnimationEditContext animationEditContext)

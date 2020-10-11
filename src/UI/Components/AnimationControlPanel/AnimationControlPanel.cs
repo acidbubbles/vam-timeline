@@ -27,7 +27,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
         private UIDynamicButton _playAll;
-        private UIDynamicButton _stop;
 
         public UIDynamicButton _playClip { get; private set; }
 
@@ -122,7 +121,6 @@ namespace VamTimeline
             });
             stop.GetComponent<LayoutElement>().preferredWidth = 0;
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
-            _stop = stop.GetComponent<UIDynamicButton>();
         }
 
         private void InitFrameNav(Transform buttonPrefab)
