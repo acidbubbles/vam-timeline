@@ -47,7 +47,6 @@ namespace VamTimeline
                     if (time < from - 0.0001f || time > to + 0.001f) continue;
                     // Do not double-apply
                     if (Math.Abs(time - _offsetSnapshot.time) < 0.0001) continue;
-                    SuperController.LogMessage($"Apply on frame {time} (snapshot is {_offsetSnapshot.time})");
 
                     var positionBefore = target.GetKeyframePosition(key);
                     var rotationBefore = target.GetKeyframeRotation(key);

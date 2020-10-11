@@ -49,6 +49,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\IAtomAnimationTarget.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\IAtomAnimationTargetsList.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\ListExtensions.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\QuaternionExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\IRemoteAtomPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\IRemoteControllerPlugin.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Common\\ITimelineListener.cs",

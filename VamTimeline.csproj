@@ -111,6 +111,7 @@
     <Compile Include="src\AtomAnimations\IAtomAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\IAtomAnimationTargetsList.cs" />
     <Compile Include="src\AtomAnimations\ListExtensions.cs" />
+    <Compile Include="src\AtomAnimations\QuaternionExtensions.cs" />
     <Compile Include="src\Common\IRemoteAtomPlugin.cs" />
     <Compile Include="src\Common\IRemoteControllerPlugin.cs" />
     <Compile Include="src\Common\ITimelineListener.cs" />

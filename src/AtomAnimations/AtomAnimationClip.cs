@@ -312,6 +312,7 @@ namespace VamTimeline
             }
         }
         private float _weight = 1f;
+        public float scaledWeight { get; private set; } = 1f;
         public float weight
         {
             get
@@ -322,8 +323,9 @@ namespace VamTimeline
             set
             {
                 _weight = Mathf.Clamp01(value);
+                scaledWeight = value.ExponentialScale(0.1f, 1f);
                 if (playbackBlendRate > 0) playbackBlendRate = 0;
-                if (playbackWeight != _weight && playbackBlendRate == 0) playbackWeight = _weight;
+                if (playbackBlendWeight != _weight && playbackBlendRate == 0) playbackBlendWeight = _weight;
                 onPlaybackSettingsChanged.Invoke();
             }
         }
@@ -370,7 +372,7 @@ namespace VamTimeline
         #region Animation State
 
         private float _clipTime;
-        public float playbackWeight { get; set; }
+        public float playbackBlendWeight { get; set; }
         public bool playbackEnabled { get; set; }
         public bool playbackMainInLayer;
         public float playbackBlendRate;
@@ -399,7 +401,7 @@ namespace VamTimeline
         public void Reset(bool resetTime)
         {
             playbackEnabled = false;
-            playbackWeight = 0f;
+            playbackBlendWeight = 0f;
             playbackBlendRate = 0f;
             playbackMainInLayer = false;
             SetNext(null, 0f);

@@ -84,7 +84,7 @@ namespace VamTimeline
                 }
                 else
                 {
-                    btn.label = $" \u25A0 [time: {clip.clipTime:00.000}, weight: {Mathf.Round(clip.playbackWeight * 100f):000}%]";
+                    btn.label = $" \u25A0 [time: {clip.clipTime:00.000}, weight: {Mathf.Round(clip.playbackBlendWeight * 100f):000}%]";
                 }
 
                 for (var i = 0; i < 4; i++)

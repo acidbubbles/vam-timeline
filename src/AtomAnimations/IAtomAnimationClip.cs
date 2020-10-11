@@ -12,9 +12,9 @@ namespace VamTimeline
         bool loop { get; }
         float animationLength { get; }
         bool playbackEnabled { get; }
-        float playbackWeight { get; }
+        float playbackBlendWeight { get; }
         float clipTime { get; }
-        float weight { get; }
+        float scaledWeight { get; }
         UnityEvent onTargetsListChanged { get; }
         UnityEvent onAnimationKeyframesDirty { get; }
         UnityEvent onAnimationKeyframesRebuilt { get; }

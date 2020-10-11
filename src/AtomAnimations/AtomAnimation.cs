@@ -376,16 +376,16 @@ namespace VamTimeline
                 if (clip.playbackBlendRate != 0)
                 {
                     // TODO: Mathf.SmoothStep
-                    clip.playbackWeight += clip.playbackBlendRate * clipDelta;
-                    if (clip.playbackWeight >= clip.weight)
+                    clip.playbackBlendWeight += clip.playbackBlendRate * clipDelta;
+                    if (clip.playbackBlendWeight >= clip.weight)
                     {
                         clip.playbackBlendRate = 0f;
-                        clip.playbackWeight = clip.weight;
+                        clip.playbackBlendWeight = clip.weight;
                     }
-                    else if (clip.playbackWeight <= 0f)
+                    else if (clip.playbackBlendWeight <= 0f)
                     {
                         clip.playbackBlendRate = 0f;
-                        clip.playbackWeight = 0f;
+                        clip.playbackBlendWeight = 0f;
                         clip.Leave();
                         clip.playbackEnabled = false;
                         onClipIsPlayingChanged.Invoke(clip);
@@ -396,9 +396,9 @@ namespace VamTimeline
 
         private void Blend(AtomAnimationClip clip, float weight, float duration)
         {
-            if (!clip.playbackEnabled) clip.playbackWeight = 0;
+            if (!clip.playbackEnabled) clip.playbackBlendWeight = 0;
             clip.playbackEnabled = true;
-            clip.playbackBlendRate = (weight - clip.playbackWeight) / duration;
+            clip.playbackBlendRate = (weight - clip.playbackBlendWeight) / duration;
             onClipIsPlayingChanged.Invoke(clip);
         }
 
@@ -413,7 +413,7 @@ namespace VamTimeline
 
             from.SetNext(null, float.NaN);
 
-            if (to.playbackWeight == 0)
+            if (to.playbackBlendWeight == 0)
             {
                 to.clipTime = to.loop && to.preserveLoops ? from.clipTime : 0f;
             }
@@ -528,7 +528,7 @@ namespace VamTimeline
                 if (!clip.playbackEnabled) continue;
                 foreach (var target in clip.targetFloatParams)
                 {
-                    target.Sample(clip.clipTime, clip.playbackWeight);
+                    target.Sample(clip.clipTime, clip.playbackBlendWeight);
                 }
             }
         }
@@ -541,6 +541,8 @@ namespace VamTimeline
             }
         }
 
+        private Quaternion[] _rotations = new Quaternion[0];
+        private float[] _rotationBlendWeights = new float[0];
         private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets)
         {
             if (controller == null) return;
@@ -548,17 +550,27 @@ namespace VamTimeline
             var control = controller.control;
             if (control == null) return;
 
+            if (targets.Count > _rotations.Length)
+            {
+                _rotations = new Quaternion[targets.Count];
+                _rotationBlendWeights = new float[targets.Count];
+            }
+            var rotationCount = 0;
+            var totalRotationBlendWeights = 0f;
+            var totalRotationControlWeights = 0f;
+
             var weightedPositionSum = Vector3.zero;
-            var totalWeight = 0f;
-            var count = 0f;
+            var positionCount = 0;
+            var totalPositionBlendWeights = 0f;
+            var totalPositionControlWeights = 0f;
 
             foreach (var target in targets)
             {
                 var clip = target.clip;
                 if (!clip.playbackEnabled) continue;
                 if (!target.playbackEnabled) continue;
-                var weight = clip.playbackWeight * target.scaledWeight;
-                if (weight == 0) continue;
+                var weight = clip.scaledWeight * target.scaledWeight;
+                if (weight < float.Epsilon) continue;
 
                 if (!target.EnsureParentAvailable()) return;
                 Rigidbody link = target.GetLinkedRigidbody();
@@ -569,14 +581,17 @@ namespace VamTimeline
                     if (link != null)
                     {
                         targetRotation = link.rotation * targetRotation;
-                        var rotation = Quaternion.Slerp(control.rotation, targetRotation, weight);
-                        control.rotation = rotation;
+                        _rotations[rotationCount] = targetRotation;
                     }
                     else
                     {
-                        var localRotation = Quaternion.Slerp(control.localRotation, targetRotation, weight);
-                        control.localRotation = localRotation;
+                        // TODO: Make absolute
+                        _rotations[rotationCount] = control.transform.parent.rotation * targetRotation;
                     }
+                    _rotationBlendWeights[rotationCount] = clip.playbackBlendWeight;
+                    totalRotationBlendWeights += clip.playbackBlendWeight;
+                    totalRotationControlWeights += weight * clip.playbackBlendWeight;
+                    rotationCount++;
                 }
 
                 if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
@@ -586,18 +601,40 @@ namespace VamTimeline
                         targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
                     else
                         targetPosition = controller.transform.parent.position + controller.transform.parent.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
-                    weightedPositionSum += targetPosition * clip.playbackWeight;
-                    totalWeight += clip.playbackWeight;
-                    count++;
+                    weightedPositionSum += targetPosition * clip.playbackBlendWeight;
+                    totalPositionBlendWeights += clip.playbackBlendWeight;
+                    totalPositionControlWeights += weight * clip.playbackBlendWeight;
+                    positionCount++;
                 }
             }
 
-            if (totalWeight > 0 && controller.currentPositionState != FreeControllerV3.PositionState.Off)
+            if (totalPositionBlendWeights < float.Epsilon) return;
+
+            if (positionCount > 0 && controller.currentPositionState != FreeControllerV3.PositionState.Off)
             {
-                var targetPosition = weightedPositionSum / totalWeight;
-                var targetWeight = totalWeight / count;
-                var position = Vector3.Lerp(control.position, targetPosition, targetWeight);
+                var targetPosition = weightedPositionSum / totalPositionBlendWeights;
+                var position = Vector3.Lerp(control.position, targetPosition, totalPositionControlWeights / totalPositionBlendWeights);
                 control.position = position;
+            }
+
+            if (rotationCount > 0 && controller.currentRotationState != FreeControllerV3.RotationState.Off)
+            {
+                Quaternion targetRotation;
+                if (rotationCount > 1)
+                {
+                    var cumulative = Vector4.zero;
+                    for (var i = 0; i < rotationCount; i++)
+                    {
+                        QuaternionExtensions.AverageQuaternion(ref cumulative, _rotations[i], _rotations[0], _rotationBlendWeights[i] / totalRotationBlendWeights);
+                    }
+                    targetRotation = QuaternionExtensions.FromVector(cumulative);
+                }
+                else
+                {
+                    targetRotation = _rotations[0];
+                }
+                var rotation = Quaternion.Slerp(control.rotation, targetRotation, totalRotationControlWeights / totalRotationBlendWeights);
+                control.rotation = targetRotation;
             }
         }
 

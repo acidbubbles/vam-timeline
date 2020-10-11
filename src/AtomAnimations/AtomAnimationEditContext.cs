@@ -182,13 +182,13 @@ namespace VamTimeline
             foreach (var clip in clips)
             {
                 clip.playbackEnabled = true;
-                clip.playbackWeight = 1f;
+                clip.playbackBlendWeight = 1f;
             }
             animation.Sample();
             foreach (var clip in clips)
             {
                 clip.playbackEnabled = false;
-                clip.playbackWeight = 0f;
+                clip.playbackBlendWeight = 0f;
             }
         }
 
