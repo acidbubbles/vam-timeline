@@ -526,16 +526,34 @@ namespace VamTimeline
         [MethodImpl(256)]
         private void SampleFloatParams()
         {
-            foreach (var clip in clips)
+            foreach (var x in index.ByFloatParam())
             {
-                if (!clip.playbackEnabled) continue;
-                foreach (var target in clip.targetFloatParams)
-                {
-                    target.Sample(clip.clipTime, clip.playbackBlendWeight);
-                }
+                if (!x.Value[0].EnsureAvailable()) continue;
+                SampleFloatParam(x.Value[0].floatParam, x.Value);
             }
         }
 
+        [MethodImpl(256)]
+        private void SampleFloatParam(JSONStorableFloat floatParam, List<FloatParamAnimationTarget> targets)
+        {
+            var weightedSum = 0f;
+            var totalBlendWeights = 0f;
+            foreach (var target in targets)
+            {
+                var clip = target.clip;
+                if (!clip.playbackEnabled) continue;
+                var weight = clip.scaledWeight;
+                if (weight < float.Epsilon) continue;
+
+                var value = target.value.Evaluate(clip.clipTime);
+                weightedSum += value * clip.playbackBlendWeight;
+                totalBlendWeights += clip.playbackBlendWeight;
+            }
+            if (totalBlendWeights > 0)
+                floatParam.val = weightedSum / totalBlendWeights;
+        }
+
+        [MethodImpl(256)]
         private void SampleControllers()
         {
             foreach (var x in index.ByController())
@@ -564,7 +582,6 @@ namespace VamTimeline
             var totalRotationControlWeights = 0f;
 
             var weightedPositionSum = Vector3.zero;
-            var positionCount = 0;
             var totalPositionBlendWeights = 0f;
             var totalPositionControlWeights = 0f;
 
@@ -608,20 +625,17 @@ namespace VamTimeline
                     weightedPositionSum += targetPosition * clip.playbackBlendWeight;
                     totalPositionBlendWeights += clip.playbackBlendWeight;
                     totalPositionControlWeights += weight * clip.playbackBlendWeight;
-                    positionCount++;
                 }
             }
 
-            if (totalPositionBlendWeights < float.Epsilon) return;
-
-            if (positionCount > 0 && controller.currentPositionState != FreeControllerV3.PositionState.Off)
+            if (totalPositionBlendWeights > float.Epsilon && controller.currentPositionState != FreeControllerV3.PositionState.Off)
             {
                 var targetPosition = weightedPositionSum / totalPositionBlendWeights;
                 var position = Vector3.Lerp(control.position, targetPosition, totalPositionControlWeights / totalPositionBlendWeights);
                 control.position = position;
             }
 
-            if (rotationCount > 0 && controller.currentRotationState != FreeControllerV3.RotationState.Off)
+            if (totalRotationBlendWeights > float.Epsilon && controller.currentRotationState != FreeControllerV3.RotationState.Off)
             {
                 Quaternion targetRotation;
                 if (rotationCount > 1)

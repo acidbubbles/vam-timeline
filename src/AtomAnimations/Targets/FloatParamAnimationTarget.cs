@@ -114,8 +114,6 @@ namespace VamTimeline
 
         public void Sample(float clipTime, float weight)
         {
-            if (!EnsureAvailable()) return;
-            floatParam.val = Mathf.Lerp(floatParam.val, value.Evaluate(clipTime), weight);
         }
 
         public void Validate(float animationLength)

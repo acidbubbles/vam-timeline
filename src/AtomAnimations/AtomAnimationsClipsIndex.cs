@@ -87,5 +87,10 @@ namespace VamTimeline
         {
             return _clipsByController;
         }
+
+        public IEnumerable<KeyValuePair<string, List<FloatParamAnimationTarget>>> ByFloatParam()
+        {
+            return _clipsByFloatParam;
+        }
     }
 }
