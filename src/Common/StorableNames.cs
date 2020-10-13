@@ -16,5 +16,6 @@ namespace VamTimeline
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";
         public const string Speed = "Speed";
+        public const string Locked = "Locked";
     }
 }

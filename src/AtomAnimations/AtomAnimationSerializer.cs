@@ -23,6 +23,7 @@ namespace VamTimeline
 
             animationEditContext.autoKeyframeAllControllers = DeserializeBool(animationEditContextJSON["AutoKeyframeAllControllers"], false);
             animationEditContext.snap = DeserializeFloat(animationEditContextJSON["Snap"], 0.1f);
+            animationEditContext.locked = DeserializeBool(animationEditContextJSON["Locked"], false);
         }
 
         public void DeserializeAnimation(AtomAnimation animation, JSONClass animationJSON)
@@ -301,7 +302,8 @@ namespace VamTimeline
             var animationEditContextJSON = new JSONClass
             {
                 { "AutoKeyframeAllControllers", animationEditContext.autoKeyframeAllControllers ? "1" : "0" },
-                { "Snap", animationEditContext.snap.ToString(CultureInfo.InvariantCulture)}
+                { "Snap", animationEditContext.snap.ToString(CultureInfo.InvariantCulture)},
+                { "Locked", animationEditContext.locked ? "1" : "0" },
             };
             return animationEditContextJSON;
         }

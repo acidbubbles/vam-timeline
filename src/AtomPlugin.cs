@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +40,7 @@ namespace VamTimeline
         public JSONStorableAction copyJSON { get; private set; }
         public JSONStorableAction pasteJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
+        public JSONStorableBool lockedJSON { get; private set; }
 
         private bool _restoring;
         private FreeControllerV3Hook _freeControllerHook;
@@ -316,6 +316,13 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterFloat(speedJSON);
+
+            lockedJSON = new JSONStorableBool(StorableNames.Locked, false, v => animationEditContext.locked = v)
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterBool(lockedJSON);
         }
 
         private IEnumerator DeferredInit()
@@ -612,7 +619,6 @@ namespace VamTimeline
         {
             try
             {
-                // Update UI
                 scrubberJSON.max = animationEditContext.current.animationLength;
                 scrubberJSON.valNoCallback = animationEditContext.clipTime;
                 timeJSON.valNoCallback = animationEditContext.playTime;
@@ -630,9 +636,7 @@ namespace VamTimeline
         {
             try
             {
-                // Update UI
-                speedJSON.valNoCallback = animation.speed;
-                _freeControllerHook.enabled = !animation.isPlaying;
+                lockedJSON.valNoCallback = animationEditContext.locked;
             }
             catch (Exception exc)
             {
