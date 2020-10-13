@@ -609,7 +609,6 @@ namespace VamTimeline
                     }
                     else
                     {
-                        // TODO: Make absolute
                         _rotations[rotationCount] = control.transform.parent.rotation * targetRotation;
                     }
                     _rotationBlendWeights[rotationCount] = smoothBlendWeight;
@@ -622,20 +621,17 @@ namespace VamTimeline
                 {
                     var targetPosition = target.EvaluatePosition(clip.clipTime);
                     if (link != null)
-                        targetPosition = link.position + link.transform.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
+                    {
+                        targetPosition = link.transform.TransformPoint(targetPosition);
+                    }
                     else
-                        targetPosition = controller.transform.parent.position + controller.transform.parent.rotation * Vector3.Scale(targetPosition, control.transform.localScale);
+                    {
+                        targetPosition = control.transform.parent.TransformPoint(targetPosition);
+                    }
                     weightedPositionSum += targetPosition * smoothBlendWeight;
                     totalPositionBlendWeights += smoothBlendWeight;
                     totalPositionControlWeights += weight * smoothBlendWeight;
                 }
-            }
-
-            if (totalPositionBlendWeights > float.Epsilon && controller.currentPositionState != FreeControllerV3.PositionState.Off)
-            {
-                var targetPosition = weightedPositionSum / totalPositionBlendWeights;
-                var position = Vector3.Lerp(control.position, targetPosition, totalPositionControlWeights / totalPositionBlendWeights);
-                control.position = position;
             }
 
             if (totalRotationBlendWeights > float.Epsilon && controller.currentRotationState != FreeControllerV3.RotationState.Off)
@@ -656,6 +652,13 @@ namespace VamTimeline
                 }
                 var rotation = Quaternion.Slerp(control.rotation, targetRotation, totalRotationControlWeights / totalRotationBlendWeights);
                 control.rotation = targetRotation;
+            }
+
+            if (totalPositionBlendWeights > float.Epsilon && controller.currentPositionState != FreeControllerV3.PositionState.Off)
+            {
+                var targetPosition = weightedPositionSum / totalPositionBlendWeights;
+                var position = Vector3.Lerp(control.position, targetPosition, totalPositionControlWeights / totalPositionBlendWeights);
+                control.position = position;
             }
         }
 
