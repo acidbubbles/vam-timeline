@@ -29,6 +29,7 @@ namespace VamTimeline
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
             prefabFactory.CreateHeader($"Controller settings", 1);
+
             if (_target == null)
             {
                 prefabFactory.CreateTextField(new JSONStorableString("", "Cannot show the selected target settings.\nPlease go back and re-enter this screen."));
@@ -36,7 +37,13 @@ namespace VamTimeline
             }
             prefabFactory.CreateHeader(_target.name, 2);
 
+            prefabFactory.CreateHeader($"Parenting", 1);
+
             InitParentUI();
+
+            prefabFactory.CreateHeader($"Options", 1);
+
+            InitWeightUI();
         }
 
         private void InitParentUI()
@@ -52,7 +59,10 @@ namespace VamTimeline
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
 
             PopulateRigidbodies();
+        }
 
+        private void InitWeightUI()
+        {
             var parentWeight = new JSONStorableFloat("Weight", 1f, (float val) => _target.weight = val, 0f, 1f)
             {
                 valNoCallback = _target.weight
