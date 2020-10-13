@@ -83,7 +83,7 @@ namespace VamTimeline
             var controlCounter = 0;
             var motControls = containingAtom.motionAnimationControls
                 .Where(m => m?.clip?.clipLength > 0.1f)
-                .Where(m => controllers.Contains(m.controller))
+                .Where(m => controllers.Count == 0 || controllers.Contains(m.controller))
                 .Where(m => m.clip.steps.Any(s => s.positionOn || s.rotationOn))
                 .ToList();
 
