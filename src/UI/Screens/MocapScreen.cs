@@ -155,7 +155,7 @@ namespace VamTimeline
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            var controllers = animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.controller).ToList();
+            var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.controller).ToList();
             IEnumerator enumerator = GetMocapImportOp().Execute(controllers);
 
             while (true)
