@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -22,6 +21,8 @@ namespace VamTimeline
         private static float _lastReduceMaxFramesPerSecond = 5f;
         private static bool _importMocapOnLoad;
         private static bool _simplifyFloatParamsOnLoad;
+        private static bool? _lastAutoRecordStop;
+
 
         public override string screenId => ScreenName;
 
@@ -247,7 +248,17 @@ namespace VamTimeline
                 _playAndRecordControllersUI.label = _startRecordControllersLabel;
                 SuperController.singleton.StopPlayback();
                 animation.StopAll();
+                if (_lastAutoRecordStop != null)
+                {
+                    SuperController.singleton.motionAnimationMaster.autoRecordStop = _lastAutoRecordStop.Value;
+                    _lastAutoRecordStop = null;
+                }
                 return;
+            }
+            if (!_resizeAnimationJSON.val)
+            {
+                _lastAutoRecordStop = SuperController.singleton.motionAnimationMaster.autoRecordStop;
+                SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
             }
             foreach (var target in animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
@@ -272,6 +283,11 @@ namespace VamTimeline
                     _recordingControllersCoroutine = null;
                     _playAndRecordControllersUI.label = _startRecordControllersLabel;
                     SuperController.singleton.SelectController(plugin.containingAtom.mainController);
+                    if (_lastAutoRecordStop != null)
+                    {
+                        SuperController.singleton.motionAnimationMaster.autoRecordStop = _lastAutoRecordStop.Value;
+                        _lastAutoRecordStop = null;
+                    }
                     yield break;
                 }
                 yield return 0;
@@ -291,6 +307,11 @@ namespace VamTimeline
             SuperController.singleton.motionAnimationMaster.StopPlayback();
             _recordingControllersCoroutine = null;
             ClearAllGrabbedControllers();
+            if (_lastAutoRecordStop != null)
+            {
+                SuperController.singleton.motionAnimationMaster.autoRecordStop = _lastAutoRecordStop.Value;
+                _lastAutoRecordStop = null;
+            }
             if (!plugin.containingAtom.mainController.selected)
             {
                 _importMocapOnLoad = true;
