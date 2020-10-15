@@ -29,11 +29,10 @@ public static class UnitySpecific
         keyframe.value = value;
     }
 
-    public static void EnsureQuaternionContinuityAndRecalculateSlope(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w)
+    public static void EnsureQuaternionContinuityAndRecalculateSlope(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, Quaternion last)
     {
         var keyCount = x.length;
         if (keyCount < 2) return;
-        var last = GetValue(x, y, z, w, keyCount - 1);
         for (int i = 0; i < keyCount; i++)
         {
             var cur = GetValue(x, y, z, w, i);

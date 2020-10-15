@@ -184,6 +184,16 @@ namespace VamTimeline
             );
         }
 
+        public Quaternion GetRotationAtKeyframe(int key)
+        {
+            return new Quaternion(
+                rotX.GetKeyframe(key).value,
+                rotY.GetKeyframe(key).value,
+                rotZ.GetKeyframe(key).value,
+                rotW.GetKeyframe(key).value
+            );
+        }
+
         public float GetKeyframeTime(int key)
         {
             return x.GetKeyframe(key).time;

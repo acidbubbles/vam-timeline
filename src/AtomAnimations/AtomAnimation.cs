@@ -696,10 +696,15 @@ namespace VamTimeline
         private void RebuildAnimationNowImpl()
         {
             var sw = Stopwatch.StartNew();
-            foreach (var clip in clips)
+            foreach (var layer in index.ByLayer())
             {
-                clip.Validate();
-                RebuildClip(clip);
+                AtomAnimationClip last = null;
+                foreach(var clip in layer.Value)
+                {
+                    clip.Validate();
+                    RebuildClip(clip, last);
+                    last = clip;
+                }
             }
             foreach (var clip in clips)
             {
@@ -725,14 +730,12 @@ namespace VamTimeline
 
         private void RebuildTransition(AtomAnimationClip clip)
         {
-            bool realign = false;
             if (clip.autoTransitionPrevious)
             {
                 var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
                 if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                 {
                     CopySourceFrameToClip(previous, previous.animationLength, clip, 0f);
-                    realign = true;
                 }
             }
             if (clip.autoTransitionNext)
@@ -741,21 +744,6 @@ namespace VamTimeline
                 if (next != null && (next.IsDirty() || clip.IsDirty()))
                 {
                     CopySourceFrameToClip(next, 0f, clip, clip.animationLength);
-                    realign = true;
-                }
-            }
-            if (realign)
-            {
-                foreach (var target in clip.targetControllers)
-                {
-                    if (clip.ensureQuaternionContinuity)
-                    {
-                        UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
-                            target.rotX,
-                            target.rotY,
-                            target.rotZ,
-                            target.rotW);
-                    }
                 }
             }
         }
@@ -791,7 +779,7 @@ namespace VamTimeline
             }
         }
 
-        private void RebuildClip(AtomAnimationClip clip)
+        private void RebuildClip(AtomAnimationClip clip, AtomAnimationClip previous)
         {
             foreach (var target in clip.targetControllers)
             {
@@ -804,11 +792,14 @@ namespace VamTimeline
 
                 if (clip.ensureQuaternionContinuity)
                 {
+                    var lastMatching = previous?.targetControllers.FirstOrDefault(t => t.TargetsSameAs(target));
+                    var q = lastMatching?.GetRotationAtKeyframe(lastMatching.rotX.length - 1) ?? target.GetRotationAtKeyframe(target.rotX.length - 1);
                     UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
                         target.rotX,
                         target.rotY,
                         target.rotZ,
-                        target.rotW);
+                        target.rotW,
+                        q);
                 }
 
                 foreach (var curve in target.GetCurves())
