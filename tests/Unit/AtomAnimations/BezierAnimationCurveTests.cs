@@ -25,24 +25,24 @@ namespace VamTimeline.Tests.Unit
                 var key = curve.SetKeyframe(0, 123, CurveTypeValues.Linear);
                 if (!context.Assert(key, 0, "First key is zero")) yield break;
                 if (!context.Assert(curve.keys.Select(k => k.time), new[] { 0f }, "Expected one frame")) yield break;
-                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0)).value, 123, "Set and get at time 0");
+                context.Assert(curve.GetKeyframeByKey(curve.KeyframeBinarySearch(0)).value, 123, "Set and get at time 0");
             }
 
             {
                 var key = curve.SetKeyframe(0.499999f, 456, CurveTypeValues.Linear);
                 if (!context.Assert(key, 1, "Second key is one")) yield break;
                 if (!context.Assert(curve.keys.Select(k => k.time), new[] { 0f, 0.5f }, "Expected two frames")) yield break;
-                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0.000001f)).value, 123, "Set and get at time 0.000001");
-                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0.499999f)).value, 456, "Set and get at time 0.499999");
+                context.Assert(curve.GetKeyframeByKey(curve.KeyframeBinarySearch(0.000001f)).value, 123, "Set and get at time 0.000001");
+                context.Assert(curve.GetKeyframeByKey(curve.KeyframeBinarySearch(0.499999f)).value, 456, "Set and get at time 0.499999");
             }
 
             {
                 var key = curve.SetKeyframe(0.250f, 789, CurveTypeValues.Linear);
                 if (!context.Assert(key, 1, "Third key is one")) yield break;
                 if (!context.Assert(curve.keys.Select(k => k.time), new[] { 0f, 0.250f, 0.5f }, "Expected three frames")) yield break;
-                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0.000001f)).value, 123, "Set and get at time 0.000001");
-                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0.250f)).value, 789, "Set and get at time 0.250f");
-                context.Assert(curve.GetKeyframe(curve.KeyframeBinarySearch(0.499999f)).value, 456, "Set and get at time 0.499999");
+                context.Assert(curve.GetKeyframeByKey(curve.KeyframeBinarySearch(0.000001f)).value, 123, "Set and get at time 0.000001");
+                context.Assert(curve.GetKeyframeByKey(curve.KeyframeBinarySearch(0.250f)).value, 789, "Set and get at time 0.250f");
+                context.Assert(curve.GetKeyframeByKey(curve.KeyframeBinarySearch(0.499999f)).value, 456, "Set and get at time 0.499999");
             }
 
             {

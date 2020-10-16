@@ -54,7 +54,7 @@ namespace VamTimeline
         {
             var source = t.value;
             var minFrameDistance = 1f / maxFramesPerSecond;
-            var maxIterations = (int)(source.GetKeyframe(source.length - 1).time * 10);
+            var maxIterations = (int)(source.GetKeyframeByKey(source.length - 1).time * 10);
 
             var steps = source.keys
                 .GroupBy(s => s.time.Snap(minFrameDistance).ToMilliseconds())
@@ -107,10 +107,10 @@ namespace VamTimeline
                 new KeyframesOperations(_clip).RemoveAll(t);
                 for (var key = 0; key < target.length; key++)
                 {
-                    var keyframe = target.GetKeyframe(key);
+                    var keyframe = target.GetKeyframeByKey(key);
                     t.SetKeyframe(keyframe.time, keyframe.value);
                 }
-                t.AddEdgeFramesIfMissing(source.GetKeyframe(source.length - 1).time);
+                t.AddEdgeFramesIfMissing(source.GetKeyframeByKey(source.length - 1).time);
             }
             finally
             {

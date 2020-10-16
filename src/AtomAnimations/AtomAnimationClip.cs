@@ -163,7 +163,11 @@ namespace VamTimeline
                             foreach (var curve in target.GetCurves())
                             {
                                 if (curve.length == 2)
-                                    curve.GetLastFrame().curveType = curve.GetFirstFrame().curveType;
+                                {
+                                    var keyframe = curve.GetLastFrame();
+                                    keyframe.curveType = curve.GetFirstFrame().curveType;
+                                    curve.SetLastFrame(keyframe);
+                                }
                             }
                         }
                         autoTransitionNext = false;
@@ -175,7 +179,11 @@ namespace VamTimeline
                             foreach (var curve in target.GetCurves())
                             {
                                 if (curve.length == 2)
-                                    curve.GetLastFrame().curveType = CurveTypeValues.CopyPrevious;
+                                {
+                                    var keyframe = curve.GetLastFrame();
+                                    keyframe.curveType = CurveTypeValues.CopyPrevious;
+                                    curve.SetLastFrame(keyframe);
+                                }
                             }
                         }
                     }

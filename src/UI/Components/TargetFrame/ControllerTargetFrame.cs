@@ -65,7 +65,7 @@ namespace VamTimeline
         private void UpdateLine()
         {
             var pointsPerSecond = 32f;
-            var pointsCount = Mathf.CeilToInt(target.x.GetKeyframe(target.x.length - 1).time * pointsPerSecond) + (clip.loop ? 2 : 1);
+            var pointsCount = Mathf.CeilToInt(target.x.GetKeyframeByKey(target.x.length - 1).time * pointsPerSecond) + (clip.loop ? 2 : 1);
             var points = new Vector3[pointsCount];
 
             for (var t = 0; t < pointsCount - (clip.loop ? 1 : 0); t++)
@@ -84,7 +84,7 @@ namespace VamTimeline
                 {
                     var handle = _handles[t];
                     handle.GetComponent<Renderer>().material.color = _line.colorGradient.Evaluate(t / clip.animationLength);
-                    handle.transform.localPosition = target.EvaluatePosition(target.x.GetKeyframe(t).time);
+                    handle.transform.localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
                 }
             }
             else
@@ -100,7 +100,7 @@ namespace VamTimeline
                     foreach (var c in handle.GetComponents<Collider>()) { c.enabled = false; Destroy(c); }
                     handle.transform.SetParent(_line.transform, false);
                     handle.transform.localScale = Vector3.one * 0.01f;
-                    handle.transform.localPosition = target.EvaluatePosition(target.x.GetKeyframe(t).time);
+                    handle.transform.localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
                     _handles.Add(handle);
                 }
             }

@@ -37,21 +37,27 @@ namespace VamTimeline
         [MethodImpl(256)]
         protected void AssignComputedControlPointsToKeyframes(List<BezierKeyframe> keys, int n)
         {
-            if (keys[0].curveType != CurveTypeValues.LeaveAsIs)
+            var key0 = keys[0];
+            if (key0.curveType != CurveTypeValues.LeaveAsIs)
             {
-                keys[0].controlPointOut = _p1[0];
+                key0.controlPointOut = _p1[0];
+                keys[0] = key0;
             }
             for (var i = 1; i < n; i++)
             {
-                if (keys[i].curveType != CurveTypeValues.LeaveAsIs)
+                var keyi = keys[i];
+                if (keyi.curveType != CurveTypeValues.LeaveAsIs)
                 {
-                    keys[i].controlPointIn = _p2[i - 1];
-                    keys[i].controlPointOut = _p1[i];
+                    keyi.controlPointIn = _p2[i - 1];
+                    keyi.controlPointOut = _p1[i];
+                    keys[i] = keyi;
                 }
             }
-            if (keys[n].curveType != CurveTypeValues.LeaveAsIs)
+            var keyn = keys[n];
+            if (keyn.curveType != CurveTypeValues.LeaveAsIs)
             {
-                keys[n].controlPointIn = _p2[n - 1];
+                keyn.controlPointIn = _p2[n - 1];
+                keys[n] = keyn;
             }
         }
     }

@@ -12,7 +12,7 @@ public static class UnitySpecific
 
     private static Quaternion GetValue(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, int key)
     {
-        return new Quaternion(x.GetKeyframe(key).value, y.GetKeyframe(key).value, z.GetKeyframe(key).value, w.GetKeyframe(key).value);
+        return new Quaternion(x.GetKeyframeByKey(key).value, y.GetKeyframeByKey(key).value, z.GetKeyframeByKey(key).value, w.GetKeyframeByKey(key).value);
     }
 
     private static void SetValue(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, int key, Quaternion q)
@@ -25,8 +25,9 @@ public static class UnitySpecific
 
     private static void SetValue(BezierAnimationCurve curve, int key, float value)
     {
-        var keyframe = curve.GetKeyframe(key);
+        var keyframe = curve.GetKeyframeByKey(key);
         keyframe.value = value;
+        curve.SetKeyframeByKey(key, keyframe);
     }
 
     public static void EnsureQuaternionContinuityAndRecalculateSlope(BezierAnimationCurve x, BezierAnimationCurve y, BezierAnimationCurve z, BezierAnimationCurve w, Quaternion last)

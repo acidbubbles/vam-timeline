@@ -85,7 +85,7 @@ namespace VamTimeline
 
         public int SetKeyframeByKey(int key, Vector3 localPosition, Quaternion locationRotation)
         {
-            var curveType = x.GetKeyframe(key).curveType;
+            var curveType = x.GetKeyframeByKey(key).curveType;
             x.SetKeyframeByKey(key, localPosition.x, curveType);
             y.SetKeyframeByKey(key, localPosition.y, curveType);
             z.SetKeyframeByKey(key, localPosition.z, curveType);
@@ -138,7 +138,7 @@ namespace VamTimeline
             var curve = x;
             var keyframes = new float[curve.length];
             for (var i = 0; i < curve.length; i++)
-                keyframes[i] = curve.GetKeyframe(i).time;
+                keyframes[i] = curve.GetKeyframeByKey(i).time;
             return keyframes;
         }
 
@@ -153,7 +153,7 @@ namespace VamTimeline
 
         public float GetTimeClosestTo(float time)
         {
-            return x.GetKeyframe(x.KeyframeBinarySearch(time, true)).time;
+            return x.GetKeyframeByKey(x.KeyframeBinarySearch(time, true)).time;
         }
 
         public bool HasKeyframe(float time)
@@ -187,34 +187,34 @@ namespace VamTimeline
         public Quaternion GetRotationAtKeyframe(int key)
         {
             return new Quaternion(
-                rotX.GetKeyframe(key).value,
-                rotY.GetKeyframe(key).value,
-                rotZ.GetKeyframe(key).value,
-                rotW.GetKeyframe(key).value
+                rotX.GetKeyframeByKey(key).value,
+                rotY.GetKeyframeByKey(key).value,
+                rotZ.GetKeyframeByKey(key).value,
+                rotW.GetKeyframeByKey(key).value
             );
         }
 
         public float GetKeyframeTime(int key)
         {
-            return x.GetKeyframe(key).time;
+            return x.GetKeyframeByKey(key).time;
         }
 
         public Vector3 GetKeyframePosition(int key)
         {
             return new Vector3(
-                x.GetKeyframe(key).value,
-                y.GetKeyframe(key).value,
-                z.GetKeyframe(key).value
+                x.GetKeyframeByKey(key).value,
+                y.GetKeyframeByKey(key).value,
+                z.GetKeyframeByKey(key).value
             );
         }
 
         public Quaternion GetKeyframeRotation(int key)
         {
             return new Quaternion(
-                rotX.GetKeyframe(key).value,
-                rotY.GetKeyframe(key).value,
-                rotZ.GetKeyframe(key).value,
-                rotW.GetKeyframe(key).value
+                rotX.GetKeyframeByKey(key).value,
+                rotY.GetKeyframeByKey(key).value,
+                rotZ.GetKeyframeByKey(key).value,
+                rotW.GetKeyframeByKey(key).value
             );
         }
 
@@ -237,13 +237,13 @@ namespace VamTimeline
             if (key == -1) return null;
             return new TransformTargetSnapshot
             {
-                x = x.GetKeyframe(key).Clone(),
-                y = y.GetKeyframe(key).Clone(),
-                z = z.GetKeyframe(key).Clone(),
-                rotX = rotX.GetKeyframe(key).Clone(),
-                rotY = rotY.GetKeyframe(key).Clone(),
-                rotZ = rotZ.GetKeyframe(key).Clone(),
-                rotW = rotW.GetKeyframe(key).Clone(),
+                x = x.GetKeyframeByKey(key),
+                y = y.GetKeyframeByKey(key),
+                z = z.GetKeyframeByKey(key),
+                rotX = rotX.GetKeyframeByKey(key),
+                rotY = rotY.GetKeyframeByKey(key),
+                rotZ = rotZ.GetKeyframeByKey(key),
+                rotW = rotW.GetKeyframeByKey(key),
             };
         }
 

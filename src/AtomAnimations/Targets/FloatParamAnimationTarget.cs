@@ -165,13 +165,13 @@ namespace VamTimeline
             var curve = value;
             var keyframes = new float[curve.length];
             for (var i = 0; i < curve.length; i++)
-                keyframes[i] = curve.GetKeyframe(i).time;
+                keyframes[i] = curve.GetKeyframeByKey(i).time;
             return keyframes;
         }
 
         public float GetTimeClosestTo(float time)
         {
-            return value.GetKeyframe(value.KeyframeBinarySearch(time, true)).time;
+            return value.GetKeyframeByKey(value.KeyframeBinarySearch(time, true)).time;
         }
 
         public bool HasKeyframe(float time)
@@ -196,7 +196,7 @@ namespace VamTimeline
             if (key == -1) return null;
             return new FloatParamTargetSnapshot
             {
-                value = value.GetKeyframe(key).Clone()
+                value = value.GetKeyframeByKey(key)
             };
         }
 

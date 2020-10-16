@@ -84,7 +84,7 @@ namespace VamTimeline
                 // Common
                 var curve = curveInfo.Value;
                 var color = curveInfo.Key;
-                var last = curve.GetKeyframe(curve.length - 1);
+                var last = curve.GetKeyframeByKey(curve.length - 1);
 
                 // Draw line
                 var step = maxX / width * precision;
@@ -109,7 +109,7 @@ namespace VamTimeline
                 // Draw handles
                 for (var i = 0; i < curve.length; i++)
                 {
-                    var keyframe = curve.GetKeyframe(i);
+                    var keyframe = curve.GetKeyframeByKey(i);
                     var handlePos = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
                     // Render bezier control points
 #if (RENDER_BEZIER_CONTROL_POINTS)
@@ -186,7 +186,7 @@ namespace VamTimeline
             var minY = float.MaxValue;
             var maxY = float.MinValue;
             var lead = _curves[0].Value;
-            var maxX = lead.GetKeyframe(lead.length - 1).time;
+            var maxX = lead.GetKeyframeByKey(lead.length - 1).time;
             var boundsTestStep = maxX / boundsEvalPrecision;
             foreach (var kvp in _curves)
             {

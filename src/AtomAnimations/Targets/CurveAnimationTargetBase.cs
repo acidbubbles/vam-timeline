@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +32,7 @@ namespace VamTimeline
                 var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
                 SuperController.LogError($"Target {name} has  duration of {curve.duration} but the animation should be {animationLength}. Auto-repairing extraneous keys.");
                 foreach (var c in GetCurves())
-                    while (c.GetKeyframe(c.length - 1).time > animationLength && c.length > 2)
+                    while (c.GetKeyframeByKey(c.length - 1).time > animationLength && c.length > 2)
                         c.RemoveKey(c.length - 1);
             }
             if (curve.duration != animationLength)
@@ -44,6 +43,7 @@ namespace VamTimeline
                     var keyframe = c.GetLastFrame();
                     if (keyframe.time == animationLength) continue;
                     keyframe.time = animationLength;
+                    c.SetLastFrame(keyframe);
                 }
             }
         }
@@ -57,12 +57,16 @@ namespace VamTimeline
         {
             foreach (var curve in GetCurves())
             {
-                var keyframe = curve.GetKeyframeAt(time);
-                if (keyframe == null) continue;
+                var key = curve.KeyframeBinarySearch(time);
+                if (key == -1) continue;
+                var keyframe = curve.GetKeyframeByKey(key);
                 keyframe.curveType = curveType;
+                curve.SetKeyframeByKey(key, keyframe);
                 if (curve.loop && time == 0)
                 {
-                    curve.keys[curve.keys.Count - 1].curveType = curveType;
+                    var last = curve.GetLastFrame();
+                    last.curveType = curveType;
+                    curve.SetLastFrame(last);
                 }
             }
             if (dirty) this.dirty = true;
@@ -86,9 +90,7 @@ namespace VamTimeline
 
         public int GetKeyframeCurveType(float time)
         {
-            var keyframe = GetLeadCurve().GetKeyframeAt(time);
-            if (keyframe == null) return -1;
-            return keyframe.curveType;
+            return GetLeadCurve().GetKeyframeAt(time).curveType;
         }
     }
 }

@@ -1,16 +1,17 @@
+using System.Runtime.CompilerServices;
+
 namespace VamTimeline
 {
-    public class BezierKeyframe
+    public struct BezierKeyframe
     {
+        public const int NullKeyframeCurveType = -1;
+        public static readonly BezierKeyframe NullKeyframe = new BezierKeyframe(0, 0, -1);
+
         public float time;
         public float value;
         public float controlPointIn;
         public float controlPointOut;
         public int curveType;
-
-        public BezierKeyframe()
-        {
-        }
 
         public BezierKeyframe(float time, float value, int curveType)
             : this(time, value, curveType, value, value)
@@ -27,16 +28,16 @@ namespace VamTimeline
             this.controlPointOut = controlPointOut;
         }
 
-        public BezierKeyframe Clone()
+        [MethodImpl(256)]
+        public bool IsNull()
         {
-            return new BezierKeyframe
-            {
-                time = time,
-                value = value,
-                curveType = curveType,
-                controlPointIn = controlPointIn,
-                controlPointOut = controlPointOut
-            };
+            return curveType == NullKeyframeCurveType;
+        }
+
+        [MethodImpl(256)]
+        public bool HasValue()
+        {
+            return curveType != NullKeyframeCurveType;
         }
 
         public override string ToString()

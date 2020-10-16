@@ -16,25 +16,35 @@ namespace VamTimeline
         private int _lastIndex;
         private IBezierAnimationCurveSmoothing _compute;
 
+        [MethodImpl(256)]
         public BezierKeyframe GetFirstFrame()
         {
             return keys[0];
         }
 
+        [MethodImpl(256)]
         public BezierKeyframe GetLastFrame()
         {
             return keys[keys.Count - 1];
         }
 
+        [MethodImpl(256)]
+        public void SetLastFrame(BezierKeyframe keyframe)
+        {
+            keys[keys.Count - 1] = keyframe;
+        }
+
+        [MethodImpl(256)]
         public BezierKeyframe GetKeyframeAt(float time)
         {
-            if (keys.Count == 0) return null;
+            if (keys.Count == 0) return BezierKeyframe.NullKeyframe;
             var key = KeyframeBinarySearch(time);
-            if (key == -1) return null;
+            if (key == -1) return BezierKeyframe.NullKeyframe;
             return keys[key];
         }
 
-        public BezierKeyframe GetKeyframe(int key)
+        [MethodImpl(256)]
+        public BezierKeyframe GetKeyframeByKey(int key)
         {
             if (key == -1) throw new ArgumentException("Expected a key, received -1", nameof(key));
             return keys[key];
@@ -49,16 +59,16 @@ namespace VamTimeline
             if (_lastIndex < keys.Count - 1)
             {
                 current = keys[_lastIndex];
-                next = _lastIndex < keys.Count - 1 ? keys[_lastIndex + 1] : null;
+                next = _lastIndex < keys.Count - 1 ? keys[_lastIndex + 1] : BezierKeyframe.NullKeyframe;
                 if (time >= current.time && time < next.time)
                 {
                     return ComputeValue(current, next, time);
                 }
                 // Attempt next portion
-                if (next != null && _lastIndex < keys.Count - 2)
+                if (next.HasValue() && _lastIndex < keys.Count - 2)
                 {
                     current = next;
-                    next = _lastIndex < keys.Count - 2 ? keys[_lastIndex + 2] : null;
+                    next = _lastIndex < keys.Count - 2 ? keys[_lastIndex + 2] : BezierKeyframe.NullKeyframe;
                     if (time >= current.time && time < next.time)
                     {
                         _lastIndex++;
@@ -81,7 +91,7 @@ namespace VamTimeline
             current = keys[key];
             if (time < current.time)
                 current = keys[--key];
-            next = key < keys.Count - 1 ? keys[key + 1] : null;
+            next = key < keys.Count - 1 ? keys[key + 1] : BezierKeyframe.NullKeyframe;
             _lastIndex = key;
             return ComputeValue(current, next, time);
         }
@@ -97,11 +107,20 @@ namespace VamTimeline
             return key;
         }
 
+        [MethodImpl(256)]
         public int SetKeyframeByKey(int key, float value, int curveType)
         {
-            var keyframe = GetKeyframe(key);
+            var keyframe = GetKeyframeByKey(key);
             keyframe.value = value;
             keyframe.curveType = curveType;
+            SetKeyframeByKey(key, keyframe);
+            return key;
+        }
+
+        [MethodImpl(256)]
+        public int SetKeyframeByKey(int key, BezierKeyframe keyframe)
+        {
+            keys[key] = keyframe;
             return key;
         }
 
@@ -145,13 +164,13 @@ namespace VamTimeline
             }
             if (keys.Count == 1)
             {
-                var keyframe = GetKeyframe(0);
+                var keyframe = GetKeyframeByKey(0);
                 keyframe.time = 0;
                 AddKey(animationLength, keyframe.value, keyframe.curveType);
                 return;
             }
             {
-                var keyframe = GetKeyframe(0);
+                var keyframe = GetKeyframeByKey(0);
                 if (keyframe.time > 0)
                 {
                     if (keys.Count > 2)
@@ -192,6 +211,7 @@ namespace VamTimeline
                 {
                     key.controlPointIn = key.value;
                     key.controlPointOut = key.value;
+                    keys[0] = key;
                 }
                 return;
             }
@@ -202,12 +222,14 @@ namespace VamTimeline
                 {
                     first.controlPointIn = first.value;
                     first.controlPointOut = first.value;
+                    keys[0] = first;
                 }
                 var last = keys[1];
                 if (last.curveType != CurveTypeValues.LeaveAsIs)
                 {
                     last.controlPointIn = last.value;
                     last.controlPointOut = last.value;
+                    keys[1] = last;
                 }
                 return;
             }
@@ -241,7 +263,7 @@ namespace VamTimeline
                 }
                 else
                 {
-                    previous = null;
+                    previous = BezierKeyframe.NullKeyframe;
                     previousTime = 0f;
                 }
                 var current = keys[key];
@@ -259,12 +281,12 @@ namespace VamTimeline
                 }
                 else
                 {
-                    next = null;
+                    next = BezierKeyframe.NullKeyframe;
                     nextTime = keys[keysCount - 1].time;
                 }
 
                 var curveType = current.curveType;
-                if (curveType == CurveTypeValues.CopyPrevious && previous != null)
+                if (curveType == CurveTypeValues.CopyPrevious && previous.HasValue())
                 {
                     current.value = previous.value;
                     curveType = previous.curveType == CurveTypeValues.CopyPrevious ? CurveTypeValues.SmoothLocal : previous.curveType;
@@ -273,16 +295,16 @@ namespace VamTimeline
                 switch (curveType)
                 {
                     case CurveTypeValues.Linear:
-                        LinearInterpolation(previous, current, next);
+                        LinearInterpolation(previous, ref current, next);
                         break;
                     case CurveTypeValues.SmoothLocal:
-                        SmoothLocalInterpolation(previous, previousTime, current, next, nextTime);
+                        SmoothLocalInterpolation(previous, previousTime, ref current, next, nextTime);
                         break;
                     case CurveTypeValues.SmoothGlobal:
-                        if (!globalSmoothing) SmoothLocalInterpolation(previous, previousTime, current, next, nextTime);
+                        if (!globalSmoothing) SmoothLocalInterpolation(previous, previousTime, ref current, next, nextTime);
                         break;
                     case CurveTypeValues.LinearFlat:
-                        if (previous != null)
+                        if (previous.HasValue())
                             current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
                         else
                             current.controlPointIn = current.value;
@@ -295,7 +317,7 @@ namespace VamTimeline
                         current.controlPointOut = current.value;
                         break;
                     case CurveTypeValues.Bounce:
-                        if (previous != null && next != null)
+                        if (previous.HasValue() && next.HasValue())
                         {
                             current.controlPointIn = current.value - ((current.value - next.value) / 1.4f);
                             current.controlPointOut = current.value + ((previous.value - current.value) / 1.8f);
@@ -311,24 +333,26 @@ namespace VamTimeline
                     default:
                         continue;
                 }
+
+                keys[key] = current;
             }
         }
 
-        private static void LinearInterpolation(BezierKeyframe previous, BezierKeyframe current, BezierKeyframe next)
+        private static void LinearInterpolation(BezierKeyframe previous, ref BezierKeyframe current, BezierKeyframe next)
         {
-            if (previous != null)
+            if (previous.HasValue())
                 current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
             else
                 current.controlPointIn = current.value;
-            if (next != null)
+            if (next.HasValue())
                 current.controlPointOut = current.value + ((next.value - current.value) / 3f);
             else
                 current.controlPointOut = current.value;
         }
 
-        private static void SmoothLocalInterpolation(BezierKeyframe previous, float previousTime, BezierKeyframe current, BezierKeyframe next, float nextTime)
+        private static void SmoothLocalInterpolation(BezierKeyframe previous, float previousTime, ref BezierKeyframe current, BezierKeyframe next, float nextTime)
         {
-            if (next != null && previous != null)
+            if (next.HasValue() && previous.HasValue())
             {
                 var bothSegmentsDuration = nextTime - previousTime;
                 var inRatio = (current.time - previousTime) / bothSegmentsDuration;
@@ -347,12 +371,12 @@ namespace VamTimeline
                     current.controlPointOut = current.value + avg;
                 }
             }
-            else if (previous == null)
+            else if (previous.IsNull())
             {
                 current.controlPointIn = current.value;
                 current.controlPointOut = current.value + ((next.value - current.value) / 3f);
             }
-            else if (next == null)
+            else if (next.IsNull())
             {
                 current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
                 current.controlPointOut = current.value;
@@ -362,7 +386,7 @@ namespace VamTimeline
         [MethodImpl(256)]
         public float ComputeValue(BezierKeyframe current, BezierKeyframe next, float time)
         {
-            if (next == null) return current.value;
+            if (next.IsNull()) return current.value;
             var t = (time - current.time) / (next.time - current.time);
             switch (current.curveType)
             {
@@ -440,40 +464,53 @@ namespace VamTimeline
 
             keys.Reverse();
 
-            foreach (var key in keys)
+            for (int i = 0; i < keys.Count; i++)
             {
-                key.time = currentLength - key.time.Snap();
+                var keyframe = GetKeyframeByKey(i);
+                keyframe.time = currentLength - keyframe.time.Snap();
+                SetKeyframeByKey(i, keyframe);
             }
         }
 
         public void SmoothNeighbors(int key)
         {
-            var previous2 = key > 1 ? keys[key - 2] : null;
-            var previous = key > 0 ? keys[key - 1] : null;
-            var current = keys[key];
-            var next = key < keys.Count - 1 ? keys[key + 1] : null;
-            var next2 = key < keys.Count - 2 ? keys[key + 2] : null;
-            if (previous != null) SmoothLocalInterpolation(previous2, previous2?.time ?? 0f, previous, current, current.time);
-            SmoothLocalInterpolation(previous, previous?.time ?? 0f, current, next, next?.time ?? 0f);
-            if (next != null) SmoothLocalInterpolation(current, current.time, next, next2, next2?.time ?? 0f);
+            var previous2 = key > 1 ? key - 2 : -1;
+            var previous = key > 0 ? key - 1 : -1;
+            var current = key;
+            var next = key < keys.Count - 1 ? key + 1 : -1;
+            var next2 = key < keys.Count - 2 ? key + 2 : -1;
+            var currentKeyframe = keys[current];
+            if (previous != -1)
+            {
+                var previousKeyframe = GetKeyframeByKey(previous);
+                SmoothLocalInterpolation(keys[previous2], keys[previous2].time, ref previousKeyframe, currentKeyframe, currentKeyframe.time);
+                SetKeyframeByKey(previous, previousKeyframe);
+            }
+            SmoothLocalInterpolation(keys[previous], keys[previous].time, ref currentKeyframe, keys[next], keys[next].time);
+            SetKeyframeByKey(current, currentKeyframe);
+            if (next != -1)
+            {
+                var nextKeyframe = GetKeyframeByKey(next);
+                SmoothLocalInterpolation(currentKeyframe, currentKeyframe.time, ref nextKeyframe, keys[next2], keys[next2].time);
+                SetKeyframeByKey(next, nextKeyframe);
+            }
         }
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)
         {
-            var clone = keyframe.Clone();
-            clone.time = time;
+            keyframe.time = time;
 
             if (length == 0)
             {
-                AddKey(clone);
+                AddKey(keyframe);
                 return;
             }
 
             var index = KeyframeBinarySearch(time);
             if (index == -1)
-                AddKey(clone);
+                AddKey(keyframe);
             else
-                keys[index] = clone;
+                keys[index] = keyframe;
         }
     }
 }

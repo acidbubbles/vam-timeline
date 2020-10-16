@@ -260,12 +260,11 @@ namespace VamTimeline
                 if (time == last) continue;
                 last = time;
                 var value = DeserializeFloat(keyframeJSON["value"]);
-                var keyframe = new BezierKeyframe
-                {
-                    time = time,
-                    value = value,
-                    curveType = CurveTypeValues.SmoothLocal
-                };
+                var keyframe = new BezierKeyframe(
+                    time,
+                    value,
+                    CurveTypeValues.SmoothLocal
+                );
                 curve.AddKey(keyframe);
             }
         }
@@ -423,7 +422,7 @@ namespace VamTimeline
 
             for (var key = 0; key < curve.length; key++)
             {
-                var keyframe = curve.GetKeyframe(key);
+                var keyframe = curve.GetKeyframeByKey(key);
                 var ms = keyframe.time.ToMilliseconds();
                 var curveEntry = new JSONClass
                 {

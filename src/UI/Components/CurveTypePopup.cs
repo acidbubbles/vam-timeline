@@ -71,7 +71,7 @@ namespace VamTimeline
             foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
                 var curveType = target.GetKeyframeCurveType(time);
-                if (curveType == -1) continue;
+                if (curveType == BezierKeyframe.NullKeyframeCurveType) continue;
                 _curveTypes.Add(CurveTypeValues.FromInt(curveType));
             }
 

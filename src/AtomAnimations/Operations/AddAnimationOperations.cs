@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -23,14 +24,14 @@ namespace VamTimeline
                 newTarget.weight = origTarget.weight;
                 for (var i = 0; i < origTarget.curves.Count; i++)
                 {
-                    newTarget.curves[i].keys = origTarget.curves[i].keys.Select(k => k.Clone()).ToList();
+                    newTarget.curves[i].keys = new List<BezierKeyframe>(origTarget.curves[i].keys);
                 }
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
                 var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
-                newTarget.value.keys = origTarget.value.keys.Select(k => k.Clone()).ToList();
+                newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetTriggers)
