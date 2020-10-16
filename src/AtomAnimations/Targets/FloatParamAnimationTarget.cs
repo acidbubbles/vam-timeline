@@ -112,10 +112,6 @@ namespace VamTimeline
             return storableId == "geometry" ? floatParamName : $"{(storableId.Length > 4 ? storableId.Substring(0, 4) : storableId)}/{floatParamName}";
         }
 
-        public void Sample(float clipTime, float weight)
-        {
-        }
-
         public void Validate(float animationLength)
         {
             Validate(value, animationLength);

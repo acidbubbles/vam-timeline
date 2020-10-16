@@ -457,6 +457,7 @@ namespace VamTimeline
                 animationEditContext.Initialize();
                 BindAnimation();
                 animation.enabled = enabled;
+                GC.Collect();
             }
             catch (Exception exc)
             {
