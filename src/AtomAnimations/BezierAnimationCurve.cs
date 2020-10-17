@@ -474,25 +474,29 @@ namespace VamTimeline
 
         public void SmoothNeighbors(int key)
         {
-            var previous2 = key > 1 ? key - 2 : -1;
-            var previous = key > 0 ? key - 1 : -1;
-            var current = key;
-            var next = key < keys.Count - 1 ? key + 1 : -1;
-            var next2 = key < keys.Count - 2 ? key + 2 : -1;
-            var currentKeyframe = keys[current];
-            if (previous != -1)
+            var previous2Key = key > 1 ? key - 2 : -1;
+            var previous1Key = key > 0 ? key - 1 : -1;
+            var currentKey = key;
+            var next1Key = key < keys.Count - 1 ? key + 1 : -1;
+            var next2Key = key < keys.Count - 2 ? key + 2 : -1;
+
+            var previous1Keyframe = previous1Key != -1 ? keys[previous1Key] : BezierKeyframe.NullKeyframe;
+            var currentKeyframe = keys[currentKey];
+            var next1Keyframe = next1Key != -1 ? keys[next1Key] : BezierKeyframe.NullKeyframe;
+
+            if (previous1Key != -1)
             {
-                var previousKeyframe = GetKeyframeByKey(previous);
-                SmoothLocalInterpolation(keys[previous2], keys[previous2].time, ref previousKeyframe, currentKeyframe, currentKeyframe.time);
-                SetKeyframeByKey(previous, previousKeyframe);
+                var previous2Keyframe = previous2Key != -1 ? keys[previous2Key] : BezierKeyframe.NullKeyframe;
+                SmoothLocalInterpolation(previous2Keyframe, previous2Keyframe.time, ref previous1Keyframe, currentKeyframe, currentKeyframe.time);
+                SetKeyframeByKey(previous1Key, previous1Keyframe);
             }
-            SmoothLocalInterpolation(keys[previous], keys[previous].time, ref currentKeyframe, keys[next], keys[next].time);
-            SetKeyframeByKey(current, currentKeyframe);
-            if (next != -1)
+            SmoothLocalInterpolation(previous1Keyframe, previous1Keyframe.time, ref currentKeyframe, next1Keyframe, next1Keyframe.time);
+            SetKeyframeByKey(currentKey, currentKeyframe);
+            if (next1Key != -1)
             {
-                var nextKeyframe = GetKeyframeByKey(next);
-                SmoothLocalInterpolation(currentKeyframe, currentKeyframe.time, ref nextKeyframe, keys[next2], keys[next2].time);
-                SetKeyframeByKey(next, nextKeyframe);
+                var next2Keyframe = next2Key != -1 ? keys[next2Key] : BezierKeyframe.NullKeyframe;
+                SmoothLocalInterpolation(currentKeyframe, currentKeyframe.time, ref next1Keyframe, next2Keyframe, next2Keyframe.time);
+                SetKeyframeByKey(next1Key, next1Keyframe);
             }
         }
 
