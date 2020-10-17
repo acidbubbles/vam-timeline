@@ -9,7 +9,7 @@ namespace VamTimeline
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayer = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3, List<FreeControllerAnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3, List<FreeControllerAnimationTarget>>();
         private readonly Dictionary<string, List<FloatParamAnimationTarget>> _clipsByFloatParam = new Dictionary<string, List<FloatParamAnimationTarget>>();
-
+        private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
         private bool _paused;
 
         public AtomAnimationsClipsIndex(List<AtomAnimationClip> clips)
@@ -80,7 +80,8 @@ namespace VamTimeline
 
         public IEnumerable<AtomAnimationClip> ByLayer(string layer)
         {
-            return _clipsByLayer[layer];
+            List<AtomAnimationClip> clip;
+            return _clipsByLayer.TryGetValue(layer, out clip) ? clip : _emptyClipList;
         }
 
         public IEnumerable<KeyValuePair<FreeControllerV3, List<FreeControllerAnimationTarget>>> ByController()
