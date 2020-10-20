@@ -374,6 +374,7 @@ namespace VamTimeline
             _masterJSON.valNoCallback = animation.master;
             _autoPlayJSON.valNoCallback = current.autoPlay;
             _blendDurationJSON.valNoCallback = current.blendInDuration;
+            _uninterruptible.valNoCallback = current.uninterruptible;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
             _preserveLoopsJSON.valNoCallback = current.preserveLoops;

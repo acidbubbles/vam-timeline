@@ -72,6 +72,7 @@ namespace VamTimeline
                 autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
                 speed = DeserializeFloat(clipJSON["Speed"], 1),
                 weight = DeserializeFloat(clipJSON["Weight"], 1),
+                uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
             };
             clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
             DeserializeClip(clip, clipJSON);
@@ -338,6 +339,7 @@ namespace VamTimeline
                     { "AnimationLayer", clip.animationLayer },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
+                    { "uninterruptible", clip.uninterruptible ? "1" : "0" },
                 };
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
