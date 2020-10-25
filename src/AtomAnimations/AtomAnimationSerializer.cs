@@ -339,7 +339,7 @@ namespace VamTimeline
                     { "AnimationLayer", clip.animationLayer },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
-                    { "uninterruptible", clip.uninterruptible ? "1" : "0" },
+                    { "Uninterruptible", clip.uninterruptible ? "1" : "0" },
                 };
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
