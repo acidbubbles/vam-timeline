@@ -93,7 +93,7 @@ namespace VamTimeline
             var selfRigidbodyTarget = selfRigidbodyControl.EndsWith("Control") ? selfRigidbodyControl.Substring(0, selfRigidbodyControl.Length - "Control".Length) : null;
             var choices = atom.linkableRigidbodies
                 .Select(rb => rb.name)
-                .Where(n => n != selfRigidbodyControl && n != selfRigidbodyTarget)
+                .Where(n => atom != plugin.containingAtom || (n != selfRigidbodyControl && n != selfRigidbodyTarget))
                 .ToList();
             choices.Insert(0, "None");
             _rigidbodyJSON.choices = choices;
