@@ -10,6 +10,8 @@ namespace VamTimeline
 
         public override string name => controller.name;
 
+        public bool controlPosition;
+        public bool controlRotation;
         private bool _parentAvailable;
         private int _lastParentAvailableCheck = 0;
         public string parentAtomId;

@@ -43,6 +43,7 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader($"Options", 1);
 
+            InitControlUI();
             InitWeightUI();
         }
 
@@ -67,7 +68,17 @@ namespace VamTimeline
             {
                 valNoCallback = _target.weight
             };
+            parentWeight.valNoCallback = _target.weight;
             prefabFactory.CreateSlider(parentWeight);
+        }
+
+        private void InitControlUI()
+        {
+            var controlPosition = new JSONStorableBool("Control position", _target.controlPosition, (bool val) => _target.controlPosition = val);
+            prefabFactory.CreateToggle(controlPosition);
+
+            var controlRotation = new JSONStorableBool("Control rotation", _target.controlRotation, (bool val) => _target.controlRotation = val);
+            prefabFactory.CreateToggle(controlRotation);
         }
 
         private void SyncAtom()

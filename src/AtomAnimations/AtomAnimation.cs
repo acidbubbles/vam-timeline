@@ -599,7 +599,7 @@ namespace VamTimeline
 
                 var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
 
-                if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
+                if (target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
                     var targetRotation = target.EvaluateRotation(clip.clipTime);
                     if (link != null)
@@ -617,7 +617,7 @@ namespace VamTimeline
                     rotationCount++;
                 }
 
-                if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
+                if (target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off)
                 {
                     var targetPosition = target.EvaluatePosition(clip.clipTime);
                     if (link != null)

@@ -103,13 +103,17 @@ namespace VamTimeline
                         SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a controller '{controllerName}'");
                         continue;
                     }
-                    var target = new FreeControllerAnimationTarget(controller);
+                    var target = new FreeControllerAnimationTarget(controller)
+                    {
+                        controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true),
+                        controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true),
+                        weight = DeserializeFloat(controllerJSON["Weight"], 1f)
+                    };
                     if (controllerJSON.HasKey("Parent"))
                     {
                         var parentJSON = controllerJSON["Parent"].AsObject;
                         target.SetParent(parentJSON["Atom"], parentJSON["Rigidbody"]);
                     }
-                    target.weight = DeserializeFloat(controllerJSON["Weight"], 1f);
                     var dirty = false;
                     DeserializeCurve(target.x, controllerJSON["X"], ref dirty);
                     DeserializeCurve(target.y, controllerJSON["Y"], ref dirty);
@@ -364,6 +368,8 @@ namespace VamTimeline
                 var controllerJSON = new JSONClass
                     {
                         { "Controller", controller.controller.name },
+                        { "ControlPosition", controller.controlPosition ? "1" : "0" },
+                        { "ControlRotation", controller.controlRotation ? "1" : "0" },
                         { "X", SerializeCurve(controller.x) },
                         { "Y", SerializeCurve(controller.y) },
                         { "Z", SerializeCurve(controller.z) },
