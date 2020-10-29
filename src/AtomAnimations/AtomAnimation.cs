@@ -242,6 +242,7 @@ namespace VamTimeline
             {
                 isPlaying = true;
                 this.sequencing = this.sequencing || sequencing;
+                PlaybackHealthCheck(clip);
             }
             if (sequencing && !clip.playbackEnabled) clip.clipTime = 0;
             var previousMain = index.ByLayer(clip.animationLayer).FirstOrDefault(c => c.playbackMainInLayer);
@@ -275,6 +276,17 @@ namespace VamTimeline
                 AssignNextAnimation(clip);
 
             onIsPlayingChanged.Invoke(clip);
+        }
+
+        private void PlaybackHealthCheck(AtomAnimationClip clip)
+        {
+            for (var i = 0; i < clip.targetControllers.Count; i++)
+            {
+                var target = clip.targetControllers[i];
+                var controller = target.controller;
+                if ((!target.controlRotation || controller.currentRotationState == FreeControllerV3.RotationState.Off) && (!target.controlPosition || controller.currentPositionState == FreeControllerV3.PositionState.Off))
+                    SuperController.LogError($"Timeline: Controller {controller.name} of atom {controller.containingAtom.name} has position and rotation off and will not play.");
+            }
         }
 
         public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
@@ -699,7 +711,7 @@ namespace VamTimeline
             foreach (var layer in index.ByLayer())
             {
                 AtomAnimationClip last = null;
-                foreach(var clip in layer.Value)
+                foreach (var clip in layer.Value)
                 {
                     clip.Validate();
                     RebuildClip(clip, last);
