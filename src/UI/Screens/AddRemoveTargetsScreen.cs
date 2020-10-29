@@ -406,7 +406,9 @@ namespace VamTimeline
             {
                 var uid = _addControllerListJSON.val;
                 if (string.IsNullOrEmpty(uid)) return;
-                _addControllerListJSON.valNoCallback = "";
+
+				SelectNextInList(_addControllerListJSON);
+
                 var controller = plugin.containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
                 {
@@ -468,7 +470,7 @@ namespace VamTimeline
                     return;
                 }
 
-				SelectNextAnimatedFloatParam();
+				SelectNextInList(_addParamListJSON);
 
                 if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
@@ -488,14 +490,14 @@ namespace VamTimeline
             }
         }
 
-		private void SelectNextAnimatedFloatParam()
+		private void SelectNextInList(JSONStorableStringChooser list)
 		{
 			int currentIndex = -1;
 
 			// getting index of current selection
-			for (int i=0; i<_addParamListJSON.choices.Count; ++i)
+			for (int i=0; i<list.choices.Count; ++i)
 			{
-				if (_addParamListJSON.choices[i] == _addParamListJSON.val)
+				if (list.choices[i] == list.val)
 				{
 					currentIndex = i;
 					break;
@@ -508,26 +510,26 @@ namespace VamTimeline
 				return;
 			}
 
-			if (currentIndex == (_addParamListJSON.choices.Count - 1))
+			if (currentIndex == (list.choices.Count - 1))
 			{
-				// param was last in list
-				if (_addParamListJSON.choices.Count <= 1)
+				// value was last in list
+				if (list.choices.Count <= 1)
 				{
-					// and that was the last param, clear
-					_addParamListJSON.val = "";
+					// and that was the last value, clear
+					list.val = "";
 				}
 				else
 				{
 					// select next to last
-					int newIndex = _addParamListJSON.choices.Count - 2;
-					_addParamListJSON.val = _addParamListJSON.choices[newIndex];
+					int newIndex = list.choices.Count - 2;
+					list.val = list.choices[newIndex];
 				}
 			}
 			else
 			{
 				// select next in list
 				int newIndex = currentIndex + 1;
-				_addParamListJSON.val = _addParamListJSON.choices[newIndex];
+				list.val = list.choices[newIndex];
 			}
 		}
 
