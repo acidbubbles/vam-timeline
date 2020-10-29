@@ -19,22 +19,33 @@ namespace VamTimeline
             vh.Clear();
             if (_length == 0 || style == null) return;
             var width = rectTransform.rect.width;
+            var pixelsPerSecond = width / _length;
+            float timespan;
+            if (pixelsPerSecond < 20)
+                timespan = 100f;
+            else if (pixelsPerSecond < 2)
+                timespan = 10f;
+            else
+                timespan = 1f;
             var height = rectTransform.rect.height;
             var yMin = -height / 2f;
             var yMax = -2f;
             var yMaxSmall = -8f;
+            var timespan25 = timespan * 0.25f;
+            var timespan50 = timespan * 0.50f;
+            var timespan75 = timespan * 0.75f;
 
             var offsetX = -width / 2f;
             var ratio = width / _length;
 
-            for (var s = 0f; s <= _length; s += 1f)
+            for (var s = 0f; s <= _length; s += timespan)
             {
                 DrawLine(vh, yMin, yMax, offsetX, ratio, s, style.SecondsSize, style.SecondsColor);
 
                 if (s == _length) break;
-                DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + 0.25f, style.SecondFractionsSize, style.SecondFractionsColor);
-                DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + 0.50f, style.SecondFractionsSize, style.SecondFractionsColor);
-                DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + 0.75f, style.SecondFractionsSize, style.SecondFractionsColor);
+                DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan25, style.SecondFractionsSize, style.SecondFractionsColor);
+                DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan50, style.SecondFractionsSize, style.SecondFractionsColor);
+                DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan75, style.SecondFractionsSize, style.SecondFractionsColor);
             }
         }
 

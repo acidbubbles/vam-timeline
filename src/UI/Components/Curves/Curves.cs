@@ -270,7 +270,9 @@ namespace VamTimeline
             yield return 0;
             yield return 0;
             foreach (var l in _lines)
+            {
                 l.SetVerticesDirty();
+            }
         }
 
         public void Update()

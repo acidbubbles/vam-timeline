@@ -65,13 +65,18 @@ namespace VamTimeline
 
             var padding = style.KeyframesRowPadding;
             var lineHeight = style.KeyframesRowLineSize;
-            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(_selected ? style.KeyframesRowLineColorSelected : style.KeyframesRowLineColor, new[]
+            var pixelsPerSecond = width / _frames.Count;
+            var tooManyKeyframes = pixelsPerSecond < 2f;
+            var lineColor = _selected ? style.KeyframesRowLineColorSelected : (tooManyKeyframes ? Color.red : style.KeyframesRowLineColor);
+            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(lineColor, new[]
             {
                 new Vector2(-width / 2f + padding, -lineHeight),
                 new Vector2(width / 2f - padding, -lineHeight),
                 new Vector2(width / 2f - padding, lineHeight),
                 new Vector2(-width / 2f + padding, lineHeight)
             }));
+
+            if(tooManyKeyframes) return;
 
             var ratio = (width - padding * 2f) / _animationLength;
             var size = style.KeyframeSize;

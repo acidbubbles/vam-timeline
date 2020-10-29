@@ -68,7 +68,15 @@ namespace VamTimeline
             }, style.ZeroLineSize, style.ZeroLineColor);
 
             // Seconds
-            for (var t = 0f; t <= maxX; t += 1f)
+            var pixelsPerSecond = width / maxX;
+            float timespan;
+            if (pixelsPerSecond < 20)
+                timespan = 100f;
+            else if (pixelsPerSecond < 2)
+                timespan = 10f;
+            else
+                timespan = 1f;
+            for (var t = 0f; t <= maxX; t += timespan)
             {
                 var x = offsetX + t * xRatio;
                 vh.DrawLine(new[]
@@ -83,6 +91,8 @@ namespace VamTimeline
             {
                 // Common
                 var curve = curveInfo.Value;
+                if(curve.length > 1000) continue;
+
                 var color = curveInfo.Key;
                 var last = curve.GetKeyframeByKey(curve.length - 1);
 
