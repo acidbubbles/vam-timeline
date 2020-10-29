@@ -71,7 +71,11 @@ namespace VamTimeline
         {
             RefreshControllersList();
             RefreshStorableFloatsList();
-            _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
+
+			// don't change the param selection if it's still in the list
+			if (!_addParamListJSON.choices.Contains(_addParamListJSON.val))
+				_addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
+
             UpdateSelectDependentUI();
         }
 
@@ -464,7 +468,7 @@ namespace VamTimeline
                     return;
                 }
 
-                _addParamListJSON.valNoCallback = "";
+				SelectNextAnimatedFloatParam();
 
                 if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
@@ -483,6 +487,49 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
             }
         }
+
+		private void SelectNextAnimatedFloatParam()
+		{
+			int currentIndex = -1;
+
+			// getting index of current selection
+			for (int i=0; i<_addParamListJSON.choices.Count; ++i)
+			{
+				if (_addParamListJSON.choices[i] == _addParamListJSON.val)
+				{
+					currentIndex = i;
+					break;
+				}
+			}
+
+			if (currentIndex == -1)
+			{
+				// not found?
+				return;
+			}
+
+			if (currentIndex == (_addParamListJSON.choices.Count - 1))
+			{
+				// param was last in list
+				if (_addParamListJSON.choices.Count <= 1)
+				{
+					// and that was the last param, clear
+					_addParamListJSON.val = "";
+				}
+				else
+				{
+					// select next to last
+					int newIndex = _addParamListJSON.choices.Count - 2;
+					_addParamListJSON.val = _addParamListJSON.choices[newIndex];
+				}
+			}
+			else
+			{
+				// select next in list
+				int newIndex = currentIndex + 1;
+				_addParamListJSON.val = _addParamListJSON.choices[newIndex];
+			}
+		}
 
         private void RemoveAnimatedController(FreeControllerAnimationTarget target)
         {
