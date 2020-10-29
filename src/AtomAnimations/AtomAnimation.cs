@@ -663,7 +663,7 @@ namespace VamTimeline
                     targetRotation = _rotations[0];
                 }
                 var rotation = Quaternion.Slerp(control.rotation, targetRotation, totalRotationControlWeights / totalRotationBlendWeights);
-                control.rotation = targetRotation;
+                control.rotation = rotation;
             }
 
             if (totalPositionBlendWeights > float.Epsilon && controller.currentPositionState != FreeControllerV3.PositionState.Off)
