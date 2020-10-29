@@ -16,7 +16,7 @@ namespace VamTimeline
 
         public void Update(float clipTime)
         {
-            if (clipTime >= startTime && clipTime < endTime)
+            if (clipTime >= startTime && (clipTime < endTime || startTime == endTime))
             {
                 active = true;
                 transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
@@ -30,7 +30,7 @@ namespace VamTimeline
 
         public void Leave()
         {
-            if (active) active = false;
+            active = false;
         }
 
         #region JSON
