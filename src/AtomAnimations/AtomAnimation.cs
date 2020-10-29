@@ -284,8 +284,8 @@ namespace VamTimeline
             {
                 var target = clip.targetControllers[i];
                 var controller = target.controller;
-                if ((!target.controlRotation || controller.currentRotationState == FreeControllerV3.RotationState.Off) && (!target.controlPosition || controller.currentPositionState == FreeControllerV3.PositionState.Off))
-                    SuperController.LogError($"Timeline: Controller {controller.name} of atom {controller.containingAtom.name} has position and rotation off and will not play.");
+                if ((target.controlRotation && controller.currentRotationState == FreeControllerV3.RotationState.Off) || (target.controlPosition && controller.currentPositionState == FreeControllerV3.PositionState.Off))
+                    SuperController.LogError($"Timeline: Controller {controller.name} of atom {controller.containingAtom.name} has position or rotation off and will not play. You can turn of rotation/position if this is the desired result in the targets, in the controller settings.");
             }
         }
 
