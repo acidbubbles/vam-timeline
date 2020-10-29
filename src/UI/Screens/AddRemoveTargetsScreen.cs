@@ -72,9 +72,9 @@ namespace VamTimeline
             RefreshControllersList();
             RefreshStorableFloatsList();
 
-			// don't change the param selection if it's still in the list
-			if (!_addParamListJSON.choices.Contains(_addParamListJSON.val))
-				_addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
+            // don't change the param selection if it's still in the list
+            if (!_addParamListJSON.choices.Contains(_addParamListJSON.val))
+                _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
 
             UpdateSelectDependentUI();
         }
@@ -407,7 +407,7 @@ namespace VamTimeline
                 var uid = _addControllerListJSON.val;
                 if (string.IsNullOrEmpty(uid)) return;
 
-				SelectNextInList(_addControllerListJSON);
+                SelectNextInList(_addControllerListJSON);
 
                 var controller = plugin.containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
                 if (controller == null)
@@ -470,7 +470,7 @@ namespace VamTimeline
                     return;
                 }
 
-				SelectNextInList(_addParamListJSON);
+                SelectNextInList(_addParamListJSON);
 
                 if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
                     return;
@@ -490,48 +490,48 @@ namespace VamTimeline
             }
         }
 
-		private void SelectNextInList(JSONStorableStringChooser list)
-		{
-			int currentIndex = -1;
+        private void SelectNextInList(JSONStorableStringChooser list)
+        {
+            int currentIndex = -1;
 
-			// getting index of current selection
-			for (int i=0; i<list.choices.Count; ++i)
-			{
-				if (list.choices[i] == list.val)
-				{
-					currentIndex = i;
-					break;
-				}
-			}
+            // getting index of current selection
+            for (int i=0; i<list.choices.Count; ++i)
+            {
+                if (list.choices[i] == list.val)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
 
-			if (currentIndex == -1)
-			{
-				// not found?
-				return;
-			}
+            if (currentIndex == -1)
+            {
+                // not found?
+                return;
+            }
 
-			if (currentIndex == (list.choices.Count - 1))
-			{
-				// value was last in list
-				if (list.choices.Count <= 1)
-				{
-					// and that was the last value, clear
-					list.val = "";
-				}
-				else
-				{
-					// select next to last
-					int newIndex = list.choices.Count - 2;
-					list.val = list.choices[newIndex];
-				}
-			}
-			else
-			{
-				// select next in list
-				int newIndex = currentIndex + 1;
-				list.val = list.choices[newIndex];
-			}
-		}
+            if (currentIndex == (list.choices.Count - 1))
+            {
+                // value was last in list
+                if (list.choices.Count <= 1)
+                {
+                    // and that was the last value, clear
+                    list.val = "";
+                }
+                else
+                {
+                    // select next to last
+                    int newIndex = list.choices.Count - 2;
+                    list.val = list.choices[newIndex];
+                }
+            }
+            else
+            {
+                // select next in list
+                int newIndex = currentIndex + 1;
+                list.val = list.choices[newIndex];
+            }
+        }
 
         private void RemoveAnimatedController(FreeControllerAnimationTarget target)
         {
