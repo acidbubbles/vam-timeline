@@ -495,7 +495,7 @@ namespace VamTimeline
             int currentIndex = -1;
 
             // getting index of current selection
-            for (int i=0; i<list.choices.Count; ++i)
+            for (var i = 0; i < list.choices.Count; ++i)
             {
                 if (list.choices[i] == list.val)
                 {
