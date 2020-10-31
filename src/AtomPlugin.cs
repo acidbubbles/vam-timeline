@@ -295,6 +295,8 @@ namespace VamTimeline
             {
                 if (animation == null) return;
                 animation.StopAndReset();
+                animationEditContext.SelectAnimation(animation.GetDefaultClip());
+                animationEditContext.Sample();
                 peers.SendStopAndReset();
             });
             RegisterAction(stopAndResetJSON);
