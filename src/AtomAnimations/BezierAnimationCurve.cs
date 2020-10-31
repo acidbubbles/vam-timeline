@@ -166,6 +166,7 @@ namespace VamTimeline
             {
                 var keyframe = GetKeyframeByKey(0);
                 keyframe.time = 0;
+                keys[0] = keyframe;
                 AddKey(animationLength, keyframe.value, keyframe.curveType);
                 return;
             }
@@ -180,6 +181,7 @@ namespace VamTimeline
                     else
                     {
                         keyframe.time = 0;
+                        keys[0] = keyframe;
                     }
                 }
             }
@@ -194,6 +196,7 @@ namespace VamTimeline
                     else
                     {
                         keyframe.time = animationLength;
+                        keys[length - 1] = keyframe;
                     }
                 }
             }
