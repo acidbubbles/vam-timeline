@@ -19,13 +19,9 @@ namespace VamTimeline
             var clip = AddAnimationWithSameSettings();
             foreach (var origTarget in _clip.targetControllers)
             {
-                var newTarget = clip.Add(origTarget.controller);
-                newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
-                newTarget.weight = origTarget.weight;
+                var newTarget = CopyTarget(clip, origTarget);
                 for (var i = 0; i < origTarget.curves.Count; i++)
-                {
                     newTarget.curves[i].keys = new List<BezierKeyframe>(origTarget.curves[i].keys);
-                }
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetFloatParams)
@@ -66,9 +62,7 @@ namespace VamTimeline
             var clip = _animation.CreateClip(_clip);
             foreach (var origTarget in _clip.targetControllers)
             {
-                var newTarget = clip.Add(origTarget.controller);
-                newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
-                newTarget.weight = origTarget.weight;
+                var newTarget = CopyTarget(clip, origTarget);
                 newTarget.SetKeyframeToCurrentTransform(0f);
                 newTarget.SetKeyframeToCurrentTransform(clip.animationLength);
             }
@@ -103,9 +97,7 @@ namespace VamTimeline
 
             foreach (var origTarget in _clip.targetControllers)
             {
-                var newTarget = clip.Add(origTarget.controller);
-                newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
-                newTarget.weight = origTarget.weight;
+                var newTarget = CopyTarget(clip, origTarget);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
@@ -121,6 +113,16 @@ namespace VamTimeline
 
             _clip.nextAnimationName = clip.animationName;
             return clip;
+        }
+
+        private static FreeControllerAnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerAnimationTarget origTarget)
+        {
+            var newTarget = clip.Add(origTarget.controller);
+            newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
+            newTarget.weight = origTarget.weight;
+            newTarget.controlPosition = origTarget.controlPosition;
+            newTarget.controlRotation = origTarget.controlPosition;
+            return newTarget;
         }
     }
 }
