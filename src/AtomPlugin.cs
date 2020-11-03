@@ -390,16 +390,6 @@ namespace VamTimeline
 
         public override JSONClass GetJSON(bool includePhysical = true, bool includeAppearance = true, bool forceStore = false)
         {
-            try
-            {
-                animation.StopAll();
-                animationEditContext.playTime = animationEditContext.playTime.Snap(animationEditContext.snap);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(GetJSON)} (Stop): {exc}");
-            }
-
             var json = base.GetJSON(includePhysical, includeAppearance, forceStore);
 
             try
