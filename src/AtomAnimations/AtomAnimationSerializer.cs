@@ -351,7 +351,7 @@ namespace VamTimeline
             if (clip.nextAnimationTime != 0)
                 clipJSON["NextAnimationTime"] = clip.nextAnimationTime.ToString(CultureInfo.InvariantCulture);
             if (clip.nextAnimationTimeRandomize != 0)
-                clipJSON["NextAnimationTimeRandomize "] = clip.nextAnimationTimeRandomize .ToString(CultureInfo.InvariantCulture);
+                clipJSON["NextAnimationTimeRandomize"] = clip.nextAnimationTimeRandomize .ToString(CultureInfo.InvariantCulture);
             if (clip.autoPlay)
                 clipJSON["AutoPlay"] = "1";
 
