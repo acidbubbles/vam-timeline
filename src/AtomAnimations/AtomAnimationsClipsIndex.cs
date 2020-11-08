@@ -70,7 +70,11 @@ namespace VamTimeline
                     byfloatParam.Add(target);
                 }
             }
-            // TODO: This could be optimized but it would be more complex (e.g. adding/removing targets, renaming layers, etc.)
+
+            foreach (var list in _clipsByController)
+            {
+                list.Value.Sort(new FreeControllerAnimationTargetParentedLastComparer());
+            }
         }
 
         public IEnumerable<KeyValuePair<string, List<AtomAnimationClip>>> ByLayer()
@@ -92,6 +96,18 @@ namespace VamTimeline
         public IEnumerable<KeyValuePair<string, List<FloatParamAnimationTarget>>> ByFloatParam()
         {
             return _clipsByFloatParam;
+        }
+
+        private class FreeControllerAnimationTargetParentedLastComparer : IComparer<FreeControllerAnimationTarget>
+        {
+            public int Compare(FreeControllerAnimationTarget x, FreeControllerAnimationTarget y)
+            {
+                var xHasParent = x.parentRigidbodyId != null;
+                var yHasParent = y.parentRigidbodyId != null;
+                if (xHasParent & !yHasParent) return 1;
+                if (!xHasParent & yHasParent) return -1;
+                return 0;
+            }
         }
     }
 }

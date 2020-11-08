@@ -15,6 +15,8 @@ namespace VamTimeline
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public class AnimationSettingsChanged : UnityEvent<string> { }
 
+        private const float _timeDeltaUntilSnapBones = 0.5f;
+
         public AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
         public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
         public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
@@ -47,7 +49,9 @@ namespace VamTimeline
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
         public bool ignoreGrabEnd;
         private AtomAnimation _animation;
-        private Coroutine _lateSample;
+        private Coroutine _sampleDeferredCoroutine;
+        public Atom containingAtom;
+        private bool _snapBonesOnSample;
 
         public AtomAnimation animation
         {
@@ -83,7 +87,8 @@ namespace VamTimeline
             }
             set
             {
-                playTime = value;
+                var originalClipTime = current.clipTime;
+                animation.playTime = value;
                 if (current == null) return;
                 foreach (var clip in animation.GetClips(current.animationName))
                 {
@@ -91,7 +96,13 @@ namespace VamTimeline
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
                 }
                 if (!animation.isPlaying || animation.paused)
+                {
+                    var timeDelta = Mathf.Abs(originalClipTime - current.clipTime);
+                    if (current.loop)
+                        timeDelta = Mathf.Min(timeDelta, Mathf.Abs(timeDelta - current.animationLength));
+                    if (timeDelta > _timeDeltaUntilSnapBones) _snapBonesOnSample = true;
                     Sample();
+                }
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
                 onTimeChanged.Invoke(timeArgs);
@@ -108,7 +119,13 @@ namespace VamTimeline
             {
                 animation.playTime = value;
                 if (!current.playbackEnabled)
-                    current.clipTime = value;
+                {
+                    foreach (var clip in animation.GetClips(current.animationName))
+                    {
+                        clip.clipTime = value;
+                        if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
+                    }
+                }
                 Sample();
                 onTimeChanged.Invoke(timeArgs);
             }
@@ -157,21 +174,6 @@ namespace VamTimeline
 
         public void Sample()
         {
-            SampleNow();
-            if (!GetMainClipPerLayer().SelectMany(c => c.targetControllers).Any(t => t.parentRigidbodyId != null)) return;
-            if (_lateSample != null) StopCoroutine(_lateSample);
-            _lateSample = StartCoroutine(LateSample());
-        }
-
-        private IEnumerator LateSample()
-        {
-            // Give a little bit of time for physics to settle and re-sample
-            yield return new WaitForSeconds(0.1f);
-            SampleNow();
-        }
-
-        private void SampleNow()
-        {
             if (animation.RebuildPending())
             {
                 _sampleAfterRebuild = true;
@@ -187,9 +189,69 @@ namespace VamTimeline
             animation.Sample();
             foreach (var clip in clips)
             {
+                // foreach (var target in clip.targetControllers)
+                // {
+                //     var parent = target.GetParent();
+                //     if (parent == null) continue;
+                //     var bone = parent.GetComponent<DAZBone>();
+                //     if(bone == null) continue;
+                //     var controller = bone.control;
+                //     if(controller == null) continue;
+                //     if (controller.containingAtom == target.controller.containingAtom) continue;
+                //     target.controller.control.position = bone.transform.position;
+                //     target.controller.control.rotation = bone.transform.rotation;
+                // }
                 clip.playbackEnabled = false;
                 clip.playbackBlendWeight = 0f;
             }
+            // Time.timeScale = 0f;
+
+            if (_snapBonesOnSample)
+            {
+                // TODO: Cleanup, keep a reference to it, find it more efficiently
+                _snapBonesOnSample = false;
+                var snapRestore = containingAtom.GetComponentInChildren<CharacterPoseSnapRestore>();
+                if (snapRestore != null)
+                {
+                    snapRestore.ForceSnapRestore();
+                }
+            }
+
+            if (!GetMainClipPerLayer().SelectMany(c => c.targetControllers).Any(t => t.parentRigidbodyId != null)) return;
+
+            _sampleUntil = Time.time + 1f;
+            if (_sampleDeferredCoroutine == null) _sampleDeferredCoroutine = StartCoroutine(SampleDeferred());
+        }
+
+        private float _sampleUntil = 0f;
+        private IEnumerator SampleDeferred()
+        {
+            // Give a little bit of time for physics to settle and re-sample
+            do
+            {
+                yield return 0;
+
+                if (animation.isPlaying)
+                {
+                    _sampleDeferredCoroutine = null;
+                    yield break;
+                }
+
+                var clips = GetMainClipPerLayer();
+                foreach (var clip in clips)
+                {
+                    clip.playbackEnabled = true;
+                    clip.playbackBlendWeight = 1f;
+                }
+                animation.Sample();
+                foreach (var clip in clips)
+                {
+                    clip.playbackEnabled = false;
+                    clip.playbackBlendWeight = 0f;
+                }
+            } while (Time.time < _sampleUntil);
+
+            _sampleDeferredCoroutine = null;
         }
 
         private IEnumerable<AtomAnimationClip> GetMainClipPerLayer()
@@ -240,6 +302,7 @@ namespace VamTimeline
             }
             else if (!SuperController.singleton.freezeAnimation)
             {
+                _snapBonesOnSample = true;
                 Sample();
             }
         }
