@@ -490,6 +490,8 @@ namespace VamTimeline
             if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
 
+            animationLegacyJSON.valNoCallback = animationEditContext.current.animationName;
+
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
         }
@@ -529,10 +531,11 @@ namespace VamTimeline
         {
             try
             {
-                var animationNames = animation.clips.Select(c => c.animationName).ToList();
-                animationLegacyJSON.choices = animationNames;
-                if (!animationLegacyJSON.choices.Contains(animationLegacyJSON.val)) animationLegacyJSON.valNoCallback = string.Empty;
+                var layerAnimationNames = animation.index.ByLayer(animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
+                animationLegacyJSON.choices = layerAnimationNames;
+                if (!animationLegacyJSON.choices.Contains(animationLegacyJSON.val)) animationLegacyJSON.valNoCallback = layerAnimationNames[0];
 
+                var animationNames = animation.index.ByLayer(animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
                 foreach (var animName in animationNames)
                 {
                     if (_clipStorables.Any(a => a.animationName == animName)) continue;
