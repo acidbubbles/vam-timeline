@@ -29,15 +29,16 @@ namespace VamTimeline
             // General
             var range = EstimateRange();
             const float margin = 20f;
-            var width = rectTransform.rect.width;
-            var height = rectTransform.rect.height - margin * 2f;
+            var rect = rectTransform.rect;
+            var width = rect.width;
+            var height = rect.height - margin * 2f;
             var offsetX = -width / 2f;
             const float precision = 2f; // Draw at every N pixels
             const float maxVertexXDelta = 3f; // Whenever that distance is reached an additional point is drawn for constant curves
             const float minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
-            var halfWidth = rectTransform.rect.width / 2;
-            var halfHeight = rectTransform.rect.height / 2;
+            var halfWidth = rect.width / 2;
+            var halfHeight = rect.height / 2;
 
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];

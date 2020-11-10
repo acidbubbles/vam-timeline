@@ -222,7 +222,7 @@ namespace VamTimeline
         {
             public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)
             {
-                return String.Compare(t1.name, t2.name, StringComparison.Ordinal);
+                return string.Compare(t1.name, t2.name, StringComparison.Ordinal);
             }
         }
     }

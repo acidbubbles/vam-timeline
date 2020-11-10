@@ -579,10 +579,9 @@ namespace VamTimeline
         [MethodImpl(256)]
         private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets)
         {
-            if (controller == null) return;
+            if (ReferenceEquals(controller, null)) return;
             if (controller.possessed) return;
             var control = controller.control;
-            if (control == null) return;
 
             if (targets.Count > _rotations.Length)
             {
@@ -607,13 +606,14 @@ namespace VamTimeline
 
                 if (!target.EnsureParentAvailable()) return;
                 var link = target.GetLinkedRigidbody();
+                var linkHasValue = link != null;
 
                 var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
 
                 if (target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
                     var targetRotation = target.EvaluateRotation(clip.clipTime);
-                    if (link != null)
+                    if (linkHasValue)
                     {
                         targetRotation = link.rotation * targetRotation;
                         _rotations[rotationCount] = targetRotation;
@@ -631,7 +631,7 @@ namespace VamTimeline
                 if (target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off)
                 {
                     var targetPosition = target.EvaluatePosition(clip.clipTime);
-                    if (link != null)
+                    if (linkHasValue)
                     {
                         targetPosition = link.transform.TransformPoint(targetPosition);
                     }
@@ -910,10 +910,6 @@ namespace VamTimeline
             SetPlayTime(playTime + Time.fixedDeltaTime * _speed);
 
             SampleControllers();
-        }
-
-        public void OnDisable()
-        {
         }
 
         public void OnDestroy()

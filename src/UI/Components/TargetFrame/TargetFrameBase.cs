@@ -90,8 +90,7 @@ namespace VamTimeline
         {
             if (toggle != null) return;
 
-            var ui = Instantiate(plugin.manager.configurableTogglePrefab.transform);
-            ui.SetParent(transform, false);
+            var ui = Instantiate(plugin.manager.configurableTogglePrefab.transform, transform, false);
 
             toggle = ui.GetComponent<UIDynamicToggle>();
 

@@ -37,12 +37,13 @@ namespace VamTimeline
         {
             vh.Clear();
 
+            var rect = rectTransform.rect;
             vh.AddUIVertexQuad(new[]
             {
-                CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMin), bottom),
-                CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMax), top),
-                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMax), top),
-                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMin), bottom)
+                CreateVertex(new Vector2(rect.xMin, rect.yMin), bottom),
+                CreateVertex(new Vector2(rect.xMin, rect.yMax), top),
+                CreateVertex(new Vector2(rect.xMax, rect.yMax), top),
+                CreateVertex(new Vector2(rect.xMax, rect.yMin), bottom)
             });
         }
 

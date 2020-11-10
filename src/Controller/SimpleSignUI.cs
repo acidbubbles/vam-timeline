@@ -44,9 +44,8 @@ namespace VamTimeline
 
         public UIDynamicSlider CreateUISliderInCanvas(JSONStorableFloat jsf)
         {
-            var transform = Object.Instantiate(_owner.manager.configurableSliderPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableSliderPrefab.transform, _container.transform, false);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableSliderPrefab");
-            transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicSlider>();
@@ -60,9 +59,8 @@ namespace VamTimeline
 
         public UIDynamicPopup CreateUIPopupInCanvas(JSONStorableStringChooser jssc)
         {
-            var transform = Object.Instantiate(_owner.manager.configurableScrollablePopupPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableScrollablePopupPrefab.transform, _container.transform, false);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableScrollablePopupPrefab");
-            transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicPopup>();
@@ -76,9 +74,8 @@ namespace VamTimeline
 
         public UIDynamicButton CreateUIButtonInCanvas(string label)
         {
-            var transform = Object.Instantiate(_owner.manager.configurableButtonPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableButtonPrefab.transform, _container.transform, false);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableButtonPrefab");
-            transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicButton>();
@@ -90,9 +87,8 @@ namespace VamTimeline
 
         public UIDynamicTextField CreateUITextfieldInCanvas(JSONStorableString jss)
         {
-            var transform = Object.Instantiate(_owner.manager.configurableTextFieldPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableTextFieldPrefab.transform, _container.transform, false);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableButtonPrefab");
-            transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicTextField>();
@@ -104,9 +100,8 @@ namespace VamTimeline
 
         public UIDynamicToggle CreateUIToggleInCanvas(JSONStorableBool jsb)
         {
-            var transform = Object.Instantiate(_owner.manager.configurableTogglePrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableTogglePrefab.transform, _container.transform, false);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableTogglePrefab");
-            transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamicToggle>();
@@ -119,9 +114,8 @@ namespace VamTimeline
 
         public UIDynamic CreateUISpacerInCanvas(float height)
         {
-            var transform = Object.Instantiate(_owner.manager.configurableSpacerPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableSpacerPrefab.transform, _container.transform, false);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableSpacerPrefab");
-            transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
 
             var ui = transform.GetComponent<UIDynamic>();

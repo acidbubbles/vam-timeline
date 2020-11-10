@@ -91,24 +91,21 @@ namespace VamTimeline
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            var playAll = Instantiate(buttonPrefab);
-            playAll.SetParent(container.transform, false);
+            var playAll = Instantiate(buttonPrefab, container.transform, false);
             playAll.GetComponent<UIDynamicButton>().label = "\u25B6 All";
             playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayCurrentAndOtherMainsInLayers());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
             _playAll = playAll.GetComponent<UIDynamicButton>();
 
-            var playClip = Instantiate(buttonPrefab);
-            playClip.SetParent(container.transform, false);
+            var playClip = Instantiate(buttonPrefab, container.transform, false);
             playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
             playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.animation.PlayClips(_animationEditContext.current.animationName, false));
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
             _playClip = playClip.GetComponent<UIDynamicButton>();
 
-            var stop = Instantiate(buttonPrefab);
-            stop.SetParent(container.transform, false);
+            var stop = Instantiate(buttonPrefab, container.transform, false);
             stop.GetComponent<UIDynamicButton>().label = "\u25A0 Stop";
             stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>
             {
@@ -183,8 +180,7 @@ namespace VamTimeline
 
         private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction callback)
         {
-            var btn = Instantiate(buttonPrefab);
-            btn.SetParent(parent, false);
+            var btn = Instantiate(buttonPrefab, parent, false);
             var ui = btn.GetComponent<UIDynamicButton>();
             ui.label = label;
             ui.buttonText.fontSize = 27;

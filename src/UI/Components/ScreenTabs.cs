@@ -33,8 +33,7 @@ namespace VamTimeline
 
         public UIDynamicButton Add(string name, Color color, string label = null, float preferredWidth = 0)
         {
-            var rt = Instantiate(buttonPrefab);
-            rt.SetParent(transform, false);
+            var rt = Instantiate(buttonPrefab, transform, false);
 
             var btn = rt.gameObject.GetComponent<UIDynamicButton>();
             btn.name = name;

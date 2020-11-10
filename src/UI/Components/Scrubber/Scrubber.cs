@@ -171,7 +171,8 @@ namespace VamTimeline
             var rect = GetComponent<RectTransform>();
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
-            var ratio = Mathf.Clamp01((localPosition.x + rect.sizeDelta.x / 2f) / rect.sizeDelta.x);
+            var sizeDelta = rect.sizeDelta;
+            var ratio = Mathf.Clamp01((localPosition.x + sizeDelta.x / 2f) / sizeDelta.x);
             var time = (animationEditContext.current.animationLength * ratio).Snap(final ? animationEditContext.snap : 0);
             if (time >= animationEditContext.current.animationLength - 0.001f)
             {

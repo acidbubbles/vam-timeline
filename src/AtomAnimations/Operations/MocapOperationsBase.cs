@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -23,8 +22,9 @@ namespace VamTimeline
 
             public static ControllerKeyframe FromStep(float time, MotionAnimationStep s, FreeControllerV3 ctrl)
             {
-                var localPosition = s.positionOn ? s.position : ctrl.transform.localPosition;
-                var locationRotation = s.rotationOn ? s.rotation : ctrl.transform.localRotation;
+                var controllerTransform = ctrl.transform;
+                var localPosition = s.positionOn ? s.position : controllerTransform.localPosition;
+                var locationRotation = s.rotationOn ? s.rotation : controllerTransform.localRotation;
                 return new ControllerKeyframe
                 {
                     time = time,

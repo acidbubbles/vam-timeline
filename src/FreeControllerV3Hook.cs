@@ -74,17 +74,18 @@ namespace VamTimeline
             if (!animationEditContext.CanEdit()) return;
 
             var grabbing = GetCurrentlyGrabbing();
+            var grabbingHasValue = grabbing != null;
 
-            if (_grabbedTarget == null && grabbing != null && !grabbing.possessed)
+            if (_grabbedTarget == null && grabbingHasValue && !grabbing.possessed)
             {
                 _grabbedTarget = animationEditContext.current.targetControllers.FirstOrDefault(c => c.controller == grabbing);
             }
-            if (_grabbedTarget != null && grabbing != null)
+            if (_grabbedTarget != null && grabbingHasValue)
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                     _cancelNextGrabbedControllerRelease = true;
             }
-            else if (_grabbedTarget != null && grabbing == null)
+            else if (_grabbedTarget != null && !grabbingHasValue)
             {
                 var grabbedTarget = _grabbedTarget;
                 _grabbedTarget = null;

@@ -185,7 +185,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON, ref bool dirty)
+        private static void DeserializeCurveFromArray(BezierAnimationCurve curve, JSONArray curveJSON, ref bool dirty)
         {
             if (curveJSON.Count == 0) return;
 
@@ -222,7 +222,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromStringLegacy(BezierAnimationCurve curve, JSONNode curveJSON)
+        private static void DeserializeCurveFromStringLegacy(BezierAnimationCurve curve, JSONNode curveJSON)
         {
             var strFrames = curveJSON.Value.Split(';').Where(x => x != "").ToList();
             if (strFrames.Count == 0) return;
@@ -255,7 +255,7 @@ namespace VamTimeline
             }
         }
 
-        private void DeserializeCurveFromClassLegacy(BezierAnimationCurve curve, JSONNode curveJSON)
+        private static void DeserializeCurveFromClassLegacy(BezierAnimationCurve curve, JSONNode curveJSON)
         {
             var keysJSON = curveJSON["keys"].AsArray;
             if (keysJSON.Count == 0) return;
@@ -309,7 +309,7 @@ namespace VamTimeline
 
         #region Serialize JSON
 
-        public JSONClass SerializeEditContext(AtomAnimationEditContext animationEditContext)
+        public static JSONClass SerializeEditContext(AtomAnimationEditContext animationEditContext)
         {
             var animationEditContextJSON = new JSONClass
             {
@@ -366,7 +366,7 @@ namespace VamTimeline
             return clipJSON;
         }
 
-        private void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
+        private static void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
             if (clip.animationPattern != null)
                 clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);

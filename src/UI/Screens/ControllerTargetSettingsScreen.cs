@@ -122,8 +122,9 @@ namespace VamTimeline
 
             animationEditContext.clipTime = 0f;
 
-            var previousPosition = _target.controller.transform.position;
-            var previousRotation = _target.controller.transform.rotation;
+            var targetControllerTransform = _target.controller.transform;
+            var previousPosition = targetControllerTransform.position;
+            var previousRotation = targetControllerTransform.rotation;
 
             var snapshot = operations.Offset().Start(0f, new[] { _target });
 
@@ -134,8 +135,8 @@ namespace VamTimeline
                 return;
             }
 
-            _target.controller.transform.position = previousPosition;
-            _target.controller.transform.rotation = previousRotation;
+            targetControllerTransform.position = previousPosition;
+            targetControllerTransform.rotation = previousRotation;
             animationEditContext.SetKeyframeToCurrentTransform(_target, 0f);
 
             operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);

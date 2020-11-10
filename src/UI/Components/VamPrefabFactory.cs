@@ -68,8 +68,7 @@ namespace VamTimeline
 
         private static Scrollbar CreateScrollbar(GameObject scrollView)
         {
-            var vs = Instantiate(scrollbarPrefab);
-            vs.transform.SetParent(scrollView.transform, false);
+            var vs = Instantiate(scrollbarPrefab, scrollView.transform, false);
             return vs.GetComponent<Scrollbar>();
         }
 
@@ -201,8 +200,7 @@ namespace VamTimeline
                 }
 
                 {
-                    var btn = Instantiate(plugin.manager.configurableButtonPrefab);
-                    btn.SetParent(ui.transform, false);
+                    var btn = Instantiate(plugin.manager.configurableButtonPrefab, ui.transform, false);
                     Destroy(btn.GetComponent<LayoutElement>());
                     btn.GetComponent<UIDynamicButton>().label = "<";
                     btn.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>
@@ -220,8 +218,7 @@ namespace VamTimeline
                 }
 
                 {
-                    var btn = Instantiate(plugin.manager.configurableButtonPrefab);
-                    btn.SetParent(ui.transform, false);
+                    var btn = Instantiate(plugin.manager.configurableButtonPrefab, ui.transform, false);
                     Destroy(btn.GetComponent<LayoutElement>());
                     btn.GetComponent<UIDynamicButton>().label = ">";
                     btn.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>

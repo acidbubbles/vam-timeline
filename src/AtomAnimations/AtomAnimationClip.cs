@@ -137,8 +137,8 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(animationLength));
             }
         }
-        public bool autoPlay { get; set; } = false;
-        public bool uninterruptible { get; set; } = false;
+        public bool autoPlay { get; set; }
+        public bool uninterruptible { get; set; }
         public bool loop
         {
             get

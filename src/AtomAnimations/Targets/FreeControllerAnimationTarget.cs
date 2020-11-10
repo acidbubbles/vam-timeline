@@ -136,10 +136,12 @@ namespace VamTimeline
         {
             if (!EnsureParentAvailable(false)) return -1;
             var rb = GetLinkedRigidbody();
-            if (rb != null)
-                return SetKeyframe(time, rb.transform.InverseTransformPoint(controller.transform.position), Quaternion.Inverse(rb.rotation) * controller.transform.rotation);
+            var controllerTransform = controller.transform;
 
-            return SetKeyframe(time, controller.transform.localPosition, controller.transform.localRotation);
+            if (rb != null)
+                return SetKeyframe(time, rb.transform.InverseTransformPoint(controllerTransform.position), Quaternion.Inverse(rb.rotation) * controllerTransform.rotation);
+
+            return SetKeyframe(time, controllerTransform.localPosition, controllerTransform.localRotation);
         }
 
         #endregion
@@ -163,10 +165,11 @@ namespace VamTimeline
                 w = rotW.Evaluate(clipTime)
             };
 
-            controller.transform.localPosition = Vector3.MoveTowards(controller.transform.localPosition, targetLocalPosition, maxDistanceDelta);
-            controller.transform.localRotation = Quaternion.RotateTowards(controller.transform.localRotation, targetLocalRotation, maxRadiansDelta);
+            var controllerTransform = controller.transform;
+            controllerTransform.localPosition = Vector3.MoveTowards(controllerTransform.localPosition, targetLocalPosition, maxDistanceDelta);
+            controllerTransform.localRotation = Quaternion.RotateTowards(controllerTransform.localRotation, targetLocalRotation, maxRadiansDelta);
 
-            var posDistance = Vector3.Distance(controller.transform.localPosition, targetLocalPosition);
+            var posDistance = Vector3.Distance(controllerTransform.localPosition, targetLocalPosition);
             // NOTE: We skip checking for rotation reached because in some cases we just never get even near the target rotation.
             // var rotDistance = Quaternion.Dot(Controller.transform.localRotation, targetLocalRotation);
             return posDistance < 0.01f;
@@ -190,7 +193,7 @@ namespace VamTimeline
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
             {
-                return String.Compare(t1.controller.name, t2.controller.name, StringComparison.Ordinal);
+                return string.Compare(t1.controller.name, t2.controller.name, StringComparison.Ordinal);
             }
         }
     }

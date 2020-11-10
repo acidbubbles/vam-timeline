@@ -42,10 +42,11 @@ namespace VamTimeline
         private void DispatchOnChange(PointerEventData eventData)
         {
             Vector2 localPosition;
-            var rect = GetComponent<RectTransform>();
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
+            var rectTransform = GetComponent<RectTransform>();
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
-            var ratio = Mathf.Clamp01((localPosition.x + rect.rect.width / 2f) / rect.rect.width);
+            var rect = rectTransform.rect;
+            var ratio = Mathf.Clamp01((localPosition.x + rect.width / 2f) / rect.width);
             onChange.Invoke(ratio);
         }
     }

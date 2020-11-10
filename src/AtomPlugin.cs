@@ -5,6 +5,7 @@ using System.Linq;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = System.Object;
 
 namespace VamTimeline
 {
@@ -127,7 +128,7 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (animation == null) return;
+            if (ReferenceEquals(animation, null)) return;
             if (animation.isPlaying)
             {
                 scrubberJSON.valNoCallback = animationEditContext.clipTime;
@@ -401,7 +402,7 @@ namespace VamTimeline
             try
             {
                 json["Animation"] = serializer.SerializeAnimation(animation);
-                json["Options"] = serializer.SerializeEditContext(animationEditContext);
+                json["Options"] = AtomAnimationSerializer.SerializeEditContext(animationEditContext);
                 needsStore = true;
             }
             catch (Exception exc)
