@@ -20,7 +20,7 @@ namespace VamTimeline
             _animation.index.StartBulkUpdates();
             try
             {
-                foreach (var clip in clips.SelectMany(c => ImportClip(c)))
+                foreach (var clip in clips.SelectMany(ImportClip))
                 {
                     _animation.AddClip(clip);
                     importedClips.Add(clip);
@@ -49,8 +49,8 @@ namespace VamTimeline
             var matchingLayer = _animation.clips.FirstOrDefault(c =>
             {
                 // We only need to match float params and controllers, triggers can be in any layers
-                if (!clip.targetFloatParams.All(t => c.targetFloatParams.Any(t2 => t.TargetsSameAs(t2)))) return false;
-                if (!clip.targetControllers.All(t => c.targetControllers.Any(t2 => t.TargetsSameAs(t2)))) return false;
+                if (!clip.targetFloatParams.All(t => c.targetFloatParams.Any(t.TargetsSameAs))) return false;
+                if (!clip.targetControllers.All(t => c.targetControllers.Any(t.TargetsSameAs))) return false;
                 return true;
             });
 
@@ -128,7 +128,7 @@ namespace VamTimeline
             while (true)
             {
                 var newAnimationName = $"{animationName} ({i})";
-                if (!layerClips.Any(c => c.animationName == newAnimationName))
+                if (layerClips.All(c => c.animationName != newAnimationName))
                     return newAnimationName;
                 i++;
             }

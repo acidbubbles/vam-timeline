@@ -8,11 +8,11 @@ namespace VamTimeline
     public class EditAnimationScreen : ScreenBase
     {
         public const string ScreenName = "Edit";
-        public const string ChangeLengthModeCropExtendEnd = "Crop/Extend (End)";
-        public const string ChangeLengthModeCropExtendBegin = "Crop/Extend (Begin)";
-        public const string ChangeLengthModeCropExtendAtTime = "Crop/Extend (Time)";
-        public const string ChangeLengthModeStretch = "Stretch";
-        public const string ChangeLengthModeLoop = "Loop";
+        private const string _changeLengthModeCropExtendEnd = "Crop/Extend (End)";
+        private const string _changeLengthModeCropExtendBegin = "Crop/Extend (Begin)";
+        private const string _changeLengthModeCropExtendAtTime = "Crop/Extend (Time)";
+        private const string _changeLengthModeStretch = "Stretch";
+        private const string _changeLengthModeLoop = "Loop";
 
         public override string screenId => ScreenName;
 
@@ -28,11 +28,6 @@ namespace VamTimeline
         private JSONStorableFloat _clipSpeedJSON;
         private JSONStorableFloat _clipWeightJSON;
         private UIDynamicButton _applyLengthUI;
-
-        public EditAnimationScreen()
-            : base()
-        {
-        }
 
         #region Init
 
@@ -67,14 +62,14 @@ namespace VamTimeline
 
         private void InitPlaybackUI()
         {
-            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, (float val) => animation.speed = val, -1f, 5f, false)
+            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, val => animation.speed = val, -1f, 5f, false)
             {
                 valNoCallback = animation.speed
             };
             var animationSpeedUI = prefabFactory.CreateSlider(_animationSpeedJSON);
             animationSpeedUI.valueFormat = "F3";
 
-            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, (float val) => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
+            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, val => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
             {
                 valNoCallback = current.speed
             };
@@ -84,18 +79,18 @@ namespace VamTimeline
 
         private void InitWeightUI()
         {
-            _clipWeightJSON = new JSONStorableFloat("Weight", 1f, (float val) => current.weight = val, 0f, 1f, true)
+            _clipWeightJSON = new JSONStorableFloat("Weight", 1f, val => current.weight = val, 0f, 1f)
             {
                 valNoCallback = current.weight
             };
-            var clipWeigthUI = prefabFactory.CreateSlider(_clipWeightJSON);
-            clipWeigthUI.valueFormat = "F4";
+            var clipWeightUI = prefabFactory.CreateSlider(_clipWeightJSON);
+            clipWeightUI.valueFormat = "F4";
         }
 
         private void InitRenameLayer()
         {
-            _layerNameJSON = new JSONStorableString("Layer name (share targets)", "", (string val) => UpdateLayerName(val));
-            var layerNameUI = prefabFactory.CreateTextInput(_layerNameJSON);
+            _layerNameJSON = new JSONStorableString("Layer name (share targets)", "", UpdateLayerName);
+            prefabFactory.CreateTextInput(_layerNameJSON);
             _layerNameJSON.valNoCallback = current.animationLayer;
         }
         private void UpdateLayerName(string to)
@@ -122,7 +117,7 @@ namespace VamTimeline
 
         private void InitRenameAnimation()
         {
-            _animationNameJSON = new JSONStorableString("Animation name (group with 'group/anim')", "", (string val) => UpdateAnimationName(val));
+            _animationNameJSON = new JSONStorableString("Animation name (group with 'group/anim')", "", UpdateAnimationName);
             var animationNameUI = prefabFactory.CreateTextInput(_animationNameJSON);
             _animationNameJSON.valNoCallback = current.animationName;
         }
@@ -142,7 +137,7 @@ namespace VamTimeline
             }
             current.animationName = val;
             var existing = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.animationName);
-            if (existing != null && existing.nextAnimationName != null)
+            if (existing?.nextAnimationName != null)
             {
                 var next = animation.index.ByLayer(current.animationLayer).FirstOrDefault(c => c.animationName == existing.nextAnimationName);
                 if (next != null)
@@ -164,31 +159,30 @@ namespace VamTimeline
         private void InitAnimationLengthUI()
         {
             _lengthModeJSON = new JSONStorableStringChooser("Length mode", new List<string> {
-                ChangeLengthModeCropExtendEnd,
-                ChangeLengthModeCropExtendBegin,
-                ChangeLengthModeCropExtendAtTime,
-                ChangeLengthModeStretch,
-                ChangeLengthModeLoop
-             }, ChangeLengthModeCropExtendEnd, "Length mode");
+                _changeLengthModeCropExtendEnd,
+                _changeLengthModeCropExtendBegin,
+                _changeLengthModeCropExtendAtTime,
+                _changeLengthModeStretch,
+                _changeLengthModeLoop
+             }, _changeLengthModeCropExtendEnd, "Length mode");
             var lengthModeUI = prefabFactory.CreatePopup(_lengthModeJSON, false, true);
             lengthModeUI.popupPanelHeight = 350f;
 
             _lengthJSON = new JSONStorableFloat(
                 "Change length to (s)",
                 AtomAnimationClip.DefaultAnimationLength,
-                (float val) =>
+                val =>
                 {
                     _lengthJSON.valNoCallback = val.Snap(animationEditContext.snap);
                     if (_lengthJSON.valNoCallback < 0.1f)
                         _lengthJSON.valNoCallback = 0.1f;
-                    if (_lengthModeJSON.val == ChangeLengthModeCropExtendAtTime && _lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
+                    if (_lengthModeJSON.val == _changeLengthModeCropExtendAtTime && _lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
                         _lengthJSON.valNoCallback = animationEditContext.clipTime + animationEditContext.snap;
                     _applyLengthUI.button.interactable = !_lengthJSON.val.IsSameFrame(current.animationLength);
                 },
                 0f,
                 Mathf.Max((current.animationLength * 5f).Snap(10f), 10f),
-                false,
-                true);
+                false);
             var lengthUI = prefabFactory.CreateSlider(_lengthJSON);
             lengthUI.valueFormat = "F3";
 
@@ -203,13 +197,13 @@ namespace VamTimeline
 
         private void InitEnsureQuaternionContinuityUI()
         {
-            _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, (bool val) => SetEnsureQuaternionContinuity(val));
-            var ensureQuaternionContinuityUI = prefabFactory.CreateToggle(_ensureQuaternionContinuity);
+            _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, SetEnsureQuaternionContinuity);
+            prefabFactory.CreateToggle(_ensureQuaternionContinuity);
         }
 
         private void InitAnimationPatternLinkUI()
         {
-            _linkedAnimationPatternJSON = new JSONStorableStringChooser("Link", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Link", (string uid) => LinkAnimationPattern(uid))
+            _linkedAnimationPatternJSON = new JSONStorableStringChooser("Link", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Link", LinkAnimationPattern)
             {
                 isStorable = false
             };
@@ -220,7 +214,7 @@ namespace VamTimeline
 
         private void InitLoopUI()
         {
-            _loop = new JSONStorableBool("Loop", current?.loop ?? true, (bool val) =>
+            _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
             {
                 current.loop = val;
             });
@@ -245,21 +239,21 @@ namespace VamTimeline
 
             switch (_lengthModeJSON.val)
             {
-                case ChangeLengthModeStretch:
+                case _changeLengthModeStretch:
                     operations.Resize().Stretch(newLength);
                     break;
-                case ChangeLengthModeCropExtendEnd:
+                case _changeLengthModeCropExtendEnd:
                     operations.Resize().CropOrExtendEnd(newLength);
                     break;
-                case ChangeLengthModeCropExtendBegin:
+                case _changeLengthModeCropExtendBegin:
                     operations.Resize().CropOrExtendAt(newLength, 0f);
                     break;
-                case ChangeLengthModeCropExtendAtTime:
+                case _changeLengthModeCropExtendAtTime:
                     if (_lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
                         _lengthJSON.valNoCallback = animationEditContext.clipTime + animationEditContext.snap;
                     operations.Resize().CropOrExtendAt(newLength, time);
                     break;
-                case ChangeLengthModeLoop:
+                case _changeLengthModeLoop:
                     operations.Resize().Loop(newLength);
                     break;
                 default:

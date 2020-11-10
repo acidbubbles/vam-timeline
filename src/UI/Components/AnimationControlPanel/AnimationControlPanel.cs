@@ -51,13 +51,13 @@ namespace VamTimeline
             _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
             SyncAnimationsListNow();
-            if (_animationEditContext.current != null) _animationEditContext.current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            _animationEditContext.current?.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));
         }
 
         private JSONStorableStringChooser InitAnimationSelectorUI()
         {
-            var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string val) =>
+            var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", val =>
             {
                 if (_ignoreAnimationChange) return;
                 _animationEditContext?.SelectAnimation(val);
@@ -245,8 +245,8 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             _animationsJSON.valNoCallback = args.after.animationNameQualified;
-            if (args.before != null) args.before.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
-            if (args.after != null) args.after.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            args.before?.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
+            args.after?.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));
             OnTimeChanged(_animationEditContext.timeArgs);
         }
@@ -275,7 +275,7 @@ namespace VamTimeline
                 _animationEditContext.animation.onClipIsPlayingChanged.RemoveListener(OnClipIsPlayingChanged);
                 _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
                 _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
-                if (_animationEditContext.current != null) _animationEditContext.current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+                _animationEditContext.current?.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             }
         }
     }

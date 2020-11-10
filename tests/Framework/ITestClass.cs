@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace VamTimeline.Tests.Framework
+namespace VamTimeline
 {
     public interface ITestClass
     {

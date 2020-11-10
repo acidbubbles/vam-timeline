@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -9,8 +8,6 @@ namespace VamTimeline
 {
     public class DopeSheet : MonoBehaviour
     {
-        public class SetTimeEvent : UnityEvent<float> { }
-
         private readonly List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
         private readonly DopeSheetStyle _style = new DopeSheetStyle();
         private readonly RectTransform _scrubberRect;
@@ -49,7 +46,7 @@ namespace VamTimeline
                 UnbindClip();
         }
 
-        private GameObject CreateBackground(GameObject parent, Color color)
+        private static GameObject CreateBackground(GameObject parent, Color color)
         {
             var go = new GameObject();
             go.transform.SetParent(parent.transform, false);
@@ -299,7 +296,7 @@ namespace VamTimeline
                 child.transform.SetParent(go.transform, false);
 
                 var rect = child.AddComponent<RectTransform>();
-                var padding = 2f;
+                const float padding = 2f;
                 rect.StretchLeft();
                 rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth - padding * 2);

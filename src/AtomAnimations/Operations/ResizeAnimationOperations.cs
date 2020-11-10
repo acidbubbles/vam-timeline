@@ -67,7 +67,7 @@ namespace VamTimeline
                 {
                     var lastKeyframe = curve.GetLastFrame();
                     var lastCurveType = lastKeyframe.HasValue() ? lastKeyframe.curveType : CurveTypeValues.SmoothLocal;
-                    var key = curve.AddKey(newAnimationLength, curve.Evaluate(newAnimationLength), lastCurveType);
+                    curve.AddKey(newAnimationLength, curve.Evaluate(newAnimationLength), lastCurveType);
                 }
                 target.dirty = true;
                 var keyframesToDelete = target.GetAllKeyframesTime().Where(t => t > newAnimationLength);
@@ -147,7 +147,6 @@ namespace VamTimeline
         private void ExtendAt(float delta, float time)
         {
             var keyframeOps = new KeyframesOperations(_clip);
-            var originalAnimationLength = _clip.animationLength;
             foreach (var target in _clip.GetAllTargets())
             {
                 // TODO: Create new keyframe if missing from evaluate curve
@@ -182,13 +181,12 @@ namespace VamTimeline
                 snapshots.RemoveAt(snapshots.Count - 1);
                 keyframeOps.RemoveAll(target, true);
 
-                float time = 0f;
                 var iteration = 0;
                 var i = 0;
                 while (true)
                 {
                     var snapshot = snapshots[i++];
-                    time = snapshot.time + (iteration * originalAnimationLength);
+                    var time = snapshot.time + iteration * originalAnimationLength;
                     if (time > newAnimationLength) break;
                     target.SetSnapshot(time, snapshot.snapshot);
                     if (i >= snapshots.Count) { i = 0; iteration++; }

@@ -27,11 +27,6 @@ namespace VamTimeline
         private UIDynamicToggle _preserveLoopsUI;
         private JSONStorableFloat _randomizeRangeJSON;
 
-        public SequencingScreen()
-            : base()
-        {
-        }
-
         #region Init
 
         public override void Init(IAtomPlugin plugin, object arg)
@@ -63,19 +58,19 @@ namespace VamTimeline
 
         private void InitSequenceMasterUI()
         {
-            _masterJSON = new JSONStorableBool("Master (atom controls others)", false, (bool val) =>
+            _masterJSON = new JSONStorableBool("Master (atom controls others)", false, val =>
             {
                 animation.master = val;
             })
             {
                 isStorable = false
             };
-            var masterUI = prefabFactory.CreateToggle(_masterJSON);
+            prefabFactory.CreateToggle(_masterJSON);
         }
 
         private void InitAutoPlayUI()
         {
-            _autoPlayJSON = new JSONStorableBool("Auto play on load", false, (bool val) =>
+            _autoPlayJSON = new JSONStorableBool("Auto play on load", false, val =>
             {
                 foreach (var c in animation.index.ByLayer(current.animationLayer).Where(c => c != current))
                     c.autoPlay = false;
@@ -84,16 +79,16 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            var autoPlayUI = prefabFactory.CreateToggle(_autoPlayJSON);
+            prefabFactory.CreateToggle(_autoPlayJSON);
         }
 
         private void InitBlendUI()
         {
-            _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, v => UpdateBlendDuration(v), 0f, 5f, false);
+            _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, UpdateBlendDuration, 0f, 5f, false);
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
 
-            _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, (bool val) =>
+            _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, val =>
             {
                 current.preserveLoops = val;
                 RoundNextTimeToNearestLoop();
@@ -126,7 +121,7 @@ namespace VamTimeline
 
         protected void InitRandomizeLengthUI()
         {
-            _randomizeRangeJSON = new JSONStorableFloat("Randomize time range (seconds)", 0f, (float val) => ChangeRandomizeLength(val), 0f, 60f, false)
+            _randomizeRangeJSON = new JSONStorableFloat("Randomize time range (seconds)", 0f, ChangeRandomizeLength, 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTimeRandomize
             };
@@ -149,16 +144,16 @@ namespace VamTimeline
 
         private void InitTransitionUI()
         {
-            _transitionPreviousJSON = new JSONStorableBool("Sync first frame with previous", false, (bool val) => ChangeTransitionPrevious(val));
+            _transitionPreviousJSON = new JSONStorableBool("Sync first frame with previous", false, ChangeTransitionPrevious);
             prefabFactory.CreateToggle(_transitionPreviousJSON);
 
-            _transitionNextJSON = new JSONStorableBool("Sync last frame with next", false, (bool val) => ChangeTransitionNext(val));
+            _transitionNextJSON = new JSONStorableBool("Sync last frame with next", false, ChangeTransitionNext);
             prefabFactory.CreateToggle(_transitionNextJSON);
         }
 
         private void InitLoopUI()
         {
-            _loop = new JSONStorableBool("Loop", current?.loop ?? true, (bool val) =>
+            _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
             {
                 current.loop = val;
                 UpdateNextAnimationPreview();
@@ -169,7 +164,7 @@ namespace VamTimeline
 
         private void InitUninterruptibleUI()
         {
-            _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, (bool val) =>
+            _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, val =>
             {
                 foreach (var clip in animation.GetClips(current.animationName))
                     clip.uninterruptible = val;
@@ -204,7 +199,7 @@ namespace VamTimeline
                 else
                 {
                     var targetClip = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
-                    if (targetClip == null || targetClip.autoTransitionNext == true)
+                    if (targetClip == null || targetClip.autoTransitionNext)
                     {
                         _transitionNextJSON.toggle.interactable = false;
                     }
@@ -249,23 +244,22 @@ namespace VamTimeline
                 .Select(c => c.animationName)
                 .GroupBy(x =>
                 {
-                    var i = x.IndexOf("/");
-                    if (i == -1) return null;
-                    return x.Substring(0, i);
+                    var i = x.IndexOf("/", StringComparison.Ordinal);
+                    return i == -1 ? null : x.Substring(0, i);
                 });
             return new[] { NoNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Concat(new[] { AtomAnimation.RandomizeAnimationName })
+                .Concat(new[] { AtomAnimation._randomizeAnimationName })
                 .ToList();
         }
 
-        private IEnumerable<string> EnumerateAnimations(IGrouping<string, string> group)
+        private static IEnumerable<string> EnumerateAnimations(IGrouping<string, string> group)
         {
-            foreach (var name in group)
-                yield return name;
+            foreach (var groupName in group)
+                yield return groupName;
 
             if (group.Key != null)
-                yield return group.Key + AtomAnimation.RandomizeGroupSuffix;
+                yield return group.Key + AtomAnimation._randomizeGroupSuffix;
         }
 
         #endregion
@@ -277,7 +271,7 @@ namespace VamTimeline
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
             v = v.Snap();
-            if (!current.loop && v >= (current.animationLength - 0.001f))
+            if (!current.loop && v >= current.animationLength - 0.001f)
                 _blendDurationJSON.valNoCallback = v = (current.animationLength - 0.001f).Snap();
             current.blendInDuration = v;
         }
@@ -339,7 +333,7 @@ namespace VamTimeline
 
         private bool NextExists(AtomAnimationClip clip, string nextName)
         {
-            if (nextName == AtomAnimation.RandomizeAnimationName)
+            if (nextName == AtomAnimation._randomizeAnimationName)
                 return true;
 
             string group;

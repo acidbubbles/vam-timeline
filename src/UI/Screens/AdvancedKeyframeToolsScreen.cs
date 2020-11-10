@@ -15,11 +15,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        public AdvancedKeyframeToolsScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -39,25 +34,25 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             _bakeUI = prefabFactory.CreateButton("Bake animation (arm & record)");
-            _bakeUI.button.onClick.AddListener(() => Bake());
+            _bakeUI.button.onClick.AddListener(Bake);
 
             prefabFactory.CreateSpacer();
 
             var reverseAnimationUI = prefabFactory.CreateButton("Reverse keyframes");
-            reverseAnimationUI.button.onClick.AddListener(() => ReverseAnimation());
+            reverseAnimationUI.button.onClick.AddListener(ReverseAnimation);
 
             prefabFactory.CreateSpacer();
 
             var removeAllKeyframesUI = prefabFactory.CreateButton("Remove all keyframes");
             removeAllKeyframesUI.buttonColor = Color.yellow;
-            removeAllKeyframesUI.button.onClick.AddListener(() => RemoveAllKeyframes());
+            removeAllKeyframesUI.button.onClick.AddListener(RemoveAllKeyframes);
 
             prefabFactory.CreateSpacer();
 
             var clearAllUI = prefabFactory.CreateButton("Delete all animations (reset)");
             clearAllUI.buttonColor = new Color(1f, 0f, 0f);
             clearAllUI.textColor = new Color(1f, 1f, 1f);
-            clearAllUI.button.onClick.AddListener(() => ClearAll());
+            clearAllUI.button.onClick.AddListener(ClearAll);
 
         }
 

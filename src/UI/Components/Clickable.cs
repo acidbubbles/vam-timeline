@@ -6,8 +6,8 @@ namespace VamTimeline
 {
     public class Clickable : MonoBehaviour, IPointerClickHandler
     {
-        public ClickableEvent onClick = new ClickableEvent();
-        public ClickableEvent onRightClick = new ClickableEvent();
+        public readonly ClickableEvent onClick = new ClickableEvent();
+        public readonly ClickableEvent onRightClick = new ClickableEvent();
 
         public void OnPointerClick(PointerEventData eventData)
         {

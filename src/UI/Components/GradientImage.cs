@@ -42,7 +42,7 @@ namespace VamTimeline
                 CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMin), bottom),
                 CreateVertex(new Vector2(rectTransform.rect.xMin, rectTransform.rect.yMax), top),
                 CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMax), top),
-                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMin), bottom),
+                CreateVertex(new Vector2(rectTransform.rect.xMax, rectTransform.rect.yMin), bottom)
             });
         }
 

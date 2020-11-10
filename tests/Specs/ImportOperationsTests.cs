@@ -1,19 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using VamTimeline.Tests.Framework;
 
-namespace VamTimeline.Tests.Specs
+namespace VamTimeline
 {
     public class ImportOperationsTests : ITestClass
     {
         public IEnumerable<Test> GetTests()
         {
-            yield return new Test(nameof(ImportOperationsTests.OverwriteEmptyClip), OverwriteEmptyClip);
-            yield return new Test(nameof(ImportOperationsTests.MatchToLayer), MatchToLayer);
-            yield return new Test(nameof(ImportOperationsTests.CreateLayerIfConflict), CreateLayerIfConflict);
-            yield return new Test(nameof(ImportOperationsTests.AddMissingTargets), AddMissingTargets);
-            yield return new Test(nameof(ImportOperationsTests.RefuseMixedTargets), RefuseMixedTargets);
+            yield return new Test(nameof(OverwriteEmptyClip), OverwriteEmptyClip);
+            yield return new Test(nameof(MatchToLayer), MatchToLayer);
+            yield return new Test(nameof(CreateLayerIfConflict), CreateLayerIfConflict);
+            yield return new Test(nameof(AddMissingTargets), AddMissingTargets);
+            yield return new Test(nameof(RefuseMixedTargets), RefuseMixedTargets);
         }
 
         public IEnumerable OverwriteEmptyClip(TestContext context)

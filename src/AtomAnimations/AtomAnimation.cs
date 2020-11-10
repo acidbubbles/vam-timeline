@@ -18,23 +18,21 @@ namespace VamTimeline
 
         private static readonly Regex _lastDigitsRegex = new Regex(@"^(?<name>.+)(?<index>[0-9]+)$", RegexOptions.Compiled);
 
-        public const float PaddingBeforeLoopFrame = 0.001f;
-        public const string RandomizeAnimationName = "(Randomize)";
-        public const string RandomizeGroupSuffix = "/*";
+        public const float _paddingBeforeLoopFrame = 0.001f;
+        public const string _randomizeAnimationName = "(Randomize)";
+        public const string _randomizeGroupSuffix = "/*";
 
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onSpeedChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
         public UnityEvent onAnimationRebuilt = new UnityEvent();
-        public IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
-        public IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
+        public readonly IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
+        public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
 
-        private readonly List<AtomAnimationClip> _clips = new List<AtomAnimationClip>();
-        public List<AtomAnimationClip> clips { get { return _clips; } }
+        public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
         public bool paused { get; set; }
-        public bool isSampling { get; private set; }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
         public bool master { get; set; }
@@ -82,12 +80,11 @@ namespace VamTimeline
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
 
-        private readonly AtomAnimationsClipsIndex _index;
-        public AtomAnimationsClipsIndex index { get { return _index; } }
+        public AtomAnimationsClipsIndex index { get; }
 
         public AtomAnimation()
         {
-            _index = new AtomAnimationsClipsIndex(_clips);
+            index = new AtomAnimationsClipsIndex(clips);
         }
 
         public AtomAnimationClip GetDefaultClip()
@@ -98,8 +95,7 @@ namespace VamTimeline
         public bool IsEmpty()
         {
             if (clips.Count == 0) return true;
-            if (clips.Count == 1 && clips[0].IsEmpty()) return true;
-            return false;
+            return clips.Count == 1 && clips[0].IsEmpty();
         }
 
         #region Clips
@@ -137,7 +133,7 @@ namespace VamTimeline
 
         public AtomAnimationClip CreateClip(AtomAnimationClip source)
         {
-            string animationName = GetNewAnimationName(source);
+            var animationName = GetNewAnimationName(source);
             return CreateClip(source.animationLayer, animationName);
         }
 
@@ -162,24 +158,27 @@ namespace VamTimeline
         {
             var match = _lastDigitsRegex.Match(source.animationName);
             if (!match.Success) return source.animationName + " 2";
-            var name = match.Groups["name"].Value;
-            var index = int.Parse(match.Groups["index"].Value);
-            for (var i = index + 1; i < 999; i++)
+            var animationNameBeforeInt = match.Groups["name"].Value;
+            var animationNameInt = int.Parse(match.Groups["index"].Value);
+            for (var i = animationNameInt + 1; i < 999; i++)
             {
-                var animationName = name + i;
-                if (!clips.Any(c => c.animationName == animationName)) return animationName;
+                var animationName = animationNameBeforeInt + i;
+                if (clips.All(c => c.animationName != animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();
         }
 
         public IEnumerable<string> EnumerateLayers()
         {
-            if (clips.Count == 0) yield break;
-            if (clips.Count == 1)
+            switch (clips.Count)
             {
-                yield return clips[0].animationLayer;
-                yield break;
+                case 0:
+                    yield break;
+                case 1:
+                    yield return clips[0].animationLayer;
+                    yield break;
             }
+
             var lastLayer = clips[0].animationLayer;
             yield return lastLayer;
             for (var i = 1; i < clips.Count; i++)
@@ -205,13 +204,13 @@ namespace VamTimeline
 
         public static bool TryGetRandomizedGroup(string animationName, out string groupName)
         {
-            if (!animationName.EndsWith(RandomizeGroupSuffix))
+            if (!animationName.EndsWith(_randomizeGroupSuffix))
             {
                 groupName = null;
                 return false;
             }
 
-            groupName = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
+            groupName = animationName.Substring(0, animationName.Length - _randomizeGroupSuffix.Length);
             return true;
         }
 
@@ -278,13 +277,13 @@ namespace VamTimeline
             onIsPlayingChanged.Invoke(clip);
         }
 
-        private void PlaybackHealthCheck(AtomAnimationClip clip)
+        private static void PlaybackHealthCheck(AtomAnimationClip clip)
         {
             for (var i = 0; i < clip.targetControllers.Count; i++)
             {
                 var target = clip.targetControllers[i];
                 var controller = target.controller;
-                if ((target.controlRotation && controller.currentRotationState == FreeControllerV3.RotationState.Off) || (target.controlPosition && controller.currentPositionState == FreeControllerV3.PositionState.Off))
+                if (target.controlRotation && controller.currentRotationState == FreeControllerV3.RotationState.Off || target.controlPosition && controller.currentPositionState == FreeControllerV3.PositionState.Off)
                     SuperController.LogError($"Timeline: Controller {controller.name} of atom {controller.containingAtom.name} has position or rotation off and will not play. You can turn of rotation/position if this is the desired result in the targets, in the controller settings.");
             }
         }
@@ -466,7 +465,7 @@ namespace VamTimeline
             AtomAnimationClip next;
 
             string group;
-            if (source.nextAnimationName == RandomizeAnimationName)
+            if (source.nextAnimationName == _randomizeAnimationName)
             {
                 var candidates = index
                     .ByLayer(source.animationLayer)
@@ -517,7 +516,7 @@ namespace VamTimeline
 
         public void Sample()
         {
-            if ((isPlaying && !paused) || !enabled) return;
+            if (isPlaying && !paused || !enabled) return;
 
             SampleFloatParams();
             SampleControllers();
@@ -546,7 +545,7 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private void SampleFloatParam(JSONStorableFloat floatParam, List<FloatParamAnimationTarget> targets)
+        private static void SampleFloatParam(JSONStorableFloat floatParam, List<FloatParamAnimationTarget> targets)
         {
             var weightedSum = 0f;
             var totalBlendWeights = 0f;
@@ -607,7 +606,7 @@ namespace VamTimeline
                 if (weight < float.Epsilon) continue;
 
                 if (!target.EnsureParentAvailable()) return;
-                Rigidbody link = target.GetLinkedRigidbody();
+                var link = target.GetLinkedRigidbody();
 
                 var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
 
@@ -686,7 +685,7 @@ namespace VamTimeline
 
         public void RebuildAnimationNow()
         {
-            if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
+            if (_animationRebuildInProgress) throw new InvalidOperationException("A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             _animationRebuildRequestPending = false;
             _animationRebuildInProgress = true;
             try
@@ -760,7 +759,7 @@ namespace VamTimeline
             }
         }
 
-        private void CopySourceFrameToClip(AtomAnimationClip source, float sourceTime, AtomAnimationClip clip, float clipTime)
+        private static void CopySourceFrameToClip(AtomAnimationClip source, float sourceTime, AtomAnimationClip clip, float clipTime)
         {
             foreach (var sourceTarget in source.targetControllers)
             {
@@ -791,7 +790,7 @@ namespace VamTimeline
             }
         }
 
-        private void RebuildClip(AtomAnimationClip clip, AtomAnimationClip previous)
+        private static void RebuildClip(AtomAnimationClip clip, AtomAnimationClip previous)
         {
             foreach (var target in clip.targetControllers)
             {
@@ -850,7 +849,7 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesDirty()
         {
-            if (_animationRebuildInProgress) throw new InvalidOperationException($"A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
+            if (_animationRebuildInProgress) throw new InvalidOperationException("A rebuild is already in progress. This is usually caused by by RebuildAnimation triggering dirty (internal error).");
             if (_animationRebuildRequestPending) return;
             _animationRebuildRequestPending = true;
             StartCoroutine(RebuildDeferred());

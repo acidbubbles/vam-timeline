@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -58,13 +57,6 @@ namespace VamTimeline
             }
             if (!isActiveAndEnabled) return;
             RefreshCurrentUI(_currentScreen);
-        }
-
-        private List<string> ListAvailableScreens()
-        {
-            var list = new List<string>();
-            if (_plugin.animation == null || _plugin.animationEditContext.current == null) return list;
-            return list;
         }
 
         public string GetDefaultScreen()

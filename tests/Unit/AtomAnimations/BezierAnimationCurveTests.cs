@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using VamTimeline.Tests.Framework;
 
-namespace VamTimeline.Tests.Unit
+namespace VamTimeline
 {
+    [SuppressMessage("ReSharper", "RedundantJumpStatement")]
     public class BezierAnimationCurveTests : ITestClass
     {
         public IEnumerable<Test> GetTests()

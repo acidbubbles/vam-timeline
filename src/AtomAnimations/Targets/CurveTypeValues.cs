@@ -30,7 +30,7 @@ namespace VamTimeline
             {LinearFlat, "Linear -> Flat"},
             {FlatLinear, "Flat -> Linear"},
             {CopyPrevious, "Copy Previous Keyframe"},
-            {LeaveAsIs, "Leave As-Is"},
+            {LeaveAsIs, "Leave As-Is"}
         };
 
         public static readonly List<string> labels2 = new List<string>
@@ -42,7 +42,7 @@ namespace VamTimeline
             FromInt(Flat),
             FromInt(Bounce),
             FromInt(LinearFlat),
-            FromInt(FlatLinear),
+            FromInt(FlatLinear)
         };
 
         public static string FromInt(int v)

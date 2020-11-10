@@ -9,11 +9,6 @@ namespace VamTimeline
         public override string screenId => ScreenName;
 
 
-        public MoreScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);

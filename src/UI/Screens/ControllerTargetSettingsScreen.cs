@@ -14,11 +14,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        public ControllerTargetSettingsScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -28,7 +23,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
-            prefabFactory.CreateHeader($"Controller settings", 1);
+            prefabFactory.CreateHeader("Controller settings", 1);
 
             if (_target == null)
             {
@@ -37,11 +32,11 @@ namespace VamTimeline
             }
             prefabFactory.CreateHeader(_target.name, 2);
 
-            prefabFactory.CreateHeader($"Parenting", 1);
+            prefabFactory.CreateHeader("Parenting", 1);
 
             InitParentUI();
 
-            prefabFactory.CreateHeader($"Options", 1);
+            prefabFactory.CreateHeader("Options", 1);
 
             InitControlUI();
             InitWeightUI();
@@ -56,7 +51,7 @@ namespace VamTimeline
 
             _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string> { "None" }, "None", "Rigidbody", (string val) => SyncRigidbody());
             var rigidbodyUI = prefabFactory.CreatePopup(_rigidbodyJSON, true, false);
-            atomUI.popupPanelHeight = 700f;
+            rigidbodyUI.popupPanelHeight = 700f;
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
 
             PopulateRigidbodies();
@@ -64,7 +59,7 @@ namespace VamTimeline
 
         private void InitWeightUI()
         {
-            var parentWeight = new JSONStorableFloat("Weight", 1f, (float val) => _target.weight = val, 0f, 1f)
+            var parentWeight = new JSONStorableFloat("Weight", 1f, val => _target.weight = val, 0f, 1f)
             {
                 valNoCallback = _target.weight
             };
@@ -74,10 +69,10 @@ namespace VamTimeline
 
         private void InitControlUI()
         {
-            var controlPosition = new JSONStorableBool("Control position", _target.controlPosition, (bool val) => _target.controlPosition = val);
+            var controlPosition = new JSONStorableBool("Control position", _target.controlPosition, val => _target.controlPosition = val);
             prefabFactory.CreateToggle(controlPosition);
 
-            var controlRotation = new JSONStorableBool("Control rotation", _target.controlRotation, (bool val) => _target.controlRotation = val);
+            var controlRotation = new JSONStorableBool("Control rotation", _target.controlRotation, val => _target.controlRotation = val);
             prefabFactory.CreateToggle(controlRotation);
         }
 
@@ -104,7 +99,7 @@ namespace VamTimeline
             var selfRigidbodyTarget = selfRigidbodyControl.EndsWith("Control") ? selfRigidbodyControl.Substring(0, selfRigidbodyControl.Length - "Control".Length) : null;
             var choices = atom.linkableRigidbodies
                 .Select(rb => rb.name)
-                .Where(n => atom != plugin.containingAtom || (n != selfRigidbodyControl && n != selfRigidbodyTarget))
+                .Where(n => atom != plugin.containingAtom || n != selfRigidbodyControl && n != selfRigidbodyTarget)
                 .ToList();
             choices.Insert(0, "None");
             _rigidbodyJSON.choices = choices;
@@ -150,11 +145,6 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
             ChangeScreen(TargetsScreen.ScreenName);
-        }
-
-        public override void OnDestroy()
-        {
-            base.OnDestroy();
         }
     }
 }

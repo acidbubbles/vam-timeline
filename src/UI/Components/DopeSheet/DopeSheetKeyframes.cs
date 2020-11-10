@@ -61,20 +61,18 @@ namespace VamTimeline
             vh.Clear();
             if (style == null || _animationLength == 0) return;
             var width = rectTransform.rect.width;
-            var height = rectTransform.rect.height;
 
             var padding = style.KeyframesRowPadding;
             var lineHeight = style.KeyframesRowLineSize;
             var pixelsPerSecond = width / _frames.Count;
             var tooManyKeyframes = pixelsPerSecond < 2f;
-            var lineColor = _selected ? style.KeyframesRowLineColorSelected : (tooManyKeyframes ? Color.red : style.KeyframesRowLineColor);
-            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(lineColor, new[]
-            {
+            var lineColor = _selected ? style.KeyframesRowLineColorSelected : tooManyKeyframes ? Color.red : style.KeyframesRowLineColor;
+            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(lineColor,
                 new Vector2(-width / 2f + padding, -lineHeight),
                 new Vector2(width / 2f - padding, -lineHeight),
                 new Vector2(width / 2f - padding, lineHeight),
                 new Vector2(-width / 2f + padding, lineHeight)
-            }));
+            ));
 
             if(tooManyKeyframes) return;
 
@@ -86,46 +84,42 @@ namespace VamTimeline
                 if (_currentFrame == keyframe) continue;
                 if (_loop && keyframe == _animationLength) continue;
                 var center = new Vector2(offsetX + keyframe * ratio, 0);
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor, new[]
-                {
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
                     center - new Vector2(0, size),
                     center - new Vector2(-size, 0)
-                }));
+                ));
             }
 
             if (_loop)
             {
                 var center = new Vector2(offsetX + _animationLength * ratio, 0);
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor, new[]
-                {
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
                     center - new Vector2(-2, -size),
                     center - new Vector2(-2, size),
                     center - new Vector2(2, size),
                     center - new Vector2(2, -size)
-                }));
+                ));
             }
 
             if (_currentFrame != -1)
             {
                 var center = new Vector2(offsetX + _currentFrame * ratio, 0);
                 size = style.KeyframeSizeSelectedBack;
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedBack : style.KeyframeColorCurrentBack, new[]
-                {
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedBack : style.KeyframeColorCurrentBack,
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
                     center - new Vector2(0, size),
                     center - new Vector2(-size, 0)
-                }));
+                ));
                 size = style.KeyframeSizeSelectedFront;
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedFront : style.KeyframeColorCurrentFront, new[]
-                {
+                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedFront : style.KeyframeColorCurrentFront,
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
                     center - new Vector2(0, size),
                     center - new Vector2(-size, 0)
-                }));
+                ));
             }
         }
     }

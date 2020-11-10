@@ -17,9 +17,9 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public void Apply(AtomClipboardEntry _offsetSnapshot, float from, float to, string offsetMode)
+        public void Apply(AtomClipboardEntry offsetSnapshot, float from, float to, string offsetMode)
         {
-            foreach (var snap in _offsetSnapshot.controllers)
+            foreach (var snap in offsetSnapshot.controllers)
             {
                 var target = _clip.targetControllers.First(t => t.controller == snap.controller);
                 if (!target.EnsureParentAvailable(false)) continue;
@@ -46,23 +46,24 @@ namespace VamTimeline
                     var time = target.GetKeyframeTime(key);
                     if (time < from - 0.0001f || time > to + 0.001f) continue;
                     // Do not double-apply
-                    if (Math.Abs(time - _offsetSnapshot.time) < 0.0001) continue;
+                    if (Math.Abs(time - offsetSnapshot.time) < 0.0001) continue;
 
                     var positionBefore = target.GetKeyframePosition(key);
                     var rotationBefore = target.GetKeyframeRotation(key);
 
-                    if (offsetMode == ChangePivotMode)
+                    switch (offsetMode)
                     {
-                        var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
-                        target.SetKeyframeByKey(key, positionAfter, rotationDelta * rotationBefore);
-                    }
-                    else if (offsetMode == OffsetMode)
-                    {
-                        target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationDelta * rotationBefore);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException($"Offset mode '{offsetMode}' is not implemented");
+                        case ChangePivotMode:
+                        {
+                            var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
+                            target.SetKeyframeByKey(key, positionAfter, rotationDelta * rotationBefore);
+                            break;
+                        }
+                        case OffsetMode:
+                            target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationDelta * rotationBefore);
+                            break;
+                        default:
+                            throw new NotImplementedException($"Offset mode '{offsetMode}' is not implemented");
                     }
                 }
             }
@@ -70,7 +71,8 @@ namespace VamTimeline
 
         public AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerAnimationTarget> targets)
         {
-            var snapshot = _clip.Copy(clipTime, targets.Cast<IAtomAnimationTarget>());
+            // ReSharper disable once RedundantEnumerableCastCall
+            var snapshot = AtomAnimationClip.Copy(clipTime, targets.Cast<IAtomAnimationTarget>().ToList());
             if (snapshot.controllers.Count == 0)
             {
                 SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {clipTime}.");

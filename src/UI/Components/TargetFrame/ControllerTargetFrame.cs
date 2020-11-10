@@ -9,11 +9,6 @@ namespace VamTimeline
         private LineDrawer _line;
         private readonly List<GameObject> _handles = new List<GameObject>();
 
-        public ControllerTargetFrame()
-            : base()
-        {
-        }
-
         protected override void CreateCustom()
         {
             plugin.animationEditContext.onTargetsSelectionChanged.AddListener(OnSelectedChanged);
@@ -64,7 +59,7 @@ namespace VamTimeline
 
         private void UpdateLine()
         {
-            var pointsPerSecond = 32f;
+            const float pointsPerSecond = 32f;
             var pointsCount = Mathf.CeilToInt(target.x.GetKeyframeByKey(target.x.length - 1).time * pointsPerSecond) + (clip.loop ? 2 : 1);
             var points = new Vector3[pointsCount];
 

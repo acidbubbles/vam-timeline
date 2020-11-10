@@ -36,11 +36,11 @@ namespace VamTimeline
         protected override IEnumerable ProcessController(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             var minFrameDistance = 1f / _settings.maxFramesPerSecond;
-            var maxIterations = (int)(_clip.animationLength * 10);
+            var maxIterations = (int)(base.clip.animationLength * 10);
 
             var steps = clip.steps
                 .Where(s => s.positionOn || s.rotationOn)
-                .TakeWhile(s => s.timeStep <= _clip.animationLength)
+                .TakeWhile(s => s.timeStep <= base.clip.animationLength)
                 .GroupBy(s => s.timeStep.Snap(minFrameDistance).ToMilliseconds())
                 .Select(g =>
                 {
@@ -52,7 +52,7 @@ namespace VamTimeline
             if (steps.Count < 2) yield break;
 
             target.SetKeyframe(0f, steps[0].position, steps[0].rotation, CurveTypeValues.SmoothLocal);
-            target.SetKeyframe(_clip.animationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation, CurveTypeValues.SmoothLocal);
+            target.SetKeyframe(base.clip.animationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation, CurveTypeValues.SmoothLocal);
             target.ComputeCurves();
 
             var buckets = new List<ReducerBucket>
@@ -95,7 +95,7 @@ namespace VamTimeline
                 // This is an attempt to compare translations and rotations
                 var normalizedPositionDistance = largestPositionDistance / 0.4f;
                 var normalizedRotationAngle = largestRotationAngle / 180f;
-                var selectPosOverRot = (normalizedPositionDistance > normalizedRotationAngle) && posInRange;
+                var selectPosOverRot = normalizedPositionDistance > normalizedRotationAngle && posInRange;
                 var keyToApply = selectPosOverRot ? keyWithLargestPositionDistance : keyWithLargestRotationAngle;
 
                 var step = steps[keyToApply];
@@ -117,13 +117,13 @@ namespace VamTimeline
                         buckets.Insert(bucketToSplitIndex, Scan(steps, target, keyToApply + 1, bucketToSplit.to));
                     if (keyToApply - 1 - bucketToSplit.from > 2)
                         buckets.Insert(bucketToSplitIndex, Scan(steps, target, bucketToSplit.from, keyToApply - 1));
-                    }
+                }
 
                 yield return 0;
             }
         }
 
-        private ReducerBucket Scan(List<ControllerKeyframe> steps, FreeControllerAnimationTarget target, int from, int to)
+        private static ReducerBucket Scan(List<ControllerKeyframe> steps, FreeControllerAnimationTarget target, int from, int to)
         {
             var bucket = new ReducerBucket
             {

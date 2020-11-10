@@ -8,11 +8,6 @@ namespace VamTimeline
         private RectTransform _sliderFillRect;
         private SimpleSlider _simpleSlider;
 
-        public FloatParamTargetFrame()
-            : base()
-        {
-        }
-
         protected override void CreateCustom()
         {
             var slider = CreateSlider();
@@ -20,7 +15,7 @@ namespace VamTimeline
             CreateSliderFill(sliderBackground);
 
             _simpleSlider = slider.AddComponent<SimpleSlider>();
-            _simpleSlider.onChange.AddListener((float val) =>
+            _simpleSlider.onChange.AddListener(val =>
             {
                 if (clip.playbackEnabled) return;
                 if (!target.EnsureAvailable()) return;

@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Text;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace VamTimeline.Tests.Framework
+namespace VamTimeline
 {
     public class Test
     {
@@ -30,7 +31,7 @@ namespace VamTimeline.Tests.Framework
             foreach (var x in _run(context))
                 yield return x;
 
-            UnityEngine.Object.Destroy(go);
+            Object.Destroy(go);
         }
     }
 }

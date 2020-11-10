@@ -19,7 +19,7 @@ namespace VamTimeline
 
         public Editor ui { get; private set; }
         public Editor controllerInjectedUI { get; private set; }
-        public AtomClipboard clipboard { get; private set; } = new AtomClipboard();
+        public AtomClipboard clipboard { get; } = new AtomClipboard();
         public PeerManager peers { get; private set; }
 
         public JSONStorableStringChooser animationLegacyJSON { get; private set; }
@@ -175,7 +175,7 @@ namespace VamTimeline
                 if (animationEditContext != null) animationEditContext.enabled = false;
                 if (ui != null) ui.enabled = false;
                 if (_freeControllerHook != null) _freeControllerHook.enabled = false;
-                if (peers != null) peers.Unready();
+                peers?.Unready();
                 DestroyControllerPanel();
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationDisabled));
             }
@@ -206,7 +206,7 @@ namespace VamTimeline
 
         public void InitStorables()
         {
-            animationLegacyJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val => ChangeAnimationLegacy(val))
+            animationLegacyJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", ChangeAnimationLegacy)
             {
                 isStorable = false,
                 isRestorable = false
@@ -235,14 +235,14 @@ namespace VamTimeline
             });
             RegisterAction(previousAnimationLegacyJSON);
 
-            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animationEditContext.clipTime = v.Snap(animationEditContext.snap), 0f, AtomAnimationClip.DefaultAnimationLength, true)
+            scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animationEditContext.clipTime = v.Snap(animationEditContext.snap), 0f, AtomAnimationClip.DefaultAnimationLength)
             {
                 isStorable = false,
                 isRestorable = false
             };
             RegisterFloat(scrubberJSON);
 
-            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animationEditContext.playTime = v.Snap(), 0f, float.MaxValue, true)
+            timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animationEditContext.playTime = v.Snap(), 0f, float.MaxValue)
             {
                 isStorable = false,
                 isRestorable = false
@@ -267,7 +267,7 @@ namespace VamTimeline
             });
             RegisterAction(playIfNotPlayingJSON);
 
-            isPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, (bool val) =>
+            isPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, val =>
             {
                 if (val)
                     playIfNotPlayingJSON.actionCallback();
@@ -307,16 +307,16 @@ namespace VamTimeline
             });
             RegisterAction(stopAndResetJSON);
 
-            nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => NextFrame());
+            nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, NextFrame);
             RegisterAction(nextFrameJSON);
 
-            previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => PreviousFrame());
+            previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, PreviousFrame);
             RegisterAction(previousFrameJSON);
 
-            deleteJSON = new JSONStorableAction("Delete", () => Delete());
-            cutJSON = new JSONStorableAction("Cut", () => Cut());
-            copyJSON = new JSONStorableAction("Copy", () => Copy());
-            pasteJSON = new JSONStorableAction("Paste", () => Paste());
+            deleteJSON = new JSONStorableAction("Delete", Delete);
+            cutJSON = new JSONStorableAction("Cut", Cut);
+            copyJSON = new JSONStorableAction("Copy", Copy);
+            pasteJSON = new JSONStorableAction("Paste", Paste);
 
             speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => animation.speed = v, -1f, 5f, false)
             {
@@ -432,7 +432,6 @@ namespace VamTimeline
                 if (!string.IsNullOrEmpty(legacyStr))
                 {
                     Load(JSONNode.Parse(legacyStr) as JSONClass, null);
-                    return;
                 }
             }
             catch (Exception exc)
@@ -550,7 +549,7 @@ namespace VamTimeline
 
                 foreach (var group in animation.clips.GroupBy(c => c.animationNameGroup).Where(g => g.Key != null && g.Count() > 1))
                 {
-                    RegisterAction(new JSONStorableAction($"Play {group.Key}{AtomAnimation.RandomizeGroupSuffix}", () =>
+                    RegisterAction(new JSONStorableAction($"Play {group.Key}{AtomAnimation._randomizeGroupSuffix}", () =>
                     {
                         animation.PlayRandom(group.Key);
                     }));
@@ -578,13 +577,13 @@ namespace VamTimeline
 
         private void CreateAndRegisterClipStorables(string animationName)
         {
-            var playJSON = new JSONStorableAction($"Play {animationName}", () =>
+            var playClipJSON = new JSONStorableAction($"Play {animationName}", () =>
             {
                 animation.PlayClips(animationName, true);
             });
-            RegisterAction(playJSON);
+            RegisterAction(playClipJSON);
 
-            var speedJSON = new JSONStorableFloat($"Speed {animationName}", 1f, (float val) =>
+            var speedClipJSON = new JSONStorableFloat($"Speed {animationName}", 1f, val =>
             {
                 foreach (var clip in animation.GetClips(animationName))
                     clip.speed = val;
@@ -594,9 +593,9 @@ namespace VamTimeline
                 isStorable = false,
                 isRestorable = false
             };
-            RegisterFloat(speedJSON);
+            RegisterFloat(speedClipJSON);
 
-            var weightJSON = new JSONStorableFloat($"Weight {animationName}", 1f, (float val) =>
+            var weightJSON = new JSONStorableFloat($"Weight {animationName}", 1f, val =>
             {
                 foreach (var clip in animation.GetClips(animationName))
                     clip.weight = val;
@@ -611,9 +610,9 @@ namespace VamTimeline
             _clipStorables.Add(new AnimStorableActionMap
             {
                 animationName = animationName,
-                playJSON = playJSON,
-                speedJSON = speedJSON,
-                weightJSON = weightJSON,
+                playJSON = playClipJSON,
+                speedJSON = speedClipJSON,
+                weightJSON = weightJSON
             });
         }
 
@@ -634,7 +633,7 @@ namespace VamTimeline
             }
         }
 
-        private void OnEditorSettingsChanged(string name)
+        private void OnEditorSettingsChanged(string propertyName)
         {
             try
             {
@@ -726,9 +725,9 @@ namespace VamTimeline
                 if (!animationEditContext.CanEdit()) return;
 
 				var time = animationEditContext.clipTime;
-				var entry = animationEditContext.current.Copy(time, animationEditContext.GetAllOrSelectedTargets());
+				var entry = AtomAnimationClip.Copy(time, animationEditContext.GetAllOrSelectedTargets().ToList());
 
-				if (entry.Empty)
+				if (entry.empty)
 				{
                     SuperController.LogMessage("Timeline: Nothing to cut");
 				}
@@ -757,9 +756,9 @@ namespace VamTimeline
                 if (!animationEditContext.CanEdit()) return;
 
 				var time = animationEditContext.clipTime;
-				var entry = animationEditContext.current.Copy(time, animationEditContext.GetAllOrSelectedTargets());
+				var entry = AtomAnimationClip.Copy(time, animationEditContext.GetAllOrSelectedTargets().ToList());
 
-				if (entry.Empty)
+				if (entry.empty)
 				{
                     SuperController.LogMessage("Timeline: Nothing to copy");
 				}
@@ -786,7 +785,6 @@ namespace VamTimeline
                     SuperController.LogMessage("Timeline: Clipboard is empty");
                     return;
                 }
-                var time = animationEditContext.clipTime;
                 var timeOffset = clipboard.time;
                 foreach (var entry in clipboard.entries)
                 {
@@ -862,8 +860,9 @@ namespace VamTimeline
         private void DestroyControllerPanel()
         {
             if (controllerInjectedUI == null) return;
-            controllerInjectedUI.gameObject.transform.SetParent(null, false);
-            Destroy(controllerInjectedUI.gameObject);
+            var go = controllerInjectedUI.gameObject;
+            go.transform.SetParent(null, false);
+            Destroy(go);
             controllerInjectedUI = null;
         }
 

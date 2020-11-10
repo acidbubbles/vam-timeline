@@ -9,11 +9,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        public OptionsScreen()
-            : base()
-        {
-        }
-
         #region Init
 
         public override void Init(IAtomPlugin plugin, object arg)
@@ -41,13 +36,13 @@ namespace VamTimeline
 
         private void InitLockedUI()
         {
-            _lockedJSON = new JSONStorableBool("Lock edits", animationEditContext.locked, (bool val) => animationEditContext.locked = val);
+            _lockedJSON = new JSONStorableBool("Lock edits", animationEditContext.locked, val => animationEditContext.locked = val);
             prefabFactory.CreateToggle(_lockedJSON);
         }
 
         private void InitSnapUI()
         {
-            _snapJSON = new JSONStorableFloat("Snap", 0.001f, (float val) => animationEditContext.snap = val.Snap(), 0.1f, 1f)
+            _snapJSON = new JSONStorableFloat("Snap", 0.001f, val => animationEditContext.snap = val.Snap(), 0.1f, 1f)
             {
                 valNoCallback = animationEditContext.snap
             };
@@ -57,7 +52,7 @@ namespace VamTimeline
 
         private void InitAutoKeyframeUI()
         {
-            _autoKeyframeAllControllersJSON = new JSONStorableBool("Keyframe all controllers at once", animationEditContext.autoKeyframeAllControllers, (bool val) => animationEditContext.autoKeyframeAllControllers = val);
+            _autoKeyframeAllControllersJSON = new JSONStorableBool("Keyframe all controllers at once", animationEditContext.autoKeyframeAllControllers, val => animationEditContext.autoKeyframeAllControllers = val);
             prefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
         }
 
@@ -68,11 +63,6 @@ namespace VamTimeline
             _lockedJSON.valNoCallback = animationEditContext.locked;
             _snapJSON.valNoCallback = animationEditContext.snap;
             _autoKeyframeAllControllersJSON.valNoCallback = animationEditContext.autoKeyframeAllControllers;
-        }
-
-        public override void OnDestroy()
-        {
-            base.OnDestroy();
         }
     }
 }

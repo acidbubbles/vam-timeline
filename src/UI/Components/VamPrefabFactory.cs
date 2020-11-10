@@ -28,13 +28,13 @@ namespace VamTimeline
 
         private static IEnumerable LoadUIAsset(string assetBundleName, string assetName, Action<RectTransform> assign)
         {
-            AssetBundleLoadAssetOperation request = AssetBundleManager.LoadAssetAsync(assetBundleName, assetName, typeof(GameObject));
+            var request = AssetBundleManager.LoadAssetAsync(assetBundleName, assetName, typeof(GameObject));
             if (request == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null request.");
             yield return request;
-            GameObject go = request.GetAsset<GameObject>();
+            var go = request.GetAsset<GameObject>();
             if (go == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null GameObject.");
             var prefab = go.GetComponent<RectTransform>();
-            if (prefab == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null RectTansform.");
+            if (prefab == null) throw new NullReferenceException($"Request for {assetName} in {assetBundleName} assetbundle failed: Null RectTransform.");
             assign(prefab);
         }
 
@@ -121,10 +121,6 @@ namespace VamTimeline
         private GameObject _currentContainer;
         private readonly List<JSONStorableParam> _storables = new List<JSONStorableParam>();
 
-        public VamPrefabFactory()
-        {
-        }
-
         public UIDynamic CreateSpacer()
         {
             var ui = Instantiate(plugin.manager.configurableSpacerPrefab).GetComponent<UIDynamic>();
@@ -173,6 +169,7 @@ namespace VamTimeline
         public UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool filterable, bool navButtons)
         {
             RegisterStorable(jsc);
+            // ReSharper disable once JoinDeclarationAndInitializer
             Transform prefab;
 #if (VAM_GT_1_20)
             if(filterable)

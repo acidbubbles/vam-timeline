@@ -15,11 +15,6 @@ namespace VamTimeline
         private UIDynamicButton _deleteAnimationUI;
         private UIDynamicButton _deleteLayerUI;
 
-        public ManageAnimationsScreen()
-            : base()
-        {
-        }
-
         #region Init
 
         public override void Init(IAtomPlugin plugin, object arg)
@@ -55,22 +50,22 @@ namespace VamTimeline
         private void InitAnimationsListUI()
         {
             _animationsListJSON = new JSONStorableString("Animations list", "");
-            var animationsListUI = prefabFactory.CreateTextField(_animationsListJSON);
+            prefabFactory.CreateTextField(_animationsListJSON);
         }
 
         private void InitReorderAnimationsUI()
         {
             var moveAnimUpUI = prefabFactory.CreateButton("Reorder animation (move up)");
-            moveAnimUpUI.button.onClick.AddListener(() => ReorderAnimationMoveUp());
+            moveAnimUpUI.button.onClick.AddListener(ReorderAnimationMoveUp);
 
             var moveAnimDownUI = prefabFactory.CreateButton("Reorder animation (move down)");
-            moveAnimDownUI.button.onClick.AddListener(() => ReorderAnimationMoveDown());
+            moveAnimDownUI.button.onClick.AddListener(ReorderAnimationMoveDown);
         }
 
         private void InitDeleteAnimationsUI()
         {
             _deleteAnimationUI = prefabFactory.CreateButton("Delete animation");
-            _deleteAnimationUI.button.onClick.AddListener(() => DeleteAnimation());
+            _deleteAnimationUI.button.onClick.AddListener(DeleteAnimation);
             _deleteAnimationUI.buttonColor = Color.red;
             _deleteAnimationUI.textColor = Color.white;
         }
@@ -78,7 +73,7 @@ namespace VamTimeline
         private void InitDeleteLayerUI()
         {
             _deleteLayerUI = prefabFactory.CreateButton("Delete layer");
-            _deleteLayerUI.button.onClick.AddListener(() => DeleteLayer());
+            _deleteLayerUI.button.onClick.AddListener(DeleteLayer);
             _deleteLayerUI.buttonColor = Color.red;
             _deleteLayerUI.textColor = Color.white;
         }
@@ -86,7 +81,7 @@ namespace VamTimeline
         private void InitSyncInAllAtomsUI()
         {
             var syncInAllAtoms = prefabFactory.CreateButton("Create/sync in all atoms");
-            syncInAllAtoms.button.onClick.AddListener(() => SyncInAllAtoms());
+            syncInAllAtoms.button.onClick.AddListener(SyncInAllAtoms);
         }
 
         #endregion

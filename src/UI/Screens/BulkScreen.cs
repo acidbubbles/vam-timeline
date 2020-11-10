@@ -14,7 +14,7 @@ namespace VamTimeline
 
         private static bool _offsetting;
         private static string _lastOffsetMode;
-        private static string _lastAnim = null;
+        private static string _lastAnim;
         private static float _lastLength = -1f;
         private static float _lastStart = -1f;
         private static float _lastEnd = -1f;
@@ -28,11 +28,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _changeCurveJSON;
         private JSONStorableStringChooser _offsetModeJSON;
         private UIDynamicButton _offsetControllerUI;
-
-        public BulkScreen()
-            : base()
-        {
-        }
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -63,12 +58,12 @@ namespace VamTimeline
 
         private void InitOffsetUI()
         {
-            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode }, _lastOffsetMode ?? OffsetOperations.ChangePivotMode, "Offset mode", (string val) => _lastOffsetMode = val);
+            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode }, _lastOffsetMode ?? OffsetOperations.ChangePivotMode, "Offset mode", val => _lastOffsetMode = val);
             var offsetModeUI = prefabFactory.CreatePopup(_offsetModeJSON, false, true);
             offsetModeUI.popupPanelHeight = 160f;
 
             _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
-            _offsetControllerUI.button.onClick.AddListener(() => OffsetController());
+            _offsetControllerUI.button.onClick.AddListener(OffsetController);
         }
 
         protected void InitBulkClipboardUI()
@@ -88,7 +83,7 @@ namespace VamTimeline
 
         private void InitSelectionUI()
         {
-            _startJSON = new JSONStorableFloat("Selection starts at", 0f, (float val) =>
+            _startJSON = new JSONStorableFloat("Selection starts at", 0f, val =>
             {
                 var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
                 _startJSON.valNoCallback = closest;
@@ -98,7 +93,7 @@ namespace VamTimeline
             }, 0f, current.animationLength);
             prefabFactory.CreateSlider(_startJSON);
 
-            _endJSON = new JSONStorableFloat("Selection ends at", 0f, (float val) =>
+            _endJSON = new JSONStorableFloat("Selection ends at", 0f, val =>
             {
                 var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
                 _endJSON.valNoCallback = closest;
@@ -170,7 +165,7 @@ namespace VamTimeline
 
                         if (copy)
                         {
-                            plugin.clipboard.entries.Insert(0, current.Copy(keyTime, animationEditContext.GetAllOrSelectedTargets()));
+                            plugin.clipboard.entries.Insert(0, AtomAnimationClip.Copy(keyTime, animationEditContext.GetAllOrSelectedTargets().ToList()));
                         }
                         if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
                         {
@@ -226,7 +221,7 @@ namespace VamTimeline
         {
             if (current.clipTime < _startJSON.val || current.clipTime > _endJSON.val)
             {
-                SuperController.LogError($"Timeline: Cannot offset, current time is outside of the bounds of the selection");
+                SuperController.LogError("Timeline: Cannot offset, current time is outside of the bounds of the selection");
                 return;
             }
 

@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using VamTimeline.Tests.Framework;
 
-namespace VamTimeline.Tests.Specs
+namespace VamTimeline
 {
     public class AnimationTests : ITestClass
     {
         public IEnumerable<Test> GetTests()
         {
-            yield return new Test(nameof(AnimationTests.EmptyAnimation), EmptyAnimation);
+            yield return new Test(nameof(EmptyAnimation), EmptyAnimation);
         }
 
         public IEnumerable EmptyAnimation(TestContext context)

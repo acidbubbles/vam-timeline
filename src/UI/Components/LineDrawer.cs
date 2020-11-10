@@ -4,7 +4,7 @@ namespace VamTimeline
 {
     public class LineDrawer : MonoBehaviour
     {
-        private bool _dirty = false;
+        private bool _dirty;
         private Material _material;
         private Gradient _colorGradient;
         private Vector3[] _points;

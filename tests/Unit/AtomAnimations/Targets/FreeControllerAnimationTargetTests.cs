@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using VamTimeline.Tests.Framework;
 
-namespace VamTimeline.Tests.Unit
+namespace VamTimeline
 {
     public class FreeControllerAnimationTargetTests : ITestClass
     {

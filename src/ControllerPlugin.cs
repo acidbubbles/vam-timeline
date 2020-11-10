@@ -8,8 +8,6 @@ namespace VamTimeline
 {
     public class ControllerPlugin : MVRScript, ITimelineListener
     {
-        private const string _atomSeparator = ";";
-
         private Atom _atom;
         private SimpleSignUI _ui;
         private JSONStorableBool _autoPlayJSON;
@@ -27,7 +25,6 @@ namespace VamTimeline
         private readonly List<SyncProxy> _links = new List<SyncProxy>();
         private readonly List<KeyValuePair<string, JSONStorableAction>> _playActions = new List<KeyValuePair<string, JSONStorableAction>>();
         private SyncProxy _selectedLink;
-        private bool _ignoreVamTimelineAnimationFrameUpdated;
 
         #region Initialization
 
@@ -52,7 +49,7 @@ namespace VamTimeline
             // Note: Yeah, that's horrible, but containingAtom is null
             var container = gameObject?.transform?.parent?.parent?.parent?.parent?.parent?.gameObject;
             if (container == null)
-                throw new NullReferenceException($"Could not find the parent gameObject.");
+                throw new NullReferenceException("Could not find the parent gameObject.");
             var atom = container.GetComponent<Atom>();
             if (atom == null)
                 throw new NullReferenceException($"Could not find the parent atom in {container.name}.");
@@ -66,38 +63,38 @@ namespace VamTimeline
             _autoPlayJSON = new JSONStorableBool("Auto Play", false);
             RegisterBool(_autoPlayJSON);
 
-            _hideJSON = new JSONStorableBool("Hide", false, (bool val) => Hide(val));
+            _hideJSON = new JSONStorableBool("Hide", false, Hide);
             RegisterBool(_hideJSON);
 
             _enableKeyboardShortcuts = new JSONStorableBool("Enable Keyboard Shortcuts", false);
             RegisterBool(_enableKeyboardShortcuts);
 
-            _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string>(), "", "Atoms", (string v) => SelectCurrentAtom(v))
+            _atomsJSON = new JSONStorableStringChooser("Atoms Selector", new List<string>(), "", "Atoms", SelectCurrentAtom)
             {
                 isStorable = false,
                 isRestorable = false
             };
 
-            _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", (string v) => ChangeAnimation(v))
+            _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", ChangeAnimation)
             {
                 isStorable = false,
                 isRestorable = false
             };
             RegisterStringChooser(_animationJSON);
 
-            _playJSON = new JSONStorableAction(StorableNames.Play, () => Play());
+            _playJSON = new JSONStorableAction(StorableNames.Play, Play);
             RegisterAction(_playJSON);
 
-            _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () => PlayIfNotPlaying());
+            _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, PlayIfNotPlaying);
             RegisterAction(_playIfNotPlayingJSON);
 
-            _stopJSON = new JSONStorableAction(StorableNames.Stop, () => Stop());
+            _stopJSON = new JSONStorableAction(StorableNames.Stop, Stop);
             RegisterAction(_stopJSON);
 
-            _stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () => StopAndReset());
+            _stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, StopAndReset);
             RegisterAction(_stopAndResetJSON);
 
-            _timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => _selectedLink.time.val = v, 0f, 2f, true)
+            _timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => _selectedLink.time.val = v, 0f, 2f)
             {
                 isStorable = false,
                 isRestorable = false
@@ -158,7 +155,7 @@ namespace VamTimeline
         public void OnTimelineAnimationReady(JSONStorable storable)
         {
             var link = TryConnectAtom(storable);
-            if (GetOrDispose(_selectedLink)?.storable == storable)
+            if (GetOrDispose(link)?.storable == storable)
             {
                 RequestControlPanelInjection();
             }
@@ -194,7 +191,7 @@ namespace VamTimeline
             var existing = _links.FirstOrDefault(a => a.storable == storable);
             if (existing != null) { return existing; }
 
-            var proxy = new SyncProxy()
+            var proxy = new SyncProxy
             {
                 storable = storable
             };
@@ -208,7 +205,7 @@ namespace VamTimeline
             }
 
             _links.Add(proxy);
-            _links.Sort((SyncProxy s1, SyncProxy s2) => string.Compare(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
+            _links.Sort((s1, s2) => string.CompareOrdinal(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
 
             _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid).ToList();
 
@@ -234,10 +231,7 @@ namespace VamTimeline
         private void InitCustomUI()
         {
             var resyncButton = CreateButton("Re-Sync Atom Plugins");
-            resyncButton.button.onClick.AddListener(() =>
-            {
-                ScanForAtoms();
-            });
+            resyncButton.button.onClick.AddListener(ScanForAtoms);
 
             CreateToggle(_autoPlayJSON, true);
 
@@ -302,7 +296,7 @@ namespace VamTimeline
         {
             _animationJSON.choices = _links
                 .ToList()
-                .Select(l => GetOrDispose(l))
+                .Select(GetOrDispose)
                 .Where(l => l != null)
                 .SelectMany(l => l.animation.choices)
                 .Distinct()
@@ -315,7 +309,7 @@ namespace VamTimeline
 
             foreach (var a in _animationJSON.choices)
             {
-                if (!_playActions.Any(kvp => kvp.Key == a))
+                if (_playActions.All(kvp => kvp.Key != a))
                 {
                     var playJSON = new JSONStorableAction($"Play {a}", () => Play(a));
                     RegisterAction(playJSON);
@@ -327,34 +321,11 @@ namespace VamTimeline
             if (proxy == null || proxy.storable != storable)
                 return;
 
-            OnTimelineTimeChanged(storable);
-
             var remoteTime = proxy.time;
             _timeJSON.max = remoteTime.max;
             _timeJSON.valNoCallback = remoteTime.val;
             var remoteAnimation = proxy.animation;
             _animationJSON.valNoCallback = remoteAnimation.val;
-        }
-
-        public void OnTimelineTimeChanged(JSONStorable storable)
-        {
-            if (_ignoreVamTimelineAnimationFrameUpdated) return;
-            _ignoreVamTimelineAnimationFrameUpdated = true;
-
-            try
-            {
-                var proxy = GetOrDispose(_selectedLink);
-                if (proxy == null || proxy.storable != storable)
-                    return;
-
-                var animationName = proxy.animation.val;
-                var isPlaying = proxy.isPlaying.val;
-                var time = proxy.time.val;
-            }
-            finally
-            {
-                _ignoreVamTimelineAnimationFrameUpdated = false;
-            }
         }
 
         public void Update()
@@ -454,10 +425,7 @@ namespace VamTimeline
 
         private void SelectCurrentAtom(string uid)
         {
-            if (_selectedLink != null)
-            {
-                _selectedLink = null;
-            }
+            _selectedLink = null;
             if (string.IsNullOrEmpty(uid))
             {
                 return;
@@ -531,13 +499,13 @@ namespace VamTimeline
             return proxy;
         }
 
-        private void ChangeAnimation(string name)
+        private void ChangeAnimation(string animationName)
         {
-            if (string.IsNullOrEmpty(name)) return;
+            if (string.IsNullOrEmpty(animationName)) return;
             foreach (var la in _links.Select(GetOrDispose))
             {
-                if (la.animation.choices.Contains(name))
-                    la.animation.val = name;
+                if (la.animation.choices.Contains(animationName))
+                    la.animation.val = animationName;
             }
         }
 

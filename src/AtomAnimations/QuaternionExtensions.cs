@@ -32,10 +32,9 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        public static Quaternion NormalizeQuaternion(float x, float y, float z, float w)
+        private static Quaternion NormalizeQuaternion(float x, float y, float z, float w)
         {
-
-            float lengthD = 1.0f / (w * w + x * x + y * y + z * z);
+            var lengthD = 1.0f / (w * w + x * x + y * y + z * z);
             w *= lengthD;
             x *= lengthD;
             y *= lengthD;
@@ -46,9 +45,8 @@ namespace VamTimeline
 
         //Changes the sign of the quaternion components. This is not the same as the inverse.
         [MethodImpl(256)]
-        public static Quaternion InverseSignQuaternion(Quaternion q)
+        private static Quaternion InverseSignQuaternion(Quaternion q)
         {
-
             return new Quaternion(-q.x, -q.y, -q.z, -q.w);
         }
 
@@ -57,22 +55,11 @@ namespace VamTimeline
         //be very similar but has its component signs reversed (q has the same rotation as
         //-q)
         [MethodImpl(256)]
-        public static bool AreQuaternionsClose(Quaternion q1, Quaternion q2)
+        private static bool AreQuaternionsClose(Quaternion q1, Quaternion q2)
         {
 
-            float dot = Quaternion.Dot(q1, q2);
-
-            if (dot < 0.0f)
-            {
-
-                return false;
-            }
-
-            else
-            {
-
-                return true;
-            }
+            var dot = Quaternion.Dot(q1, q2);
+            return !(dot < 0.0f);
         }
     }
 }

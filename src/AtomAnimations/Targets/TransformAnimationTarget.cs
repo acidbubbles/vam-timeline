@@ -31,7 +31,7 @@ namespace VamTimeline
 
         public bool playbackEnabled { get; set; } = true;
 
-        public TransformAnimationTargetBase()
+        protected TransformAnimationTargetBase()
         {
             curves = new List<BezierAnimationCurve> {
                 x, y, z, rotX, rotY, rotZ, rotW
@@ -61,7 +61,7 @@ namespace VamTimeline
 
             foreach (var curve in curves)
             {
-                ComputeCurves(curve);
+                curve.ComputeCurves();
             }
         }
 
@@ -246,11 +246,11 @@ namespace VamTimeline
                 rotX = rotX.GetKeyframeByKey(key),
                 rotY = rotY.GetKeyframeByKey(key),
                 rotZ = rotZ.GetKeyframeByKey(key),
-                rotW = rotW.GetKeyframeByKey(key),
+                rotW = rotW.GetKeyframeByKey(key)
             };
         }
 
-        public void SetCurveSnapshot(float time, TransformTargetSnapshot snapshot, bool dirty = true)
+        public void SetCurveSnapshot(float time, TransformTargetSnapshot snapshot, bool makeDirty = true)
         {
             x.SetKeySnapshot(time, snapshot.x);
             y.SetKeySnapshot(time, snapshot.y);
@@ -259,7 +259,7 @@ namespace VamTimeline
             rotY.SetKeySnapshot(time, snapshot.rotY);
             rotZ.SetKeySnapshot(time, snapshot.rotZ);
             rotW.SetKeySnapshot(time, snapshot.rotW);
-            if (dirty) base.dirty = true;
+            if (makeDirty) dirty = true;
         }
 
         #endregion

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -52,7 +53,7 @@ namespace VamTimeline
 
         public float Evaluate(float time)
         {
-            if (keys.Count < 2) throw new InvalidOperationException($"Cannot evalue curve, at least two keyframes are needed");
+            if (keys.Count < 2) throw new InvalidOperationException("Cannot evalue curve, at least two keyframes are needed");
             BezierKeyframe current;
             BezierKeyframe next;
             // Attempt last evaluated portion
@@ -86,8 +87,13 @@ namespace VamTimeline
 
             // Search for portion
             var key = KeyframeBinarySearch(time, true);
-            if (key == -1) return keys[keys.Count - 1].value;
-            if (key == 0) return keys[0].value;
+            switch (key)
+            {
+                case -1:
+                    return keys[keys.Count - 1].value;
+                case 0:
+                    return keys[0].value;
+            }
             current = keys[key];
             if (time < current.time)
                 current = keys[--key];
@@ -103,7 +109,7 @@ namespace VamTimeline
             var key = KeyframeBinarySearch(time);
             if (key != -1) return SetKeyframeByKey(key, value, curveType);
             key = AddKey(time, value, curveType);
-            if (key == -1) throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", keys.Select(k => k.time.ToString()).ToArray())}.");
+            if (key == -1) throw new InvalidOperationException($"Cannot add keyframe at time {time}. Keys: {string.Join(", ", keys.Select(k => k.time.ToString(CultureInfo.InvariantCulture)).ToArray())}.");
             return key;
         }
 
@@ -156,19 +162,20 @@ namespace VamTimeline
 
         public bool AddEdgeFramesIfMissing(float animationLength, int curveType)
         {
-            if (keys.Count == 0)
+            switch (keys.Count)
             {
-                AddKey(0, 0, curveType);
-                AddKey(animationLength, 0, curveType);
-                return true;
-            }
-            if (keys.Count == 1)
-            {
-                var keyframe = GetKeyframeByKey(0);
-                keyframe.time = 0;
-                keys[0] = keyframe;
-                AddKey(animationLength, keyframe.value, keyframe.curveType);
-                return true;
+                case 0:
+                    AddKey(0, 0, curveType);
+                    AddKey(animationLength, 0, curveType);
+                    return true;
+                case 1:
+                {
+                    var keyframe = GetKeyframeByKey(0);
+                    keyframe.time = 0;
+                    keys[0] = keyframe;
+                    AddKey(animationLength, keyframe.value, keyframe.curveType);
+                    return true;
+                }
             }
 
             var dirty = false;
@@ -212,36 +219,35 @@ namespace VamTimeline
         public void ComputeCurves()
         {
             var keysCount = keys.Count;
-            if (keysCount == 0)
-                return;
-            if (keysCount == 1)
+            switch (keysCount)
             {
-                var key = keys[0];
-                if (key.curveType != CurveTypeValues.LeaveAsIs)
+                case 0:
+                    return;
+                case 1:
                 {
+                    var key = keys[0];
+                    if (key.curveType == CurveTypeValues.LeaveAsIs) return;
                     key.controlPointIn = key.value;
                     key.controlPointOut = key.value;
                     keys[0] = key;
+                    return;
                 }
-                return;
-            }
-            if (keysCount == 2)
-            {
-                var first = keys[0];
-                if (first.curveType != CurveTypeValues.LeaveAsIs)
+                case 2:
                 {
-                    first.controlPointIn = first.value;
-                    first.controlPointOut = first.value;
-                    keys[0] = first;
-                }
-                var last = keys[1];
-                if (last.curveType != CurveTypeValues.LeaveAsIs)
-                {
+                    var first = keys[0];
+                    if (first.curveType != CurveTypeValues.LeaveAsIs)
+                    {
+                        first.controlPointIn = first.value;
+                        first.controlPointOut = first.value;
+                        keys[0] = first;
+                    }
+                    var last = keys[1];
+                    if (last.curveType == CurveTypeValues.LeaveAsIs) return;
                     last.controlPointIn = last.value;
                     last.controlPointOut = last.value;
                     keys[1] = last;
+                    return;
                 }
-                return;
             }
 
             var globalSmoothing = false;
@@ -315,7 +321,7 @@ namespace VamTimeline
                         break;
                     case CurveTypeValues.LinearFlat:
                         if (previous.HasValue())
-                            current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                            current.controlPointIn = current.value - (current.value - previous.value) / 3f;
                         else
                             current.controlPointIn = current.value;
                         current.controlPointOut = current.value;
@@ -329,8 +335,8 @@ namespace VamTimeline
                     case CurveTypeValues.Bounce:
                         if (previous.HasValue() && next.HasValue())
                         {
-                            current.controlPointIn = current.value - ((current.value - next.value) / 1.4f);
-                            current.controlPointOut = current.value + ((previous.value - current.value) / 1.8f);
+                            current.controlPointIn = current.value - (current.value - next.value) / 1.4f;
+                            current.controlPointOut = current.value + (previous.value - current.value) / 1.8f;
                         }
                         else
                         {
@@ -351,11 +357,11 @@ namespace VamTimeline
         private static void LinearInterpolation(BezierKeyframe previous, ref BezierKeyframe current, BezierKeyframe next)
         {
             if (previous.HasValue())
-                current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                current.controlPointIn = current.value - (current.value - previous.value) / 3f;
             else
                 current.controlPointIn = current.value;
             if (next.HasValue())
-                current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+                current.controlPointOut = current.value + (next.value - current.value) / 3f;
             else
                 current.controlPointOut = current.value;
         }
@@ -384,17 +390,17 @@ namespace VamTimeline
             else if (previous.IsNull())
             {
                 current.controlPointIn = current.value;
-                current.controlPointOut = current.value + ((next.value - current.value) / 3f);
+                current.controlPointOut = current.value + (next.value - current.value) / 3f;
             }
             else if (next.IsNull())
             {
-                current.controlPointIn = current.value - ((current.value - previous.value) / 3f);
+                current.controlPointIn = current.value - (current.value - previous.value) / 3f;
                 current.controlPointOut = current.value;
             }
         }
 
         [MethodImpl(256)]
-        public float ComputeValue(BezierKeyframe current, BezierKeyframe next, float time)
+        public static float ComputeValue(BezierKeyframe current, BezierKeyframe next, float time)
         {
             if (next.IsNull()) return current.value;
             var t = (time - current.time) / (next.time - current.time);
@@ -415,11 +421,11 @@ namespace VamTimeline
             var w3 = next.value;
 
             // See https://pomax.github.io/bezierinfo/#how-to-implement-the-weighted-basis-function
-            float mt = 1f - t;
-            float mt2 = mt * mt;
-            float mt3 = mt2 * mt;
-            float t2 = t * t;
-            float t3 = t2 * t;
+            var mt = 1f - t;
+            var mt2 = mt * mt;
+            var mt3 = mt2 * mt;
+            var t2 = t * t;
+            var t3 = t2 * t;
             return w0 * mt3 + 3f * w1 * mt2 * t + 3f * w2 * mt * t2 + w3 * t3;
         }
 
@@ -462,8 +468,9 @@ namespace VamTimeline
                 right = tmp;
             }
             if (right >= keys.Count) return left;
-            var avg = keys[left].time + ((keys[right].time - keys[left].time) / 2f);
-            if (time - avg < 0) return left; else return right;
+            var avg = keys[left].time + (keys[right].time - keys[left].time) / 2f;
+            if (time - avg < 0) return left;
+            return right;
         }
 
         public void Reverse()
@@ -474,7 +481,7 @@ namespace VamTimeline
 
             keys.Reverse();
 
-            for (int i = 0; i < keys.Count; i++)
+            for (var i = 0; i < keys.Count; i++)
             {
                 var keyframe = GetKeyframeByKey(i);
                 keyframe.time = currentLength - keyframe.time.Snap();

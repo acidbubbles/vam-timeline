@@ -29,7 +29,7 @@ namespace VamTimeline
                 v3 = RotatePointAroundPivot(v3, curr, angle);
                 v4 = RotatePointAroundPivot(v4, curr, angle);
 
-                vh.AddUIVertexQuad(CreateVBO(color, new[] { v1, v2, v3, v4 }));
+                vh.AddUIVertexQuad(CreateVBO(color, v1, v2, v3, v4));
                 // vh.AddUIVertexQuad(CreateVBO(new Color(Random.Range(0, 1), Random.Range(0, 1f), Random.Range(0, 1)), new[] { v1, v2, v3, v4 }));
             }
         }

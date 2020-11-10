@@ -8,14 +8,14 @@ namespace VamTimeline
     public class PeerManager
     {
         public AtomAnimationEditContext animationEditContext;
-        public AtomAnimation animation => animationEditContext.animation;
-        public bool syncing => _sending > 0 || _receiving;
+        private AtomAnimation animation => animationEditContext.animation;
+        private bool syncing => _sending > 0 || _receiving;
 
         private readonly List<JSONStorable> _peers = new List<JSONStorable>();
         private readonly Atom _containingAtom;
         private readonly IAtomPlugin _plugin;
-        private bool _receiving = false;
-        private int _sending = 0;
+        private bool _receiving;
+        private int _sending;
 
         public PeerManager(Atom containingAtom, IAtomPlugin plugin)
         {
@@ -134,7 +134,7 @@ namespace VamTimeline
                  clip.animationName,
                  clip.playbackEnabled,
                  clip.clipTime,
-                 animation.sequencing,
+                 animation.sequencing
             });
         }
 
@@ -157,7 +157,7 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendMasterClipState), // 0
                  clip.animationName, // 1
-                 clip.clipTime, //2
+                 clip.clipTime //2
             });
         }
 
@@ -194,7 +194,7 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendTime), // 0
                  clip.animationName, // 1
-                 clip.clipTime, // 2
+                 clip.clipTime // 2
             });
         }
 
@@ -212,7 +212,7 @@ namespace VamTimeline
             if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendCurrentAnimation),
-                 clip.animationName,
+                 clip.animationName
             });
         }
 
@@ -249,8 +249,8 @@ namespace VamTimeline
 
         private void ReceiveSyncAnimation(object[] e)
         {
-            string animationName = (string)e[1];
-            string animationLayer = (string)e[2];
+            var animationName = (string)e[1];
+            var animationLayer = (string)e[2];
 
             var existing = animation.GetClip(animationLayer, animationName);
             if (existing == null)
@@ -297,10 +297,10 @@ namespace VamTimeline
         public void SendScreen(string screenName, object screenArg)
         {
             if (syncing) return;
-            SendTimelineEvent(new object[]{
+            SendTimelineEvent(new[]{
                  nameof(SendScreen),
                  screenName,
-                 screenArg,
+                 screenArg
             });
         }
 
@@ -331,12 +331,12 @@ namespace VamTimeline
             return animation.GetClips((string)e[1]);
         }
 
-        public void Begin()
+        private void Begin()
         {
             _sending++;
         }
 
-        public void Complete()
+        private void Complete()
         {
             _sending--;
         }

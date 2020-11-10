@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace VamTimeline
         public bool controlPosition = true;
         public bool controlRotation = true;
         private bool _parentAvailable;
-        private int _lastParentAvailableCheck = 0;
+        private int _lastParentAvailableCheck;
         public string parentAtomId;
         public string parentRigidbodyId;
         public Rigidbody parentRigidbody;
@@ -103,7 +104,6 @@ namespace VamTimeline
         }
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
-            : base()
         {
             this.controller = controller;
         }
@@ -190,7 +190,7 @@ namespace VamTimeline
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
             {
-                return t1.controller.name.CompareTo(t2.controller.name);
+                return String.Compare(t1.controller.name, t2.controller.name, StringComparison.Ordinal);
             }
         }
     }

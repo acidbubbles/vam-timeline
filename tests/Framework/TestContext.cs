@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace VamTimeline.Tests.Framework
+namespace VamTimeline
 {
     public class TestContext
     {

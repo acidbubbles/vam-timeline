@@ -58,37 +58,40 @@ namespace VamTimeline
         private void InternalSegments(List<BezierKeyframe> keys, int n)
         {
             // left most segment
-            _a[0] = 0; // outside the matrix
-            _b[0] = 2;
-            _c[0] = -1;
-            _d[0] = 0;
-            _r[0] = keys[0].value + 0;// add curvature at K0
+            var idx = 0;
+            _a[idx] = 0; // outside the matrix
+            _b[idx] = 2;
+            _c[idx] = -1;
+            _d[idx] = 0;
+            _r[idx] = keys[0].value + 0;// add curvature at K0
 
             // internal segments
             for (var i = 1; i < n; i++)
             {
-                var idx = 2 * i - 1;
-                _a[2 * i - 1] = 1 * _w[i] * _w[i];
-                _b[2 * i - 1] = -2 * _w[i] * _w[i];
-                _c[2 * i - 1] = 2 * _w[i - 1] * _w[i - 1];
-                _d[2 * i - 1] = -1 * _w[i - 1] * _w[i - 1];
-                _r[2 * i - 1] = keys[i].value * (-_w[i] * _w[i] + _w[i - 1] * _w[i - 1]);
+                idx = 2 * i - 1;
+                _a[idx] = 1 * _w[i] * _w[i];
+                _b[idx] = -2 * _w[i] * _w[i];
+                _c[idx] = 2 * _w[i - 1] * _w[i - 1];
+                _d[idx] = -1 * _w[i - 1] * _w[i - 1];
+                _r[idx] = keys[i].value * (-_w[i] * _w[i] + _w[i - 1] * _w[i - 1]);
 
-                _a[2 * i] = _w[i];
-                _b[2 * i] = _w[i - 1];
-                _c[2 * i] = 0;
-                _d[2 * i] = 0; // note: d[2n-2] is already outside the matrix
-                _r[2 * i] = (_w[i - 1] + _w[i]) * keys[i].value;
+                idx = 2 * i;
+                _a[idx] = _w[i];
+                _b[idx] = _w[i - 1];
+                _c[idx] = 0;
+                _d[idx] = 0; // note: d[2n-2] is already outside the matrix
+                _r[idx] = (_w[i - 1] + _w[i]) * keys[i].value;
 
             }
 
             // right segment
-            _a[2 * n - 1] = -1;
-            _b[2 * n - 1] = 2;
-            _r[2 * n - 1] = keys[n].value; // curvature at last point
-            _c[2 * n - 1] = 0; // outside the matrix
+            idx = 2 * n - 1;
+            _a[idx] = -1;
+            _b[idx] = 2;
+            _r[idx] = keys[n].value; // curvature at last point
+            _c[idx] = 0; // outside the matrix
             _d[2 * n - 2] = 0; // outside the matrix
-            _d[2 * n - 1] = 0; // outside the matrix
+            _d[idx] = 0; // outside the matrix
         }
 
         [MethodImpl(256)]

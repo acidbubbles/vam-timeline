@@ -29,8 +29,8 @@ namespace VamTimeline
                 timespan = 1f;
             var height = rectTransform.rect.height;
             var yMin = -height / 2f;
-            var yMax = -2f;
-            var yMaxSmall = -8f;
+            const float yMax = -2f;
+            const float yMaxSmall = -8f;
             var timespan25 = timespan * 0.25f;
             var timespan50 = timespan * 0.50f;
             var timespan75 = timespan * 0.75f;
@@ -49,17 +49,16 @@ namespace VamTimeline
             }
         }
 
-        private void DrawLine(VertexHelper vh, float yMin, float yMax, float offsetX, float ratio, float time, float size, Color color)
+        private static void DrawLine(VertexHelper vh, float yMin, float yMax, float offsetX, float ratio, float time, float size, Color color)
         {
             var xMin = offsetX + time * ratio - size / 2f;
             var xMax = xMin + size;
-            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
-            {
-                    new Vector2(xMin, yMin),
-                    new Vector2(xMax, yMin),
-                    new Vector2(xMax, yMax),
-                    new Vector2(xMin, yMax)
-                }));
+            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color,
+                new Vector2(xMin, yMin),
+                new Vector2(xMax, yMin),
+                new Vector2(xMax, yMax),
+                new Vector2(xMin, yMax)
+            ));
         }
     }
 }

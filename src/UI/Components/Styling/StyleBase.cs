@@ -6,8 +6,8 @@ namespace VamTimeline
     {
         // Global
         public Font Font { get; }
-        public Color FontColor { get; set; } = new Color(0, 0, 0);
-        public Color BackgroundColor { get; set; } = new Color(0.721f, 0.682f, 0.741f);
+        public Color FontColor { get; } = new Color(0, 0, 0);
+        public Color BackgroundColor { get; } = new Color(0.721f, 0.682f, 0.741f);
 
         public StyleBase()
         {

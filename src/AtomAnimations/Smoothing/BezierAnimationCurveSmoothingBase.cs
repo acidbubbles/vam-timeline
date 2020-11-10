@@ -16,7 +16,7 @@ namespace VamTimeline
         // protected float _totalDistance;
 
         [MethodImpl(256)]
-        protected float Weighting(BezierKeyframe k1, BezierKeyframe k2)
+        protected static float Weighting(BezierKeyframe k1, BezierKeyframe k2)
         {
             return k2.time - k1.time;
             // if (_totalDistance == 0) return 1f;

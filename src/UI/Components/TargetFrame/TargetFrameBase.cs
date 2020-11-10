@@ -19,10 +19,6 @@ namespace VamTimeline
         private int _ignoreNextToggleEvent;
         private RectTransform _expanded;
 
-        public TargetFrameBase()
-        {
-        }
-
         public virtual void Bind(IAtomPlugin plugin, AtomAnimationClip clip, T target)
         {
             this.plugin = plugin;
@@ -40,7 +36,7 @@ namespace VamTimeline
             var expandListener = _expandButton.AddComponent<Clickable>();
             expandListener.onClick.AddListener(pointerEvent => ToggleExpanded());
 
-            this.plugin.animationEditContext.onTimeChanged.AddListener(this.OnTimeChanged);
+            this.plugin.animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
             OnTimeChanged(this.plugin.animationEditContext.timeArgs);
 
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
@@ -51,7 +47,7 @@ namespace VamTimeline
         public void ToggleExpanded()
         {
             var ui = GetComponent<UIDynamic>();
-            var expandSize = 70f;
+            const float expandSize = 70f;
             if (_expanded == null)
             {
                 ui.height += expandSize;

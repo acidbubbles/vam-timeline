@@ -59,6 +59,7 @@ namespace VamTimeline
             {
                 legacyTransition = DeserializeBool(clipJSON["Transition"], false);
             }
+
             var clip = new AtomAnimationClip(animationName, animationLayer)
             {
                 blendInDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
@@ -68,14 +69,14 @@ namespace VamTimeline
                 preserveLoops = DeserializeBool(clipJSON["SyncTransitionTime"], false),
                 ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                 nextAnimationName = clipJSON["NextAnimationName"]?.Value,
-                nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"], 0),
-                nextAnimationTimeRandomize = DeserializeFloat(clipJSON["NextAnimationTimeRandomize"], 0),
+                nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"]),
+                nextAnimationTimeRandomize = DeserializeFloat(clipJSON["NextAnimationTimeRandomize"]),
                 autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
                 speed = DeserializeFloat(clipJSON["Speed"], 1),
                 weight = DeserializeFloat(clipJSON["Weight"], 1),
                 uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
+                animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap()
             };
-            clip.animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap();
             DeserializeClip(clip, clipJSON);
             return clip;
         }
@@ -92,7 +93,7 @@ namespace VamTimeline
                     clip.animationPattern = animationPattern;
             }
 
-            JSONArray controllersJSON = clipJSON["Controllers"].AsArray;
+            var controllersJSON = clipJSON["Controllers"].AsArray;
             if (controllersJSON != null)
             {
                 foreach (JSONClass controllerJSON in controllersJSON)
@@ -129,7 +130,7 @@ namespace VamTimeline
                 }
             }
 
-            JSONArray floatParamsJSON = clipJSON["FloatParams"].AsArray;
+            var floatParamsJSON = clipJSON["FloatParams"].AsArray;
             if (floatParamsJSON != null)
             {
                 foreach (JSONClass paramJSON in floatParamsJSON)
@@ -145,7 +146,7 @@ namespace VamTimeline
                 }
             }
 
-            JSONArray triggersJSON = clipJSON["Triggers"].AsArray;
+            var triggersJSON = clipJSON["Triggers"].AsArray;
             if (triggersJSON != null)
             {
                 foreach (JSONClass triggerJSON in triggersJSON)
@@ -275,23 +276,29 @@ namespace VamTimeline
             }
         }
 
-        private float DeserializeFloat(JSONNode node, float defaultVal = 0)
+        private static float DeserializeFloat(JSONNode node, float defaultVal = 0)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
             return float.Parse(node.Value, CultureInfo.InvariantCulture);
         }
 
-        private bool DeserializeBool(JSONNode node, bool defaultVal)
+        private static bool DeserializeBool(JSONNode node, bool defaultVal)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
-            if (node.Value == "0") return false;
-            if (node.Value == "1") return true;
-            return bool.Parse(node.Value);
+            switch (node.Value)
+            {
+                case "0":
+                    return false;
+                case "1":
+                    return true;
+                default:
+                    return bool.Parse(node.Value);
+            }
         }
 
-        private string DeserializeString(JSONNode node, string defaultVal)
+        private static string DeserializeString(JSONNode node, string defaultVal)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
@@ -308,7 +315,7 @@ namespace VamTimeline
             {
                 { "AutoKeyframeAllControllers", animationEditContext.autoKeyframeAllControllers ? "1" : "0" },
                 { "Snap", animationEditContext.snap.ToString(CultureInfo.InvariantCulture)},
-                { "Locked", animationEditContext.locked ? "1" : "0" },
+                { "Locked", animationEditContext.locked ? "1" : "0" }
             };
             return animationEditContextJSON;
         }
@@ -344,7 +351,7 @@ namespace VamTimeline
                     { "AnimationLayer", clip.animationLayer },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
-                    { "Uninterruptible", clip.uninterruptible ? "1" : "0" },
+                    { "Uninterruptible", clip.uninterruptible ? "1" : "0" }
                 };
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
@@ -385,7 +392,7 @@ namespace VamTimeline
                 {
                     controllerJSON["Parent"] = new JSONClass{
                         {"Atom", controller.parentAtomId },
-                        {"Rigidbody", controller.parentRigidbodyId},
+                        {"Rigidbody", controller.parentRigidbodyId}
                     };
                 }
                 if (controller.weight != 1f)
@@ -403,7 +410,7 @@ namespace VamTimeline
                     {
                         { "Storable", target.storableId },
                         { "Name", target.floatParamName },
-                        { "Value", SerializeCurve(target.value) },
+                        { "Value", SerializeCurve(target.value) }
                     };
                 paramsJSON.Add(paramJSON);
             }
@@ -413,7 +420,7 @@ namespace VamTimeline
             clipJSON.Add("Triggers", triggersJSON);
             foreach (var target in clip.targetTriggers)
             {
-                var triggerJSON = new JSONClass()
+                var triggerJSON = new JSONClass
                 {
                     {"Name", target.name}
                 };
@@ -427,14 +434,13 @@ namespace VamTimeline
             }
         }
 
-        private JSONNode SerializeCurve(BezierAnimationCurve curve)
+        private static JSONNode SerializeCurve(BezierAnimationCurve curve)
         {
             var curveJSON = new JSONArray();
 
             for (var key = 0; key < curve.length; key++)
             {
                 var keyframe = curve.GetKeyframeByKey(key);
-                var ms = keyframe.time.ToMilliseconds();
                 var curveEntry = new JSONClass
                 {
                     ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
@@ -455,20 +461,24 @@ namespace VamTimeline
 
         public static JSONClass SerializeQuaternion(Quaternion localRotation)
         {
-            var jc = new JSONClass();
-            jc["x"].AsFloat = localRotation.x;
-            jc["y"].AsFloat = localRotation.y;
-            jc["z"].AsFloat = localRotation.z;
-            jc["w"].AsFloat = localRotation.w;
+            var jc = new JSONClass
+            {
+                ["x"] = {AsFloat = localRotation.x},
+                ["y"] = {AsFloat = localRotation.y},
+                ["z"] = {AsFloat = localRotation.z},
+                ["w"] = {AsFloat = localRotation.w}
+            };
             return jc;
         }
 
         public static JSONClass SerializeVector3(Vector3 localPosition)
         {
-            var jc = new JSONClass();
-            jc["x"].AsFloat = localPosition.x;
-            jc["y"].AsFloat = localPosition.y;
-            jc["z"].AsFloat = localPosition.z;
+            var jc = new JSONClass
+            {
+                ["x"] = {AsFloat = localPosition.x},
+                ["y"] = {AsFloat = localPosition.y},
+                ["z"] = {AsFloat = localPosition.z}
+            };
             return jc;
         }
 

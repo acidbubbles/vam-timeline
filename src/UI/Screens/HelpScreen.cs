@@ -42,11 +42,6 @@ Check out the wiki for more details and videos. There's a ton of things you can 
 
         public override string screenId => ScreenName;
 
-        public HelpScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);

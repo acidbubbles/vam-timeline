@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace VamTimeline
@@ -24,12 +25,11 @@ namespace VamTimeline
             }
             if (curve.GetFirstFrame().time != 0)
             {
-                SuperController.LogError($"Target {name} has no start frame. Frames: {string.Join(", ", curve.keys.Select(k => k.time.ToString()).ToArray())}");
+                SuperController.LogError($"Target {name} has no start frame. Frames: {string.Join(", ", curve.keys.Select(k => k.time.ToString(CultureInfo.InvariantCulture)).ToArray())}");
                 return;
             }
             if (curve.duration > animationLength)
             {
-                var curveKeys = curve.keys.Select(k => k.time.ToMilliseconds()).ToList();
                 SuperController.LogError($"Target {name} has  duration of {curve.duration} but the animation should be {animationLength}. Auto-repairing extraneous keys.");
                 foreach (var c in GetCurves())
                     while (c.GetKeyframeByKey(c.length - 1).time > animationLength && c.length > 2)
@@ -46,11 +46,6 @@ namespace VamTimeline
                     c.SetLastFrame(keyframe);
                 }
             }
-        }
-
-        protected void ComputeCurves(BezierAnimationCurve curve)
-        {
-            curve.ComputeCurves();
         }
 
         public void ChangeCurve(float time, int curveType, bool makeDirty = true)

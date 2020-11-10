@@ -30,7 +30,7 @@ namespace VamTimeline
             _timeText = CreateTime();
         }
 
-        private GameObject CreateBackground(GameObject parent, Color color)
+        private static GameObject CreateBackground(GameObject parent, Color color)
         {
             var go = new GameObject();
             go.transform.SetParent(parent.transform, false);
@@ -128,7 +128,7 @@ namespace VamTimeline
         {
             _scrubberRect.anchorMin = new Vector2(0, 0);
             _scrubberRect.anchorMax = new Vector2(0, 1);
-            _timeText.text = $"Locked";
+            _timeText.text = "Locked";
         }
 
         public void OnEnable()

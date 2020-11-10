@@ -15,12 +15,12 @@ namespace VamTimeline
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public class AnimationSettingsChanged : UnityEvent<string> { }
 
-        public AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
-        public TimeChangedEvent onTimeChanged = new TimeChangedEvent();
-        public CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
-        public UnityEvent onTargetsSelectionChanged = new UnityEvent();
+        public readonly AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
+        public readonly TimeChangedEvent onTimeChanged = new TimeChangedEvent();
+        public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
+        public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
 
-        public HashSet<IAtomAnimationTarget> selectedTargets = new HashSet<IAtomAnimationTarget>();
+        public readonly HashSet<IAtomAnimationTarget> selectedTargets = new HashSet<IAtomAnimationTarget>();
 
         private bool _sampleAfterRebuild;
 
@@ -129,7 +129,7 @@ namespace VamTimeline
         {
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return false;
             if (locked) return false;
-            if (animation.isPlaying || animation.isSampling) return false;
+            if (animation.isPlaying) return false;
             return true;
         }
 
@@ -158,7 +158,7 @@ namespace VamTimeline
         public void Sample()
         {
             SampleNow();
-            if (!GetMainClipPerLayer().SelectMany(c => c.targetControllers).Any(t => t.parentRigidbodyId != null)) return;
+            if (GetMainClipPerLayer().SelectMany(c => c.targetControllers).All(t => t.parentRigidbodyId == null)) return;
             if (_lateSample != null) StopCoroutine(_lateSample);
             _lateSample = StartCoroutine(LateSample());
         }
@@ -192,16 +192,18 @@ namespace VamTimeline
             }
         }
 
-        private IEnumerable<AtomAnimationClip> GetMainClipPerLayer()
+        private List<AtomAnimationClip> GetMainClipPerLayer()
         {
-            return animation.index
+            var list = new List<AtomAnimationClip>(animation.index.ByLayer().Count());
+            list.AddRange(animation.index
                 .ByLayer()
                 .Select(g =>
                 {
                     return g.Key == current.animationLayer
                         ? current
-                        : (g.Value.FirstOrDefault(c => c.playbackMainInLayer) ?? g.Value.FirstOrDefault(c => c.animationName == current.animationName) ?? g.Value.FirstOrDefault(c => c.autoPlay) ?? g.Value[0]);
-                });
+                        : g.Value.FirstOrDefault(c => c.playbackMainInLayer) ?? g.Value.FirstOrDefault(c => c.animationName == current.animationName) ?? g.Value.FirstOrDefault(c => c.autoPlay) ?? g.Value[0];
+                }));
+            return list;
         }
 
         #endregion
@@ -299,8 +301,7 @@ namespace VamTimeline
             }
             if (nextTime.IsSameFrame(current.animationLength) && current.loop)
                 return 0f;
-            else
-                return nextTime;
+            return nextTime;
         }
 
         public float GetPreviousFrame(float time)

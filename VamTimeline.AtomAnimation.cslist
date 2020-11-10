@@ -32,12 +32,10 @@ src\AtomAnimations\AtomAnimationTargetsList.cs
 src\AtomAnimations\AtomClipboardEntry.cs
 src\AtomAnimations\BezierAnimationCurve.cs
 src\AtomAnimations\BezierKeyframe.cs
-src\AtomAnimations\DictionaryExtensions.cs
 src\AtomAnimations\FloatExtensions.cs
 src\AtomAnimations\IAtomAnimationClip.cs
 src\AtomAnimations\IAtomAnimationTarget.cs
 src\AtomAnimations\IAtomAnimationTargetsList.cs
-src\AtomAnimations\ListExtensions.cs
 src\AtomAnimations\QuaternionExtensions.cs
 src\Common\IRemoteAtomPlugin.cs
 src\Common\IRemoteControllerPlugin.cs

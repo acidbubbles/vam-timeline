@@ -1,4 +1,5 @@
 // #define RENDER_BEZIER_CONTROL_POINTS
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,13 +28,13 @@ namespace VamTimeline
 
             // General
             var range = EstimateRange();
-            var margin = 20f;
+            const float margin = 20f;
             var width = rectTransform.rect.width;
             var height = rectTransform.rect.height - margin * 2f;
             var offsetX = -width / 2f;
-            var precision = 2f; // Draw at every N pixels
-            var maxVertexXDelta = 3f; // Whenever that distance is reached an additional point is drawn for constant curves
-            var minVertexYDelta = 0.8f; // How much distance is required to draw a point
+            const float precision = 2f; // Draw at every N pixels
+            const float maxVertexXDelta = 3f; // Whenever that distance is reached an additional point is drawn for constant curves
+            const float minVertexYDelta = 0.8f; // How much distance is required to draw a point
             var handleSize = style.HandleSize;
             var halfWidth = rectTransform.rect.width / 2;
             var halfHeight = rectTransform.rect.height / 2;
@@ -93,7 +94,7 @@ namespace VamTimeline
                 var curve = curveInfo.Value;
                 if(curve.length > 1000) continue;
 
-                var color = curveInfo.Key;
+                var curveColor = curveInfo.Key;
                 var last = curve.GetKeyframeByKey(curve.length - 1);
 
                 // Draw line
@@ -114,7 +115,7 @@ namespace VamTimeline
                 if (Mathf.Abs(curN.x - previous.x) > maxVertexXDelta)
                     points.Add(new Vector2(curN.x, previous.y));
                 points.Add(curN);
-                vh.DrawLine(points, style.CurveLineSize, color);
+                vh.DrawLine(points, style.CurveLineSize, curveColor);
 
                 // Draw handles
                 for (var i = 0; i < curve.length; i++)
@@ -151,13 +152,12 @@ namespace VamTimeline
                     }
 #endif
                     // Render keyframe
-                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(color, new[]
-                    {
+                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(curveColor,
                         handlePos - new Vector2(-handleSize, -handleSize),
                         handlePos - new Vector2(-handleSize, handleSize),
                         handlePos - new Vector2(handleSize, handleSize),
                         handlePos - new Vector2(handleSize, -handleSize)
-                    }));
+                    ));
                 }
             }
 
@@ -192,7 +192,7 @@ namespace VamTimeline
 
         private Vector2 EstimateRange()
         {
-            var boundsEvalPrecision = 20f; // Check how many points to detect highest value
+            const float boundsEvalPrecision = 20f; // Check how many points to detect highest value
             var minY = float.MaxValue;
             var maxY = float.MinValue;
             var lead = _curves[0].Value;

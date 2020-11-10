@@ -237,7 +237,6 @@ namespace VamTimeline
             }
             else
             {
-                return;
             }
         }
 

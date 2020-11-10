@@ -34,15 +34,15 @@ namespace VamTimeline
             }
         }
 
-        protected readonly AtomAnimation _animation;
-        protected readonly AtomAnimationClip _clip;
+        private readonly AtomAnimation _animation;
+        protected readonly AtomAnimationClip clip;
         private readonly Atom _containingAtom;
 
-        public MocapOperationsBase(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
+        protected MocapOperationsBase(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
         {
             _containingAtom = containingAtom;
-            _clip = clip;
             _animation = animation;
+            this.clip = clip;
         }
 
         public void Prepare(bool resize)
@@ -55,14 +55,14 @@ namespace VamTimeline
                 throw new Exception("Timeline: No motion animation to import.");
 
             var requiresRebuild = false;
-            if (_clip.loop)
+            if (clip.loop)
             {
-                _clip.loop = SuperController.singleton.motionAnimationMaster.loop;
+                clip.loop = SuperController.singleton.motionAnimationMaster.loop;
                 requiresRebuild = true;
             }
-            if (resize && length != _clip.animationLength)
+            if (resize && length != clip.animationLength)
             {
-                new ResizeAnimationOperations(_clip).CropOrExtendEnd(length);
+                new ResizeAnimationOperations(clip).CropOrExtendEnd(length);
                 requiresRebuild = true;
             }
             if (requiresRebuild)
@@ -74,9 +74,8 @@ namespace VamTimeline
         public IEnumerator Execute(List<FreeControllerV3> controllers)
         {
             var containingAtom = _containingAtom;
-            var totalStopwatch = Stopwatch.StartNew();
-            var keyOps = new KeyframesOperations(_clip);
-            var targetOps = new TargetsOperations(_animation, _clip);
+            var keyOps = new KeyframesOperations(clip);
+            var targetOps = new TargetsOperations(_animation, clip);
 
             yield return 0;
 
@@ -97,9 +96,9 @@ namespace VamTimeline
                 try
                 {
                     ctrl = mot.controller;
-                    target = _clip.targetControllers.FirstOrDefault(t => t.controller == ctrl);
+                    target = clip.targetControllers.FirstOrDefault(t => t.controller == ctrl);
 
-                    if (_animation.index.ByLayer().Where(l => l.Key != _clip.animationLayer).Select(l => l.Value.First()).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == ctrl))
+                    if (_animation.index.ByLayer().Where(l => l.Key != clip.animationLayer).Select(l => l.Value.First()).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == ctrl))
                     {
                         SuperController.LogError($"Skipping controller {ctrl.name} because it was used in another layer.");
                         continue;
@@ -108,13 +107,13 @@ namespace VamTimeline
                     if (target == null)
                     {
                         target = targetOps.Add(ctrl);
-                        target.AddEdgeFramesIfMissing(_clip.animationLength);
+                        target.AddEdgeFramesIfMissing(clip.animationLength);
                     }
                     else
                     {
                         keyOps.RemoveAll(target);
                     }
-                    target.Validate(_clip.animationLength);
+                    target.Validate(clip.animationLength);
                     target.StartBulkUpdates();
 
                     var enumerator = ProcessController(mot.clip, target, ctrl).GetEnumerator();
@@ -130,7 +129,7 @@ namespace VamTimeline
 
         protected abstract IEnumerable ProcessController(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl);
 
-        private bool TryMoveNext(IEnumerator enumerator, FreeControllerAnimationTarget target)
+        private static bool TryMoveNext(IEnumerator enumerator, FreeControllerAnimationTarget target)
         {
             try
             {

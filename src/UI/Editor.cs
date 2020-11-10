@@ -23,7 +23,7 @@ namespace VamTimeline
 
         public static Editor Configure(GameObject go)
         {
-            var rows = go.AddComponent<VerticalLayoutGroup>();
+            go.AddComponent<VerticalLayoutGroup>();
 
             var tabs = ScreenTabs.Create(go.transform, VamPrefabFactory.buttonPrefab);
 
@@ -73,7 +73,6 @@ namespace VamTimeline
         }
 
         public AtomAnimationEditContext animationEditContext;
-        public AtomAnimation animation => animationEditContext.animation;
         public ScreenTabs tabs;
         public GameObject leftPanel;
         public GameObject rightPanel;
@@ -123,7 +122,7 @@ namespace VamTimeline
             screensManager.Bind(plugin, defaultScreen);
         }
 
-        private AnimationControlPanel CreateControlPanel(GameObject panel)
+        private static AnimationControlPanel CreateControlPanel(GameObject panel)
         {
             var go = new GameObject();
             go.transform.SetParent(panel.transform, false);
@@ -223,18 +222,18 @@ namespace VamTimeline
             layout.preferredHeight = 1138f;
             layout.flexibleWidth = 1;
 
-            var screensManager = ScreensManager.Configure(go);
-            screensManager.popupParent = popupParent;
-            return screensManager;
+            var sm = ScreensManager.Configure(go);
+            sm.popupParent = popupParent;
+            return sm;
         }
 
-        public void Bind(AtomAnimationEditContext animationEditContext)
+        public void Bind(AtomAnimationEditContext ctx)
         {
-            this.animationEditContext = animationEditContext;
+            animationEditContext = ctx;
 
-            _controlPanel.Bind(animationEditContext);
-            _curveType.Bind(animationEditContext);
-            _curves.Bind(animationEditContext);
+            _controlPanel.Bind(ctx);
+            _curveType.Bind(ctx);
+            _curves.Bind(ctx);
         }
     }
 }

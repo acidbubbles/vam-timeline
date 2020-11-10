@@ -104,12 +104,10 @@
     <Compile Include="src\AtomAnimations\AtomClipboardEntry.cs" />
     <Compile Include="src\AtomAnimations\BezierAnimationCurve.cs" />
     <Compile Include="src\AtomAnimations\BezierKeyframe.cs" />
-    <Compile Include="src\AtomAnimations\DictionaryExtensions.cs" />
     <Compile Include="src\AtomAnimations\FloatExtensions.cs" />
     <Compile Include="src\AtomAnimations\IAtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\IAtomAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\IAtomAnimationTargetsList.cs" />
-    <Compile Include="src\AtomAnimations\ListExtensions.cs" />
     <Compile Include="src\AtomAnimations\QuaternionExtensions.cs" />
     <Compile Include="src\Common\IRemoteAtomPlugin.cs" />
     <Compile Include="src\Common\IRemoteControllerPlugin.cs" />

@@ -37,7 +37,7 @@ namespace VamTimeline
 
         public override JSONClass GetJSON()
         {
-            JSONClass jSON = base.GetJSON();
+            var jSON = base.GetJSON();
             jSON["startTime"].AsFloat = startTime;
             jSON["endTime"].AsFloat = endTime;
             return jSON;

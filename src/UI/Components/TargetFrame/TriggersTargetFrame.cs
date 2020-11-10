@@ -11,11 +11,6 @@ namespace VamTimeline
 
         private UIDynamicButton _editTriggersButton;
 
-        public TriggersTargetFrame()
-            : base()
-        {
-        }
-
         protected override void CreateCustom()
         {
             if (!expanded) StartCoroutine(ToggleExpandedDeferred());

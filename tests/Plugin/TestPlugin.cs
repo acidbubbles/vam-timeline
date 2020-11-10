@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
-using VamTimeline.Tests.Framework;
 
-namespace VamTimeline.Tests.Plugin
+namespace VamTimeline
 {
     public class TestPlugin : MVRScript
     {
@@ -19,7 +18,7 @@ namespace VamTimeline.Tests.Plugin
             _testFilterJSON = new JSONStorableString("Test Filter", "");
             _resultJSON = new JSONStorableString("Test Results", "Running...");
 
-            _runUI = CreateButton("Run", false);
+            _runUI = CreateButton("Run");
             _runUI.button.onClick.AddListener(Run);
 
             Run();

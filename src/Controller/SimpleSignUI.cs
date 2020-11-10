@@ -2,25 +2,22 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace VamTimeline
 {
     public class SimpleSignUI : IDisposable
     {
-        public readonly Material material;
-
-        private readonly Atom _atom;
         private readonly MVRScript _owner;
         private readonly GameObject _child;
         private readonly VerticalLayoutGroup _container;
 
         public SimpleSignUI(Atom atom, MVRScript owner)
         {
-            _atom = atom;
             _owner = owner;
 
-            var canvas = _atom.GetComponentsInChildren<Canvas>().FirstOrDefault(c => c.gameObject.name == "Sign");
-            if (canvas == null) throw new NullReferenceException($"Expected Sign Canvas, but found: {string.Join(",", _atom.GetComponentsInChildren<Canvas>().Select(c => c.gameObject.name).ToArray())}");
+            var canvas = atom.GetComponentsInChildren<Canvas>().FirstOrDefault(c => c.gameObject.name == "Sign");
+            if (canvas == null) throw new NullReferenceException($"Expected Sign Canvas, but found: {string.Join(",", atom.GetComponentsInChildren<Canvas>().Select(c => c.gameObject.name).ToArray())}");
 
             _child = new GameObject("Simple Sign UI");
             _child.transform.SetParent(canvas.transform, false);
@@ -47,7 +44,7 @@ namespace VamTimeline
 
         public UIDynamicSlider CreateUISliderInCanvas(JSONStorableFloat jsf)
         {
-            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableSliderPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableSliderPrefab.transform);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableSliderPrefab");
             transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
@@ -63,7 +60,7 @@ namespace VamTimeline
 
         public UIDynamicPopup CreateUIPopupInCanvas(JSONStorableStringChooser jssc)
         {
-            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableScrollablePopupPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableScrollablePopupPrefab.transform);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableScrollablePopupPrefab");
             transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
@@ -79,7 +76,7 @@ namespace VamTimeline
 
         public UIDynamicButton CreateUIButtonInCanvas(string label)
         {
-            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableButtonPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableButtonPrefab.transform);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableButtonPrefab");
             transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
@@ -93,7 +90,7 @@ namespace VamTimeline
 
         public UIDynamicTextField CreateUITextfieldInCanvas(JSONStorableString jss)
         {
-            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableTextFieldPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableTextFieldPrefab.transform);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableButtonPrefab");
             transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
@@ -107,7 +104,7 @@ namespace VamTimeline
 
         public UIDynamicToggle CreateUIToggleInCanvas(JSONStorableBool jsb)
         {
-            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableTogglePrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableTogglePrefab.transform);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableTogglePrefab");
             transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
@@ -122,7 +119,7 @@ namespace VamTimeline
 
         public UIDynamic CreateUISpacerInCanvas(float height)
         {
-            var transform = UnityEngine.Object.Instantiate(_owner.manager.configurableSpacerPrefab.transform);
+            var transform = Object.Instantiate(_owner.manager.configurableSpacerPrefab.transform);
             if (transform == null) throw new NullReferenceException("Could not instantiate configurableSpacerPrefab");
             transform.SetParent(_container.transform, false);
             transform.gameObject.SetActive(true);
@@ -136,7 +133,7 @@ namespace VamTimeline
 
         public void Dispose()
         {
-            UnityEngine.Object.Destroy(_child);
+            Object.Destroy(_child);
         }
     }
 }

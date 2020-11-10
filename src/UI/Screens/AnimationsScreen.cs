@@ -10,11 +10,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        public AnimationsScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -55,7 +50,7 @@ namespace VamTimeline
 
         private void InitAnimButton(AtomAnimationClip clip)
         {
-            var btn = prefabFactory.CreateButton($"...");
+            var btn = prefabFactory.CreateButton("...");
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {

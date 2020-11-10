@@ -11,7 +11,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        private readonly List<JSONStorableBool> _removeToggles = new List<JSONStorableBool>();
         private JSONStorableStringChooser _addControllerListJSON;
         private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _addStorableListJSON;
@@ -21,11 +20,6 @@ namespace VamTimeline
         private UIDynamicButton _toggleFloatParamUI;
         private UIDynamicPopup _addParamListUI;
         private UIDynamicButton _removeUI;
-
-        public AddRemoveTargetsScreen()
-            : base()
-        {
-        }
 
         #region Init
 
@@ -139,7 +133,7 @@ namespace VamTimeline
             _addControllerUI.popupPanelHeight = 740f;
 
             _toggleControllerUI = prefabFactory.CreateButton("Add");
-            _toggleControllerUI.button.onClick.AddListener(() => AddAnimatedController());
+            _toggleControllerUI.button.onClick.AddListener(AddAnimatedController);
 
             RefreshControllersList();
         }
@@ -176,7 +170,7 @@ namespace VamTimeline
             var preferredSelection = new[] { "headControl", "lHandControl", "rHandControl", "hipControl", "chestControl" };
             _addControllerListJSON.val =
                 preferredSelection.FirstOrDefault(pref => controllers.Contains(pref))
-                ?? controllers.Where(c => c != "control" && c != "").FirstOrDefault();
+                ?? controllers.FirstOrDefault(c => c != "control" && c != "");
         }
 
         private void InitFloatParamsUI()
@@ -196,7 +190,7 @@ namespace VamTimeline
             _addParamListUI.popupPanelHeight = 320f;
 
             _toggleFloatParamUI = prefabFactory.CreateButton("Add");
-            _toggleFloatParamUI.button.onClick.AddListener(() => AddAnimatedFloatParam());
+            _toggleFloatParamUI.button.onClick.AddListener(AddAnimatedFloatParam);
 
             RefreshStorablesList();
             RefreshStorableFloatsList();
@@ -370,7 +364,7 @@ namespace VamTimeline
                 {
                     foreach (var controller in allControllers)
                     {
-                        if (!clip.targetControllers.Any(t => t.controller == controller))
+                        if (clip.targetControllers.All(t => t.controller != controller))
                         {
                             var target = clip.Add(controller);
                             if (target != null)
@@ -409,7 +403,7 @@ namespace VamTimeline
 
                 SelectNextInList(_addControllerListJSON);
 
-                var controller = plugin.containingAtom.freeControllers.Where(x => x.name == uid).FirstOrDefault();
+                var controller = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == uid);
                 if (controller == null)
                 {
                     SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} does not exist");
@@ -490,9 +484,9 @@ namespace VamTimeline
             }
         }
 
-        private void SelectNextInList(JSONStorableStringChooser list)
+        private static void SelectNextInList(JSONStorableStringChooser list)
         {
-            int currentIndex = -1;
+            var currentIndex = -1;
 
             // getting index of current selection
             for (var i = 0; i < list.choices.Count; ++i)
@@ -510,7 +504,7 @@ namespace VamTimeline
                 return;
             }
 
-            if (currentIndex == (list.choices.Count - 1))
+            if (currentIndex == list.choices.Count - 1)
             {
                 // value was last in list
                 if (list.choices.Count <= 1)
@@ -521,41 +515,15 @@ namespace VamTimeline
                 else
                 {
                     // select next to last
-                    int newIndex = list.choices.Count - 2;
+                    var newIndex = list.choices.Count - 2;
                     list.val = list.choices[newIndex];
                 }
             }
             else
             {
                 // select next in list
-                int newIndex = currentIndex + 1;
+                var newIndex = currentIndex + 1;
                 list.val = list.choices[newIndex];
-            }
-        }
-
-        private void RemoveAnimatedController(FreeControllerAnimationTarget target)
-        {
-            try
-            {
-                foreach (var clip in animation.index.ByLayer(current.animationLayer))
-                    clip.Remove(target.controller);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(RemoveAnimatedController)}: " + exc);
-            }
-        }
-
-        private void RemoveFloatParam(FloatParamAnimationTarget target)
-        {
-            try
-            {
-                foreach (var clip in animation.index.ByLayer(current.animationLayer))
-                    clip.Remove(target.storable, target.floatParam);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(RemoveFloatParam)}: " + exc);
             }
         }
 

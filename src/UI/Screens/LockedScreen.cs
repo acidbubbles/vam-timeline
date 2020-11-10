@@ -6,11 +6,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        public LockedScreen()
-            : base()
-        {
-
-        }
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);

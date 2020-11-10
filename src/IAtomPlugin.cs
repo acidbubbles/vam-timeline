@@ -1,5 +1,4 @@
 using System.Collections;
-using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
@@ -14,7 +13,6 @@ namespace VamTimeline
     {
         Atom containingAtom { get; }
         MVRPluginManager manager { get; }
-        Transform UITransform { get; }
     }
 
     public interface IAtomPlugin : IMVRScript, IRemoteAtomPlugin
@@ -22,8 +20,6 @@ namespace VamTimeline
         AtomAnimation animation { get; }
         AtomAnimationEditContext animationEditContext { get; }
         AtomAnimationSerializer serializer { get; }
-        Editor ui { get; }
-        Editor controllerInjectedUI { get; }
         AtomClipboard clipboard { get; }
         PeerManager peers { get; }
 

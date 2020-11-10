@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace VamTimeline
 {
     public class AddAnimationScreen : ScreenBase
@@ -8,12 +6,6 @@ namespace VamTimeline
         private UIDynamicButton _addAnimationTransitionUI;
 
         public override string screenId => ScreenName;
-
-        public AddAnimationScreen()
-            : base()
-        {
-
-        }
 
         #region Init
 
@@ -51,13 +43,13 @@ namespace VamTimeline
         private void InitCreateAnimationUI()
         {
             var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create Animation From Current Frame");
-            addAnimationFromCurrentFrameUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame());
+            addAnimationFromCurrentFrameUI.button.onClick.AddListener(AddAnimationFromCurrentFrame);
 
             var addAnimationAsCopyUI = prefabFactory.CreateButton("Create Copy Of Current Animation");
-            addAnimationAsCopyUI.button.onClick.AddListener(() => AddAnimationAsCopy());
+            addAnimationAsCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
 
-            _addAnimationTransitionUI = prefabFactory.CreateButton($"Create Transition (Current -> Next)");
-            _addAnimationTransitionUI.button.onClick.AddListener(() => AddTransitionAnimation());
+            _addAnimationTransitionUI = prefabFactory.CreateButton("Create Transition (Current -> Next)");
+            _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
 
             RefreshButtons();
         }
@@ -65,13 +57,13 @@ namespace VamTimeline
         public void InitCreateLayerUI()
         {
             var createLayerUI = prefabFactory.CreateButton("Create New Layer");
-            createLayerUI.button.onClick.AddListener(() => AddLayer());
+            createLayerUI.button.onClick.AddListener(AddLayer);
         }
 
         private void InitSplitLayerUI()
         {
             var splitLayerUI = prefabFactory.CreateButton("Split selection to new layer");
-            splitLayerUI.button.onClick.AddListener(() => SplitLayer());
+            splitLayerUI.button.onClick.AddListener(SplitLayer);
         }
 
         #endregion
@@ -135,8 +127,8 @@ namespace VamTimeline
 
         private void RefreshButtons()
         {
-            bool hasNext = current.nextAnimationName != null;
-            bool nextIsTransition = false;
+            var hasNext = current.nextAnimationName != null;
+            var nextIsTransition = false;
             if (hasNext)
             {
                 var nextClip = animation.GetClip(current.animationLayer, current.nextAnimationName);
@@ -147,11 +139,11 @@ namespace VamTimeline
             }
             _addAnimationTransitionUI.button.interactable = hasNext && !nextIsTransition;
             if (!hasNext)
-                _addAnimationTransitionUI.label = $"Create Transition (No sequence)";
+                _addAnimationTransitionUI.label = "Create Transition (No sequence)";
             else if (nextIsTransition)
-                _addAnimationTransitionUI.label = $"Create Transition (Next is transition)";
+                _addAnimationTransitionUI.label = "Create Transition (Next is transition)";
             else
-                _addAnimationTransitionUI.label = $"Create Transition (Current -> Next)";
+                _addAnimationTransitionUI.label = "Create Transition (Current -> Next)";
         }
 
         #endregion

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ namespace VamTimeline
 
         private bool _available;
         private readonly Atom _atom;
-        private int _lastAvailableCheck = 0;
+        private int _lastAvailableCheck;
 
         public FloatParamAnimationTarget(Atom atom, string storableId, string floatParamName)
         {
@@ -97,7 +98,7 @@ namespace VamTimeline
             this.storable = storable;
             this.floatParam = floatParam;
             // May be replaced (might use alt name)
-            this.floatParamName = floatParam.name;
+            floatParamName = floatParam.name;
             _available = true;
             return true;
         }
@@ -117,13 +118,6 @@ namespace VamTimeline
             Validate(value, animationLength);
         }
 
-        public void ReapplyCurveTypes()
-        {
-            if (value.length < 2) return;
-
-            ComputeCurves(value);
-        }
-
         public override BezierAnimationCurve GetLeadCurve()
         {
             return value;
@@ -134,11 +128,11 @@ namespace VamTimeline
             return new[] { value };
         }
 
-        public void SetKeyframe(float time, float value, bool dirty = true)
+        public void SetKeyframe(float time, float setValue, bool makeDirty = true)
         {
             var curveType = SelectCurveType(time, CurveTypeValues.Undefined);
-            this.value.SetKeyframe(time, value, curveType);
-            if (dirty) base.dirty = true;
+            value.SetKeyframe(time, setValue, curveType);
+            if (makeDirty) dirty = true;
         }
 
         public void DeleteFrame(float time)
@@ -195,10 +189,10 @@ namespace VamTimeline
             };
         }
 
-        public void SetCurveSnapshot(float time, FloatParamTargetSnapshot snapshot, bool dirty = true)
+        public void SetCurveSnapshot(float time, FloatParamTargetSnapshot snapshot, bool makeDirty = true)
         {
             value.SetKeySnapshot(time, snapshot.value);
-            if (dirty) base.dirty = true;
+            if (makeDirty) dirty = true;
         }
 
         #endregion
@@ -228,7 +222,7 @@ namespace VamTimeline
         {
             public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)
             {
-                return t1.name.CompareTo(t2.name);
+                return String.Compare(t1.name, t2.name, StringComparison.Ordinal);
             }
         }
     }

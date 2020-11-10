@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -9,9 +8,9 @@ namespace VamTimeline
         public class ScreenChangeRequestEventArgs { public string screenName; public object screenArg; }
         public class ScreenChangeRequestedEvent : UnityEvent<ScreenChangeRequestEventArgs> { }
 
-        protected static readonly Color navButtonColor = new Color(0.8f, 0.7f, 0.8f);
+        protected static readonly Color NavButtonColor = new Color(0.8f, 0.7f, 0.8f);
 
-        public ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
+        public readonly ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
         public Transform popupParent;
         public abstract string screenId { get; }
 
@@ -23,10 +22,6 @@ namespace VamTimeline
         protected IAtomPlugin plugin;
         protected VamPrefabFactory prefabFactory;
         protected bool _disposing;
-
-        protected ScreenBase()
-        {
-        }
 
         public virtual void Init(IAtomPlugin plugin, object arg)
         {
@@ -44,7 +39,7 @@ namespace VamTimeline
         {
             var ui = prefabFactory.CreateButton(label);
             ui.button.onClick.AddListener(() => ChangeScreen(screenName));
-            ui.buttonColor = navButtonColor;
+            ui.buttonColor = NavButtonColor;
             return ui;
         }
 

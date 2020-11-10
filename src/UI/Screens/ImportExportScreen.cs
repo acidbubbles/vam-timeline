@@ -19,11 +19,6 @@ namespace VamTimeline
 
         private JSONStorableStringChooser _exportAnimationsJSON;
 
-        public ImportExportScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -42,7 +37,7 @@ namespace VamTimeline
         private void InitImportUI()
         {
             var importUI = prefabFactory.CreateButton("Import animation(s)");
-            importUI.button.onClick.AddListener(() => Import());
+            importUI.button.onClick.AddListener(Import);
         }
 
         private void InitExportUI()
@@ -55,7 +50,7 @@ namespace VamTimeline
             exportAnimationsUI.popupPanelHeight = 800f;
 
             var exportUI = prefabFactory.CreateButton("Export animation");
-            exportUI.button.onClick.AddListener(() => Export());
+            exportUI.button.onClick.AddListener(Export);
         }
 
         private void Export()
@@ -127,18 +122,24 @@ namespace VamTimeline
         {
             var atomState = new JSONClass();
             IEnumerable<FreeControllerV3> controllers;
-            if (_exportAnimationsJSON.val == _poseAndAllAnimations)
-                controllers = plugin.containingAtom.freeControllers;
-            else if (_exportAnimationsJSON.val == _allAnimations)
-                controllers = animation.clips
-                      .SelectMany(c => c.targetControllers)
-                      .Select(t => t.controller)
-                      .Distinct();
-            else
-                controllers = animation.clips
-                    .First(c => c.animationName == _exportAnimationsJSON.val)
-                    .targetControllers
-                    .Select(t => t.controller);
+            switch (_exportAnimationsJSON.val)
+            {
+                case _poseAndAllAnimations:
+                    controllers = plugin.containingAtom.freeControllers;
+                    break;
+                case _allAnimations:
+                    controllers = animation.clips
+                        .SelectMany(c => c.targetControllers)
+                        .Select(t => t.controller)
+                        .Distinct();
+                    break;
+                default:
+                    controllers = animation.clips
+                        .First(c => c.animationName == _exportAnimationsJSON.val)
+                        .targetControllers
+                        .Select(t => t.controller);
+                    break;
+            }
             foreach (var fc in controllers)
             {
                 if (fc.name == "control") continue;
@@ -199,7 +200,7 @@ namespace VamTimeline
             var clipsJSON = jc["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0)
             {
-                SuperController.LogError($"Timeline: Imported file does not contain any animations. Are you trying to load a scene file?");
+                SuperController.LogError("Timeline: Imported file does not contain any animations. Are you trying to load a scene file?");
                 return false;
             }
 
@@ -215,7 +216,7 @@ namespace VamTimeline
             operations.Import().ImportClips(imported);
 
             if (imported.Count > 0) animationEditContext.SelectAnimation(imported.FirstOrDefault());
-            else SuperController.LogError($"Timeline: No animations were imported.");
+            else SuperController.LogError("Timeline: No animations were imported.");
 
             return true;
         }

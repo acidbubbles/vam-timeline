@@ -12,10 +12,9 @@ namespace VamTimeline
         private const string _recordingLabel = "\u25A0 Waiting for recording...";
         private const string _startRecordControllersLabel = "\u25B6 Clear & mocap controllers now";
         private const string _startRecordFloatParamsLabel = "\u25B6 Clear & record float params now";
-        private static readonly TimeSpan _importMocapTimeout = TimeSpan.FromSeconds(5);
         private static Coroutine _recordingControllersCoroutine;
         private static Coroutine _recordingFloatParamsCoroutine;
-        private static bool _lastResizeAnimation = false;
+        private static bool _lastResizeAnimation;
         private static float _lastReduceMinPosDistance = 0.04f;
         private static float _lastReduceMinRotation = 10f;
         private static float _lastReduceMaxFramesPerSecond = 5f;
@@ -36,11 +35,6 @@ namespace VamTimeline
         private UIDynamicButton _playAndRecordControllersUI;
         private UIDynamicButton _playAndRecordFloatParamsUI;
 
-        public MocapScreen()
-            : base()
-        {
-        }
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -60,51 +54,51 @@ namespace VamTimeline
                 {
                     isStorable = false
                 };
-            var importRecordedOptionsUI = prefabFactory.CreatePopup(_importRecordedOptionsJSON, false, true);
+            prefabFactory.CreatePopup(_importRecordedOptionsJSON, false, true);
 
-            _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", current.targetControllers.Count == 0 || _lastResizeAnimation, (bool val) => _lastResizeAnimation = val);
-            var resizeAnimationUI = prefabFactory.CreateToggle(_resizeAnimationJSON);
+            _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", current.targetControllers.Count == 0 || _lastResizeAnimation, val => _lastResizeAnimation = val);
+            prefabFactory.CreateToggle(_resizeAnimationJSON);
 
-            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, (float val) => _lastReduceMinPosDistance = val, 0.001f, 0.5f, true)
+            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, val => _lastReduceMinPosDistance = val, 0.001f, 0.5f)
             {
                 valNoCallback = _lastReduceMinPosDistance
             };
-            var reduceMinPosDistanceUI = prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
+            prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
 
-            _reduceMinRotationJSON = new JSONStorableFloat("Minimum rotation between frames", 10f, (float val) => _lastReduceMinRotation = val, 0.1f, 90f, true)
+            _reduceMinRotationJSON = new JSONStorableFloat("Minimum rotation between frames", 10f, val => _lastReduceMinRotation = val, 0.1f, 90f)
             {
                 valNoCallback = _lastReduceMinRotation
             };
-            var reduceMinRotationUI = prefabFactory.CreateSlider(_reduceMinRotationJSON);
+            prefabFactory.CreateSlider(_reduceMinRotationJSON);
 
-            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 5f, (float val) => _reduceMaxFramesPerSecondJSON.valNoCallback = _lastReduceMaxFramesPerSecond = Mathf.Round(val), 1f, 10f, true)
+            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 5f, val => _reduceMaxFramesPerSecondJSON.valNoCallback = _lastReduceMaxFramesPerSecond = Mathf.Round(val), 1f, 10f)
             {
                 valNoCallback = _lastReduceMaxFramesPerSecond
             };
-            var maxFramesPerSecondUI = prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON);
+            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON);
 
             prefabFactory.CreateSpacer();
 
             _importRecordedUI = prefabFactory.CreateButton("Import recorded animation (mocap)");
-            _importRecordedUI.button.onClick.AddListener(() => ImportRecorded());
+            _importRecordedUI.button.onClick.AddListener(ImportRecorded);
 
             prefabFactory.CreateSpacer();
 
             _reduceKeyframesUI = prefabFactory.CreateButton("Reduce float params keyframes");
-            _reduceKeyframesUI.button.onClick.AddListener(() => ReduceKeyframes());
+            _reduceKeyframesUI.button.onClick.AddListener(ReduceKeyframes);
 
             prefabFactory.CreateSpacer();
 
             _playAndRecordControllersUI = prefabFactory.CreateButton(_recordingControllersCoroutine != null ? _recordingLabel : _startRecordControllersLabel);
-            _playAndRecordControllersUI.button.onClick.AddListener(() => PlayAndRecordControllers());
+            _playAndRecordControllersUI.button.onClick.AddListener(PlayAndRecordControllers);
 
             _playAndRecordFloatParamsUI = prefabFactory.CreateButton(_recordingFloatParamsCoroutine != null ? _recordingLabel : _startRecordFloatParamsLabel);
-            _playAndRecordFloatParamsUI.button.onClick.AddListener(() => PlayAndRecordFloatParams());
+            _playAndRecordFloatParamsUI.button.onClick.AddListener(PlayAndRecordFloatParams);
 
             prefabFactory.CreateSpacer();
 
             var clearMocapUI = prefabFactory.CreateButton("Clear atom's mocap");
-            clearMocapUI.button.onClick.AddListener(() => ClearMocapData());
+            clearMocapUI.button.onClick.AddListener(ClearMocapData);
             clearMocapUI.buttonColor = Color.yellow;
 
             animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
@@ -157,7 +151,7 @@ namespace VamTimeline
         private IEnumerator ImportRecordedCoroutine()
         {
             var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.controller).ToList();
-            IEnumerator enumerator = GetMocapImportOp().Execute(controllers);
+            var enumerator = GetMocapImportOp().Execute(controllers);
 
             while (true)
             {
@@ -394,7 +388,7 @@ namespace VamTimeline
             ChangeScreen(ScreenName);
         }
 
-        private bool AreAnyStartRecordKeysDown()
+        private static bool AreAnyStartRecordKeysDown()
         {
             var sctrl = SuperController.singleton;
             if (sctrl.isOVR)

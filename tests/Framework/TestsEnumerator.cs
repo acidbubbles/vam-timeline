@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using VamTimeline.Tests.Framework;
 
-namespace VamTimeline.Tests.Plugin
+namespace VamTimeline
 {
     public class TestsEnumerator : IEnumerable<Test>
     {

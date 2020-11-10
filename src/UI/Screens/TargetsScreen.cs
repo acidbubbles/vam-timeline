@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -13,32 +14,21 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        private class TargetRef
-        {
-            public ITargetFrame Component;
-            public IAtomAnimationTarget Target;
-        }
-
-        private readonly List<TargetRef> _targets = new List<TargetRef>();
+        private readonly List<ITargetFrame> _targets = new List<ITargetFrame>();
         private bool _selectionChangedPending;
         private UIDynamicToggle _filterUI;
         private UIDynamicButton _manageTargetsUI;
         private UIDynamic _spacerUI;
         private JSONStorableBool _filterJSON;
-        private UnityEngine.UI.Text _noTargetsUI;
+        private Text _noTargetsUI;
         private JSONStorableString _textJSON;
         private UIDynamicTextField _textUI;
 
-        public TargetsScreen()
-            : base()
-        {
-
-        }
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
 
-            _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, (bool val) => { _lastFilterVal = val; OnSelectionChanged(); });
+            _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, val => { _lastFilterVal = val; OnSelectionChanged(); });
 
             animationEditContext.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
 
@@ -67,7 +57,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
             _textUI.height = 1078f;
         }
 
-        private string GetRandomQuote()
+        private static string GetRandomQuote()
         {
             switch (Random.Range(0, 9))
             {
@@ -111,7 +101,6 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
             RemoveTargets();
             RemoveTargetSiblingComponents();
 
-            var time = animationEditContext.clipTime;
             var hasTargets = false;
 
             foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>() : current.targetTriggers)
@@ -122,11 +111,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 var component = keyframeUI.gameObject.AddComponent<TriggersTargetFrame>();
                 component.popupParent = popupParent;
                 component.Bind(plugin, animationEditContext.current, target);
-                _targets.Add(new TargetRef
-                {
-                    Component = component,
-                    Target = target,
-                });
+                _targets.Add(component);
             }
 
             foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>() : current.targetControllers)
@@ -136,11 +121,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
                 component.Bind(plugin, animationEditContext.current, target);
-                _targets.Add(new TargetRef
-                {
-                    Component = component,
-                    Target = target
-                });
+                _targets.Add(component);
             }
 
             foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>() : current.targetFloatParams)
@@ -150,11 +131,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(plugin, animationEditContext.current, target);
-                _targets.Add(new TargetRef
-                {
-                    Component = component,
-                    Target = target,
-                });
+                _targets.Add(component);
             }
 
             if (!hasTargets)
@@ -166,9 +143,9 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 _spacerUI = prefabFactory.CreateSpacer();
 
                 _filterUI = prefabFactory.CreateToggle(_filterJSON);
-                _filterUI.backgroundColor = navButtonColor;
+                _filterUI.backgroundColor = NavButtonColor;
                 var toggleColors = _filterUI.toggle.colors;
-                toggleColors.normalColor = navButtonColor;
+                toggleColors.normalColor = NavButtonColor;
                 _filterUI.toggle.colors = toggleColors;
             }
 
@@ -181,7 +158,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
             if (highlight)
                 _manageTargetsUI.buttonColor = new Color(0f, 1f, 0f);
             else
-                _manageTargetsUI.buttonColor = navButtonColor;
+                _manageTargetsUI.buttonColor = NavButtonColor;
         }
 
         public override void OnDestroy()
@@ -196,7 +173,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
         {
             foreach (var targetRef in _targets)
             {
-                Destroy(targetRef.Component.gameObject);
+                Destroy(targetRef.gameObject);
             }
             _targets.Clear();
             Destroy(_manageTargetsUI?.gameObject);

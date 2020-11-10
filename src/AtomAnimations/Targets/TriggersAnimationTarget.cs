@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,10 +12,6 @@ namespace VamTimeline
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
         public string name { get; set; }
-
-        public TriggersAnimationTarget()
-        {
-        }
 
         public string GetShortName()
         {
@@ -55,7 +52,6 @@ namespace VamTimeline
             if (!triggersMap.ContainsKey(animationLength.ToMilliseconds()))
             {
                 SuperController.LogError($"Target {name} ends with frame {triggersMap.Keys.OrderBy(k => k).Last()} instead of expected {animationLength.ToMilliseconds()}");
-                return;
             }
         }
 
@@ -122,7 +118,12 @@ namespace VamTimeline
         {
             var lower = 0f;
             var higher = keyframes
-                .SkipWhile(t => { if (t < time) { lower = t; return true; } else { return false; } })
+                .SkipWhile(t =>
+                {
+                    if (t < time) { lower = t; return true; }
+
+                    return false;
+                })
                 .FirstOrDefault();
             return Mathf.Abs(time - lower) < Mathf.Abs(higher - time) ? lower : higher;
         }
@@ -186,7 +187,7 @@ namespace VamTimeline
         {
             public int Compare(TriggersAnimationTarget t1, TriggersAnimationTarget t2)
             {
-                return t1.name.CompareTo(t2.name);
+                return string.Compare(t1.name, t2.name, StringComparison.Ordinal);
 
             }
         }

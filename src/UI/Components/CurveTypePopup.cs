@@ -48,7 +48,7 @@ namespace VamTimeline
                 RefreshCurrentCurveType(_animationEditContext.clipTime);
                 return;
             }
-            float time = _animationEditContext.clipTime.Snap();
+            var time = _animationEditContext.clipTime.Snap();
 
             var curveType = CurveTypeValues.ToInt(val);
 
@@ -66,7 +66,6 @@ namespace VamTimeline
             if (curveTypeJSON == null) return;
 
             var time = currentClipTime.Snap();
-            var ms = time.ToMilliseconds();
             _curveTypes.Clear();
             foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
@@ -75,20 +74,20 @@ namespace VamTimeline
                 _curveTypes.Add(CurveTypeValues.FromInt(curveType));
             }
 
-            if (_curveTypes.Count == 0)
+            switch (_curveTypes.Count)
             {
-                curveTypeJSON.valNoCallback = _noKeyframeCurveType;
-                curveTypeUI.popup.topButton.interactable = false;
-            }
-            else if (_curveTypes.Count == 1)
-            {
-                curveTypeJSON.valNoCallback = _curveTypes.First().ToString();
-                curveTypeUI.popup.topButton.interactable = true;
-            }
-            else
-            {
-                curveTypeJSON.valNoCallback = "(" + string.Join("/", _curveTypes.ToArray()) + ")";
-                curveTypeUI.popup.topButton.interactable = true;
+                case 0:
+                    curveTypeJSON.valNoCallback = _noKeyframeCurveType;
+                    curveTypeUI.popup.topButton.interactable = false;
+                    break;
+                case 1:
+                    curveTypeJSON.valNoCallback = _curveTypes.First();
+                    curveTypeUI.popup.topButton.interactable = true;
+                    break;
+                default:
+                    curveTypeJSON.valNoCallback = "(" + string.Join("/", _curveTypes.ToArray()) + ")";
+                    curveTypeUI.popup.topButton.interactable = true;
+                    break;
             }
         }
 

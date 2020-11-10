@@ -46,9 +46,9 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(animationPattern));
             }
         }
-        public readonly AtomAnimationTargetsList<TriggersAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersAnimationTarget>() { label = "Triggers" };
-        public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget>() { label = "Controllers" };
-        public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget>() { label = "Float Params" };
+        public readonly AtomAnimationTargetsList<TriggersAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersAnimationTarget> { label = "Triggers" };
+        public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget> { label = "Controllers" };
+        public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget> { label = "Float Params" };
 
         public IEnumerable<ICurveAnimationTarget> GetAllCurveTargets()
         {
@@ -346,7 +346,7 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return GetAllTargets().Count() == 0;
+            return !GetAllTargets().Any();
         }
 
         public bool IsDirty()
@@ -561,7 +561,7 @@ namespace VamTimeline
 
         #region Clipboard
 
-        public AtomClipboardEntry Copy(float time, IEnumerable<IAtomAnimationTarget> targets)
+        public static AtomClipboardEntry Copy(float time, IList<IAtomAnimationTarget> targets)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
             foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
