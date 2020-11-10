@@ -215,17 +215,23 @@ namespace VamTimeline
 
             nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
+                if (animationLegacyJSON.choices.Count < 2) return;
                 var i = animationLegacyJSON.choices.IndexOf(animationLegacyJSON.val);
-                if (i < 0 || i > animationLegacyJSON.choices.Count - 2) return;
-                animationLegacyJSON.val = animationLegacyJSON.choices[i + 1];
+                if (i < 0 || i > animationLegacyJSON.choices.Count - 2)
+                    animationLegacyJSON.val = animationLegacyJSON.choices[1];
+                else
+                    animationLegacyJSON.val = animationLegacyJSON.choices[i + 1];
             });
             RegisterAction(nextAnimationLegacyJSON);
 
             previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
+                if (animationLegacyJSON.choices.Count < 2) return;
                 var i = animationLegacyJSON.choices.IndexOf(animationLegacyJSON.val);
-                if (i < 1 || i > animationLegacyJSON.choices.Count - 1) return;
-                animationLegacyJSON.val = animationLegacyJSON.choices[i - 1];
+                if (i < 1 || i > animationLegacyJSON.choices.Count - 1)
+                    animationLegacyJSON.val = animationLegacyJSON.choices[animationLegacyJSON.choices.Count - 1];
+                else
+                    animationLegacyJSON.val = animationLegacyJSON.choices[i - 1];
             });
             RegisterAction(previousAnimationLegacyJSON);
 
@@ -490,7 +496,7 @@ namespace VamTimeline
             if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
 
-            animationLegacyJSON.valNoCallback = animationEditContext.current.animationName;
+            animationLegacyJSON.valNoCallback = "";
 
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
@@ -531,9 +537,9 @@ namespace VamTimeline
         {
             try
             {
-                var layerAnimationNames = animation.index.ByLayer(animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
+                var layerAnimationNames = animation.index.ByLayer(animation.clips[0].animationLayer).Select(c => c.animationName).ToList();
                 animationLegacyJSON.choices = layerAnimationNames;
-                if (!animationLegacyJSON.choices.Contains(animationLegacyJSON.val)) animationLegacyJSON.valNoCallback = layerAnimationNames[0];
+                if (!animationLegacyJSON.choices.Contains(animationLegacyJSON.val)) animationLegacyJSON.valNoCallback = "";
 
                 var animationNames = animation.index.ByLayer(animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
                 foreach (var animName in animationNames)
