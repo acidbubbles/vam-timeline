@@ -10,10 +10,13 @@ namespace VamTimeline.Tests.Unit
     {
         public IEnumerable<Test> GetTests()
         {
-            yield return new Test(nameof(AddEdgeFramesIfMissing), AddEdgeFramesIfMissing);
+            yield return new Test(nameof(AddEdgeFramesIfMissing_SameLengthStaysUntouched), AddEdgeFramesIfMissing_SameLengthStaysUntouched);
+            yield return new Test(nameof(AddEdgeFramesIfMissing_WithTwoKeyframes_Moves), AddEdgeFramesIfMissing_WithTwoKeyframes_Moves);
+            yield return new Test(nameof(AddEdgeFramesIfMissing_WithThreeKeyframes_Adds), AddEdgeFramesIfMissing_WithThreeKeyframes_Adds);
+            yield return new Test(nameof(AddEdgeFramesIfMissing_WithCopyPrevious_AlwaysExtends), AddEdgeFramesIfMissing_WithCopyPrevious_AlwaysExtends);
         }
 
-        public IEnumerable AddEdgeFramesIfMissing(TestContext context)
+        public IEnumerable AddEdgeFramesIfMissing_SameLengthStaysUntouched(TestContext context)
         {
             var target = GivenAFreeController(context);
             target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
@@ -23,8 +26,52 @@ namespace VamTimeline.Tests.Unit
             target.AddEdgeFramesIfMissing(2f);
 
             context.Assert(target.rotX.keys.Select(k => k.curveType),
-                new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear},
-                "Same length stays untouched");
+                new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear}
+            );
+            yield break;
+        }
+
+        public IEnumerable AddEdgeFramesIfMissing_WithTwoKeyframes_Moves(TestContext context)
+        {
+            var target = GivenAFreeController(context);
+            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+
+            target.AddEdgeFramesIfMissing(2f);
+
+            context.Assert(target.rotX.keys.Select(k => k.curveType),
+                new[] {CurveTypeValues.Linear, CurveTypeValues.Linear}
+            );
+            yield break;
+        }
+
+        public IEnumerable AddEdgeFramesIfMissing_WithThreeKeyframes_Adds(TestContext context)
+        {
+            var target = GivenAFreeController(context);
+            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframe(2, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+
+            target.AddEdgeFramesIfMissing(3f);
+
+            context.Assert(target.rotX.keys.Select(k => k.curveType),
+                new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear}
+            );
+            yield break;
+        }
+
+        public IEnumerable AddEdgeFramesIfMissing_WithCopyPrevious_AlwaysExtends(TestContext context)
+        {
+            var target = GivenAFreeController(context);
+            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframe(2, Vector3.zero, Quaternion.identity, CurveTypeValues.CopyPrevious);
+
+            target.AddEdgeFramesIfMissing(3f);
+
+            context.Assert(target.rotX.keys.Select(k => k.curveType),
+                new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.CopyPrevious}
+            );
             yield break;
         }
 

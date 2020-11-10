@@ -154,13 +154,13 @@ namespace VamTimeline
             keys.RemoveAt(v);
         }
 
-        public void AddEdgeFramesIfMissing(float animationLength, int curveType)
+        public bool AddEdgeFramesIfMissing(float animationLength, int curveType)
         {
             if (keys.Count == 0)
             {
                 AddKey(0, 0, curveType);
                 AddKey(animationLength, 0, curveType);
-                return;
+                return true;
             }
             if (keys.Count == 1)
             {
@@ -168,8 +168,10 @@ namespace VamTimeline
                 keyframe.time = 0;
                 keys[0] = keyframe;
                 AddKey(animationLength, keyframe.value, keyframe.curveType);
-                return;
+                return true;
             }
+
+            var dirty = false;
             {
                 var keyframe = GetKeyframeByKey(0);
                 if (keyframe.time > 0)
@@ -177,11 +179,13 @@ namespace VamTimeline
                     if (keys.Count > 2)
                     {
                         AddKey(0, keyframe.value, curveType);
+                        dirty = true;
                     }
-                    else
+                    else if(keyframe.time != 0)
                     {
                         keyframe.time = 0;
                         keys[0] = keyframe;
+                        dirty = true;
                     }
                 }
             }
@@ -192,14 +196,17 @@ namespace VamTimeline
                     if (length > 2)
                     {
                         AddKey(animationLength, keyframe.value, curveType);
+                        dirty = true;
                     }
-                    else
+                    else if(keyframe.time != animationLength)
                     {
                         keyframe.time = animationLength;
                         keys[length - 1] = keyframe;
+                        dirty = true;
                     }
                 }
             }
+            return dirty;
         }
 
         public void ComputeCurves()

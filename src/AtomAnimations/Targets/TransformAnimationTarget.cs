@@ -69,7 +69,7 @@ namespace VamTimeline
 
         #region Keyframe control
 
-        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool dirty = true)
+        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool makeDirty = true)
         {
             curveType = SelectCurveType(time, curveType);
             var key = x.SetKeyframe(time, localPosition.x, curveType);
@@ -79,7 +79,7 @@ namespace VamTimeline
             rotY.SetKeyframe(time, locationRotation.y, curveType);
             rotZ.SetKeyframe(time, locationRotation.z, curveType);
             rotW.SetKeyframe(time, locationRotation.w, curveType);
-            if (dirty) this.dirty = true;
+            if (makeDirty) dirty = true;
             return key;
         }
 
@@ -110,15 +110,18 @@ namespace VamTimeline
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
-            var before = x.length;
-            x.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            y.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            z.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            rotX.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            rotY.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            rotZ.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            rotW.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal);
-            if (x.length != before) dirty = true;
+            var lastCurveType = x.length > 0 ? x.GetLastFrame().curveType : CurveTypeValues.SmoothLocal;
+
+            dirty = x.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+            y.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+            z.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+            rotX.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+            rotY.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+            rotZ.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+            rotW.AddEdgeFramesIfMissing(animationLength, lastCurveType);
+
+            if (dirty && lastCurveType == CurveTypeValues.CopyPrevious && x.length > 2 && x.keys[x.length - 2].curveType == CurveTypeValues.CopyPrevious)
+                DeleteFrame(x.keys[x.length - 2].time);
         }
 
         public void SmoothNeighbors(int key)

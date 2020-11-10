@@ -53,7 +53,7 @@ namespace VamTimeline
             curve.ComputeCurves();
         }
 
-        public void ChangeCurve(float time, int curveType, bool dirty = true)
+        public void ChangeCurve(float time, int curveType, bool makeDirty = true)
         {
             foreach (var curve in GetCurves())
             {
@@ -69,7 +69,7 @@ namespace VamTimeline
                     curve.SetLastFrame(last);
                 }
             }
-            if (dirty) this.dirty = true;
+            if (makeDirty) dirty = true;
         }
 
         protected int SelectCurveType(float time, int curveType)
