@@ -78,7 +78,7 @@ namespace VamTimeline
             return _clipsByLayer;
         }
 
-        public IEnumerable<AtomAnimationClip> ByLayer(string layer)
+        public IList<AtomAnimationClip> ByLayer(string layer)
         {
             List<AtomAnimationClip> clip;
             return _clipsByLayer.TryGetValue(layer, out clip) ? clip : _emptyClipList;

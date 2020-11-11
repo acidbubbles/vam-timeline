@@ -5,7 +5,6 @@ using System.Linq;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = System.Object;
 
 namespace VamTimeline
 {
@@ -217,22 +216,30 @@ namespace VamTimeline
             nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
                 if (animationLegacyJSON.choices.Count < 2) return;
-                var i = animationLegacyJSON.choices.IndexOf(animationLegacyJSON.val);
-                if (i < 0 || i > animationLegacyJSON.choices.Count - 2)
-                    animationLegacyJSON.val = animationLegacyJSON.choices[1];
+                var clip = string.IsNullOrEmpty(animationLegacyJSON.val)
+                    ? animation.clips[0]
+                    : animation.clips.First(c => c.animationName == animationLegacyJSON.val);
+                var inLayer = animation.index.ByLayer(clip.animationLayer);
+                var i = inLayer.IndexOf(clip);
+                if (i < 0 || i > inLayer.Count - 2)
+                    animationLegacyJSON.val = inLayer[0].animationName;
                 else
-                    animationLegacyJSON.val = animationLegacyJSON.choices[i + 1];
+                    animationLegacyJSON.val = inLayer[i + 1].animationName;
             });
             RegisterAction(nextAnimationLegacyJSON);
 
             previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
                 if (animationLegacyJSON.choices.Count < 2) return;
-                var i = animationLegacyJSON.choices.IndexOf(animationLegacyJSON.val);
-                if (i < 1 || i > animationLegacyJSON.choices.Count - 1)
-                    animationLegacyJSON.val = animationLegacyJSON.choices[animationLegacyJSON.choices.Count - 1];
+                var clip = string.IsNullOrEmpty(animationLegacyJSON.val)
+                    ? animation.clips[0]
+                    : animation.clips.First(c => c.animationName == animationLegacyJSON.val);
+                var inLayer = animation.index.ByLayer(clip.animationLayer);
+                var i = inLayer.IndexOf(clip);
+                if (i < 1 || i > inLayer.Count - 1)
+                    animationLegacyJSON.val = inLayer[inLayer.Count - 1].animationName;
                 else
-                    animationLegacyJSON.val = animationLegacyJSON.choices[i - 1];
+                    animationLegacyJSON.val = inLayer[i - 1].animationName;
             });
             RegisterAction(previousAnimationLegacyJSON);
 
@@ -262,7 +269,7 @@ namespace VamTimeline
                 if (animation == null) return;
                 var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(animationLegacyJSON.val).FirstOrDefault();
                 if (!animation.isPlaying)
-                    animation?.PlayOneAndOtherMainsInLayers(selected);
+                    animation.PlayOneAndOtherMainsInLayers(selected);
                 else if (!selected.playbackEnabled)
                     animation.PlayClip(selected, true);
             });
@@ -491,7 +498,7 @@ namespace VamTimeline
             OnClipsListChanged();
             OnAnimationParametersChanged();
 
-            ui?.Bind(animationEditContext);
+            if(ui != null) ui.Bind(animationEditContext);
             peers.animationEditContext = animationEditContext;
             if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
@@ -537,11 +544,10 @@ namespace VamTimeline
         {
             try
             {
-                var layerAnimationNames = animation.index.ByLayer(animation.clips[0].animationLayer).Select(c => c.animationName).ToList();
-                animationLegacyJSON.choices = layerAnimationNames;
-                if (!animationLegacyJSON.choices.Contains(animationLegacyJSON.val)) animationLegacyJSON.valNoCallback = "";
+                var animationNames = animation.clips.Select(c => c.animationName).Distinct().ToList();
 
-                var animationNames = animation.index.ByLayer(animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
+                animationLegacyJSON.choices = animationNames;
+
                 foreach (var animName in animationNames)
                 {
                     if (_clipStorables.Any(a => a.animationName == animName)) continue;
