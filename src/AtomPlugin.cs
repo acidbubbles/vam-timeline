@@ -661,7 +661,7 @@ namespace VamTimeline
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)
         {
-            if (animation.master && clip.playbackEnabled)
+            if (animation.master && clip.playbackEnabled && animation.sequencing)
                 peers.SendMasterClipState(clip);
         }
 

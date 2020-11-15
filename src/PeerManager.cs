@@ -130,11 +130,11 @@ namespace VamTimeline
         {
             if (syncing) return;
             SendTimelineEvent(new object[]{
-                 nameof(SendPlaybackState),
-                 clip.animationName,
-                 clip.playbackEnabled,
-                 clip.clipTime,
-                 animation.sequencing
+                 nameof(SendPlaybackState), // 0
+                 clip.animationName, // 1
+                 clip.playbackEnabled, // 2
+                 clip.clipTime, // 3
+                 animation.sequencing // 4
             });
         }
 
