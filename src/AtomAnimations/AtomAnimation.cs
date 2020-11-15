@@ -431,6 +431,8 @@ namespace VamTimeline
                 to.clipTime = to.loop && to.preserveLoops ? from.clipTime : 0f;
             }
 
+            // if(!from.loop && to.blendInDuration > from.animationLength - from.clipTime)
+            //     SuperController.LogError($"Timeline: Transition from '{from.animationName}' to '{to.animationName}' will stop the former animation after it ends, because the blend-in time of the latter is too long for the sequenced time.");
             Blend(from, 0f, to.blendInDuration);
             from.playbackMainInLayer = false;
             Blend(to, 1f, to.blendInDuration);
