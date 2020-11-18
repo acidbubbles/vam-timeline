@@ -464,6 +464,9 @@ namespace VamTimeline
 
         public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
         {
+            if (storable == null) throw new ArgumentNullException(nameof(storable));
+            if (jsf == null) throw new ArgumentNullException(nameof(jsf));
+
             if (targetFloatParams.Any(t => t.Targets(storable.storeId, jsf.name))) return null;
             return Add(new FloatParamAnimationTarget(storable, jsf));
         }

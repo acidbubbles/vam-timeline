@@ -26,6 +26,7 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
+                if (!origTarget.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
                 newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                 newTarget.dirty = true;
@@ -103,6 +104,7 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
+                if (!origTarget.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
