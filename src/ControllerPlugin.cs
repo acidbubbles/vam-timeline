@@ -166,9 +166,16 @@ namespace VamTimeline
             var link = _links.FirstOrDefault(l => l.storable == storable);
             if (link == null) return;
             _links.Remove(link);
-            _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid).ToList();
+            _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid + "|" + l.storable.name).ToList();
+            _atomsJSON.displayChoices = _links.Select(l => l.storable.containingAtom.uid).ToList();
             if (_selectedLink == link)
-                _atomsJSON.val = _links.Select(GetOrDispose).FirstOrDefault()?.storable.containingAtom.uid;
+            {
+                 var selected = _links.Select(GetOrDispose).FirstOrDefault();
+                 if(selected == null)
+                    _atomsJSON.val = null;
+                 else
+                    _atomsJSON.val = selected.storable.containingAtom.uid + "|" + selected.storable.name;
+            }
             link.Dispose();
         }
 
@@ -207,14 +214,15 @@ namespace VamTimeline
             _links.Add(proxy);
             _links.Sort((s1, s2) => string.CompareOrdinal(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
 
-            _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid).ToList();
+            _atomsJSON.displayChoices = _links.Select(l => l.storable.containingAtom.uid).ToList();
+            _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid + "|" + l.storable.name).ToList();
 
             OnTimelineAnimationParametersChanged(storable);
 
             if (_selectedLink == null)
             {
                 _selectedLink = proxy;
-                _atomsJSON.val = proxy.storable.containingAtom.uid;
+                _atomsJSON.val = proxy.storable.containingAtom.uid + "|" + proxy.storable.name;
             }
 
             return proxy;
@@ -430,9 +438,17 @@ namespace VamTimeline
             {
                 return;
             }
-            var mainLinkedAnimation = _links.Select(GetOrDispose).FirstOrDefault(la => la.storable.containingAtom.uid == uid);
+            var parts = uid.Split('|');
+            if(parts.Length != 2)
+            {
+                SuperController.LogError($"Invalid atom/storable name: {uid} - the '|' character is reserved");
+                _atomsJSON.valNoCallback = "";
+                return;
+            }
+            var mainLinkedAnimation = _links.Select(GetOrDispose).FirstOrDefault(la => la.storable.containingAtom.uid == parts[0] && la.storable.name == parts[1]);
             if (mainLinkedAnimation == null)
             {
+                SuperController.LogError($"Atom/storable {uid} has been destroyed or is unavailable");
                 _atomsJSON.valNoCallback = "";
                 return;
             }
@@ -440,7 +456,7 @@ namespace VamTimeline
             _selectedLink = mainLinkedAnimation;
             RequestControlPanelInjection();
 
-            _atomsJSON.valNoCallback = _selectedLink.storable.containingAtom.uid;
+            _atomsJSON.valNoCallback = _selectedLink.storable.containingAtom.uid + "|" + _selectedLink.storable.name;
         }
 
         private void RequestControlPanelInjection()
