@@ -55,6 +55,9 @@ namespace VamTimeline
             clip.nextAnimationTime = _clip.nextAnimationTime;
             clip.ensureQuaternionContinuity = _clip.ensureQuaternionContinuity;
             clip.blendInDuration = _clip.blendInDuration;
+            clip.speed = _clip.speed;
+            clip.nextAnimationTimeRandomize = _clip.nextAnimationTimeRandomize;
+            clip.preserveLoops = _clip.preserveLoops;
             return clip;
         }
 
