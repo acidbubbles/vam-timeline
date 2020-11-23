@@ -150,20 +150,8 @@ namespace VamTimeline
 
         public bool Interpolate(float clipTime, float maxDistanceDelta, float maxRadiansDelta)
         {
-            var targetLocalPosition = new Vector3
-            {
-                x = x.Evaluate(clipTime),
-                y = y.Evaluate(clipTime),
-                z = z.Evaluate(clipTime)
-            };
-
-            var targetLocalRotation = new Quaternion
-            {
-                x = rotX.Evaluate(clipTime),
-                y = rotY.Evaluate(clipTime),
-                z = rotZ.Evaluate(clipTime),
-                w = rotW.Evaluate(clipTime)
-            };
+            var targetLocalPosition = EvaluatePosition(clipTime);
+            var targetLocalRotation = EvaluateRotation(clipTime);
 
             var controllerTransform = controller.transform;
             controllerTransform.localPosition = Vector3.MoveTowards(controllerTransform.localPosition, targetLocalPosition, maxDistanceDelta);

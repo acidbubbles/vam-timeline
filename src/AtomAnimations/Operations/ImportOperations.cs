@@ -22,6 +22,7 @@ namespace VamTimeline
             {
                 foreach (var clip in clips.SelectMany(ImportClip))
                 {
+                    clip.Validate();
                     _animation.AddClip(clip);
                     importedClips.Add(clip);
                 }
