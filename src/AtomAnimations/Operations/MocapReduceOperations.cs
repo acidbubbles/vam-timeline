@@ -52,7 +52,9 @@ namespace VamTimeline
             if (steps.Count < 2) yield break;
 
             target.SetKeyframe(0f, steps[0].position, steps[0].rotation, CurveTypeValues.SmoothLocal);
-            target.SetKeyframe(base.clip.animationLength, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation, CurveTypeValues.SmoothLocal);
+            var lastFrameTime = steps[steps.Count - 1].time;
+            if(Mathf.Abs(clip.steps[clip.steps.Count-1].timeStep - base.clip.animationLength) < 0.01f) lastFrameTime = base.clip.animationLength;
+            target.SetKeyframe(lastFrameTime, steps[steps.Count - 1].position, steps[steps.Count - 1].rotation, CurveTypeValues.SmoothLocal);
             target.ComputeCurves();
 
             var buckets = new List<ReducerBucket>
