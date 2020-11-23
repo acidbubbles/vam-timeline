@@ -10,12 +10,22 @@ namespace VamTimeline
     public class BezierAnimationCurve
     {
         public float duration => keys.Count == 0 ? -1 : keys[keys.Count - 1].time;
-        public List<BezierKeyframe> keys = new List<BezierKeyframe>();
+        public List<BezierKeyframe> keys;
         public int length => keys.Count;
         public bool loop;
 
         private int _lastIndex;
         private IBezierAnimationCurveSmoothing _compute;
+
+        public BezierAnimationCurve()
+        {
+            keys = new List<BezierKeyframe>();
+        }
+
+        public BezierAnimationCurve(IEnumerable<BezierKeyframe> keys)
+        {
+            this.keys = new List<BezierKeyframe>(keys);
+        }
 
         [MethodImpl(256)]
         public BezierKeyframe GetFirstFrame()
@@ -169,13 +179,13 @@ namespace VamTimeline
                     AddKey(animationLength, 0, curveType);
                     return true;
                 case 1:
-                {
-                    var keyframe = GetKeyframeByKey(0);
-                    keyframe.time = 0;
-                    keys[0] = keyframe;
-                    AddKey(animationLength, keyframe.value, keyframe.curveType);
-                    return true;
-                }
+                    {
+                        var keyframe = GetKeyframeByKey(0);
+                        keyframe.time = 0;
+                        keys[0] = keyframe;
+                        AddKey(animationLength, keyframe.value, keyframe.curveType);
+                        return true;
+                    }
             }
 
             var dirty = false;
@@ -188,7 +198,7 @@ namespace VamTimeline
                         AddKey(0, keyframe.value, curveType);
                         dirty = true;
                     }
-                    else if(keyframe.time != 0)
+                    else if (keyframe.time != 0)
                     {
                         keyframe.time = 0;
                         keys[0] = keyframe;
@@ -205,7 +215,7 @@ namespace VamTimeline
                         AddKey(animationLength, keyframe.value, curveType);
                         dirty = true;
                     }
-                    else if(keyframe.time != animationLength)
+                    else if (keyframe.time != animationLength)
                     {
                         keyframe.time = animationLength;
                         keys[length - 1] = keyframe;
@@ -224,30 +234,30 @@ namespace VamTimeline
                 case 0:
                     return;
                 case 1:
-                {
-                    var key = keys[0];
-                    if (key.curveType == CurveTypeValues.LeaveAsIs) return;
-                    key.controlPointIn = key.value;
-                    key.controlPointOut = key.value;
-                    keys[0] = key;
-                    return;
-                }
-                case 2:
-                {
-                    var first = keys[0];
-                    if (first.curveType != CurveTypeValues.LeaveAsIs)
                     {
-                        first.controlPointIn = first.value;
-                        first.controlPointOut = first.value;
-                        keys[0] = first;
+                        var key = keys[0];
+                        if (key.curveType == CurveTypeValues.LeaveAsIs) return;
+                        key.controlPointIn = key.value;
+                        key.controlPointOut = key.value;
+                        keys[0] = key;
+                        return;
                     }
-                    var last = keys[1];
-                    if (last.curveType == CurveTypeValues.LeaveAsIs) return;
-                    last.controlPointIn = last.value;
-                    last.controlPointOut = last.value;
-                    keys[1] = last;
-                    return;
-                }
+                case 2:
+                    {
+                        var first = keys[0];
+                        if (first.curveType != CurveTypeValues.LeaveAsIs)
+                        {
+                            first.controlPointIn = first.value;
+                            first.controlPointOut = first.value;
+                            keys[0] = first;
+                        }
+                        var last = keys[1];
+                        if (last.curveType == CurveTypeValues.LeaveAsIs) return;
+                        last.controlPointIn = last.value;
+                        last.controlPointOut = last.value;
+                        keys[1] = last;
+                        return;
+                    }
             }
 
             var globalSmoothing = false;

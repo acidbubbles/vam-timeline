@@ -202,32 +202,34 @@ namespace VamTimeline
                 BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
                 BindCurve(t.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
                 // To display rotation as euleur angles, we have to build custom curves. But it's not that useful.
-                // var rotVX = new VamKeyframe[t.rotX.length];
-                // var rotVY = new VamKeyframe[t.rotY.length];
-                // var rotVZ = new VamKeyframe[t.rotZ.length];
-                // for (var time = 0; time < t.rotW.length; time++)
-                // {
-                //     VamKeyframe keyX = t.rotX[time];
-                //     VamKeyframe keyY = t.rotY[time];
-                //     VamKeyframe keyZ = t.rotZ[time];
-                //     VamKeyframe keyW = t.rotW[time];
-                //     var rot = new Quaternion(
-                //         keyX.value,
-                //         keyY.value,
-                //         keyZ.value,
-                //         keyW.value
-                //     );
-                //     var eulerAngles = rot.eulerAngles;
-                //     rotVX[time] = new VamKeyframe(keyW.time, eulerAngles.x);
-                //     rotVY[time] = new VamKeyframe(keyW.time, eulerAngles.y);
-                //     rotVZ[time] = new VamKeyframe(keyW.time, eulerAngles.z);
-                // }
-                // VamAnimationCurve rotVXCurve = new VamAnimationCurve(rotVX);
-                // VamAnimationCurve rotVYCurve = new VamAnimationCurve(rotVY);
-                // VamAnimationCurve rotVZCurve = new VamAnimationCurve(rotVZ);
-                // BindCurve(rotVXCurve, new Color(1.0f, 0.8f, 0.8f), $"{target.GetShortName()} rot x");
-                // BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
-                // BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
+                /*
+                var rotVX = new BezierKeyframe[t.rotX.length];
+                var rotVY = new BezierKeyframe[t.rotY.length];
+                var rotVZ = new BezierKeyframe[t.rotZ.length];
+                for (var time = 0; time < t.rotW.length; time++)
+                {
+                    var keyX = t.rotX.keys[time];
+                    var keyY = t.rotY.keys[time];
+                    var keyZ = t.rotZ.keys[time];
+                    var keyW = t.rotW.keys[time];
+                    var rot = new Quaternion(
+                        keyX.value,
+                        keyY.value,
+                        keyZ.value,
+                        keyW.value
+                    );
+                    var eulerAngles = rot.eulerAngles;
+                    rotVX[time] = new BezierKeyframe(keyW.time, eulerAngles.x, keyW.curveType);
+                    rotVY[time] = new BezierKeyframe(keyW.time, eulerAngles.y, keyW.curveType);
+                    rotVZ[time] = new BezierKeyframe(keyW.time, eulerAngles.z, keyW.curveType);
+                }
+                var rotVXCurve = new BezierAnimationCurve(rotVX);
+                var rotVYCurve = new BezierAnimationCurve(rotVY);
+                var rotVZCurve = new BezierAnimationCurve(rotVZ);
+                BindCurve(rotVXCurve, new Color(1.0f, 0.8f, 0.8f), $"{target.GetShortName()} rot x");
+                BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
+                BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
+                */
             }
             else if (target is FloatParamAnimationTarget)
             {
