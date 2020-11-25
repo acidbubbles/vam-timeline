@@ -185,7 +185,7 @@ namespace VamTimeline
 
         private void ReceiveStopAndReset(object[] _)
         {
-            animation.StopAndReset();
+            animationEditContext.StopAndReset();
         }
 
         public void SendTime(AtomAnimationClip clip)

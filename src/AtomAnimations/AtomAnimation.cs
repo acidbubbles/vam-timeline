@@ -366,7 +366,6 @@ namespace VamTimeline
                 clip.Reset(true);
             }
             playTime = playTime;
-            Sample();
         }
 
         public void StopAndReset()

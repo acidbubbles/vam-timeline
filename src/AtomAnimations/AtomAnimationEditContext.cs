@@ -147,6 +147,13 @@ namespace VamTimeline
 
         #region Playback
 
+        public void StopAndReset()
+        {
+            animation.StopAndReset();
+            SelectAnimation(animation.GetDefaultClip());
+            onTimeChanged.Invoke(timeArgs);
+        }
+
         public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
         {
             foreach (var clip in GetMainClipPerLayer())
@@ -219,6 +226,7 @@ namespace VamTimeline
 
         public void SelectAnimation(AtomAnimationClip clip)
         {
+            if (current == clip) return;
             var previous = current;
             var previousSelected = selectedTargets;
             current = clip;
