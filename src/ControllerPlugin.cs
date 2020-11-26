@@ -170,22 +170,22 @@ namespace VamTimeline
             _atomsJSON.displayChoices = _links.Select(l => l.storable.containingAtom.uid).ToList();
             if (_selectedLink == link)
             {
-                 var selected = _links.Select(GetOrDispose).FirstOrDefault();
-                 if(selected == null)
+                var selected = _links.Select(GetOrDispose).FirstOrDefault();
+                if (selected == null)
                     _atomsJSON.val = null;
-                 else
+                else
                     _atomsJSON.val = selected.storable.containingAtom.uid + "|" + selected.storable.name;
             }
             link.Dispose();
         }
 
-        private SyncProxy TryConnectAtom(Atom atom)
+        private void TryConnectAtom(Atom atom)
         {
-            if (atom == null) return null;
-            var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
-            if (storableId == null) return null;
-            var storable = atom.GetStorableByID(storableId);
-            return TryConnectAtom(storable);
+            if (atom == null) return;
+            foreach (var storableId in atom.GetStorableIDs().Where(id => id.EndsWith("VamTimeline.AtomPlugin")))
+            {
+                TryConnectAtom(atom.GetStorableByID(storableId));
+            }
         }
 
         private SyncProxy TryConnectAtom(JSONStorable storable)
@@ -439,7 +439,7 @@ namespace VamTimeline
                 return;
             }
             var parts = uid.Split('|');
-            if(parts.Length != 2)
+            if (parts.Length != 2)
             {
                 SuperController.LogError($"Invalid atom/storable name: {uid} - the '|' character is reserved");
                 _atomsJSON.valNoCallback = "";
