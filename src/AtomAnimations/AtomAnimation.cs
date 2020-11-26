@@ -552,6 +552,7 @@ namespace VamTimeline
         [MethodImpl(256)]
         private static void SampleFloatParam(JSONStorableFloat floatParam, List<FloatParamAnimationTarget> targets)
         {
+            const float minimumDelta = 0.00000015f;
             var weightedSum = 0f;
             var totalBlendWeights = 0f;
             foreach (var target in targets)
@@ -566,8 +567,14 @@ namespace VamTimeline
                 weightedSum += value * smoothBlendWeight;
                 totalBlendWeights += smoothBlendWeight;
             }
-            if (totalBlendWeights > 0)
-                floatParam.val = weightedSum / totalBlendWeights;
+            if (totalBlendWeights > minimumDelta)
+            {
+                var val = weightedSum / totalBlendWeights;
+                if(Mathf.Abs(val - floatParam.val) > minimumDelta)
+                {
+                    floatParam.val = val;
+                }
+            }
         }
 
         [MethodImpl(256)]
