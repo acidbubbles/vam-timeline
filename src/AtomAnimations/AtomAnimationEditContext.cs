@@ -36,6 +36,12 @@ namespace VamTimeline
             get { return _autoKeyframeAllControllers; }
             set { _autoKeyframeAllControllers = value; onEditorSettingsChanged.Invoke(nameof(autoKeyframeAllControllers)); }
         }
+        private bool _showPaths = true;
+        public bool showPaths
+        {
+            get { return _showPaths; }
+            set { _showPaths = value; }
+        }
         private bool _locked;
         public bool locked
         {
