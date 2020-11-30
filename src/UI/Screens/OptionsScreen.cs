@@ -6,6 +6,7 @@ namespace VamTimeline
         private JSONStorableBool _lockedJSON;
         private JSONStorableFloat _snapJSON;
         private JSONStorableBool _autoKeyframeAllControllersJSON;
+        private JSONStorableBool _showPaths;
 
         public override string screenId => ScreenName;
 
@@ -32,6 +33,12 @@ namespace VamTimeline
             InitAutoKeyframeUI();
 
             animationEditContext.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
+
+            _showPaths = new JSONStorableBool(
+                "Show paths", animationEditContext.showPaths,
+                val => animationEditContext.showPaths = val);
+
+            prefabFactory.CreateToggle(_showPaths);
         }
 
         private void InitLockedUI()

@@ -31,6 +31,7 @@ namespace VamTimeline
             {
                 _line = CreateLine();
                 UpdateLine();
+                _line.transform.gameObject.SetActive(plugin.animationEditContext.showPaths);
             }
         }
 
