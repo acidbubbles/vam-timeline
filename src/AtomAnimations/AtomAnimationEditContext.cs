@@ -158,6 +158,7 @@ namespace VamTimeline
             animation.StopAndReset();
             SelectAnimation(animation.GetDefaultClip());
             onTimeChanged.Invoke(timeArgs);
+            Sample();
         }
 
         public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
