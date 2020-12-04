@@ -888,8 +888,14 @@ namespace VamTimeline
 
         private void ProcessAnimationSequence(float deltaTime)
         {
-            foreach (var clip in clips)
+            var clipsPlaying = 0;
+            for (var i = 0; i < clips.Count; i++)
             {
+                var clip = clips[i];
+
+                if (clip.playbackEnabled)
+                    clipsPlaying++;
+
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
                 {
                     clip.playbackEnabled = false;
@@ -906,13 +912,18 @@ namespace VamTimeline
                         var nextClip = GetClip(clip.animationLayer, nextAnimationName);
                         if (nextClip == null)
                         {
-                            SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
+                            SuperController.LogError(
+                                $"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
                             continue;
                         }
+
                         TransitionAnimation(clip, nextClip);
                     }
                 }
             }
+
+            if(clipsPlaying == 0)
+                StopAll();
         }
 
         public void FixedUpdate()
