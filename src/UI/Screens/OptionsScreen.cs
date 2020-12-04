@@ -32,18 +32,16 @@ namespace VamTimeline
 
             InitAutoKeyframeUI();
 
+            prefabFactory.CreateSpacer();
+
+            InitShowPathsUI();
+
             animationEditContext.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
-
-            _showPaths = new JSONStorableBool(
-                "Show paths", animationEditContext.showPaths,
-                val => animationEditContext.showPaths = val);
-
-            prefabFactory.CreateToggle(_showPaths);
         }
 
         private void InitLockedUI()
         {
-            _lockedJSON = new JSONStorableBool("Lock edits", animationEditContext.locked, val => animationEditContext.locked = val);
+            _lockedJSON = new JSONStorableBool("Lock (ignore in-game edits)", animationEditContext.locked, val => animationEditContext.locked = val);
             prefabFactory.CreateToggle(_lockedJSON);
         }
 
@@ -61,6 +59,14 @@ namespace VamTimeline
         {
             _autoKeyframeAllControllersJSON = new JSONStorableBool("Keyframe all controllers at once", animationEditContext.autoKeyframeAllControllers, val => animationEditContext.autoKeyframeAllControllers = val);
             prefabFactory.CreateToggle(_autoKeyframeAllControllersJSON);
+        }
+
+        private void InitShowPathsUI()
+        {
+            _showPaths = new JSONStorableBool(
+                "Show selected controllers paths", animationEditContext.showPaths,
+                val => animationEditContext.showPaths = val);
+            prefabFactory.CreateToggle(_showPaths);
         }
 
         #endregion

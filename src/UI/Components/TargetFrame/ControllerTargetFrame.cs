@@ -18,6 +18,8 @@ namespace VamTimeline
 
         private void OnSelectedChanged()
         {
+            if (!plugin.animationEditContext.showPaths) return;
+
             var selected = plugin.animationEditContext.IsSelected(target);
             if (!selected && _line != null)
             {
@@ -31,7 +33,6 @@ namespace VamTimeline
             {
                 _line = CreateLine();
                 UpdateLine();
-                _line.transform.gameObject.SetActive(plugin.animationEditContext.showPaths);
             }
         }
 
