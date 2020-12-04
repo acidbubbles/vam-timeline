@@ -382,6 +382,7 @@ namespace VamTimeline
         private float _clipTime;
         public float playbackBlendWeight { get; set; }
         public bool playbackEnabled { get; set; }
+        public bool temporarilyEnabled { get; set; }
         public bool playbackMainInLayer;
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;

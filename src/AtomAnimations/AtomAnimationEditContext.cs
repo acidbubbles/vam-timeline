@@ -89,7 +89,7 @@ namespace VamTimeline
             }
             set
             {
-                playTime = value;
+                animation.playTime = value;
                 if (current == null) return;
                 foreach (var clip in animation.GetClips(current.animationName))
                 {
@@ -115,7 +115,8 @@ namespace VamTimeline
                 animation.playTime = value;
                 if (!current.playbackEnabled)
                     current.clipTime = value;
-                Sample();
+                if (!animation.isPlaying || animation.paused)
+                    Sample();
                 onTimeChanged.Invoke(timeArgs);
             }
         }
@@ -193,17 +194,9 @@ namespace VamTimeline
             }
 
             var clips = GetMainClipPerLayer();
-            foreach (var clip in clips)
-            {
-                clip.playbackEnabled = true;
-                clip.playbackBlendWeight = 1f;
-            }
+            foreach (var clip in clips) clip.temporarilyEnabled = true;
             animation.Sample();
-            foreach (var clip in clips)
-            {
-                clip.playbackEnabled = false;
-                clip.playbackBlendWeight = 0f;
-            }
+            foreach (var clip in clips) clip.temporarilyEnabled = false;
         }
 
         private List<AtomAnimationClip> GetMainClipPerLayer()

@@ -11,6 +11,7 @@ namespace VamTimeline
         float animationLength { get; }
         bool playbackEnabled { get; }
         float playbackBlendWeight { get; }
+        bool temporarilyEnabled { get; set; }
         float clipTime { get; }
         float scaledWeight { get; }
         UnityEvent onTargetsListChanged { get; }

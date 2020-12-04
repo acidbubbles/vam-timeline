@@ -555,18 +555,20 @@ namespace VamTimeline
             const float minimumDelta = 0.00000015f;
             var weightedSum = 0f;
             var totalBlendWeights = 0f;
-            foreach (var target in targets)
+            for (var i = 0; i < targets.Count; i++)
             {
+                var target = targets[i];
                 var clip = target.clip;
-                if (!clip.playbackEnabled) continue;
-                var weight = clip.scaledWeight;
+                if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
+                var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
                 if (weight < float.Epsilon) continue;
 
                 var value = target.value.Evaluate(clip.clipTime);
-                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
+                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.temporarilyEnabled ? 1f : clip.playbackBlendWeight);
                 weightedSum += value * smoothBlendWeight;
                 totalBlendWeights += smoothBlendWeight;
             }
+
             if (totalBlendWeights > minimumDelta)
             {
                 var val = weightedSum / totalBlendWeights;
@@ -608,19 +610,20 @@ namespace VamTimeline
             var totalPositionBlendWeights = 0f;
             var totalPositionControlWeights = 0f;
 
-            foreach (var target in targets)
+            for (var i = 0; i < targets.Count; i++)
             {
+                var target = targets[i];
                 var clip = target.clip;
-                if (!clip.playbackEnabled) continue;
+                if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
                 if (!target.playbackEnabled) continue;
-                var weight = clip.scaledWeight * target.scaledWeight;
+                var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight * target.scaledWeight;
                 if (weight < float.Epsilon) continue;
 
                 if (!target.EnsureParentAvailable()) return;
                 var link = target.GetLinkedRigidbody();
                 var linkHasValue = link != null;
 
-                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.playbackBlendWeight);
+                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.temporarilyEnabled ? 1f : clip.playbackBlendWeight);
 
                 if (target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
@@ -634,6 +637,7 @@ namespace VamTimeline
                     {
                         _rotations[rotationCount] = control.transform.parent.rotation * targetRotation;
                     }
+
                     _rotationBlendWeights[rotationCount] = smoothBlendWeight;
                     totalRotationBlendWeights += smoothBlendWeight;
                     totalRotationControlWeights += weight * smoothBlendWeight;
@@ -651,6 +655,7 @@ namespace VamTimeline
                     {
                         targetPosition = control.transform.parent.TransformPoint(targetPosition);
                     }
+
                     weightedPositionSum += targetPosition * smoothBlendWeight;
                     totalPositionBlendWeights += smoothBlendWeight;
                     totalPositionControlWeights += weight * smoothBlendWeight;
@@ -922,7 +927,7 @@ namespace VamTimeline
                 }
             }
 
-            if(clipsPlaying == 0)
+            if (clipsPlaying == 0)
                 StopAll();
         }
 
