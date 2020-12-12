@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -28,16 +29,18 @@ namespace VamTimeline
                 SuperController.LogError($"Target {name} has no start frame. Frames: {string.Join(", ", curve.keys.Select(k => k.time.ToString(CultureInfo.InvariantCulture)).ToArray())}");
                 return;
             }
-            if (curve.duration > animationLength)
+            if (curve.duration > animationLength + 0.0001f)
             {
-                SuperController.LogError($"Target {name} has  duration of {curve.duration} but the animation should be {animationLength}. Auto-repairing extraneous keys.");
+                SuperController.LogError($"Target {name} has  duration of {curve.duration:0.0000} but the animation should be {animationLength:0.0000}. Auto-repairing extraneous keys.");
                 foreach (var c in GetCurves())
                     while (c.GetKeyframeByKey(c.length - 1).time > animationLength && c.length > 2)
                         c.RemoveKey(c.length - 1);
+                dirty = true;
             }
             if (curve.duration != animationLength)
             {
-                SuperController.LogError($"Target {name} ends with frame {curve.duration} instead of expected {animationLength}. Auto-repairing last frame.");
+                if(Mathf.Abs(curve.duration - animationLength) > 0.0009f)
+                    SuperController.LogError($"Target {name} ends with frame {curve.duration:0.0000} instead of expected {animationLength:0.0000}. Auto-repairing last frame.");
                 foreach (var c in GetCurves())
                 {
                     var keyframe = c.GetLastFrame();
@@ -45,6 +48,7 @@ namespace VamTimeline
                     keyframe.time = animationLength;
                     c.SetLastFrame(keyframe);
                 }
+                dirty = true;
             }
         }
 

@@ -113,33 +113,22 @@ namespace VamTimeline
                     {
                         keyOps.RemoveAll(target);
                     }
-                    target.Validate(clip.animationLength);
                     target.StartBulkUpdates();
+                    target.Validate(clip.animationLength);
 
                     var enumerator = ProcessController(mot.clip, target, ctrl).GetEnumerator();
-                    while (TryMoveNext(enumerator, target))
+                    while (enumerator.MoveNext())
                         yield return enumerator.Current;
                 }
                 finally
                 {
+                    // NOTE: This should not be necessary, but for some reason dirty is set back to false too early and some changes are not picked up
+                    target.dirty = true;
                     target?.EndBulkUpdates();
                 }
             }
         }
 
         protected abstract IEnumerable ProcessController(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl);
-
-        private static bool TryMoveNext(IEnumerator enumerator, FreeControllerAnimationTarget target)
-        {
-            try
-            {
-                return enumerator.MoveNext();
-            }
-            catch
-            {
-                target.EndBulkUpdates();
-                throw;
-            }
-        }
     }
 }

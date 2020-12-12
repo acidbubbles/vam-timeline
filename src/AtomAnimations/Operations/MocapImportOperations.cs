@@ -18,30 +18,33 @@ namespace VamTimeline
             _settings = settings;
         }
 
-        protected override IEnumerable ProcessController(MotionAnimationClip clip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
+        protected override IEnumerable ProcessController(MotionAnimationClip motClip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
             const float minPositionDistanceForFlat = 0.01f;
             var frameLength = 1f / _settings.maxFramesPerSecond;
 
             var lastRecordedFrame = float.MinValue;
-            MotionAnimationStep previousStep = null;
-            for (var stepIndex = 0; stepIndex < clip.steps.Count - (base.clip.loop ? 1 : 0); stepIndex++)
+            Vector3? previousPosition = null;
+            var previousTime = 0f;
+            for (var stepIndex = 0; stepIndex < motClip.steps.Count - (clip.loop ? 1 : 0); stepIndex++)
             {
-                var step = clip.steps[stepIndex];
+                var step = motClip.steps[stepIndex];
                 var time = step.timeStep.Snap(0.01f);
                 if (time - lastRecordedFrame < frameLength) continue;
-                if (time > base.clip.animationLength) break;
+                if (time > clip.animationLength) break;
+                if (Mathf.Abs(time - clip.animationLength) < 0.001f) time = clip.animationLength;
                 var k = ControllerKeyframe.FromStep(time, step, ctrl);
                 target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
-                if (previousStep != null && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousStep.position, step.position) <= minPositionDistanceForFlat)
+                if (previousPosition.HasValue && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousPosition.Value, step.position) <= minPositionDistanceForFlat)
                 {
-                    target.ChangeCurve(previousStep.timeStep, CurveTypeValues.Linear);
+                    target.ChangeCurve(previousTime, CurveTypeValues.Linear);
                 }
                 lastRecordedFrame = time;
-                previousStep = step;
+                previousPosition = step.position;
+                previousTime = time;
             }
 
-            target.AddEdgeFramesIfMissing(base.clip.animationLength);
+            target.AddEdgeFramesIfMissing(clip.animationLength);
             yield break;
         }
     }
