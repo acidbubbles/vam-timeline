@@ -25,7 +25,7 @@ namespace VamTimeline
 
         public TargetsOperations Targets()
         {
-            return new TargetsOperations(_animation, _clip);
+            return new TargetsOperations(_containingAtom, _animation, _clip);
         }
 
         public KeyframesOperations Keyframes()

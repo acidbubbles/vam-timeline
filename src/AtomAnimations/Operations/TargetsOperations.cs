@@ -4,11 +4,13 @@ namespace VamTimeline
 {
     public class TargetsOperations
     {
+        private readonly Atom _containingAtom;
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
-        public TargetsOperations(AtomAnimation animation, AtomAnimationClip clip)
+        public TargetsOperations(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
         {
+            _containingAtom = containingAtom;
             _animation = animation;
             _clip = clip;
         }
@@ -26,6 +28,14 @@ namespace VamTimeline
                 if (clip == _clip) target = t;
             }
             return target;
+        }
+
+        public void AddSelectedController()
+        {
+            var selected = SuperController.singleton.GetSelectedController();
+            if (selected == null || selected.containingAtom != _containingAtom) return;
+            if (_animation.index.ByController().Any(kvp => kvp.Key == selected)) return;
+            Add(selected);
         }
     }
 }

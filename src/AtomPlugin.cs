@@ -903,6 +903,19 @@ namespace VamTimeline
                 new KeyValuePair<string, string>("Namespace", "Timeline")
             });
             bindings.Add(new JSONStorableAction("OpenUI", SelectAndOpenUI));
+            bindings.Add(new JSONStorableAction("OpenUI_AnimationsTab", () => { ChangeScreen(AnimationsScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_AddAnimationsTab", () => { ChangeScreen(AddAnimationScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_ManageAnimationsTab", () => { ChangeScreen(ManageAnimationsScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_TargetsTab", () => { ChangeScreen(TargetsScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_AddRemoveTargetsTab", () => { ChangeScreen(AddRemoveTargetsScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_EditTab", () => { ChangeScreen(EditAnimationScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_SequenceTab", () => { ChangeScreen(SequencingScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab", () => { ChangeScreen(MoreScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab_ImportExportAnimations", () => { ChangeScreen(ImportExportScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab_BulkChanges", () => { ChangeScreen(BulkScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Mocap", () => { ChangeScreen(MocapScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab_AdvancedKeyframeTools", () => { ChangeScreen(AdvancedKeyframeToolsScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Options", () => { ChangeScreen(OptionsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
             bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", previousAnimationLegacyJSON.actionCallback));
@@ -916,7 +929,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapToSecond()));
             bindings.Add(new JSONStorableAction("ForwardTenthOfASecond", () => animationEditContext.ForwardSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("ForwardSecond", () => animationEditContext.ForwardSeconds(1f)));
-            bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => animationEditContext.ForwardSeconds(1f)));
+            bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => new OperationsFactory(containingAtom, animation, animationEditContext.current).Targets().AddSelectedController()));
         }
 
         private void SelectAndOpenUI()

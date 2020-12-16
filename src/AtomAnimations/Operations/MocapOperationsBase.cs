@@ -75,7 +75,7 @@ namespace VamTimeline
         {
             var containingAtom = _containingAtom;
             var keyOps = new KeyframesOperations(clip);
-            var targetOps = new TargetsOperations(_animation, clip);
+            var targetOps = new TargetsOperations(_containingAtom, _animation, clip);
 
             yield return 0;
 
