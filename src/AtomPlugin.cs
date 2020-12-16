@@ -193,6 +193,7 @@ namespace VamTimeline
                 try { Destroy(ui); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [ui]: {exc}"); }
                 try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [panel]: {exc}"); }
                 Destroy(_freeControllerHook);
+                SuperController.singleton.BroadcastMessage("OnActionsProviderDestroyed", this, SendMessageOptions.DontRequireReceiver);
             }
             catch (Exception exc)
             {
@@ -505,6 +506,7 @@ namespace VamTimeline
 
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
+            SuperController.singleton.BroadcastMessage("OnActionsProviderAvailable", this, SendMessageOptions.DontRequireReceiver);
         }
 
         private void DeregisterAction(AnimStorableActionMap action)
@@ -888,6 +890,41 @@ namespace VamTimeline
         public void OnTimelineEvent(object[] e)
         {
             peers.OnTimelineEvent(e);
+        }
+
+        #endregion
+
+        #region Keybindings
+
+        public void OnBindingsListRequested(List<object> bindings)
+        {
+            bindings.Add(new []
+            {
+                new KeyValuePair<string, string>("Namespace", "Timeline")
+            });
+            bindings.Add(new JSONStorableAction("OpenUI", SelectAndOpenUI));
+            bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
+            bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
+            bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", previousAnimationLegacyJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", nextAnimationLegacyJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("PlayCurrentClip", animationEditContext.PlayCurrentClip));
+            bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
+            bindings.Add(new JSONStorableAction("Stop", animationEditContext.Stop));
+            bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
+            bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
+            bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));
+            bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapToSecond()));
+            bindings.Add(new JSONStorableAction("ForwardTenthOfASecond", () => animationEditContext.ForwardSeconds(0.1f)));
+            bindings.Add(new JSONStorableAction("ForwardSecond", () => animationEditContext.ForwardSeconds(1f)));
+            bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => animationEditContext.ForwardSeconds(1f)));
+        }
+
+        private void SelectAndOpenUI()
+        {
+            SuperController.singleton.SelectController(containingAtom.mainController);
+            var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
+            selector.SetActiveTab("Plugins");
+            UITransform.gameObject.SetActive(true);
         }
 
         #endregion

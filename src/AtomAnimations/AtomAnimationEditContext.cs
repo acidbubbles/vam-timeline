@@ -140,6 +140,61 @@ namespace VamTimeline
             return true;
         }
 
+        #region Animation Control
+
+        public void Stop()
+        {
+            if (animation.isPlaying)
+                animation.StopAll();
+            else
+                animation.ResetAll();
+            onTimeChanged.Invoke(timeArgs);
+            Sample();
+        }
+
+        public void PlayCurrentClip()
+        {
+            animation.PlayClips(current.animationName, false);
+        }
+
+        public void PlayAll()
+        {
+            PlayCurrentAndOtherMainsInLayers();
+        }
+
+        public void PreviousFrame()
+        {
+            clipTime = GetPreviousFrame(clipTime);
+        }
+
+        public void NextFrame()
+        {
+            clipTime = GetNextFrame(clipTime);
+        }
+
+        public void RewindSeconds(float seconds)
+        {
+            var time = clipTime - seconds;
+            if (time < 0)
+                time = 0;
+            clipTime = time;
+        }
+
+        public void ForwardSeconds(float seconds)
+        {
+            var time = clipTime + seconds;
+            if (time >= current.animationLength - 0.001f)
+                time = current.loop ? current.animationLength - seconds : current.animationLength;
+            clipTime = time;
+        }
+
+        public void SnapToSecond()
+        {
+            clipTime = clipTime.Snap(1f);
+        }
+
+        #endregion
+
         #region Keyframing
 
         public int SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)

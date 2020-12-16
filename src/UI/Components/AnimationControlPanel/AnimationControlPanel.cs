@@ -93,29 +93,21 @@ namespace VamTimeline
 
             var playAll = Instantiate(buttonPrefab, container.transform, false);
             playAll.GetComponent<UIDynamicButton>().label = "\u25B6 All";
-            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayCurrentAndOtherMainsInLayers());
+            playAll.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayAll());
             playAll.GetComponent<LayoutElement>().preferredWidth = 0;
             playAll.GetComponent<LayoutElement>().flexibleWidth = 100;
             _playAll = playAll.GetComponent<UIDynamicButton>();
 
             var playClip = Instantiate(buttonPrefab, container.transform, false);
             playClip.GetComponent<UIDynamicButton>().label = "\u25B6 Clip";
-            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.animation.PlayClips(_animationEditContext.current.animationName, false));
+            playClip.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => _animationEditContext.PlayCurrentClip());
             playClip.GetComponent<LayoutElement>().preferredWidth = 0;
             playClip.GetComponent<LayoutElement>().flexibleWidth = 100;
             _playClip = playClip.GetComponent<UIDynamicButton>();
 
             var stop = Instantiate(buttonPrefab, container.transform, false);
             stop.GetComponent<UIDynamicButton>().label = "\u25A0 Stop";
-            stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() =>
-            {
-                if (_animationEditContext.animation.isPlaying)
-                    _animationEditContext.animation.StopAll();
-                else
-                    _animationEditContext.animation.ResetAll();
-                _animationEditContext.onTimeChanged.Invoke(_animationEditContext.timeArgs);
-                _animationEditContext.Sample();
-            });
+            stop.GetComponent<UIDynamicButton>().button.onClick.AddListener(() => { _animationEditContext.Stop(); });
             stop.GetComponent<LayoutElement>().preferredWidth = 0;
             stop.GetComponent<LayoutElement>().flexibleWidth = 30;
         }
@@ -130,52 +122,19 @@ namespace VamTimeline
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () =>
-            {
-                _animationEditContext.clipTime = _animationEditContext.GetPreviousFrame(_animationEditContext.clipTime);
-            });
+            CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () => _animationEditContext.PreviousFrame());
 
-            CreateSmallButton(buttonPrefab, container.transform, "-1s", () =>
-            {
-                var time = _animationEditContext.clipTime - 1f;
-                if (time < 0)
-                    time = 0;
-                _animationEditContext.clipTime = time;
-            });
+            CreateSmallButton(buttonPrefab, container.transform, "-1s", () => _animationEditContext.RewindSeconds(1f));
 
-            CreateSmallButton(buttonPrefab, container.transform, "-.1s", () =>
-            {
-                var time = _animationEditContext.clipTime - 0.1f;
-                if (time < 0)
-                    time = 0;
-                _animationEditContext.clipTime = time;
-            });
+            CreateSmallButton(buttonPrefab, container.transform, "-.1s", () => _animationEditContext.RewindSeconds(0.1f));
 
-            CreateSmallButton(buttonPrefab, container.transform, ">|<", () =>
-            {
-                _animationEditContext.clipTime = _animationEditContext.clipTime.Snap(1f);
-            });
+            CreateSmallButton(buttonPrefab, container.transform, ">|<", () => _animationEditContext.SnapToSecond());
 
-            CreateSmallButton(buttonPrefab, container.transform, "+.1s", () =>
-            {
-                var time = _animationEditContext.clipTime + 0.1f;
-                if (time >= _animationEditContext.current.animationLength - 0.001f)
-                    time = _animationEditContext.current.loop ? _animationEditContext.current.animationLength - 0.1f : _animationEditContext.current.animationLength;
-                _animationEditContext.clipTime = time;
-            });
+            CreateSmallButton(buttonPrefab, container.transform, "+.1s", () => _animationEditContext.ForwardSeconds(0.1f));
 
-            CreateSmallButton(buttonPrefab, container.transform, "+1s", () =>
-            {
-                var time = _animationEditContext.clipTime + 1f;
-                if (time >= _animationEditContext.current.animationLength - 0.001f)
-                    time = _animationEditContext.current.loop ? _animationEditContext.current.animationLength - 1f : _animationEditContext.current.animationLength;
-                _animationEditContext.clipTime = time;
-            });
+            CreateSmallButton(buttonPrefab, container.transform, "+1s", () => _animationEditContext.ForwardSeconds(1f));
 
-            CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () =>
-            {
-                _animationEditContext.clipTime = _animationEditContext.GetNextFrame(_animationEditContext.clipTime);
-            });
+            CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () => _animationEditContext.NextFrame());
         }
 
         private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction callback)
