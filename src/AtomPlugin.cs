@@ -19,7 +19,6 @@ namespace VamTimeline
 
         public Editor ui { get; private set; }
         public Editor controllerInjectedUI { get; private set; }
-        public AtomClipboard clipboard { get; } = new AtomClipboard();
         public PeerManager peers { get; private set; }
 
         public JSONStorableStringChooser animationLegacyJSON { get; private set; }
@@ -269,6 +268,7 @@ namespace VamTimeline
             {
                 if (animation == null) return;
                 var selected = string.IsNullOrEmpty(animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(animationLegacyJSON.val).FirstOrDefault();
+                if (selected == null) return;
                 if (!animation.isPlaying)
                     animation.PlayOneAndOtherMainsInLayers(selected);
                 else if (!selected.playbackEnabled)
@@ -314,16 +314,16 @@ namespace VamTimeline
             });
             RegisterAction(stopAndResetJSON);
 
-            nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, NextFrame);
+            nextFrameJSON = new JSONStorableAction(StorableNames.NextFrame, () => animationEditContext.NextFrame());
             RegisterAction(nextFrameJSON);
 
-            previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, PreviousFrame);
+            previousFrameJSON = new JSONStorableAction(StorableNames.PreviousFrame, () => animationEditContext.PreviousFrame());
             RegisterAction(previousFrameJSON);
 
-            deleteJSON = new JSONStorableAction("Delete", Delete);
-            cutJSON = new JSONStorableAction("Cut", Cut);
-            copyJSON = new JSONStorableAction("Copy", Copy);
-            pasteJSON = new JSONStorableAction("Paste", Paste);
+            deleteJSON = new JSONStorableAction("Delete", () => animationEditContext.Delete());
+            cutJSON = new JSONStorableAction("Cut", () => animationEditContext.Cut());
+            copyJSON = new JSONStorableAction("Copy", () => animationEditContext.Copy());
+            pasteJSON = new JSONStorableAction("Paste", () => animationEditContext.Paste());
 
             speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => animation.speed = v, -1f, 5f, false)
             {
@@ -697,114 +697,6 @@ namespace VamTimeline
             }
         }
 
-        private void NextFrame()
-        {
-            animationEditContext.clipTime = animationEditContext.GetNextFrame(animationEditContext.clipTime);
-        }
-
-        private void PreviousFrame()
-        {
-            animationEditContext.clipTime = animationEditContext.GetPreviousFrame(animationEditContext.clipTime);
-        }
-
-        private void Delete()
-        {
-            try
-            {
-                if (!animationEditContext.CanEdit()) return;
-                var time = animationEditContext.clipTime;
-                if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
-                foreach (var target in animationEditContext.GetAllOrSelectedTargets())
-                {
-                    target.DeleteFrame(time);
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Delete)}: {exc}");
-            }
-        }
-
-        private void Cut()
-        {
-            try
-            {
-                if (!animationEditContext.CanEdit()) return;
-
-				var time = animationEditContext.clipTime;
-				var entry = AtomAnimationClip.Copy(time, animationEditContext.GetAllOrSelectedTargets().ToList());
-
-				if (entry.empty)
-				{
-                    SuperController.LogMessage("Timeline: Nothing to cut");
-				}
-				else
-				{
-					clipboard.Clear();
-					clipboard.time = time;
-					clipboard.entries.Add(entry);
-					if (time.IsSameFrame(0f) || time.IsSameFrame(animationEditContext.current.animationLength)) return;
-					foreach (var target in animationEditContext.GetAllOrSelectedTargets())
-					{
-						target.DeleteFrame(time);
-					}
-				}
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Cut)}: {exc}");
-            }
-        }
-
-        private void Copy()
-        {
-            try
-            {
-                if (!animationEditContext.CanEdit()) return;
-
-				var time = animationEditContext.clipTime;
-				var entry = AtomAnimationClip.Copy(time, animationEditContext.GetAllOrSelectedTargets().ToList());
-
-				if (entry.empty)
-				{
-                    SuperController.LogMessage("Timeline: Nothing to copy");
-				}
-				else
-				{
-					clipboard.Clear();
-					clipboard.time = time;
-					clipboard.entries.Add(entry);
-				}
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Copy)}: {exc}");
-            }
-        }
-
-        private void Paste()
-        {
-            try
-            {
-                if (!animationEditContext.CanEdit()) return;
-                if (clipboard.entries.Count == 0)
-                {
-                    SuperController.LogMessage("Timeline: Clipboard is empty");
-                    return;
-                }
-                var timeOffset = clipboard.time;
-                foreach (var entry in clipboard.entries)
-                {
-                    animationEditContext.current.Paste(animationEditContext.clipTime + entry.time - timeOffset, entry);
-                }
-                animationEditContext.Sample();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Paste)}: {exc}");
-            }
-        }
-
         public void ChangeScreen(string screenName, object screenArg)
         {
             if (ui == null) return;
@@ -930,14 +822,32 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("ForwardTenthOfASecond", () => animationEditContext.ForwardSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("ForwardSecond", () => animationEditContext.ForwardSeconds(1f)));
             bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => new OperationsFactory(containingAtom, animation, animationEditContext.current).Targets().AddSelectedController()));
+            bindings.Add(new JSONStorableAction("Keyframe_Cut", () => animationEditContext.Cut()));
+            bindings.Add(new JSONStorableAction("Keyframe_Copy", () => animationEditContext.Copy()));
+            bindings.Add(new JSONStorableAction("Keyframe_Paste", () => animationEditContext.Paste()));
+            bindings.Add(new JSONStorableAction("Keyframe_Delete", () => animationEditContext.Delete()));
         }
 
         private void SelectAndOpenUI()
         {
-            SuperController.singleton.SelectController(containingAtom.mainController);
-            var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
-            selector.SetActiveTab("Plugins");
-            UITransform.gameObject.SetActive(true);
+            if(containingAtom == null) SuperController.LogError("Timeline: No containing atom");
+            SuperController.singleton.SelectController(containingAtom.mainController, false, false, true);
+            StartCoroutine(WaitForUI());
+        }
+
+        private IEnumerator WaitForUI()
+        {
+            var expiration = Time.unscaledTime + 1f;
+            while (Time.unscaledTime < expiration)
+            {
+                yield return 0;
+                var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
+                if(selector == null) continue;
+                selector.SetActiveTab("Plugins");
+                if (UITransform == null) SuperController.LogError("Timeline: No UI");
+                UITransform.gameObject.SetActive(true);
+                yield break;
+            }
         }
 
         #endregion

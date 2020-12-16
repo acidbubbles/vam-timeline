@@ -21,6 +21,7 @@ namespace VamTimeline
         public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
 
         public readonly HashSet<IAtomAnimationTarget> selectedTargets = new HashSet<IAtomAnimationTarget>();
+        public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         private bool _sampleAfterRebuild;
 
@@ -191,6 +192,104 @@ namespace VamTimeline
         public void SnapToSecond()
         {
             clipTime = clipTime.Snap(1f);
+        }
+
+        public void Delete()
+        {
+            try
+            {
+                if (!CanEdit()) return;
+                var time = clipTime;
+                if (time.IsSameFrame(0f) || time.IsSameFrame(current.animationLength)) return;
+                foreach (var target in GetAllOrSelectedTargets())
+                {
+                    target.DeleteFrame(time);
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Delete)}: {exc}");
+            }
+        }
+
+        public void Cut()
+        {
+            try
+            {
+                if (!CanEdit()) return;
+
+				var time = clipTime;
+				var entry = AtomAnimationClip.Copy(time, GetAllOrSelectedTargets().ToList());
+
+				if (entry.empty)
+				{
+                    SuperController.LogMessage("Timeline: Nothing to cut");
+				}
+				else
+				{
+					clipboard.Clear();
+					clipboard.time = time;
+					clipboard.entries.Add(entry);
+					if (time.IsSameFrame(0f) || time.IsSameFrame(current.animationLength)) return;
+					foreach (var target in GetAllOrSelectedTargets())
+					{
+						target.DeleteFrame(time);
+					}
+				}
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Cut)}: {exc}");
+            }
+        }
+
+        public void Copy()
+        {
+            try
+            {
+                if (!CanEdit()) return;
+
+				var time = clipTime;
+				var entry = AtomAnimationClip.Copy(time, GetAllOrSelectedTargets().ToList());
+
+				if (entry.empty)
+				{
+                    SuperController.LogMessage("Timeline: Nothing to copy");
+				}
+				else
+				{
+					clipboard.Clear();
+					clipboard.time = time;
+					clipboard.entries.Add(entry);
+				}
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Copy)}: {exc}");
+            }
+        }
+
+        public void Paste()
+        {
+            try
+            {
+                if (!CanEdit()) return;
+                if (clipboard.entries.Count == 0)
+                {
+                    SuperController.LogMessage("Timeline: Clipboard is empty");
+                    return;
+                }
+                var timeOffset = clipboard.time;
+                foreach (var entry in clipboard.entries)
+                {
+                    current.Paste(clipTime + entry.time - timeOffset, entry);
+                }
+                Sample();
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Paste)}: {exc}");
+            }
         }
 
         #endregion

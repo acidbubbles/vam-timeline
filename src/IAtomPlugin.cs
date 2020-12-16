@@ -20,7 +20,6 @@ namespace VamTimeline
         AtomAnimation animation { get; }
         AtomAnimationEditContext animationEditContext { get; }
         AtomAnimationSerializer serializer { get; }
-        AtomClipboard clipboard { get; }
         PeerManager peers { get; }
 
         JSONStorableAction deleteJSON { get; }

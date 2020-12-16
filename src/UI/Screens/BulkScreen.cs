@@ -150,8 +150,8 @@ namespace VamTimeline
 
         public void CopyDeleteSelected(bool copy, bool delete)
         {
-            plugin.clipboard.Clear();
-            plugin.clipboard.time = _startJSON.valNoCallback;
+            plugin.animationEditContext.clipboard.Clear();
+            plugin.animationEditContext.clipboard.time = _startJSON.valNoCallback;
             foreach (var target in animationEditContext.GetAllOrSelectedTargets())
             {
                 target.StartBulkUpdates();
@@ -165,7 +165,7 @@ namespace VamTimeline
 
                         if (copy)
                         {
-                            plugin.clipboard.entries.Insert(0, AtomAnimationClip.Copy(keyTime, animationEditContext.GetAllOrSelectedTargets().ToList()));
+                            plugin.animationEditContext.clipboard.entries.Insert(0, AtomAnimationClip.Copy(keyTime, animationEditContext.GetAllOrSelectedTargets().ToList()));
                         }
                         if (delete && !keyTime.IsSameFrame(0) && !keyTime.IsSameFrame(current.animationLength))
                         {
