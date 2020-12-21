@@ -35,10 +35,11 @@ namespace VamTimeline
                 if (Mathf.Abs(time - clip.animationLength) < 0.001f) time = clip.animationLength;
                 var k = ControllerKeyframe.FromStep(time, step, ctrl);
                 target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
-                if (previousPosition.HasValue && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousPosition.Value, step.position) <= minPositionDistanceForFlat)
-                {
-                    target.ChangeCurve(previousTime, CurveTypeValues.Linear);
-                }
+                // SuperController.LogMessage($"{k.position.x:0.0000}, {k.position.y:0.0000},{k.position.z:0.0000}");
+                // if (previousPosition.HasValue && (target.controller.name == "lFootControl" || target.controller.name == "rFootControl") && Vector3.Distance(previousPosition.Value, step.position) <= minPositionDistanceForFlat)
+                // {
+                //     target.ChangeCurve(previousTime, CurveTypeValues.Linear);
+                // }
                 lastRecordedFrame = time;
                 previousPosition = step.position;
                 previousTime = time;

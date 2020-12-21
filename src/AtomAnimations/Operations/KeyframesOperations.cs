@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -33,6 +34,22 @@ namespace VamTimeline
             finally
             {
                 target.EndBulkUpdates();
+            }
+        }
+
+        public void AddSelectedController()
+        {
+            var selected = SuperController.singleton.GetSelectedController();
+            if (selected == null) return;
+            var target = _clip.targetControllers.FirstOrDefault(t => t.controller != selected);
+            target?.SetKeyframeToCurrentTransform(_clip.clipTime.Snap());
+        }
+
+        public void AddAllControllers()
+        {
+            foreach (var target in _clip.targetControllers)
+            {
+                target.SetKeyframeToCurrentTransform(_clip.clipTime.Snap());
             }
         }
     }

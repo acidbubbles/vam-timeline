@@ -788,6 +788,8 @@ namespace VamTimeline
 
         #region Keybindings
 
+        private OperationsFactory operations => new OperationsFactory(containingAtom, animation, animationEditContext.current);
+
         public void OnBindingsListRequested(List<object> bindings)
         {
             bindings.Add(new []
@@ -821,11 +823,13 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapToSecond()));
             bindings.Add(new JSONStorableAction("ForwardTenthOfASecond", () => animationEditContext.ForwardSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("ForwardSecond", () => animationEditContext.ForwardSeconds(1f)));
-            bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => new OperationsFactory(containingAtom, animation, animationEditContext.current).Targets().AddSelectedController()));
+            bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => operations.Targets().AddSelectedController()));
             bindings.Add(new JSONStorableAction("Keyframe_Cut", () => animationEditContext.Cut()));
             bindings.Add(new JSONStorableAction("Keyframe_Copy", () => animationEditContext.Copy()));
             bindings.Add(new JSONStorableAction("Keyframe_Paste", () => animationEditContext.Paste()));
             bindings.Add(new JSONStorableAction("Keyframe_Delete", () => animationEditContext.Delete()));
+            bindings.Add(new JSONStorableAction("Keyframe_Add_CurrentController", () => operations.Keyframes().AddSelectedController()));
+            bindings.Add(new JSONStorableAction("Keyframe_Add_AllControllerTargets", () => operations.Keyframes().AddAllControllers()));
         }
 
         private void SelectAndOpenUI()
