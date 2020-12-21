@@ -380,9 +380,10 @@ namespace VamTimeline
                 yield return 0;
             sctrl.helpText = string.Empty;
             animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
-            while (animation.playTime <= current.animationLength)
+            while (animation.playTime <= current.animationLength && animation.isPlaying)
                 yield return 0;
-            animation.StopAll();
+            animationEditContext.Stop();
+            animationEditContext.clipTime = 0f;
             _recordingFloatParamsCoroutine = null;
             _simplifyFloatParamsOnLoad = true;
             ChangeScreen(ScreenName);
