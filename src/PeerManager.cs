@@ -16,6 +16,7 @@ namespace VamTimeline
         private readonly IAtomPlugin _plugin;
         private bool _receiving;
         private int _sending;
+        private bool _reportedLengthErrorOnce;
 
         public PeerManager(Atom containingAtom, IAtomPlugin plugin)
         {
@@ -140,6 +141,7 @@ namespace VamTimeline
 
         private void ReceivePlaybackState(object[] e)
         {
+            if (!ValidateArgumentCount(e.Length, 5)) return;
             foreach (var clip in GetClips(e))
             {
                 if (clip == null) return;
@@ -163,6 +165,7 @@ namespace VamTimeline
 
         private void ReceiveMasterClipState(object[] e)
         {
+            if (!ValidateArgumentCount(e.Length, 3)) return;
             if (animation.master)
             {
                 SuperController.LogError($"Atom {_containingAtom.name} received a master clip state from another atom. Please make sure only one of your atoms is a sequence master during playback.");
@@ -200,6 +203,7 @@ namespace VamTimeline
 
         private void ReceiveTime(object[] e)
         {
+            if (!ValidateArgumentCount(e.Length, 3)) return;
             foreach (var clip in GetClips(e))
             {
                 if (clip != animationEditContext.current) return;
@@ -218,6 +222,7 @@ namespace VamTimeline
 
         private void ReceiveCurrentAnimation(object[] e)
         {
+            if (!ValidateArgumentCount(e.Length, 2)) return;
             foreach (var clip in GetClips(e))
             {
                 if (clip == null) return;
@@ -249,6 +254,7 @@ namespace VamTimeline
 
         private void ReceiveSyncAnimation(object[] e)
         {
+            if (!ValidateArgumentCount(e.Length, 15)) return;
             var animationName = (string)e[1];
             var animationLayer = (string)e[2];
 
@@ -306,6 +312,7 @@ namespace VamTimeline
 
         private void ReceiveScreen(object[] e)
         {
+            if (!ValidateArgumentCount(e.Length, 3)) return;
             _plugin.ChangeScreen((string)e[1], e[2]);
         }
 
@@ -339,6 +346,16 @@ namespace VamTimeline
         private void Complete()
         {
             _sending--;
+        }
+
+        private bool ValidateArgumentCount(int actualLength, int expectedLength)
+        {
+            if (actualLength >= expectedLength) return true;
+            if (_reportedLengthErrorOnce) return false;
+            _reportedLengthErrorOnce = true;
+            SuperController.LogError($"Atom {_plugin.containingAtom.name} received a peer message with the wrong number of arguments. This usually means you have more than one version of Timeline in your scene. Make sure all Timeline instances are running the same version.");
+            return false;
+
         }
 
         #endregion

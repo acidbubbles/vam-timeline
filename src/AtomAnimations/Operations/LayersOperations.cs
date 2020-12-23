@@ -22,7 +22,7 @@ namespace VamTimeline
 
         public void SplitLayer(List<IAtomAnimationTarget> targets)
         {
-            var layerName = GetSplitAnimationName(_clip.animationLayer, _animation.clips.Select(c => c.animationLayer).Distinct().ToList());
+            var layerName = GetSplitAnimationName(_clip.animationLayer, _animation.index.ByLayer().Select(c => c.Key).ToList());
             foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayer).Reverse().ToList())
             {
                 var newClip = new AddAnimationOperations(_animation, sourceClip).AddAnimationWithSameSettings();

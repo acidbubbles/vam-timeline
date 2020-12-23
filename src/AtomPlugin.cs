@@ -812,7 +812,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Options", () => { ChangeScreen(OptionsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
-            bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", previousAnimationLegacyJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("Prehttps://hub.virtamate.com/resources/hannah-flashes.1236/viousAnimationInCurrentLayer", previousAnimationLegacyJSON.actionCallback));
             bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", nextAnimationLegacyJSON.actionCallback));
             bindings.Add(new JSONStorableAction("PlayCurrentClip", animationEditContext.PlayCurrentClip));
             bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
