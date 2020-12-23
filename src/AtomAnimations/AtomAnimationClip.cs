@@ -501,21 +501,27 @@ namespace VamTimeline
 
             target.clip = null;
 
-            if (target is FreeControllerAnimationTarget)
+            var freeControllerAnimationTarget = target as FreeControllerAnimationTarget;
+            if (freeControllerAnimationTarget != null)
             {
-                Remove((FreeControllerAnimationTarget)target);
+                Remove(freeControllerAnimationTarget);
                 return;
             }
-            if (target is FloatParamAnimationTarget)
+
+            var floatParamAnimationTarget = target as FloatParamAnimationTarget;
+            if (floatParamAnimationTarget != null)
             {
-                Remove((FloatParamAnimationTarget)target);
+                Remove(floatParamAnimationTarget);
                 return;
             }
-            if (target is TriggersAnimationTarget)
+
+            var animationTarget = target as TriggersAnimationTarget;
+            if (animationTarget != null)
             {
-                Remove((TriggersAnimationTarget)target);
+                Remove(animationTarget);
                 return;
             }
+
             throw new NotSupportedException($"Cannot remove unknown target type {target}");
         }
 
