@@ -894,12 +894,16 @@ namespace VamTimeline
         private void ProcessAnimationSequence(float deltaTime)
         {
             var clipsPlaying = 0;
+            var clipsQueued = 0;
             for (var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
 
                 if (clip.playbackEnabled)
                     clipsPlaying++;
+
+                if (clip.playbackScheduledNextTimeLeft > 0)
+                    clipsQueued++;
 
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
                 {
@@ -927,8 +931,10 @@ namespace VamTimeline
                 }
             }
 
-            if (clipsPlaying == 0)
+            if (clipsPlaying == 0 && clipsQueued == 0)
+            {
                 StopAll();
+            }
         }
 
         public void FixedUpdate()
