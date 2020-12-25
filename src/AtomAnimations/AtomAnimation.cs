@@ -412,9 +412,10 @@ namespace VamTimeline
 
         private void Blend(AtomAnimationClip clip, float weight, float duration)
         {
-            if (!clip.playbackEnabled) clip.playbackBlendWeight = 0;
             clip.playbackEnabled = true;
             clip.playbackBlendRate = (weight - clip.playbackBlendWeight) / duration;
+            if (clip.playbackEnabled) return;
+            clip.playbackBlendWeight = 0;
             onClipIsPlayingChanged.Invoke(clip);
         }
 
@@ -429,7 +430,7 @@ namespace VamTimeline
 
             from.SetNext(null, float.NaN);
 
-            if (to.playbackBlendWeight == 0)
+            if (!to.playbackEnabled)
             {
                 to.clipTime = to.loop && to.preserveLoops ? from.clipTime : 0f;
             }
@@ -902,7 +903,7 @@ namespace VamTimeline
                 if (clip.playbackEnabled)
                     clipsPlaying++;
 
-                if (clip.playbackScheduledNextTimeLeft > 0)
+                if (clip.playbackScheduledNextAnimationName != null)
                     clipsQueued++;
 
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
