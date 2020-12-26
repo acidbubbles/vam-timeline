@@ -383,8 +383,9 @@ namespace VamTimeline
             var delta = value - _playTime;
             if (delta == 0) return;
             _playTime = value;
-            foreach (var clip in clips)
+            for (var i = 0; i < clips.Count; i++)
             {
+                var clip = clips[i];
                 if (!clip.playbackEnabled) continue;
 
                 var clipDelta = delta * clip.speed;
