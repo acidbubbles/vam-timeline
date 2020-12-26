@@ -383,16 +383,28 @@ namespace VamTimeline
             var delta = value - _playTime;
             if (delta == 0) return;
             _playTime = value;
+
+            var weightedClipSpeedSum = 0f;
+            var totalBlendWeights = 0f;
+            for (var i = 0; i < clips.Count; i++)
+            {
+                var clip = clips[i];
+                if (!clip.playbackEnabled) continue;
+                var smoothBlendWeight = Mathf.SmoothStep(0f, 1, clip.playbackBlendWeight);
+                weightedClipSpeedSum += clip.speed * smoothBlendWeight;
+                totalBlendWeights += smoothBlendWeight;
+            }
+            var clipSpeed = weightedClipSpeedSum / totalBlendWeights;
+
             for (var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
                 if (!clip.playbackEnabled) continue;
 
-                var clipDelta = delta * clip.speed;
+                var clipDelta = delta * clipSpeed;
                 clip.clipTime += clipDelta;
                 if (clip.playbackBlendRate != 0)
                 {
-                    // TODO: Mathf.SmoothStep
                     clip.playbackBlendWeight += clip.playbackBlendRate * clipDelta;
                     if (clip.playbackBlendWeight >= clip.weight)
                     {
