@@ -41,6 +41,9 @@ namespace VamTimeline
         public JSONStorableFloat speedJSON { get; private set; }
         public JSONStorableBool lockedJSON { get; private set; }
 
+        private JSONStorableFloat _scrubberAnalogControlJSON;
+        private bool _scrubbing = false;
+
         private bool _restoring;
         private FreeControllerV3Hook _freeControllerHook;
 
@@ -131,6 +134,17 @@ namespace VamTimeline
             {
                 scrubberJSON.valNoCallback = animationEditContext.clipTime;
                 timeJSON.valNoCallback = animation.playTime;
+            }
+
+            if (_scrubberAnalogControlJSON.val != 0)
+            {
+                _scrubbing = true;
+                animationEditContext.clipTime += _scrubberAnalogControlJSON.val * Time.unscaledDeltaTime;
+            }
+            else if (_scrubbing)
+            {
+                animationEditContext.clipTime = animationEditContext.clipTime.Snap(animationEditContext.snap);
+                _scrubbing = false;
             }
         }
 
@@ -338,6 +352,8 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterBool(lockedJSON);
+
+            _scrubberAnalogControlJSON = new JSONStorableFloat("Scrubber", 0f, -1f, 1f);
         }
 
         private IEnumerator DeferredInit()
@@ -830,6 +846,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Keyframe_Delete", () => animationEditContext.Delete()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_CurrentController", () => operations.Keyframes().AddSelectedController()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_AllControllerTargets", () => operations.Keyframes().AddAllControllers()));
+
+            bindings.Add(_scrubberAnalogControlJSON);
         }
 
         private void SelectAndOpenUI()
