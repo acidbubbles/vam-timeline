@@ -46,9 +46,10 @@ namespace VamTimeline
             }
             set
             {
-                SetPlayTime(value);
+                _playTime = value;
                 foreach (var clip in clips)
                 {
+                    clip.clipTime = _playTime;
                     if (clip.animationPattern != null)
                         clip.animationPattern.SetFloatParamValue("currentTime", clip.clipTime);
                 }
@@ -378,11 +379,9 @@ namespace VamTimeline
 
         #region Animation state
 
-        private void SetPlayTime(float value)
+        private void AdvanceClipsTime(float delta)
         {
-            var delta = value - _playTime;
             if (delta == 0) return;
-            _playTime = value;
 
             var weightedClipSpeedSum = 0f;
             var totalBlendWeights = 0f;
@@ -394,7 +393,8 @@ namespace VamTimeline
                 weightedClipSpeedSum += clip.speed * smoothBlendWeight;
                 totalBlendWeights += smoothBlendWeight;
             }
-            var clipSpeed = weightedClipSpeedSum / totalBlendWeights;
+
+            var clipSpeed = weightedClipSpeedSum == 0 ? 1 : weightedClipSpeedSum / totalBlendWeights;
 
             for (var i = 0; i < clips.Count; i++)
             {
@@ -955,8 +955,10 @@ namespace VamTimeline
         {
             if (!allowAnimationProcessing || paused) return;
 
-            SetPlayTime(playTime + Time.fixedDeltaTime * _speed);
 
+            var delta = Time.fixedDeltaTime * _speed;
+            _playTime += delta;
+            AdvanceClipsTime(delta);
             SampleControllers();
         }
 
