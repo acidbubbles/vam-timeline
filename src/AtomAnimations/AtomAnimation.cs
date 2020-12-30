@@ -425,10 +425,10 @@ namespace VamTimeline
 
         private void Blend(AtomAnimationClip clip, float weight, float duration)
         {
-            clip.playbackEnabled = true;
+            if (!clip.playbackEnabled) clip.playbackBlendWeight = 0f;
             clip.playbackBlendRate = (weight - clip.playbackBlendWeight) / duration;
             if (clip.playbackEnabled) return;
-            clip.playbackBlendWeight = 0;
+            clip.playbackEnabled = true;
             onClipIsPlayingChanged.Invoke(clip);
         }
 
