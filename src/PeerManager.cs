@@ -175,6 +175,7 @@ namespace VamTimeline
             {
                 if (clip == null || clip.playbackEnabled) return;
                 animation.PlayClip(clip, true, false);
+                clip.clipTime = (float) e[2];
             }
         }
 
