@@ -515,7 +515,7 @@ namespace VamTimeline
             var nextTime = source.nextAnimationTime;
             if (source.preserveLoops && source.loop)
             {
-                nextTime = nextTime.RoundToNearest(source.animationLength) - next.blendInDuration + source.clipTime;
+                nextTime = nextTime.RoundToNearest(source.animationLength) - (next.blendInDuration / 2f) + source.clipTime;
             }
             if (source.nextAnimationTimeRandomize > 0f)
             {
