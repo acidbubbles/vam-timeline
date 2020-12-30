@@ -174,7 +174,7 @@ namespace VamTimeline
             foreach (var clip in GetClips(e))
             {
                 if (clip == null || clip.playbackEnabled) return;
-                animation.PlayClip(clip, true);
+                animation.PlayClip(clip, true, false);
             }
         }
 

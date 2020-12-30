@@ -235,7 +235,7 @@ namespace VamTimeline
                 PlayClip(clip, sequencing);
         }
 
-        public void PlayClip(AtomAnimationClip clip, bool sequencing)
+        public void PlayClip(AtomAnimationClip clip, bool sequencing, bool allowPreserveLoops = true)
         {
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
             if (!isPlaying)
@@ -251,10 +251,9 @@ namespace VamTimeline
             if (previousMain != null && previousMain != clip)
             {
                 if (previousMain.uninterruptible)
-                {
                     return;
-                }
-                if (clip.loop && clip.preserveLoops && previousMain.loop)
+
+                if (clip.loop && clip.preserveLoops && previousMain.loop && allowPreserveLoops)
                 {
                     previousMain.SetNext(clip.animationName, Mathf.Max(previousMain.animationLength - previousMain.clipTime, 0f));
                 }
