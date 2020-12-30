@@ -382,41 +382,52 @@ namespace VamTimeline
         {
             if (delta == 0) return;
 
-            var weightedClipSpeedSum = 0f;
-            var totalBlendWeights = 0f;
-            for (var i = 0; i < clips.Count; i++)
+            foreach (var layer in index.ByLayer())
             {
-                var clip = clips[i];
-                if (!clip.playbackEnabled) continue;
-                var smoothBlendWeight = Mathf.SmoothStep(0f, 1, clip.playbackBlendWeight);
-                weightedClipSpeedSum += clip.speed * smoothBlendWeight;
-                totalBlendWeights += smoothBlendWeight;
-            }
-
-            var clipSpeed = weightedClipSpeedSum == 0 ? 1 : weightedClipSpeedSum / totalBlendWeights;
-
-            for (var i = 0; i < clips.Count; i++)
-            {
-                var clip = clips[i];
-                if (!clip.playbackEnabled) continue;
-
-                var clipDelta = delta * clipSpeed;
-                clip.clipTime += clipDelta;
-                if (clip.playbackBlendRate != 0)
+                var layerClips = layer.Value;
+                float clipSpeed;
+                if (layerClips.Count > 1)
                 {
-                    clip.playbackBlendWeight += clip.playbackBlendRate * clipDelta;
-                    if (clip.playbackBlendWeight >= clip.weight)
+                    var weightedClipSpeedSum = 0f;
+                    var totalBlendWeights = 0f;
+                    for (var i = 0; i < layerClips.Count; i++)
                     {
-                        clip.playbackBlendRate = 0f;
-                        clip.playbackBlendWeight = clip.weight;
+                        var clip = layerClips[i];
+                        if (!clip.playbackEnabled) continue;
+                        var smoothBlendWeight = Mathf.SmoothStep(0f, 1, clip.playbackBlendWeight);
+                        weightedClipSpeedSum += clip.speed * smoothBlendWeight;
+                        totalBlendWeights += smoothBlendWeight;
                     }
-                    else if (clip.playbackBlendWeight <= 0f)
+                    clipSpeed = weightedClipSpeedSum == 0 ? 1 : weightedClipSpeedSum / totalBlendWeights;
+                }
+                else
+                {
+                    clipSpeed = layerClips[0].speed;
+                }
+
+                for (var i = 0; i < layerClips.Count; i++)
+                {
+                    var clip = layerClips[i];
+                    if (!clip.playbackEnabled) continue;
+
+                    var clipDelta = delta * clipSpeed;
+                    clip.clipTime += clipDelta;
+                    if (clip.playbackBlendRate != 0)
                     {
-                        clip.playbackBlendRate = 0f;
-                        clip.playbackBlendWeight = 0f;
-                        clip.Leave();
-                        clip.playbackEnabled = false;
-                        onClipIsPlayingChanged.Invoke(clip);
+                        clip.playbackBlendWeight += clip.playbackBlendRate * clipDelta;
+                        if (clip.playbackBlendWeight >= clip.weight)
+                        {
+                            clip.playbackBlendRate = 0f;
+                            clip.playbackBlendWeight = clip.weight;
+                        }
+                        else if (clip.playbackBlendWeight <= 0f)
+                        {
+                            clip.playbackBlendRate = 0f;
+                            clip.playbackBlendWeight = 0f;
+                            clip.Leave();
+                            clip.playbackEnabled = false;
+                            onClipIsPlayingChanged.Invoke(clip);
+                        }
                     }
                 }
             }
