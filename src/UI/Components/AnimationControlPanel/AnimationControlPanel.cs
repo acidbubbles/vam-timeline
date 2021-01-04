@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -122,7 +123,11 @@ namespace VamTimeline
             gridLayout.childForceExpandWidth = false;
             gridLayout.childControlWidth = true;
 
-            CreateSmallButton(buttonPrefab, container.transform, "<\u0192", () => _animationEditContext.PreviousFrame());
+            CreateSmallButton(
+				buttonPrefab, container.transform, "<\u0192",
+				() => _animationEditContext.PreviousFrame(),
+				() => _animationEditContext.RewindSeconds(_animationEditContext.snap));
+
 
             CreateSmallButton(buttonPrefab, container.transform, "-1s", () => _animationEditContext.RewindSeconds(1f));
 
@@ -134,16 +139,27 @@ namespace VamTimeline
 
             CreateSmallButton(buttonPrefab, container.transform, "+1s", () => _animationEditContext.ForwardSeconds(1f));
 
-            CreateSmallButton(buttonPrefab, container.transform, "\u0192>", () => _animationEditContext.NextFrame());
+            CreateSmallButton(
+				buttonPrefab, container.transform, "\u0192>",
+				() => _animationEditContext.NextFrame(),
+				() => _animationEditContext.ForwardSeconds(_animationEditContext.snap));
         }
 
-        private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction callback)
+        private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction leftClick, UnityAction rightClick=null)
         {
             var btn = Instantiate(buttonPrefab, parent, false);
             var ui = btn.GetComponent<UIDynamicButton>();
             ui.label = label;
             ui.buttonText.fontSize = 27;
-            ui.button.onClick.AddListener(callback);
+
+			var click = btn.gameObject.AddComponent<Clickable>();
+
+			if (leftClick != null)
+				click.onClick.AddListener(eventData => leftClick());
+
+			if (rightClick != null)
+				click.onRightClick.AddListener(eventData => rightClick());
+
             var layoutElement = btn.GetComponent<LayoutElement>();
             layoutElement.preferredWidth = 0;
             layoutElement.flexibleWidth = 20;
