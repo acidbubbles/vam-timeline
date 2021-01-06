@@ -58,7 +58,6 @@ namespace VamTimeline
             clearAllUI.buttonColor = new Color(1f, 0f, 0f);
             clearAllUI.textColor = new Color(1f, 1f, 1f);
             clearAllUI.button.onClick.AddListener(ClearAll);
-
         }
 
         private void RemoveAllKeyframes()
@@ -214,7 +213,7 @@ namespace VamTimeline
         {
             while (animation.clips.Count > 0)
                 animation.RemoveClip(animation.clips[0]);
-            animationEditContext.Initialize();
+            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
             animationEditContext.SelectAnimation(animation.clips[0]);
         }
     }
