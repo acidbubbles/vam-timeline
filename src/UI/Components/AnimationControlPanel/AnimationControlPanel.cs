@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -126,23 +125,40 @@ namespace VamTimeline
             CreateSmallButton(
                 buttonPrefab, container.transform, "<\u0192",
                 () => _animationEditContext.PreviousFrame(),
-                () => _animationEditContext.RewindSeconds(_animationEditContext.snap));
+                () => _animationEditContext.RewindSeconds(_animationEditContext.snap)
+            );
 
 
-            CreateSmallButton(buttonPrefab, container.transform, "-1s", () => _animationEditContext.RewindSeconds(1f));
+            CreateSmallButton(buttonPrefab, container.transform, "-1s",
+                () => _animationEditContext.RewindSeconds(1f),
+                () => _animationEditContext.RewindSeconds(0.01f)
+            );
 
-            CreateSmallButton(buttonPrefab, container.transform, "-.1s", () => _animationEditContext.RewindSeconds(0.1f));
+            CreateSmallButton(buttonPrefab, container.transform, "-.1s",
+                () => _animationEditContext.RewindSeconds(0.1f),
+                () => _animationEditContext.RewindSeconds(0.001f)
+            );
 
-            CreateSmallButton(buttonPrefab, container.transform, ">|<", () => _animationEditContext.SnapToSecond());
+            CreateSmallButton(buttonPrefab, container.transform, ">|<",
+                () => _animationEditContext.SnapTo(1f),
+                () => _animationEditContext.SnapToClosestKeyframe()
+            );
 
-            CreateSmallButton(buttonPrefab, container.transform, "+.1s", () => _animationEditContext.ForwardSeconds(0.1f));
+            CreateSmallButton(buttonPrefab, container.transform, "+.1s",
+                () => _animationEditContext.ForwardSeconds(0.1f),
+                () => _animationEditContext.ForwardSeconds(0.001f)
+            );
 
-            CreateSmallButton(buttonPrefab, container.transform, "+1s", () => _animationEditContext.ForwardSeconds(1f));
+            CreateSmallButton(buttonPrefab, container.transform, "+1s",
+                () => _animationEditContext.ForwardSeconds(1f),
+                () => _animationEditContext.ForwardSeconds(0.01f)
+            );
 
             CreateSmallButton(
                 buttonPrefab, container.transform, "\u0192>",
                 () => _animationEditContext.NextFrame(),
-                () => _animationEditContext.ForwardSeconds(_animationEditContext.snap));
+                () => _animationEditContext.ForwardSeconds(_animationEditContext.snap)
+            );
         }
 
         private static void CreateSmallButton(Transform buttonPrefab, Transform parent, string label, UnityAction leftClick, UnityAction rightClick=null)

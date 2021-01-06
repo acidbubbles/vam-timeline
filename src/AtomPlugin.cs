@@ -836,7 +836,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
             bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
             bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));
-            bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapToSecond()));
+            bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapTo(1f)));
             bindings.Add(new JSONStorableAction("ForwardTenthOfASecond", () => animationEditContext.ForwardSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("ForwardSecond", () => animationEditContext.ForwardSeconds(1f)));
             bindings.Add(new JSONStorableAction("AddTarget_SelectedController", () => operations.Targets().AddSelectedController()));

@@ -189,9 +189,22 @@ namespace VamTimeline
             clipTime = time;
         }
 
-        public void SnapToSecond()
+        public void SnapTo(float span)
         {
-            clipTime = clipTime.Snap(1f);
+            clipTime = clipTime.Snap(span);
+        }
+
+        public void SnapToClosestKeyframe()
+        {
+            var closest = float.PositiveInfinity;
+            foreach (var time in GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(clipTime)))
+            {
+                if (Mathf.Abs(time - clipTime) < Mathf.Abs(closest - clipTime))
+                    closest = time;
+            }
+            if(float.IsInfinity(closest))
+                return;
+            clipTime = closest;
         }
 
         public void Delete()
