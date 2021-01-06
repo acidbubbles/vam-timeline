@@ -42,10 +42,10 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI()
         {
-            var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create Animation From Current Frame");
+            var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create animation From current frame");
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(AddAnimationFromCurrentFrame);
 
-            var addAnimationAsCopyUI = prefabFactory.CreateButton("Create Copy Of Current Animation");
+            var addAnimationAsCopyUI = prefabFactory.CreateButton("Create copy Of current animation");
             addAnimationAsCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
 
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create Transition (Current -> Next)");
@@ -56,7 +56,7 @@ namespace VamTimeline
 
         public void InitCreateLayerUI()
         {
-            var createLayerUI = prefabFactory.CreateButton("Create New Layer");
+            var createLayerUI = prefabFactory.CreateButton("Create new layer");
             createLayerUI.button.onClick.AddListener(AddLayer);
         }
 
