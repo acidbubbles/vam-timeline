@@ -20,12 +20,11 @@ namespace VamTimeline
 
         protected override IEnumerable ProcessController(MotionAnimationClip motClip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
         {
-            const float minPositionDistanceForFlat = 0.01f;
             var frameLength = 1f / _settings.maxFramesPerSecond;
 
             var lastRecordedFrame = float.MinValue;
-            Vector3? previousPosition = null;
-            var previousTime = 0f;
+            // Vector3? previousPosition = null;
+            // var previousTime = 0f;
             for (var stepIndex = 0; stepIndex < motClip.steps.Count - (clip.loop ? 1 : 0); stepIndex++)
             {
                 var step = motClip.steps[stepIndex];
@@ -41,8 +40,8 @@ namespace VamTimeline
                 //     target.ChangeCurve(previousTime, CurveTypeValues.Linear);
                 // }
                 lastRecordedFrame = time;
-                previousPosition = step.position;
-                previousTime = time;
+                // previousPosition = step.position;
+                // previousTime = time;
             }
 
             target.AddEdgeFramesIfMissing(clip.animationLength);
