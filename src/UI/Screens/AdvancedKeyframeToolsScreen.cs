@@ -43,6 +43,11 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            var rebuildAnimationsUI = prefabFactory.CreateButton("Rebuild & realign all animations");
+            rebuildAnimationsUI.button.onClick.AddListener(RebuildAnimations);
+
+            prefabFactory.CreateSpacer();
+
             var removeAllKeyframesUI = prefabFactory.CreateButton("Remove all keyframes");
             removeAllKeyframesUI.buttonColor = Color.yellow;
             removeAllKeyframesUI.button.onClick.AddListener(RemoveAllKeyframes);
@@ -103,6 +108,17 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"Timeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(ReverseAnimation)}: {exc}");
+            }
+        }
+
+        private void RebuildAnimations()
+        {
+            foreach (var clip in animation.clips)
+            {
+                foreach (var target in clip.GetAllCurveTargets())
+                {
+                    target.dirty = true;
+                }
             }
         }
 
