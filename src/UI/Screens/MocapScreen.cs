@@ -321,6 +321,7 @@ namespace VamTimeline
 
         private void ClearAllGrabbedControllers()
         {
+            #if (VAM_GT_1_20)
             animationEditContext.ignoreGrabEnd = true;
             try
             {
@@ -334,6 +335,9 @@ namespace VamTimeline
             {
                 animationEditContext.ignoreGrabEnd = false;
             }
+            #else
+            throw new NotSupportedException("This feature requires Virt-A-Mate 1.20+");
+            #endif
         }
 
         private void ClearMocapData()

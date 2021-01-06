@@ -853,7 +853,11 @@ namespace VamTimeline
         private void SelectAndOpenUI()
         {
             if(containingAtom == null) SuperController.LogError("Timeline: No containing atom");
+            #if (VAM_GT_1_20)
             SuperController.singleton.SelectController(containingAtom.mainController, false, false, true);
+            #else
+            SuperController.singleton.SelectController(containingAtom.mainController);
+            #endif
             StartCoroutine(WaitForUI());
         }
 
