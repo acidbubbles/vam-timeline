@@ -158,9 +158,18 @@ namespace VamTimeline
         private string GetNewAnimationName(AtomAnimationClip source)
         {
             var match = _lastDigitsRegex.Match(source.animationName);
-            if (!match.Success) return source.animationName + " 2";
-            var animationNameBeforeInt = match.Groups["name"].Value;
-            var animationNameInt = int.Parse(match.Groups["index"].Value);
+            string animationNameBeforeInt;
+            int animationNameInt;
+            if (!match.Success)
+            {
+                animationNameBeforeInt = $"{source.animationName.TrimEnd()} ";
+                animationNameInt = 1;
+            }
+            else
+            {
+                animationNameBeforeInt = match.Groups["name"].Value;
+                animationNameInt = int.Parse(match.Groups["index"].Value);
+            }
             for (var i = animationNameInt + 1; i < 999; i++)
             {
                 var animationName = animationNameBeforeInt + i;
