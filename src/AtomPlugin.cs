@@ -858,6 +858,7 @@ namespace VamTimeline
             #else
             SuperController.singleton.SelectController(containingAtom.mainController);
             #endif
+            SuperController.singleton.ShowMainHUDMonitor();
             StartCoroutine(WaitForUI());
         }
 
