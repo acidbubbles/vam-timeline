@@ -9,7 +9,7 @@ namespace VamTimeline
     public class ImportExportScreen : ScreenBase
     {
         private const string _saveExt = "json";
-        private const string _saveFolder = "Saves\\animations";
+        private const string _saveFolder = "Saves\\PluginData\\animations";
         private const string _poseAndAllAnimations = "Pose & all animations";
         private const string _allAnimations = "All animations";
 

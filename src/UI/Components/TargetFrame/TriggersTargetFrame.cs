@@ -82,6 +82,8 @@ namespace VamTimeline
             trigger.OpenTriggerActionsPanel();
             // When already open but in the wrong parent:
             trigger.triggerActionsPanel.transform.SetParent(popupParent, false);
+            // When open behind another atom's panel in Controller:
+            trigger.triggerActionsPanel.SetAsLastSibling();
         }
 
         private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
