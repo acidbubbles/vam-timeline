@@ -974,8 +974,7 @@ namespace VamTimeline
         {
             if (!allowAnimationProcessing || paused) return;
 
-
-            var delta = Time.fixedDeltaTime * _speed;
+            var delta = Time.deltaTime * _speed;
             _playTime += delta;
             AdvanceClipsTime(delta);
             SampleControllers();
