@@ -10,6 +10,7 @@ namespace VamTimeline
         public Transform popupParent;
 
         private UIDynamicButton _editTriggersButton;
+        private AtomAnimationTrigger _trigger;
 
         protected override void CreateCustom()
         {
@@ -28,6 +29,9 @@ namespace VamTimeline
 
             if (stopped)
             {
+                if (!ReferenceEquals(_trigger, null) && _trigger.startTime != time)
+                    CloseTriggersPanel();
+
                 AtomAnimationTrigger trigger;
                 var ms = plugin.animationEditContext.clipTime.ToMilliseconds();
                 if (target.triggersMap.TryGetValue(ms, out trigger))
@@ -73,17 +77,17 @@ namespace VamTimeline
         {
             if (!plugin.animationEditContext.CanEdit()) return;
 
-            var trigger = GetOrCreateTriggerAtCurrentTime();
+            _trigger = GetOrCreateTriggerAtCurrentTime();
 
-            trigger.handler = this;
-            trigger.triggerActionsParent = popupParent;
-            trigger.atom = plugin.containingAtom;
-            trigger.InitTriggerUI();
-            trigger.OpenTriggerActionsPanel();
+            _trigger.handler = this;
+            _trigger.triggerActionsParent = popupParent;
+            _trigger.atom = plugin.containingAtom;
+            _trigger.InitTriggerUI();
+            _trigger.OpenTriggerActionsPanel();
             // When already open but in the wrong parent:
-            trigger.triggerActionsPanel.transform.SetParent(popupParent, false);
+            _trigger.triggerActionsPanel.transform.SetParent(popupParent, false);
             // When open behind another atom's panel in Controller:
-            trigger.triggerActionsPanel.SetAsLastSibling();
+            _trigger.triggerActionsPanel.SetAsLastSibling();
         }
 
         private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
@@ -96,6 +100,19 @@ namespace VamTimeline
                 target.SetKeyframe(ms, trigger);
             }
             return trigger;
+        }
+
+        public void OnDisable()
+        {
+            CloseTriggersPanel();
+        }
+
+        private void CloseTriggersPanel()
+        {
+            if (_trigger == null) return;
+            if (_trigger.triggerActionsPanel != null)
+                _trigger.triggerActionsPanel.gameObject.SetActive(false);
+            _trigger = null;
         }
 
         #region Trigger handler
@@ -132,7 +149,7 @@ namespace VamTimeline
 
         void TriggerHandler.RemoveTriggerActionUI(RectTransform rt)
         {
-            Destroy(rt?.gameObject);
+            if (rt != null) Destroy(rt.gameObject);
         }
 
         #endregion
