@@ -57,7 +57,9 @@ namespace VamTimeline
         {
             try
             {
+                #if (VAM_GT_1_20)
                 FileManagerSecure.CreateDirectory(_saveFolder);
+                #endif
                 var fileBrowserUI = SuperController.singleton.fileBrowserUI;
                 fileBrowserUI.SetTitle("Save animation");
                 fileBrowserUI.fileRemovePrefix = null;
@@ -159,9 +161,13 @@ namespace VamTimeline
         {
             try
             {
+                #if (VAM_GT_1_20)
                 FileManagerSecure.CreateDirectory(_saveFolder);
                 var shortcuts = FileManagerSecure.GetShortCutsForDirectory(_saveFolder);
                 SuperController.singleton.GetMediaPathDialog(ImportFileSelected, _saveExt, _saveFolder, false, true, false, null, false, shortcuts);
+                #else
+                SuperController.singleton.GetMediaPathDialog(ImportFileSelected, _saveExt, _saveFolder);
+                #endif
             }
             catch (Exception exc)
             {
