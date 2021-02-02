@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>VAM_GT_1_20;DEBUG;TRACE</DefineConstants>
+    <DefineConstants>VAM_GT_1_20;VAM_GT_1_20_0_9;DEBUG;TRACE</DefineConstants>
     <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
