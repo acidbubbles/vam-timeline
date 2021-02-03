@@ -37,13 +37,13 @@ namespace VamTimeline
             BroadcastToTimelines(nameof(ITimelineListener.OnTimelineAnimationDisabled));
         }
 
-        public void OnTimelineAnimationReady(JSONStorable storable)
+        public void OnTimelineAnimationReady(MVRScript storable)
         {
             if (ReferenceEquals(storable, _plugin) || _peers.Contains(storable)) return;
             _peers.Add(storable);
         }
 
-        public void OnTimelineAnimationDisabled(JSONStorable storable)
+        public void OnTimelineAnimationDisabled(MVRScript storable)
         {
             _peers.Remove(storable);
         }
@@ -116,7 +116,8 @@ namespace VamTimeline
                 if (atom == null) continue;
                 var storableId = atom.GetStorableIDs().FirstOrDefault(id => id.EndsWith("VamTimeline.AtomPlugin"));
                 if (storableId == null) continue;
-                var storable = atom.GetStorableByID(storableId);
+                var storable = atom.GetStorableByID(storableId) as MVRScript;
+                if (storable == null) continue;
                 if (ReferenceEquals(storable, _plugin)) continue;
                 if (!storable.enabled) continue;
                 OnTimelineAnimationReady(storable);

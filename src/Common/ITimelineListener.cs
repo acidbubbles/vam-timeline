@@ -2,7 +2,7 @@
 {
     public interface ITimelineListener
     {
-        void OnTimelineAnimationReady(JSONStorable storable);
-        void OnTimelineAnimationDisabled(JSONStorable storable);
+        void OnTimelineAnimationReady(MVRScript storable);
+        void OnTimelineAnimationDisabled(MVRScript storable);
     }
 }

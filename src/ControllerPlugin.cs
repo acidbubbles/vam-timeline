@@ -152,7 +152,7 @@ namespace VamTimeline
             }
         }
 
-        public void OnTimelineAnimationReady(JSONStorable storable)
+        public void OnTimelineAnimationReady(MVRScript storable)
         {
             var link = TryConnectAtom(storable);
             if (GetOrDispose(link)?.storable == storable)
@@ -161,7 +161,7 @@ namespace VamTimeline
             }
         }
 
-        public void OnTimelineAnimationDisabled(JSONStorable storable)
+        public void OnTimelineAnimationDisabled(MVRScript storable)
         {
             var link = _links.FirstOrDefault(l => l.storable == storable);
             if (link == null) return;
@@ -184,12 +184,14 @@ namespace VamTimeline
             if (atom == null) return;
             foreach (var storableId in atom.GetStorableIDs().Where(id => id.EndsWith("VamTimeline.AtomPlugin")))
             {
-                TryConnectAtom(atom.GetStorableByID(storableId));
+                TryConnectAtom(atom.GetStorableByID(storableId) as MVRScript);
             }
         }
 
-        private SyncProxy TryConnectAtom(JSONStorable storable)
+        private SyncProxy TryConnectAtom(MVRScript storable)
         {
+            if (storable == null) return null;
+
             foreach (var l in _links.ToArray())
             {
                 GetOrDispose(l);
@@ -212,9 +214,9 @@ namespace VamTimeline
             }
 
             _links.Add(proxy);
-            _links.Sort((s1, s2) => string.CompareOrdinal(s1.storable.containingAtom.name, s2.storable.containingAtom.name));
+            _links.Sort((s1, s2) => string.CompareOrdinal(s1.label, s2.label));
 
-            _atomsJSON.displayChoices = _links.Select(l => l.storable.containingAtom.uid).ToList();
+            _atomsJSON.displayChoices = _links.Select(l => l.label).ToList();
             _atomsJSON.choices = _links.Select(l => l.storable.containingAtom.uid + "|" + l.storable.name).ToList();
 
             OnTimelineAnimationParametersChanged(storable);

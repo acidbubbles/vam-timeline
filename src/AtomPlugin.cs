@@ -785,12 +785,12 @@ namespace VamTimeline
 
         #region Sync Events
 
-        public void OnTimelineAnimationReady(JSONStorable storable)
+        public void OnTimelineAnimationReady(MVRScript storable)
         {
             peers.OnTimelineAnimationReady(storable);
         }
 
-        public void OnTimelineAnimationDisabled(JSONStorable storable)
+        public void OnTimelineAnimationDisabled(MVRScript storable)
         {
             peers.OnTimelineAnimationDisabled(storable);
         }

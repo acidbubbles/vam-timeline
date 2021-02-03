@@ -19,10 +19,22 @@ namespace VamTimeline
             set { Set(nameof(connected), value); }
         }
 
-        public JSONStorable storable
+        public MVRScript storable
         {
-            get { return Get<JSONStorable>(nameof(storable)); }
+            get { return Get<MVRScript>(nameof(storable)); }
             set { Set(nameof(storable), value); }
+        }
+
+        public string label
+        {
+            get
+            {
+                var s = storable;
+                var customLabel = s.pluginLabelJSON.val;
+                return !string.IsNullOrEmpty(customLabel)
+                    ? $"{s.containingAtom.name}: {customLabel}"
+                    : s.containingAtom.name;
+            }
         }
 
         // TODO: Instead, get from storable and cache
