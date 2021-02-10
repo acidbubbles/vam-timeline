@@ -290,6 +290,10 @@ namespace VamTimeline
             foreach (var target in excludedControllers)
                 target.playbackEnabled = false;
             animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
+            if(_lastResizeAnimation) 
+            {
+                SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
+            }
             while ((_lastResizeAnimation || animationEditContext.playTime <= animationEditContext.clipTime) && IsRecording())
             {
                 yield return 0;
