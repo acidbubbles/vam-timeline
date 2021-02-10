@@ -15,9 +15,9 @@ namespace VamTimeline
         private static Coroutine _recordingControllersCoroutine;
         private static Coroutine _recordingFloatParamsCoroutine;
         private static bool _lastResizeAnimation;
-        private static float _lastReduceMinPosDistance = 0.04f;
-        private static float _lastReduceMinRotation = 10f;
-        private static float _lastReduceMaxFramesPerSecond = 5f;
+        private static float _lastReduceMinPosDistance = 0.02f;
+        private static float _lastReduceMinRotation = 5f;
+        private static float _lastReduceMaxFramesPerSecond = 10f;
         private static bool _importMocapOnLoad;
         private static bool _simplifyFloatParamsOnLoad;
         private static bool? _lastAutoRecordStop;
