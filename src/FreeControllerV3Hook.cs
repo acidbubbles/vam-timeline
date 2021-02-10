@@ -1,3 +1,4 @@
+#define VAM_GT_1_20_0_9
 #if(VAM_GT_1_20_0_9)
 using System.Collections;
 #endif
@@ -25,7 +26,7 @@ namespace VamTimeline
             {
                 fc.onRotationChangeHandlers += OnFreeControllerPositionChanged;
                 fc.onPositionChangeHandlers += OnFreeControllerPositionChanged;
-                fc.onGrabEndHandlers += OnFreeControllerPositionChanged;
+                fc.onGrabEndHandlers += OnFreeControllerPositionChangedGrabEnd;
             }
         }
 
@@ -36,11 +37,21 @@ namespace VamTimeline
             {
                 fc.onRotationChangeHandlers -= OnFreeControllerPositionChanged;
                 fc.onPositionChangeHandlers -= OnFreeControllerPositionChanged;
-                fc.onGrabEndHandlers -= OnFreeControllerPositionChanged;
+                fc.onGrabEndHandlers -= OnFreeControllerPositionChangedGrabEnd;
             }
         }
 
+        private void OnFreeControllerPositionChangedGrabEnd(FreeControllerV3 controller)
+        {
+            HandleControllerChanged(controller, true);
+        }
+
         private void OnFreeControllerPositionChanged(FreeControllerV3 controller)
+        {
+            HandleControllerChanged(controller, false);
+        }
+
+        private void HandleControllerChanged(FreeControllerV3 controller, bool grabEnd)
         {
             // Only record moves in edit mode
             if (!animationEditContext.CanEdit()) return;
@@ -51,8 +62,8 @@ namespace VamTimeline
             // Do not create a keyframe when loading a preset
             if (controller.isPresetRestore) return;
 
-            // Ignore comply nodes, since they will dispatch during the animation
-            if (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply) return;
+            // Ignore comply nodes unless the event is grab end, since they will dispatch during the animation
+            if (!grabEnd && (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply)) return;
 
             // Only track animated targets
             var target = animationEditContext.current.targetControllers.FirstOrDefault(t => t.controller == controller);
