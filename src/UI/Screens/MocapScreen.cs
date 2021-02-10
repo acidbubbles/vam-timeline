@@ -249,11 +249,8 @@ namespace VamTimeline
                 }
                 return;
             }
-            if (!_resizeAnimationJSON.val)
-            {
-                _lastAutoRecordStop = SuperController.singleton.motionAnimationMaster.autoRecordStop;
-                SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
-            }
+            _lastAutoRecordStop = SuperController.singleton.motionAnimationMaster.autoRecordStop;
+            SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
             foreach (var target in animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
                 var mac = target.controller.GetComponent<MotionAnimationControl>();
@@ -290,10 +287,6 @@ namespace VamTimeline
             foreach (var target in excludedControllers)
                 target.playbackEnabled = false;
             animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
-            if(_lastResizeAnimation) 
-            {
-                SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
-            }
             while ((_lastResizeAnimation || animationEditContext.playTime <= animationEditContext.clipTime) && IsRecording())
             {
                 yield return 0;
