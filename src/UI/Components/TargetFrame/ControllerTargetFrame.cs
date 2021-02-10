@@ -114,7 +114,8 @@ namespace VamTimeline
 
         protected override void CreateExpandPanel(RectTransform container)
         {
-            var group = container.gameObject.AddComponent<HorizontalLayoutGroup>();
+            
+            var group = container.gameObject.AddComponent<VerticalLayoutGroup>();
             group.spacing = 4f;
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
@@ -125,6 +126,12 @@ namespace VamTimeline
             {
                 plugin.ChangeScreen(ControllerTargetSettingsScreen.ScreenName, target.name);
             });
+            
+            var posCtl = CreateCustomToggle(group.transform, "Control position", (val) => target.controlPosition = val);
+            posCtl.toggle.isOn = target.controlPosition == true;
+            var rotCtl = CreateCustomToggle(group.transform, "Control rotation", (val) => target.controlRotation = val);
+            rotCtl.toggle.isOn = target.controlRotation == true;
+
         }
 
         public override void SetTime(float time, bool stopped)
