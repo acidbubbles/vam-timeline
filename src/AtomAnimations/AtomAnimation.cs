@@ -557,7 +557,7 @@ namespace VamTimeline
             if (isPlaying && !paused || !enabled) return;
 
             SampleFloatParams();
-            SampleControllers();
+            SampleControllers(true);
         }
 
         private void SampleTriggers()
@@ -613,18 +613,18 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private void SampleControllers()
+        private void SampleControllers(bool force = false)
         {
             foreach (var x in index.ByController())
             {
-                SampleController(x.Key, x.Value);
+                SampleController(x.Key, x.Value, force);
             }
         }
 
         private Quaternion[] _rotations = new Quaternion[0];
         private float[] _rotationBlendWeights = new float[0];
         [MethodImpl(256)]
-        private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets)
+        private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets, bool force)
         {
             if (ReferenceEquals(controller, null)) return;
             if (controller.possessed) return;
@@ -721,6 +721,9 @@ namespace VamTimeline
                 var position = Vector3.Lerp(control.position, targetPosition, totalPositionControlWeights / totalPositionBlendWeights);
                 control.position = position;
             }
+
+            if (force && controller.currentPositionState == FreeControllerV3.PositionState.Comply || controller.currentRotationState == FreeControllerV3.RotationState.Comply)
+                controller.PauseComply();
         }
 
         #endregion
