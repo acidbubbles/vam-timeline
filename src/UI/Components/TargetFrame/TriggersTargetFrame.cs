@@ -82,12 +82,10 @@ namespace VamTimeline
             _trigger.handler = this;
             _trigger.triggerActionsParent = popupParent;
             _trigger.atom = plugin.containingAtom;
-            _trigger.InitTriggerUI();
+            _trigger.InitTriggerActionsUI();
             _trigger.OpenTriggerActionsPanel();
             // When already open but in the wrong parent:
-            _trigger.triggerActionsPanel.transform.SetParent(popupParent, false);
-            // When open behind another atom's panel in Controller:
-            _trigger.triggerActionsPanel.SetAsLastSibling();
+            _trigger.SetPanelParent(popupParent);
         }
 
         private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
@@ -110,8 +108,7 @@ namespace VamTimeline
         private void CloseTriggersPanel()
         {
             if (_trigger == null) return;
-            if (_trigger.triggerActionsPanel != null)
-                _trigger.triggerActionsPanel.gameObject.SetActive(false);
+            _trigger.ClosePanel();
             _trigger = null;
         }
 

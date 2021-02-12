@@ -1,5 +1,7 @@
 using System;
 using SimpleJSON;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace VamTimeline
 {
@@ -87,6 +89,89 @@ namespace VamTimeline
         public void Dispose()
         {
             SuperController.singleton.onAtomUIDRenameHandlers -= OnAtomRename;
+        }
+
+        public void SetPanelParent(Transform parent)
+        {
+            if (triggerActionsPanel != null)
+            {
+                triggerActionsPanel.SetParent(parent, false);
+                triggerActionsPanel.SetAsLastSibling();
+            }
+
+            if (discreteActionsStart != null)
+            {
+                foreach (var start in discreteActionsStart)
+                {
+                    if (start.triggerActionPanel != null)
+                    {
+                        start.triggerActionPanel.SetParent(parent, false);
+                        start.triggerActionPanel.SetAsLastSibling();
+                    }
+                }
+            }
+
+            if (transitionActions != null)
+            {
+                foreach (var transition in transitionActions)
+                {
+                    if (transition.triggerActionPanel != null)
+                    {
+                        transition.triggerActionPanel.SetParent(parent, false);
+                        transition.triggerActionPanel.SetAsLastSibling();
+                    }
+                }
+            }
+
+            if (discreteActionsEnd != null)
+            {
+                foreach (var end in discreteActionsEnd)
+                {
+                    if (end.triggerActionPanel != null)
+                    {
+                        end.triggerActionPanel.SetParent(parent, false);
+                        end.triggerActionPanel.SetAsLastSibling();
+                    }
+                }
+            }
+        }
+
+        public void ClosePanel()
+        {
+            CloseTriggerActionsPanel();
+
+            if (discreteActionsStart != null)
+            {
+                foreach (var start in discreteActionsStart)
+                {
+                    if (start.triggerActionPanel != null)
+                    {
+                        start.triggerActionPanel.gameObject.SetActive(false);
+                    }
+                }
+            }
+
+            if (transitionActions != null)
+            {
+                foreach (var transition in transitionActions)
+                {
+                    if (transition.triggerActionPanel != null)
+                    {
+                        transition.triggerActionPanel.gameObject.SetActive(false);
+                    }
+                }
+            }
+
+            if (discreteActionsEnd != null)
+            {
+                foreach (var end in discreteActionsEnd)
+                {
+                    if (end.triggerActionPanel != null)
+                    {
+                        end.triggerActionPanel.gameObject.SetActive(false);
+                    }
+                }
+            }
         }
     }
 }
