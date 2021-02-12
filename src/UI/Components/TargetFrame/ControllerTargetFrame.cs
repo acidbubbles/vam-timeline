@@ -6,6 +6,7 @@ namespace VamTimeline
 {
     public class ControllerTargetFrame : TargetFrameBase<FreeControllerAnimationTarget>
     {
+        protected override float expandSize => 140f;
         private LineDrawer _line;
         private readonly List<GameObject> _handles = new List<GameObject>();
 
@@ -114,23 +115,32 @@ namespace VamTimeline
 
         protected override void CreateExpandPanel(RectTransform container)
         {
-            
+
             var group = container.gameObject.AddComponent<VerticalLayoutGroup>();
             group.spacing = 4f;
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
 
-            CreateExpandButton(group.transform, "Select", () => target.SelectInVam());
+            var row1 = new GameObject();
+            row1.transform.SetParent(group.transform, false);
+            row1.AddComponent<LayoutElement>().preferredHeight = 70f;
+            row1.AddComponent<HorizontalLayoutGroup>();
 
-            CreateExpandButton(group.transform, "Settings", () =>
+            CreateExpandButton(row1.transform, "Select", () => target.SelectInVam());
+
+            CreateExpandButton(row1.transform, "Parenting & more", () =>
             {
                 plugin.ChangeScreen(ControllerTargetSettingsScreen.ScreenName, target.name);
             });
-            
-            var posCtl = CreateCustomToggle(group.transform, "Control position", (val) => target.controlPosition = val);
-            posCtl.toggle.isOn = target.controlPosition == true;
-            var rotCtl = CreateCustomToggle(group.transform, "Control rotation", (val) => target.controlRotation = val);
-            rotCtl.toggle.isOn = target.controlRotation == true;
+
+            var row2 = new GameObject();
+            row2.transform.SetParent(group.transform, false);
+            row2.AddComponent<HorizontalLayoutGroup>();
+
+            var posJSON = new JSONStorableBool("Position", target.controlPosition, val => target.controlPosition = val);
+            CreateExpandToggle(row2.transform, posJSON);
+            var rotJSON = new JSONStorableBool("Rotation", target.controlRotation, val => target.controlRotation = val);
+            CreateExpandToggle(row2.transform, rotJSON);
 
         }
 

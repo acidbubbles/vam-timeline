@@ -8,6 +8,7 @@ namespace VamTimeline
     public abstract class TargetFrameBase<T> : MonoBehaviour, ITargetFrame
         where T : IAtomAnimationTarget
     {
+        protected virtual float expandSize => 70f;
         protected readonly StyleBase style = new StyleBase();
         protected IAtomPlugin plugin;
         protected AtomAnimationClip clip;
@@ -47,7 +48,6 @@ namespace VamTimeline
         public void ToggleExpanded()
         {
             var ui = GetComponent<UIDynamic>();
-            const float expandSize = 270f;
             if (_expanded == null)
             {
                 ui.height += expandSize;
@@ -84,40 +84,6 @@ namespace VamTimeline
         private void OnAnimationKeyframesRebuilt()
         {
             SetTime(plugin.animationEditContext.clipTime, !plugin.animation.isPlaying);
-        }
-
-        protected UIDynamicToggle CreateCustomToggle(Transform parent, string text, UnityAction<bool> callback) 
-        {
-            var ui = Instantiate(plugin.manager.configurableTogglePrefab, transform, false);
-            ui.transform.SetParent(parent, true);
-
-            var customToggle = ui.GetComponent<UIDynamicToggle>();
-
-            var rect = ui.gameObject.GetComponent<RectTransform>();
-            rect.StretchParent();
-
-            customToggle.backgroundImage.raycastTarget = false;
-
-            var label = customToggle.labelText;
-            label.fontSize = 26;
-            label.alignment = TextAnchor.UpperLeft;
-            label.raycastTarget = false;
-            label.text = text;
-            var labelRect = label.GetComponent<RectTransform>();
-            labelRect.offsetMin += new Vector2(-3f, 0f);
-            labelRect.offsetMax += new Vector2(0f, -5f);
-
-            var checkbox = customToggle.toggle.image.gameObject;
-            var toggleRect = checkbox.GetComponent<RectTransform>();
-            toggleRect.anchorMin = new Vector2(0, 1);
-            toggleRect.anchorMax = new Vector2(0, 1);
-            toggleRect.anchoredPosition = new Vector2(29f, -30f);
-
-            ui.gameObject.SetActive(true);
-
-            customToggle.toggle.onValueChanged.AddListener(callback);
-
-            return customToggle;
         }
 
         private void CreateToggle(IAtomPlugin plugin)
@@ -264,6 +230,27 @@ namespace VamTimeline
             layout.preferredHeight = 20f;
 
             return btn;
+        }
+
+        protected UIDynamicToggle CreateExpandToggle(Transform parent, JSONStorableBool jsb)
+        {
+            var ui = Instantiate(plugin.manager.configurableTogglePrefab, transform, false);
+            ui.transform.SetParent(parent, true);
+
+            var toggle = ui.GetComponent<UIDynamicToggle>();
+            jsb.toggle = toggle.toggle;
+
+            var label = toggle.labelText;
+            label.fontSize = 24;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.raycastTarget = false;
+            label.text = jsb.name;
+
+            var layout = toggle.GetComponent<LayoutElement>();
+            layout.minHeight = 52f;
+            layout.preferredHeight = 52f;
+
+            return toggle;
         }
 
         protected abstract void CreateCustom();
