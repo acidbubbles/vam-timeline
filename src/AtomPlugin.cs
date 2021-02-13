@@ -40,6 +40,7 @@ namespace VamTimeline
         public JSONStorableAction pasteJSON { get; private set; }
         public JSONStorableFloat speedJSON { get; private set; }
         public JSONStorableBool lockedJSON { get; private set; }
+        public JSONStorableBool pausedJSON { get; private set; }
 
         private JSONStorableFloat _scrubberAnalogControlJSON;
         private bool _scrubbing = false;
@@ -354,6 +355,13 @@ namespace VamTimeline
             RegisterBool(lockedJSON);
 
             _scrubberAnalogControlJSON = new JSONStorableFloat("Scrubber", 0f, -1f, 1f);
+
+            pausedJSON = new JSONStorableBool(StorableNames.Paused, false, v => animation.paused = v)
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterBool(pausedJSON);
         }
 
         private IEnumerator DeferredInit()
@@ -509,6 +517,7 @@ namespace VamTimeline
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
             animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
+            animation.onPausedChanged.AddListener(OnPauseChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
@@ -681,6 +690,12 @@ namespace VamTimeline
                 peers.SendMasterClipState(clip);
         }
 
+        private void OnPauseChanged()
+        {
+            pausedJSON.valNoCallback = animation.paused;
+            peers.SendPaused();
+        }
+
         private void BroadcastToControllers(string methodName)
         {
             var externalControllers = SuperController.singleton.GetAtoms().Where(a => a.type == "SimpleSign");
@@ -834,6 +849,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
             bindings.Add(new JSONStorableAction("Stop", animationEditContext.Stop));
             bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
+            bindings.Add(new JSONStorableAction("TogglePause", () => animation.paused = !animation.paused));
             bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
             bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapTo(1f)));

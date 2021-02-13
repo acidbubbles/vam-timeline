@@ -79,6 +79,9 @@ namespace VamTimeline
                     case nameof(SendStopAndReset):
                         ReceiveStopAndReset(e);
                         break;
+                    case nameof(SendPaused):
+                        ReceivePaused(e);
+                        break;
                     default:
                         SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
                         break;
@@ -178,6 +181,21 @@ namespace VamTimeline
                 animation.PlayClip(clip, true, false);
                 clip.clipTime = (float) e[2];
             }
+        }
+
+        public void SendPaused()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendPaused), // 0
+                 animation.paused, // 1
+            });
+        }
+
+        private void ReceivePaused(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 1)) return;
+            animation.paused = (bool) e[1];
         }
 
         public void SendStopAndReset()

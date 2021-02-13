@@ -26,13 +26,28 @@ namespace VamTimeline
         public UnityEvent onSpeedChanged = new UnityEvent();
         public UnityEvent onClipsListChanged = new UnityEvent();
         public UnityEvent onAnimationRebuilt = new UnityEvent();
+        public UnityEvent onPausedChanged = new UnityEvent();
         public readonly IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
-        public bool paused { get; set; }
+        private bool _paused;
+        public bool paused
+        {
+            get
+            {
+                return _paused;
+            }
+            set
+            {
+                var dispatch = value != _paused;
+                _paused = value;
+                if (dispatch)
+                    onPausedChanged.Invoke();
+            }
+        }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
         public bool master { get; set; }
@@ -246,6 +261,7 @@ namespace VamTimeline
 
         public void PlayClip(AtomAnimationClip clip, bool sequencing, bool allowPreserveLoops = true)
         {
+            paused = false;
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
             if (!isPlaying)
             {
