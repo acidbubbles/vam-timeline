@@ -581,10 +581,7 @@ namespace VamTimeline
 
                 foreach (var group in animation.clips.GroupBy(c => c.animationNameGroup).Where(g => g.Key != null && g.Count() > 1))
                 {
-                    RegisterAction(new JSONStorableAction($"Play {group.Key}{AtomAnimation._randomizeGroupSuffix}", () =>
-                    {
-                        animation.PlayRandom(group.Key);
-                    }));
+                    CreateAndRegisterGroupStorables(group.Key);
                 }
 
                 if (_clipStorables.Count > animationNames.Count)
@@ -605,6 +602,22 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(OnClipsListChanged)}: {exc}");
             }
+        }
+
+        private void CreateAndRegisterGroupStorables(string groupKey)
+        {
+            RegisterAction(new JSONStorableAction($"Play {groupKey}{AtomAnimation._randomizeGroupSuffix}", () =>
+            {
+                animation.PlayRandom(groupKey);
+            }));
+            var setSpeedJSON = new JSONStorableFloat($"Set Speed {groupKey}{AtomAnimation._randomizeGroupSuffix}", 0f, -1f, 5f, false);
+            setSpeedJSON.setCallbackFunction = val =>
+            {
+                foreach (var clip in animation.clips.Where(c => c.animationNameGroup == groupKey))
+                    clip.speed = val;
+                setSpeedJSON.valNoCallback = 0;
+            };
+            RegisterFloat(setSpeedJSON);
         }
 
         private void CreateAndRegisterClipStorables(string animationName)
