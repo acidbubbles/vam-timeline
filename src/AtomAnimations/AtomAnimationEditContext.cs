@@ -213,7 +213,17 @@ namespace VamTimeline
             {
                 if (!CanEdit()) return;
                 var time = clipTime;
-                if (time.IsSameFrame(0f) || time.IsSameFrame(current.animationLength)) return;
+                if (time.IsSameFrame(0f)) return;
+                if (time.IsSameFrame(current.animationLength))
+                {
+                    if (current.loop) return;
+                    foreach (var target in GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
+                    {
+                        target.ChangeCurve(current.animationLength, CurveTypeValues.CopyPrevious);
+                    }
+
+                    return;
+                }
                 foreach (var target in GetAllOrSelectedTargets())
                 {
                     target.DeleteFrame(time);
