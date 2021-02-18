@@ -480,7 +480,7 @@ namespace VamTimeline
 
             if (!to.playbackEnabled)
             {
-                to.clipTime = to.loop && to.preserveLoops ? from.clipTime : 0f;
+                to.clipTime = to.loop && from.loop && to.preserveLoops ? from.clipTime : 0f;
             }
 
             // if(!from.loop && to.blendInDuration > from.animationLength - from.clipTime)
