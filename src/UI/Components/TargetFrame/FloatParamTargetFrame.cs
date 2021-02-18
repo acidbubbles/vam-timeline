@@ -85,6 +85,7 @@ namespace VamTimeline
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
 
+            // ReSharper disable once Unity.NoNullPropagation
             var morph = (target.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(target.floatParam.name);
 
             CreateExpandButton(group.transform, "Default", () => SetValue(target.floatParam.defaultVal));
@@ -180,7 +181,10 @@ namespace VamTimeline
             }
             if (enable)
             {
-                target.SetKeyframe(time, target.floatParam.val);
+                var key = target.SetKeyframe(time, target.floatParam.val);
+                var keyframe = target.value.keys[key];
+                if (keyframe.curveType == CurveTypeValues.CopyPrevious)
+                    target.ChangeCurve(time, CurveTypeValues.SmoothLocal);
             }
             else
             {

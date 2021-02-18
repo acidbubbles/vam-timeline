@@ -128,11 +128,11 @@ namespace VamTimeline
             return new[] { value };
         }
 
-        public void SetKeyframe(float time, float setValue, bool makeDirty = true)
+        public int SetKeyframe(float time, float setValue, bool makeDirty = true)
         {
             var curveType = SelectCurveType(time, CurveTypeValues.Undefined);
-            value.SetKeyframe(time, setValue, curveType);
             if (makeDirty) dirty = true;
+            return value.SetKeyframe(time, setValue, curveType);
         }
 
         public void DeleteFrame(float time)
@@ -145,12 +145,11 @@ namespace VamTimeline
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
-            if (value.AddEdgeFramesIfMissing(animationLength, CurveTypeValues.SmoothLocal))
-            {
-                if (value.length > 2 && value.keys[value.length - 2].curveType == CurveTypeValues.CopyPrevious)
-                    value.RemoveKey(value.length - 2);
-                dirty = true;
-            }
+            var lastCurveType = value.length > 0 ? value.GetLastFrame().curveType : CurveTypeValues.SmoothLocal;
+            if (!value.AddEdgeFramesIfMissing(animationLength, lastCurveType)) return;
+            if (value.length > 2 && value.keys[value.length - 2].curveType == CurveTypeValues.CopyPrevious)
+                value.RemoveKey(value.length - 2);
+            dirty = true;
         }
 
         public float[] GetAllKeyframesTime()

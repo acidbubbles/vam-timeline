@@ -154,44 +154,29 @@ namespace VamTimeline
                 {
                     curve.loop = value;
                 }
+
                 try
                 {
+                    // ReSharper disable once RedundantEnumerableCastCall
+                    foreach (var target in targetControllers.Cast<ICurveAnimationTarget>().Concat(targetFloatParams.Cast<ICurveAnimationTarget>()))
+                    {
+                        foreach (var curve in target.GetCurves())
+                        {
+                            if (curve.length != 2) continue;
+                            var keyframe = curve.GetLastFrame();
+                            keyframe.curveType = value ? curve.GetFirstFrame().curveType : CurveTypeValues.CopyPrevious;
+                            curve.SetLastFrame(keyframe);
+                        }
+                    }
+
                     if (value)
-                    {
-                        foreach (var target in targetControllers)
-                        {
-                            foreach (var curve in target.GetCurves())
-                            {
-                                if (curve.length == 2)
-                                {
-                                    var keyframe = curve.GetLastFrame();
-                                    keyframe.curveType = curve.GetFirstFrame().curveType;
-                                    curve.SetLastFrame(keyframe);
-                                }
-                            }
-                        }
                         autoTransitionNext = false;
-                    }
-                    else
-                    {
-                        foreach (var target in targetControllers)
-                        {
-                            foreach (var curve in target.GetCurves())
-                            {
-                                if (curve.length == 2)
-                                {
-                                    var keyframe = curve.GetLastFrame();
-                                    keyframe.curveType = CurveTypeValues.CopyPrevious;
-                                    curve.SetLastFrame(keyframe);
-                                }
-                            }
-                        }
-                    }
                 }
                 finally
                 {
                     _skipNextAnimationSettingsModified = false;
                 }
+
                 UpdateForcedNextAnimationTime();
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(loop));
                 DirtyAll();
