@@ -610,6 +610,7 @@ namespace VamTimeline
             {
                 animation.PlayRandom(groupKey);
             }));
+
             var setSpeedJSON = new JSONStorableFloat($"Set Speed {groupKey}{AtomAnimation._randomizeGroupSuffix}", 0f, -1f, 5f, false);
             setSpeedJSON.setCallbackFunction = val =>
             {
@@ -618,6 +619,15 @@ namespace VamTimeline
                 setSpeedJSON.valNoCallback = 0;
             };
             RegisterFloat(setSpeedJSON);
+
+            var setWeightJSON = new JSONStorableFloat($"Set Weight {groupKey}{AtomAnimation._randomizeGroupSuffix}", 1f, 0f, 1f);
+            setWeightJSON.setCallbackFunction = val =>
+            {
+                foreach (var clip in animation.clips.Where(c => c.animationNameGroup == groupKey))
+                    clip.weight = val;
+                setWeightJSON.valNoCallback = 0;
+            };
+            RegisterFloat(setWeightJSON);
         }
 
         private void CreateAndRegisterClipStorables(string animationName)
