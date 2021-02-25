@@ -56,11 +56,11 @@ namespace VamTimeline
                         case ChangePivotMode:
                         {
                             var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
-                            target.SetKeyframeByKey(key, positionAfter, rotationDelta * rotationBefore);
+                            target.SetKeyframeByKey(key, positionAfter, rotationBefore * rotationDelta);
                             break;
                         }
                         case OffsetMode:
-                            target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationDelta * rotationBefore);
+                            target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
                             break;
                         default:
                             throw new NotImplementedException($"Offset mode '{offsetMode}' is not implemented");
