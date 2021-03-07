@@ -381,8 +381,13 @@ namespace VamTimeline
                 yield return 0;
             sctrl.helpText = string.Empty;
             animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
+            var targets = animationEditContext.GetSelectedTargets().OfType<FloatParamAnimationTarget>().ToList();
+            foreach (var target in targets)
+                target.recording = true;
             while (animation.playTime <= current.animationLength && animation.isPlaying)
                 yield return 0;
+            foreach (var target in targets)
+                target.recording = false;
             animationEditContext.Stop();
             animationEditContext.clipTime = 0f;
             _recordingFloatParamsCoroutine = null;

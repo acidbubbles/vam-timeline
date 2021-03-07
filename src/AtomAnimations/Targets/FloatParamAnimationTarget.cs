@@ -11,6 +11,7 @@ namespace VamTimeline
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
         public readonly BezierAnimationCurve value = new BezierAnimationCurve();
+        public bool recording;
 
         public override string name => $"{storableId}/{floatParamName}";
 

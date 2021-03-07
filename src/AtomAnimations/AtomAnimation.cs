@@ -11,7 +11,6 @@ using Random = UnityEngine.Random;
 
 namespace VamTimeline
 {
-
     public class AtomAnimation : MonoBehaviour
     {
         public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
@@ -29,7 +28,6 @@ namespace VamTimeline
         public UnityEvent onPausedChanged = new UnityEvent();
         public readonly IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
-
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
@@ -608,6 +606,11 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
+                if(target.recording)
+                {
+                    target.SetKeyframe(clip.clipTime, floatParam.val);
+                    continue;
+                }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
                 var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
                 if (weight < float.Epsilon) continue;
@@ -749,6 +752,8 @@ namespace VamTimeline
         private IEnumerator RebuildDeferred()
         {
             yield return new WaitForEndOfFrame();
+            while (isPlaying)
+                yield return 0;
             RebuildAnimationNow();
         }
 
