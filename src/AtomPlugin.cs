@@ -891,7 +891,11 @@ namespace VamTimeline
 
         private void SelectAndOpenUI()
         {
-            if(containingAtom == null) SuperController.LogError("Timeline: No containing atom");
+            if (containingAtom == null) return;
+            if (UITransform != null && UITransform.gameObject.activeInHierarchy) return;
+
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) SuperController.singleton.gameMode = SuperController.GameMode.Edit;
+
             #if (VAM_GT_1_20)
             SuperController.singleton.SelectController(containingAtom.mainController, false, false, true);
             #else
@@ -910,7 +914,7 @@ namespace VamTimeline
                 var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
                 if(selector == null) continue;
                 selector.SetActiveTab("Plugins");
-                if (UITransform == null) SuperController.LogError("Timeline: No UI");
+                if (UITransform == null) continue;
                 UITransform.gameObject.SetActive(true);
                 yield break;
             }
