@@ -147,6 +147,12 @@ namespace VamTimeline
                 case MocapScreen.ScreenName:
                     _current = screenContainer.AddComponent<MocapScreen>();
                     break;
+                case RecordScreen.ScreenName:
+                    _current = screenContainer.AddComponent<RecordScreen>();
+                    break;
+                case ReduceScreen.ScreenName:
+                    _current = screenContainer.AddComponent<ReduceScreen>();
+                    break;
                 case MoreScreen.ScreenName:
                     _current = screenContainer.AddComponent<MoreScreen>();
                     break;
@@ -233,7 +239,7 @@ namespace VamTimeline
 
         public void OnDisable()
         {
-            Destroy(_current?.gameObject);
+            if(_current != null) Destroy(_current.gameObject);
             _current = null;
             if (_uiRefreshCoroutine != null) StopCoroutine(_uiRefreshCoroutine);
             _uiRefreshInProgress = false;

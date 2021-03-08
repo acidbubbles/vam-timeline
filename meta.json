@@ -96,6 +96,8 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\MocapScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\MoreScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\OptionsScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\RecordScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ReduceScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ScreenBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ScreensManager.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\SequencingScreen.cs",
