@@ -69,6 +69,26 @@ namespace VamTimeline
             }
         }
 
+        public float timeRemaining
+        {
+            get
+            {
+                for (var i = 0; i < clips.Count; ++i)
+                {
+                    var clip = clips[i];
+
+                    if (clip.playbackEnabled)
+                    {
+                        var length = clip.animationLength;
+                        var time = clip.clipTime;
+                        return length - time;
+                    }
+                }
+
+                return 0;
+            }
+        }
+
         private float _speed = 1f;
         public float speed
         {
