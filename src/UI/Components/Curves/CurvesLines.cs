@@ -127,7 +127,7 @@ namespace VamTimeline
 #if (RENDER_BEZIER_CONTROL_POINTS)
                     if (i > 0)
                     {
-                        var previousKey = curve.GetKeyframe(i - 1);
+                        var previousKey = curve.GetKeyframeByKey(i - 1);
                         var previousPos = new Vector2(offsetX + (keyframe.time - (keyframe.time - previousKey.time) / 3f) * xRatio, offsetY + keyframe.controlPointIn * yRatio);
                         vh.DrawLine(new[] { handlePos, previousPos }, 1f, Color.white);
                         vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]
@@ -140,7 +140,7 @@ namespace VamTimeline
                     }
                     if (i < curve.length - 1)
                     {
-                        var next = curve.GetKeyframe(i + 1);
+                        var next = curve.GetKeyframeByKey(i + 1);
                         var nextPos = new Vector2(offsetX + (keyframe.time + (next.time - keyframe.time) / 3f) * xRatio, offsetY + keyframe.controlPointOut * yRatio);
                         vh.DrawLine(new[] { handlePos, nextPos }, 1f, Color.white);
                         vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(Color.white, new[]

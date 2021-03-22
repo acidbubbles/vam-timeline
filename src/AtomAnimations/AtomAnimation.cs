@@ -608,8 +608,8 @@ namespace VamTimeline
                 var clip = target.clip;
                 if(target.recording)
                 {
-                    target.SetKeyframe(clip.clipTime, floatParam.val);
-                    continue;
+                    target.SetKeyframe(clip.clipTime.Snap(), floatParam.val);
+                    return;
                 }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
                 var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
@@ -646,7 +646,6 @@ namespace VamTimeline
         private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets, bool force)
         {
             if (ReferenceEquals(controller, null)) return;
-            if (controller.possessed) return;
             var control = controller.control;
 
             if (targets.Count > _rotations.Length)
@@ -666,6 +665,11 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
+                if(target.recording)
+                {
+                    target.SetKeyframeToCurrentTransform(clip.clipTime.Snap());
+                    return;
+                }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
                 if (!target.playbackEnabled) continue;
                 var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight * target.scaledWeight;

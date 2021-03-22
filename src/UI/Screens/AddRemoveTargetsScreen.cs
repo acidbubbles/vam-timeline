@@ -56,6 +56,29 @@ namespace VamTimeline
             InitFixMissingUI();
             InitRemoveUI();
 
+            prefabFactory.CreateSpacer();
+
+            prefabFactory.CreateHeader("Presets", 2);
+
+            // TODO: Extract
+            if (plugin.containingAtom.type == "Person")
+            {
+                prefabFactory.CreateButton("Add fingers").button.onClick.AddListener(() =>
+                {
+                    var leftHandControl = plugin.containingAtom.GetStorableByID("LeftHandControl");
+                    leftHandControl.SetStringChooserParamValue("fingerControlMode", "JSONParams");
+                    var leftHandFingerControl = plugin.containingAtom.GetStorableByID("LeftHandFingerControl");
+                    foreach (var paramName in leftHandFingerControl.GetFloatParamNames())
+                        AddFloatParam(leftHandFingerControl, leftHandFingerControl.GetFloatJSONParam(paramName));
+
+                    var rightHandControl = plugin.containingAtom.GetStorableByID("RightHandControl");
+                    rightHandControl.SetStringChooserParamValue("fingerControlMode", "JSONParams");
+                    var rightHandFingerControl = plugin.containingAtom.GetStorableByID("RightHandFingerControl");
+                    foreach (var paramName in rightHandFingerControl.GetFloatParamNames())
+                        AddFloatParam(rightHandFingerControl, rightHandFingerControl.GetFloatJSONParam(paramName));
+                });
+            }
+
             UpdateSelectDependentUI();
             current.onTargetsListChanged.AddListener(OnTargetsListChanged);
             animationEditContext.onTargetsSelectionChanged.AddListener(UpdateSelectDependentUI);
@@ -466,22 +489,29 @@ namespace VamTimeline
 
                 SelectNextInList(_addParamListJSON);
 
-                if (current.targetFloatParams.Any(c => c.floatParam == sourceFloatParam))
-                    return;
-
-                foreach (var clip in animation.index.ByLayer(current.animationLayer))
-                {
-                    var added = clip.Add(storable, sourceFloatParam);
-                    if (added == null) continue;
-
-                    added.SetKeyframe(0f, sourceFloatParam.val);
-                    added.SetKeyframe(clip.animationLength, sourceFloatParam.val);
-                }
+                AddFloatParam(storable, sourceFloatParam);
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddAnimatedFloatParam)}: " + exc);
             }
+        }
+
+        private bool AddFloatParam(JSONStorable storable, JSONStorableFloat jsf)
+        {
+            if (current.targetFloatParams.Any(c => c.floatParam == jsf))
+                return false;
+
+            foreach (var clip in animation.index.ByLayer(current.animationLayer))
+            {
+                var added = clip.Add(storable, jsf);
+                if (added == null) continue;
+
+                added.SetKeyframe(0f, jsf.val);
+                added.SetKeyframe(clip.animationLength, jsf.val);
+            }
+
+            return true;
         }
 
         private static void SelectNextInList(JSONStorableStringChooser list)

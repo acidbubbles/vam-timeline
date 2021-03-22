@@ -8,6 +8,7 @@
 ..\src\AtomAnimations\Operations\OffsetOperations.cs
 ..\src\AtomAnimations\Operations\OperationsFactory.cs
 ..\src\AtomAnimations\Operations\ParamKeyframeReductionOperations.cs
+..\src\AtomAnimations\Operations\RecordOperations.cs
 ..\src\AtomAnimations\Operations\ResizeAnimationOperations.cs
 ..\src\AtomAnimations\Operations\TargetsOperations.cs
 ..\src\AtomAnimations\Smoothing\BezierAnimationCurveSmoothingBase.cs

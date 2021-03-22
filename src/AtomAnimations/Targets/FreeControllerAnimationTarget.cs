@@ -13,6 +13,7 @@ namespace VamTimeline
 
         public bool controlPosition = true;
         public bool controlRotation = true;
+        public bool recording;
         private bool _parentAvailable;
         private int _lastParentAvailableCheck;
         public string parentAtomId;

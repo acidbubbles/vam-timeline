@@ -887,6 +887,15 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Keyframe_Delete", () => animationEditContext.Delete()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_CurrentController", () => operations.Keyframes().AddSelectedController()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_AllControllerTargets", () => operations.Keyframes().AddAllControllers()));
+            // TODO: Check if already recording
+            bindings.Add(new JSONStorableAction("StartRecord", () =>
+            {
+                var targets = animationEditContext.GetSelectedTargets().ToList();
+                StartCoroutine(operations.Record().StartRecording(
+                    targets.Count > 0 ? targets.OfType<FreeControllerAnimationTarget>().ToList() : animationEditContext.current.targetControllers,
+                    targets.Count > 0 ? targets.OfType<FloatParamAnimationTarget>().ToList() : animationEditContext.current.targetFloatParams
+                ));
+            }));
 
             bindings.Add(_scrubberAnalogControlJSON);
         }

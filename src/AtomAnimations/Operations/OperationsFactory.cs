@@ -67,5 +67,10 @@ namespace VamTimeline
         {
             return new ParamKeyframeReductionOperations(_clip);
         }
+
+        public RecordOperations Record()
+        {
+            return new RecordOperations(_animation, _clip);
+        }
     }
 }
