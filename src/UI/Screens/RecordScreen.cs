@@ -17,8 +17,14 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
+            prefabFactory.CreateSpacer();
+
             _recordButton = prefabFactory.CreateButton("Start recording in 5...");
             _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo()));
+
+            prefabFactory.CreateSpacer();
+
+            CreateChangeScreenButton("<i>Go to <b>reduce</b> screen...</i>", ReduceScreen.ScreenName);
 
             animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();

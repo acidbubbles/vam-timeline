@@ -153,6 +153,41 @@ namespace VamTimeline
             );
         }
 
+        public ICurveAnimationTarget Clone()
+        {
+            var clone = new FreeControllerAnimationTarget(controller);
+            clone.x.keys.AddRange(x.keys);
+            clone.y.keys.AddRange(y.keys);
+            clone.z.keys.AddRange(z.keys);
+            clone.rotX.keys.AddRange(rotX.keys);
+            clone.rotY.keys.AddRange(rotY.keys);
+            clone.rotZ.keys.AddRange(rotZ.keys);
+            clone.rotW.keys.AddRange(rotW.keys);
+            return clone;
+        }
+
+        public void RestoreFrom(ICurveAnimationTarget backup)
+        {
+            var target = backup as FreeControllerAnimationTarget;
+            if (target == null) return;
+            if (Math.Abs(target.x.GetLastFrame().time - x.GetLastFrame().time) > 0.0001) return;
+            x.keys.Clear();
+            x.keys.AddRange(target.x.keys);
+            y.keys.Clear();
+            y.keys.AddRange(target.y.keys);
+            z.keys.Clear();
+            z.keys.AddRange(target.z.keys);
+            rotX.keys.Clear();
+            rotX.keys.AddRange(target.rotX.keys);
+            rotY.keys.Clear();
+            rotY.keys.AddRange(target.rotY.keys);
+            rotZ.keys.Clear();
+            rotZ.keys.AddRange(target.rotZ.keys);
+            rotW.keys.Clear();
+            rotW.keys.AddRange(target.rotW.keys);
+            dirty = true;
+        }
+
         #endregion
 
         #region Interpolation
