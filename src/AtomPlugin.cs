@@ -896,6 +896,14 @@ namespace VamTimeline
                     targets.Count > 0 ? targets.OfType<FloatParamAnimationTarget>().ToList() : animationEditContext.current.targetFloatParams
                 ));
             }));
+            bindings.Add(new JSONStorableAction("AddTarget_SelectControllerFromScene", () =>
+            {
+                SuperController.singleton.SelectModeControllers(targetCtrl =>
+                {
+                    operations.Targets().Add(targetCtrl);
+                });
+
+            }));
 
             bindings.Add(_scrubberAnalogControlJSON);
         }

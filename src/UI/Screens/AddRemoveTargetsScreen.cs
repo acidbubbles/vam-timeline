@@ -158,6 +158,18 @@ namespace VamTimeline
             _toggleControllerUI = prefabFactory.CreateButton("Add");
             _toggleControllerUI.button.onClick.AddListener(AddAnimatedController);
 
+
+            var selectFromSceneUI = prefabFactory.CreateButton("<i>Select from scene</i>");
+            selectFromSceneUI.button.onClick.AddListener(() =>
+            {
+                SuperController.singleton.SelectModeControllers(targetCtrl =>
+                {
+                    SuperController.singleton.ShowMainHUDAuto();
+                    SuperController.singleton.SelectController(plugin.containingAtom.mainController, false, false, false, true);
+                    operations.Targets().Add(targetCtrl);
+                });
+            });
+
             RefreshControllersList();
         }
 
