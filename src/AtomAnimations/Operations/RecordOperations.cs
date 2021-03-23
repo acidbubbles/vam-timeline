@@ -26,45 +26,44 @@ namespace VamTimeline
 
             var keyframesOps = new KeyframesOperations(_clip);
 
+            for (var i = 5; i > 0; i--)
+            {
+                SuperController.singleton.helpText = $"Start recording in {i}...";
+                var next = Time.realtimeSinceStartup + 1f;
+                while (Time.realtimeSinceStartup < next)
+                {
+                    yield return 0;
+                    if (Input.GetKeyDown(KeyCode.Escape))
+                        yield break;
+                }
+            }
+
+            SuperController.singleton.helpText = "Recording...";
+
             foreach (var target in controllers)
             {
                 keyframesOps.RemoveAll(target);
-                target.recording = true;
             }
             foreach (var target in floatParams)
             {
                 keyframesOps.RemoveAll(target);
+            }
+
+            _clip.DirtyAll();
+            _animation.RebuildAnimationNow();
+
+            yield return 0;
+
+            foreach (var target in controllers)
+            {
                 target.recording = true;
+                target.StartBulkUpdates();
             }
-
-            SuperController.singleton.helpText = "Starting recording in 3...";
-            var next = Time.realtimeSinceStartup + 1f;
-            while (Time.realtimeSinceStartup < next)
+            foreach (var target in floatParams)
             {
-                yield return 0;
-                if(Input.GetKeyDown(KeyCode.Escape))
-                    yield break;
+                target.recording = true;
+                target.StartBulkUpdates();
             }
-
-            SuperController.singleton.helpText = "Starting recording in 2...";
-            next = Time.realtimeSinceStartup + 1f;
-            while (Time.realtimeSinceStartup < next)
-            {
-                yield return 0;
-                if(Input.GetKeyDown(KeyCode.Escape))
-                    yield break;
-            }
-
-            SuperController.singleton.helpText = "Starting recording in 1...";
-            next = Time.realtimeSinceStartup + 1f;
-            while (Time.realtimeSinceStartup < next)
-            {
-                yield return 0;
-                if(Input.GetKeyDown(KeyCode.Escape))
-                    yield break;
-            }
-
-            SuperController.singleton.helpText = "Recording...";
 
             _animation.PlayClip(_clip, false);
 
@@ -83,14 +82,15 @@ namespace VamTimeline
             foreach (var target in controllers)
             {
                 target.recording = false;
+                target.EndBulkUpdates();
             }
             foreach (var target in floatParams)
             {
                 target.recording = false;
+                target.EndBulkUpdates();
             }
 
-            // TODO: This should be deferred
-            _animation.RebuildAnimationNow();
+            _clip.DirtyAll();
         }
     }
 }

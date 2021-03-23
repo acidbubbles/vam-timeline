@@ -56,17 +56,17 @@ namespace VamTimeline
             if (x.length != rotW.length)
             {
                 SuperController.LogError($"Mismatched rotation and position data on controller {name}. Missing data will be created.");
-                RepairMismatchedCurvs();
+                RepairMismatchedCurves();
             }
         }
 
-        private void RepairMismatchedCurvs()
+        private void RepairMismatchedCurves()
         {
             if (x.length > rotW.length)
             {
                 for (var i = 0; i < x.length; i++)
                 {
-                    float time = x.keys[i].time;
+                    var time = x.keys[i].time;
                     SetKeyframe(time, EvaluatePosition(time), EvaluateRotation(time), x.keys[i].curveType, false);
                 }
             }
@@ -74,7 +74,7 @@ namespace VamTimeline
             {
                 for (var i = 0; i < rotW.length; i++)
                 {
-                    float time = rotW.keys[i].time;
+                    var time = rotW.keys[i].time;
                     SetKeyframe(time, EvaluatePosition(time), EvaluateRotation(time), rotW.keys[i].curveType, false);
                 }
             }
