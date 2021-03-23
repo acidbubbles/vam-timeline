@@ -231,7 +231,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Delete)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(AtomAnimationEditContext)}.{nameof(Delete)}: {exc}");
             }
         }
 
@@ -262,7 +262,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Cut)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(AtomAnimationEditContext)}.{nameof(Cut)}: {exc}");
             }
         }
 
@@ -288,7 +288,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Copy)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(AtomAnimationEditContext)}.{nameof(Copy)}: {exc}");
             }
         }
 
@@ -311,7 +311,7 @@ namespace VamTimeline
             }
             catch (Exception exc)
             {
-                SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Paste)}: {exc}");
+                SuperController.LogError($"Timeline.{nameof(AtomAnimationEditContext)}.{nameof(Paste)}: {exc}");
             }
         }
 

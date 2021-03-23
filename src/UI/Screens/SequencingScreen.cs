@@ -249,7 +249,7 @@ namespace VamTimeline
                 });
             return new[] { NoNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Concat(new[] { AtomAnimation._randomizeAnimationName })
+                .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
         }
 
@@ -259,7 +259,7 @@ namespace VamTimeline
                 yield return groupName;
 
             if (group.Key != null)
-                yield return group.Key + AtomAnimation._randomizeGroupSuffix;
+                yield return group.Key + AtomAnimation.RandomizeGroupSuffix;
         }
 
         #endregion
@@ -333,7 +333,7 @@ namespace VamTimeline
 
         private bool NextExists(AtomAnimationClip clip, string nextName)
         {
-            if (nextName == AtomAnimation._randomizeAnimationName)
+            if (nextName == AtomAnimation.RandomizeAnimationName)
                 return true;
 
             string group;

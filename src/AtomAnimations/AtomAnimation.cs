@@ -17,9 +17,9 @@ namespace VamTimeline
 
         private static readonly Regex _lastDigitsRegex = new Regex(@"^(?<name>.+)(?<index>[0-9]+)$", RegexOptions.Compiled);
 
-        public const float _paddingBeforeLoopFrame = 0.001f;
-        public const string _randomizeAnimationName = "(Randomize)";
-        public const string _randomizeGroupSuffix = "/*";
+        public const float PaddingBeforeLoopFrame = 0.001f;
+        public const string RandomizeAnimationName = "(Randomize)";
+        public const string RandomizeGroupSuffix = "/*";
 
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public UnityEvent onSpeedChanged = new UnityEvent();
@@ -227,13 +227,13 @@ namespace VamTimeline
 
         public static bool TryGetRandomizedGroup(string animationName, out string groupName)
         {
-            if (!animationName.EndsWith(_randomizeGroupSuffix))
+            if (!animationName.EndsWith(RandomizeGroupSuffix))
             {
                 groupName = null;
                 return false;
             }
 
-            groupName = animationName.Substring(0, animationName.Length - _randomizeGroupSuffix.Length);
+            groupName = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
             return true;
         }
 
@@ -517,7 +517,7 @@ namespace VamTimeline
             AtomAnimationClip next;
 
             string group;
-            if (source.nextAnimationName == _randomizeAnimationName)
+            if (source.nextAnimationName == RandomizeAnimationName)
             {
                 var candidates = index
                     .ByLayer(source.animationLayer)
