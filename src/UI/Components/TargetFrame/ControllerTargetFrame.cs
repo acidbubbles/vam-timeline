@@ -46,9 +46,9 @@ namespace VamTimeline
         private LineDrawer CreateLine()
         {
             var go = new GameObject();
-            var parent = target.GetParent();
-            if (parent == null) return null;
-            go.transform.SetParent(parent, false);
+            // ReSharper disable once Unity.NoNullCoalescing
+            var parent = target.GetPositionParentRB()?.transform ?? target.controller.control.parent;
+            go.transform.SetParent(parent.transform, false);
 
             var line = go.AddComponent<LineDrawer>();
             line.colorGradient = new Gradient

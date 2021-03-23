@@ -77,31 +77,32 @@ namespace VamTimeline
             return true;
         }
 
-        private Rigidbody _lastLinkedRigidbody;
+        private Rigidbody _previousLinkedParentRB;
 
-        public Rigidbody GetLinkedRigidbody()
+        public Rigidbody GetPositionParentRB()
         {
-            if (parentRigidbody != null) return parentRigidbody;
-            var rb = controller.linkToRB;
-            if (rb == _lastLinkedRigidbody) return _lastLinkedRigidbody;
-            if (rb == null)
-            {
-                _lastLinkedRigidbody = null;
-                return null;
-            }
-            var tfc = rb.GetComponent<FreeControllerV3>();
-            if (tfc == null && _lastLinkedRigidbody != null)
-                return _lastLinkedRigidbody;
-            if (tfc != null)
-                return _lastLinkedRigidbody = controller.linkToRB;
-            controller.RestorePreLinkState();
-            return _lastLinkedRigidbody = controller.linkToRB;
+             if (!ReferenceEquals(parentRigidbody, null)) return parentRigidbody;
+             if (controller.currentPositionState == FreeControllerV3.PositionState.ParentLink || controller.currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
+             {
+                 if (ReferenceEquals(controller.linkToRB, null)) return _previousLinkedParentRB = null;
+                 if (_previousLinkedParentRB == controller.linkToRB) return _previousLinkedParentRB;
+                 if (ReferenceEquals(controller.linkToRB.GetComponent<FreeControllerV3>(), null)) return _previousLinkedParentRB;
+                 return _previousLinkedParentRB = controller.linkToRB;
+             }
+             return null;
         }
 
-        public Transform GetParent()
+        public Rigidbody GetRotationParentRB()
         {
-            if (!EnsureParentAvailable()) return null;
-            return GetLinkedRigidbody()?.transform ?? controller.transform.parent;
+             if (!ReferenceEquals(parentRigidbody, null)) return parentRigidbody;
+             if (controller.currentPositionState == FreeControllerV3.PositionState.ParentLink || controller.currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
+             {
+                 if (ReferenceEquals(controller.linkToRB, null)) return _previousLinkedParentRB = null;
+                 if (_previousLinkedParentRB == controller.linkToRB) return _previousLinkedParentRB;
+                 if (ReferenceEquals(controller.linkToRB.GetComponent<FreeControllerV3>(), null)) return _previousLinkedParentRB;
+                 return _previousLinkedParentRB = controller.linkToRB;
+             }
+             return null;
         }
 
         public FreeControllerAnimationTarget(FreeControllerV3 controller)
@@ -135,14 +136,19 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrentTransform(float time)
         {
+            // TODO: Fix this while possessing
             if (!EnsureParentAvailable(false)) return -1;
-            var rb = GetLinkedRigidbody();
+            var posParent = GetPositionParentRB();
+            var hasPosParent = !ReferenceEquals(posParent, null);
+            var rotParent = GetRotationParentRB();
+            var hasRotParent = !ReferenceEquals(rotParent, null);
             var controllerTransform = controller.transform;
 
-            if (rb != null)
-                return SetKeyframe(time, rb.transform.InverseTransformPoint(controllerTransform.position), Quaternion.Inverse(rb.rotation) * controllerTransform.rotation);
-
-            return SetKeyframe(time, controllerTransform.localPosition, controllerTransform.localRotation);
+            return SetKeyframe(
+                time,
+                hasPosParent ? posParent.transform.InverseTransformPoint(controllerTransform.position) : controllerTransform.localPosition,
+                hasRotParent ? Quaternion.Inverse(rotParent.rotation) * controllerTransform.rotation : controllerTransform.localRotation
+            );
         }
 
         #endregion

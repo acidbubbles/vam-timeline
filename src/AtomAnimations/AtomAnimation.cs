@@ -676,17 +676,18 @@ namespace VamTimeline
                 if (weight < float.Epsilon) continue;
 
                 if (!target.EnsureParentAvailable()) return;
-                var link = target.GetLinkedRigidbody();
-                var linkHasValue = link != null;
 
                 var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.temporarilyEnabled ? 1f : clip.playbackBlendWeight);
 
                 if (target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
+                    var rotLink = target.GetPositionParentRB();
+                    var hasRotLink = !ReferenceEquals(rotLink, null);
+
                     var targetRotation = target.EvaluateRotation(clip.clipTime);
-                    if (linkHasValue)
+                    if (hasRotLink)
                     {
-                        targetRotation = link.rotation * targetRotation;
+                        targetRotation = rotLink.rotation * targetRotation;
                         _rotations[rotationCount] = targetRotation;
                     }
                     else
@@ -702,10 +703,13 @@ namespace VamTimeline
 
                 if (target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off)
                 {
+                    var posLink = target.GetPositionParentRB();
+                    var hasPosLink = !ReferenceEquals(posLink, null);
+
                     var targetPosition = target.EvaluatePosition(clip.clipTime);
-                    if (linkHasValue)
+                    if (hasPosLink)
                     {
-                        targetPosition = link.transform.TransformPoint(targetPosition);
+                        targetPosition = posLink.transform.TransformPoint(targetPosition);
                     }
                     else
                     {
@@ -845,8 +849,11 @@ namespace VamTimeline
                 var currentTarget = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
                 if (currentTarget == null) continue;
                 if (!currentTarget.EnsureParentAvailable()) continue;
-                var sourceParent = sourceTarget.GetParent();
-                var currentParent = currentTarget.GetParent();
+                // TODO: If there's a parent for position but not rotation or vice versa there will be problems
+                // ReSharper disable Unity.NoNullCoalescing
+                var sourceParent = sourceTarget.GetPositionParentRB()?.transform ?? sourceTarget.controller.control.parent;
+                var currentParent = currentTarget.GetPositionParentRB()?.transform ?? currentTarget.controller.control.parent;
+                // ReSharper restore Unity.NoNullCoalescing
                 if (sourceParent == currentParent)
                 {
                     currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(sourceTime), false);

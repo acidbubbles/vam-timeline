@@ -23,7 +23,10 @@ namespace VamTimeline
             {
                 var target = _clip.targetControllers.First(t => t.controller == snap.controller);
                 if (!target.EnsureParentAvailable(false)) continue;
-                var rb = target.GetLinkedRigidbody();
+                var posLink = target.GetPositionParentRB();
+                var hasPosLink = !ReferenceEquals(posLink, null);
+                var rotLink = target.GetRotationParentRB();
+                var hasRotLink = !ReferenceEquals(rotLink, null);
 
                 Vector3 pivot;
                 Vector3 positionDelta;
@@ -33,8 +36,8 @@ namespace VamTimeline
                     var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
                     var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
 
-                    var positionAfter = rb == null ? snap.controller.control.localPosition : rb.transform.InverseTransformPoint(snap.controller.transform.position);
-                    var rotationAfter = rb == null ? snap.controller.control.localRotation : Quaternion.Inverse(rb.rotation) * snap.controller.transform.rotation;
+                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.controller.transform.position) : snap.controller.control.localPosition;
+                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.controller.transform.rotation : snap.controller.control.localRotation;
 
                     pivot = positionBefore;
                     positionDelta = positionAfter - positionBefore;
