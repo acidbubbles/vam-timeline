@@ -439,7 +439,7 @@ namespace VamTimeline
                         var nextTime = keys[nextKey].time;
                         if (time < nextTime - _epsilon)
                         {
-                            if (!returnClosest) return _lastReferencedKey = -1;
+                            if (!returnClosest) return -1;
                             var midNext = keys[_lastReferencedKey].time + (nextTime - keys[_lastReferencedKey].time) / 2f;
                             return time - midNext < 0 ? _lastReferencedKey : nextKey;
                         }
@@ -457,9 +457,6 @@ namespace VamTimeline
                     return _lastReferencedKey;
                 }
             }
-
-            SuperController.singleton.ClearMessages();
-            SuperController.LogMessage($"{Time.time:0.00} Search");
 
             // This is a MUCH more efficient way to search for a keyframe by time
             var left = 0;

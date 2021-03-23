@@ -134,7 +134,7 @@ namespace VamTimeline
 
         #region Keyframes control
 
-        public int SetKeyframeToCurrentTransform(float time)
+        public int SetKeyframeToCurrentTransform(float time, bool makeDirty = true)
         {
             // TODO: Fix this while possessing
             if (!EnsureParentAvailable(false)) return -1;
@@ -147,7 +147,9 @@ namespace VamTimeline
             return SetKeyframe(
                 time,
                 hasPosParent ? posParent.transform.InverseTransformPoint(controllerTransform.position) : controllerTransform.localPosition,
-                hasRotParent ? Quaternion.Inverse(rotParent.rotation) * controllerTransform.rotation : controllerTransform.localRotation
+                hasRotParent ? Quaternion.Inverse(rotParent.rotation) * controllerTransform.rotation : controllerTransform.localRotation,
+                -1,
+                false
             );
         }
 
