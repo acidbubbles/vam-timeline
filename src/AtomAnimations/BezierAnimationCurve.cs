@@ -9,12 +9,13 @@ namespace VamTimeline
 {
     public class BezierAnimationCurve
     {
+        private const float _epsilon = 0.0001f;
         public float duration => keys.Count == 0 ? -1 : keys[keys.Count - 1].time;
         public List<BezierKeyframe> keys;
         public int length => keys.Count;
         public bool loop;
 
-        private int _lastIndex;
+        private int _lastReferencedKey;
         private IBezierAnimationCurveSmoothing _compute;
 
         public BezierAnimationCurve()
@@ -58,43 +59,13 @@ namespace VamTimeline
         public BezierKeyframe GetKeyframeByKey(int key)
         {
             if (key == -1) throw new ArgumentException("Expected a key, received -1", nameof(key));
+            if (key > keys.Count - 1) throw new Exception("WRONG");
             return keys[key];
         }
 
         public float Evaluate(float time)
         {
-            if (keys.Count < 2) throw new InvalidOperationException("Cannot evalue curve, at least two keyframes are needed");
-            BezierKeyframe current;
-            BezierKeyframe next;
-            // Attempt last evaluated portion
-            if (_lastIndex < keys.Count - 1)
-            {
-                current = keys[_lastIndex];
-                next = _lastIndex < keys.Count - 1 ? keys[_lastIndex + 1] : BezierKeyframe.NullKeyframe;
-                if (time >= current.time && time < next.time)
-                {
-                    return ComputeValue(current, next, time);
-                }
-                // Attempt next portion
-                if (next.HasValue() && _lastIndex < keys.Count - 2)
-                {
-                    current = next;
-                    next = _lastIndex < keys.Count - 2 ? keys[_lastIndex + 2] : BezierKeyframe.NullKeyframe;
-                    if (time >= current.time && time < next.time)
-                    {
-                        _lastIndex++;
-                        return ComputeValue(current, next, time);
-                    }
-                }
-            }
-            // Attempt first portion
-            next = keys[1];
-            if (time < next.time)
-            {
-                _lastIndex = 0;
-                return ComputeValue(keys[0], next, time);
-            }
-
+            if (keys.Count < 2) throw new InvalidOperationException("Cannot evaluate curve, at least two keyframes are needed");
             // Search for portion
             var key = KeyframeBinarySearch(time, true);
             switch (key)
@@ -104,11 +75,10 @@ namespace VamTimeline
                 case 0:
                     return keys[0].value;
             }
-            current = keys[key];
+            var current = keys[key];
             if (time < current.time)
                 current = keys[--key];
-            next = key < keys.Count - 1 ? keys[key + 1] : BezierKeyframe.NullKeyframe;
-            _lastIndex = key;
+            var next = key < keys.Count - 1 ? keys[key + 1] : BezierKeyframe.NullKeyframe;
             return ComputeValue(current, next, time);
         }
 
@@ -130,6 +100,7 @@ namespace VamTimeline
             keyframe.value = value;
             keyframe.curveType = curveType;
             SetKeyframeByKey(key, keyframe);
+            _lastReferencedKey = key;
             return key;
         }
 
@@ -140,6 +111,7 @@ namespace VamTimeline
             return key;
         }
 
+        [MethodImpl(256)]
         public int AddKey(float time, float value, int curveType)
         {
             return AddKey(new BezierKeyframe(time, value, curveType));
@@ -150,18 +122,21 @@ namespace VamTimeline
             if (keyframe.time > duration)
             {
                 keys.Add(keyframe);
-                return keys.Count - 1;
+                return _lastReferencedKey = keys.Count - 1;
             }
+
             var nearestKey = KeyframeBinarySearch(keyframe.time, true);
             var nearestKeyframe = keys[nearestKey];
-            if (Mathf.Approximately(nearestKeyframe.time, keyframe.time)) return -1;
+            if (Mathf.Abs(nearestKeyframe.time - keyframe.time) < _epsilon) return -1;
             if (nearestKeyframe.time < keyframe.time)
             {
                 var key = nearestKey + 1;
                 keys.Insert(key, keyframe);
+                _lastReferencedKey = key;
                 return key;
             }
             keys.Insert(nearestKey, keyframe);
+            _lastReferencedKey = nearestKey;
             return nearestKey;
         }
 
@@ -439,13 +414,54 @@ namespace VamTimeline
             return w0 * mt3 + 3f * w1 * mt2 * t + 3f * w2 * mt * t2 + w3 * t3;
         }
 
-        [MethodImpl(256)]
         public int KeyframeBinarySearch(float time, bool returnClosest = false)
         {
-            if (time == 0) return 0;
-            var timeSmall = time - 0.0001f;
-            var timeLarge = time + 0.0001f;
+            if (time == 0) return _lastReferencedKey = 0;
 
+            var timeSmall = time - _epsilon;
+            var timeLarge = time + _epsilon;
+
+            // This is a micro optimization mostly for large animations to avoid binary searching during recording and sequential rewrites
+            if (_lastReferencedKey > -1 && _lastReferencedKey < keys.Count)
+            {
+                var lastIndexTime = keys[_lastReferencedKey].time;
+
+                // Valid last index
+                // t: 0 (0s) 1 (2s) 2 (4s) 3 (5s), i: 2 (5s) time: 4s
+                if (timeSmall > lastIndexTime)
+                {
+                    // Try the next few keyframes
+                    var maxTime = time + 0.2f;
+                    var maxKey = keys.Count - 1;
+                    while(_lastReferencedKey < maxKey)
+                    {
+                        var nextKey = _lastReferencedKey + 1;
+                        var nextTime = keys[nextKey].time;
+                        if (time < nextTime - _epsilon)
+                        {
+                            if (!returnClosest) return _lastReferencedKey = -1;
+                            var midNext = keys[_lastReferencedKey].time + (nextTime - keys[_lastReferencedKey].time) / 2f;
+                            return time - midNext < 0 ? _lastReferencedKey : nextKey;
+                        }
+                        if (time <= nextTime + _epsilon)
+                        {
+                            return _lastReferencedKey = nextKey;
+                        }
+                        if (nextTime > maxTime) break;
+                        _lastReferencedKey++;
+                    }
+                }
+                else if (timeLarge > lastIndexTime)
+                {
+                    // Exact match
+                    return _lastReferencedKey;
+                }
+            }
+
+            SuperController.singleton.ClearMessages();
+            SuperController.LogMessage($"{Time.time:0.00} Search");
+
+            // This is a MUCH more efficient way to search for a keyframe by time
             var left = 0;
             var right = keys.Count - 1;
 
@@ -464,9 +480,10 @@ namespace VamTimeline
                 }
                 else
                 {
-                    return middle;
+                    return _lastReferencedKey = middle;
                 }
             }
+            _lastReferencedKey = left;
             if (!returnClosest)
             {
                 return -1;
@@ -479,8 +496,7 @@ namespace VamTimeline
             }
             if (right >= keys.Count) return left;
             var avg = keys[left].time + (keys[right].time - keys[left].time) / 2f;
-            if (time - avg < 0) return left;
-            return right;
+            return time - avg < 0 ? left : right;
         }
 
         public void Reverse()
