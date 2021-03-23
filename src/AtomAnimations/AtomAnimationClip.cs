@@ -349,7 +349,8 @@ namespace VamTimeline
         {
             yield return targetTriggers;
             yield return targetControllers;
-            yield return targetFloatParams;
+            foreach (var group in targetFloatParams.GroupBy(t => t.storableId))
+                yield return new AtomAnimationTargetsList<FloatParamAnimationTarget>(group) {label = group.Key};
         }
 
         public void Validate()

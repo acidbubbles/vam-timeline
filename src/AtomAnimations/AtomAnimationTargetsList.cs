@@ -8,6 +8,15 @@ namespace VamTimeline
     {
         public string label { get; set; }
 
+        public AtomAnimationTargetsList()
+        {
+        }
+
+        public AtomAnimationTargetsList(IEnumerable<T> values)
+            : base(values)
+        {
+        }
+
         public IEnumerable<IAtomAnimationTarget> GetTargets()
         {
             return this.Cast<IAtomAnimationTarget>();

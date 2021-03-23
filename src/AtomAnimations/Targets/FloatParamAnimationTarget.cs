@@ -106,12 +106,9 @@ namespace VamTimeline
 
         public string GetShortName()
         {
-            if (floatParam != null)
-            {
-                if (!string.IsNullOrEmpty(floatParam.altName))
-                    return floatParam.altName;
-            }
-            return storableId == "geometry" ? floatParamName : $"{(storableId.Length > 4 ? storableId.Substring(0, 4) : storableId)}/{floatParamName}";
+            if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
+                return floatParam.altName;
+            return floatParamName;
         }
 
         public void Validate(float animationLength)
