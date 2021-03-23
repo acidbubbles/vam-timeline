@@ -69,7 +69,11 @@ namespace VamTimeline
             _animation.PlayClip(_clip, false);
 
             while (_animation.playTime <= _clip.animationLength && _animation.isPlaying)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                    break;
                 yield return 0;
+            }
 
             _animation.StopAll();
             _animation.ResetAll();
