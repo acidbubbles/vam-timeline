@@ -63,9 +63,9 @@ namespace VamTimeline
             return new MocapReduceOperations(_containingAtom, _animation, _clip, settings);
         }
 
-        public ParamKeyframeReductionOperations ParamKeyframeReduction()
+        public ReduceOperations Reduce()
         {
-            return new ParamKeyframeReductionOperations(_clip);
+            return new ReduceOperations(_clip);
         }
 
         public RecordOperations Record()

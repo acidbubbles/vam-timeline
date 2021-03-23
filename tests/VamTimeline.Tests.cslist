@@ -7,7 +7,7 @@
 ..\src\AtomAnimations\Operations\MocapReduceOperations.cs
 ..\src\AtomAnimations\Operations\OffsetOperations.cs
 ..\src\AtomAnimations\Operations\OperationsFactory.cs
-..\src\AtomAnimations\Operations\ParamKeyframeReductionOperations.cs
+..\src\AtomAnimations\Operations\ReduceOperations.cs
 ..\src\AtomAnimations\Operations\RecordOperations.cs
 ..\src\AtomAnimations\Operations\ResizeAnimationOperations.cs
 ..\src\AtomAnimations\Operations\TargetsOperations.cs

@@ -79,7 +79,7 @@
     <Compile Include="src\AtomAnimations\Operations\MocapReduceOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OffsetOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\OperationsFactory.cs" />
-    <Compile Include="src\AtomAnimations\Operations\ParamKeyframeReductionOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\ReduceOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\RecordOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />

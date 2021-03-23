@@ -6,11 +6,11 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ParamKeyframeReductionOperations
+    public class ReduceOperations
     {
         private readonly AtomAnimationClip _clip;
 
-        public ParamKeyframeReductionOperations(AtomAnimationClip clip)
+        public ReduceOperations(AtomAnimationClip clip)
         {
             _clip = clip;
         }
