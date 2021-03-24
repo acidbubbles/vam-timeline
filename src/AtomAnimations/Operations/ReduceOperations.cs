@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,16 +15,21 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets)
+        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets, Action callback)
         {
+            SuperController.LogMessage($"Timeline: Reducing {targets.Count} targets. Please wait...");
+
             foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
             {
+                var initialFrames = target.x.length;
+                var initialTime = Time.realtimeSinceStartup;
                 target.StartBulkUpdates();
                 try
                 {
                     var enumerator = Process(new ControllerTargetReduceProcessor(target));
                     while (enumerator.MoveNext())
                         yield return enumerator.Current;
+                    SuperController.LogMessage($"Timeline: Reduced {target.controller.name} from {initialFrames} frames to {target.x.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
                 }
                 finally
                 {
@@ -35,12 +41,15 @@ namespace VamTimeline
 
             foreach (var target in targets.OfType<FloatParamAnimationTarget>())
             {
+                var initialFrames = target.value.length;
+                var initialTime = Time.realtimeSinceStartup;
                 target.StartBulkUpdates();
                 try
                 {
                     var enumerator = Process(new FloatParamTargetReduceProcessor(target));
                     while (enumerator.MoveNext())
                         yield return enumerator.Current;
+                    SuperController.LogMessage($"Timeline: Reduced {target.GetShortName()} from {initialFrames} frames to {target.value.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
                 }
                 finally
                 {
@@ -49,6 +58,8 @@ namespace VamTimeline
                 }
                 yield return 0;
             }
+
+            callback?.Invoke();
         }
 
         public interface ITargetReduceProcessor
@@ -133,6 +144,7 @@ namespace VamTimeline
                         target.EvaluateRotation(time)
                     );
                     // This is an attempt to compare translations and rotations
+                    // TODO: Normalize the values, investigate how to do this with settings
                     var normalizedPositionDistance = positionDiff / 0.4f;
                     var normalizedRotationAngle = rotationAngle / 180f;
                     var delta = normalizedPositionDistance + normalizedRotationAngle;
@@ -161,10 +173,11 @@ namespace VamTimeline
                 for (var i = from; i <= to; i++)
                 {
                     var time = target.value.keys[i].time;
+                    // TODO: Normalize the delta values based on range
                     var delta = Mathf.Abs(
                         branch.value.Evaluate(time) -
                         target.value.Evaluate(time)
-                    );
+                    ) / (target.floatParam.max - target.floatParam.min);
                     if (delta > bucket.largestDelta)
                     {
                         bucket.largestDelta = delta;
@@ -228,8 +241,6 @@ namespace VamTimeline
                 if (keyWithLargestDelta == -1) break;
                 if(largestDelta < 0.1f) break; // TODO: Configurable pos and rot weight, pos and rot min change inside bucket scan
 
-                // This is an attempt to compare translations and rotations
-
                 processor.CopyToBranch(keyWithLargestDelta);
 
                 var bucketToSplitIndex = bucketWithLargestDelta;
@@ -247,6 +258,8 @@ namespace VamTimeline
 
                 yield return 0;
             }
+
+            processor.Commit();
         }
     }
 }

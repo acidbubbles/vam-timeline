@@ -77,10 +77,15 @@ namespace VamTimeline
 
         private void Reduce()
         {
-            // TODO: Also do this for controllers
+            _reduceUI.button.interactable = false;
+            _reduceUI.label = "Reducing...";
             StartCoroutine(operations.Reduce().ReduceKeyframes(
-                animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList())
-            );
+                animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList(),
+                () =>
+                {
+                    _reduceUI.button.interactable = true;
+                    _reduceUI.label = "Reduce";
+                }));
         }
     }
 }
