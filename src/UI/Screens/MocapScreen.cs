@@ -211,7 +211,7 @@ namespace VamTimeline
 
         private IEnumerator ReduceKeyframesCoroutine()
         {
-            var enumerator = operations.Reduce().ReduceKeyframes(animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().ToList(), _reduceMaxFramesPerSecondJSON.val, _reduceMinPosDistanceJSON.val);
+            var enumerator = operations.Reduce().ReduceKeyframes(animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().Cast<ICurveAnimationTarget>().ToList());
             while (true)
             {
                 try

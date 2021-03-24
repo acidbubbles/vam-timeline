@@ -126,10 +126,19 @@ namespace VamTimeline
             return new[] { value };
         }
 
-        public ICurveAnimationTarget Clone()
+        public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
             var clone = new FloatParamAnimationTarget(_atom, storableId, floatParamName);
-            clone.value.keys.AddRange(value.keys);
+            if (copyKeyframes)
+            {
+                clone.value.keys.AddRange(value.keys);
+            }
+            else
+            {
+                clone.value.SetKeyframe(0f, value.keys[0].value, CurveTypeValues.SmoothLocal);
+                clone.value.SetKeyframe(value.length - 1, value.keys[value.length - 1].value, CurveTypeValues.SmoothLocal);
+                clone.value.ComputeCurves();
+            }
             return clone;
         }
 

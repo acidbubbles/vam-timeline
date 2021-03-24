@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,15 +14,16 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator ReduceKeyframes(List<FloatParamAnimationTarget> targets, float maxFramesPerSecond, float minValueDelta)
+        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets)
         {
-            /*
-            foreach (var target in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
                 {
-                    // ReduceKeyframes(target.X, target.Y, target.Z, target.RotX, target.RotY, target.RotZ, target.RotW);
+                    var enumerator = Process(new ControllerTargetReduceProcessor(target));
+                    while (enumerator.MoveNext())
+                        yield return enumerator.Current;
                 }
                 finally
                 {
@@ -32,14 +32,15 @@ namespace VamTimeline
                 }
                 yield return 0;
             }
-            */
 
-            foreach (var target in targets)
+            foreach (var target in targets.OfType<FloatParamAnimationTarget>())
             {
                 target.StartBulkUpdates();
                 try
                 {
-                    ReduceTargetKeyframes(target, maxFramesPerSecond, minValueDelta);
+                    var enumerator = Process(new FloatParamTargetReduceProcessor(target));
+                    while (enumerator.MoveNext())
+                        yield return enumerator.Current;
                 }
                 finally
                 {
@@ -50,71 +51,201 @@ namespace VamTimeline
             }
         }
 
-        private void ReduceTargetKeyframes(FloatParamAnimationTarget t, float maxFramesPerSecond, float minValueDelta)
+        public interface ITargetReduceProcessor
         {
-            var source = t.value;
-            var minFrameDistance = 1f / maxFramesPerSecond;
-            var maxIterations = (int)(source.GetKeyframeByKey(source.length - 1).time * 10);
+            ICurveAnimationTarget target { get; }
+            void Branch();
+            void Commit();
+            ReducerBucket CreateBucket(int from, int to);
+            void CopyToBranch(int key);
+        }
 
-            var steps = source.keys
-                .GroupBy(s => s.time.Snap(minFrameDistance).ToMilliseconds())
-                .Select(g =>
+        public struct ReducerBucket
+        {
+            public int from;
+            public int to;
+            public int keyWithLargestDelta;
+            public float largestDelta;
+        }
+
+        public abstract class TargetReduceProcessorBase<T> where T : class, ICurveAnimationTarget
+        {
+            public readonly T target;
+            protected T branch;
+
+            protected TargetReduceProcessorBase(T target)
+            {
+                this.target = target;
+            }
+
+            public void Branch()
+            {
+                branch = target.Clone(false) as T;
+            }
+
+            public void Commit()
+            {
+                target.RestoreFrom(branch);
+                branch = null;
+            }
+
+            public virtual ReducerBucket CreateBucket(int from, int to)
+            {
+                return new ReducerBucket
                 {
-                    var keyframe = g.OrderBy(s => Math.Abs(g.Key - s.time)).First();
-                    return new BezierKeyframe((g.Key / 1000f).Snap(), keyframe.value, 0, 0, keyframe.curveType);
-                })
-                .ToList();
+                    from = from,
+                    to = to,
+                    keyWithLargestDelta = -1
+                };
+            }
+        }
 
-            var target = new BezierAnimationCurve();
-            target.AddKey(0, source.GetFirstFrame().value, source.GetFirstFrame().curveType);
-            target.AddKey(source.GetLastFrame().time, source.GetLastFrame().value, source.GetLastFrame().curveType);
-            target.SmoothNeighbors(0);
+        public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerAnimationTarget>, ITargetReduceProcessor
+        {
+            ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
+
+            public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target)
+                : base(target)
+            {
+            }
+
+            public void CopyToBranch(int key)
+            {
+                var time = target.x.keys[key].time;
+                branch.SetSnapshot(time, target.GetSnapshot(time));
+                var branchKey = branch.x.KeyframeBinarySearch(time);
+                branch.SmoothNeighbors(branchKey);
+            }
+
+            public override ReducerBucket CreateBucket(int from, int to)
+            {
+                var bucket = base.CreateBucket(from, to);
+                for (var i = from; i <= to; i++)
+                {
+                    var time = target.x.keys[i].time;
+
+                    var positionDiff = Vector3.Distance(
+                        branch.EvaluatePosition(time),
+                        target.EvaluatePosition(time)
+                    );
+                    var rotationAngle = Quaternion.Angle(
+                        branch.EvaluateRotation(time),
+                        target.EvaluateRotation(time)
+                    );
+                    // This is an attempt to compare translations and rotations
+                    var normalizedPositionDistance = positionDiff / 0.4f;
+                    var normalizedRotationAngle = rotationAngle / 180f;
+                    var delta = normalizedPositionDistance + normalizedRotationAngle;
+                    if (delta > bucket.largestDelta)
+                    {
+                        bucket.largestDelta = delta;
+                        bucket.keyWithLargestDelta = i;
+                    }
+                }
+                return bucket;
+            }
+        }
+
+        public class FloatParamTargetReduceProcessor : TargetReduceProcessorBase<FloatParamAnimationTarget>, ITargetReduceProcessor
+        {
+            ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
+
+            public FloatParamTargetReduceProcessor(FloatParamAnimationTarget target)
+                : base(target)
+            {
+            }
+
+            public override ReducerBucket CreateBucket(int from, int to)
+            {
+                var bucket = base.CreateBucket(from, to);
+                for (var i = from; i <= to; i++)
+                {
+                    var time = target.value.keys[i].time;
+                    var delta = Mathf.Abs(
+                        branch.value.Evaluate(time) -
+                        target.value.Evaluate(time)
+                    );
+                    if (delta > bucket.largestDelta)
+                    {
+                        bucket.largestDelta = delta;
+                        bucket.keyWithLargestDelta = i;
+                    }
+                }
+                return bucket;
+            }
+
+            public void CopyToBranch(int key)
+            {
+                var branchKey = branch.value.SetKeyframe(target.value.keys[key].time, target.value.keys[key].value, CurveTypeValues.SmoothLocal);
+                branch.value.SmoothNeighbors(branchKey);
+            }
+        }
+
+        protected IEnumerator Process(ITargetReduceProcessor processor)
+        {
+            var maxFramesPerSecond = 10f; // TODO: Settings FPS (20fps here)
+            var minFrameDistance = 1f / maxFramesPerSecond;
+            var animationLength = processor.target.GetLeadCurve().GetLastFrame().time;
+            var maxIterations = (int)(animationLength * 10);
+
+            // STEP 1: Average keyframes based on the desired FPS
+            for (var i = 0f; i < animationLength * maxFramesPerSecond; i += minFrameDistance)
+            {
+                // Average from t-0.5 to t+0.5 given 1 is the frame distance
+            }
+
+            // STEP 2: Apply to the curve, adjust end time
+
+            // STEP 3: Run the buckets algorithm to find flat and linear curves (mostly flat ones)
+
+            // STEP 4: Run the reduce algo
+
+            processor.Branch();
+
+            var buckets = new List<ReducerBucket>
+            {
+                processor.CreateBucket(1, processor.target.GetLeadCurve().length - 2)
+            };
 
             for (var iteration = 0; iteration < maxIterations; iteration++)
             {
                 // Scan for largest difference with curve
-                // TODO: Use the buckets strategy
-                var keyWithLargestDiff = -1;
-                var largestDiff = 0f;
-                for (var i = 1; i < steps.Count - 1; i++)
+                var bucketWithLargestDelta = -1;
+                var keyWithLargestDelta = -1;
+                var largestDelta = 0f;
+                for (var bucketIndex = 0; bucketIndex < buckets.Count; bucketIndex++)
                 {
-                    var diff = Mathf.Abs(target.Evaluate(steps[i].time) - steps[i].value);
-
-                    if (diff > largestDiff)
+                    var bucket = buckets[bucketIndex];
+                    if (bucket.largestDelta > largestDelta)
                     {
-                        largestDiff = diff;
-                        keyWithLargestDiff = i;
+                        largestDelta = bucket.largestDelta;
+                        keyWithLargestDelta = bucket.keyWithLargestDelta;
+                        bucketWithLargestDelta = bucketIndex;
                     }
                 }
 
                 // Cannot find large enough diffs, exit
-                if (keyWithLargestDiff == -1) break;
-                var inRange = largestDiff >= minValueDelta;
-                if (!inRange) break;
+                if (keyWithLargestDelta == -1) break;
+                if(largestDelta < 0.1f) break; // TODO: Configurable pos and rot weight, pos and rot min change inside bucket scan
 
                 // This is an attempt to compare translations and rotations
-                var keyToApply = keyWithLargestDiff;
 
-                var step = steps[keyToApply];
-                steps.RemoveAt(keyToApply);
-                var key = target.SetKeyframe(step.time, step.value, step.curveType);
-                target.SmoothNeighbors(key);
-            }
+                processor.CopyToBranch(keyWithLargestDelta);
 
-            t.StartBulkUpdates();
-            try
-            {
-                new KeyframesOperations(_clip).RemoveAll(t);
-                for (var key = 0; key < target.length; key++)
+                var bucketToSplitIndex = bucketWithLargestDelta;
+
+                if (bucketToSplitIndex > -1)
                 {
-                    var keyframe = target.GetKeyframeByKey(key);
-                    t.SetKeyframe(keyframe.time, keyframe.value);
+                    // Split buckets and exclude the scanned keyframe, we never have to scan it again.
+                    var bucketToSplit = buckets[bucketToSplitIndex];
+                    buckets.RemoveAt(bucketToSplitIndex);
+                    if (bucketToSplit.to - keyWithLargestDelta + 1 > 2)
+                        buckets.Insert(bucketToSplitIndex, processor.CreateBucket(keyWithLargestDelta + 1, bucketToSplit.to));
+                    if (keyWithLargestDelta - 1 - bucketToSplit.from > 2)
+                        buckets.Insert(bucketToSplitIndex, processor.CreateBucket(bucketToSplit.from, keyWithLargestDelta - 1));
                 }
-                t.AddEdgeFramesIfMissing(source.GetKeyframeByKey(source.length - 1).time);
-            }
-            finally
-            {
-                t.EndBulkUpdates();
+
+                yield return 0;
             }
         }
     }

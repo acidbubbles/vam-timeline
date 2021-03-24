@@ -8,7 +8,7 @@ namespace VamTimeline
         IEnumerable<BezierAnimationCurve> GetCurves();
         void ChangeCurve(float time, int curveType, bool dirty = true);
         int GetKeyframeCurveType(float time);
-        ICurveAnimationTarget Clone();
+        ICurveAnimationTarget Clone(bool copyKeyframes);
         void RestoreFrom(ICurveAnimationTarget backup);
     }
 }

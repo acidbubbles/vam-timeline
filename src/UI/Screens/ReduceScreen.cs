@@ -60,7 +60,7 @@ namespace VamTimeline
 
         private void TakeBackup()
         {
-            _backup = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().Select(t => t.Clone()).ToList();
+            _backup = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().Select(t => t.Clone(true)).ToList();
             _restoreUI.button.interactable = true;
         }
 
@@ -73,18 +73,14 @@ namespace VamTimeline
                 var target = targets.FirstOrDefault(t => t.TargetsSameAs(backup));
                 target?.RestoreFrom(backup);
             }
-            // TODO: Why doesn't the dope sheet refreshes correctly?
         }
 
         private void Reduce()
         {
             // TODO: Also do this for controllers
             StartCoroutine(operations.Reduce().ReduceKeyframes(
-                animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>().ToList(),
-                10f,
-                0.01f)
+                animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList())
             );
-            // TODO: Why doesn't the dope sheet refreshes correctly?
         }
     }
 }

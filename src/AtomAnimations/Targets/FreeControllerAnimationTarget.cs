@@ -153,16 +153,25 @@ namespace VamTimeline
             );
         }
 
-        public ICurveAnimationTarget Clone()
+        public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
             var clone = new FreeControllerAnimationTarget(controller);
-            clone.x.keys.AddRange(x.keys);
-            clone.y.keys.AddRange(y.keys);
-            clone.z.keys.AddRange(z.keys);
-            clone.rotX.keys.AddRange(rotX.keys);
-            clone.rotY.keys.AddRange(rotY.keys);
-            clone.rotZ.keys.AddRange(rotZ.keys);
-            clone.rotW.keys.AddRange(rotW.keys);
+            if (copyKeyframes)
+            {
+                clone.x.keys.AddRange(x.keys);
+                clone.y.keys.AddRange(y.keys);
+                clone.z.keys.AddRange(z.keys);
+                clone.rotX.keys.AddRange(rotX.keys);
+                clone.rotY.keys.AddRange(rotY.keys);
+                clone.rotZ.keys.AddRange(rotZ.keys);
+                clone.rotW.keys.AddRange(rotW.keys);
+            }
+            else
+            {
+                clone.SetKeyframe(0f, GetKeyframePosition(0), GetKeyframeRotation(0), CurveTypeValues.SmoothLocal);
+                clone.SetKeyframe(GetKeyframeTime(x.length - 1), GetKeyframePosition(x.length - 1), GetKeyframeRotation(x.length - 1), CurveTypeValues.SmoothLocal);
+                clone.ComputeCurves();
+            }
             return clone;
         }
 
