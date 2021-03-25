@@ -141,10 +141,24 @@ namespace VamTimeline
             {
                 processor.Branch();
 
-                var buckets = new List<ReducerBucket>
+                var buckets = new List<ReducerBucket>();
+                var leadCurve = processor.target.GetLeadCurve();
+                var sectionStart = 1;
+                for (var key = 1; key < leadCurve.length - 1; key++)
                 {
-                    processor.CreateBucket(1, processor.target.GetLeadCurve().length - 2)
-                };
+                    var curveType = leadCurve.keys[key].curveType;
+                    if (curveType == CurveTypeValues.FlatLinear)
+                    {
+                        // Bucket from the section start until the key before. This one will be skipped.
+                        buckets.Add(processor.CreateBucket(sectionStart, key - 1));
+                        processor.CopyToBranch(key);
+                        processor.CopyToBranch(key + 1);
+                        // Also skip the next one (end of linear section)
+                        sectionStart = ++key;
+                    }
+                }
+                if (sectionStart < leadCurve.length - 3)
+                    buckets.Add(processor.CreateBucket(sectionStart, leadCurve.length - 2));
 
                 for (var iteration = 0; iteration < maxIterations; iteration++)
                 {
