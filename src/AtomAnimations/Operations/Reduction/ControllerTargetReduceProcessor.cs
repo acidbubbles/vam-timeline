@@ -17,11 +17,10 @@ namespace VamTimeline
             var time = source.x.keys[key].time;
             branch.SetSnapshot(time, source.GetSnapshot(time));
             var branchKey = branch.x.KeyframeBinarySearch(time);
-            if (branchKey == -1) throw new InvalidOperationException($"Tried to create keyframe at {time} but no keyframe found there");
+            if (branchKey == -1) return;
             if(curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurveByKey(branchKey, curveType, false);
-            // TODO IMPORTANT Recompute curves!
-            // branch.SmoothNeighbors(branchKey);
+            branch.RecomputeKey(branchKey);
         }
 
         public void AverageToBranch(float keyTime, int fromKey, int toKey)

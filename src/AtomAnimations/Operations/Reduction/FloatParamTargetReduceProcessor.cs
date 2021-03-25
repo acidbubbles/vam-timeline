@@ -17,7 +17,7 @@ namespace VamTimeline
             var branchKey = branch.value.SetKeyframe(source.value.keys[sourceKey].time, source.value.keys[sourceKey].value, CurveTypeValues.SmoothLocal);
             if(curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurve(branchKey, curveType);
-            branch.value.SmoothNeighbors(branchKey);
+            branch.value.RecomputeKey(branchKey);
         }
 
         public void AverageToBranch(float keyTime, int fromKey, int toKey)

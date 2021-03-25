@@ -39,8 +39,8 @@ namespace VamTimeline
                 }
                 finally
                 {
-                    target.dirty = true;
                     target.EndBulkUpdates();
+                    target.dirty = true;
                     progress?.Invoke(new ReduceProgress
                     {
                         startTime = startTime,
@@ -49,6 +49,7 @@ namespace VamTimeline
                         stepsDone = ++done
                     });
                 }
+                yield return 0;
                 yield return 0;
             }
 
@@ -66,8 +67,8 @@ namespace VamTimeline
                 }
                 finally
                 {
-                    target.dirty = true;
                     target.EndBulkUpdates();
+                    target.dirty = true;
                     progress?.Invoke(new ReduceProgress
                     {
                         startTime = startTime,
@@ -76,6 +77,7 @@ namespace VamTimeline
                         stepsDone = ++done
                     });
                 }
+                yield return 0;
                 yield return 0;
             }
 

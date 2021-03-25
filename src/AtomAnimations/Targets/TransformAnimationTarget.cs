@@ -149,16 +149,16 @@ namespace VamTimeline
                 DeleteFrame(x.keys[x.length - 2].time);
         }
 
-        public void SmoothNeighbors(int key)
+        public void RecomputeKey(int key)
         {
             if (key == -1) return;
-            x.SmoothNeighbors(key);
-            y.SmoothNeighbors(key);
-            z.SmoothNeighbors(key);
-            rotX.SmoothNeighbors(key);
-            rotY.SmoothNeighbors(key);
-            rotZ.SmoothNeighbors(key);
-            rotW.SmoothNeighbors(key);
+            x.RecomputeKey(key);
+            y.RecomputeKey(key);
+            z.RecomputeKey(key);
+            rotX.RecomputeKey(key);
+            rotY.RecomputeKey(key);
+            rotZ.RecomputeKey(key);
+            rotW.RecomputeKey(key);
         }
 
         public float[] GetAllKeyframesTime()

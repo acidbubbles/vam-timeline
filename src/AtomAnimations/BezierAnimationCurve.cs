@@ -250,93 +250,100 @@ namespace VamTimeline
 
             for (var key = 0; key < keysCount; key++)
             {
-                BezierKeyframe previous;
-                float previousTime;
-                if (key >= 1)
-                {
-                    previous = keys[key - 1];
-                    previousTime = previous.time;
-                }
-                else if (loop)
-                {
-                    previous = keys[keysCount - 2];
-                    previousTime = previous.time - keys[keysCount - 1].time;
-                }
-                else
-                {
-                    previous = BezierKeyframe.NullKeyframe;
-                    previousTime = 0f;
-                }
-                var current = keys[key];
-                BezierKeyframe next;
-                float nextTime;
-                if (key < keysCount - 1)
-                {
-                    next = keys[key + 1];
-                    nextTime = next.time;
-                }
-                else if (loop)
-                {
-                    next = keys[1];
-                    nextTime = current.time + next.time;
-                }
-                else
-                {
-                    next = BezierKeyframe.NullKeyframe;
-                    nextTime = keys[keysCount - 1].time;
-                }
+                ComputeKey(key, keysCount, globalSmoothing);
+            }
+        }
 
-                var curveType = current.curveType;
-                if (curveType == CurveTypeValues.CopyPrevious && previous.HasValue())
-                {
-                    current.value = previous.value;
-                    curveType = previous.curveType == CurveTypeValues.CopyPrevious ? CurveTypeValues.SmoothLocal : previous.curveType;
-                }
+        private void ComputeKey(int key, int keysCount, bool globalSmoothing)
+        {
+            BezierKeyframe previous;
+            float previousTime;
+            if (key >= 1)
+            {
+                previous = keys[key - 1];
+                previousTime = previous.time;
+            }
+            else if (loop)
+            {
+                previous = keys[keysCount - 2];
+                previousTime = previous.time - keys[keysCount - 1].time;
+            }
+            else
+            {
+                previous = BezierKeyframe.NullKeyframe;
+                previousTime = 0f;
+            }
 
-                switch (curveType)
-                {
-                    case CurveTypeValues.Linear:
-                        LinearInterpolation(previous, ref current, next);
-                        break;
-                    case CurveTypeValues.SmoothLocal:
-                        SmoothLocalInterpolation(previous, previousTime, ref current, next, nextTime);
-                        break;
-                    case CurveTypeValues.SmoothGlobal:
-                        if (!globalSmoothing) SmoothLocalInterpolation(previous, previousTime, ref current, next, nextTime);
-                        break;
-                    case CurveTypeValues.LinearFlat:
-                        if (previous.HasValue())
-                            current.controlPointIn = current.value - (current.value - previous.value) / 3f;
-                        else
-                            current.controlPointIn = current.value;
-                        current.controlPointOut = current.value;
-                        break;
-                    case CurveTypeValues.Flat:
-                    case CurveTypeValues.FlatLong:
-                    case CurveTypeValues.FlatLinear:
+            var current = keys[key];
+            BezierKeyframe next;
+            float nextTime;
+            if (key < keysCount - 1)
+            {
+                next = keys[key + 1];
+                nextTime = next.time;
+            }
+            else if (loop)
+            {
+                next = keys[1];
+                nextTime = current.time + next.time;
+            }
+            else
+            {
+                next = BezierKeyframe.NullKeyframe;
+                nextTime = keys[keysCount - 1].time;
+            }
+
+            var curveType = current.curveType;
+            if (curveType == CurveTypeValues.CopyPrevious && previous.HasValue())
+            {
+                current.value = previous.value;
+                curveType = previous.curveType == CurveTypeValues.CopyPrevious ? CurveTypeValues.SmoothLocal : previous.curveType;
+            }
+
+            switch (curveType)
+            {
+                case CurveTypeValues.Linear:
+                    LinearInterpolation(previous, ref current, next);
+                    break;
+                case CurveTypeValues.SmoothLocal:
+                    SmoothLocalInterpolation(previous, previousTime, ref current, next, nextTime);
+                    break;
+                case CurveTypeValues.SmoothGlobal:
+                    if (!globalSmoothing) SmoothLocalInterpolation(previous, previousTime, ref current, next, nextTime);
+                    break;
+                case CurveTypeValues.LinearFlat:
+                    if (previous.HasValue())
+                        current.controlPointIn = current.value - (current.value - previous.value) / 3f;
+                    else
+                        current.controlPointIn = current.value;
+                    current.controlPointOut = current.value;
+                    break;
+                case CurveTypeValues.Flat:
+                case CurveTypeValues.FlatLong:
+                case CurveTypeValues.FlatLinear:
+                    current.controlPointIn = current.value;
+                    current.controlPointOut = current.value;
+                    break;
+                case CurveTypeValues.Bounce:
+                    if (previous.HasValue() && next.HasValue())
+                    {
+                        current.controlPointIn = current.value - (current.value - next.value) / 1.4f;
+                        current.controlPointOut = current.value + (previous.value - current.value) / 1.8f;
+                    }
+                    else
+                    {
                         current.controlPointIn = current.value;
                         current.controlPointOut = current.value;
-                        break;
-                    case CurveTypeValues.Bounce:
-                        if (previous.HasValue() && next.HasValue())
-                        {
-                            current.controlPointIn = current.value - (current.value - next.value) / 1.4f;
-                            current.controlPointOut = current.value + (previous.value - current.value) / 1.8f;
-                        }
-                        else
-                        {
-                            current.controlPointIn = current.value;
-                            current.controlPointOut = current.value;
-                        }
-                        break;
-                    case CurveTypeValues.LeaveAsIs:
-                        break;
-                    default:
-                        continue;
-                }
+                    }
 
-                keys[key] = current;
+                    break;
+                case CurveTypeValues.LeaveAsIs:
+                    break;
+                default:
+                    return;
             }
+
+            keys[key] = current;
         }
 
         private static void LinearInterpolation(BezierKeyframe previous, ref BezierKeyframe current, BezierKeyframe next)
@@ -512,32 +519,14 @@ namespace VamTimeline
             }
         }
 
-        public void SmoothNeighbors(int key)
+        public void RecomputeKey(int key)
         {
-            var previous2Key = key > 1 ? key - 2 : -1;
-            var previous1Key = key > 0 ? key - 1 : -1;
-            var currentKey = key;
-            var next1Key = key < keys.Count - 1 ? key + 1 : -1;
-            var next2Key = key < keys.Count - 2 ? key + 2 : -1;
-
-            var previous1Keyframe = previous1Key != -1 ? keys[previous1Key] : BezierKeyframe.NullKeyframe;
-            var currentKeyframe = keys[currentKey];
-            var next1Keyframe = next1Key != -1 ? keys[next1Key] : BezierKeyframe.NullKeyframe;
-
-            if (previous1Key != -1)
-            {
-                var previous2Keyframe = previous2Key != -1 ? keys[previous2Key] : BezierKeyframe.NullKeyframe;
-                SmoothLocalInterpolation(previous2Keyframe, previous2Keyframe.time, ref previous1Keyframe, currentKeyframe, currentKeyframe.time);
-                SetKeyframeByKey(previous1Key, previous1Keyframe);
-            }
-            SmoothLocalInterpolation(previous1Keyframe, previous1Keyframe.time, ref currentKeyframe, next1Keyframe, next1Keyframe.time);
-            SetKeyframeByKey(currentKey, currentKeyframe);
-            if (next1Key != -1)
-            {
-                var next2Keyframe = next2Key != -1 ? keys[next2Key] : BezierKeyframe.NullKeyframe;
-                SmoothLocalInterpolation(currentKeyframe, currentKeyframe.time, ref next1Keyframe, next2Keyframe, next2Keyframe.time);
-                SetKeyframeByKey(next1Key, next1Keyframe);
-            }
+            var keysCount = keys.Count;
+            if (key > 0)
+                ComputeKey(key - 1, keysCount, false);
+            ComputeKey(key, keysCount, false);
+            if(key < keysCount - 1)
+                ComputeKey(key + 1, keysCount, false);
         }
 
         public void SetKeySnapshot(float time, BezierKeyframe keyframe)
