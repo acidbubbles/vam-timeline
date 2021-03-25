@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,6 +9,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Reduce";
 
+        private static string _backupTime;
         private static List<ICurveAnimationTarget> _backup;
 
         public override string screenId => ScreenName;
@@ -61,6 +63,7 @@ namespace VamTimeline
             animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
             _restoreUI.button.interactable = _backup != null;
+            if (_backup != null) _restoreUI.label = $"Restore [{_backupTime}]";
         }
 
         private void OnTargetsSelectionChanged()
@@ -86,6 +89,8 @@ namespace VamTimeline
         private void TakeBackup()
         {
             _backup = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().Select(t => t.Clone(true)).ToList();
+            _backupTime = DateTime.Now.ToShortTimeString();
+            _restoreUI.label = $"Restore [{_backupTime}]";
             _restoreUI.button.interactable = true;
         }
 
