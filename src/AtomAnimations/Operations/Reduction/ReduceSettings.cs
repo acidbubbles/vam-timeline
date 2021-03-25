@@ -4,6 +4,7 @@
     {
         public int fps;
         public bool avgToSnap;
+        public bool removeFlats;
         public bool simplify;
         public float minMeaningfulDistance;
         public float minMeaningfulRotation;

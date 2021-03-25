@@ -1,39 +1,59 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace VamTimeline
 {
     public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerAnimationTarget>, ITargetReduceProcessor
     {
-        ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
+        ICurveAnimationTarget ITargetReduceProcessor.target => base.source;
 
-        public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target, ReduceSettings settings)
-            : base(target, settings)
+        public ControllerTargetReduceProcessor(FreeControllerAnimationTarget source, ReduceSettings settings)
+            : base(source, settings)
         {
         }
 
-        public void CopyToBranch(int key)
+        public void CopyToBranch(int key, int curveType = CurveTypeValues.Undefined)
         {
-            var time = target.x.keys[key].time;
-            branch.SetSnapshot(time, target.GetSnapshot(time));
+            var time = source.x.keys[key].time;
+            branch.SetSnapshot(time, source.GetSnapshot(time));
             var branchKey = branch.x.KeyframeBinarySearch(time);
-            branch.SmoothNeighbors(branchKey);
+            if (branchKey == -1) throw new InvalidOperationException($"Tried to create keyframe at {time} but no keyframe found there");
+            if(curveType != CurveTypeValues.Undefined)
+                branch.ChangeCurveByKey(branchKey, curveType, false);
+            // TODO IMPORTANT Recompute curves!
+            // branch.SmoothNeighbors(branchKey);
         }
 
         public void AverageToBranch(float keyTime, int fromKey, int toKey)
         {
             var position = Vector3.zero;
             var rotationCum = Vector4.zero;
-            var firstRotation = target.GetKeyframeRotation(fromKey);
-            var duration = target.x.GetKeyframeByKey(toKey).time - target.x.GetKeyframeByKey(fromKey).time;
+            var firstRotation = source.GetKeyframeRotation(fromKey);
+            var duration = source.x.GetKeyframeByKey(toKey).time - source.x.GetKeyframeByKey(fromKey).time;
             for (var key = fromKey; key < toKey; key++)
             {
-                var frameDuration = target.x.GetKeyframeByKey(key + 1).time - target.x.GetKeyframeByKey(key).time;
+                var frameDuration = source.x.GetKeyframeByKey(key + 1).time - source.x.GetKeyframeByKey(key).time;
                 var weight = frameDuration / duration;
-                position += target.GetKeyframePosition(key) * weight;
-                QuaternionUtil.AverageQuaternion(ref rotationCum, target.GetKeyframeRotation(key), firstRotation, weight);
+                position += source.GetKeyframePosition(key) * weight;
+                QuaternionUtil.AverageQuaternion(ref rotationCum, source.GetKeyframeRotation(key), firstRotation, weight);
             }
-            branch.SetKeyframe(keyTime, position, target.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
+            branch.SetKeyframe(keyTime, position, source.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
 
+        }
+
+        public bool IsStable(int key1, int key2)
+        {
+            var positionDiff = Vector3.Distance(
+                source.GetKeyframePosition(key1),
+                source.GetKeyframePosition(key2)
+            );
+            if (positionDiff >= settings.minMeaningfulDistance / 10f) return false;
+            var rotationAngle = Quaternion.Angle(
+                source.EvaluateRotation(key1),
+                source.EvaluateRotation(key2)
+            );
+            if (rotationAngle >= settings.minMeaningfulRotation / 10f) return false;
+            return true;
         }
 
         public override ReducerBucket CreateBucket(int from, int to)
@@ -41,15 +61,15 @@ namespace VamTimeline
             var bucket = base.CreateBucket(from, to);
             for (var i = from; i <= to; i++)
             {
-                var time = target.x.keys[i].time;
+                var time = source.x.keys[i].time;
 
                 var positionDiff = Vector3.Distance(
                     branch.EvaluatePosition(time),
-                    target.EvaluatePosition(time)
+                    source.EvaluatePosition(time)
                 );
                 var rotationAngle = Quaternion.Angle(
                     branch.EvaluateRotation(time),
-                    target.EvaluateRotation(time)
+                    source.EvaluateRotation(time)
                 );
                 // This is an attempt to compare translations and rotations
                 // TODO: Normalize the values, investigate how to do this with settings

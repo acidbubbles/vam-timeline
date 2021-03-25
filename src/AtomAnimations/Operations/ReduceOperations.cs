@@ -96,7 +96,6 @@ namespace VamTimeline
                 var lead = processor.target.GetLeadCurve();
                 var toKey = 0;
                 processor.Branch();
-                SuperController.LogMessage($"{minFrameDistance:0.000} {animationLength:0.000}");
                 for (var keyTime = 0f; keyTime <= animationLength; keyTime += minFrameDistance)
                 {
                     var fromKey = toKey;
@@ -111,12 +110,31 @@ namespace VamTimeline
                 processor.Commit();
             }
 
-            // STEP 2: Apply to the curve, adjust end time
+            // STEP 2: Fine flat sections
+            if (_settings.removeFlats)
+            {
+                processor.Branch();
+                var lead = processor.target.GetLeadCurve();
+                var keysCount = lead.keys.Count - 1;
+                var sectionStart = 0;
+                for (var key = 1; key < keysCount; key++)
+                {
+                    if (!processor.IsStable(sectionStart, key))
+                    {
+                        var duration = lead.keys[key].time - lead.keys[sectionStart].time;
+                        if (key - sectionStart > 3 && duration > 0.5f)
+                        {
+                            processor.CopyToBranch(sectionStart, CurveTypeValues.FlatLinear);
+                            processor.CopyToBranch(key - 1, CurveTypeValues.LinearFlat);
+                        }
+                        processor.CopyToBranch(key);
+                        sectionStart = ++key;
+                    }
+                }
+                processor.Commit();
+            }
 
-            // STEP 3: Run the buckets algorithm to find flat and linear curves (mostly flat ones)
-
-            // STEP 4: Run the reduce algo
-
+            // STEP 3: Run the reduce algo
             if (_settings.simplify)
             {
                 processor.Branch();

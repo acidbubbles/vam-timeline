@@ -2,24 +2,24 @@
 {
     public abstract class TargetReduceProcessorBase<T> where T : class, ICurveAnimationTarget
     {
-        public readonly T target;
+        public readonly T source;
         public readonly ReduceSettings settings;
         protected T branch;
 
-        protected TargetReduceProcessorBase(T target, ReduceSettings settings)
+        protected TargetReduceProcessorBase(T source, ReduceSettings settings)
         {
-            this.target = target;
+            this.source = source;
             this.settings = settings;
         }
 
         public void Branch()
         {
-            branch = target.Clone(false) as T;
+            branch = source.Clone(false) as T;
         }
 
         public void Commit()
         {
-            target.RestoreFrom(branch);
+            source.RestoreFrom(branch);
             branch = null;
         }
 

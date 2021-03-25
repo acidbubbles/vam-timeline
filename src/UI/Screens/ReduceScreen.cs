@@ -13,6 +13,7 @@ namespace VamTimeline
         private static List<ICurveAnimationTarget> _backup;
         private static readonly JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private static readonly JSONStorableBool _averageToSnapJSON;
+        private static readonly JSONStorableBool _removeFlatSectionsKeyframes;
         private static readonly JSONStorableBool _simplifyKeyframes;
         private static readonly JSONStorableFloat _reduceMinDistanceJSON;
         private static readonly JSONStorableFloat _reduceMinRotationJSON;
@@ -29,6 +30,7 @@ namespace VamTimeline
             _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Frames per second", 10f, 1f, 100f);
             _reduceMaxFramesPerSecondJSON.setCallbackFunction = val => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
             _averageToSnapJSON = new JSONStorableBool("Average and snap to fps", true);
+            _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
             _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
             _reduceMinDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f);
             _reduceMinRotationJSON = new JSONStorableFloat("Minimum meaningful rotation", 1f, 0f, 10f);
@@ -51,6 +53,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F1";
             prefabFactory.CreateToggle(_averageToSnapJSON);
+            prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
             prefabFactory.CreateToggle(_simplifyKeyframes);
             prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F3";
             prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F2";
@@ -99,6 +102,7 @@ namespace VamTimeline
             {
                 fps = (int)_reduceMaxFramesPerSecondJSON.val,
                 avgToSnap = _averageToSnapJSON.val,
+                removeFlats = _removeFlatSectionsKeyframes.val,
                 simplify = _simplifyKeyframes.val,
                 minMeaningfulDistance = _reduceMinDistanceJSON.val,
                 minMeaningfulRotation = _reduceMinRotationJSON.val,

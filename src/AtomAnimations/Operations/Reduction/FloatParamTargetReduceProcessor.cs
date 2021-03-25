@@ -4,17 +4,19 @@ namespace VamTimeline
 {
     public class FloatParamTargetReduceProcessor : TargetReduceProcessorBase<FloatParamAnimationTarget>, ITargetReduceProcessor
     {
-        ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
+        ICurveAnimationTarget ITargetReduceProcessor.target => base.source;
 
-        public FloatParamTargetReduceProcessor(FloatParamAnimationTarget target, ReduceSettings settings)
-            : base(target, settings)
+        public FloatParamTargetReduceProcessor(FloatParamAnimationTarget source, ReduceSettings settings)
+            : base(source, settings)
         {
         }
 
 
-        public void CopyToBranch(int key)
+        public void CopyToBranch(int sourceKey, int curveType = CurveTypeValues.Undefined)
         {
-            var branchKey = branch.value.SetKeyframe(target.value.keys[key].time, target.value.keys[key].value, CurveTypeValues.SmoothLocal);
+            var branchKey = branch.value.SetKeyframe(source.value.keys[sourceKey].time, source.value.keys[sourceKey].value, CurveTypeValues.SmoothLocal);
+            if(curveType != CurveTypeValues.Undefined)
+                branch.ChangeCurve(branchKey, curveType);
             branch.value.SmoothNeighbors(branchKey);
         }
 
@@ -24,12 +26,20 @@ namespace VamTimeline
             var valueSum = 0f;
             for (var key = fromKey; key < toKey; key++)
             {
-                var frame = target.value.GetKeyframeByKey(key);
+                var frame = source.value.GetKeyframeByKey(key);
                 valueSum += frame.value;
-                timeSum += target.value.GetKeyframeByKey(key + 1).time - frame.time;
+                timeSum += source.value.GetKeyframeByKey(key + 1).time - frame.time;
             }
 
             branch.SetKeyframe(keyTime, valueSum / timeSum, false);
+        }
+
+        public bool IsStable(int key1, int key2)
+        {
+            if (settings.minMeaningfulFloatParamRangeRatio <= 0) return false;
+            var value1 = source.value.GetKeyframeByKey(key1).value;
+            var value2 = source.value.GetKeyframeByKey(key2).value;
+            return Mathf.Abs(value2 - value1) / (source.floatParam.max - source.floatParam.min) < (settings.minMeaningfulFloatParamRangeRatio / 10f);
         }
 
         public override ReducerBucket CreateBucket(int from, int to)
@@ -37,14 +47,14 @@ namespace VamTimeline
             var bucket = base.CreateBucket(from, to);
             for (var i = from; i <= to; i++)
             {
-                var time = target.value.keys[i].time;
+                var time = source.value.keys[i].time;
                 // TODO: Normalize the delta values based on range
                 float delta;
                 if (settings.minMeaningfulFloatParamRangeRatio > 0)
                     delta = Mathf.Abs(
                         branch.value.Evaluate(time) -
-                        target.value.Evaluate(time)
-                    ) / (target.floatParam.max - target.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
+                        source.value.Evaluate(time)
+                    ) / (source.floatParam.max - source.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
                 else
                     delta = 1f;
                 if (delta > bucket.largestDelta)

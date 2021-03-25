@@ -54,20 +54,26 @@ namespace VamTimeline
 
         public void ChangeCurve(float time, int curveType, bool makeDirty = true)
         {
+            var key = GetLeadCurve().KeyframeBinarySearch(time);
+            ChangeCurveByKey(key, curveType, makeDirty);
+        }
+
+        public void ChangeCurveByKey(int key, int curveType, bool makeDirty = true)
+        {
+            if (key == -1) return;
             foreach (var curve in GetCurves())
             {
-                var key = curve.KeyframeBinarySearch(time);
-                if (key == -1) continue;
                 var keyframe = curve.GetKeyframeByKey(key);
                 keyframe.curveType = curveType;
                 curve.SetKeyframeByKey(key, keyframe);
-                if (curve.loop && time == 0)
+                if (curve.loop && key == 0)
                 {
                     var last = curve.GetLastFrame();
                     last.curveType = curveType;
                     curve.SetLastFrame(last);
                 }
             }
+
             if (makeDirty) dirty = true;
         }
 
