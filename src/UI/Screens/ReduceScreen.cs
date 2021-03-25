@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -14,6 +15,12 @@ namespace VamTimeline
         private UIDynamicButton _backupUI;
         private UIDynamicButton _restoreUI;
         private UIDynamicButton _reduceUI;
+        private JSONStorableFloat _reduceMinPosDistanceJSON;
+        private JSONStorableFloat _reduceMinRotationJSON;
+        private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
+        private float _lastReduceMinPosDistance;
+        private float _lastReduceMinRotation;
+        private float _lastReduceMaxFramesPerSecond;
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -29,6 +36,24 @@ namespace VamTimeline
             _restoreUI.button.onClick.AddListener(RestoreBackup);
 
             prefabFactory.CreateSpacer();
+
+            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, val => _lastReduceMinPosDistance = val, 0.001f, 0.5f)
+            {
+                valNoCallback = _lastReduceMinPosDistance
+            };
+            prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
+
+            _reduceMinRotationJSON = new JSONStorableFloat("Minimum rotation between frames", 10f, val => _lastReduceMinRotation = val, 0.1f, 90f)
+            {
+                valNoCallback = _lastReduceMinRotation
+            };
+            prefabFactory.CreateSlider(_reduceMinRotationJSON);
+
+            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 5f, val => _reduceMaxFramesPerSecondJSON.valNoCallback = _lastReduceMaxFramesPerSecond = Mathf.Round(val), 1f, 10f)
+            {
+                valNoCallback = _lastReduceMaxFramesPerSecond
+            };
+            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON);
 
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);

@@ -3,12 +3,10 @@ src\AtomAnimations\Operations\ImportOperations.cs
 src\AtomAnimations\Operations\KeyframesOperations.cs
 src\AtomAnimations\Operations\LayersOperations.cs
 src\AtomAnimations\Operations\MocapImportOperations.cs
-src\AtomAnimations\Operations\MocapOperationsBase.cs
-src\AtomAnimations\Operations\MocapReduceOperations.cs
 src\AtomAnimations\Operations\OffsetOperations.cs
 src\AtomAnimations\Operations\OperationsFactory.cs
-src\AtomAnimations\Operations\ReduceOperations.cs
 src\AtomAnimations\Operations\RecordOperations.cs
+src\AtomAnimations\Operations\ReduceOperations.cs
 src\AtomAnimations\Operations\ResizeAnimationOperations.cs
 src\AtomAnimations\Operations\TargetsOperations.cs
 src\AtomAnimations\Smoothing\BezierAnimationCurveSmoothingBase.cs

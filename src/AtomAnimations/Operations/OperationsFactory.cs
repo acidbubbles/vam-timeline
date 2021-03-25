@@ -53,14 +53,9 @@ namespace VamTimeline
             return new OffsetOperations(_clip);
         }
 
-        public MocapImportOperations MocapImport(MocapImportSettings settings)
+        public MocapImportOperations MocapImport()
         {
-            return new MocapImportOperations(_containingAtom, _animation, _clip, settings);
-        }
-
-        public MocapReduceOperations MocapReduce(MocapReduceSettings settings)
-        {
-            return new MocapReduceOperations(_containingAtom, _animation, _clip, settings);
+            return new MocapImportOperations(_containingAtom, _animation, _clip);
         }
 
         public ReduceOperations Reduce()
