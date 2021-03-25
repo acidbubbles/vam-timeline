@@ -96,6 +96,7 @@ namespace VamTimeline
             void Commit();
             ReducerBucket CreateBucket(int from, int to);
             void CopyToBranch(int key);
+            void AverageToBranch(float keyTime, int fromKey, int toKey);
         }
 
         public struct ReducerBucket
@@ -158,6 +159,23 @@ namespace VamTimeline
                 branch.SmoothNeighbors(branchKey);
             }
 
+            public void AverageToBranch(float keyTime, int fromKey, int toKey)
+            {
+                var position = Vector3.zero;
+                var rotationCum = Vector4.zero;
+                var firstRotation = target.GetKeyframeRotation(fromKey);
+                var duration = target.x.GetKeyframeByKey(toKey).time - target.x.GetKeyframeByKey(fromKey).time;
+                for (var key = fromKey; key < toKey; key++)
+                {
+                    var frameDuration = target.x.GetKeyframeByKey(key + 1).time - target.x.GetKeyframeByKey(key).time;
+                    var weight = frameDuration / duration;
+                    position += target.GetKeyframePosition(key) * weight;
+                    QuaternionUtil.AverageQuaternion(ref rotationCum, target.GetKeyframeRotation(key), firstRotation, weight);
+                }
+                branch.SetKeyframe(keyTime, position, target.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
+
+            }
+
             public override ReducerBucket CreateBucket(int from, int to)
             {
                 var bucket = base.CreateBucket(from, to);
@@ -199,6 +217,26 @@ namespace VamTimeline
             {
             }
 
+
+            public void CopyToBranch(int key)
+            {
+                var branchKey = branch.value.SetKeyframe(target.value.keys[key].time, target.value.keys[key].value, CurveTypeValues.SmoothLocal);
+                branch.value.SmoothNeighbors(branchKey);
+            }
+
+            public void AverageToBranch(float keyTime, int fromKey, int toKey)
+            {
+                var timeSum = 0f;
+                var valueSum = 0f;
+                for (var key = fromKey; key < toKey; key++)
+                {
+                    var frame = target.value.GetKeyframeByKey(key);
+                    valueSum += frame.value;
+                    timeSum += target.value.GetKeyframeByKey(key + 1).time - frame.time;
+                }
+                branch.SetKeyframe(keyTime, valueSum / timeSum, false);
+            }
+
             public override ReducerBucket CreateBucket(int from, int to)
             {
                 var bucket = base.CreateBucket(from, to);
@@ -218,12 +256,6 @@ namespace VamTimeline
                 }
                 return bucket;
             }
-
-            public void CopyToBranch(int key)
-            {
-                var branchKey = branch.value.SetKeyframe(target.value.keys[key].time, target.value.keys[key].value, CurveTypeValues.SmoothLocal);
-                branch.value.SmoothNeighbors(branchKey);
-            }
         }
 
         protected IEnumerator Process(ITargetReduceProcessor processor)
@@ -234,9 +266,25 @@ namespace VamTimeline
             var maxIterations = (int)(animationLength * 10);
 
             // STEP 1: Average keyframes based on the desired FPS
-            for (var i = 0f; i < animationLength * maxFramesPerSecond; i += minFrameDistance)
+            if (maxFramesPerSecond < 50)
             {
-                // Average from t-0.5 to t+0.5 given 1 is the frame distance
+                var avgTimeRange = minFrameDistance / 2f;
+                var lead = processor.target.GetLeadCurve();
+                var toKey = 0;
+                processor.Branch();
+                for (var keyTime = 0f; keyTime <= animationLength; keyTime += minFrameDistance)
+                {
+                    var fromKey = toKey;
+                    while (toKey < lead.length - 1 && lead.keys[toKey].time < keyTime + avgTimeRange)
+                    {
+                        toKey++;
+                    }
+
+                    if (toKey - fromKey > 0)
+                        processor.AverageToBranch(keyTime, fromKey, toKey);
+                    // Average from t-0.5 to t+0.5 given 1 is the frame distance
+                }
+                processor.Commit();
             }
 
             // STEP 2: Apply to the curve, adjust end time
