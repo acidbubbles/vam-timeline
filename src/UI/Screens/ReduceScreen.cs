@@ -77,10 +77,17 @@ namespace VamTimeline
 
         private void Reduce()
         {
+            if(_backup == null)
+                TakeBackup();
+
             _reduceUI.button.interactable = false;
             _reduceUI.label = "Reducing...";
             StartCoroutine(operations.Reduce().ReduceKeyframes(
                 animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList(),
+            progress =>
+                {
+                    _reduceUI.label = $"{progress.stepsDone}/{progress.stepsTotal} ({progress.timeLeft:0}s left)";
+                },
                 () =>
                 {
                     _reduceUI.button.interactable = true;

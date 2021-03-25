@@ -179,21 +179,22 @@ namespace VamTimeline
         {
             var target = backup as FreeControllerAnimationTarget;
             if (target == null) return;
-            if (Math.Abs(target.x.GetLastFrame().time - x.GetLastFrame().time) > 0.0001) return;
+            var maxTime = x.GetLastFrame().time;
             x.keys.Clear();
-            x.keys.AddRange(target.x.keys);
+            x.keys.AddRange(target.x.keys.Where(k => k.time < maxTime + 0.0001f));
             y.keys.Clear();
-            y.keys.AddRange(target.y.keys);
+            y.keys.AddRange(target.y.keys.Where(k => k.time < maxTime + 0.0001f));
             z.keys.Clear();
-            z.keys.AddRange(target.z.keys);
+            z.keys.AddRange(target.z.keys.Where(k => k.time < maxTime + 0.0001f));
             rotX.keys.Clear();
-            rotX.keys.AddRange(target.rotX.keys);
+            rotX.keys.AddRange(target.rotX.keys.Where(k => k.time < maxTime + 0.0001f));
             rotY.keys.Clear();
-            rotY.keys.AddRange(target.rotY.keys);
+            rotY.keys.AddRange(target.rotY.keys.Where(k => k.time < maxTime + 0.0001f));
             rotZ.keys.Clear();
-            rotZ.keys.AddRange(target.rotZ.keys);
+            rotZ.keys.AddRange(target.rotZ.keys.Where(k => k.time < maxTime + 0.0001f));
             rotW.keys.Clear();
-            rotW.keys.AddRange(target.rotW.keys);
+            rotW.keys.AddRange(target.rotW.keys.Where(k => k.time < maxTime + 0.0001f));
+            AddEdgeFramesIfMissing(maxTime);
             dirty = true;
         }
 

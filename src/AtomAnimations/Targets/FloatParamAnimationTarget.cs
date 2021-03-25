@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -146,9 +147,10 @@ namespace VamTimeline
         {
             var target = backup as FloatParamAnimationTarget;
             if (target == null) return;
-            if (Math.Abs(target.value.GetLastFrame().time - value.GetLastFrame().time) > 0.0001) return;
+            var maxTime = value.GetLastFrame().time;
             value.keys.Clear();
-            value.keys.AddRange(target.value.keys);
+            value.keys.AddRange(target.value.keys.Where(k => k.time < maxTime + 0.0001f));
+            value.AddEdgeFramesIfMissing(maxTime, CurveTypeValues.SmoothLocal);
             dirty = true;
         }
 

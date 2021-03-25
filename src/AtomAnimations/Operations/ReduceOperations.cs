@@ -8,6 +8,15 @@ namespace VamTimeline
 {
     public class ReduceOperations
     {
+        public struct Progress
+        {
+            public float startTime;
+            public float nowTime;
+            public float stepsDone;
+            public float stepsTotal;
+            public float timeLeft => ((nowTime - startTime) / stepsDone) * (stepsTotal - stepsDone);
+        }
+
         private readonly AtomAnimationClip _clip;
 
         public ReduceOperations(AtomAnimationClip clip)
@@ -15,9 +24,13 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets, Action callback)
+        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets, Action<Progress> progress, Action callback)
         {
             SuperController.LogMessage($"Timeline: Reducing {targets.Count} targets. Please wait...");
+
+            var steps = targets.Count;
+            var startTime = Time.realtimeSinceStartup;
+            var done = 0;
 
             foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
             {
@@ -35,6 +48,13 @@ namespace VamTimeline
                 {
                     target.dirty = true;
                     target.EndBulkUpdates();
+                    progress?.Invoke(new Progress
+                    {
+                        startTime = startTime,
+                        nowTime = Time.realtimeSinceStartup,
+                        stepsTotal = steps,
+                        stepsDone = ++done
+                    });
                 }
                 yield return 0;
             }
@@ -55,6 +75,13 @@ namespace VamTimeline
                 {
                     target.dirty = true;
                     target.EndBulkUpdates();
+                    progress?.Invoke(new Progress
+                    {
+                        startTime = startTime,
+                        nowTime = Time.realtimeSinceStartup,
+                        stepsTotal = steps,
+                        stepsDone = ++done
+                    });
                 }
                 yield return 0;
             }
@@ -113,6 +140,9 @@ namespace VamTimeline
 
         public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerAnimationTarget>, ITargetReduceProcessor
         {
+            private const float _smallestDistanceUnit = 0.1f;
+            private const float _smallestRotationUnit = 2f;
+
             ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
 
             public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target)
@@ -145,8 +175,8 @@ namespace VamTimeline
                     );
                     // This is an attempt to compare translations and rotations
                     // TODO: Normalize the values, investigate how to do this with settings
-                    var normalizedPositionDistance = positionDiff / 0.4f;
-                    var normalizedRotationAngle = rotationAngle / 180f;
+                    var normalizedPositionDistance = positionDiff / _smallestDistanceUnit;
+                    var normalizedRotationAngle = rotationAngle / _smallestRotationUnit;
                     var delta = normalizedPositionDistance + normalizedRotationAngle;
                     if (delta > bucket.largestDelta)
                     {
@@ -160,6 +190,8 @@ namespace VamTimeline
 
         public class FloatParamTargetReduceProcessor : TargetReduceProcessorBase<FloatParamAnimationTarget>, ITargetReduceProcessor
         {
+            private const float _smallestNormalizeValueUnit = 0.01f;
+
             ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
 
             public FloatParamTargetReduceProcessor(FloatParamAnimationTarget target)
@@ -177,7 +209,7 @@ namespace VamTimeline
                     var delta = Mathf.Abs(
                         branch.value.Evaluate(time) -
                         target.value.Evaluate(time)
-                    ) / (target.floatParam.max - target.floatParam.min);
+                    ) / (target.floatParam.max - target.floatParam.min) / _smallestNormalizeValueUnit;
                     if (delta > bucket.largestDelta)
                     {
                         bucket.largestDelta = delta;
@@ -239,7 +271,7 @@ namespace VamTimeline
 
                 // Cannot find large enough diffs, exit
                 if (keyWithLargestDelta == -1) break;
-                if(largestDelta < 0.1f) break; // TODO: Configurable pos and rot weight, pos and rot min change inside bucket scan
+                if (largestDelta < 1f) break; // TODO: Configurable pos and rot weight, pos and rot min change inside bucket scan
 
                 processor.CopyToBranch(keyWithLargestDelta);
 
