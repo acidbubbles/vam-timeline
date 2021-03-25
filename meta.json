@@ -9,6 +9,13 @@
   "promotionalLink": "https://github.com/acidbubbles/vam-timeline",
   "programVersion": "1.19.0.5",
   "contentList": [
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\ControllerTargetReduceProcessor.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\FloatParamTargetReduceProcessor.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\ITargetReduceProcessor.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\ReduceProgress.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\ReducerBucket.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\ReduceSettings.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\Reduction\\TargetReduceProcessorBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\AddAnimationOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\ImportOperations.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Operations\\KeyframesOperations.cs",

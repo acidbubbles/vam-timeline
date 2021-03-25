@@ -6,27 +6,8 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ReduceSettings
-    {
-        public int fps;
-        public bool avgToSnap;
-        public bool simplify;
-        public float minMeaningfulDistance;
-        public float minMeaningfulRotation;
-        public float minMeaningfulFloatParamRangeRatio;
-    }
-
     public class ReduceOperations
     {
-        public struct Progress
-        {
-            public float startTime;
-            public float nowTime;
-            public float stepsDone;
-            public float stepsTotal;
-            public float timeLeft => ((nowTime - startTime) / stepsDone) * (stepsTotal - stepsDone);
-        }
-
         private readonly AtomAnimationClip _clip;
         private readonly ReduceSettings _settings;
 
@@ -36,7 +17,7 @@ namespace VamTimeline
             _settings = settings;
         }
 
-        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets, Action<Progress> progress, Action callback)
+        public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets, Action<ReduceProgress> progress, Action callback)
         {
             SuperController.LogMessage($"Timeline: Reducing {targets.Count} targets. Please wait...");
 
@@ -60,7 +41,7 @@ namespace VamTimeline
                 {
                     target.dirty = true;
                     target.EndBulkUpdates();
-                    progress?.Invoke(new Progress
+                    progress?.Invoke(new ReduceProgress
                     {
                         startTime = startTime,
                         nowTime = Time.realtimeSinceStartup,
@@ -87,7 +68,7 @@ namespace VamTimeline
                 {
                     target.dirty = true;
                     target.EndBulkUpdates();
-                    progress?.Invoke(new Progress
+                    progress?.Invoke(new ReduceProgress
                     {
                         startTime = startTime,
                         nowTime = Time.realtimeSinceStartup,
@@ -101,181 +82,11 @@ namespace VamTimeline
             callback?.Invoke();
         }
 
-        public interface ITargetReduceProcessor
-        {
-            ICurveAnimationTarget target { get; }
-            void Branch();
-            void Commit();
-            ReducerBucket CreateBucket(int from, int to);
-            void CopyToBranch(int key);
-            void AverageToBranch(float keyTime, int fromKey, int toKey);
-        }
-
-        public struct ReducerBucket
-        {
-            public int from;
-            public int to;
-            public int keyWithLargestDelta;
-            public float largestDelta;
-        }
-
-        public abstract class TargetReduceProcessorBase<T> where T : class, ICurveAnimationTarget
-        {
-            public readonly T target;
-            public readonly ReduceSettings settings;
-            protected T branch;
-
-            protected TargetReduceProcessorBase(T target, ReduceSettings settings)
-            {
-                this.target = target;
-                this.settings = settings;
-            }
-
-            public void Branch()
-            {
-                branch = target.Clone(false) as T;
-            }
-
-            public void Commit()
-            {
-                target.RestoreFrom(branch);
-                branch = null;
-            }
-
-            public virtual ReducerBucket CreateBucket(int from, int to)
-            {
-                return new ReducerBucket
-                {
-                    from = from,
-                    to = to,
-                    keyWithLargestDelta = -1
-                };
-            }
-        }
-
-        public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerAnimationTarget>, ITargetReduceProcessor
-        {
-            ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
-
-            public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target, ReduceSettings settings)
-                : base(target, settings)
-            {
-            }
-
-            public void CopyToBranch(int key)
-            {
-                var time = target.x.keys[key].time;
-                branch.SetSnapshot(time, target.GetSnapshot(time));
-                var branchKey = branch.x.KeyframeBinarySearch(time);
-                branch.SmoothNeighbors(branchKey);
-            }
-
-            public void AverageToBranch(float keyTime, int fromKey, int toKey)
-            {
-                var position = Vector3.zero;
-                var rotationCum = Vector4.zero;
-                var firstRotation = target.GetKeyframeRotation(fromKey);
-                var duration = target.x.GetKeyframeByKey(toKey).time - target.x.GetKeyframeByKey(fromKey).time;
-                for (var key = fromKey; key < toKey; key++)
-                {
-                    var frameDuration = target.x.GetKeyframeByKey(key + 1).time - target.x.GetKeyframeByKey(key).time;
-                    var weight = frameDuration / duration;
-                    position += target.GetKeyframePosition(key) * weight;
-                    QuaternionUtil.AverageQuaternion(ref rotationCum, target.GetKeyframeRotation(key), firstRotation, weight);
-                }
-                branch.SetKeyframe(keyTime, position, target.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
-
-            }
-
-            public override ReducerBucket CreateBucket(int from, int to)
-            {
-                var bucket = base.CreateBucket(from, to);
-                for (var i = from; i <= to; i++)
-                {
-                    var time = target.x.keys[i].time;
-
-                    var positionDiff = Vector3.Distance(
-                        branch.EvaluatePosition(time),
-                        target.EvaluatePosition(time)
-                    );
-                    var rotationAngle = Quaternion.Angle(
-                        branch.EvaluateRotation(time),
-                        target.EvaluateRotation(time)
-                    );
-                    // This is an attempt to compare translations and rotations
-                    // TODO: Normalize the values, investigate how to do this with settings
-                    var normalizedPositionDistance = settings.minMeaningfulDistance > 0 ? positionDiff / settings.minMeaningfulDistance : 1f;
-                    var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationAngle / settings.minMeaningfulRotation : 1f;
-                    var delta = normalizedPositionDistance + normalizedRotationAngle;
-                    if (delta > bucket.largestDelta)
-                    {
-                        bucket.largestDelta = delta;
-                        bucket.keyWithLargestDelta = i;
-                    }
-                }
-                return bucket;
-            }
-        }
-
-        public class FloatParamTargetReduceProcessor : TargetReduceProcessorBase<FloatParamAnimationTarget>, ITargetReduceProcessor
-        {
-            ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
-
-            public FloatParamTargetReduceProcessor(FloatParamAnimationTarget target, ReduceSettings settings)
-                : base(target, settings)
-            {
-            }
-
-
-            public void CopyToBranch(int key)
-            {
-                var branchKey = branch.value.SetKeyframe(target.value.keys[key].time, target.value.keys[key].value, CurveTypeValues.SmoothLocal);
-                branch.value.SmoothNeighbors(branchKey);
-            }
-
-            public void AverageToBranch(float keyTime, int fromKey, int toKey)
-            {
-                var timeSum = 0f;
-                var valueSum = 0f;
-                for (var key = fromKey; key < toKey; key++)
-                {
-                    var frame = target.value.GetKeyframeByKey(key);
-                    valueSum += frame.value;
-                    timeSum += target.value.GetKeyframeByKey(key + 1).time - frame.time;
-                }
-                branch.SetKeyframe(keyTime, valueSum / timeSum, false);
-            }
-
-            public override ReducerBucket CreateBucket(int from, int to)
-            {
-                var bucket = base.CreateBucket(from, to);
-                for (var i = from; i <= to; i++)
-                {
-                    var time = target.value.keys[i].time;
-                    // TODO: Normalize the delta values based on range
-                    float delta;
-                    if (settings.minMeaningfulFloatParamRangeRatio > 0)
-                        delta = Mathf.Abs(
-                            branch.value.Evaluate(time) -
-                            target.value.Evaluate(time)
-                        ) / (target.floatParam.max - target.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
-                    else
-                        delta = 1f;
-                    if (delta > bucket.largestDelta)
-                    {
-                        bucket.largestDelta = delta;
-                        bucket.keyWithLargestDelta = i;
-                    }
-                }
-                return bucket;
-            }
-        }
-
-        protected IEnumerator Process(ITargetReduceProcessor processor)
+        private IEnumerator Process(ITargetReduceProcessor processor)
         {
             var maxFramesPerSecond = (float) _settings.fps;
             var minFrameDistance = Mathf.Max(1f / maxFramesPerSecond, 0.001f);
-            var animationLength = processor.target.GetLeadCurve().GetLastFrame().time;
+            var animationLength = _clip.animationLength;
             var maxIterations = (int)(animationLength * 10);
 
             // STEP 1: Average keyframes based on the desired FPS

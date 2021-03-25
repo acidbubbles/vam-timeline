@@ -70,6 +70,13 @@
 
   <ItemGroup>
     <!-- AtomAnimationFiles -->
+    <Compile Include="src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs" />
+    <Compile Include="src\AtomAnimations\Operations\Reduction\FloatParamTargetReduceProcessor.cs" />
+    <Compile Include="src\AtomAnimations\Operations\Reduction\ITargetReduceProcessor.cs" />
+    <Compile Include="src\AtomAnimations\Operations\Reduction\ReduceProgress.cs" />
+    <Compile Include="src\AtomAnimations\Operations\Reduction\ReducerBucket.cs" />
+    <Compile Include="src\AtomAnimations\Operations\Reduction\ReduceSettings.cs" />
+    <Compile Include="src\AtomAnimations\Operations\Reduction\TargetReduceProcessorBase.cs" />
     <Compile Include="src\AtomAnimations\Operations\AddAnimationOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\ImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
