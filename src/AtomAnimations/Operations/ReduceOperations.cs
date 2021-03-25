@@ -155,9 +155,6 @@ namespace VamTimeline
 
         public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerAnimationTarget>, ITargetReduceProcessor
         {
-            private const float _smallestDistanceUnit = 0.1f;
-            private const float _smallestRotationUnit = 2f;
-
             ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
 
             public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target, ReduceSettings settings)
@@ -207,8 +204,8 @@ namespace VamTimeline
                     );
                     // This is an attempt to compare translations and rotations
                     // TODO: Normalize the values, investigate how to do this with settings
-                    var normalizedPositionDistance = positionDiff / _smallestDistanceUnit;
-                    var normalizedRotationAngle = rotationAngle / _smallestRotationUnit;
+                    var normalizedPositionDistance = settings.minMeaningfulDistance > 0 ? positionDiff / settings.minMeaningfulDistance : 1f;
+                    var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationAngle / settings.minMeaningfulRotation : 1f;
                     var delta = normalizedPositionDistance + normalizedRotationAngle;
                     if (delta > bucket.largestDelta)
                     {
@@ -256,10 +253,14 @@ namespace VamTimeline
                 {
                     var time = target.value.keys[i].time;
                     // TODO: Normalize the delta values based on range
-                    var delta = Mathf.Abs(
-                        branch.value.Evaluate(time) -
-                        target.value.Evaluate(time)
-                    ) / (target.floatParam.max - target.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
+                    float delta;
+                    if (settings.minMeaningfulFloatParamRangeRatio > 0)
+                        delta = Mathf.Abs(
+                            branch.value.Evaluate(time) -
+                            target.value.Evaluate(time)
+                        ) / (target.floatParam.max - target.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
+                    else
+                        delta = 1f;
                     if (delta > bucket.largestDelta)
                     {
                         bucket.largestDelta = delta;
@@ -272,8 +273,8 @@ namespace VamTimeline
 
         protected IEnumerator Process(ITargetReduceProcessor processor)
         {
-            var maxFramesPerSecond = _settings.fps;
-            var minFrameDistance = Mathf.Min(1f / maxFramesPerSecond, 0.001f);
+            var maxFramesPerSecond = (float) _settings.fps;
+            var minFrameDistance = Mathf.Max(1f / maxFramesPerSecond, 0.001f);
             var animationLength = processor.target.GetLeadCurve().GetLastFrame().time;
             var maxIterations = (int)(animationLength * 10);
 
@@ -284,6 +285,7 @@ namespace VamTimeline
                 var lead = processor.target.GetLeadCurve();
                 var toKey = 0;
                 processor.Branch();
+                SuperController.LogMessage($"{minFrameDistance:0.000} {animationLength:0.000}");
                 for (var keyTime = 0f; keyTime <= animationLength; keyTime += minFrameDistance)
                 {
                     var fromKey = toKey;
@@ -294,7 +296,6 @@ namespace VamTimeline
 
                     if (toKey - fromKey > 0)
                         processor.AverageToBranch(keyTime.Snap(), fromKey, toKey);
-                    // Average from t-0.5 to t+0.5 given 1 is the frame distance
                 }
                 processor.Commit();
             }

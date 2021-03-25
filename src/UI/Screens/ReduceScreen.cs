@@ -49,26 +49,17 @@ namespace VamTimeline
             _restoreUI.button.onClick.AddListener(RestoreBackup);
 
             prefabFactory.CreateSpacer();
+            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F1";
             prefabFactory.CreateToggle(_averageToSnapJSON);
             prefabFactory.CreateToggle(_simplifyKeyframes);
-            prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F5";
-            prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F4";
-            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F5";
+            prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F3";
+            prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F2";
 
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);
 
-            animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
-            OnTargetsSelectionChanged();
             _restoreUI.button.interactable = _backup != null;
             if (_backup != null) _restoreUI.label = $"Restore [{_backupTime}]";
-        }
-
-        private void OnTargetsSelectionChanged()
-        {
-            var hasSelectedTargets = animationEditContext.GetSelectedTargets().Any();
-            _backupUI.button.interactable = hasSelectedTargets;
-            _reduceUI.button.interactable = hasSelectedTargets;
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
@@ -76,12 +67,6 @@ namespace VamTimeline
             base.OnCurrentAnimationChanged(args);
             _backup = null;
             _restoreUI.button.interactable = false;
-        }
-
-        public override void OnDestroy()
-        {
-            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
-            base.OnDestroy();
         }
 
         private void TakeBackup()
@@ -109,7 +94,7 @@ namespace VamTimeline
                 TakeBackup();
 
             _reduceUI.button.interactable = false;
-            _reduceUI.label = "Estimating time left...";
+            _reduceUI.label = "Please be patient...";
             var settings = new ReduceSettings
             {
                 fps = (int)_reduceMaxFramesPerSecondJSON.val,
@@ -124,7 +109,7 @@ namespace VamTimeline
                 targets,
             progress =>
                 {
-                    _reduceUI.label = $"{progress.stepsDone}/{progress.stepsTotal} ({progress.timeLeft:0}s left)";
+                    _reduceUI.label = $"{progress.stepsDone} of {progress.stepsTotal} ({progress.timeLeft:0}s left)";
                 },
                 () =>
                 {
