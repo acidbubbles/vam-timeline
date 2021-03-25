@@ -11,18 +11,29 @@ namespace VamTimeline
 
         private static string _backupTime;
         private static List<ICurveAnimationTarget> _backup;
+        private static readonly JSONStorableFloat _reduceMaxFramesPerSecondJSON;
+        private static readonly JSONStorableBool _averageToSnapJSON;
+        private static readonly JSONStorableBool _simplifyKeyframes;
+        private static readonly JSONStorableFloat _reduceMinDistanceJSON;
+        private static readonly JSONStorableFloat _reduceMinRotationJSON;
+        private static readonly JSONStorableFloat _reduceMinFloatParamRangeRatioJSON;
 
         public override string screenId => ScreenName;
 
         private UIDynamicButton _backupUI;
         private UIDynamicButton _restoreUI;
         private UIDynamicButton _reduceUI;
-        private JSONStorableFloat _reduceMinPosDistanceJSON;
-        private JSONStorableFloat _reduceMinRotationJSON;
-        private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
-        private float _lastReduceMinPosDistance;
-        private float _lastReduceMinRotation;
-        private float _lastReduceMaxFramesPerSecond;
+
+        static ReduceScreen()
+        {
+            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Frames per second", 10f, 1f, 100f);
+            _reduceMaxFramesPerSecondJSON.setCallbackFunction = val => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
+            _averageToSnapJSON = new JSONStorableBool("Average and snap to fps", true);
+            _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
+            _reduceMinDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f);
+            _reduceMinRotationJSON = new JSONStorableFloat("Minimum meaningful rotation", 1f, 0f, 10f);
+            _reduceMinFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
+        }
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -38,24 +49,11 @@ namespace VamTimeline
             _restoreUI.button.onClick.AddListener(RestoreBackup);
 
             prefabFactory.CreateSpacer();
-
-            _reduceMinPosDistanceJSON = new JSONStorableFloat("Minimum distance between frames", 0.04f, val => _lastReduceMinPosDistance = val, 0.001f, 0.5f)
-            {
-                valNoCallback = _lastReduceMinPosDistance
-            };
-            prefabFactory.CreateSlider(_reduceMinPosDistanceJSON);
-
-            _reduceMinRotationJSON = new JSONStorableFloat("Minimum rotation between frames", 10f, val => _lastReduceMinRotation = val, 0.1f, 90f)
-            {
-                valNoCallback = _lastReduceMinRotation
-            };
-            prefabFactory.CreateSlider(_reduceMinRotationJSON);
-
-            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 5f, val => _reduceMaxFramesPerSecondJSON.valNoCallback = _lastReduceMaxFramesPerSecond = Mathf.Round(val), 1f, 10f)
-            {
-                valNoCallback = _lastReduceMaxFramesPerSecond
-            };
-            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON);
+            prefabFactory.CreateToggle(_averageToSnapJSON);
+            prefabFactory.CreateToggle(_simplifyKeyframes);
+            prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F5";
+            prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F4";
+            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F5";
 
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);
@@ -111,9 +109,19 @@ namespace VamTimeline
                 TakeBackup();
 
             _reduceUI.button.interactable = false;
-            _reduceUI.label = "Reducing...";
-            StartCoroutine(operations.Reduce().ReduceKeyframes(
-                animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList(),
+            _reduceUI.label = "Estimating time left...";
+            var settings = new ReduceSettings
+            {
+                fps = (int)_reduceMaxFramesPerSecondJSON.val,
+                avgToSnap = _averageToSnapJSON.val,
+                simplify = _simplifyKeyframes.val,
+                minMeaningfulDistance = _reduceMinDistanceJSON.val,
+                minMeaningfulRotation = _reduceMinRotationJSON.val,
+                minMeaningfulFloatParamRangeRatio = _reduceMinFloatParamRangeRatioJSON.val,
+            };
+            var targets = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
+            StartCoroutine(operations.Reduce(settings).ReduceKeyframes(
+                targets,
             progress =>
                 {
                     _reduceUI.label = $"{progress.stepsDone}/{progress.stepsTotal} ({progress.timeLeft:0}s left)";

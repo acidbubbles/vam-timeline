@@ -6,6 +6,16 @@ using UnityEngine;
 
 namespace VamTimeline
 {
+    public class ReduceSettings
+    {
+        public int fps;
+        public bool avgToSnap;
+        public bool simplify;
+        public float minMeaningfulDistance;
+        public float minMeaningfulRotation;
+        public float minMeaningfulFloatParamRangeRatio;
+    }
+
     public class ReduceOperations
     {
         public struct Progress
@@ -18,10 +28,12 @@ namespace VamTimeline
         }
 
         private readonly AtomAnimationClip _clip;
+        private readonly ReduceSettings _settings;
 
-        public ReduceOperations(AtomAnimationClip clip)
+        public ReduceOperations(AtomAnimationClip clip, ReduceSettings settings)
         {
             _clip = clip;
+            _settings = settings;
         }
 
         public IEnumerator ReduceKeyframes(List<ICurveAnimationTarget> targets, Action<Progress> progress, Action callback)
@@ -39,7 +51,7 @@ namespace VamTimeline
                 target.StartBulkUpdates();
                 try
                 {
-                    var enumerator = Process(new ControllerTargetReduceProcessor(target));
+                    var enumerator = Process(new ControllerTargetReduceProcessor(target, _settings));
                     while (enumerator.MoveNext())
                         yield return enumerator.Current;
                     SuperController.LogMessage($"Timeline: Reduced {target.controller.name} from {initialFrames} frames to {target.x.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
@@ -66,7 +78,7 @@ namespace VamTimeline
                 target.StartBulkUpdates();
                 try
                 {
-                    var enumerator = Process(new FloatParamTargetReduceProcessor(target));
+                    var enumerator = Process(new FloatParamTargetReduceProcessor(target, _settings));
                     while (enumerator.MoveNext())
                         yield return enumerator.Current;
                     SuperController.LogMessage($"Timeline: Reduced {target.GetShortName()} from {initialFrames} frames to {target.value.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
@@ -110,11 +122,13 @@ namespace VamTimeline
         public abstract class TargetReduceProcessorBase<T> where T : class, ICurveAnimationTarget
         {
             public readonly T target;
+            public readonly ReduceSettings settings;
             protected T branch;
 
-            protected TargetReduceProcessorBase(T target)
+            protected TargetReduceProcessorBase(T target, ReduceSettings settings)
             {
                 this.target = target;
+                this.settings = settings;
             }
 
             public void Branch()
@@ -146,8 +160,8 @@ namespace VamTimeline
 
             ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
 
-            public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target)
-                : base(target)
+            public ControllerTargetReduceProcessor(FreeControllerAnimationTarget target, ReduceSettings settings)
+                : base(target, settings)
             {
             }
 
@@ -208,12 +222,10 @@ namespace VamTimeline
 
         public class FloatParamTargetReduceProcessor : TargetReduceProcessorBase<FloatParamAnimationTarget>, ITargetReduceProcessor
         {
-            private const float _smallestNormalizeValueUnit = 0.01f;
-
             ICurveAnimationTarget ITargetReduceProcessor.target => base.target;
 
-            public FloatParamTargetReduceProcessor(FloatParamAnimationTarget target)
-                : base(target)
+            public FloatParamTargetReduceProcessor(FloatParamAnimationTarget target, ReduceSettings settings)
+                : base(target, settings)
             {
             }
 
@@ -247,7 +259,7 @@ namespace VamTimeline
                     var delta = Mathf.Abs(
                         branch.value.Evaluate(time) -
                         target.value.Evaluate(time)
-                    ) / (target.floatParam.max - target.floatParam.min) / _smallestNormalizeValueUnit;
+                    ) / (target.floatParam.max - target.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
                     if (delta > bucket.largestDelta)
                     {
                         bucket.largestDelta = delta;
@@ -260,13 +272,13 @@ namespace VamTimeline
 
         protected IEnumerator Process(ITargetReduceProcessor processor)
         {
-            var maxFramesPerSecond = 10f; // TODO: Settings FPS (20fps here)
-            var minFrameDistance = 1f / maxFramesPerSecond;
+            var maxFramesPerSecond = _settings.fps;
+            var minFrameDistance = Mathf.Min(1f / maxFramesPerSecond, 0.001f);
             var animationLength = processor.target.GetLeadCurve().GetLastFrame().time;
             var maxIterations = (int)(animationLength * 10);
 
             // STEP 1: Average keyframes based on the desired FPS
-            if (maxFramesPerSecond < 50)
+            if (_settings.avgToSnap && maxFramesPerSecond <= 50)
             {
                 var avgTimeRange = minFrameDistance / 2f;
                 var lead = processor.target.GetLeadCurve();
@@ -281,7 +293,7 @@ namespace VamTimeline
                     }
 
                     if (toKey - fromKey > 0)
-                        processor.AverageToBranch(keyTime, fromKey, toKey);
+                        processor.AverageToBranch(keyTime.Snap(), fromKey, toKey);
                     // Average from t-0.5 to t+0.5 given 1 is the frame distance
                 }
                 processor.Commit();
@@ -293,53 +305,56 @@ namespace VamTimeline
 
             // STEP 4: Run the reduce algo
 
-            processor.Branch();
-
-            var buckets = new List<ReducerBucket>
+            if (_settings.simplify)
             {
-                processor.CreateBucket(1, processor.target.GetLeadCurve().length - 2)
-            };
+                processor.Branch();
 
-            for (var iteration = 0; iteration < maxIterations; iteration++)
-            {
-                // Scan for largest difference with curve
-                var bucketWithLargestDelta = -1;
-                var keyWithLargestDelta = -1;
-                var largestDelta = 0f;
-                for (var bucketIndex = 0; bucketIndex < buckets.Count; bucketIndex++)
+                var buckets = new List<ReducerBucket>
                 {
-                    var bucket = buckets[bucketIndex];
-                    if (bucket.largestDelta > largestDelta)
+                    processor.CreateBucket(1, processor.target.GetLeadCurve().length - 2)
+                };
+
+                for (var iteration = 0; iteration < maxIterations; iteration++)
+                {
+                    // Scan for largest difference with curve
+                    var bucketWithLargestDelta = -1;
+                    var keyWithLargestDelta = -1;
+                    var largestDelta = 0f;
+                    for (var bucketIndex = 0; bucketIndex < buckets.Count; bucketIndex++)
                     {
-                        largestDelta = bucket.largestDelta;
-                        keyWithLargestDelta = bucket.keyWithLargestDelta;
-                        bucketWithLargestDelta = bucketIndex;
+                        var bucket = buckets[bucketIndex];
+                        if (bucket.largestDelta > largestDelta)
+                        {
+                            largestDelta = bucket.largestDelta;
+                            keyWithLargestDelta = bucket.keyWithLargestDelta;
+                            bucketWithLargestDelta = bucketIndex;
+                        }
                     }
+
+                    // Cannot find large enough diffs, exit
+                    if (keyWithLargestDelta == -1) break;
+                    if (largestDelta < 1f) break; // TODO: Configurable pos and rot weight, pos and rot min change inside bucket scan
+
+                    processor.CopyToBranch(keyWithLargestDelta);
+
+                    var bucketToSplitIndex = bucketWithLargestDelta;
+
+                    if (bucketToSplitIndex > -1)
+                    {
+                        // Split buckets and exclude the scanned keyframe, we never have to scan it again.
+                        var bucketToSplit = buckets[bucketToSplitIndex];
+                        buckets.RemoveAt(bucketToSplitIndex);
+                        if (bucketToSplit.to - keyWithLargestDelta + 1 > 2)
+                            buckets.Insert(bucketToSplitIndex, processor.CreateBucket(keyWithLargestDelta + 1, bucketToSplit.to));
+                        if (keyWithLargestDelta - 1 - bucketToSplit.from > 2)
+                            buckets.Insert(bucketToSplitIndex, processor.CreateBucket(bucketToSplit.from, keyWithLargestDelta - 1));
+                    }
+
+                    yield return 0;
                 }
 
-                // Cannot find large enough diffs, exit
-                if (keyWithLargestDelta == -1) break;
-                if (largestDelta < 1f) break; // TODO: Configurable pos and rot weight, pos and rot min change inside bucket scan
-
-                processor.CopyToBranch(keyWithLargestDelta);
-
-                var bucketToSplitIndex = bucketWithLargestDelta;
-
-                if (bucketToSplitIndex > -1)
-                {
-                    // Split buckets and exclude the scanned keyframe, we never have to scan it again.
-                    var bucketToSplit = buckets[bucketToSplitIndex];
-                    buckets.RemoveAt(bucketToSplitIndex);
-                    if (bucketToSplit.to - keyWithLargestDelta + 1 > 2)
-                        buckets.Insert(bucketToSplitIndex, processor.CreateBucket(keyWithLargestDelta + 1, bucketToSplit.to));
-                    if (keyWithLargestDelta - 1 - bucketToSplit.from > 2)
-                        buckets.Insert(bucketToSplitIndex, processor.CreateBucket(bucketToSplit.from, keyWithLargestDelta - 1));
-                }
-
-                yield return 0;
+                processor.Commit();
             }
-
-            processor.Commit();
         }
     }
 }
