@@ -14,7 +14,8 @@ namespace VamTimeline
 
         public void CopyToBranch(int sourceKey, int curveType = CurveTypeValues.Undefined)
         {
-            var branchKey = branch.value.SetKeyframe(source.value.keys[sourceKey].time, source.value.keys[sourceKey].value, CurveTypeValues.SmoothLocal);
+            var sourceFrame = source.value.keys[sourceKey];
+            var branchKey = branch.value.SetKeyframe(sourceFrame.time, sourceFrame.value, CurveTypeValues.SmoothLocal);
             if(curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurve(branchKey, curveType);
             branch.value.RecomputeKey(branchKey);
@@ -22,16 +23,16 @@ namespace VamTimeline
 
         public void AverageToBranch(float keyTime, int fromKey, int toKey)
         {
-            var timeSum = 0f;
-            var valueSum = 0f;
+            var value = 0f;
+            var duration = source.value.GetKeyframeByKey(toKey).time - source.value.GetKeyframeByKey(fromKey).time;
             for (var key = fromKey; key < toKey; key++)
             {
-                var frame = source.value.GetKeyframeByKey(key);
-                valueSum += frame.value;
-                timeSum += source.value.GetKeyframeByKey(key + 1).time - frame.time;
+                var frameDuration = source.value.GetKeyframeByKey(key + 1).time - source.value.GetKeyframeByKey(key).time;
+                var weight = frameDuration / duration;
+                value += source.value.GetKeyframeByKey(key).value * weight;
             }
 
-            branch.SetKeyframe(keyTime, valueSum / timeSum, false);
+            branch.SetKeyframe(keyTime, value, false);
         }
 
         public bool IsStable(int key1, int key2)
