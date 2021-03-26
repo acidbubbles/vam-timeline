@@ -59,7 +59,6 @@ namespace VamTimeline
         public BezierKeyframe GetKeyframeByKey(int key)
         {
             if (key == -1) throw new ArgumentException("Expected a key, received -1", nameof(key));
-            if (key > keys.Count - 1) throw new Exception("WRONG");
             return keys[key];
         }
 
@@ -68,13 +67,6 @@ namespace VamTimeline
             if (keys.Count < 2) throw new InvalidOperationException("Cannot evaluate curve, at least two keyframes are needed");
             // Search for portion
             var key = KeyframeBinarySearch(time, true);
-            switch (key)
-            {
-                case -1:
-                    return keys[keys.Count - 1].value;
-                case 0:
-                    return keys[0].value;
-            }
             var current = keys[key];
             if (time < current.time)
                 current = keys[--key];
