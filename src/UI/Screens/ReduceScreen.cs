@@ -27,7 +27,7 @@ namespace VamTimeline
 
         static ReduceScreen()
         {
-            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Frames per second", 10f, 1f, 100f);
+            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Frames per second", 25f, 1f, 100f);
             _reduceMaxFramesPerSecondJSON.setCallbackFunction = val => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
             _averageToSnapJSON = new JSONStorableBool("Average and snap to fps", true);
             _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
@@ -57,6 +57,7 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_simplifyKeyframes);
             prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F3";
             prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F2";
+            prefabFactory.CreateSlider(_reduceMinFloatParamRangeRatioJSON).valueFormat = "F3";
 
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);

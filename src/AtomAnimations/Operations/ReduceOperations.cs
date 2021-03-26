@@ -21,21 +21,28 @@ namespace VamTimeline
         {
             SuperController.LogMessage($"Timeline: Reducing {targets.Count} targets. Please wait...");
 
+            var originalTime = Time.realtimeSinceStartup;
+            var originalFrames = 0;
+            var reducedFrames = 0;
+
             var steps = targets.Count;
             var startTime = Time.realtimeSinceStartup;
             var done = 0;
 
             foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
             {
+                if (Input.GetKey(KeyCode.Escape)) continue;
                 var initialFrames = target.x.length;
                 var initialTime = Time.realtimeSinceStartup;
+                originalFrames += initialFrames;
                 target.StartBulkUpdates();
                 try
                 {
                     var enumerator = Process(new ControllerTargetReduceProcessor(target, _settings));
-                    while (enumerator.MoveNext())
+                    while (enumerator.MoveNext() && !Input.GetKey(KeyCode.Escape))
                         yield return enumerator.Current;
                     SuperController.LogMessage($"Timeline: Reduced {target.controller.name} from {initialFrames} frames to {target.x.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
+                    reducedFrames += target.x.length;
                 }
                 finally
                 {
@@ -56,14 +63,17 @@ namespace VamTimeline
 
             foreach (var target in targets.OfType<FloatParamAnimationTarget>())
             {
+                if (Input.GetKey(KeyCode.Escape)) continue;
                 var initialFrames = target.value.length;
                 var initialTime = Time.realtimeSinceStartup;
+                originalFrames += initialFrames;
                 target.StartBulkUpdates();
                 try
                 {
                     var enumerator = Process(new FloatParamTargetReduceProcessor(target, _settings));
-                    while (enumerator.MoveNext())
+                    while (enumerator.MoveNext() && !Input.GetKey(KeyCode.Escape))
                         yield return enumerator.Current;
+                    reducedFrames += target.value.length;
                     SuperController.LogMessage($"Timeline: Reduced {target.GetShortName()} from {initialFrames} frames to {target.value.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
                 }
                 finally
@@ -83,6 +93,7 @@ namespace VamTimeline
                 yield return 0;
             }
 
+            SuperController.LogMessage($"Timeline: Reduction complete from {originalFrames} frames to {reducedFrames} frames ({(originalFrames == 0 ? 0 : reducedFrames / (float)originalFrames * 100f):0.00}%) in {Time.realtimeSinceStartup - originalTime:0.00}s");
             callback?.Invoke();
         }
 
