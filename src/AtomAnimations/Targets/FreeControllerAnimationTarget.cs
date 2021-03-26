@@ -149,7 +149,7 @@ namespace VamTimeline
                 hasPosParent ? posParent.transform.InverseTransformPoint(controllerTransform.position) : controllerTransform.localPosition,
                 hasRotParent ? Quaternion.Inverse(rotParent.rotation) * controllerTransform.rotation : controllerTransform.localRotation,
                 -1,
-                false
+                makeDirty
             );
         }
 

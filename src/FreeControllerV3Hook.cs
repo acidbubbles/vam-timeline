@@ -1,8 +1,6 @@
-#define VAM_GT_1_20_0_9
-#if(VAM_GT_1_20_0_9)
-using System.Collections;
-#endif
+#if(!VAM_GT_1_20_0_9)
 using System.Collections.Generic;
+#endif
 using System.Linq;
 using UnityEngine;
 

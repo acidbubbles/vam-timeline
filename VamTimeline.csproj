@@ -6,6 +6,7 @@
     <RootNamespace>VamTimeline</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>6</LangVersion>
+    <DefineConstants>VAM_GT_1_20;VAM_GT_1_20_0_9;DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'VAM_1_19' ">
@@ -19,7 +20,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>VAM_GT_1_20;VAM_GT_1_20_0_9;DEBUG;TRACE</DefineConstants>
     <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>

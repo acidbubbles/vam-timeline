@@ -51,6 +51,7 @@ namespace VamTimeline
                 }
                 yield return 0;
                 yield return 0;
+                yield return 0;
             }
 
             foreach (var target in targets.OfType<FloatParamAnimationTarget>())
@@ -77,6 +78,7 @@ namespace VamTimeline
                         stepsDone = ++done
                     });
                 }
+                yield return 0;
                 yield return 0;
                 yield return 0;
             }
@@ -117,9 +119,9 @@ namespace VamTimeline
             {
                 processor.Branch();
                 var lead = processor.target.GetLeadCurve();
-                var keysCount = lead.keys.Count - 1;
+                var lastKey = lead.keys.Count - 1;
                 var sectionStart = 0;
-                for (var key = 1; key < keysCount; key++)
+                for (var key = 1; key < lastKey; key++)
                 {
                     if (!processor.IsStable(sectionStart, key))
                     {
@@ -143,22 +145,29 @@ namespace VamTimeline
 
                 var buckets = new List<ReducerBucket>();
                 var leadCurve = processor.target.GetLeadCurve();
-                var sectionStart = 1;
-                for (var key = 1; key < leadCurve.length - 1; key++)
+                if (_settings.removeFlats)
                 {
-                    var curveType = leadCurve.keys[key].curveType;
-                    if (curveType == CurveTypeValues.FlatLinear)
+                    var sectionStart = 1;
+                    for (var key = 1; key < leadCurve.length - 1; key++)
                     {
-                        // Bucket from the section start until the key before. This one will be skipped.
-                        buckets.Add(processor.CreateBucket(sectionStart, key - 1));
-                        processor.CopyToBranch(key);
-                        processor.CopyToBranch(key + 1);
-                        // Also skip the next one (end of linear section)
-                        sectionStart = ++key;
+                        var curveType = leadCurve.keys[key].curveType;
+                        if (curveType == CurveTypeValues.FlatLinear)
+                        {
+                            // Bucket from the section start until the key before. This one will be skipped.
+                            buckets.Add(processor.CreateBucket(sectionStart, key - 1));
+                            processor.CopyToBranch(key);
+                            processor.CopyToBranch(key + 1);
+                            // Also skip the next one (end of linear section)
+                            sectionStart = ++key;
+                        }
                     }
+                    if (sectionStart < leadCurve.length - 3)
+                        buckets.Add(processor.CreateBucket(sectionStart, leadCurve.length - 2));
                 }
-                if (sectionStart < leadCurve.length - 3)
-                    buckets.Add(processor.CreateBucket(sectionStart, leadCurve.length - 2));
+                else
+                {
+                    buckets.Add(processor.CreateBucket(1, leadCurve.length - 2));
+                }
 
                 for (var iteration = 0; iteration < maxIterations; iteration++)
                 {
