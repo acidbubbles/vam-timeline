@@ -872,6 +872,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
             bindings.Add(new JSONStorableAction("Stop", animationEditContext.Stop));
             bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
+            bindings.Add(new JSONStorableAction("StopAllSceneAnimations", () => { animationEditContext.Stop(); SuperController.singleton.motionAnimationMaster.StopPlayback(); }));
             bindings.Add(new JSONStorableAction("TogglePause", () => animation.paused = !animation.paused));
             bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
             bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));
