@@ -385,16 +385,17 @@ namespace VamTimeline
                 var bothSegmentsDuration = nextTime - previousTime;
                 var inRatio = (current.time - previousTime) / bothSegmentsDuration;
                 var outRatio = (nextTime - current.time) / bothSegmentsDuration;
-                var avg = inHandle * inRatio + outHandle * outRatio;
+                // The larger the incoming curve, the stronger the effect on the other side
+                var weightedAvg = inHandle * outRatio + outHandle * inRatio;
                 if (inRatio > outRatio)
                 {
-                    current.controlPointIn = current.value - avg;
-                    current.controlPointOut = current.value + avg * outRatio;
+                    current.controlPointIn = current.value - weightedAvg * (inRatio / outRatio);
+                    current.controlPointOut = current.value + weightedAvg;
                 }
                 else
                 {
-                    current.controlPointIn = current.value - avg * inRatio;
-                    current.controlPointOut = current.value + avg;
+                    current.controlPointIn = current.value - weightedAvg;
+                    current.controlPointOut = current.value + weightedAvg * (outRatio / inRatio);
                 }
             }
             else if (previous.IsNull())
