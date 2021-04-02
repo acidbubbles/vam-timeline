@@ -380,20 +380,20 @@ namespace VamTimeline
         {
             if (next.HasValue() && previous.HasValue())
             {
+                var inHandle = (current.value - previous.value) / 3f;
+                var outHandle = (next.value - current.value) / 3f;
                 var bothSegmentsDuration = nextTime - previousTime;
                 var inRatio = (current.time - previousTime) / bothSegmentsDuration;
                 var outRatio = (nextTime - current.time) / bothSegmentsDuration;
-                var inHandle = (current.value - previous.value) / 3f;
-                var outHandle = (next.value - current.value) / 3f;
-                var avg = (inHandle + outHandle) / 2f;
+                var avg = inHandle * inRatio + outHandle * outRatio;
                 if (inRatio > outRatio)
                 {
                     current.controlPointIn = current.value - avg;
-                    current.controlPointOut = current.value + avg * (outRatio / inRatio);
+                    current.controlPointOut = current.value + avg * outRatio;
                 }
                 else
                 {
-                    current.controlPointIn = current.value - avg * (inRatio / outRatio);
+                    current.controlPointIn = current.value - avg * inRatio;
                     current.controlPointOut = current.value + avg;
                 }
             }
