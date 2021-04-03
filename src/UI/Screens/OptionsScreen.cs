@@ -55,13 +55,13 @@ namespace VamTimeline
 
         private void InitDisableSync()
         {
-            _syncWithPeersJSON = new JSONStorableBool("Disable sync with other atoms", animation.syncWithPeers, val => animation.syncWithPeers = val);
+            _syncWithPeersJSON = new JSONStorableBool("Sync with other atoms", animation.syncWithPeers, val => animation.syncWithPeers = val);
             prefabFactory.CreateToggle(_syncWithPeersJSON);
         }
 
         private void InitSyncSubsceneOnly()
         {
-            _syncSubsceneOnlyJSON = new JSONStorableBool("Sync animations in subscene only", animation.syncSubsceneOnly, val => animation.syncSubsceneOnly = val);
+            _syncSubsceneOnlyJSON = new JSONStorableBool("Send sync in subscene only", animation.syncSubsceneOnly, val => animation.syncSubsceneOnly = val);
             prefabFactory.CreateToggle(_syncSubsceneOnlyJSON);
         }
 
