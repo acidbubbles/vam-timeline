@@ -343,8 +343,9 @@ namespace VamTimeline
             Begin();
             try
             {
-                foreach (var storable in _peers)
+                for (var i = 0; i < _peers.Count; i++)
                 {
+                    var storable = _peers[i];
                     if (storable == null) continue;
                     if (animation.syncSubsceneOnly && storable.containingAtom.containingSubScene != _containingAtom.containingSubScene) continue;
                     storable.SendMessage(nameof(OnTimelineEvent), e);

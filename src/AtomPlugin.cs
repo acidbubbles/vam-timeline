@@ -573,8 +573,9 @@ namespace VamTimeline
 
                 animationLegacyJSON.choices = animationNames;
 
-                foreach (var animName in animationNames)
+                for (var i = 0; i < animationNames.Count; i++)
                 {
+                    var animName = animationNames[i];
                     if (_clipStorables.Any(a => a.animationName == animName)) continue;
                     CreateAndRegisterClipStorables(animName);
                 }
@@ -586,12 +587,14 @@ namespace VamTimeline
 
                 if (_clipStorables.Count > animationNames.Count)
                 {
-                    foreach (var action in _clipStorables.ToArray())
+                    for (var i = 0; i < _clipStorables.Count; i++)
                     {
+                        var action = _clipStorables[i];
                         if (!animationNames.Contains(action.animationName))
                         {
                             DeregisterAction(action);
-                            _clipStorables.Remove(action);
+                            _clipStorables.RemoveAt(i);
+                            i--;
                         }
                     }
                 }
