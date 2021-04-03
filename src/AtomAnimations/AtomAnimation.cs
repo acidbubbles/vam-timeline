@@ -97,6 +97,7 @@ namespace VamTimeline
         private bool _animationRebuildInProgress;
 
         public AtomAnimationsClipsIndex index { get; }
+        public bool syncSubsceneOnly { get; set; }
 
         public AtomAnimation()
         {

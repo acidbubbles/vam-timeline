@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+// ReSharper disable UnusedParameter.Local
 
 namespace VamTimeline
 {
@@ -291,6 +292,7 @@ namespace VamTimeline
                     }
                     else
                     {
+                        // ReSharper disable once RedundantAssignment
                         existing = animation.CreateClip(animationLayer, animationName);
                     }
                 }
@@ -344,6 +346,7 @@ namespace VamTimeline
                 foreach (var storable in _peers)
                 {
                     if (storable == null) continue;
+                    if (animation.syncSubsceneOnly && storable.containingAtom.containingSubScene != _containingAtom.containingSubScene) continue;
                     storable.SendMessage(nameof(OnTimelineEvent), e);
                 }
             }

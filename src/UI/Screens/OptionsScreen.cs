@@ -4,6 +4,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Settings";
         private JSONStorableBool _lockedJSON;
+        private JSONStorableBool _syncSubsceneOnlyJSON;
         private JSONStorableFloat _snapJSON;
         private JSONStorableBool _autoKeyframeAllControllersJSON;
         private JSONStorableBool _showPaths;
@@ -24,6 +25,13 @@ namespace VamTimeline
 
             InitLockedUI();
 
+            if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
+            {
+                prefabFactory.CreateSpacer();
+
+                InitSyncSubsceneOnly();
+            }
+
             prefabFactory.CreateSpacer();
 
             InitSnapUI();
@@ -43,6 +51,12 @@ namespace VamTimeline
         {
             _lockedJSON = new JSONStorableBool("Lock (ignore in-game edits)", animationEditContext.locked, val => animationEditContext.locked = val);
             prefabFactory.CreateToggle(_lockedJSON);
+        }
+
+        private void InitSyncSubsceneOnly()
+        {
+            _syncSubsceneOnlyJSON = new JSONStorableBool("Sync animations in subscene only", animation.syncSubsceneOnly, val => animation.syncSubsceneOnly = val);
+            prefabFactory.CreateToggle(_syncSubsceneOnlyJSON);
         }
 
         private void InitSnapUI()
