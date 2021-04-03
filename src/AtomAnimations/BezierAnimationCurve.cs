@@ -385,7 +385,7 @@ namespace VamTimeline
                 var bothSegmentsDuration = nextTime - previousTime;
                 var inRatio = (current.time - previousTime) / bothSegmentsDuration;
                 var outRatio = (nextTime - current.time) / bothSegmentsDuration;
-                #if(SMOOTH)
+                /* // SMOOTH
                 // The larger the incoming curve, the weaker the effect on the other side
                 var weightedAvg = inHandle * outRatio + outHandle * inRatio;
                 if (inRatio > outRatio)
@@ -398,7 +398,8 @@ namespace VamTimeline
                     current.controlPointIn = current.value - weightedAvg;
                     current.controlPointOut = current.value + weightedAvg * (outRatio / inRatio);
                 }
-                #elif(TRUE) // NO_OVERSHOOT
+                */
+                // NO_OVERSHOOT
                 // The larger the incoming curve, the stronger the effect on the other side
                 var weightedAvg = inHandle * inRatio + outHandle * outRatio;
                 if (inRatio > outRatio)
@@ -411,7 +412,6 @@ namespace VamTimeline
                     current.controlPointIn = current.value - weightedAvg * (inRatio / outRatio);
                     current.controlPointOut = current.value + weightedAvg;
                 }
-                #endif
             }
             else if (previous.IsNull())
             {
