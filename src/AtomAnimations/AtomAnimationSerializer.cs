@@ -33,6 +33,7 @@ namespace VamTimeline
 
             animation.speed = DeserializeFloat(animationJSON["Speed"], 1f);
             animation.master = DeserializeBool(animationJSON["Master"], false);
+            animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
 
             animation.index.StartBulkUpdates();
@@ -329,6 +330,7 @@ namespace VamTimeline
             {
                 { "Speed", animation.speed.ToString(CultureInfo.InvariantCulture) },
                 { "Master", animation.master ? "1" : "0" },
+                { "SyncWithPeers", animation.syncWithPeers ? "1" : "0" },
                 { "SyncSubsceneOnly", animation.syncSubsceneOnly ? "1" : "0" },
             };
             var clipsJSON = new JSONArray();

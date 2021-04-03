@@ -4,6 +4,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Settings";
         private JSONStorableBool _lockedJSON;
+        private JSONStorableBool _syncWithPeersJSON;
         private JSONStorableBool _syncSubsceneOnlyJSON;
         private JSONStorableFloat _snapJSON;
         private JSONStorableBool _autoKeyframeAllControllersJSON;
@@ -25,12 +26,11 @@ namespace VamTimeline
 
             InitLockedUI();
 
-            if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
-            {
-                prefabFactory.CreateSpacer();
+            prefabFactory.CreateSpacer();
 
+            InitDisableSync();
+            if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
                 InitSyncSubsceneOnly();
-            }
 
             prefabFactory.CreateSpacer();
 
@@ -51,6 +51,12 @@ namespace VamTimeline
         {
             _lockedJSON = new JSONStorableBool("Lock (ignore in-game edits)", animationEditContext.locked, val => animationEditContext.locked = val);
             prefabFactory.CreateToggle(_lockedJSON);
+        }
+
+        private void InitDisableSync()
+        {
+            _syncWithPeersJSON = new JSONStorableBool("Disable sync with other atoms", animation.syncWithPeers, val => animation.syncWithPeers = val);
+            prefabFactory.CreateToggle(_syncWithPeersJSON);
         }
 
         private void InitSyncSubsceneOnly()

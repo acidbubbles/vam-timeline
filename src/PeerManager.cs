@@ -51,6 +51,8 @@ namespace VamTimeline
 
         public void OnTimelineEvent(object[] e)
         {
+            if (!animation.syncWithPeers) return;
+
             if (_receiving)
                 throw new InvalidOperationException("Already syncing, infinite loop avoided!");
 
@@ -340,6 +342,7 @@ namespace VamTimeline
 
         private void SendTimelineEvent(object[] e)
         {
+            if (!animation.syncWithPeers) return;
             Begin();
             try
             {
