@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+// ReSharper disable UnusedParameter.Local
 
 namespace VamTimeline
 {
@@ -50,6 +51,8 @@ namespace VamTimeline
 
         public void OnTimelineEvent(object[] e)
         {
+            if (!animation.syncWithPeers) return;
+
             if (_receiving)
                 throw new InvalidOperationException("Already syncing, infinite loop avoided!");
 
@@ -291,6 +294,7 @@ namespace VamTimeline
                     }
                     else
                     {
+                        // ReSharper disable once RedundantAssignment
                         existing = animation.CreateClip(animationLayer, animationName);
                     }
                 }
@@ -338,12 +342,15 @@ namespace VamTimeline
 
         private void SendTimelineEvent(object[] e)
         {
+            if (!animation.syncWithPeers) return;
             Begin();
             try
             {
-                foreach (var storable in _peers)
+                for (var i = 0; i < _peers.Count; i++)
                 {
+                    var storable = _peers[i];
                     if (storable == null) continue;
+                    if (animation.syncSubsceneOnly && storable.containingAtom.containingSubScene != _containingAtom.containingSubScene) continue;
                     storable.SendMessage(nameof(OnTimelineEvent), e);
                 }
             }

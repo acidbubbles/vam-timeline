@@ -573,8 +573,9 @@ namespace VamTimeline
 
                 animationLegacyJSON.choices = animationNames;
 
-                foreach (var animName in animationNames)
+                for (var i = 0; i < animationNames.Count; i++)
                 {
+                    var animName = animationNames[i];
                     if (_clipStorables.Any(a => a.animationName == animName)) continue;
                     CreateAndRegisterClipStorables(animName);
                 }
@@ -586,12 +587,14 @@ namespace VamTimeline
 
                 if (_clipStorables.Count > animationNames.Count)
                 {
-                    foreach (var action in _clipStorables.ToArray())
+                    for (var i = 0; i < _clipStorables.Count; i++)
                     {
+                        var action = _clipStorables[i];
                         if (!animationNames.Contains(action.animationName))
                         {
                             DeregisterAction(action);
-                            _clipStorables.Remove(action);
+                            _clipStorables.RemoveAt(i);
+                            i--;
                         }
                     }
                 }
@@ -874,6 +877,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
             bindings.Add(new JSONStorableAction("Stop", animationEditContext.Stop));
             bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
+            bindings.Add(new JSONStorableAction("StopAllSceneAnimations", () => { animationEditContext.Stop(); SuperController.singleton.motionAnimationMaster.StopPlayback(); }));
             bindings.Add(new JSONStorableAction("TogglePause", () => animation.paused = !animation.paused));
             bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
             bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));

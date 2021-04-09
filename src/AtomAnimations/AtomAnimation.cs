@@ -60,8 +60,9 @@ namespace VamTimeline
             set
             {
                 _playTime = value;
-                foreach (var clip in clips)
+                for (var i = 0; i < clips.Count; i++)
                 {
+                    var clip = clips[i];
                     clip.clipTime = _playTime;
                     if (clip.animationPattern != null)
                         clip.animationPattern.SetFloatParamValue("currentTime", clip.clipTime);
@@ -80,11 +81,13 @@ namespace VamTimeline
             set
             {
                 _speed = value;
-                foreach (var clip in clips)
+                for (var i = 0; i < clips.Count; i++)
                 {
+                    var clip = clips[i];
                     if (clip.animationPattern != null)
                         clip.animationPattern.SetFloatParamValue("speed", value);
                 }
+
                 onSpeedChanged.Invoke();
             }
         }
@@ -95,6 +98,8 @@ namespace VamTimeline
         private bool _animationRebuildInProgress;
 
         public AtomAnimationsClipsIndex index { get; }
+        public bool syncSubsceneOnly { get; set; }
+        public bool syncWithPeers { get; set; } = true;
 
         public AtomAnimation()
         {
@@ -214,8 +219,12 @@ namespace VamTimeline
 
         public void Clear()
         {
-            foreach (var clip in clips.ToList())
+            var list = clips.ToList();
+            for (var index = 0; index < list.Count; index++)
+            {
+                var clip = list[index];
                 RemoveClip(clip);
+            }
 
             speed = 1f;
             _playTime = 0f;
@@ -576,11 +585,13 @@ namespace VamTimeline
 
         private void SampleTriggers()
         {
-            foreach (var clip in clips)
+            for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
+                var clip = clips[clipIndex];
                 if (!clip.playbackEnabled) continue;
-                foreach (var target in clip.targetTriggers)
+                for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
+                    var target = clip.targetTriggers[triggerIndex];
                     target.Sample(clip.clipTime);
                 }
             }
