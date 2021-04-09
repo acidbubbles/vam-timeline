@@ -101,7 +101,7 @@ namespace VamTimeline
 
         public AtomAnimationsClipsIndex index { get; }
         public bool syncSubsceneOnly { get; set; }
-        public bool syncWithPeers { get; set; }
+        public bool syncWithPeers { get; set; } = true;
 
         public AtomAnimation()
         {
