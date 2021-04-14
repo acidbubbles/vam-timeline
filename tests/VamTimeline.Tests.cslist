@@ -82,6 +82,7 @@
 ..\src\UI\Screens\AnimationsScreen.cs
 ..\src\UI\Screens\BulkScreen.cs
 ..\src\UI\Screens\ControllerTargetSettingsScreen.cs
+..\src\UI\Screens\DiagnosticsScreen.cs
 ..\src\UI\Screens\EditAnimationScreen.cs
 ..\src\UI\Screens\HelpScreen.cs
 ..\src\UI\Screens\ImportExportScreen.cs

@@ -21,6 +21,7 @@ namespace VamTimeline
             CreateChangeScreenButton("<b>Record</b> animation...", RecordScreen.ScreenName);
             CreateChangeScreenButton("<b>Reduce</b> keyframes...", ReduceScreen.ScreenName);
             CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedKeyframeToolsScreen.ScreenName);
+            CreateChangeScreenButton("<b>Diagnostics</b> and scene analysis...", DiagnosticsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 

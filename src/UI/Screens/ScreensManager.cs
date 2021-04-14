@@ -174,6 +174,9 @@ namespace VamTimeline
                 case LockedScreen.ScreenName:
                     _current = screenContainer.AddComponent<LockedScreen>();
                     break;
+                case DiagnosticsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<DiagnosticsScreen>();
+                    break;
                 case HelpScreen.ScreenName:
                     _current = screenContainer.AddComponent<HelpScreen>();
                     break;
