@@ -868,6 +868,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Record", () => { ChangeScreen(RecordScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Reduce", () => { ChangeScreen(ReduceScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_AdvancedKeyframeTools", () => { ChangeScreen(AdvancedKeyframeToolsScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Diagnostics", () => { ChangeScreen(DiagnosticsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Options", () => { ChangeScreen(OptionsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));

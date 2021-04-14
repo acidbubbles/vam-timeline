@@ -351,7 +351,7 @@ namespace VamTimeline
                     var storable = _peers[i];
                     if (storable == null) continue;
                     if (animation.syncSubsceneOnly && storable.containingAtom.containingSubScene != _containingAtom.containingSubScene) continue;
-                    storable.SendMessage(nameof(OnTimelineEvent), e);
+                    storable.SendMessage(nameof(IRemoteAtomPlugin.OnTimelineEvent), e);
                 }
             }
             finally

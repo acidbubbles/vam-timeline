@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace VamTimeline
 {
@@ -10,7 +12,7 @@ namespace VamTimeline
         public override string screenId => ScreenName;
 
         private JSONStorableString _resultJSON;
-        private readonly StringBuilder _resultBuffer = new StringBuilder();
+        private StringBuilder _resultBuffer;
         private readonly HashSet<string> _versions = new HashSet<string>();
 
         #region Init
@@ -26,15 +28,17 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             _resultJSON = new JSONStorableString("Result", "Analyzing...");
+            prefabFactory.CreateTextField(_resultJSON).height = 1200f;
 
             DoAnalysis();
         }
 
         private void DoAnalysis()
         {
-            _resultBuffer.Clear();
+            _resultBuffer = new StringBuilder();
             _versions.Clear();
             _resultBuffer.AppendLine("<b>INSTANCES</b>");
+            _resultBuffer.AppendLine();
 
             foreach (var atom in SuperController.singleton.GetAtoms())
             {
@@ -52,32 +56,55 @@ namespace VamTimeline
             }
 
             _resultBuffer.AppendLine("<b>ISSUES</b>");
+            _resultBuffer.AppendLine();
 
             var issues = 0;
 
             if (_versions.Count > 1)
             {
-                _resultBuffer.AppendLine($"{++issues} More than one version were found");
+                _resultBuffer.AppendLine($"- <color=yellow>{++issues} More than one version were found</color>");
             }
 
             if (issues == 0)
             {
-                _resultBuffer.AppendLine($"No issues found");
+                _resultBuffer.AppendLine($"- No issues found");
             }
 
-            _resultBuffer.AppendLine("Done");
             _resultJSON.val = _resultBuffer.ToString();
-            _resultBuffer.Clear();
+            _resultBuffer = null;
         }
 
         private void DoAnalysisTimeline(JSONStorable timelineStorable)
         {
-            _resultBuffer.AppendLine($"Timeline: {timelineStorable}");
+            var timelineScript = timelineStorable as MVRScript;
+            if (timelineScript == null) return;
+            var timelineJSON = timelineStorable.GetJSON();
+            var pluginsJSON = timelineScript.manager.GetJSON();
+            var pluginId = timelineScript.storeId.Substring(0, timelineScript.storeId.IndexOf("_", StringComparison.Ordinal));
+            var path = pluginsJSON["plugins"][pluginId].Value;
+            var regex = new Regex(@"^[^.]+\.^[^.]+\.([0-9]+):/");
+            var match = regex.Match(path);
+            string version;
+            if (!match.Success)
+            {
+                version = path;
+            }
+            else
+            {
+                version = match.Groups[1].Value;
+            }
+
+            _resultBuffer.AppendLine($"<b>{timelineScript.containingAtom.uid} {pluginId}</b>");
+            _resultBuffer.AppendLine($"- version: {version}");
+            if(!match.Success)
+                _resultBuffer.AppendLine($"- <color=yellow>Not from a known var package</color>");
+            _resultBuffer.AppendLine();
         }
 
         private void DoAnalysisController(JSONStorable controllerStorable)
         {
-            _resultBuffer.AppendLine($"Controller: {controllerStorable}");
+            _resultBuffer.AppendLine($"<b>Controller: {controllerStorable}</b>");
+            _resultBuffer.AppendLine();
         }
 
         #endregion

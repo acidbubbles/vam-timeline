@@ -8,5 +8,6 @@ namespace VamTimeline
     {
         void VamTimelineConnectController(Dictionary<string, object> dict);
         void VamTimelineRequestControlPanel(GameObject container);
+        void OnTimelineEvent(object[] e);
     }
 }
