@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using SimpleJSON;
 
 namespace VamTimeline
 {
@@ -13,7 +14,10 @@ namespace VamTimeline
 
         private JSONStorableString _resultJSON;
         private StringBuilder _resultBuffer;
-        private readonly HashSet<string> _versions = new HashSet<string>();
+        private HashSet<string> _versions;
+        private Dictionary<string, bool> _looping;
+        private HashSet<string> _loopingMismatches;
+        private int _masters;
 
         #region Init
 
@@ -35,9 +39,13 @@ namespace VamTimeline
 
         private void DoAnalysis()
         {
+            _masters = 0;
             _resultBuffer = new StringBuilder();
-            _versions.Clear();
-            _resultBuffer.AppendLine("<b>INSTANCES</b>");
+            _versions = new HashSet<string>();
+            _looping = new Dictionary<string, bool>();
+            _loopingMismatches = new HashSet<string>();
+
+            _resultBuffer.AppendLine("<b>SCAN RESULT</b>");
             _resultBuffer.AppendLine();
 
             foreach (var atom in SuperController.singleton.GetAtoms())
@@ -62,7 +70,17 @@ namespace VamTimeline
 
             if (_versions.Count > 1)
             {
-                _resultBuffer.AppendLine($"- <color=yellow>{++issues} More than one version were found</color>");
+                _resultBuffer.AppendLine($"- [{++issues}] <color=yellow>More than one version were found</color>");
+            }
+
+            if (_masters > 0)
+            {
+                _resultBuffer.AppendLine($"- [{++issues}] <color=red>More than one 'master' found. Only one Timeline instance can have the master option enabled.</color>");
+            }
+
+            foreach (var loopingMismatch in _loopingMismatches)
+            {
+                _resultBuffer.AppendLine($"- [{++issues}] <color=red>Clip '{loopingMismatch}' is shared between multiple instances and does not have the same value for 'loop'. This will cause the looping clip to stop when the non-looping clip stops.</color>");
             }
 
             if (issues == 0)
@@ -71,31 +89,50 @@ namespace VamTimeline
             }
 
             _resultJSON.val = _resultBuffer.ToString();
+
+            _masters = 0;
             _resultBuffer = null;
+            _versions = null;
+            _looping = null;
+            _loopingMismatches = null;
         }
 
         private void DoAnalysisTimeline(JSONStorable timelineStorable)
         {
             var timelineScript = timelineStorable as MVRScript;
             if (timelineScript == null) return;
-            var timelineJSON = timelineStorable.GetJSON();
+            var timelineJSON = timelineStorable.GetJSON()["Animation"];
             var pluginsJSON = timelineScript.manager.GetJSON();
             var pluginId = timelineScript.storeId.Substring(0, timelineScript.storeId.IndexOf("_", StringComparison.Ordinal));
             var path = pluginsJSON["plugins"][pluginId].Value;
-            var regex = new Regex(@"^[^.]+\.^[^.]+\.([0-9]+):/");
+            var regex = new Regex(@"^[^.]+\.[^.]+\.([0-9]+):/");
             var match = regex.Match(path);
-            string version;
-            if (!match.Success)
+            var version = !match.Success ? path : match.Groups[1].Value;
+            var master = timelineJSON["Master"].Value == "1";
+            if (master) _masters++;
+            var syncWithPeers = timelineJSON["SyncWithPeers"].Value != "0";
+            var clipsJSON = timelineJSON["Clips"].AsArray;
+            foreach (JSONClass clipJSON in clipsJSON)
             {
-                version = path;
-            }
-            else
-            {
-                version = match.Groups[1].Value;
+                var name = clipJSON["AnimationName"].Value;
+                var loop = clipJSON["Loop"].Value == "1";
+                if (syncWithPeers)
+                {
+                    bool otherLoop;
+                    if (_looping.TryGetValue(name, out otherLoop))
+                    {
+                        if (loop != otherLoop) _loopingMismatches.Add(name);
+                    }
+                    else
+                    {
+                        _looping.Add(name, loop);
+                    }
+                }
             }
 
             _resultBuffer.AppendLine($"<b>{timelineScript.containingAtom.uid} {pluginId}</b>");
             _resultBuffer.AppendLine($"- version: {version}");
+            _resultBuffer.AppendLine($"- clips: {clipsJSON.Count}");
             if(!match.Success)
                 _resultBuffer.AppendLine($"- <color=yellow>Not from a known var package</color>");
             _resultBuffer.AppendLine();
