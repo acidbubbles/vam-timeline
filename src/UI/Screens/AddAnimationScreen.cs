@@ -42,13 +42,13 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI()
         {
-            var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create animation From current frame");
+            var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create animation from current frame");
             addAnimationFromCurrentFrameUI.button.onClick.AddListener(AddAnimationFromCurrentFrame);
 
-            var addAnimationAsCopyUI = prefabFactory.CreateButton("Create copy Of current animation");
+            var addAnimationAsCopyUI = prefabFactory.CreateButton("Create copy of current animation");
             addAnimationAsCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
 
-            _addAnimationTransitionUI = prefabFactory.CreateButton("Create Transition (Current -> Next)");
+            _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
 
             RefreshButtons();
