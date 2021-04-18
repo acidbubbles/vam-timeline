@@ -424,6 +424,7 @@ namespace VamTimeline
                 {
                     var weightedClipSpeedSum = 0f;
                     var totalBlendWeights = 0f;
+                    clipSpeed = 0f;
                     for (var i = 0; i < layerClips.Count; i++)
                     {
                         var clip = layerClips[i];
@@ -431,8 +432,9 @@ namespace VamTimeline
                         var smoothBlendWeight = Mathf.SmoothStep(0f, 1, clip.playbackBlendWeight);
                         weightedClipSpeedSum += clip.speed * smoothBlendWeight;
                         totalBlendWeights += smoothBlendWeight;
+                        clipSpeed = clip.speed;
                     }
-                    clipSpeed = weightedClipSpeedSum == 0 ? 1 : weightedClipSpeedSum / totalBlendWeights;
+                    clipSpeed = weightedClipSpeedSum == 0 ? clipSpeed : weightedClipSpeedSum / totalBlendWeights;
                 }
                 else
                 {
