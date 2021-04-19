@@ -112,10 +112,13 @@ namespace VamTimeline
             if (master) _masters++;
             var syncWithPeers = timelineJSON["SyncWithPeers"].Value != "0";
             var clipsJSON = timelineJSON["Clips"].AsArray;
+            string hasZeroSpeed = null;
             foreach (JSONClass clipJSON in clipsJSON)
             {
                 var name = clipJSON["AnimationName"].Value;
                 var loop = clipJSON["Loop"].Value == "1";
+                var speed = clipJSON["Speed"].AsFloat;
+                if (speed == 0) hasZeroSpeed = name;
                 if (syncWithPeers)
                 {
                     bool otherLoop;
@@ -135,6 +138,8 @@ namespace VamTimeline
             _resultBuffer.AppendLine($"- clips: {clipsJSON.Count}");
             if(!match.Success)
                 _resultBuffer.AppendLine($"- <color=yellow>Not from a known var package</color>");
+            if(hasZeroSpeed != null)
+                _resultBuffer.AppendLine($"- <color=yellow>Clip '{hasZeroSpeed}' has a speed of zero, which means it will not play</color>");
             _resultBuffer.AppendLine();
         }
 
