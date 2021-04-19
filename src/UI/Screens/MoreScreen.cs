@@ -16,16 +16,22 @@ namespace VamTimeline
             prefabFactory.CreateHeader("More options", 1);
 
             CreateChangeScreenButton("<b>Import / export</b> animations...", ImportExportScreen.ScreenName);
-            CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName);
-            CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName);
-            CreateChangeScreenButton("<b>Record</b> animation...", RecordScreen.ScreenName);
-            CreateChangeScreenButton("<b>Reduce</b> keyframes...", ReduceScreen.ScreenName);
-            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedKeyframeToolsScreen.ScreenName);
-            CreateChangeScreenButton("<b>Diagnostics</b> and scene analysis...", DiagnosticsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("Options...", OptionsScreen.ScreenName);
+            CreateChangeScreenButton("<b>Mocap</b> import...", MocapScreen.ScreenName);
+            CreateChangeScreenButton("<b>Record</b> animation...", RecordScreen.ScreenName);
+            CreateChangeScreenButton("<b>Reduce</b> keyframes...", ReduceScreen.ScreenName);
+
+            prefabFactory.CreateSpacer();
+
+            CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName);
+            CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedKeyframeToolsScreen.ScreenName);
+
+            prefabFactory.CreateSpacer();
+
+            CreateChangeScreenButton("<b>Diagnostics</b> and scene analysis...", DiagnosticsScreen.ScreenName);
+            CreateChangeScreenButton("<b>Options</b>...", OptionsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
