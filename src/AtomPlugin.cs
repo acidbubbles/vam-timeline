@@ -41,6 +41,7 @@ namespace VamTimeline
         public JSONStorableFloat speedJSON { get; private set; }
         public JSONStorableBool lockedJSON { get; private set; }
         public JSONStorableBool pausedJSON { get; private set; }
+        public JSONStorableFloat timeRemainingJSON { get; private set; }
 
         private JSONStorableFloat _scrubberAnalogControlJSON;
         private bool _scrubbing = false;
@@ -135,6 +136,7 @@ namespace VamTimeline
             {
                 scrubberJSON.valNoCallback = animationEditContext.clipTime;
                 timeJSON.valNoCallback = animation.playTime;
+                timeRemainingJSON.valNoCallback = animation.timeRemaining;
             }
 
             if (_scrubberAnalogControlJSON.val != 0)
@@ -303,6 +305,10 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterBool(isPlayingJSON);
+
+
+            timeRemainingJSON = new JSONStorableFloat(StorableNames.TimeRemaining, 0f, 0f, float.MaxValue);
+            RegisterFloat(timeRemainingJSON);
 
             stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
@@ -706,6 +712,7 @@ namespace VamTimeline
         private void OnIsPlayingChanged(AtomAnimationClip clip)
         {
             isPlayingJSON.valNoCallback = animation.isPlaying;
+            timeRemainingJSON.valNoCallback = animation.isPlaying ? animation.timeRemaining : 0;
             _freeControllerHook.enabled = !animation.isPlaying;
             peers.SendPlaybackState(clip);
         }

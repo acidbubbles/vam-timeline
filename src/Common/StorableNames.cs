@@ -10,6 +10,7 @@ namespace VamTimeline
         public const string Play = "Play";
         public const string PlayIfNotPlaying = "Play If Not Playing";
         public const string IsPlaying = "Is Playing";
+        public const string TimeRemaining = "Time Remaining";
         public const string Stop = "Stop";
         public const string StopIfPlaying = "Stop If Playing";
         public const string StopAndReset = "Stop And Reset";
