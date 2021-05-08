@@ -28,6 +28,10 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            InitUseRealTimeUI();
+
+            prefabFactory.CreateSpacer();
+
             InitDisableSync();
             if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
                 InitSyncSubsceneOnly();
@@ -51,6 +55,12 @@ namespace VamTimeline
         {
             _lockedJSON = new JSONStorableBool("Lock (ignore in-game edits)", animationEditContext.locked, val => animationEditContext.locked = val);
             prefabFactory.CreateToggle(_lockedJSON);
+        }
+
+        private void InitUseRealTimeUI()
+        {
+            var useRealTimeJSON = new JSONStorableBool("Use real time (fps independent)", animation.useRealTime, val => animation.useRealTime = val);
+            prefabFactory.CreateToggle(useRealTimeJSON);
         }
 
         private void InitDisableSync()
