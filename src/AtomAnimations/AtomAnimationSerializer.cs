@@ -35,6 +35,7 @@ namespace VamTimeline
             animation.master = DeserializeBool(animationJSON["Master"], false);
             animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
+            animation.useRealTime = DeserializeBool(animationJSON["UseRealTime"], true);
 
             animation.index.StartBulkUpdates();
             try
@@ -332,6 +333,7 @@ namespace VamTimeline
                 { "Master", animation.master ? "1" : "0" },
                 { "SyncWithPeers", animation.syncWithPeers ? "1" : "0" },
                 { "SyncSubsceneOnly", animation.syncSubsceneOnly ? "1" : "0" },
+                { "UseRealTime", animation.useRealTime ? "1" : "0" },
             };
             var clipsJSON = new JSONArray();
             foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))

@@ -48,6 +48,8 @@ namespace VamTimeline
         }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
+        public bool useRealTime { get; set; }
+
         public bool master { get; set; }
 
         private float _playTime;
@@ -220,9 +222,9 @@ namespace VamTimeline
         public void Clear()
         {
             var list = clips.ToList();
-            for (var index = 0; index < list.Count; index++)
+            for (var i = 0; i < list.Count; i++)
             {
-                var clip = list[index];
+                var clip = list[i];
                 RemoveClip(clip);
             }
 
@@ -655,6 +657,7 @@ namespace VamTimeline
 
         private Quaternion[] _rotations = new Quaternion[0];
         private float[] _rotationBlendWeights = new float[0];
+
         [MethodImpl(256)]
         private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets, bool force)
         {
@@ -969,7 +972,13 @@ namespace VamTimeline
 
             SampleFloatParams();
             SampleTriggers();
-            ProcessAnimationSequence(Time.deltaTime * speed);
+            ProcessAnimationSequence(GetDeltaTime() * speed);
+        }
+
+        [MethodImpl(256)]
+        private float GetDeltaTime()
+        {
+            return useRealTime ? Time.unscaledDeltaTime * Time.timeScale : Time.deltaTime;
         }
 
         private void ProcessAnimationSequence(float deltaTime)
@@ -1022,7 +1031,7 @@ namespace VamTimeline
         {
             if (!allowAnimationProcessing || paused) return;
 
-            var delta = Time.deltaTime * _speed;
+            var delta = GetDeltaTime() * _speed;
             _playTime += delta;
             AdvanceClipsTime(delta);
             SampleControllers();
