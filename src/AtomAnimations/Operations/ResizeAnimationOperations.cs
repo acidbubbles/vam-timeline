@@ -81,7 +81,7 @@ namespace VamTimeline
                     var lastTrigger = target.triggersMap.Keys.Last();
                     if (lastTrigger / 1000f > newAnimationLength)
                     {
-                        target.triggersMap.Remove(lastTrigger);
+                        target.DeleteFrameByMs(lastTrigger);
                         continue;
                     }
                     break;

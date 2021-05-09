@@ -8,7 +8,7 @@ namespace VamTimeline
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
         public readonly SortedDictionary<int, AtomAnimationTrigger> triggersMap = new SortedDictionary<int, AtomAnimationTrigger>();
-        public float[] keyframes { get; private set; } = new float[0];
+        private float[] keyframes { get; set; } = new float[0];
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
         public string name { get; set; }
@@ -84,7 +84,7 @@ namespace VamTimeline
         public void SetKeyframe(int ms, AtomAnimationTrigger value)
         {
             if (value == null)
-                triggersMap.Remove(ms);
+                DeleteFrameByMs(ms);
             else
                 triggersMap[ms] = value;
             dirty = true;
@@ -92,11 +92,14 @@ namespace VamTimeline
 
         public void DeleteFrame(float time)
         {
-            DeleteFrame(time.ToMilliseconds());
+            DeleteFrameByMs(time.ToMilliseconds());
         }
 
-        public void DeleteFrame(int ms)
+        public void DeleteFrameByMs(int ms)
         {
+            AtomAnimationTrigger trigger;
+            if (triggersMap.TryGetValue(ms, out trigger))
+                trigger.Dispose();
             triggersMap.Remove(ms);
             dirty = true;
         }
