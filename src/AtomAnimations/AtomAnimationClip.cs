@@ -383,7 +383,21 @@ namespace VamTimeline
 
             set
             {
-                _clipTime = Mathf.Abs(loop ? value % animationLength : Mathf.Min(value, animationLength));
+                if (loop)
+                {
+                    if (value >= 0)
+                    {
+                        _clipTime = value % animationLength;
+                    }
+                    else
+                    {
+                        _clipTime = animationLength + value;
+                    }
+                }
+                else
+                {
+                    _clipTime = Mathf.Clamp(value, 0, animationLength);
+                }
             }
         }
 
