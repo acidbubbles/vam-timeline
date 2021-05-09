@@ -452,7 +452,7 @@ namespace VamTimeline
                     clip.clipTime += clipDelta;
                     if (clip.playbackBlendRate != 0)
                     {
-                        clip.playbackBlendWeight += clip.playbackBlendRate * clipDelta;
+                        clip.playbackBlendWeight += clip.playbackBlendRate * Mathf.Abs(clipDelta);
                         if (clip.playbackBlendWeight >= clip.weight)
                         {
                             clip.playbackBlendRate = 0f;
