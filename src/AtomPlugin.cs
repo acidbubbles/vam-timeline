@@ -375,6 +375,14 @@ namespace VamTimeline
                     yield return 0;
                     if (this == null) yield break;
                 }
+
+                var confirmPanel = SuperController.singleton.errorLogPanel.parent.Find("UserConfirmCanvas");
+                while (confirmPanel != null && confirmPanel.childCount > 0)
+                {
+                    yield return 0;
+                    if (this == null) yield break;
+                }
+
                 foreach (var t in animation.clips.SelectMany(c => c.targetTriggers))
                 {
                     // Allows accessing the self target
