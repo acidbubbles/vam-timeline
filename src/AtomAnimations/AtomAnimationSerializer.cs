@@ -35,7 +35,7 @@ namespace VamTimeline
             animation.master = DeserializeBool(animationJSON["Master"], false);
             animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
-            animation.useRealTime = DeserializeBool(animationJSON["UseRealTime"], true);
+            animation.timeMode = DeserializeInt(animationJSON["TimeMode"], 0);
 
             animation.index.StartBulkUpdates();
             try
@@ -287,6 +287,13 @@ namespace VamTimeline
             return float.Parse(node.Value, CultureInfo.InvariantCulture);
         }
 
+        private static int DeserializeInt(JSONNode node, int defaultVal = 0)
+        {
+            if (node == null || string.IsNullOrEmpty(node.Value))
+                return defaultVal;
+            return int.Parse(node.Value, CultureInfo.InvariantCulture);
+        }
+
         private static bool DeserializeBool(JSONNode node, bool defaultVal)
         {
             if (node == null || string.IsNullOrEmpty(node.Value))
@@ -333,7 +340,7 @@ namespace VamTimeline
                 { "Master", animation.master ? "1" : "0" },
                 { "SyncWithPeers", animation.syncWithPeers ? "1" : "0" },
                 { "SyncSubsceneOnly", animation.syncSubsceneOnly ? "1" : "0" },
-                { "UseRealTime", animation.useRealTime ? "1" : "0" },
+                { "TimeMode", animation.timeMode.ToString(CultureInfo.InvariantCulture) },
             };
             var clipsJSON = new JSONArray();
             foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))

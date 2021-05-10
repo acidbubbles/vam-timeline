@@ -48,7 +48,7 @@ namespace VamTimeline
         }
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
-        public bool useRealTime { get; set; }
+        public int timeMode { get; set; }
 
         public bool master { get; set; }
 
@@ -978,7 +978,15 @@ namespace VamTimeline
         [MethodImpl(256)]
         private float GetDeltaTime()
         {
-            return useRealTime ? Time.unscaledDeltaTime * Time.timeScale : Time.deltaTime;
+            switch (timeMode)
+            {
+                case 0:
+                    return Time.deltaTime;
+                case 1:
+                    return Time.unscaledDeltaTime * Time.timeScale;
+                default:
+                    return Time.deltaTime;
+            }
         }
 
         private void ProcessAnimationSequence(float deltaTime)
