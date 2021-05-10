@@ -21,6 +21,7 @@ src\AtomAnimations\Targets\CurveTypeValues.cs
 src\AtomAnimations\Targets\FloatParamAnimationTarget.cs
 src\AtomAnimations\Targets\FreeControllerAnimationTarget.cs
 src\AtomAnimations\Targets\ICurveAnimationTarget.cs
+src\AtomAnimations\Targets\TimeTypeValues.cs
 src\AtomAnimations\Targets\TransformAnimationTarget.cs
 src\AtomAnimations\Targets\TriggersAnimationTarget.cs
 src\AtomAnimations\AtomAnimation.cs

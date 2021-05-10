@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace VamTimeline
 {
     public class OptionsScreen : ScreenBase
@@ -25,11 +28,11 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitLockedUI();
-
+/*
             prefabFactory.CreateSpacer();
 
             InitUseRealTimeUI();
-
+*/
             prefabFactory.CreateSpacer();
 
             InitDisableSync();
@@ -59,8 +62,15 @@ namespace VamTimeline
 
         private void InitUseRealTimeUI()
         {
-            var useRealTimeJSON = new JSONStorableBool("Use real time (fps independent)", animation.useRealTime, val => animation.useRealTime = val);
-            prefabFactory.CreateToggle(useRealTimeJSON);
+            var timeTypeJSON = new JSONStorableStringChooser("Time mode", new List<string> {TimeTypeValues.GameTime.ToString(), TimeTypeValues.RealTime.ToString()}, TimeTypeValues.GameTime.ToString(), "Time mode");
+            timeTypeJSON.displayChoices = new List<string>
+            {
+                "Game time (slows with low fps)",
+                "Real time (better for audio sync)"
+            };
+            timeTypeJSON.valNoCallback = animation.timeMode.ToString();
+            timeTypeJSON.setCallbackFunction = val => animation.timeMode = int.Parse(val);
+            prefabFactory.CreatePopup(timeTypeJSON, true, true);
         }
 
         private void InitDisableSync()

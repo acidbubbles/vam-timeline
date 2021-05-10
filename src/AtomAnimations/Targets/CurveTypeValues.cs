@@ -33,7 +33,7 @@ namespace VamTimeline
             {LeaveAsIs, "Leave As-Is"}
         };
 
-        public static readonly List<string> labels2 = new List<string>
+        public static readonly List<string> choicesList = new List<string>
         {
             FromInt(SmoothGlobal),
             FromInt(SmoothLocal),
