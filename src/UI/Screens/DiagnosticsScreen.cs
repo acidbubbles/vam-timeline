@@ -13,11 +13,12 @@ namespace VamTimeline
         public override string screenId => ScreenName;
 
         private JSONStorableString _resultJSON;
-        private StringBuilder _resultBuffer;
-        private HashSet<string> _versions;
-        private Dictionary<string, bool> _looping;
-        private HashSet<string> _loopingMismatches;
+        private StringBuilder _resultBuffer = new StringBuilder();
+        private HashSet<string> _versions = new HashSet<string>();
+        private Dictionary<string, bool> _looping = new Dictionary<string, bool>();
+        private HashSet<string> _loopingMismatches = new HashSet<string>();
         private int _masters;
+        private int _otherTimeModes = -1;
 
         #region Init
 
@@ -40,10 +41,11 @@ namespace VamTimeline
         private void DoAnalysis()
         {
             _masters = 0;
-            _resultBuffer = new StringBuilder();
-            _versions = new HashSet<string>();
-            _looping = new Dictionary<string, bool>();
-            _loopingMismatches = new HashSet<string>();
+            _otherTimeModes = -1;
+            _resultBuffer.Length = 0;
+            _versions.Clear();
+            _looping.Clear();
+            _loopingMismatches.Clear();
 
             _resultBuffer.AppendLine("<b>SCAN RESULT</b>");
             _resultBuffer.AppendLine();
@@ -111,26 +113,34 @@ namespace VamTimeline
             var master = timelineJSON["Master"].Value == "1";
             if (master) _masters++;
             var syncWithPeers = timelineJSON["SyncWithPeers"].Value != "0";
+            var timeMode = timelineJSON["TimeMode"].AsInt;
             var clipsJSON = timelineJSON["Clips"].AsArray;
             string hasZeroSpeed = null;
+            var hasTimeModeMismatch = false;
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                var name = clipJSON["AnimationName"].Value;
+                var animationName = clipJSON["AnimationName"].Value;
                 var loop = clipJSON["Loop"].Value == "1";
                 var speed = clipJSON["Speed"].AsFloat;
-                if (speed == 0) hasZeroSpeed = name;
+                if (speed == 0) hasZeroSpeed = animationName;
+
                 if (syncWithPeers)
                 {
                     bool otherLoop;
-                    if (_looping.TryGetValue(name, out otherLoop))
+                    if (_looping.TryGetValue(animationName, out otherLoop))
                     {
-                        if (loop != otherLoop) _loopingMismatches.Add(name);
+                        if (loop != otherLoop) _loopingMismatches.Add(animationName);
                     }
                     else
                     {
-                        _looping.Add(name, loop);
+                        _looping.Add(animationName, loop);
                     }
                 }
+
+                if (_otherTimeModes == -1)
+                    _otherTimeModes = timeMode;
+                else if (timeMode != _otherTimeModes)
+                    hasTimeModeMismatch = true;
             }
 
             _resultBuffer.AppendLine($"<b>{timelineScript.containingAtom.uid} {pluginId}</b>");
@@ -138,6 +148,8 @@ namespace VamTimeline
             _resultBuffer.AppendLine($"- clips: {clipsJSON.Count}");
             if(!match.Success)
                 _resultBuffer.AppendLine($"- <color=yellow>Not from a known var package</color>");
+            if(hasTimeModeMismatch)
+                _resultBuffer.AppendLine($"- <color=yellow>Using a time mode that differs from other instances; timing may be off</color>");
             if(hasZeroSpeed != null)
                 _resultBuffer.AppendLine($"- <color=yellow>Clip '{hasZeroSpeed}' has a speed of zero, which means it will not play</color>");
             _resultBuffer.AppendLine();
