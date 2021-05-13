@@ -92,8 +92,10 @@ namespace VamTimeline
             {
                 animation.playTime = value;
                 if (current == null) return;
-                foreach (var clip in animation.GetClips(current.animationName))
+                var clips = animation.GetClips(current.animationName);
+                for(var i = 0; i < clips.Count; i++)
                 {
+                    var clip = clips[i];
                     clip.clipTime = value;
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
                 }

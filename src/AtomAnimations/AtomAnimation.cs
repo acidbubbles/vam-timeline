@@ -121,14 +121,14 @@ namespace VamTimeline
 
         #region Clips
 
-        public AtomAnimationClip GetClip(string layer, string name)
+        public AtomAnimationClip GetClip(string animationLayer, string animationName)
         {
-            return clips.FirstOrDefault(c => c.animationLayer == layer && c.animationName == name);
+            return clips.FirstOrDefault(c => c.animationLayer == animationLayer && c.animationName == animationName);
         }
 
-        public IEnumerable<AtomAnimationClip> GetClips(string name)
+        public IList<AtomAnimationClip> GetClips(string animationName)
         {
-            return clips.Where(c => c.animationName == name);
+            return index.ByName(animationName);
         }
 
         public AtomAnimationClip GetClipQualified(string animationNameQualified)

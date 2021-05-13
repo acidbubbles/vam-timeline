@@ -149,9 +149,11 @@ namespace VamTimeline
         private void ReceivePlaybackState(object[] e)
         {
             if (!ValidateArgumentCount(e.Length, 5)) return;
-            foreach (var clip in GetClips(e))
+            var clips = GetClips(e);
+            for(var i = 0; i < clips.Count; i++)
             {
-                if (clip == null) return;
+                var clip = clips[i];
+                if (clip == null) continue;
                 if ((bool)e[2])
                     animation.PlayClip(clip, (bool)e[4]);
                 else
@@ -178,9 +180,11 @@ namespace VamTimeline
                 SuperController.LogError($"Atom {_containingAtom.name} received a master clip state from another atom. Please make sure only one of your atoms is a sequence master during playback.");
                 return;
             }
-            foreach (var clip in GetClips(e))
+            var clips = GetClips(e);
+            for(var i = 0; i < clips.Count; i++)
             {
-                if (clip == null || clip.playbackEnabled) return;
+                var clip = clips[i];
+                if (clip == null || clip.playbackEnabled) continue;
                 animation.PlayClip(clip, true, false);
                 clip.clipTime = (float) e[2];
             }
@@ -227,9 +231,11 @@ namespace VamTimeline
         private void ReceiveTime(object[] e)
         {
             if (!ValidateArgumentCount(e.Length, 3)) return;
-            foreach (var clip in GetClips(e))
+            var clips = GetClips(e);
+            for(var i = 0; i < clips.Count; i++)
             {
-                if (clip != animationEditContext.current) return;
+                var clip = clips[i];
+                if (clip != animationEditContext.current) continue;
                 animationEditContext.clipTime = (float)e[2];
             }
         }
@@ -246,9 +252,11 @@ namespace VamTimeline
         private void ReceiveCurrentAnimation(object[] e)
         {
             if (!ValidateArgumentCount(e.Length, 2)) return;
-            foreach (var clip in GetClips(e))
+            var clips = GetClips(e);
+            for(var i = 0; i < clips.Count; i++)
             {
-                if (clip == null) return;
+                var clip = clips[i];
+                if (clip == null) continue;
                 animationEditContext.SelectAnimation(clip);
             }
         }
@@ -300,8 +308,10 @@ namespace VamTimeline
                 }
             }
 
-            foreach (var clip in animation.GetClips(animationName))
+            var clips = animation.GetClips(animationName);
+            for(var i = 0; i < clips.Count; i++)
             {
+                var clip = clips[i];
                 new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd((float)e[3]);
                 var nextAnimationName = (string)e[4];
                 if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextAnimationName))
@@ -360,7 +370,7 @@ namespace VamTimeline
             }
         }
 
-        private IEnumerable<AtomAnimationClip> GetClips(object[] e)
+        private IList<AtomAnimationClip> GetClips(object[] e)
         {
             return animation.GetClips((string)e[1]);
         }
