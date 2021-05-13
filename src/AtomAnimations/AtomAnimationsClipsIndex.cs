@@ -4,6 +4,8 @@ namespace VamTimeline
 {
     public class AtomAnimationsClipsIndex
     {
+        public IEnumerable<string> clipNames => _clipsByName.Keys;
+
         private readonly List<AtomAnimationClip> _clips;
 
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayer = new Dictionary<string, List<AtomAnimationClip>>();
@@ -31,12 +33,26 @@ namespace VamTimeline
 
         public void Rebuild()
         {
-            if (_paused) return;
-
-            _clipsByLayer.Clear();
             _clipsByName.Clear();
+            _clipsByLayer.Clear();
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
+
+            foreach (var clip in _clips)
+            {
+                {
+                    List<AtomAnimationClip> nameClips;
+                    if (!_clipsByName.TryGetValue(clip.animationName, out nameClips))
+                    {
+                        nameClips = new List<AtomAnimationClip>();
+                        _clipsByName.Add(clip.animationName, nameClips);
+                    }
+                    nameClips.Add(clip);
+                }
+            }
+
+            if (_paused) return;
+
 
             foreach (var clip in _clips)
             {
@@ -48,16 +64,6 @@ namespace VamTimeline
                         _clipsByLayer.Add(clip.animationLayer, layerClips);
                     }
                     layerClips.Add(clip);
-                }
-
-                {
-                    List<AtomAnimationClip> nameClips;
-                    if (!_clipsByName.TryGetValue(clip.animationName, out nameClips))
-                    {
-                        nameClips = new List<AtomAnimationClip>();
-                        _clipsByName.Add(clip.animationName, nameClips);
-                    }
-                    nameClips.Add(clip);
                 }
 
                 foreach (var target in clip.targetControllers)

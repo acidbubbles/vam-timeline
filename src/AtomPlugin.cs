@@ -577,7 +577,7 @@ namespace VamTimeline
         {
             try
             {
-                var animationNames = animation.clips.Select(c => c.animationName).Distinct().ToList();
+                var animationNames = animation.index.clipNames.ToList();
 
                 animationLegacyJSON.choices = animationNames;
 

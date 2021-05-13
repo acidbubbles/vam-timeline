@@ -146,9 +146,9 @@ namespace VamTimeline
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
+            index.Rebuild();
             onClipsListChanged.Invoke();
             if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
-            index.Rebuild();
             return clip;
         }
 
@@ -170,9 +170,9 @@ namespace VamTimeline
         {
             clips.Remove(clip);
             clip.Dispose();
+            index.Rebuild();
             onClipsListChanged.Invoke();
             OnAnimationKeyframesDirty();
-            index.Rebuild();
         }
 
         private string GetNewAnimationName(AtomAnimationClip source)
