@@ -20,12 +20,10 @@ namespace VamTimeline
         public DopeSheet()
         {
             CreateBackground(gameObject, _style.BackgroundColor);
-            CreateLabelsBackground();
-
             _content = VamPrefabFactory.CreateScrollRect(gameObject);
             _content.GetComponent<VerticalLayoutGroup>().spacing = _style.RowSpacing;
-            _scrubberRect = CreateScrubber(_content.transform.parent.gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
-
+            _scrubberRect = CreateScrubber(_content.parent.gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
+            CreateLabelsBackground(_content);
         }
 
         public void OnDisable()
@@ -61,10 +59,11 @@ namespace VamTimeline
             return go;
         }
 
-        private GameObject CreateLabelsBackground()
+        private GameObject CreateLabelsBackground(Transform content)
         {
             var go = new GameObject();
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(content.parent, false);
+            go.transform.SetSiblingIndex(1);
 
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
@@ -147,8 +146,8 @@ namespace VamTimeline
 
         private void OnScrubberRangeChanged(AtomAnimationEditContext.ScrubberRangeChangedEventArgs args)
         {
-            SuperController.LogMessage("Range: " + args.scrubberRange.rangeDuration + " / " + this._clip.animationLength);
             foreach (var keyframe in _keyframesRows) keyframe.SetRange(args.scrubberRange.rangeBegin, args.scrubberRange.rangeDuration);
+            SetScrubberPosition(_clip.clipTime, true);
         }
 
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
@@ -271,6 +270,38 @@ namespace VamTimeline
                 child.transform.SetParent(go.transform, false);
 
                 var rect = child.AddComponent<RectTransform>();
+                rect.StretchParent();
+                rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+                rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
+
+                keyframes = child.AddComponent<DopeSheetKeyframes>();
+                _keyframesRows.Add(keyframes);
+                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
+                keyframes.SetRange(_animationEditContext.scrubberRange.rangeBegin, _animationEditContext.scrubberRange.rangeDuration);
+                keyframes.SetTime(_ms);
+                keyframes.style = _style;
+                keyframes.raycastTarget = true;
+
+                var listener = go.AddComponent<Listener>();
+                listener.Bind(
+                    target.onAnimationKeyframesRebuilt,
+                    () =>
+                    {
+                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
+                        keyframes.SetTime(_ms);
+                        keyframes.SetVerticesDirty();
+                    }
+                );
+
+                var click = go.AddComponent<Clickable>();
+                click.onClick.AddListener(eventData => OnClick(target, rect, eventData));
+            }
+
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
+
+                var rect = child.AddComponent<RectTransform>();
                 rect.StretchLeft();
                 rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth);
@@ -320,38 +351,6 @@ namespace VamTimeline
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.resizeTextForBestFit = false; // Better but ugly if true
                 text.raycastTarget = false;
-            }
-
-            {
-                var child = new GameObject();
-                child.transform.SetParent(go.transform, false);
-
-                var rect = child.AddComponent<RectTransform>();
-                rect.StretchParent();
-                rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
-                rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
-
-                keyframes = child.AddComponent<DopeSheetKeyframes>();
-                _keyframesRows.Add(keyframes);
-                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
-                keyframes.SetRange(_animationEditContext.scrubberRange.rangeBegin, _animationEditContext.scrubberRange.rangeDuration);
-                keyframes.SetTime(_ms);
-                keyframes.style = _style;
-                keyframes.raycastTarget = true;
-
-                var listener = go.AddComponent<Listener>();
-                listener.Bind(
-                    target.onAnimationKeyframesRebuilt,
-                    () =>
-                    {
-                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
-                        keyframes.SetTime(_ms);
-                        keyframes.SetVerticesDirty();
-                    }
-                );
-
-                var click = go.AddComponent<Clickable>();
-                click.onClick.AddListener(eventData => OnClick(target, rect, eventData));
             }
 
             UpdateSelected(target, keyframes, labelBackgroundImage);
@@ -411,10 +410,13 @@ namespace VamTimeline
         public void SetScrubberPosition(float time, bool stopped)
         {
             if (_scrubberRect == null) return;
+            if (_animationEditContext.scrubberRange.rangeDuration == 0) return;
 
-            var ratio = Mathf.Clamp01(time / _animationEditContext.scrubberRange.rangeDuration);
+            var ratio = (time - _animationEditContext.scrubberRange.rangeBegin) / _animationEditContext.scrubberRange.rangeDuration;
+
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
+
             if (stopped)
             {
                 _ms = time.ToMilliseconds();

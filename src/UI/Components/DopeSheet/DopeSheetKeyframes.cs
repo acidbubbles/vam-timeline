@@ -93,7 +93,7 @@ namespace VamTimeline
             {
                 if (_currentFrame == keyframe) continue;
                 if (_loop && keyframe == _animationLength) continue;
-                var center = new Vector2(offsetX + keyframe * ratio, 0);
+                var center = new Vector2(offsetX + (keyframe - _rangeBegin) * ratio, 0);
                 // TODO: Also skip keyframes before
                 if (center.x - size > width) break;
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
@@ -106,7 +106,7 @@ namespace VamTimeline
 
             if (_loop)
             {
-                var center = new Vector2(offsetX + _animationLength * ratio, 0);
+                var center = new Vector2(offsetX + (_animationLength - _rangeBegin) * ratio, 0);
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
                     center - new Vector2(-2, -size),
                     center - new Vector2(-2, size),
@@ -117,7 +117,7 @@ namespace VamTimeline
 
             if (_currentFrame != -1)
             {
-                var center = new Vector2(offsetX + _currentFrame * ratio, 0);
+                var center = new Vector2(offsetX + (_currentFrame - _rangeBegin) * ratio, 0);
                 size = style.KeyframeSizeSelectedBack;
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedBack : style.KeyframeColorCurrentBack,
                     center - new Vector2(0, -size),
