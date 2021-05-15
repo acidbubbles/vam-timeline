@@ -55,7 +55,7 @@ namespace VamTimeline
             Validate(GetLeadCurve(), animationLength);
             if (x.length != rotW.length)
             {
-                SuperController.LogError($"Mismatched rotation and position data on controller {name}. Missing data will be created.");
+                SuperController.LogError($"Mismatched rotation and position data on controller {name}. {x.length} position keys and {rotW.length} rotation keys found. Missing data will be created.");
                 RepairMismatchedCurves();
             }
         }
