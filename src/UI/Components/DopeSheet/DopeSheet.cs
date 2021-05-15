@@ -377,14 +377,14 @@ namespace VamTimeline
 
         private void OnClick(IAtomAnimationTarget target, RectTransform rect, PointerEventData eventData)
         {
-            if (!_animationEditContext.CanEdit()) return;
+            if (!_animationEditContext.CanEdit() || _animationEditContext.scrubberRange.rangeDuration == 0) return;
 
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
             var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
-            var clickedTime = ratio * _clip.animationLength;
+            var clickedTime = (ratio * _animationEditContext.scrubberRange.rangeDuration) + _animationEditContext.scrubberRange.rangeBegin;
             var previousClipTime = _animationEditContext.clipTime;
             _animationEditContext.clipTime = target.GetTimeClosestTo(clickedTime);
             if (!_animationEditContext.IsSelected(target))
