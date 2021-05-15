@@ -7,16 +7,25 @@ using UnityEngine.Events;
 
 namespace VamTimeline
 {
+    public struct ScrubberRange
+    {
+        public float rangeBegin;
+        public float rangeDuration;
+    }
+
     public class AtomAnimationEditContext : MonoBehaviour
     {
         public struct TimeChangedEventArgs { public float time; public float currentClipTime; }
         public class TimeChangedEvent : UnityEvent<TimeChangedEventArgs> { }
+        public struct ScrubberRangeChangedEventArgs { public ScrubberRange scrubberRange; }
+        public class ScrubberRangeChangedEvent : UnityEvent<ScrubberRangeChangedEventArgs> { }
         public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public class AnimationSettingsChanged : UnityEvent<string> { }
 
         public readonly AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
         public readonly TimeChangedEvent onTimeChanged = new TimeChangedEvent();
+        public readonly ScrubberRangeChangedEvent onScrubberRangeChanged = new ScrubberRangeChangedEvent();
         public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
         public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
 
@@ -50,7 +59,21 @@ namespace VamTimeline
             set { _locked = value; onEditorSettingsChanged.Invoke(nameof(locked)); }
         }
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
-        public AtomAnimationClip current { get; private set; }
+        private AtomAnimationClip _current;
+
+        public AtomAnimationClip current
+        {
+            get { return _current; }
+            private set
+            {
+                _current = value;
+                scrubberRange = new ScrubberRange
+                {
+                    rangeBegin = 0f,
+                    rangeDuration = value.animationLength
+                };
+            }
+        }
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
         public bool ignoreGrabEnd;
         private AtomAnimation _animation;
@@ -103,7 +126,23 @@ namespace VamTimeline
                     Sample();
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", playTime);
+                // TODO: If the scrubber range does not contain the time, update the range
                 onTimeChanged.Invoke(timeArgs);
+            }
+        }
+
+        private ScrubberRange _scrubberRange;
+        public ScrubberRange scrubberRange
+        {
+            get
+            {
+                return _scrubberRange;
+            }
+            set
+            {
+                _scrubberRange = value;
+                // TODO: If the clip time is out of range, update the scrubber position
+                onScrubberRangeChanged.Invoke(new ScrubberRangeChangedEventArgs {scrubberRange = value});
             }
         }
 

@@ -110,6 +110,7 @@ namespace VamTimeline
 
             _animationEditContext = animationEditContext;
             _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
+            _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
             _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             _animationEditContext.animation.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
 
@@ -122,7 +123,9 @@ namespace VamTimeline
             if (_animationEditContext == null) return;
 
             _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
+            _animationEditContext.onScrubberRangeChanged.RemoveListener(OnScrubberRangeChanged);
             _animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
+            _animationEditContext.animation.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
             _animationEditContext = null;
 
             UnbindClip();
@@ -140,6 +143,12 @@ namespace VamTimeline
         private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs args)
         {
             SetScrubberPosition(args.currentClipTime, true);
+        }
+
+        private void OnScrubberRangeChanged(AtomAnimationEditContext.ScrubberRangeChangedEventArgs args)
+        {
+            SuperController.LogMessage("Range: " + args.scrubberRange.rangeDuration + " / " + this._clip.animationLength);
+            foreach (var keyframe in _keyframesRows) keyframe.SetRange(args.scrubberRange.rangeBegin, args.scrubberRange.rangeDuration);
         }
 
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
@@ -275,6 +284,7 @@ namespace VamTimeline
                 // TODO: Change this for a dictionary and listen once instead of once per row!
                 listener.Bind(
                     _animationEditContext.onTargetsSelectionChanged,
+                    // ReSharper disable once AccessToModifiedClosure
                     () => UpdateSelected(target, keyframes, labelBackgroundImage)
                 );
 
@@ -324,6 +334,7 @@ namespace VamTimeline
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
                 _keyframesRows.Add(keyframes);
                 keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
+                keyframes.SetRange(_animationEditContext.scrubberRange.rangeBegin, _animationEditContext.scrubberRange.rangeDuration);
                 keyframes.SetTime(_ms);
                 keyframes.style = _style;
                 keyframes.raycastTarget = true;
@@ -401,7 +412,7 @@ namespace VamTimeline
         {
             if (_scrubberRect == null) return;
 
-            var ratio = Mathf.Clamp01(time / _clip.animationLength);
+            var ratio = Mathf.Clamp01(time / _animationEditContext.scrubberRange.rangeDuration);
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             if (stopped)

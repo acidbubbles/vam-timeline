@@ -12,6 +12,8 @@ namespace VamTimeline
         private readonly HashSet<int> _frames = new HashSet<int>();
         private int _animationLength;
         private bool _loop;
+        private int _rangeBegin;
+        private int _rangeDuration;
 
         public bool selected
         {
@@ -56,10 +58,17 @@ namespace VamTimeline
             }
         }
 
+        public void SetRange(float rangeBegin, float rangeDuration)
+        {
+            _rangeBegin = rangeBegin.ToMilliseconds();
+            _rangeDuration = rangeDuration.ToMilliseconds();
+            SetVerticesDirty();
+        }
+
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
-            if (style == null || _animationLength == 0) return;
+            if (style == null || _animationLength == 0 || _rangeDuration == 0) return;
             var width = rectTransform.rect.width;
 
             var padding = style.KeyframesRowPadding;
@@ -74,9 +83,10 @@ namespace VamTimeline
                 new Vector2(-width / 2f + padding, lineHeight)
             ));
 
+            // TODO: We only care about too many keyframes in the zoomed area
             if(tooManyKeyframes) return;
 
-            var ratio = (width - padding * 2f) / _animationLength;
+            var ratio = (width - padding * 2f) / _rangeDuration;
             var size = style.KeyframeSize;
             var offsetX = -width / 2f + padding;
             foreach (var keyframe in _frames)
@@ -84,6 +94,8 @@ namespace VamTimeline
                 if (_currentFrame == keyframe) continue;
                 if (_loop && keyframe == _animationLength) continue;
                 var center = new Vector2(offsetX + keyframe * ratio, 0);
+                // TODO: Also skip keyframes before
+                if (center.x - size > width) break;
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
