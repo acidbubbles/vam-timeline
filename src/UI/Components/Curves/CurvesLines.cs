@@ -10,6 +10,8 @@ namespace VamTimeline
     {
         public CurvesStyle style;
         private readonly List<KeyValuePair<Color, BezierAnimationCurve>> _curves = new List<KeyValuePair<Color, BezierAnimationCurve>>();
+        public float rangeBegin;
+        public float rangeDuration;
 
         public void ClearCurves()
         {
@@ -24,9 +26,10 @@ namespace VamTimeline
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
-            if (style == null || _curves.Count == 0) return;
+            if (style == null || _curves.Count == 0 || rangeDuration == 0) return;
 
             // General
+            // TODO: Only recompute range when keyframes changed, not when zooming
             var range = EstimateRange();
             const float margin = 20f;
             var rect = rectTransform.rect;
@@ -43,7 +46,7 @@ namespace VamTimeline
             // X ratio
             var lastCurve = _curves[_curves.Count - 1];
             if (lastCurve.Value.length < 2) return;
-            var maxX = lastCurve.Value.duration;
+            var maxX = rangeDuration;
             if (maxX == 0)
             {
                 DrawBorder(vh, halfWidth, halfHeight);
@@ -80,7 +83,8 @@ namespace VamTimeline
                 timespan = 1f;
             for (var t = 0f; t <= maxX; t += timespan)
             {
-                var x = offsetX + t * xRatio;
+                var x = offsetX + (t - rangeBegin) * xRatio;
+                if (x < offsetX) continue;
                 vh.DrawLine(new[]
                 {
                     new Vector2(x, halfHeight),
@@ -104,7 +108,7 @@ namespace VamTimeline
                 var previous = new Vector2(Mathf.NegativeInfinity, Mathf.Infinity);
                 for (var time = 0f; time < maxX; time += step)
                 {
-                    var value = curve.Evaluate(time);
+                    var value = curve.Evaluate(time + rangeBegin);
                     var cur = new Vector2(offsetX + time * xRatio, offsetY + value * yRatio);
                     if (Mathf.Abs(cur.y - previous.y) < minVertexYDelta) continue;
                     if (Mathf.Abs(cur.x - previous.x) > maxVertexXDelta)
@@ -122,7 +126,9 @@ namespace VamTimeline
                 for (var i = 0; i < curve.length; i++)
                 {
                     var keyframe = curve.GetKeyframeByKey(i);
-                    var handlePos = new Vector2(offsetX + keyframe.time * xRatio, offsetY + keyframe.value * yRatio);
+                    if (keyframe.time < rangeBegin) continue;
+                    if (keyframe.time > rangeBegin + rangeDuration) break;
+                    var handlePos = new Vector2(offsetX + (keyframe.time - rangeBegin) * xRatio, offsetY + keyframe.value * yRatio);
                     // Render bezier control points
 #if (RENDER_BEZIER_CONTROL_POINTS)
                     if (i > 0)

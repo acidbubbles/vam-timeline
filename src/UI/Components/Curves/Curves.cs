@@ -155,7 +155,18 @@ namespace VamTimeline
             if (_animationEditContext != null) throw new InvalidOperationException("Cannot bind to animation twice");
             _animationEditContext = animationEditContext;
             _animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
             OnTargetsSelectionChanged();
+        }
+
+        private void OnScrubberRangeChanged(AtomAnimationEditContext.ScrubberRangeChangedEventArgs args)
+        {
+            foreach (var l in _lines)
+            {
+                l.rangeBegin = args.scrubberRange.rangeBegin;
+                l.rangeDuration = args.scrubberRange.rangeDuration;
+                l.SetVerticesDirty();
+            }
         }
 
         private void OnTargetsSelectionChanged()
@@ -246,6 +257,8 @@ namespace VamTimeline
         {
             var lines = CreateCurvesLines(_linesContainer, color, label);
             _lines.Add(lines);
+            lines.rangeBegin = _animationEditContext.scrubberRange.rangeBegin;
+            lines.rangeDuration = _animationEditContext.scrubberRange.rangeDuration;
             lines.AddCurve(color, lead);
             lines.SetVerticesDirty();
         }
@@ -270,6 +283,11 @@ namespace VamTimeline
             // Allow curve refresh;
             yield return 0;
             yield return 0;
+            DrawCurveLinesImmediate();
+        }
+
+        private void DrawCurveLinesImmediate()
+        {
             foreach (var l in _lines)
             {
                 l.SetVerticesDirty();
@@ -291,7 +309,10 @@ namespace VamTimeline
         public void OnDestroy()
         {
             if (_animationEditContext != null)
+            {
                 _animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+                _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
+            }
 
             foreach (var t in _targets)
                 t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
