@@ -17,18 +17,24 @@ namespace VamTimeline
         private readonly GameObject _linesContainer;
         private readonly IList<ICurveAnimationTarget> _targets = new List<ICurveAnimationTarget>();
         private readonly IList<CurvesLines> _lines = new List<CurvesLines>();
-        private float _animationLength;
         private AtomAnimationEditContext _animationEditContext;
-        private float _clipTime;
+        private float _lastClipTime;
 
         public Curves()
         {
             CreateBackground(_style.BackgroundColor);
 
+            var image = gameObject.AddComponent<Image>();
+            image.color = Color.yellow;
+            image.raycastTarget = false;
+
+            var mask = gameObject.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
             _noCurves = CreateNoCurvesText();
 
             _linesContainer = CreateLinesContainer();
-            _scrubberLineRect = CreateScrubber();
+            _scrubberLineRect = CreateScrubber(transform);
         }
 
         private GameObject CreateBackground(Color color)
@@ -46,10 +52,10 @@ namespace VamTimeline
             return go;
         }
 
-        private RectTransform CreateScrubber()
+        private RectTransform CreateScrubber(Transform parent)
         {
             var go = new GameObject("Scrubber");
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(parent, false);
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
@@ -87,12 +93,6 @@ namespace VamTimeline
             var go = new GameObject();
             go.transform.SetParent(parent.transform, false);
 
-            var image = go.AddComponent<Image>();
-            image.color = Color.yellow;
-            image.raycastTarget = false;
-
-            var mask = go.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
 
             var layout = go.AddComponent<LayoutElement>();
             layout.flexibleWidth = 1;
@@ -161,6 +161,7 @@ namespace VamTimeline
 
         private void OnScrubberRangeChanged(AtomAnimationEditContext.ScrubberRangeChangedEventArgs args)
         {
+            _lastClipTime = -1;
             foreach (var l in _lines)
             {
                 l.rangeBegin = args.scrubberRange.rangeBegin;
@@ -189,11 +190,10 @@ namespace VamTimeline
                 }
                 _noCurves.SetActive(false);
                 _scrubberLineRect.transform.parent.gameObject.SetActive(true);
-                _clipTime = -1f;
+                _lastClipTime = -1f;
             }
             else
             {
-                _animationLength = 0f;
                 _noCurves.SetActive(true);
                 _scrubberLineRect.transform.parent.gameObject.SetActive(false);
             }
@@ -202,7 +202,6 @@ namespace VamTimeline
         private void BindCurves(ICurveAnimationTarget target)
         {
             var lead = target.GetLeadCurve();
-            _animationLength = lead.length >= 2 ? lead.GetKeyframeByKey(lead.length - 1).time : 0f;
             _targets.Add(target);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             if (target is FreeControllerAnimationTarget)
@@ -297,11 +296,13 @@ namespace VamTimeline
         public void Update()
         {
             if (_animationEditContext == null) return;
-            if (_animationEditContext.clipTime == _clipTime) return;
+            if (_animationEditContext.clipTime == _lastClipTime) return;
+            if (_animationEditContext.scrubberRange.rangeDuration == 0) return;
             if (UIPerformance.ShouldSkip()) return;
 
-            _clipTime = _animationEditContext.clipTime;
-            var ratio = Mathf.Clamp01(_animationEditContext.clipTime / _animationLength);
+            _lastClipTime = _animationEditContext.clipTime;
+            var ratio = (_animationEditContext.clipTime - _animationEditContext.scrubberRange.rangeBegin) / _animationEditContext.scrubberRange.rangeDuration;
+            // TODO: The line could just be a vertice instead of moving the layout
             _scrubberLineRect.anchorMin = new Vector2(ratio, 0);
             _scrubberLineRect.anchorMax = new Vector2(ratio, 1);
         }
