@@ -84,18 +84,20 @@ namespace VamTimeline
             ));
 
             // TODO: We only care about too many keyframes in the zoomed area
-            if(tooManyKeyframes) return;
+            // if(tooManyKeyframes) return;
 
             var ratio = (width - padding * 2f) / _rangeDuration;
             var size = style.KeyframeSize;
+            var minX = -width / 2f - style.KeyframeSizeSelectedBack;
+            var maxX = width / 2f + style.KeyframeSizeSelectedBack;
             var offsetX = -width / 2f + padding;
             foreach (var keyframe in _frames)
             {
                 if (_currentFrame == keyframe) continue;
                 if (_loop && keyframe == _animationLength) continue;
                 var center = new Vector2(offsetX + (keyframe - _rangeBegin) * ratio, 0);
-                // TODO: Also skip keyframes before
-                if (center.x - size > width) break;
+                if (center.x < minX) continue;
+                if (center.x > maxX) break;
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
@@ -107,31 +109,37 @@ namespace VamTimeline
             if (_loop)
             {
                 var center = new Vector2(offsetX + (_animationLength - _rangeBegin) * ratio, 0);
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
-                    center - new Vector2(-2, -size),
-                    center - new Vector2(-2, size),
-                    center - new Vector2(2, size),
-                    center - new Vector2(2, -size)
-                ));
+                if (center.x >= minX && center.x <= maxX)
+                {
+                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
+                        center - new Vector2(-2, -size),
+                        center - new Vector2(-2, size),
+                        center - new Vector2(2, size),
+                        center - new Vector2(2, -size)
+                    ));
+                }
             }
 
             if (_currentFrame != -1)
             {
                 var center = new Vector2(offsetX + (_currentFrame - _rangeBegin) * ratio, 0);
-                size = style.KeyframeSizeSelectedBack;
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedBack : style.KeyframeColorCurrentBack,
-                    center - new Vector2(0, -size),
-                    center - new Vector2(size, 0),
-                    center - new Vector2(0, size),
-                    center - new Vector2(-size, 0)
-                ));
-                size = style.KeyframeSizeSelectedFront;
-                vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedFront : style.KeyframeColorCurrentFront,
-                    center - new Vector2(0, -size),
-                    center - new Vector2(size, 0),
-                    center - new Vector2(0, size),
-                    center - new Vector2(-size, 0)
-                ));
+                if (center.x >= minX && center.x <= maxX)
+                {
+                    size = style.KeyframeSizeSelectedBack;
+                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedBack : style.KeyframeColorCurrentBack,
+                        center - new Vector2(0, -size),
+                        center - new Vector2(size, 0),
+                        center - new Vector2(0, size),
+                        center - new Vector2(-size, 0)
+                    ));
+                    size = style.KeyframeSizeSelectedFront;
+                    vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(selected ? style.KeyframeColorSelectedFront : style.KeyframeColorCurrentFront,
+                        center - new Vector2(0, -size),
+                        center - new Vector2(size, 0),
+                        center - new Vector2(0, size),
+                        center - new Vector2(-size, 0)
+                    ));
+                }
             }
         }
     }
