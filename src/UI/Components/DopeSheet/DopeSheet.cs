@@ -14,16 +14,64 @@ namespace VamTimeline
         private readonly RectTransform _content;
         private AtomAnimationEditContext _animationEditContext;
         private IAtomAnimationClip _clip;
+        private Curves _curves;
         private bool _bound;
         private int _ms;
 
         public DopeSheet()
         {
             CreateBackground(gameObject, _style.BackgroundColor);
-            _content = VamPrefabFactory.CreateScrollRect(gameObject);
+            var editor = CreateEditor();
+            _content = VamPrefabFactory.CreateScrollRect(editor.gameObject);
             _content.GetComponent<VerticalLayoutGroup>().spacing = _style.RowSpacing;
             _scrubberRect = CreateScrubber(_content.parent.gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
             CreateLabelsBackground(_content);
+            _curves = CreateCurves(editor);
+            CreateToolbox();
+        }
+
+        private GameObject CreateEditor()
+        {
+            var go = new GameObject("DopeSheetEditor");
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+            rect.offsetMax = new Vector2(0, -_style.TimelineHeight);
+
+            return go;
+        }
+
+        private void CreateToolbox()
+        {
+            var go = new GameObject("DopeSheetToolbox");
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchTop();
+            rect.sizeDelta = new Vector2(0, _style.TimelineHeight);
+            rect.anchoredPosition = new Vector2(0, -_style.TimelineHeight / 2f);
+
+            // TEMP
+
+            var image = go.AddComponent<Image>();
+            image.color = Color.red;
+
+            go.AddComponent<Button>().onClick.AddListener(() => { _curves.gameObject.SetActive(!_curves.gameObject.activeSelf); });
+        }
+
+        private Curves CreateCurves(GameObject parent)
+        {
+            var go = new GameObject("Curves");
+            go.transform.SetParent(parent.transform, false);
+            go.SetActive(false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+            rect.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+            rect.sizeDelta = new Vector2(-_style.LabelWidth, 0);
+
+            return go.AddComponent<Curves>();
         }
 
         public void OnDisable()
@@ -115,6 +163,7 @@ namespace VamTimeline
 
             BindClip(_animationEditContext.current);
             SetScrubberPosition(_animationEditContext.clipTime, true);
+            _curves.Bind(_animationEditContext);
         }
 
         private void UnbindAnimation()

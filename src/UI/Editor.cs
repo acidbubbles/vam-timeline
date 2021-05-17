@@ -81,7 +81,6 @@ namespace VamTimeline
         private AnimationControlPanel _controlPanel;
         private IAtomPlugin _plugin;
         private VamPrefabFactory _leftPanelPrefabFactory;
-        private Curves _curves;
         private CurveTypePopup _curveType;
         private bool _expanded = true;
         private UIDynamicButton _expandButton;
@@ -99,8 +98,6 @@ namespace VamTimeline
             InitClipboardUI();
 
             InitChangeCurveTypeUI();
-
-            _curves = InitCurvesUI();
 
             tabs.Add(AnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f));
             tabs.Add(AddAnimationScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f), "+", 60f);
@@ -136,18 +133,6 @@ namespace VamTimeline
         private void InitChangeCurveTypeUI()
         {
             _curveType = CurveTypePopup.Create(_leftPanelPrefabFactory);
-        }
-
-        private Curves InitCurvesUI()
-        {
-            var go = new GameObject();
-            go.transform.SetParent(leftPanel.transform, false);
-
-            var layout = go.AddComponent<LayoutElement>();
-            layout.preferredHeight = 200f;
-            layout.flexibleWidth = 1f;
-
-            return go.AddComponent<Curves>();
         }
 
         protected void InitClipboardUI()
@@ -233,7 +218,6 @@ namespace VamTimeline
 
             _controlPanel.Bind(ctx);
             _curveType.Bind(ctx);
-            _curves.Bind(ctx);
         }
     }
 }
