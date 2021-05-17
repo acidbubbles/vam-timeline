@@ -17,6 +17,7 @@ namespace VamTimeline
         private Curves _curves;
         private bool _bound;
         private int _ms;
+        private Scrubber _scrubber;
 
         public DopeSheet()
         {
@@ -52,13 +53,22 @@ namespace VamTimeline
             rect.sizeDelta = new Vector2(0, _style.TimelineHeight);
             rect.anchoredPosition = new Vector2(0, -_style.TimelineHeight / 2f);
 
-            var switcher = MiniButton.Create(go, "Curves");
+            CreateCurvesToggle(go);
+            CreateTimeline(go);
+        }
+
+        private void CreateCurvesToggle(GameObject go)
+        {
+            var switcher = MiniButton.Create(go, "Toggle curves");
+            switcher.rectTransform.StretchLeft();
+            switcher.rectTransform.sizeDelta = new Vector2(_style.LabelWidth, 0);
+            switcher.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
             switcher.clickable.onClick.AddListener(_ =>
             {
                 var selected = !switcher.selected;
                 switcher.selected = selected;
                 _curves.gameObject.SetActive(selected);
-                foreach(var row in _keyframesRows) row.gameObject.SetActive(!selected);
+                foreach (var row in _keyframesRows) row.gameObject.SetActive(!selected);
                 if (selected)
                 {
                     _content.GetComponent<RectTransform>().sizeDelta = new Vector2(_style.LabelWidth, 0);
@@ -69,6 +79,19 @@ namespace VamTimeline
                     _content.GetComponent<RectTransform>().StretchTop();
                 }
             });
+        }
+
+        private void CreateTimeline(GameObject parent)
+        {
+            var go = new GameObject("Timeline");
+            go.transform.SetParent(parent.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+            rect.offsetMin = new Vector2(_style.LabelWidth + _style.KeyframesRowPadding, 0);
+            rect.offsetMax = new Vector2(-_style.KeyframesRowPadding, 0);
+
+            _scrubber = go.AddComponent<Scrubber>();
         }
 
         private Curves CreateCurves(GameObject parent)
@@ -175,6 +198,7 @@ namespace VamTimeline
             BindClip(_animationEditContext.current);
             SetScrubberPosition(_animationEditContext.clipTime, true);
             _curves.Bind(_animationEditContext);
+            _scrubber.animationEditContext = _animationEditContext;
         }
 
         private void UnbindAnimation()

@@ -22,7 +22,6 @@ namespace VamTimeline
 
         private VamPrefabFactory _prefabFactory;
         private DopeSheet _dopeSheet;
-        private Scrubber _scrubber;
         private AtomAnimationEditContext _animationEditContext;
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
@@ -35,7 +34,6 @@ namespace VamTimeline
             _prefabFactory = gameObject.AddComponent<VamPrefabFactory>();
             _prefabFactory.plugin = plugin;
             _animationsJSON = InitAnimationSelectorUI();
-            _scrubber = InitScrubber();
             InitFrameNav(plugin.manager.configurableButtonPrefab);
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab);
             _dopeSheet = InitDopeSheet();
@@ -44,7 +42,6 @@ namespace VamTimeline
         public void Bind(AtomAnimationEditContext animationEditContext)
         {
             _animationEditContext = animationEditContext;
-            if (_scrubber != null) _scrubber.animationEditContext = animationEditContext;
             if (_dopeSheet != null) _dopeSheet.Bind(animationEditContext);
             _animationEditContext.animation.onClipsListChanged.AddListener(OnClipsListChanged);
             _animationEditContext.animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
@@ -67,18 +64,6 @@ namespace VamTimeline
             popup.popupPanelHeight = GetComponent<UIDynamic>()?.height ?? 500;
 
             return jsc;
-        }
-
-        private Scrubber InitScrubber()
-        {
-            var go = new GameObject("Scrubber");
-            go.transform.SetParent(transform, false);
-
-            go.AddComponent<LayoutElement>().preferredHeight = 60f;
-
-            var scrubber = go.AddComponent<Scrubber>();
-
-            return scrubber;
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab)

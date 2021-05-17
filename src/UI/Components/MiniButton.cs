@@ -26,9 +26,9 @@ namespace VamTimeline
             go.transform.SetParent(parent.transform, false);
 
             var rect = go.AddComponent<RectTransform>();
-            rect.StretchParent();
 
             var miniButton = go.AddComponent<MiniButton>();
+            miniButton.rectTransform = rect;
 
             CreateBackground(go, miniButton);
             CreateLabel(label, go);
@@ -74,6 +74,7 @@ namespace VamTimeline
             miniButton.clickable = clickable;
         }
 
+        public RectTransform rectTransform { get; set; }
         public Clickable clickable { get; set; }
         public GradientImage image { get; set; }
 
