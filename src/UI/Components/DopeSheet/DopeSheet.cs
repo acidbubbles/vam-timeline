@@ -37,7 +37,7 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
-            rect.offsetMax = new Vector2(0, -_style.TimelineHeight);
+            rect.offsetMax = new Vector2(0, -_style.TimelineHeight - _style.RowSpacing);
 
             return go;
         }
@@ -52,12 +52,23 @@ namespace VamTimeline
             rect.sizeDelta = new Vector2(0, _style.TimelineHeight);
             rect.anchoredPosition = new Vector2(0, -_style.TimelineHeight / 2f);
 
-            // TEMP
-
-            var image = go.AddComponent<Image>();
-            image.color = Color.red;
-
-            go.AddComponent<Button>().onClick.AddListener(() => { _curves.gameObject.SetActive(!_curves.gameObject.activeSelf); });
+            var switcher = MiniButton.Create(go, "Curves");
+            switcher.clickable.onClick.AddListener(_ =>
+            {
+                var selected = !switcher.selected;
+                switcher.selected = selected;
+                _curves.gameObject.SetActive(selected);
+                foreach(var row in _keyframesRows) row.gameObject.SetActive(!selected);
+                if (selected)
+                {
+                    _content.GetComponent<RectTransform>().sizeDelta = new Vector2(_style.LabelWidth, 0);
+                    _content.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
+                }
+                else
+                {
+                    _content.GetComponent<RectTransform>().StretchTop();
+                }
+            });
         }
 
         private Curves CreateCurves(GameObject parent)
@@ -342,7 +353,7 @@ namespace VamTimeline
                     }
                 );
 
-                var click = go.AddComponent<Clickable>();
+                var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(eventData => OnClick(target, rect, eventData));
             }
 

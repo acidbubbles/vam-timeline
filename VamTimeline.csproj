@@ -145,6 +145,7 @@
     <Compile Include="src\UI\Components\GradientImage.cs" />
     <Compile Include="src\UI\Components\LineDrawer.cs" />
     <Compile Include="src\UI\Components\Listener.cs" />
+    <Compile Include="src\UI\Components\MiniButton.cs" />
     <Compile Include="src\UI\Components\ScreenTabs.cs" />
     <Compile Include="src\UI\Components\UIPerformance.cs" />
     <Compile Include="src\UI\Components\UIVertexHelper.cs" />

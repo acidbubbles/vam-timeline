@@ -73,6 +73,7 @@
 ..\src\UI\Components\GradientImage.cs
 ..\src\UI\Components\LineDrawer.cs
 ..\src\UI\Components\Listener.cs
+..\src\UI\Components\MiniButton.cs
 ..\src\UI\Components\ScreenTabs.cs
 ..\src\UI\Components\UIPerformance.cs
 ..\src\UI\Components\UIVertexHelper.cs
