@@ -33,6 +33,7 @@ namespace VamTimeline
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         private bool _sampleAfterRebuild;
+        private float _lastCurrentAnimationLength;
 
         private float _snap = 0.1f;
         public float snap
@@ -70,7 +71,7 @@ namespace VamTimeline
                 scrubberRange = new ScrubberRange
                 {
                     rangeBegin = 0f,
-                    rangeDuration = value.animationLength
+                    rangeDuration = _lastCurrentAnimationLength = value.animationLength
                 };
             }
         }
@@ -103,6 +104,19 @@ namespace VamTimeline
                 _sampleAfterRebuild = false;
                 Sample();
             }
+
+            if (_lastCurrentAnimationLength != current.animationLength)
+            {
+                if (scrubberRange.rangeDuration == _lastCurrentAnimationLength || scrubberRange.rangeDuration > current.animationLength)
+                {
+                    scrubberRange = new ScrubberRange
+                    {
+                        rangeBegin = 0f,
+                        rangeDuration = current.animationLength
+                    };
+                }
+                _lastCurrentAnimationLength = current.animationLength;
+            }
         }
 
         public float clipTime
@@ -132,6 +146,7 @@ namespace VamTimeline
         }
 
         private ScrubberRange _scrubberRange;
+
         public ScrubberRange scrubberRange
         {
             get

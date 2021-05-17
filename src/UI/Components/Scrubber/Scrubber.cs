@@ -104,7 +104,7 @@ namespace VamTimeline
         {
             if (UIPerformance.ShouldSkip()) return;
 
-            var currentUpdate = new Vector2(animationEditContext.clipTime, animationEditContext.current.animationLength);
+            var currentUpdate = new Vector2(animationEditContext.clipTime, animationEditContext.scrubberRange.rangeDuration);
 
             if (_lastScrubberUpdate != currentUpdate)
             {
