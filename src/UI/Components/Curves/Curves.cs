@@ -59,6 +59,8 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
+            rect.offsetMin = new Vector2(_style.Padding, 0f);
+            rect.offsetMax = new Vector2(-_style.Padding, 0f);
 
             var line = new GameObject("Scrubber Line");
             line.transform.SetParent(go.transform, false);

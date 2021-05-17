@@ -9,6 +9,8 @@ namespace VamTimeline
             return new ScrubberStyle();
         }
 
+        public float Padding { get; } = 16f;
+
         // Curves
         public float CurveLineSize { get; } = 2f;
         public float HandleSize { get; } = 5f;

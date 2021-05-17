@@ -5,6 +5,7 @@ namespace VamTimeline
     public class ScrubberStyle : StyleBase
     {
         // Scrubber
+        public float Padding { get; } = 16f;
         public Color ScrubberColor { get; } = new Color(0.88f, 0.84f, 0.86f);
         public float ScrubberSize { get; } = 2f;
         public Color SecondsColor { get; } = new Color(0.50f, 0.48f, 0.48f);

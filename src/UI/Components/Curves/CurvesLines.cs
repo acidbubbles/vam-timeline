@@ -31,9 +31,9 @@ namespace VamTimeline
             // General
             // TODO: Only recompute range when keyframes changed, not when zooming
             var range = EstimateRange();
-            const float margin = 20f;
+            float margin = style.Padding;
             var rect = rectTransform.rect;
-            var width = rect.width;
+            var width = rect.width - margin * 2;
             var height = rect.height - margin * 2f;
             var offsetX = -width / 2f;
             const float precision = 2f; // Draw at every N pixels

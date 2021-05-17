@@ -15,6 +15,7 @@ namespace VamTimeline
         private ScrubberMarkers _markers;
 
         public AtomAnimationEditContext animationEditContext;
+        private Canvas _canvas;
 
         public Scrubber()
         {
@@ -28,6 +29,11 @@ namespace VamTimeline
             CreateMarkers();
             _scrubberRect = CreateLine(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
             _timeText = CreateTime();
+        }
+
+        private void Start()
+        {
+            _canvas = GetComponentInParent<Canvas>();
         }
 
         private static GameObject CreateBackground(GameObject parent, Color color)
@@ -65,6 +71,8 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
+            rect.offsetMin = new Vector2(_style.Padding, 0f);
+            rect.offsetMax = new Vector2(-_style.Padding, 0f);
 
             var line = new GameObject("Scrubber Line");
             line.transform.SetParent(go.transform, false);
@@ -171,9 +179,8 @@ namespace VamTimeline
             var rect = GetComponent<RectTransform>();
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
-            SuperController.singleton.ClearMessages();
-            var actualSize = RectTransformUtility.PixelAdjustRect(rect, GetComponentInParent<Canvas>());
-            var ratio = Mathf.Clamp01((localPosition.x - actualSize.x) / actualSize.width);
+            var actualSize = RectTransformUtility.PixelAdjustRect(rect, _canvas);
+            var ratio = Mathf.Clamp01((localPosition.x - actualSize.x - _style.Padding) / (actualSize.width - _style.Padding * 2));
             var clickedTime = (ratio * animationEditContext.scrubberRange.rangeDuration) + animationEditContext.scrubberRange.rangeBegin;
             var time = clickedTime.Snap(final ? animationEditContext.snap : 0);
             if (time >= animationEditContext.current.animationLength - 0.001f)

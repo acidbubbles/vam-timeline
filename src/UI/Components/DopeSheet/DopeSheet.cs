@@ -18,6 +18,7 @@ namespace VamTimeline
         private bool _bound;
         private int _ms;
         private Scrubber _scrubber;
+        private Canvas _canvas;
 
         public DopeSheet()
         {
@@ -29,6 +30,11 @@ namespace VamTimeline
             CreateLabelsBackground(_content);
             _curves = CreateCurves(editor);
             CreateToolbox();
+        }
+
+        private void Start()
+        {
+            _canvas = GetComponentInParent<Canvas>();
         }
 
         private GameObject CreateEditor()
@@ -88,8 +94,7 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
-            rect.offsetMin = new Vector2(_style.LabelWidth + _style.KeyframesRowPadding, 0);
-            rect.offsetMax = new Vector2(-_style.KeyframesRowPadding, 0);
+            rect.offsetMin = new Vector2(_style.LabelWidth, 0);
 
             _scrubber = go.AddComponent<Scrubber>();
         }
@@ -466,8 +471,8 @@ namespace VamTimeline
             Vector2 localPosition;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
-            var width = rect.rect.width - _style.KeyframesRowPadding * 2f;
-            var ratio = Mathf.Clamp01((localPosition.x + width / 2f) / width);
+            var actualSize = RectTransformUtility.PixelAdjustRect(rect, _canvas);
+            var ratio = Mathf.Clamp01((localPosition.x - actualSize.x - _style.KeyframesRowPadding) / (actualSize.width - _style.KeyframesRowPadding * 2));
             var clickedTime = (ratio * _animationEditContext.scrubberRange.rangeDuration) + _animationEditContext.scrubberRange.rangeBegin;
             var previousClipTime = _animationEditContext.clipTime;
             _animationEditContext.clipTime = target.GetTimeClosestTo(clickedTime);

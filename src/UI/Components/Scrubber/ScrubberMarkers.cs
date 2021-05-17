@@ -18,7 +18,7 @@ namespace VamTimeline
         {
             vh.Clear();
             if (_length == 0 || style == null) return;
-            var width = rectTransform.rect.width;
+            var width = rectTransform.rect.width - style.Padding * 2;
             var pixelsPerSecond = width / _length;
             float timespan;
             if (pixelsPerSecond < 20)
