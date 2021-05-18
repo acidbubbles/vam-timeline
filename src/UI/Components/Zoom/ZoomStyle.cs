@@ -10,7 +10,9 @@ namespace VamTimeline
         public override Color FontColor { get; } = new Color(0.821f, 0.782f, 0.841f);
         public float Padding { get; } = 16f;
         public float VerticalPadding => 4f;
+        public float ScrubberWidth = 2f;
         public Color FullSectionColor { get; } = new Color(0.321f, 0.282f, 0.341f);
         public Color ZoomedSectionColor { get; } = new Color(0.1f, 0.1f, 0.1f);
+        public Color ScrubberColor { get; } = new Color(0.721f, 0.682f, 0.741f);
     }
 }

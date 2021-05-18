@@ -5,21 +5,17 @@ namespace VamTimeline
 {
     public class ScrubberMarkers : MaskableGraphic
     {
-        private float _length;
         public ScrubberStyle style;
 
-        public float length
-        {
-            get { return _length; }
-            set { _length = value; SetVerticesDirty(); }
-        }
+        public float length;
+        public float offset;
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
-            if (_length == 0 || style == null) return;
+            if (length == 0 || style == null) return;
             var width = rectTransform.rect.width - style.Padding * 2;
-            var pixelsPerSecond = width / _length;
+            var pixelsPerSecond = width / length;
             float timespan;
             if (pixelsPerSecond < 20)
                 timespan = 100f;
@@ -36,13 +32,13 @@ namespace VamTimeline
             var timespan75 = timespan * 0.75f;
 
             var offsetX = -width / 2f;
-            var ratio = width / _length;
+            var ratio = width / length;
 
-            for (var s = 0f; s <= _length; s += timespan)
+            for (var s = -offset; s <= length; s += timespan)
             {
                 DrawLine(vh, yMin, yMax, offsetX, ratio, s, style.SecondsSize, style.SecondsColor);
 
-                if (s == _length) break;
+                if (s == length) break;
                 DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan25, style.SecondFractionsSize, style.SecondFractionsColor);
                 DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan50, style.SecondFractionsSize, style.SecondFractionsColor);
                 DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan75, style.SecondFractionsSize, style.SecondFractionsColor);

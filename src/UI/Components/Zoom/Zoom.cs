@@ -9,6 +9,7 @@ namespace VamTimeline
     {
         private readonly ZoomStyle _style = new ZoomStyle();
         private readonly ZoomGraphics _graphics;
+        private readonly ZoomTime _time;
         private readonly Text _zoomText;
 
         private Canvas _canvas;
@@ -24,6 +25,7 @@ namespace VamTimeline
 
             CreateBackground();
             _graphics = CreateGraphics();
+            _time = CreateTime();
             _zoomText = CreateZoomText();
         }
 
@@ -76,6 +78,22 @@ namespace VamTimeline
             return graphics;
         }
 
+        private ZoomTime CreateTime()
+        {
+            var go = new GameObject();
+            go.transform.SetParent(transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+            rect.offsetMin = new Vector2(_style.Padding, _style.VerticalPadding);
+            rect.offsetMax = new Vector2(-_style.Padding, -_style.VerticalPadding);
+
+            var graphics = go.AddComponent<ZoomTime>();
+            graphics.raycastTarget = true;
+            graphics.style = _style;
+            return graphics;
+        }
+
         private Text CreateZoomText()
         {
             var go = new GameObject();
@@ -102,7 +120,18 @@ namespace VamTimeline
             _graphics.rangeDuration = args.scrubberRange.rangeDuration;
             _graphics.rangeBegin = args.scrubberRange.rangeBegin;
             _graphics.SetVerticesDirty();
+            _time.animationLength = _animationEditContext.current.animationLength;
+            _time.time = _animationEditContext.clipTime;
+            _time.SetVerticesDirty();
             _zoomText.text = (args.scrubberRange.rangeDuration / _animationEditContext.current.animationLength * 100f).ToString("0.0") + "%";
+        }
+
+        public void Update()
+        {
+            if (!UIPerformance.ShouldRun()) return;
+            if (_time.time == _animationEditContext.clipTime) return;
+            _time.time = _animationEditContext.clipTime;
+            _time.SetVerticesDirty();
         }
 
         public void OnPointerDown(PointerEventData eventData)

@@ -143,6 +143,7 @@
     <Compile Include="src\UI\Components\Zoom\Zoom.cs" />
     <Compile Include="src\UI\Components\Zoom\ZoomGraphics.cs" />
     <Compile Include="src\UI\Components\Zoom\ZoomStyle.cs" />
+    <Compile Include="src\UI\Components\Zoom\ZoomTime.cs" />
     <Compile Include="src\UI\Components\Clickable.cs" />
     <Compile Include="src\UI\Components\CurveTypePopup.cs" />
     <Compile Include="src\UI\Components\GradientImage.cs" />

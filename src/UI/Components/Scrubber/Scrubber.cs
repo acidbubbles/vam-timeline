@@ -10,8 +10,8 @@ namespace VamTimeline
         private readonly RectTransform _scrubberRect;
         private readonly Text _timeText;
 
-        private Vector2 _lastScrubberUpdate = new Vector2(-1, -1);
-        private Vector2 _lastTextUpdate = new Vector2(-1, -1);
+        private int _lastScrubberHash = 0;
+        private int _lastTextHash = 0;
         private ScrubberMarkers _markers;
 
         public AtomAnimationEditContext animationEditContext;
@@ -112,23 +112,39 @@ namespace VamTimeline
         {
             if (UIPerformance.ShouldSkip()) return;
 
-            var currentUpdate = new Vector2(animationEditContext.clipTime, animationEditContext.scrubberRange.rangeDuration);
+            // var currentUpdate = new Vector2(animationEditContext.clipTime, animationEditContext.scrubberRange.rangeDuration);
 
-            if (_lastScrubberUpdate != currentUpdate)
+            if (UIPerformance.ShouldRun())
             {
-                if (_lastScrubberUpdate.y != currentUpdate.y)
-                    _markers.length = currentUpdate.y;
+                int currentScrubberHash;
+                unchecked
+                {
+                    currentScrubberHash = animationEditContext.scrubberRange.rangeBegin.GetHashCode() * 23 + animationEditContext.scrubberRange.rangeDuration.GetHashCode();
+                }
 
-                _lastScrubberUpdate = currentUpdate;
-                var ratio = Mathf.Clamp01(currentUpdate.x / currentUpdate.y);
+                if (currentScrubberHash != _lastScrubberHash)
+                {
+                    _markers.offset = animationEditContext.scrubberRange.rangeBegin;
+                    _markers.length = animationEditContext.scrubberRange.rangeDuration;
+                    _markers.SetVerticesDirty();
+                    _lastScrubberHash = currentScrubberHash;
+                }
+
+                var ratio = (animationEditContext.clipTime - animationEditContext.scrubberRange.rangeBegin) / animationEditContext.scrubberRange.rangeDuration;
                 _scrubberRect.anchorMin = new Vector2(ratio, 0);
                 _scrubberRect.anchorMax = new Vector2(ratio, 1);
             }
 
-            if (_lastTextUpdate != currentUpdate && UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
+            if (UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
             {
-                _lastTextUpdate = currentUpdate;
-                _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
+                int currentTextHash;
+                unchecked { currentTextHash = animationEditContext.clipTime.GetHashCode() + 31 * animationEditContext.current.animationLength.GetHashCode(); }
+
+                if (currentTextHash != _lastTextHash)
+                {
+                    _lastTextHash = currentTextHash;
+                    _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
+                }
             }
         }
 
@@ -143,7 +159,7 @@ namespace VamTimeline
         {
             if (animationEditContext == null) return;
 
-            var ratio = Mathf.Clamp01(animationEditContext.clipTime / animationEditContext.current.animationLength);
+            var ratio = (animationEditContext.clipTime - animationEditContext.scrubberRange.rangeBegin) / animationEditContext.scrubberRange.rangeDuration;
             _scrubberRect.anchorMin = new Vector2(ratio, 0);
             _scrubberRect.anchorMax = new Vector2(ratio, 1);
             _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
