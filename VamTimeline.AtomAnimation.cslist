@@ -68,6 +68,9 @@ src\UI\Components\TargetFrame\ITargetFrame.cs
 src\UI\Components\TargetFrame\SimpleSlider.cs
 src\UI\Components\TargetFrame\TargetFrameBase.cs
 src\UI\Components\TargetFrame\TriggersTargetFrame.cs
+src\UI\Components\Zoom\Zoom.cs
+src\UI\Components\Zoom\ZoomGraphics.cs
+src\UI\Components\Zoom\ZoomStyle.cs
 src\UI\Components\Clickable.cs
 src\UI\Components\CurveTypePopup.cs
 src\UI\Components\GradientImage.cs

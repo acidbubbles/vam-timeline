@@ -14,11 +14,12 @@ namespace VamTimeline
         private readonly RectTransform _content;
         private AtomAnimationEditContext _animationEditContext;
         private IAtomAnimationClip _clip;
-        private Curves _curves;
+        private readonly Curves _curves;
         private bool _bound;
         private int _ms;
         private Scrubber _scrubber;
         private Canvas _canvas;
+        private Zoom _zoom;
 
         public DopeSheet()
         {
@@ -44,7 +45,7 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
-            rect.offsetMax = new Vector2(0, -_style.TimelineHeight - _style.RowSpacing);
+            rect.offsetMax = new Vector2(0, -_style.ToolbarHeight - _style.RowSpacing);
 
             return go;
         }
@@ -56,16 +57,19 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchTop();
-            rect.sizeDelta = new Vector2(0, _style.TimelineHeight);
-            rect.anchoredPosition = new Vector2(0, -_style.TimelineHeight / 2f);
+            rect.sizeDelta = new Vector2(0, _style.ToolbarHeight);
+            rect.anchoredPosition = new Vector2(0, -_style.ToolbarHeight / 2f);
 
             CreateCurvesToggle(go);
+            CreateZoom(go);
             CreateTimeline(go);
         }
 
         private void CreateCurvesToggle(GameObject go)
         {
-            var switcher = MiniButton.Create(go, "Toggle curves");
+            var switcher = MiniButton.Create(go, "∿");
+            switcher.text.fontSize = 32;
+            switcher.text.fontStyle = FontStyle.Bold;
             switcher.rectTransform.StretchLeft();
             switcher.rectTransform.sizeDelta = new Vector2(_style.LabelWidth, 0);
             switcher.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
@@ -87,6 +91,19 @@ namespace VamTimeline
             });
         }
 
+        private void CreateZoom(GameObject parent)
+        {
+            var go = new GameObject("Zoom");
+            go.transform.SetParent(parent.transform, false);
+
+            var rect = go.AddComponent<RectTransform>();
+            rect.StretchParent();
+            rect.offsetMin = new Vector2(_style.LabelWidth, _style.TimelineHeight);
+            rect.offsetMax = new Vector2(1, 0);
+
+            _zoom = go.AddComponent<Zoom>();
+        }
+
         private void CreateTimeline(GameObject parent)
         {
             var go = new GameObject("Timeline");
@@ -95,6 +112,7 @@ namespace VamTimeline
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
             rect.offsetMin = new Vector2(_style.LabelWidth, 0);
+            rect.offsetMax = new Vector2(1, -_style.ZoomHeight);
 
             _scrubber = go.AddComponent<Scrubber>();
         }
@@ -203,6 +221,7 @@ namespace VamTimeline
             BindClip(_animationEditContext.current);
             SetScrubberPosition(_animationEditContext.clipTime, true);
             _curves.Bind(_animationEditContext);
+            _zoom.Bind(_animationEditContext);
             _scrubber.animationEditContext = _animationEditContext;
         }
 

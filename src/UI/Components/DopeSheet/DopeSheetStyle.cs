@@ -22,7 +22,9 @@ namespace VamTimeline
         public float LabelWidth { get; } = 150f;
 
         // Timeline
+        public float ZoomHeight { get; } = 30f;
         public float TimelineHeight { get; } = 60f;
+        public float ToolbarHeight => ZoomHeight + TimelineHeight;
 
         // Keyframes
         public Color KeyframesRowLineColor { get; } = new Color(0.650f, 0.650f, 0.650f);

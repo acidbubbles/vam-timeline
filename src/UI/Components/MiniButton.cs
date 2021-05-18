@@ -30,23 +30,44 @@ namespace VamTimeline
             var miniButton = go.AddComponent<MiniButton>();
             miniButton.rectTransform = rect;
 
-            CreateBackground(go, miniButton);
-            CreateLabel(label, go);
+            miniButton.text.text = label;
 
             return miniButton;
         }
 
-        private static void CreateLabel(string label, GameObject go)
+        public MiniButton()
+        {
+            CreateBackground();
+            CreateLabel();
+        }
+
+        private void CreateBackground()
         {
             var child = new GameObject();
-            child.transform.SetParent(go.transform, false);
+            child.transform.SetParent(transform, false);
+
+            var rect = child.AddComponent<RectTransform>();
+            rect.StretchParent();
+
+            image = child.AddComponent<GradientImage>();
+            image.top = _style.LabelBackgroundColorTop;
+            image.bottom = _style.LabelBackgroundColorBottom;
+            image.raycastTarget = true;
+
+            clickable = child.AddComponent<Clickable>();
+        }
+
+        private void CreateLabel()
+        {
+            var child = new GameObject();
+            child.transform.SetParent(transform, false);
 
             var rect = child.AddComponent<RectTransform>();
             const float padding = 2f;
             rect.StretchParent();
 
-            var text = child.AddComponent<Text>();
-            text.text = label;
+            text = child.AddComponent<Text>();
+            text.text = "Button";
             text.font = _style.Font;
             text.fontSize = 20;
             text.color = _style.FontColor;
@@ -56,29 +77,13 @@ namespace VamTimeline
             text.raycastTarget = false;
         }
 
-        private static void CreateBackground(GameObject go, MiniButton miniButton)
-        {
-            var child = new GameObject();
-            child.transform.SetParent(go.transform, false);
-
-            var rect = child.AddComponent<RectTransform>();
-            rect.StretchParent();
-
-            var image = child.AddComponent<GradientImage>();
-            image.top = _style.LabelBackgroundColorTop;
-            image.bottom = _style.LabelBackgroundColorBottom;
-            image.raycastTarget = true;
-            miniButton.image = image;
-
-            var clickable = child.AddComponent<Clickable>();
-            miniButton.clickable = clickable;
-        }
-
         public RectTransform rectTransform { get; set; }
         public Clickable clickable { get; set; }
         public GradientImage image { get; set; }
+        public Text text;
 
         private bool _selected;
+
         public bool selected
         {
             get

@@ -41,18 +41,35 @@ namespace VamTimeline
             {
                 OnSelectionChanged();
 
-                var beginJSON = new JSONStorableFloat("[TEMP] View Begin", 0, 0, current.animationLength)
+                JSONStorableFloat beginJSON = null;
+                JSONStorableFloat rangeJSON = null;
+
+                beginJSON = new JSONStorableFloat("[TEMP] View Begin", 0, 0, current.animationLength)
                 {
-                    setCallbackFunction = val => { animationEditContext.scrubberRange = new ScrubberRange {rangeBegin = val, rangeDuration = animationEditContext.scrubberRange.rangeDuration}; }
+                    setCallbackFunction = val =>
+                    {
+                        animationEditContext.scrubberRange = new ScrubberRange
+                        {
+                            rangeBegin = val, rangeDuration = Mathf.Min(animationEditContext.scrubberRange.rangeDuration, animationEditContext.current.animationLength - val)
+                        };
+                        rangeJSON.valNoCallback = animationEditContext.scrubberRange.rangeDuration;
+                    },
+                    valNoCallback = animationEditContext.scrubberRange.rangeBegin
                 };
-                beginJSON.valNoCallback = animationEditContext.scrubberRange.rangeBegin;
                 prefabFactory.CreateSlider(beginJSON);
 
-                var rangeJSON = new JSONStorableFloat("[TEMP] View Range", current.animationLength, 0, current.animationLength)
+                rangeJSON = new JSONStorableFloat("[TEMP] View Range", current.animationLength, 0, current.animationLength)
                 {
-                    setCallbackFunction = val => { animationEditContext.scrubberRange = new ScrubberRange {rangeBegin = animationEditContext.scrubberRange.rangeBegin, rangeDuration = val}; }
+                    setCallbackFunction = val =>
+                    {
+                        animationEditContext.scrubberRange = new ScrubberRange
+                        {
+                            rangeBegin = Mathf.Min(animationEditContext.scrubberRange.rangeBegin, animationEditContext.current.animationLength - val), rangeDuration = val
+                        };
+                        beginJSON.valNoCallback = animationEditContext.scrubberRange.rangeBegin;
+                    },
+                    valNoCallback = animationEditContext.scrubberRange.rangeDuration
                 };
-                rangeJSON.valNoCallback = animationEditContext.scrubberRange.rangeDuration;
                 prefabFactory.CreateSlider(rangeJSON);
             }
         }
