@@ -73,9 +73,7 @@ namespace VamTimeline
 
             var padding = style.KeyframesRowPadding;
             var lineHeight = style.KeyframesRowLineSize;
-            var pixelsPerSecond = width / _frames.Count;
-            var tooManyKeyframes = pixelsPerSecond < 2f;
-            var lineColor = _selected ? style.KeyframesRowLineColorSelected : tooManyKeyframes ? Color.red : style.KeyframesRowLineColor;
+            var lineColor = _selected ? style.KeyframesRowLineColorSelected : style.KeyframesRowLineColor;
             vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(lineColor,
                 new Vector2(-width / 2f + padding, -lineHeight),
                 new Vector2(width / 2f - padding, -lineHeight),
@@ -83,14 +81,12 @@ namespace VamTimeline
                 new Vector2(-width / 2f + padding, lineHeight)
             ));
 
-            // TODO: We only care about too many keyframes in the zoomed area
-            // if(tooManyKeyframes) return;
-
             var ratio = (width - padding * 2f) / _rangeDuration;
             var size = style.KeyframeSize;
             var minX = -width / 2f - style.KeyframeSizeSelectedBack;
             var maxX = width / 2f + style.KeyframeSizeSelectedBack;
             var offsetX = -width / 2f + padding;
+            var lastCenter = float.NegativeInfinity;
             foreach (var keyframe in _frames)
             {
                 if (_currentFrame == keyframe) continue;
@@ -98,6 +94,8 @@ namespace VamTimeline
                 var center = new Vector2(offsetX + (keyframe - _rangeBegin) * ratio, 0);
                 if (center.x < minX) continue;
                 if (center.x > maxX) break;
+                if (center.x - lastCenter < 2.5f) continue;
+                lastCenter = center.x;
                 vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.KeyframeColor,
                     center - new Vector2(0, -size),
                     center - new Vector2(size, 0),
