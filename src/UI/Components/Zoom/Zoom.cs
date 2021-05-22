@@ -1,18 +1,16 @@
-using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    public class Zoom : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class Zoom : MonoBehaviour
     {
         private readonly ZoomStyle _style = new ZoomStyle();
         private readonly ZoomGraphics _graphics;
         private readonly ZoomTime _time;
+        private readonly ScrubberInput _scrubberInput;
         private readonly Text _zoomText;
 
-        private Canvas _canvas;
         private AtomAnimationEditContext _animationEditContext;
 
         public Zoom()
@@ -26,6 +24,7 @@ namespace VamTimeline
             CreateBackground();
             _graphics = CreateGraphics();
             _time = CreateTime();
+            _scrubberInput = _time.gameObject.AddComponent<ScrubberInput>();
             _zoomText = CreateZoomText();
         }
 
@@ -33,12 +32,8 @@ namespace VamTimeline
         {
             _animationEditContext = animationEditContext;
             _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
+            _scrubberInput.animationEditContext = _animationEditContext;
             OnScrubberRangeChanged(new AtomAnimationEditContext.ScrubberRangeChangedEventArgs {scrubberRange = _animationEditContext.scrubberRange});
-        }
-
-        private void Start()
-        {
-            _canvas = GetComponentInParent<Canvas>();
         }
 
         private void OnDestroy()
@@ -132,38 +127,6 @@ namespace VamTimeline
             if (_time.time == _animationEditContext.clipTime) return;
             _time.time = _animationEditContext.clipTime;
             _time.SetVerticesDirty();
-        }
-
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            eventData.useDragThreshold = false;
-            UpdateZoomFromView(eventData, true);
-        }
-
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            UpdateZoomFromView(eventData);
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            UpdateZoomFromView(eventData);
-        }
-
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            UpdateZoomFromView(eventData, true);
-        }
-
-        private void UpdateZoomFromView(PointerEventData eventData, bool final = false)
-        {
-            if (_animationEditContext == null) return;
-            Vector2 localPosition;
-            var rect = GetComponent<RectTransform>();
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
-                return;
-            var actualSize = RectTransformUtility.PixelAdjustRect(rect, _canvas);
-            // TODO: Implement this
         }
     }
 }

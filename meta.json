@@ -80,6 +80,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\TargetFrame\\SimpleSlider.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\TargetFrame\\TargetFrameBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\TargetFrame\\TriggersTargetFrame.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Zoom\\ScrubberInput.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Zoom\\Zoom.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Zoom\\ZoomGraphics.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Components\\Zoom\\ZoomStyle.cs",

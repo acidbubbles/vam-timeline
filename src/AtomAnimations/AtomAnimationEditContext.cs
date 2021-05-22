@@ -68,11 +68,8 @@ namespace VamTimeline
             private set
             {
                 _current = value;
-                scrubberRange = new ScrubberRange
-                {
-                    rangeBegin = 0f,
-                    rangeDuration = _lastCurrentAnimationLength = value.animationLength
-                };
+                _lastCurrentAnimationLength = value.animationLength;
+                ResetScrubberRange();
             }
         }
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
@@ -109,11 +106,7 @@ namespace VamTimeline
             {
                 if (scrubberRange.rangeDuration == _lastCurrentAnimationLength || scrubberRange.rangeDuration > current.animationLength)
                 {
-                    scrubberRange = new ScrubberRange
-                    {
-                        rangeBegin = 0f,
-                        rangeDuration = current.animationLength
-                    };
+                    ResetScrubberRange();
                 }
                 _lastCurrentAnimationLength = current.animationLength;
             }
@@ -195,6 +188,15 @@ namespace VamTimeline
             if (locked) return false;
             if (animation.isPlaying) return false;
             return true;
+        }
+
+        public void ResetScrubberRange()
+        {
+            scrubberRange = new ScrubberRange
+            {
+                rangeBegin = 0f,
+                rangeDuration = current.animationLength
+            };
         }
 
         #region Animation Control

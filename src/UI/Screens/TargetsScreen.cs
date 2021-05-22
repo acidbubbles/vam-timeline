@@ -43,34 +43,6 @@ namespace VamTimeline
 
                 JSONStorableFloat beginJSON = null;
                 JSONStorableFloat rangeJSON = null;
-
-                beginJSON = new JSONStorableFloat("[TEMP] View Begin", 0, 0, current.animationLength)
-                {
-                    setCallbackFunction = val =>
-                    {
-                        animationEditContext.scrubberRange = new ScrubberRange
-                        {
-                            rangeBegin = val, rangeDuration = Mathf.Min(animationEditContext.scrubberRange.rangeDuration, animationEditContext.current.animationLength - val)
-                        };
-                        rangeJSON.valNoCallback = animationEditContext.scrubberRange.rangeDuration;
-                    },
-                    valNoCallback = animationEditContext.scrubberRange.rangeBegin
-                };
-                prefabFactory.CreateSlider(beginJSON);
-
-                rangeJSON = new JSONStorableFloat("[TEMP] View Range", current.animationLength, 0, current.animationLength)
-                {
-                    setCallbackFunction = val =>
-                    {
-                        animationEditContext.scrubberRange = new ScrubberRange
-                        {
-                            rangeBegin = Mathf.Min(animationEditContext.scrubberRange.rangeBegin, animationEditContext.current.animationLength - val), rangeDuration = val
-                        };
-                        beginJSON.valNoCallback = animationEditContext.scrubberRange.rangeBegin;
-                    },
-                    valNoCallback = animationEditContext.scrubberRange.rangeDuration
-                };
-                prefabFactory.CreateSlider(rangeJSON);
             }
         }
 
