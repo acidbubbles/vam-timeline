@@ -5,7 +5,7 @@ namespace VamTimeline
 {
     public class ScrubberInput : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IScrollHandler
     {
-        private const float _clickablePadding = 16;
+        private const float _clickablePadding = 32f;
         private const int _resizeBeginMode = 1;
         private const int _resizeEndMode = 2;
         private const int _moveMode = 3;
@@ -48,9 +48,11 @@ namespace VamTimeline
 
             if (_origClickedX < startX - _clickablePadding || _origClickedX > endX + _clickablePadding) return;
 
-            if (_origClickedX < startX + _clickablePadding)
+            var insidePadding = _clickablePadding * (endX - startX) / actualSize.width;
+
+            if (_origClickedX < startX + insidePadding)
                 _mode = _resizeBeginMode;
-            else if (_origClickedX > endX - _clickablePadding)
+            else if (_origClickedX > endX - insidePadding)
                 _mode = _resizeEndMode;
             else
                 _mode = _moveMode;
