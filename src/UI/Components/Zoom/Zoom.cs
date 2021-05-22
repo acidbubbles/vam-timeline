@@ -118,7 +118,7 @@ namespace VamTimeline
             _time.animationLength = _animationEditContext.current.animationLength;
             _time.time = _animationEditContext.clipTime;
             _time.SetVerticesDirty();
-            _zoomText.text = (args.scrubberRange.rangeDuration / _animationEditContext.current.animationLength * 100f).ToString("0.0") + "%";
+            _zoomText.text = args.scrubberRange.rangeDuration == _animationEditContext.current.animationLength ? "100%" : $"{args.scrubberRange.rangeBegin:0.0}s - {args.scrubberRange.rangeBegin + args.scrubberRange.rangeDuration:0.0}s";
         }
 
         public void Update()
