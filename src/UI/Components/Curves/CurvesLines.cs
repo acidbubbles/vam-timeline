@@ -31,7 +31,7 @@ namespace VamTimeline
             // General
             // TODO: Only recompute range when keyframes changed, not when zooming
             var range = EstimateRange();
-            float margin = style.Padding;
+            var margin = style.Padding;
             var rect = rectTransform.rect;
             var width = rect.width - margin * 2;
             var height = rect.height - margin * 2f;
@@ -81,10 +81,11 @@ namespace VamTimeline
                 timespan = 10f;
             else
                 timespan = 1f;
-            for (var t = 0f; t <= maxX; t += timespan)
+            for (var t = 0f; t <= rangeBegin + rangeDuration; t += timespan)
             {
+                if (t < rangeBegin) continue;
                 var x = offsetX + (t - rangeBegin) * xRatio;
-                if (x < offsetX) continue;
+                // if (x < offsetX) continue;
                 vh.DrawLine(new[]
                 {
                     new Vector2(x, halfHeight),
@@ -199,7 +200,7 @@ namespace VamTimeline
 
         private Vector2 EstimateRange()
         {
-            const float boundsEvalPrecision = 20f; // Check how many points to detect highest value
+            const float boundsEvalPrecision = 40f; // Check how many points to detect highest value
             var minY = float.MaxValue;
             var maxY = float.MinValue;
             var lead = _curves[0].Value;
