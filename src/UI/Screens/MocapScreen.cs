@@ -33,6 +33,8 @@ namespace VamTimeline
             _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", current.targetControllers.Count == 0 || _lastResizeAnimation, val => _lastResizeAnimation = val);
             prefabFactory.CreateToggle(_resizeAnimationJSON);
 
+            prefabFactory.CreateSpacer();
+
             _importRecordedUI = prefabFactory.CreateButton("Import recorded animation (mocap)");
             _importRecordedUI.button.onClick.AddListener(ImportRecorded);
 

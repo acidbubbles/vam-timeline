@@ -35,7 +35,6 @@ namespace VamTimeline
                 foreach (var c in GetCurves())
                     while (c.GetKeyframeByKey(c.length - 1).time > animationLength && c.length > 2)
                         c.RemoveKey(c.length - 1);
-                dirty = true;
             }
             if (curve.duration != animationLength)
             {
@@ -48,7 +47,6 @@ namespace VamTimeline
                     keyframe.time = animationLength;
                     c.SetLastFrame(keyframe);
                 }
-                dirty = true;
             }
         }
 
