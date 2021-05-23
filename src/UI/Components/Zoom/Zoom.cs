@@ -66,8 +66,8 @@ namespace VamTimeline
 
             var rect = go.AddComponent<RectTransform>();
             rect.StretchParent();
-            rect.offsetMin = new Vector2(_style.Padding, _style.VerticalPadding);
-            rect.offsetMax = new Vector2(-_style.Padding, -_style.VerticalPadding);
+            rect.offsetMin = new Vector2(0, _style.VerticalPadding);
+            rect.offsetMax = new Vector2(0, -_style.VerticalPadding);
 
             var control = go.AddComponent<ZoomControl>();
             control.style = _style;

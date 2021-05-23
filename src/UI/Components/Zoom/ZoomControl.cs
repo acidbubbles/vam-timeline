@@ -9,7 +9,6 @@ namespace VamTimeline
         public AtomAnimationEditContext animationEditContext;
         public ZoomControlGraphics graphics;
 
-        private readonly ZoomControlGraphics _graphics;
         private RectTransform _rect;
         private Canvas _canvas;
         private int _mode;
@@ -28,6 +27,10 @@ namespace VamTimeline
             {
                 animationEditContext.ResetScrubberRange();
             }
+
+            _mode = 0;
+            graphics.mode = 0;
+            graphics.SetVerticesDirty();
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -55,6 +58,9 @@ namespace VamTimeline
                 _mode = ZoomStateModes.ResizeEndMode;
             else
                 _mode = ZoomStateModes.MoveMode;
+
+            graphics.mode = _mode;
+            graphics.SetVerticesDirty();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -71,6 +77,8 @@ namespace VamTimeline
         {
             Dispatch(eventData);
             _mode = 0;
+            graphics.mode = 0;
+            graphics.SetVerticesDirty();
         }
 
         private void Dispatch(PointerEventData eventData)
