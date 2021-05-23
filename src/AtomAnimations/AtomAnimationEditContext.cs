@@ -190,6 +190,8 @@ namespace VamTimeline
             return true;
         }
 
+        #region Scrubber
+
         public void ResetScrubberRange()
         {
             scrubberRange = new ScrubberRange
@@ -198,6 +200,52 @@ namespace VamTimeline
                 rangeDuration = current.animationLength
             };
         }
+
+        public void ZoomScrubberRangeIn()
+        {
+            ZoomScrubberRange(0.8f);
+        }
+
+        public void ZoomScrubberRangeOut()
+        {
+            ZoomScrubberRange(1.2f);
+        }
+
+        private void ZoomScrubberRange(float ratio)
+        {
+            var rangeDuration = scrubberRange.rangeDuration * ratio;
+            var rangeBegin = Mathf.Max(0f, scrubberRange.rangeBegin - (rangeDuration - scrubberRange.rangeDuration) / 2f);
+            rangeDuration = Mathf.Min(current.animationLength - rangeBegin, rangeDuration);
+            scrubberRange = new ScrubberRange
+            {
+                rangeBegin = rangeBegin,
+                rangeDuration = rangeDuration
+            };
+        }
+
+        public void MoveScrubberRangeBackward()
+        {
+            MoveScrubberRange(scrubberRange.rangeBegin - 1f);
+        }
+
+        public void MoveScrubberRangeForward()
+        {
+            MoveScrubberRange(scrubberRange.rangeBegin + 1f);
+        }
+
+        public void MoveScrubberRange(float rangeBegin)
+        {
+            scrubberRange = new ScrubberRange
+            {
+                rangeBegin = Mathf.Clamp(
+                    rangeBegin,
+                    0,
+                    current.animationLength - scrubberRange.rangeDuration),
+                rangeDuration = scrubberRange.rangeDuration
+            };
+        }
+
+        #endregion
 
         #region Animation Control
 

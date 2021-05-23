@@ -14,6 +14,7 @@ namespace VamTimeline
         private int _mode;
         private float _origClickedX;
         private ScrubberRange _origScrubberRange;
+        private bool _lastPointerInside;
 
         private void Start()
         {
@@ -23,7 +24,7 @@ namespace VamTimeline
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData.clickCount >= 2)
+            if (eventData.clickCount == 2 && _lastPointerInside)
             {
                 animationEditContext.ResetScrubberRange();
             }
@@ -48,8 +49,21 @@ namespace VamTimeline
             var startX = animationEditContext.scrubberRange.rangeBegin / animationEditContext.current.animationLength * actualSize.width;
             var endX = (animationEditContext.scrubberRange.rangeBegin + animationEditContext.scrubberRange.rangeDuration) / animationEditContext.current.animationLength * actualSize.width;
 
-            if (_origClickedX < startX - style.ClickablePadding || _origClickedX > endX + style.ClickablePadding) return;
+            if (_origClickedX < startX - style.ClickablePadding)
+            {
+                _lastPointerInside = false;
+                animationEditContext.MoveScrubberRangeBackward();
+                return;
+            }
 
+            if (_origClickedX > endX + style.ClickablePadding)
+            {
+                _lastPointerInside = false;
+                animationEditContext.MoveScrubberRangeForward();
+                return;
+            }
+
+            _lastPointerInside = true;
             var insidePadding = style.ClickablePadding * (endX - startX) / actualSize.width;
 
             if (_origClickedX < startX + insidePadding)
@@ -94,15 +108,7 @@ namespace VamTimeline
             {
                 case ZoomStateModes.MoveMode:
                 {
-                    var rangeBegin = Mathf.Clamp(
-                        _origScrubberRange.rangeBegin + clickedTimeDelta,
-                        0,
-                        animationEditContext.current.animationLength - _origScrubberRange.rangeDuration);
-                    animationEditContext.scrubberRange = new ScrubberRange
-                    {
-                        rangeBegin = rangeBegin,
-                        rangeDuration = _origScrubberRange.rangeDuration
-                    };
+                    animationEditContext.MoveScrubberRange(_origScrubberRange.rangeBegin + clickedTimeDelta);
                     break;
                 }
                 case ZoomStateModes.ResizeBeginMode:
@@ -138,19 +144,13 @@ namespace VamTimeline
         {
             if (!eventData.IsScrolling()) return;
             _mode = 0;
-            var rangeDuration = animationEditContext.scrubberRange.rangeDuration;
-            if (eventData.scrollDelta.y > 0)
-                rangeDuration *= 0.8f;
-            else if (eventData.scrollDelta.y < 0)
-                rangeDuration *= 1.2f;
-            var rangeBegin = Mathf.Max(0f, animationEditContext.scrubberRange.rangeBegin - (rangeDuration - animationEditContext.scrubberRange.rangeDuration) / 2f);
-            rangeDuration = Mathf.Min(animationEditContext.current.animationLength - rangeBegin, rangeDuration);
-            animationEditContext.scrubberRange = new ScrubberRange
-            {
-                rangeBegin = rangeBegin,
-                rangeDuration = rangeDuration
-            };
-        }
+            graphics.mode = 0;
+            graphics.SetVerticesDirty();
 
+            if (eventData.scrollDelta.y > 0)
+                animationEditContext.ZoomScrubberRangeIn();
+            else if (eventData.scrollDelta.y < 0)
+                animationEditContext.ZoomScrubberRangeOut();
+        }
     }
 }
