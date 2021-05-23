@@ -98,7 +98,6 @@ namespace VamTimeline
             {
                 // Common
                 var curve = curveInfo.Value;
-                if(curve.length > 1000) continue;
 
                 var curveColor = curveInfo.Key;
                 var last = curve.GetKeyframeByKey(curve.length - 1);
