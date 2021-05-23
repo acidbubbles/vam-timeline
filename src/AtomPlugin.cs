@@ -900,6 +900,11 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Keyframe_Delete", () => animationEditContext.Delete()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_CurrentController", () => operations.Keyframes().AddSelectedController()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_AllControllerTargets", () => operations.Keyframes().AddAllControllers()));
+            bindings.Add(new JSONStorableAction("ZoomIn", () => animationEditContext.ZoomScrubberRangeIn()));
+            bindings.Add(new JSONStorableAction("ZoomOut", () => animationEditContext.ZoomScrubberRangeOut()));
+            bindings.Add(new JSONStorableAction("ZoomMoveBackward", () => animationEditContext.MoveScrubberRangeBackward()));
+            bindings.Add(new JSONStorableAction("ZoomMoveForward", () => animationEditContext.MoveScrubberRangeForward()));
+            bindings.Add(new JSONStorableAction("ZoomReset", () => animationEditContext.ResetScrubberRange()));
             // TODO: Check if already recording
             bindings.Add(new JSONStorableAction("StartRecord", () =>
             {
