@@ -1,17 +1,16 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace VamTimeline
 {
-    public class ScrubberInput : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IScrollHandler
+    public class ZoomControl : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IScrollHandler
     {
-        private const float _clickablePadding = 32f;
-        private const int _resizeBeginMode = 1;
-        private const int _resizeEndMode = 2;
-        private const int _moveMode = 3;
-
+        public ZoomStyle style;
         public AtomAnimationEditContext animationEditContext;
+        public ZoomControlGraphics graphics;
 
+        private readonly ZoomControlGraphics _graphics;
+        private RectTransform _rect;
         private Canvas _canvas;
         private int _mode;
         private float _origClickedX;
@@ -19,6 +18,7 @@ namespace VamTimeline
 
         private void Start()
         {
+            _rect = GetComponent<RectTransform>();
             _canvas = GetComponentInParent<Canvas>();
         }
 
@@ -37,8 +37,7 @@ namespace VamTimeline
             _origScrubberRange = animationEditContext.scrubberRange;
 
             Vector2 localPosition;
-            var rect = GetComponent<RectTransform>();
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
             var actualSize = RectTransformUtility.PixelAdjustRect(GetComponent<RectTransform>(), _canvas);
 
@@ -46,16 +45,16 @@ namespace VamTimeline
             var startX = animationEditContext.scrubberRange.rangeBegin / animationEditContext.current.animationLength * actualSize.width;
             var endX = (animationEditContext.scrubberRange.rangeBegin + animationEditContext.scrubberRange.rangeDuration) / animationEditContext.current.animationLength * actualSize.width;
 
-            if (_origClickedX < startX - _clickablePadding || _origClickedX > endX + _clickablePadding) return;
+            if (_origClickedX < startX - style.ClickablePadding || _origClickedX > endX + style.ClickablePadding) return;
 
-            var insidePadding = _clickablePadding * (endX - startX) / actualSize.width;
+            var insidePadding = style.ClickablePadding * (endX - startX) / actualSize.width;
 
             if (_origClickedX < startX + insidePadding)
-                _mode = _resizeBeginMode;
+                _mode = ZoomStateModes.ResizeBeginMode;
             else if (_origClickedX > endX - insidePadding)
-                _mode = _resizeEndMode;
+                _mode = ZoomStateModes.ResizeEndMode;
             else
-                _mode = _moveMode;
+                _mode = ZoomStateModes.MoveMode;
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -70,23 +69,22 @@ namespace VamTimeline
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            Dispatch(eventData, true);
+            Dispatch(eventData);
             _mode = 0;
         }
 
-        private void Dispatch(PointerEventData eventData, bool final = false)
+        private void Dispatch(PointerEventData eventData)
         {
             if (_mode == 0) return;
             Vector2 localPosition;
-            var rect = GetComponent<RectTransform>();
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out localPosition))
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_rect, eventData.position, eventData.pressEventCamera, out localPosition))
                 return;
-            var actualSize = RectTransformUtility.PixelAdjustRect(rect, _canvas);
+            var actualSize = RectTransformUtility.PixelAdjustRect(_rect, _canvas);
             var clickedX = localPosition.x - actualSize.xMin;
             var clickedTimeDelta = (clickedX - _origClickedX) / actualSize.width * animationEditContext.current.animationLength;
             switch (_mode)
             {
-                case _moveMode:
+                case ZoomStateModes.MoveMode:
                 {
                     var rangeBegin = Mathf.Clamp(
                         _origScrubberRange.rangeBegin + clickedTimeDelta,
@@ -99,7 +97,7 @@ namespace VamTimeline
                     };
                     break;
                 }
-                case _resizeBeginMode:
+                case ZoomStateModes.ResizeBeginMode:
                 {
                     var rangeBegin = Mathf.Clamp(
                         _origScrubberRange.rangeBegin + clickedTimeDelta,
@@ -112,7 +110,7 @@ namespace VamTimeline
                     };
                     break;
                 }
-                case _resizeEndMode:
+                case ZoomStateModes.ResizeEndMode:
                 {
                     var rangeDuration = Mathf.Clamp(
                         _origScrubberRange.rangeDuration + clickedTimeDelta,
@@ -145,5 +143,6 @@ namespace VamTimeline
                 rangeDuration = rangeDuration
             };
         }
+
     }
 }

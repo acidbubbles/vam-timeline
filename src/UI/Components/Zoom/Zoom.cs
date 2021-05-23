@@ -6,9 +6,9 @@ namespace VamTimeline
     public class Zoom : MonoBehaviour
     {
         private readonly ZoomStyle _style = new ZoomStyle();
-        private readonly ZoomGraphics _graphics;
+        private readonly ZoomControl _zoomControl;
+        private readonly ZoomControlGraphics _zoomGraphics;
         private readonly ZoomTime _time;
-        private readonly ScrubberInput _scrubberInput;
         private readonly Text _zoomText;
 
         private AtomAnimationEditContext _animationEditContext;
@@ -22,9 +22,10 @@ namespace VamTimeline
             mask.showMaskGraphic = false;
 
             CreateBackground();
-            _graphics = CreateGraphics();
+            _zoomControl = CreateZoomControl();
+            _zoomGraphics = CreateZoomGraphics(_zoomControl.gameObject);
+            _zoomControl.graphics = _zoomGraphics;
             _time = CreateTime();
-            _scrubberInput = _time.gameObject.AddComponent<ScrubberInput>();
             _zoomText = CreateZoomText();
         }
 
@@ -32,7 +33,8 @@ namespace VamTimeline
         {
             _animationEditContext = animationEditContext;
             _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
-            _scrubberInput.animationEditContext = _animationEditContext;
+            _zoomControl.animationEditContext = _animationEditContext;
+            _zoomGraphics.animationEditContext = _animationEditContext;
             OnScrubberRangeChanged(new AtomAnimationEditContext.ScrubberRangeChangedEventArgs {scrubberRange = _animationEditContext.scrubberRange});
         }
 
@@ -57,7 +59,7 @@ namespace VamTimeline
             return go;
         }
 
-        private ZoomGraphics CreateGraphics()
+        private ZoomControl CreateZoomControl()
         {
             var go = new GameObject();
             go.transform.SetParent(transform, false);
@@ -67,7 +69,15 @@ namespace VamTimeline
             rect.offsetMin = new Vector2(_style.Padding, _style.VerticalPadding);
             rect.offsetMax = new Vector2(-_style.Padding, -_style.VerticalPadding);
 
-            var graphics = go.AddComponent<ZoomGraphics>();
+            var control = go.AddComponent<ZoomControl>();
+            control.style = _style;
+
+            return control;
+        }
+
+        private ZoomControlGraphics CreateZoomGraphics(GameObject go)
+        {
+            var graphics = go.AddComponent<ZoomControlGraphics>();
             graphics.raycastTarget = true;
             graphics.style = _style;
             return graphics;
@@ -84,7 +94,7 @@ namespace VamTimeline
             rect.offsetMax = new Vector2(-_style.Padding, -_style.VerticalPadding);
 
             var graphics = go.AddComponent<ZoomTime>();
-            graphics.raycastTarget = true;
+            graphics.raycastTarget = false;
             graphics.style = _style;
             return graphics;
         }
@@ -111,10 +121,7 @@ namespace VamTimeline
         private void OnScrubberRangeChanged(AtomAnimationEditContext.ScrubberRangeChangedEventArgs args)
         {
             if (_animationEditContext == null) return;
-            _graphics.animationLength = _animationEditContext.current.animationLength;
-            _graphics.rangeDuration = args.scrubberRange.rangeDuration;
-            _graphics.rangeBegin = args.scrubberRange.rangeBegin;
-            _graphics.SetVerticesDirty();
+            _zoomGraphics.SetVerticesDirty();
             _time.animationLength = _animationEditContext.current.animationLength;
             _time.time = _animationEditContext.clipTime;
             _time.SetVerticesDirty();

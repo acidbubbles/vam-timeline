@@ -1,27 +1,25 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    public class ZoomGraphics : MaskableGraphic
+    public class ZoomControlGraphics : MaskableGraphic
     {
         public ZoomStyle style;
-        public float animationLength { get; set; }
-        public float rangeDuration { get; set; }
-        public float rangeBegin { get; set; }
+        public AtomAnimationEditContext animationEditContext;
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
 
-            if(animationLength == 0 || rangeDuration == 0) return;
+            if(animationEditContext.current.animationLength == 0) return;
 
             var rect = rectTransform.rect;
             var width = rect.width;
             var height = rect.height;
 
-            var x1 = (rangeBegin / animationLength) * width;
-            var x2 = (rangeDuration / animationLength) * width;
+            var x1 = (animationEditContext.scrubberRange.rangeBegin / animationEditContext.current.animationLength) * width;
+            var x2 = (animationEditContext.scrubberRange.rangeDuration / animationEditContext.current.animationLength) * width;
 
             vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.FullSectionColor,
                 new Vector2(rect.xMin, rect.yMin),

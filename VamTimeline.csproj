@@ -140,9 +140,10 @@
     <Compile Include="src\UI\Components\TargetFrame\SimpleSlider.cs" />
     <Compile Include="src\UI\Components\TargetFrame\TargetFrameBase.cs" />
     <Compile Include="src\UI\Components\TargetFrame\TriggersTargetFrame.cs" />
-    <Compile Include="src\UI\Components\Zoom\ScrubberInput.cs" />
     <Compile Include="src\UI\Components\Zoom\Zoom.cs" />
-    <Compile Include="src\UI\Components\Zoom\ZoomGraphics.cs" />
+    <Compile Include="src\UI\Components\Zoom\ZoomControl.cs" />
+    <Compile Include="src\UI\Components\Zoom\ZoomControlGraphics.cs" />
+    <Compile Include="src\UI\Components\Zoom\ZoomStateModes.cs" />
     <Compile Include="src\UI\Components\Zoom\ZoomStyle.cs" />
     <Compile Include="src\UI\Components\Zoom\ZoomTime.cs" />
     <Compile Include="src\UI\Components\Clickable.cs" />
