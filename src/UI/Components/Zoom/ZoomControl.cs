@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 namespace VamTimeline
 {
-    public class ZoomControl : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IScrollHandler
+    public class ZoomControl : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
     {
         public ZoomStyle style;
         public AtomAnimationEditContext animationEditContext;
@@ -15,6 +15,7 @@ namespace VamTimeline
         private float _origClickedX;
         private ScrubberRange _origScrubberRange;
         private bool _lastPointerInside;
+        private float _lastPointerDownTime;
 
         private void Start()
         {
@@ -22,13 +23,8 @@ namespace VamTimeline
             _canvas = GetComponentInParent<Canvas>();
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public void OnPointerUp(PointerEventData eventData)
         {
-            if (eventData.clickCount == 2 && _lastPointerInside)
-            {
-                animationEditContext.ResetScrubberRange();
-            }
-
             _mode = 0;
             graphics.mode = 0;
             graphics.SetVerticesDirty();
@@ -36,6 +32,14 @@ namespace VamTimeline
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            if (Time.realtimeSinceStartup - _lastPointerDownTime < 0.3f && _lastPointerInside)
+            {
+                animationEditContext.ResetScrubberRange();
+                return;
+            }
+
+            _lastPointerDownTime = Time.realtimeSinceStartup;
+
             eventData.useDragThreshold = false;
 
             _origScrubberRange = animationEditContext.scrubberRange;
@@ -49,21 +53,20 @@ namespace VamTimeline
             var startX = animationEditContext.scrubberRange.rangeBegin / animationEditContext.current.animationLength * actualSize.width;
             var endX = (animationEditContext.scrubberRange.rangeBegin + animationEditContext.scrubberRange.rangeDuration) / animationEditContext.current.animationLength * actualSize.width;
 
+            _lastPointerInside = _origClickedX > startX && _origClickedX < endX;
+
             if (_origClickedX < startX - style.ClickablePadding)
             {
-                _lastPointerInside = false;
                 animationEditContext.MoveScrubberRangeBackward();
                 return;
             }
 
             if (_origClickedX > endX + style.ClickablePadding)
             {
-                _lastPointerInside = false;
                 animationEditContext.MoveScrubberRangeForward();
                 return;
             }
 
-            _lastPointerInside = true;
             var insidePadding = style.ClickablePadding * (endX - startX) / actualSize.width;
 
             if (_origClickedX < startX + insidePadding)
@@ -90,9 +93,6 @@ namespace VamTimeline
         public void OnEndDrag(PointerEventData eventData)
         {
             Dispatch(eventData);
-            _mode = 0;
-            graphics.mode = 0;
-            graphics.SetVerticesDirty();
         }
 
         private void Dispatch(PointerEventData eventData)
