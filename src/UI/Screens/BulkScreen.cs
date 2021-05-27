@@ -102,6 +102,13 @@ namespace VamTimeline
             }, 0f, current.animationLength);
             prefabFactory.CreateSlider(_endJSON);
 
+            var markScrubberRangeUI = prefabFactory.CreateButton("Select visible range");
+            markScrubberRangeUI.button.onClick.AddListener(() =>
+            {
+                _startJSON.val = animationEditContext.scrubberRange.rangeBegin;
+                _endJSON.val = animationEditContext.scrubberRange.rangeBegin + animationEditContext.scrubberRange.rangeDuration;
+            });
+
             var markSelectionStartUI = prefabFactory.CreateButton("Start at current time");
             markSelectionStartUI.button.onClick.AddListener(() => _startJSON.val = current.clipTime);
 
