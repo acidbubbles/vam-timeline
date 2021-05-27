@@ -7,9 +7,9 @@ namespace VamTimeline
 {
     public class MocapScreen : ScreenBase
     {
-        public const string ScreenName = "Mocap";
+        public const string ScreenName = "Import scene animation";
         private const string _recordingLabel = "\u25A0 Waiting for recording...";
-        private const string _startRecordControllersLabel = "\u25B6 Clear & mocap controllers now";
+        private const string _startRecordControllersLabel = "\u25B6 Clear & record selected";
         private static Coroutine _recordingControllersCoroutine;
         private static bool _lastResizeAnimation;
         private static bool? _lastAutoRecordStop;
@@ -30,28 +30,27 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            _resizeAnimationJSON = new JSONStorableBool("Resize animation to mocap length", current.targetControllers.Count == 0 || _lastResizeAnimation, val => _lastResizeAnimation = val);
+            prefabFactory.CreateHeader("Import scene animation", 1);
+            _resizeAnimationJSON = new JSONStorableBool("Resize animation to match import", current.targetControllers.Count == 0 || _lastResizeAnimation, val => _lastResizeAnimation = val);
             prefabFactory.CreateToggle(_resizeAnimationJSON);
 
-            prefabFactory.CreateSpacer();
-
-            _importRecordedUI = prefabFactory.CreateButton("Import recorded animation (mocap)");
+            _importRecordedUI = prefabFactory.CreateButton("Import scene animation (mocap)");
             _importRecordedUI.button.onClick.AddListener(ImportRecorded);
 
             prefabFactory.CreateSpacer();
 
+            prefabFactory.CreateHeader("Manage scene animation", 1);
+
             _playAndRecordControllersUI = prefabFactory.CreateButton(_recordingControllersCoroutine != null ? _recordingLabel : _startRecordControllersLabel);
             _playAndRecordControllersUI.button.onClick.AddListener(PlayAndRecordControllers);
+
+            var clearMocapUI = prefabFactory.CreateButton("Clear atom's scene animation");
+            clearMocapUI.button.onClick.AddListener(ClearMocapData);
+            clearMocapUI.buttonColor = Color.yellow;
 
             prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("<i>Go to <b>reduce</b> screen...</i>", ReduceScreen.ScreenName);
-
-            prefabFactory.CreateSpacer();
-
-            var clearMocapUI = prefabFactory.CreateButton("Clear atom's mocap");
-            clearMocapUI.button.onClick.AddListener(ClearMocapData);
-            clearMocapUI.buttonColor = Color.yellow;
 
             animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
@@ -227,6 +226,11 @@ namespace VamTimeline
         }
 
         private void ClearMocapData()
+        {
+            prefabFactory.CreateConfirm("Clear all scene animation from atom?", ClearMocapDataConfirm);
+        }
+
+        private void ClearMocapDataConfirm()
         {
             SuperController.singleton.motionAnimationMaster.SeekToBeginning();
             foreach (var mac in plugin.containingAtom.freeControllers.Select(fc => fc.GetComponent<MotionAnimationControl>()).Where(mac => mac != null))
