@@ -16,10 +16,8 @@ namespace VamTimeline
         private JSONStorableString _resultJSON;
         private StringBuilder _resultBuffer = new StringBuilder();
         private HashSet<string> _versions = new HashSet<string>();
-        private List<InstanceSettings> _instances = new List<InstanceSettings>();
-        private List<AnimationSettings> _animations = new List<AnimationSettings>();
-        private int _masters;
-        private int _otherTimeModes = -1;
+        private readonly List<InstanceSettings> _instances = new List<InstanceSettings>();
+        private readonly List<ClipSettings> _clips = new List<ClipSettings>();
 
         private class InstanceSettings
         {
@@ -33,7 +31,7 @@ namespace VamTimeline
             public string label => $"{atomId} {pluginId}";
         }
 
-        private class AnimationSettings
+        private class ClipSettings
         {
             public bool loop;
             public float speed;
@@ -62,11 +60,10 @@ namespace VamTimeline
 
         private void DoAnalysis()
         {
-            _masters = 0;
-            _otherTimeModes = -1;
             _resultBuffer.Length = 0;
             _versions.Clear();
-            _animations.Clear();
+            _instances.Clear();
+            _clips.Clear();
 
             _resultBuffer.AppendLine("<b>SCAN RESULT</b>");
             _resultBuffer.AppendLine();
@@ -103,7 +100,7 @@ namespace VamTimeline
             if(_instances.GroupBy(i => i.speed).Count() > 1)
                 _resultBuffer.AppendLine($"- [{++issues}] <color=yellow>Different global speeds are used; animations will be out of sync and transitions may run at unexpected times</color>");
 
-            var clips = _animations.GroupBy(a => a.animationName);
+            var clips = _clips.GroupBy(a => a.animationName);
 
             foreach (var clip in clips)
             {
@@ -127,10 +124,10 @@ namespace VamTimeline
 
             _resultJSON.val = _resultBuffer.ToString();
 
-            _masters = 0;
             _resultBuffer = null;
             _versions = null;
-            _animations = null;
+            _instances.Clear();
+            _clips.Clear();
         }
 
         private void DoAnalysisTimeline(JSONStorable timelineStorable)
@@ -143,19 +140,16 @@ namespace VamTimeline
             var path = pluginsJSON["plugins"][pluginId].Value;
             var regex = new Regex(@"^[^.]+\.[^.]+\.([0-9]+):/");
             var match = regex.Match(path);
-            var version = !match.Success ? path : match.Groups[1].Value;
-            var master = timelineJSON["Master"].Value == "1";
-            if (master) _masters++;
             var syncWithPeers = timelineJSON["SyncWithPeers"].Value != "0";
-            var timeMode = timelineJSON["TimeMode"].AsInt;
 
             var instanceInfo = new InstanceSettings
             {
                 atomId = timelineStorable.containingAtom.uid,
                 pluginId = pluginId,
-                master = master,
-                version = version,
-                timeMode = timeMode
+                master = timelineJSON["Master"].Value == "1",
+                version = !match.Success ? path : match.Groups[1].Value,
+                timeMode = timelineJSON["TimeMode"].AsInt,
+                speed = timelineJSON["Speed"].AsInt,
             };
             _instances.Add(instanceInfo);
 
@@ -170,7 +164,7 @@ namespace VamTimeline
             {
                 var animationName = clipJSON["AnimationName"].Value;
 
-                var animationInfo = new AnimationSettings
+                var animationInfo = new ClipSettings
                 {
                     animationName = animationName,
                     loop = clipJSON["Loop"].Value == "1",
@@ -183,7 +177,7 @@ namespace VamTimeline
                     _resultBuffer.AppendLine($"- <color=yellow>Clip '{animationInfo.animationName}' has a speed of zero, which means it will not play</color>");
 
                 if (syncWithPeers)
-                    _animations.Add(animationInfo);
+                    _clips.Add(animationInfo);
             }
 
             _resultBuffer.AppendLine();

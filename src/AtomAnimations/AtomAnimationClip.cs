@@ -157,8 +157,9 @@ namespace VamTimeline
 
                 try
                 {
-                    // ReSharper disable once RedundantEnumerableCastCall
+                    // ReSharper disable RedundantEnumerableCastCall
                     foreach (var target in targetControllers.Cast<ICurveAnimationTarget>().Concat(targetFloatParams.Cast<ICurveAnimationTarget>()))
+                    // ReSharper restore RedundantEnumerableCastCall
                     {
                         foreach (var curve in target.GetCurves())
                         {

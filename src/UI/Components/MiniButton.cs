@@ -63,7 +63,6 @@ namespace VamTimeline
             child.transform.SetParent(transform, false);
 
             var rect = child.AddComponent<RectTransform>();
-            const float padding = 2f;
             rect.StretchParent();
 
             text = child.AddComponent<Text>();

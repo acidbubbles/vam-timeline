@@ -40,9 +40,6 @@ namespace VamTimeline
             else
             {
                 OnSelectionChanged();
-
-                JSONStorableFloat beginJSON = null;
-                JSONStorableFloat rangeJSON = null;
             }
         }
 
