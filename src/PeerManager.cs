@@ -297,7 +297,7 @@ namespace VamTimeline
                 {
                     if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     {
-                        existing = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame();
+                        existing = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame(false);
                         existing.animationName = animationName;
                     }
                     else

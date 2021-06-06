@@ -656,6 +656,20 @@ namespace VamTimeline
             }
         }
 
+        public void CopySettingsTo(AtomAnimationClip target)
+        {
+            target.loop = loop;
+            target.animationLength = animationLength;
+            target.animationLayer = animationLayer;
+            target.nextAnimationName = nextAnimationName;
+            target.nextAnimationTime = nextAnimationTime;
+            target.ensureQuaternionContinuity = ensureQuaternionContinuity;
+            target.blendInDuration = blendInDuration;
+            target.speed = speed;
+            target.nextAnimationTimeRandomize = nextAnimationTimeRandomize;
+            target.preserveLoops = preserveLoops;
+        }
+
         #endregion
 
         private void UpdateForcedNextAnimationTime()

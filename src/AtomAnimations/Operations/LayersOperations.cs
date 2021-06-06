@@ -25,7 +25,8 @@ namespace VamTimeline
             var layerName = GetSplitAnimationName(_clip.animationLayer, _animation.index.ByLayer().Select(c => c.Key).ToList());
             foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayer).Reverse().ToList())
             {
-                var newClip = new AddAnimationOperations(_animation, sourceClip).AddAnimationWithSameSettings();
+                var newClip = _animation.CreateClip(sourceClip);
+                sourceClip.CopySettingsTo(newClip);
                 newClip.animationName = GetSplitAnimationName(sourceClip.animationName, _animation.clips.Select(c => c.animationName).ToList());
                 newClip.animationLayer = layerName;
                 foreach (var t in sourceClip.GetAllTargets().Where(t => targets.Any(t.TargetsSameAs)).ToList())

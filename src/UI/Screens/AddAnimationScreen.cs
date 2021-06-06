@@ -42,11 +42,14 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI()
         {
-            var addAnimationFromCurrentFrameUI = prefabFactory.CreateButton("Create animation from current frame");
-            addAnimationFromCurrentFrameUI.button.onClick.AddListener(AddAnimationFromCurrentFrame);
+            var createNewUI = prefabFactory.CreateButton("Create new");
+            createNewUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(false));
 
-            var addAnimationAsCopyUI = prefabFactory.CreateButton("Create copy of current animation");
-            addAnimationAsCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
+            var createNewCarrySettingsUI = prefabFactory.CreateButton("Create new (carry settings)");
+            createNewCarrySettingsUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(true));
+
+            var createCopyUI = prefabFactory.CreateButton("Create copy");
+            createCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
 
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
@@ -78,9 +81,9 @@ namespace VamTimeline
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
-        private void AddAnimationFromCurrentFrame()
+        private void AddAnimationFromCurrentFrame(bool copySettings)
         {
-            var clip = operations.AddAnimation().AddAnimationFromCurrentFrame();
+            var clip = operations.AddAnimation().AddAnimationFromCurrentFrame(copySettings);
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);

@@ -16,7 +16,8 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationAsCopy()
         {
-            var clip = AddAnimationWithSameSettings();
+            var clip = _animation.CreateClip(_clip);
+            _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
                 var newTarget = CopyTarget(clip, origTarget);
@@ -45,25 +46,10 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip AddAnimationWithSameSettings()
+        public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings)
         {
             var clip = _animation.CreateClip(_clip);
-            clip.loop = _clip.loop;
-            clip.animationLength = _clip.animationLength;
-            clip.animationLayer = _clip.animationLayer;
-            clip.nextAnimationName = _clip.nextAnimationName;
-            clip.nextAnimationTime = _clip.nextAnimationTime;
-            clip.ensureQuaternionContinuity = _clip.ensureQuaternionContinuity;
-            clip.blendInDuration = _clip.blendInDuration;
-            clip.speed = _clip.speed;
-            clip.nextAnimationTimeRandomize = _clip.nextAnimationTimeRandomize;
-            clip.preserveLoops = _clip.preserveLoops;
-            return clip;
-        }
-
-        public AtomAnimationClip AddAnimationFromCurrentFrame()
-        {
-            var clip = _animation.CreateClip(_clip);
+            if (copySettings) _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
                 var newTarget = CopyTarget(clip, origTarget);
