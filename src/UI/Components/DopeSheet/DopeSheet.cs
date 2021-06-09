@@ -21,6 +21,12 @@ namespace VamTimeline
         private Canvas _canvas;
         private Zoom _zoom;
 
+        private class RowRef
+        {
+            public GameObject gameObject;
+            public DopeSheetKeyframes keyframes;
+        }
+
         public DopeSheet()
         {
             CreateBackground(gameObject, _style.BackgroundColor);
@@ -281,10 +287,11 @@ namespace VamTimeline
                 if (group.Count > 0)
                 {
                     any = true;
-                    CreateHeader(group);
+                    var rows = new List<RowRef>();
+                    CreateHeader(group, rows);
 
                     foreach (var target in group.GetTargets())
-                        CreateRow(target);
+                        rows.Add(CreateRow(target));
                 }
             }
             _scrubberRect?.gameObject.SetActive(any);
@@ -312,7 +319,7 @@ namespace VamTimeline
             }
         }
 
-        private void CreateHeader(IAtomAnimationTargetsList group)
+        private void CreateHeader(IAtomAnimationTargetsList @group, List<RowRef> rows)
         {
             var go = new GameObject("Header");
             go.transform.SetParent(_content, false);
@@ -338,16 +345,52 @@ namespace VamTimeline
                 child.transform.SetParent(go.transform, false);
 
                 var rect = child.AddComponent<RectTransform>();
-                rect.StretchParent();
-                rect.offsetMin = new Vector2(6f, 0);
-                rect.offsetMax = new Vector2(-6f, 0);
+                rect.StretchLeft();
+                rect.offsetMin = new Vector2(_style.LabelHorizontalPadding, 0);
+                rect.sizeDelta = new Vector2(_style.GroupToggleWidth, 0);
+                rect.anchoredPosition = new Vector2(_style.GroupToggleWidth / 2f + _style.LabelHorizontalPadding, 0);
 
                 var text = child.AddComponent<Text>();
-                text.text = group.label;
+                text.text = "\u25BC"; //"\u25BA";
                 text.font = _style.Font;
                 text.fontSize = 24;
                 text.color = _style.FontColor;
                 text.fontStyle = FontStyle.Bold;
+                text.alignment = TextAnchor.MiddleLeft;
+                text.raycastTarget = true;
+
+                var click = child.AddComponent<Clickable>();
+                click.onClick.AddListener(_ =>
+                {
+                    var someInactive = false;
+                    foreach (var row in rows)
+                    {
+                        var isActiveNow = !row.gameObject.activeSelf;
+                        row.gameObject.SetActive(isActiveNow);
+                        if (!isActiveNow) someInactive = true;
+                    }
+                    text.text = someInactive ? "\u25BA" : "\u25BC";
+                    // var targets = group.GetTargets().ToList();
+                    // var selected = targets.Any(t => _animationEditContext.IsSelected(t));
+                    // foreach (var target in targets)
+                    //     _animationEditContext.SetSelected(target, !selected);
+                });
+            }
+
+            {
+                var child = new GameObject();
+                child.transform.SetParent(go.transform, false);
+
+                var rect = child.AddComponent<RectTransform>();
+                rect.StretchParent();
+                rect.offsetMin = new Vector2(_style.GroupToggleWidth + _style.LabelHorizontalPadding, 0);
+                rect.offsetMax = new Vector2(-_style.LabelHorizontalPadding, 0);
+
+                var text = child.AddComponent<Text>();
+                text.text = $"<b>{group.label}</b> [{group.Count}]";
+                text.font = _style.Font;
+                text.fontSize = 24;
+                text.color = _style.FontColor;
                 text.alignment = TextAnchor.MiddleLeft;
                 text.raycastTarget = true;
 
@@ -362,7 +405,7 @@ namespace VamTimeline
             }
         }
 
-        private void CreateRow(IAtomAnimationTarget target)
+        private RowRef CreateRow(IAtomAnimationTarget target)
         {
             var go = new GameObject("Row");
             go.transform.SetParent(_content, false);
@@ -462,6 +505,12 @@ namespace VamTimeline
             }
 
             UpdateSelected(target, keyframes, labelBackgroundImage);
+
+            return new RowRef
+            {
+                gameObject = go,
+                keyframes = keyframes
+            };
         }
 
         private void UpdateSelected(IAtomAnimationTarget target, DopeSheetKeyframes keyframes, GradientImage image)

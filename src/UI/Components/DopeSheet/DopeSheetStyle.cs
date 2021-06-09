@@ -20,6 +20,8 @@ namespace VamTimeline
         public float RowHeight { get; } = 30f;
         public float RowSpacing { get; } = 5f;
         public float LabelWidth { get; } = 150f;
+        public float LabelHorizontalPadding { get; } = 6f;
+        public float GroupToggleWidth { get; } = 30f;
 
         // Timeline
         public float ZoomHeight { get; } = 30f;
