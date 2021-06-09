@@ -100,12 +100,15 @@ namespace VamTimeline
         private bool _animationRebuildInProgress;
 
         public AtomAnimationsClipsIndex index { get; }
+        public AtomAnimationTargetsRegistry targetsRegistry { get; }
+
         public bool syncSubsceneOnly { get; set; }
         public bool syncWithPeers { get; set; } = true;
 
         public AtomAnimation()
         {
             index = new AtomAnimationsClipsIndex(clips);
+            targetsRegistry = new AtomAnimationTargetsRegistry();
         }
 
         public AtomAnimationClip GetDefaultClip()
@@ -606,8 +609,8 @@ namespace VamTimeline
         {
             foreach (var x in index.ByFloatParam())
             {
-                if (!x.Value[0].EnsureAvailable()) continue;
-                SampleFloatParam(x.Value[0].floatParam, x.Value);
+                if (!x.Value[0].storableFloat.EnsureAvailable()) continue;
+                SampleFloatParam(x.Value[0].storableFloat.floatParam, x.Value);
             }
         }
 

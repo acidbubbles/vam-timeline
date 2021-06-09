@@ -104,7 +104,7 @@ namespace VamTimeline
             {
                 foreach (var target in clip.targetFloatParams)
                 {
-                    target.EnsureAvailable(false);
+                    target.storableFloat.EnsureAvailable(false);
                 }
             }
 
@@ -291,10 +291,10 @@ namespace VamTimeline
             var reservedByOtherLayers = new HashSet<string>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetFloatParams)
-                .Where(t => t.storableId == storable.storeId)
-                .Select(t => t.floatParamName));
+                .Where(t => t.storableFloat.storableId == storable.storeId)
+                .Select(t => t.storableFloat.floatParamName));
             _addParamListJSON.choices = values
-                .Where(v => !current.targetFloatParams.Any(t => t.storableId == storable.storeId && t.floatParamName == v))
+                .Where(v => !current.targetFloatParams.Any(t => t.storableFloat.storableId == storable.storeId && t.storableFloat.floatParamName == v))
                 .Where(v => !reservedByOtherLayers.Contains(v))
                 .OrderBy(v => v)
                 .ToList();
@@ -342,8 +342,8 @@ namespace VamTimeline
                     var target = s as FloatParamAnimationTarget;
                     if (target != null)
                     {
-                        _addStorableListJSON.val = target.storableId;
-                        _addParamListJSON.val = target.floatParamName;
+                        _addStorableListJSON.val = target.storableFloat.storableId;
+                        _addParamListJSON.val = target.storableFloat.floatParamName;
                     }
                 }
             }
@@ -390,9 +390,9 @@ namespace VamTimeline
                 var allFloatParams = animation.index
                     .ByLayer(current.animationLayer)
                     .SelectMany(c => c.targetFloatParams)
-                    .Where(t => t.EnsureAvailable(false))
-                    .Where(t => h.Add(t.floatParam))
-                    .Select(t => new FloatParamRef { storable = t.storable, floatParam = t.floatParam })
+                    .Where(t => t.storableFloat.EnsureAvailable(false))
+                    .Where(t => h.Add(t.storableFloat.floatParam))
+                    .Select(t => new FloatParamRef { storable = t.storableFloat.storable, floatParam = t.storableFloat.floatParam })
                     .ToList();
 
                 foreach (var clip in animation.clips)
@@ -413,10 +413,11 @@ namespace VamTimeline
 
                     foreach (var floatParamRef in allFloatParams)
                     {
-                        if (clip.targetFloatParams.Any(t => t.floatParamName == floatParamRef.floatParam.name)) continue;
-                        var target = clip.Add(floatParamRef.storable, floatParamRef.floatParam);
+                        if (clip.targetFloatParams.Any(t => t.storableFloat.floatParamName == floatParamRef.floatParam.name)) continue;
+                        var storableFloat = animation.targetsRegistry.GetOrCreateStorableFloat(floatParamRef.storable, floatParamRef.floatParam);
+                        var target = clip.Add(storableFloat);
                         if (target == null) continue;
-                        if (!target.EnsureAvailable(false)) continue;
+                        if (!target.storableFloat.EnsureAvailable(false)) continue;
                         target.SetKeyframe(0f, floatParamRef.floatParam.val);
                         target.SetKeyframe(clip.animationLength, floatParamRef.floatParam.val);
                     }
@@ -511,12 +512,13 @@ namespace VamTimeline
 
         private bool AddFloatParam(JSONStorable storable, JSONStorableFloat jsf)
         {
-            if (current.targetFloatParams.Any(c => c.floatParam == jsf))
+            if (current.targetFloatParams.Any(c => c.storableFloat.EnsureAvailable(true) && c.storableFloat.floatParam == jsf))
                 return false;
 
             foreach (var clip in animation.index.ByLayer(current.animationLayer))
             {
-                var added = clip.Add(storable, jsf);
+                var storableFloat = animation.targetsRegistry.GetOrCreateStorableFloat(storable, jsf);
+                var added = clip.Add(storableFloat);
                 if (added == null) continue;
 
                 added.SetKeyframe(0f, jsf.val);

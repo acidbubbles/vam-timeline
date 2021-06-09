@@ -30,7 +30,7 @@ namespace VamTimeline
 
     public class FloatParamValClipboardEntry
     {
-        public string storableId;
+        public AtomAnimationStorableFloatParamTargetReference storableFloat;
         public string floatParamName;
         public FloatParamTargetSnapshot snapshot;
     }

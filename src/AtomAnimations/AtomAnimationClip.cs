@@ -350,7 +350,7 @@ namespace VamTimeline
         {
             yield return targetTriggers;
             yield return targetControllers;
-            foreach (var group in targetFloatParams.GroupBy(t => t.storableId))
+            foreach (var group in targetFloatParams.GroupBy(t => t.storableFloat.storableId))
                 yield return new AtomAnimationTargetsList<FloatParamAnimationTarget>(group) {label = group.Key};
         }
 
@@ -464,13 +464,10 @@ namespace VamTimeline
             return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
         }
 
-        public FloatParamAnimationTarget Add(JSONStorable storable, JSONStorableFloat jsf)
+        public FloatParamAnimationTarget Add(AtomAnimationStorableFloatParamTargetReference storableFloat)
         {
-            if (storable == null) throw new ArgumentNullException(nameof(storable));
-            if (jsf == null) throw new ArgumentNullException(nameof(jsf));
-
-            if (targetFloatParams.Any(t => t.Targets(storable.storeId, jsf.name))) return null;
-            return Add(new FloatParamAnimationTarget(storable, jsf));
+            if (targetFloatParams.Any(t => t.storableFloat == storableFloat)) return null;
+            return Add(new FloatParamAnimationTarget(storableFloat));
         }
 
         public FloatParamAnimationTarget Add(FloatParamAnimationTarget target)
@@ -536,11 +533,6 @@ namespace VamTimeline
             Remove(targetControllers, target);
         }
 
-        public void Remove(JSONStorable storable, JSONStorableFloat jsf)
-        {
-            Remove(targetFloatParams.FirstOrDefault(c => c.storable == storable && c.floatParam == jsf));
-        }
-
         public void Remove(FloatParamAnimationTarget target)
         {
             Remove(targetFloatParams, target);
@@ -592,8 +584,7 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
-                    storableId = target.storableId,
-                    floatParamName = target.floatParamName,
+                    storableFloat = target.storableFloat,
                     snapshot = snapshot
                 });
             }
@@ -636,10 +627,10 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.Targets(entry.storableId, entry.floatParamName));
+                var target = targetFloatParams.FirstOrDefault(c => c.storableFloat == entry.storableFloat);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste storable {entry.storableId}/{entry.floatParamName} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste storable {entry.storableFloat}/{entry.floatParamName} in animation [{animationLayer}] {animationName} because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);

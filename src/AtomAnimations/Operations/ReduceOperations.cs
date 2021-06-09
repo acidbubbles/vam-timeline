@@ -74,7 +74,7 @@ namespace VamTimeline
                     while (enumerator.MoveNext() && !Input.GetKey(KeyCode.Escape))
                         yield return enumerator.Current;
                     reducedFrames += target.value.length;
-                    SuperController.LogMessage($"Timeline: Reduced {target.GetShortName()} from {initialFrames} frames to {target.value.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
+                    SuperController.LogMessage($"Timeline: Reduced {target.name} from {initialFrames} frames to {target.value.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
                 }
                 finally
                 {

@@ -88,7 +88,7 @@ namespace VamTimeline
             {
                 if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controller == controller)))
                 {
-                    if (!_silent) SuperController.LogError($"Timeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.GetShortName()).ToArray())}");
+                    if (!_silent) SuperController.LogError($"Timeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.name).ToArray())}");
                     return clips;
                 }
             }
@@ -97,7 +97,7 @@ namespace VamTimeline
             {
                 if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetFloatParams.Any(t => t.name == floatParam)))
                 {
-                    if (!_silent) SuperController.LogError($"Timeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.GetShortName()).ToArray())}");
+                    if (!_silent) SuperController.LogError($"Timeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.name).ToArray())}");
                     return clips;
                 }
             }

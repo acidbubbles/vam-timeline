@@ -8,6 +8,8 @@ namespace VamTimeline
         private RectTransform _sliderFillRect;
         private SimpleSlider _simpleSlider;
 
+        private JSONStorableFloat floatParam => target.storableFloat.floatParam;
+
         protected override void CreateCustom()
         {
             var slider = CreateSlider();
@@ -19,8 +21,8 @@ namespace VamTimeline
             {
                 if (plugin.animationEditContext.locked) return;
                 if (plugin.animationEditContext.locked) return;
-                if (!target.EnsureAvailable()) return;
-                SetValue(target.floatParam.min + val * (target.floatParam.max - target.floatParam.min));
+                if (!target.storableFloat.EnsureAvailable()) return;
+                SetValue(floatParam.min + val * (floatParam.max - floatParam.min));
             });
         }
 
@@ -86,33 +88,33 @@ namespace VamTimeline
             group.childAlignment = TextAnchor.MiddleCenter;
 
             // ReSharper disable once Unity.NoNullPropagation
-            var morph = (target.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(target.floatParam.name);
+            var morph = (target.storableFloat.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(floatParam.name);
 
-            CreateExpandButton(group.transform, "Default", () => SetValue(target.floatParam.defaultVal));
+            CreateExpandButton(group.transform, "Default", () => SetValue(floatParam.defaultVal));
 
             if (morph == null)
             {
                 CreateExpandButton(group.transform, "Range .1X", () =>
                 {
-                    target.floatParam.min *= 0.1f;
-                    target.floatParam.max *= 0.1f;
+                    floatParam.min *= 0.1f;
+                    floatParam.max *= 0.1f;
                     SetTime(plugin.animationEditContext.clipTime, true);
-                }).button.interactable = !target.floatParam.constrained;
+                }).button.interactable = !floatParam.constrained;
 
                 CreateExpandButton(group.transform, "Range 10X", () =>
                 {
-                    target.floatParam.min *= 10f;
-                    target.floatParam.max *= 10f;
+                    floatParam.min *= 10f;
+                    floatParam.max *= 10f;
                     SetTime(plugin.animationEditContext.clipTime, true);
-                }).button.interactable = !target.floatParam.constrained;
+                }).button.interactable = !floatParam.constrained;
             }
             else
             {
                 CreateExpandButton(group.transform, "Reset Range", () =>
                 {
                     morph.ResetRange();
-                    if (target.floatParam.val < target.floatParam.min) SetValue(target.floatParam.min);
-                    if (target.floatParam.val > target.floatParam.max) SetValue(target.floatParam.max);
+                    if (floatParam.val < floatParam.min) SetValue(floatParam.min);
+                    if (floatParam.val > floatParam.max) SetValue(floatParam.max);
                     SetTime(plugin.animationEditContext.clipTime, true);
                 });
 
@@ -127,7 +129,7 @@ namespace VamTimeline
         private void SetValue(float val)
         {
             if (plugin.animationEditContext.locked) return;
-            if (!target.EnsureAvailable(false)) return;
+            if (!target.storableFloat.EnsureAvailable(false)) return;
             var time = plugin.animationEditContext.clipTime.Snap();
             if (plugin.animation.isPlaying)
             {
@@ -136,7 +138,7 @@ namespace VamTimeline
                     return;
             }
             target.SetKeyframe(time, val);
-            target.floatParam.val = val;
+            floatParam.val = val;
             if (!plugin.animation.isPlaying)
             {
                 SetTime(time, true);
@@ -149,7 +151,7 @@ namespace VamTimeline
         {
             base.SetTime(time, stopped);
 
-            if (!target.EnsureAvailable())
+            if (!target.storableFloat.EnsureAvailable())
             {
                 if (stopped)
                 {
@@ -160,7 +162,7 @@ namespace VamTimeline
 
             if (stopped)
             {
-                valueText.text = target.floatParam.val.ToString("0.00");
+                valueText.text = floatParam.val.ToString("0.00");
             }
 
             if (!_simpleSlider.interacting)
@@ -169,19 +171,19 @@ namespace VamTimeline
 
         private void UpdateSliderFromValue()
         {
-            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-target.floatParam.min + target.floatParam.val) / (target.floatParam.max - target.floatParam.min)), 1f);
+            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-floatParam.min + floatParam.val) / (floatParam.max - floatParam.min)), 1f);
         }
 
         protected override void ToggleKeyframeImpl(float time, bool enable)
         {
-            if (!target.EnsureAvailable(false))
+            if (!target.storableFloat.EnsureAvailable(false))
             {
                 SetToggle(!enabled);
                 return;
             }
             if (enable)
             {
-                var key = target.SetKeyframe(time, target.floatParam.val);
+                var key = target.SetKeyframe(time, floatParam.val);
                 var keyframe = target.value.keys[key];
                 if (keyframe.curveType == CurveTypeValues.CopyPrevious)
                     target.ChangeCurve(time, CurveTypeValues.SmoothLocal);

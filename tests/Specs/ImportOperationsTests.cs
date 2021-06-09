@@ -82,7 +82,8 @@ namespace VamTimeline
         private AtomAnimationClip WithStorable(TestContext context, AtomAnimationClip clip, string name)
         {
             var storable = context.gameObject.GetComponent<JSONStorable>() ?? context.gameObject.AddComponent<JSONStorable>();
-            var target = clip.Add(new FloatParamAnimationTarget(storable, new JSONStorableFloat(name, 0, 0, 1)));
+            var targetRef = new AtomAnimationStorableFloatParamTargetReference(storable, new JSONStorableFloat(name, 0, 0, 1));
+            var target = clip.Add(new FloatParamAnimationTarget(targetRef));
             target.AddEdgeFramesIfMissing(clip.animationLength);
             return clip;
         }

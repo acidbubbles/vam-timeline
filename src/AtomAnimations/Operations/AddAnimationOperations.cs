@@ -27,7 +27,7 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
-                if (!origTarget.EnsureAvailable(false)) continue;
+                if (!origTarget.storableFloat.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
                 newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                 newTarget.dirty = true;
@@ -58,10 +58,10 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
-                if (!origTarget.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
-                newTarget.SetKeyframe(0f, origTarget.floatParam.val);
-                newTarget.SetKeyframe(clip.animationLength, origTarget.floatParam.val);
+                if (!origTarget.storableFloat.EnsureAvailable(false)) continue;
+                var newTarget = clip.Add(origTarget.storableFloat);
+                newTarget.SetKeyframe(0f, origTarget.storableFloat.floatParam.val);
+                newTarget.SetKeyframe(clip.animationLength, origTarget.storableFloat.floatParam.val);
             }
             return clip;
         }
@@ -93,8 +93,8 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
-                if (!origTarget.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.storable, origTarget.floatParam);
+                if (!origTarget.storableFloat.EnsureAvailable(false)) continue;
+                var newTarget = clip.Add(origTarget.storableFloat);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }

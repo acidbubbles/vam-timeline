@@ -216,7 +216,7 @@ namespace VamTimeline
             var imported = new List<AtomAnimationClip>();
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                imported.Add(plugin.serializer.DeserializeClip(clipJSON));
+                imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.targetsRegistry));
             }
 
             operations.Import().ImportClips(imported);

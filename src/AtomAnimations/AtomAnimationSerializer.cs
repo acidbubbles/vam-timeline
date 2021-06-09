@@ -44,7 +44,7 @@ namespace VamTimeline
                 if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
                 foreach (JSONClass clipJSON in clipsJSON)
                 {
-                    var clip = DeserializeClip(clipJSON);
+                    var clip = DeserializeClip(clipJSON, animation.targetsRegistry);
                     animation.AddClip(clip);
                 }
             }
@@ -54,7 +54,7 @@ namespace VamTimeline
             }
         }
 
-        public AtomAnimationClip DeserializeClip(JSONClass clipJSON)
+        public AtomAnimationClip DeserializeClip(JSONClass clipJSON, AtomAnimationTargetsRegistry targetsRegistry)
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
@@ -81,11 +81,11 @@ namespace VamTimeline
                 uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
                 animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap()
             };
-            DeserializeClip(clip, clipJSON);
+            DeserializeClip(clip, clipJSON, targetsRegistry);
             return clip;
         }
 
-        private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON)
+        private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON, AtomAnimationTargetsRegistry targetsRegistry)
         {
             var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
             if (!string.IsNullOrEmpty(animationPatternUID))
@@ -141,7 +141,8 @@ namespace VamTimeline
                 {
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
-                    var target = new FloatParamAnimationTarget(_atom, storableId, floatParamName);
+                    var floatParam = targetsRegistry.GetOrCreateStorableFloat(_atom, storableId, floatParamName);
+                    var target = new FloatParamAnimationTarget(floatParam);
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -423,8 +424,8 @@ namespace VamTimeline
             {
                 var paramJSON = new JSONClass
                     {
-                        { "Storable", target.storableId },
-                        { "Name", target.floatParamName },
+                        { "Storable", target.storableFloat.storableId },
+                        { "Name", target.storableFloat.floatParamName },
                         { "Value", SerializeCurve(target.value) }
                     };
                 paramsJSON.Add(paramJSON);
