@@ -100,7 +100,7 @@ namespace VamTimeline
         private bool _animationRebuildInProgress;
 
         public AtomAnimationsClipsIndex index { get; }
-        public AtomAnimationTargetsRegistry targetsRegistry { get; }
+        public AnimatablesRegistry animatables { get; }
 
         public bool syncSubsceneOnly { get; set; }
         public bool syncWithPeers { get; set; } = true;
@@ -108,7 +108,7 @@ namespace VamTimeline
         public AtomAnimation()
         {
             index = new AtomAnimationsClipsIndex(clips);
-            targetsRegistry = new AtomAnimationTargetsRegistry();
+            animatables = new AnimatablesRegistry();
         }
 
         public AtomAnimationClip GetDefaultClip()
@@ -609,8 +609,8 @@ namespace VamTimeline
         {
             foreach (var x in index.ByFloatParam())
             {
-                if (!x.Value[0].storableFloat.EnsureAvailable()) continue;
-                SampleFloatParam(x.Value[0].storableFloat.floatParam, x.Value);
+                if (!x.Value[0].floatParamRef.EnsureAvailable()) continue;
+                SampleFloatParam(x.Value[0].floatParamRef.floatParam, x.Value);
             }
         }
 
@@ -654,7 +654,7 @@ namespace VamTimeline
         {
             foreach (var x in index.ByController())
             {
-                SampleController(x.Key, x.Value, force);
+                SampleController(x.Key.controller, x.Value, force);
             }
         }
 
@@ -662,7 +662,7 @@ namespace VamTimeline
         private float[] _rotationBlendWeights = new float[0];
 
         [MethodImpl(256)]
-        private void SampleController(FreeControllerV3 controller, List<FreeControllerAnimationTarget> targets, bool force)
+        private void SampleController(FreeControllerV3 controller, IList<FreeControllerAnimationTarget> targets, bool force)
         {
             if (ReferenceEquals(controller, null)) return;
             var control = controller.control;
@@ -870,8 +870,8 @@ namespace VamTimeline
                 if (!currentTarget.EnsureParentAvailable()) continue;
                 // TODO: If there's a parent for position but not rotation or vice versa there will be problems
                 // ReSharper disable Unity.NoNullCoalescing
-                var sourceParent = sourceTarget.GetPositionParentRB()?.transform ?? sourceTarget.controller.control.parent;
-                var currentParent = currentTarget.GetPositionParentRB()?.transform ?? currentTarget.controller.control.parent;
+                var sourceParent = sourceTarget.GetPositionParentRB()?.transform ?? sourceTarget.controllerRef.controller.control.parent;
+                var currentParent = currentTarget.GetPositionParentRB()?.transform ?? currentTarget.controllerRef.controller.control.parent;
                 // ReSharper restore Unity.NoNullCoalescing
                 if (sourceParent == currentParent)
                 {

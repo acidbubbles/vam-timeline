@@ -47,7 +47,7 @@ namespace VamTimeline
         {
             var go = new GameObject();
             // ReSharper disable once Unity.NoNullCoalescing
-            var parent = target.GetPositionParentRB()?.transform ?? target.controller.control.parent;
+            var parent = target.GetPositionParentRB()?.transform ?? target.controllerRef.controller.control.parent;
             go.transform.SetParent(parent.transform, false);
 
             var line = go.AddComponent<LineDrawer>();
@@ -150,7 +150,7 @@ namespace VamTimeline
 
             if (stopped)
             {
-                var pos = target.controller.transform.position;
+                var pos = target.controllerRef.controller.transform.position;
                 valueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
             }
         }

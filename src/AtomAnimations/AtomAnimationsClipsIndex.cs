@@ -10,8 +10,8 @@ namespace VamTimeline
 
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayer = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
-        private readonly Dictionary<FreeControllerV3, List<FreeControllerAnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3, List<FreeControllerAnimationTarget>>();
-        private readonly Dictionary<string, List<FloatParamAnimationTarget>> _clipsByFloatParam = new Dictionary<string, List<FloatParamAnimationTarget>>();
+        private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerAnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerAnimationTarget>>();
+        private readonly Dictionary<StorableFloatParamRef, List<FloatParamAnimationTarget>> _clipsByFloatParam = new Dictionary<StorableFloatParamRef, List<FloatParamAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
         private bool _paused;
 
@@ -53,7 +53,6 @@ namespace VamTimeline
 
             if (_paused) return;
 
-
             foreach (var clip in _clips)
             {
                 {
@@ -69,23 +68,23 @@ namespace VamTimeline
                 foreach (var target in clip.targetControllers)
                 {
                     List<FreeControllerAnimationTarget> byController;
-                    if (!_clipsByController.TryGetValue(target.controller, out byController))
+                    if (!_clipsByController.TryGetValue(target.controllerRef, out byController))
                     {
                         byController = new List<FreeControllerAnimationTarget>();
-                        _clipsByController.Add(target.controller, byController);
+                        _clipsByController.Add(target.controllerRef, byController);
                     }
                     byController.Add(target);
                 }
 
                 foreach (var target in clip.targetFloatParams)
                 {
-                    List<FloatParamAnimationTarget> byfloatParam;
-                    if (!_clipsByFloatParam.TryGetValue(target.name, out byfloatParam))
+                    List<FloatParamAnimationTarget> byFloatParam;
+                    if (!_clipsByFloatParam.TryGetValue(target.floatParamRef, out byFloatParam))
                     {
-                        byfloatParam = new List<FloatParamAnimationTarget>();
-                        _clipsByFloatParam.Add(target.name, byfloatParam);
+                        byFloatParam = new List<FloatParamAnimationTarget>();
+                        _clipsByFloatParam.Add(target.floatParamRef, byFloatParam);
                     }
-                    byfloatParam.Add(target);
+                    byFloatParam.Add(target);
                 }
             }
             // TODO: This could be optimized but it would be more complex (e.g. adding/removing targets, renaming layers, etc.)
@@ -102,12 +101,12 @@ namespace VamTimeline
             return _clipsByLayer.TryGetValue(layer, out clips) ? clips : _emptyClipList;
         }
 
-        public IEnumerable<KeyValuePair<FreeControllerV3, List<FreeControllerAnimationTarget>>> ByController()
+        public IEnumerable<KeyValuePair<FreeControllerV3Ref, List<FreeControllerAnimationTarget>>> ByController()
         {
             return _clipsByController;
         }
 
-        public IEnumerable<KeyValuePair<string, List<FloatParamAnimationTarget>>> ByFloatParam()
+        public IEnumerable<KeyValuePair<StorableFloatParamRef, List<FloatParamAnimationTarget>>> ByFloatParam()
         {
             return _clipsByFloatParam;
         }

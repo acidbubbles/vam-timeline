@@ -30,9 +30,10 @@ src\AtomAnimations\Targets\ICurveAnimationTarget.cs
 src\AtomAnimations\Targets\TimeTypeValues.cs
 src\AtomAnimations\Targets\TransformAnimationTarget.cs
 src\AtomAnimations\Targets\TriggersAnimationTarget.cs
-src\AtomAnimations\TargetsRegistry\AtomAnimationStorableFloatParamTargetReference.cs
-src\AtomAnimations\TargetsRegistry\AtomAnimationTargetReferenceBase.cs
-src\AtomAnimations\TargetsRegistry\AtomAnimationTargetsRegistry.cs
+src\AtomAnimations\TargetsRegistry\AnimatableRefBase.cs
+src\AtomAnimations\TargetsRegistry\AnimatablesRegistry.cs
+src\AtomAnimations\TargetsRegistry\FreeControllerV3Ref.cs
+src\AtomAnimations\TargetsRegistry\StorableFloatParamRef.cs
 src\AtomAnimations\AtomAnimation.cs
 src\AtomAnimations\AtomAnimationClip.cs
 src\AtomAnimations\AtomAnimationEditContext.cs

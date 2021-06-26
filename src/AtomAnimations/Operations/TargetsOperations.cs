@@ -18,11 +18,11 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerV3 fc)
         {
             if (fc == null || fc.containingAtom != _containingAtom) return null;
-            var target = _clip.targetControllers.FirstOrDefault(t => t.controller == fc);
+            var target = _clip.targetControllers.FirstOrDefault(t => t.controllerRef.Targets(fc));
             if (target != null) return target;
             foreach (var clip in _animation.index.ByLayer(_clip.animationLayer))
             {
-                var t = clip.Add(fc);
+                var t = clip.Add(_animation.animatables.GetOrCreateController(fc));
                 if (t == null) continue;
                 t.SetKeyframeToCurrentTransform(0f);
                 t.SetKeyframeToCurrentTransform(clip.animationLength);
@@ -35,7 +35,7 @@ namespace VamTimeline
         {
             var selected = SuperController.singleton.GetSelectedController();
             if (selected == null || selected.containingAtom != _containingAtom) return;
-            if (_animation.index.ByController().Any(kvp => kvp.Key == selected)) return;
+            if (_animation.index.ByController().Any(kvp => kvp.Key.Targets(selected))) return;
             Add(selected);
         }
     }

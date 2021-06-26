@@ -82,7 +82,7 @@ namespace VamTimeline
             var fc = controller.AddComponent<FreeControllerV3>();
             fc.UITransforms = new Transform[0];
             fc.UITransformsPlayMode = new Transform[0];
-            var target = new FreeControllerAnimationTarget(fc);
+            var target = new FreeControllerAnimationTarget(new FreeControllerV3Ref(fc));
             return target;
         }
     }

@@ -21,7 +21,7 @@ namespace VamTimeline
         {
             foreach (var snap in offsetSnapshot.controllers)
             {
-                var target = _clip.targetControllers.First(t => t.controller == snap.controller);
+                var target = _clip.targetControllers.First(t => t.controllerRef == snap.controllerRef);
                 if (!target.EnsureParentAvailable(false)) continue;
                 var posLink = target.GetPositionParentRB();
                 var hasPosLink = !ReferenceEquals(posLink, null);
@@ -36,8 +36,8 @@ namespace VamTimeline
                     var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
                     var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
 
-                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.controller.transform.position) : snap.controller.control.localPosition;
-                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.controller.transform.rotation : snap.controller.control.localRotation;
+                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.controllerRef.controller.transform.position) : snap.controllerRef.controller.control.localPosition;
+                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.controllerRef.controller.transform.rotation : snap.controllerRef.controller.control.localRotation;
 
                     pivot = positionBefore;
                     positionDelta = positionAfter - positionBefore;
@@ -81,7 +81,7 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {clipTime}.");
                 return null;
             }
-            if (snapshot.controllers.Select(c => _clip.targetControllers.First(t => t.controller == c.controller)).Any(t => !t.EnsureParentAvailable(false)))
+            if (snapshot.controllers.Select(c => _clip.targetControllers.First(t => t.controllerRef == c.controllerRef)).Any(t => !t.EnsureParentAvailable(false)))
             {
                 return null;
             }

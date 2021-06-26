@@ -102,9 +102,10 @@
     <Compile Include="src\AtomAnimations\Targets\TimeTypeValues.cs" />
     <Compile Include="src\AtomAnimations\Targets\TransformAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Targets\TriggersAnimationTarget.cs" />
-    <Compile Include="src\AtomAnimations\TargetsRegistry\AtomAnimationStorableFloatParamTargetReference.cs" />
-    <Compile Include="src\AtomAnimations\TargetsRegistry\AtomAnimationTargetReferenceBase.cs" />
-    <Compile Include="src\AtomAnimations\TargetsRegistry\AtomAnimationTargetsRegistry.cs" />
+    <Compile Include="src\AtomAnimations\TargetsRegistry\AnimatableRefBase.cs" />
+    <Compile Include="src\AtomAnimations\TargetsRegistry\AnimatablesRegistry.cs" />
+    <Compile Include="src\AtomAnimations\TargetsRegistry\FreeControllerV3Ref.cs" />
+    <Compile Include="src\AtomAnimations\TargetsRegistry\StorableFloatParamRef.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimation.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationEditContext.cs" />

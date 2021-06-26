@@ -95,7 +95,7 @@ namespace VamTimeline
                 return;
             }
             var atom = SuperController.singleton.GetAtomByUid(_atomJSON.val);
-            var selfRigidbodyControl = _target.controller.GetComponent<Rigidbody>().name;
+            var selfRigidbodyControl = _target.controllerRef.controller.GetComponent<Rigidbody>().name;
             var selfRigidbodyTarget = selfRigidbodyControl.EndsWith("Control") ? selfRigidbodyControl.Substring(0, selfRigidbodyControl.Length - "Control".Length) : null;
             var choices = atom.linkableRigidbodies
                 .Select(rb => rb.name)
@@ -122,7 +122,7 @@ namespace VamTimeline
 
             animationEditContext.clipTime = 0f;
 
-            var targetControllerTransform = _target.controller.transform;
+            var targetControllerTransform = _target.controllerRef.controller.transform;
             var previousPosition = targetControllerTransform.position;
             var previousRotation = targetControllerTransform.rotation;
 

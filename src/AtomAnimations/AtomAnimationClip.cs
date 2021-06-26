@@ -350,7 +350,7 @@ namespace VamTimeline
         {
             yield return targetTriggers;
             yield return targetControllers;
-            foreach (var group in targetFloatParams.GroupBy(t => t.storableFloat.storableId))
+            foreach (var group in targetFloatParams.GroupBy(t => t.floatParamRef.storableId))
                 yield return new AtomAnimationTargetsList<FloatParamAnimationTarget>(group) {label = group.Key};
         }
 
@@ -451,23 +451,23 @@ namespace VamTimeline
             throw new NotSupportedException($"Cannot add unknown target type {target}");
         }
 
-        public FreeControllerAnimationTarget Add(FreeControllerV3 controller)
+        public FreeControllerAnimationTarget Add(FreeControllerV3Ref controllerRef)
         {
-            if (targetControllers.Any(c => c.controller == controller)) return null;
-            return Add(new FreeControllerAnimationTarget(controller));
+            if (targetControllers.Any(c => c.controllerRef == controllerRef)) return null;
+            return Add(new FreeControllerAnimationTarget(controllerRef));
         }
 
         public FreeControllerAnimationTarget Add(FreeControllerAnimationTarget target)
         {
-            if (targetControllers.Any(t => t.controller == target.controller)) return null;
+            if (targetControllers.Any(t => t.controllerRef == target.controllerRef)) return null;
             foreach (var curve in target.curves) { curve.loop = _loop; }
             return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
         }
 
-        public FloatParamAnimationTarget Add(AtomAnimationStorableFloatParamTargetReference storableFloat)
+        public FloatParamAnimationTarget Add(StorableFloatParamRef floatParamRef)
         {
-            if (targetFloatParams.Any(t => t.storableFloat == storableFloat)) return null;
-            return Add(new FloatParamAnimationTarget(storableFloat));
+            if (targetFloatParams.Any(t => t.floatParamRef == floatParamRef)) return null;
+            return Add(new FloatParamAnimationTarget(floatParamRef));
         }
 
         public FloatParamAnimationTarget Add(FloatParamAnimationTarget target)
@@ -525,7 +525,7 @@ namespace VamTimeline
 
         public void Remove(FreeControllerV3 controller)
         {
-            Remove(targetControllers.FirstOrDefault(c => c.controller == controller));
+            Remove(targetControllers.FirstOrDefault(c => c.controllerRef.Targets(controller)));
         }
 
         public void Remove(FreeControllerAnimationTarget target)
@@ -573,7 +573,7 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 controllers.Add(new FreeControllerV3ClipboardEntry
                 {
-                    controller = target.controller,
+                    controllerRef = target.controllerRef,
                     snapshot = snapshot
                 });
             }
@@ -584,7 +584,7 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
-                    storableFloat = target.storableFloat,
+                    floatParamRef = target.floatParamRef,
                     snapshot = snapshot
                 });
             }
@@ -617,20 +617,20 @@ namespace VamTimeline
 
             foreach (var entry in clipboard.controllers)
             {
-                var target = targetControllers.FirstOrDefault(c => c.controller == entry.controller);
+                var target = targetControllers.FirstOrDefault(c => c.controllerRef == entry.controllerRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste controller {entry.controller.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste controller {entry.controllerRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.storableFloat == entry.storableFloat);
+                var target = targetFloatParams.FirstOrDefault(c => c.floatParamRef == entry.floatParamRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste storable {entry.storableFloat}/{entry.floatParamName} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste storable {entry.floatParamRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);

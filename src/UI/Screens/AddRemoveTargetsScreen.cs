@@ -104,7 +104,7 @@ namespace VamTimeline
             {
                 foreach (var target in clip.targetFloatParams)
                 {
-                    target.storableFloat.EnsureAvailable(false);
+                    target.floatParamRef.EnsureAvailable(false);
                 }
             }
 
@@ -179,11 +179,11 @@ namespace VamTimeline
             var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetControllers)
-                .Select(t => t.controller));
+                .Select(t => t.controllerRef.controller));
             foreach (var fc in plugin.containingAtom.freeControllers)
             {
                 if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
-                if (current.targetControllers.Any(c => c.controller == fc)) continue;
+                if (current.targetControllers.Any(c => c.controllerRef.Targets(fc))) continue;
                 if (reservedByOtherLayers.Contains(fc)) continue;
                 yield return fc.name;
             }
@@ -291,10 +291,10 @@ namespace VamTimeline
             var reservedByOtherLayers = new HashSet<string>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetFloatParams)
-                .Where(t => t.storableFloat.storableId == storable.storeId)
-                .Select(t => t.storableFloat.floatParamName));
+                .Where(t => t.floatParamRef.storableId == storable.storeId)
+                .Select(t => t.floatParamRef.floatParamName));
             _addParamListJSON.choices = values
-                .Where(v => !current.targetFloatParams.Any(t => t.storableFloat.storableId == storable.storeId && t.storableFloat.floatParamName == v))
+                .Where(v => !current.targetFloatParams.Any(t => t.floatParamRef.storableId == storable.storeId && t.floatParamRef.floatParamName == v))
                 .Where(v => !reservedByOtherLayers.Contains(v))
                 .OrderBy(v => v)
                 .ToList();
@@ -342,8 +342,8 @@ namespace VamTimeline
                     var target = s as FloatParamAnimationTarget;
                     if (target != null)
                     {
-                        _addStorableListJSON.val = target.storableFloat.storableId;
-                        _addParamListJSON.val = target.storableFloat.floatParamName;
+                        _addStorableListJSON.val = target.floatParamRef.storableId;
+                        _addParamListJSON.val = target.floatParamRef.floatParamName;
                     }
                 }
             }
@@ -383,23 +383,23 @@ namespace VamTimeline
                 var allControllers = animation.index
                     .ByLayer(current.animationLayer)
                     .SelectMany(c => c.targetControllers)
-                    .Select(t => t.controller)
+                    .Select(t => t.controllerRef)
                     .Distinct()
                     .ToList();
                 var h = new HashSet<JSONStorableFloat>();
                 var allFloatParams = animation.index
                     .ByLayer(current.animationLayer)
                     .SelectMany(c => c.targetFloatParams)
-                    .Where(t => t.storableFloat.EnsureAvailable(false))
-                    .Where(t => h.Add(t.storableFloat.floatParam))
-                    .Select(t => new FloatParamRef { storable = t.storableFloat.storable, floatParam = t.storableFloat.floatParam })
+                    .Where(t => t.floatParamRef.EnsureAvailable(false))
+                    .Where(t => h.Add(t.floatParamRef.floatParam))
+                    .Select(t => new FloatParamRef { storable = t.floatParamRef.storable, floatParam = t.floatParamRef.floatParam })
                     .ToList();
 
                 foreach (var clip in animation.clips)
                 {
                     foreach (var controller in allControllers)
                     {
-                        if (clip.targetControllers.All(t => t.controller != controller))
+                        if (clip.targetControllers.All(t => t.controllerRef != controller))
                         {
                             var target = clip.Add(controller);
                             if (target != null)
@@ -413,11 +413,11 @@ namespace VamTimeline
 
                     foreach (var floatParamRef in allFloatParams)
                     {
-                        if (clip.targetFloatParams.Any(t => t.storableFloat.floatParamName == floatParamRef.floatParam.name)) continue;
-                        var storableFloat = animation.targetsRegistry.GetOrCreateStorableFloat(floatParamRef.storable, floatParamRef.floatParam);
+                        if (clip.targetFloatParams.Any(t => t.floatParamRef.floatParamName == floatParamRef.floatParam.name)) continue;
+                        var storableFloat = animation.animatables.GetOrCreateStorableFloat(floatParamRef.storable, floatParamRef.floatParam);
                         var target = clip.Add(storableFloat);
                         if (target == null) continue;
-                        if (!target.storableFloat.EnsureAvailable(false)) continue;
+                        if (!target.floatParamRef.EnsureAvailable(false)) continue;
                         target.SetKeyframe(0f, floatParamRef.floatParam.val);
                         target.SetKeyframe(clip.animationLength, floatParamRef.floatParam.val);
                     }
@@ -446,7 +446,7 @@ namespace VamTimeline
                     return;
                 }
 
-                if (current.targetControllers.Any(c => c.controller == controller))
+                if (current.targetControllers.Any(c => c.controllerRef.Targets(controller)))
                 {
                     SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} was already added");
                     return;
@@ -460,7 +460,7 @@ namespace VamTimeline
 
                 foreach (var clip in animation.index.ByLayer(current.animationLayer))
                 {
-                    var added = clip.Add(controller);
+                    var added = clip.Add(animation.animatables.GetOrCreateController(controller));
                     if (added != null)
                     {
                         added.SetKeyframeToCurrentTransform(0f);
@@ -512,12 +512,12 @@ namespace VamTimeline
 
         private bool AddFloatParam(JSONStorable storable, JSONStorableFloat jsf)
         {
-            if (current.targetFloatParams.Any(c => c.storableFloat.EnsureAvailable(true) && c.storableFloat.floatParam == jsf))
+            if (current.targetFloatParams.Any(c => c.floatParamRef.EnsureAvailable(true) && c.floatParamRef.floatParam == jsf))
                 return false;
 
             foreach (var clip in animation.index.ByLayer(current.animationLayer))
             {
-                var storableFloat = animation.targetsRegistry.GetOrCreateStorableFloat(storable, jsf);
+                var storableFloat = animation.animatables.GetOrCreateStorableFloat(storable, jsf);
                 var added = clip.Add(storableFloat);
                 if (added == null) continue;
 

@@ -132,14 +132,14 @@ namespace VamTimeline
                 case _allAnimations:
                     controllers = animation.clips
                         .SelectMany(c => c.targetControllers)
-                        .Select(t => t.controller)
+                        .Select(t => t.controllerRef.controller)
                         .Distinct();
                     break;
                 default:
                     controllers = animation.clips
                         .First(c => c.animationName == _exportAnimationsJSON.val)
                         .targetControllers
-                        .Select(t => t.controller);
+                        .Select(t => t.controllerRef.controller);
                     break;
             }
             foreach (var fc in controllers)
@@ -216,7 +216,7 @@ namespace VamTimeline
             var imported = new List<AtomAnimationClip>();
             foreach (JSONClass clipJSON in clipsJSON)
             {
-                imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.targetsRegistry));
+                imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables));
             }
 
             operations.Import().ImportClips(imported);

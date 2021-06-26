@@ -41,7 +41,7 @@ namespace VamTimeline
                     var enumerator = Process(new ControllerTargetReduceProcessor(target, _settings));
                     while (enumerator.MoveNext() && !Input.GetKey(KeyCode.Escape))
                         yield return enumerator.Current;
-                    SuperController.LogMessage($"Timeline: Reduced {target.controller.name} from {initialFrames} frames to {target.x.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
+                    SuperController.LogMessage($"Timeline: Reduced {target.controllerRef.name} from {initialFrames} frames to {target.x.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
                     reducedFrames += target.x.length;
                 }
                 finally

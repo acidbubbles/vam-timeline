@@ -44,7 +44,7 @@ namespace VamTimeline
                 if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
                 foreach (JSONClass clipJSON in clipsJSON)
                 {
-                    var clip = DeserializeClip(clipJSON, animation.targetsRegistry);
+                    var clip = DeserializeClip(clipJSON, animation.animatables);
                     animation.AddClip(clip);
                 }
             }
@@ -54,7 +54,7 @@ namespace VamTimeline
             }
         }
 
-        public AtomAnimationClip DeserializeClip(JSONClass clipJSON, AtomAnimationTargetsRegistry targetsRegistry)
+        public AtomAnimationClip DeserializeClip(JSONClass clipJSON, AnimatablesRegistry targetsRegistry)
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
@@ -85,7 +85,7 @@ namespace VamTimeline
             return clip;
         }
 
-        private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON, AtomAnimationTargetsRegistry targetsRegistry)
+        private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON, AnimatablesRegistry targetsRegistry)
         {
             var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
             if (!string.IsNullOrEmpty(animationPatternUID))
@@ -103,13 +103,9 @@ namespace VamTimeline
                 foreach (JSONClass controllerJSON in controllersJSON)
                 {
                     var controllerName = controllerJSON["Controller"].Value;
-                    var controller = _atom.freeControllers.Single(fc => fc.name == controllerName);
-                    if (controller == null)
-                    {
-                        SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a controller '{controllerName}'");
-                        continue;
-                    }
-                    var target = new FreeControllerAnimationTarget(controller)
+                    var controllerRef = targetsRegistry.GetOrCreateController(_atom, controllerName);
+                    if (controllerRef == null) continue;
+                    var target = new FreeControllerAnimationTarget(controllerRef)
                     {
                         controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true),
                         controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true),
@@ -141,8 +137,8 @@ namespace VamTimeline
                 {
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
-                    var floatParam = targetsRegistry.GetOrCreateStorableFloat(_atom, storableId, floatParamName);
-                    var target = new FloatParamAnimationTarget(floatParam);
+                    var floatParamRef = targetsRegistry.GetOrCreateStorableFloat(_atom, storableId, floatParamName);
+                    var target = new FloatParamAnimationTarget(floatParamRef);
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -393,7 +389,7 @@ namespace VamTimeline
             {
                 var controllerJSON = new JSONClass
                     {
-                        { "Controller", controller.controller.name },
+                        { "Controller", controller.controllerRef.name },
                         { "ControlPosition", controller.controlPosition ? "1" : "0" },
                         { "ControlRotation", controller.controlRotation ? "1" : "0" },
                         { "X", SerializeCurve(controller.x) },
@@ -424,8 +420,8 @@ namespace VamTimeline
             {
                 var paramJSON = new JSONClass
                     {
-                        { "Storable", target.storableFloat.storableId },
-                        { "Name", target.storableFloat.floatParamName },
+                        { "Storable", target.floatParamRef.storableId },
+                        { "Name", target.floatParamRef.floatParamName },
                         { "Value", SerializeCurve(target.value) }
                     };
                 paramsJSON.Add(paramJSON);

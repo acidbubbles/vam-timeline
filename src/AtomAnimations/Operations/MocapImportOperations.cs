@@ -73,14 +73,13 @@ namespace VamTimeline
 
         public IEnumerator Execute(List<FreeControllerV3> controllers)
         {
-            var containingAtom = _containingAtom;
             var keyOps = new KeyframesOperations(clip);
             var targetOps = new TargetsOperations(_containingAtom, _animation, clip);
 
             yield return 0;
 
             var controlCounter = 0;
-            var motControls = containingAtom.motionAnimationControls
+            var motControls = _containingAtom.motionAnimationControls
                 .Where(m => m?.clip?.clipLength > 0.1f)
                 .Where(m => controllers.Count == 0 || controllers.Contains(m.controller))
                 .Where(m => m.clip.steps.Any(s => s.positionOn || s.rotationOn))
@@ -96,9 +95,9 @@ namespace VamTimeline
                 try
                 {
                     ctrl = mot.controller;
-                    target = clip.targetControllers.FirstOrDefault(t => t.controller == ctrl);
+                    target = clip.targetControllers.FirstOrDefault(t => t.controllerRef.Targets(ctrl));
 
-                    if (_animation.index.ByLayer().Where(l => l.Key != clip.animationLayer).Select(l => l.Value.First()).SelectMany(c => c.targetControllers).Any(t2 => t2.controller == ctrl))
+                    if (_animation.index.ByLayer().Where(l => l.Key != clip.animationLayer).Select(l => l.Value.First()).SelectMany(c => c.targetControllers).Any(t2 => t2.controllerRef.Targets(ctrl)))
                     {
                         SuperController.LogError($"Skipping controller {ctrl.name} because it was used in another layer.");
                         continue;

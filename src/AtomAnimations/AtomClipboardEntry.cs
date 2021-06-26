@@ -30,14 +30,13 @@ namespace VamTimeline
 
     public class FloatParamValClipboardEntry
     {
-        public AtomAnimationStorableFloatParamTargetReference storableFloat;
-        public string floatParamName;
+        public StorableFloatParamRef floatParamRef;
         public FloatParamTargetSnapshot snapshot;
     }
 
     public class FreeControllerV3ClipboardEntry
     {
-        public FreeControllerV3 controller;
+        public FreeControllerV3Ref controllerRef;
         public TransformTargetSnapshot snapshot;
     }
 

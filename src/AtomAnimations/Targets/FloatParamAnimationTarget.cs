@@ -7,20 +7,20 @@ namespace VamTimeline
 {
     public class FloatParamAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
     {
-        public override string name => storableFloat.name;
-        public string GetShortName() => storableFloat.GetShortName();
-        public readonly AtomAnimationStorableFloatParamTargetReference storableFloat;
+        public override string name => floatParamRef.name;
+        public string GetShortName() => floatParamRef.GetShortName();
+        public readonly StorableFloatParamRef floatParamRef;
         public readonly BezierAnimationCurve value = new BezierAnimationCurve();
         public bool recording;
 
         public FloatParamAnimationTarget(FloatParamAnimationTarget source)
+            : this(source.floatParamRef)
         {
-            this.storableFloat = source.storableFloat;
         }
 
-        public FloatParamAnimationTarget(AtomAnimationStorableFloatParamTargetReference storableFloat)
+        public FloatParamAnimationTarget(StorableFloatParamRef floatParamRef)
         {
-            this.storableFloat = storableFloat;
+            this.floatParamRef = floatParamRef;
         }
 
         public void Validate(float animationLength)
@@ -40,7 +40,7 @@ namespace VamTimeline
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
-            var clone = new FloatParamAnimationTarget(storableFloat);
+            var clone = new FloatParamAnimationTarget(floatParamRef);
             if (copyKeyframes)
             {
                 clone.value.keys.AddRange(value.keys);
@@ -141,7 +141,7 @@ namespace VamTimeline
         {
             var t = target as FloatParamAnimationTarget;
             if (t == null) return false;
-            return t.storableFloat == storableFloat;
+            return t.floatParamRef == floatParamRef;
         }
 
         public override string ToString()

@@ -2,7 +2,7 @@
 
 namespace VamTimeline
 {
-    public class AtomAnimationStorableFloatParamTargetReference : AtomAnimationTargetReferenceBase
+    public class StorableFloatParamRef : AnimatableRefBase
     {
         public override string name => $"{storableId}/{floatParamName}";
 
@@ -14,14 +14,14 @@ namespace VamTimeline
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
 
-        public AtomAnimationStorableFloatParamTargetReference(Atom atom, string storableId, string floatParamName)
+        public StorableFloatParamRef(Atom atom, string storableId, string floatParamName)
         {
             _atom = atom;
             this.storableId = storableId;
             this.floatParamName = floatParamName;
         }
 
-        public AtomAnimationStorableFloatParamTargetReference(JSONStorable storable, JSONStorableFloat floatParam)
+        public StorableFloatParamRef(JSONStorable storable, JSONStorableFloat floatParam)
             : this(storable.containingAtom, storable.storeId, floatParam.name)
         {
             this.storable = storable;
@@ -29,7 +29,7 @@ namespace VamTimeline
             _available = true;
         }
 
-        public AtomAnimationStorableFloatParamTargetReference(AtomAnimationStorableFloatParamTargetReference source)
+        public StorableFloatParamRef(StorableFloatParamRef source)
         {
             if (source.storable != null)
             {
@@ -40,6 +40,13 @@ namespace VamTimeline
             _atom = source._atom;
             storableId = source.storableId;
             floatParamName = source.floatParamName;
+        }
+
+        public string GetShortName()
+        {
+            if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
+                return floatParam.altName;
+            return floatParamName;
         }
 
         public bool EnsureAvailable(bool silent = true)
@@ -97,13 +104,6 @@ namespace VamTimeline
             floatParamName = floatParam.name;
             _available = true;
             return true;
-        }
-
-        public string GetShortName()
-        {
-            if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
-                return floatParam.altName;
-            return floatParamName;
         }
 
         public bool Targets(string storableId, string floatParamName)

@@ -73,7 +73,7 @@ namespace VamTimeline
                 {
                     if (!clip.targetControllers.Any(t => target.TargetsSameAs(t)))
                     {
-                        var missing = new FreeControllerAnimationTarget(target.controller);
+                        var missing = new FreeControllerAnimationTarget(target.controllerRef);
                         missing.AddEdgeFramesIfMissing(clip.animationLength);
                         clip.Add(missing);
                     }
@@ -84,9 +84,9 @@ namespace VamTimeline
                 clip.animationLayer = new LayersOperations(_animation, clip).GetNewLayerName();
             }
 
-            foreach (var controller in clip.targetControllers.Select(t => t.controller))
+            foreach (var controller in clip.targetControllers.Select(t => t.controllerRef))
             {
-                if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controller == controller)))
+                if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.controllerRef == controller)))
                 {
                     if (!_silent) SuperController.LogError($"Timeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.name).ToArray())}");
                     return clips;

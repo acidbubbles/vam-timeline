@@ -251,7 +251,7 @@ namespace VamTimeline
             var fc = controller.AddComponent<FreeControllerV3>();
             fc.UITransforms = new Transform[0];
             fc.UITransformsPlayMode = new Transform[0];
-            var target = clip.Add(fc);
+            var target = clip.Add(new FreeControllerV3Ref(fc));
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframe(1f, Vector3.one, Quaternion.identity);
@@ -264,7 +264,7 @@ namespace VamTimeline
         private static FloatParamAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
         {
             var storable = context.gameObject.AddComponent<JSONStorable>();
-            var floatParam = new AtomAnimationStorableFloatParamTargetReference(storable, new JSONStorableFloat("Test", 0, 0, 1));
+            var floatParam = new StorableFloatParamRef(storable, new JSONStorableFloat("Test", 0, 0, 1));
             var target = clip.Add(floatParam);
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, 0f);
