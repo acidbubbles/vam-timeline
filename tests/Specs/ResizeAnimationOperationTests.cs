@@ -277,7 +277,7 @@ namespace VamTimeline
 
         private static TriggersAnimationTarget GivenThreeKeyframesTrigger(TestContext context, AtomAnimationClip clip)
         {
-            var target = clip.Add(new TriggersAnimationTarget());
+            var target = clip.Add(new TriggersAnimationTarget(new TriggerTrackRef("Triggers 1")));
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, new AtomAnimationTrigger());
             target.SetKeyframe(1f, new AtomAnimationTrigger());

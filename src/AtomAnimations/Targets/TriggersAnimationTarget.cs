@@ -7,15 +7,21 @@ namespace VamTimeline
 {
     public class TriggersAnimationTarget : AnimationTargetBase, IAtomAnimationTarget
     {
+        public readonly TriggerTrackRef triggerTrackRef;
         public readonly SortedDictionary<int, AtomAnimationTrigger> triggersMap = new SortedDictionary<int, AtomAnimationTrigger>();
         private float[] keyframes { get; set; } = new float[0];
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
-        public string name { get; set; }
+        public string name => triggerTrackRef.name;
+
+        public TriggersAnimationTarget(TriggerTrackRef triggerTrackRef)
+        {
+            this.triggerTrackRef = triggerTrackRef;
+        }
 
         public string GetShortName()
         {
-            return name;
+            return triggerTrackRef.name;
         }
 
         public void Sample(float time)

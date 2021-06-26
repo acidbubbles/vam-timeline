@@ -140,10 +140,7 @@ namespace VamTimeline
             var btn = prefabFactory.CreateButton("Add triggers track");
             btn.button.onClick.AddListener(() =>
             {
-                var target = new TriggersAnimationTarget
-                {
-                    name = $"Triggers {current.targetTriggers.Count + 1}"
-                };
+                var target = new TriggersAnimationTarget(animation.animatables.GetOrCreateTriggerTrack($"Triggers {current.targetTriggers.Count + 1}"));
                 target.AddEdgeFramesIfMissing(current.animationLength);
                 current.Add(target);
             });

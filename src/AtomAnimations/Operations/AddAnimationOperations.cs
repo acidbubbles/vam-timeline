@@ -34,7 +34,7 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetTriggers)
             {
-                var newTarget = clip.Add(new TriggersAnimationTarget { name = origTarget.name });
+                var newTarget = clip.Add(new TriggersAnimationTarget (origTarget.triggerTrackRef));
                 foreach (var origTrigger in origTarget.triggersMap)
                 {
                     var trigger = new AtomAnimationTrigger();

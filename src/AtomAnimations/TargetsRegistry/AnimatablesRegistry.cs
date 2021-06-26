@@ -7,6 +7,7 @@ namespace VamTimeline
     {
         public List<StorableFloatParamRef> storableFloats = new List<StorableFloatParamRef>();
         public List<FreeControllerV3Ref> controllers = new List<FreeControllerV3Ref>();
+        public List<TriggerTrackRef> triggers = new List<TriggerTrackRef>();
 
         public StorableFloatParamRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName)
         {
@@ -47,6 +48,15 @@ namespace VamTimeline
             if (t != null) return t;
             t = new FreeControllerV3Ref(controller);
             controllers.Add(t);
+            return t;
+        }
+
+        public TriggerTrackRef GetOrCreateTriggerTrack(string triggerTrackName)
+        {
+            var t = triggers.FirstOrDefault(x => x.Targets(triggerTrackName));
+            if (t != null) return t;
+            t = new TriggerTrackRef(triggerTrackName);
+            triggers.Add(t);
             return t;
         }
     }

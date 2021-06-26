@@ -152,10 +152,9 @@ namespace VamTimeline
             {
                 foreach (JSONClass triggerJSON in triggersJSON)
                 {
-                    var target = new TriggersAnimationTarget
-                    {
-                        name = DeserializeString(triggerJSON["Name"], "Trigger")
-                    };
+                    var triggerTrackName = DeserializeString(triggerJSON["Name"], "Triggers");
+                    var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(triggerTrackName);
+                    var target = new TriggersAnimationTarget(triggerTrackRef);
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
                         var trigger = new AtomAnimationTrigger();

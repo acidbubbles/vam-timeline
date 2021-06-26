@@ -92,6 +92,7 @@
     <Compile Include="src\AtomAnimations\Smoothing\BezierAnimationCurveSmoothingLooping.cs" />
     <Compile Include="src\AtomAnimations\Smoothing\BezierAnimationCurveSmoothingNonLooping.cs" />
     <Compile Include="src\AtomAnimations\Smoothing\IBezierAnimationCurveSmoothing.cs" />
+    <Compile Include="src\AtomAnimations\TargetsRegistry\TriggerTrackRef.cs" />
     <Compile Include="src\AtomAnimations\Targets\AnimationTargetBase.cs" />
     <Compile Include="src\AtomAnimations\Targets\AtomAnimationTrigger.cs" />
     <Compile Include="src\AtomAnimations\Targets\CurveAnimationTargetBase.cs" />
