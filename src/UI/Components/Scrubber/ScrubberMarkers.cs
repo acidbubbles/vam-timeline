@@ -38,11 +38,18 @@ namespace VamTimeline
             {
                 DrawLine(vh, yMin, yMax, offsetX, ratio, s, style.SecondsSize, style.SecondsColor);
 
-                if (s == length) break;
+                if (s >= length) break;
                 DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan25, style.SecondFractionsSize, style.SecondFractionsColor);
                 DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan50, style.SecondFractionsSize, style.SecondFractionsColor);
                 DrawLine(vh, yMin, yMaxSmall, offsetX, ratio, s + timespan75, style.SecondFractionsSize, style.SecondFractionsColor);
             }
+
+            vh.AddUIVertexQuad(UIVertexHelper.CreateVBO(style.SecondsColor,
+                new Vector2(offsetX, yMin),
+                new Vector2(-offsetX, yMin),
+                new Vector2(-offsetX, yMin + style.SecondsSize),
+                new Vector2(offsetX, yMin + style.SecondsSize)
+            ));
         }
 
         private static void DrawLine(VertexHelper vh, float yMin, float yMax, float offsetX, float ratio, float time, float size, Color color)
