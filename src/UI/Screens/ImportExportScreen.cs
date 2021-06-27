@@ -132,14 +132,14 @@ namespace VamTimeline
                 case _allAnimations:
                     controllers = animation.clips
                         .SelectMany(c => c.targetControllers)
-                        .Select(t => t.controllerRef.controller)
+                        .Select(t => t.animatableRef.controller)
                         .Distinct();
                     break;
                 default:
                     controllers = animation.clips
                         .First(c => c.animationName == _exportAnimationsJSON.val)
                         .targetControllers
-                        .Select(t => t.controllerRef.controller);
+                        .Select(t => t.animatableRef.controller);
                     break;
             }
             foreach (var fc in controllers)

@@ -609,8 +609,8 @@ namespace VamTimeline
         {
             foreach (var x in index.ByFloatParam())
             {
-                if (!x.Value[0].floatParamRef.EnsureAvailable()) continue;
-                SampleFloatParam(x.Value[0].floatParamRef.floatParam, x.Value);
+                if (!x.Value[0].animatableRef.EnsureAvailable()) continue;
+                SampleFloatParam(x.Value[0].animatableRef.floatParam, x.Value);
             }
         }
 
@@ -870,8 +870,8 @@ namespace VamTimeline
                 if (!currentTarget.EnsureParentAvailable()) continue;
                 // TODO: If there's a parent for position but not rotation or vice versa there will be problems
                 // ReSharper disable Unity.NoNullCoalescing
-                var sourceParent = sourceTarget.GetPositionParentRB()?.transform ?? sourceTarget.controllerRef.controller.control.parent;
-                var currentParent = currentTarget.GetPositionParentRB()?.transform ?? currentTarget.controllerRef.controller.control.parent;
+                var sourceParent = sourceTarget.GetPositionParentRB()?.transform ?? sourceTarget.animatableRef.controller.control.parent;
+                var currentParent = currentTarget.GetPositionParentRB()?.transform ?? currentTarget.animatableRef.controller.control.parent;
                 // ReSharper restore Unity.NoNullCoalescing
                 if (sourceParent == currentParent)
                 {

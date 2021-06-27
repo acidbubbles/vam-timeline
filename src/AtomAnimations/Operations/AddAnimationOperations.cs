@@ -27,14 +27,14 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
-                if (!origTarget.floatParamRef.EnsureAvailable(false)) continue;
+                if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
                 newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetTriggers)
             {
-                var newTarget = clip.Add(new TriggersAnimationTarget (origTarget.triggerTrackRef));
+                var newTarget = clip.Add(new TriggersAnimationTarget (origTarget.animatableRef));
                 foreach (var origTrigger in origTarget.triggersMap)
                 {
                     var trigger = new AtomAnimationTrigger();
@@ -58,10 +58,10 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
-                if (!origTarget.floatParamRef.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.floatParamRef);
-                newTarget.SetKeyframe(0f, origTarget.floatParamRef.floatParam.val);
-                newTarget.SetKeyframe(clip.animationLength, origTarget.floatParamRef.floatParam.val);
+                if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                var newTarget = clip.Add(origTarget.animatableRef);
+                newTarget.SetKeyframe(0f, origTarget.animatableRef.floatParam.val);
+                newTarget.SetKeyframe(clip.animationLength, origTarget.animatableRef.floatParam.val);
             }
             return clip;
         }
@@ -93,8 +93,8 @@ namespace VamTimeline
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
-                if (!origTarget.floatParamRef.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.floatParamRef);
+                if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                var newTarget = clip.Add(origTarget.animatableRef);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
@@ -108,7 +108,7 @@ namespace VamTimeline
 
         private static FreeControllerAnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerAnimationTarget origTarget)
         {
-            var newTarget = clip.Add(origTarget.controllerRef);
+            var newTarget = clip.Add(origTarget.animatableRef);
             newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
             newTarget.weight = origTarget.weight;
             newTarget.controlPosition = origTarget.controlPosition;

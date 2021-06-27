@@ -133,11 +133,11 @@ namespace VamTimeline
 
                     if (fc.currentPositionState == FreeControllerV3.PositionState.Off && fc.currentRotationState == FreeControllerV3.RotationState.Off) continue;
 
-                    var target = current.targetControllers.FirstOrDefault(tc => tc.controllerRef.Targets(fc));
+                    var target = current.targetControllers.FirstOrDefault(tc => tc.animatableRef.Targets(fc));
                     if (target == null)
                     {
                         if (!all) continue;
-                        if (animation.EnumerateLayers().Where(l => l != current.animationLayer).Select(l => animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.controllerRef.Targets(fc)))
+                        if (animation.EnumerateLayers().Where(l => l != current.animationLayer).Select(l => animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
                         {
                             SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
                             continue;
@@ -163,7 +163,7 @@ namespace VamTimeline
                     return;
                 }
 
-                var controllers = animation.clips.SelectMany(c => c.targetControllers).Select(c => c.controllerRef).Distinct().ToList();
+                var controllers = animation.clips.SelectMany(c => c.targetControllers).Select(c => c.animatableRef).Distinct().ToList();
                 foreach (var mac in plugin.containingAtom.motionAnimationControls)
                 {
                     if (!controllers.Any(c => c.Targets(mac.controller))) continue;

@@ -95,9 +95,9 @@ namespace VamTimeline
                 try
                 {
                     ctrl = mot.controller;
-                    target = clip.targetControllers.FirstOrDefault(t => t.controllerRef.Targets(ctrl));
+                    target = clip.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(ctrl));
 
-                    if (_animation.index.ByLayer().Where(l => l.Key != clip.animationLayer).Select(l => l.Value.First()).SelectMany(c => c.targetControllers).Any(t2 => t2.controllerRef.Targets(ctrl)))
+                    if (_animation.index.ByLayer().Where(l => l.Key != clip.animationLayer).Select(l => l.Value.First()).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(ctrl)))
                     {
                         SuperController.LogError($"Skipping controller {ctrl.name} because it was used in another layer.");
                         continue;

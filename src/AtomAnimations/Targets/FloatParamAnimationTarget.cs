@@ -1,26 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace VamTimeline
 {
-    public class FloatParamAnimationTarget : CurveAnimationTargetBase, ICurveAnimationTarget
+    public class FloatParamAnimationTarget : CurveAnimationTargetBase<StorableFloatParamRef>, ICurveAnimationTarget
     {
-        public override string name => floatParamRef.name;
-        public string GetShortName() => floatParamRef.GetShortName();
-        public readonly StorableFloatParamRef floatParamRef;
         public readonly BezierAnimationCurve value = new BezierAnimationCurve();
         public bool recording;
 
         public FloatParamAnimationTarget(FloatParamAnimationTarget source)
-            : this(source.floatParamRef)
+            : this(source.animatableRef)
         {
         }
 
-        public FloatParamAnimationTarget(StorableFloatParamRef floatParamRef)
+        public FloatParamAnimationTarget(StorableFloatParamRef animatableRef)
+            : base(animatableRef)
         {
-            this.floatParamRef = floatParamRef;
         }
 
         public void Validate(float animationLength)
@@ -40,7 +36,7 @@ namespace VamTimeline
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
-            var clone = new FloatParamAnimationTarget(floatParamRef);
+            var clone = new FloatParamAnimationTarget(animatableRef);
             if (copyKeyframes)
             {
                 clone.value.keys.AddRange(value.keys);
@@ -141,7 +137,7 @@ namespace VamTimeline
         {
             var t = target as FloatParamAnimationTarget;
             if (t == null) return false;
-            return t.floatParamRef == floatParamRef;
+            return t.animatableRef == animatableRef;
         }
 
         public override string ToString()

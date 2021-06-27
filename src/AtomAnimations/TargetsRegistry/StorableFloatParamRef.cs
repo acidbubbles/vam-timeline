@@ -29,20 +29,7 @@ namespace VamTimeline
             _available = true;
         }
 
-        public StorableFloatParamRef(StorableFloatParamRef source)
-        {
-            if (source.storable != null)
-            {
-                storable = source.storable;
-                floatParam = source.floatParam;
-                _available = true;
-            }
-            _atom = source._atom;
-            storableId = source.storableId;
-            floatParamName = source.floatParamName;
-        }
-
-        public string GetShortName()
+        public override string GetShortName()
         {
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;

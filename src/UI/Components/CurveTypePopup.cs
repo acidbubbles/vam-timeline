@@ -111,7 +111,7 @@ namespace VamTimeline
             if (_listening || _animationEditContext == null) return;
             _listening = true;
             _animationEditContext.onTimeChanged.AddListener(OnTimeChanged);
-            _animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            _animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             _animationEditContext.animation.onAnimationRebuilt.AddListener(OnAnimationRebuilt);
             OnTimeChanged(_animationEditContext.timeArgs);
         }
@@ -120,7 +120,7 @@ namespace VamTimeline
         {
             if (!_listening || _animationEditContext == null) return;
             _animationEditContext.onTimeChanged.RemoveListener(OnTimeChanged);
-            _animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            _animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
             _animationEditContext.animation.onAnimationRebuilt.RemoveListener(OnAnimationRebuilt);
             _listening = false;
         }

@@ -30,7 +30,7 @@ namespace VamTimeline
 
             _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, val => { _lastFilterVal = val; OnSelectionChanged(); });
 
-            animationEditContext.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
 
             if (animation.IsEmpty())
             {
@@ -163,7 +163,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
 
         public override void OnDestroy()
         {
-            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
             Destroy(_manageTargetsUI);
             RemoveTargets();
             base.OnDestroy();

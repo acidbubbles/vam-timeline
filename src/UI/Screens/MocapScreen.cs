@@ -52,7 +52,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<i>Go to <b>reduce</b> screen...</i>", ReduceScreen.ScreenName);
 
-            animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
 
@@ -89,7 +89,7 @@ namespace VamTimeline
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.controllerRef.controller).ToList();
+            var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.animatableRef.controller).ToList();
             var enumerator = operations.MocapImport().Execute(controllers);
 
             while (true)
@@ -142,7 +142,7 @@ namespace VamTimeline
             SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
             foreach (var target in animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>())
             {
-                var mac = target.controllerRef.controller.GetComponent<MotionAnimationControl>();
+                var mac = target.animatableRef.controller.GetComponent<MotionAnimationControl>();
                 if (mac == null) continue;
                 mac.armedForRecord = true;
             }
@@ -172,7 +172,7 @@ namespace VamTimeline
                 }
                 yield return 0;
             }
-            var excludedControllers = current.targetControllers.Where(t => t.controllerRef.controller.GetComponent<MotionAnimationControl>()?.armedForRecord == true).ToList();
+            var excludedControllers = current.targetControllers.Where(t => t.animatableRef.controller.GetComponent<MotionAnimationControl>()?.armedForRecord == true).ToList();
             foreach (var target in excludedControllers)
                 target.playbackEnabled = false;
             animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
@@ -210,10 +210,10 @@ namespace VamTimeline
             animationEditContext.ignoreGrabEnd = true;
             try
             {
-                foreach (var target in current.targetControllers.Where(t => t.controllerRef.controller.isGrabbing))
+                foreach (var target in current.targetControllers.Where(t => t.animatableRef.controller.isGrabbing))
                 {
-                    target.controllerRef.controller.RestorePreLinkState();
-                    target.controllerRef.controller.isGrabbing = false;
+                    target.animatableRef.controller.RestorePreLinkState();
+                    target.animatableRef.controller.isGrabbing = false;
                 }
             }
             finally
@@ -241,7 +241,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
-            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }
     }
 }

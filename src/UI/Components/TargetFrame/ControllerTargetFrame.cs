@@ -12,7 +12,7 @@ namespace VamTimeline
 
         protected override void CreateCustom()
         {
-            plugin.animationEditContext.onTargetsSelectionChanged.AddListener(OnSelectedChanged);
+            target.animatableRef.onSelectedChanged.AddListener(OnSelectedChanged);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             OnSelectedChanged();
         }
@@ -21,8 +21,7 @@ namespace VamTimeline
         {
             if (!plugin.animationEditContext.showPaths) return;
 
-            var selected = plugin.animationEditContext.IsSelected(target);
-            if (!selected && _line != null)
+            if (!target.selected && _line != null)
             {
                 Destroy(_line);
                 foreach (var t in _handles)
@@ -30,7 +29,7 @@ namespace VamTimeline
                 _handles.Clear();
                 _line = null;
             }
-            else if (selected && _line == null)
+            else if (target.selected && _line == null)
             {
                 _line = CreateLine();
                 UpdateLine();
@@ -39,7 +38,7 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesRebuilt()
         {
-            if (!plugin.animationEditContext.IsSelected(target)) return;
+            if (!target.selected) return;
             if (_line != null) UpdateLine();
         }
 
@@ -47,7 +46,7 @@ namespace VamTimeline
         {
             var go = new GameObject();
             // ReSharper disable once Unity.NoNullCoalescing
-            var parent = target.GetPositionParentRB()?.transform ?? target.controllerRef.controller.control.parent;
+            var parent = target.GetPositionParentRB()?.transform ?? target.animatableRef.controller.control.parent;
             go.transform.SetParent(parent.transform, false);
 
             var line = go.AddComponent<LineDrawer>();
@@ -150,7 +149,7 @@ namespace VamTimeline
 
             if (stopped)
             {
-                var pos = target.controllerRef.controller.transform.position;
+                var pos = target.animatableRef.controller.transform.position;
                 valueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
             }
         }
@@ -193,7 +192,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
-            plugin.animationEditContext.onTargetsSelectionChanged.RemoveListener(OnSelectedChanged);
+            target.animatableRef.onSelectedChanged.RemoveListener(OnSelectedChanged);
             if (_line != null) Destroy(_line.gameObject);
             foreach (var t in _handles)
                 Destroy(t);

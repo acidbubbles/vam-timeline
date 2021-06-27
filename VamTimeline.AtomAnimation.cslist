@@ -34,6 +34,7 @@ src\AtomAnimations\TargetsRegistry\AnimatableRefBase.cs
 src\AtomAnimations\TargetsRegistry\AnimatablesRegistry.cs
 src\AtomAnimations\TargetsRegistry\FreeControllerV3Ref.cs
 src\AtomAnimations\TargetsRegistry\StorableFloatParamRef.cs
+src\AtomAnimations\TargetsRegistry\TriggerTrackRef.cs
 src\AtomAnimations\AtomAnimation.cs
 src\AtomAnimations\AtomAnimationClip.cs
 src\AtomAnimations\AtomAnimationEditContext.cs

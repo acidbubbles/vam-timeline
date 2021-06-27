@@ -21,7 +21,7 @@ namespace VamTimeline
         {
             foreach (var snap in offsetSnapshot.controllers)
             {
-                var target = _clip.targetControllers.First(t => t.controllerRef == snap.controllerRef);
+                var target = _clip.targetControllers.First(t => t.animatableRef == snap.controllerRef);
                 if (!target.EnsureParentAvailable(false)) continue;
                 var posLink = target.GetPositionParentRB();
                 var hasPosLink = !ReferenceEquals(posLink, null);
@@ -81,7 +81,7 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {clipTime}.");
                 return null;
             }
-            if (snapshot.controllers.Select(c => _clip.targetControllers.First(t => t.controllerRef == c.controllerRef)).Any(t => !t.EnsureParentAvailable(false)))
+            if (snapshot.controllers.Select(c => _clip.targetControllers.First(t => t.animatableRef == c.controllerRef)).Any(t => !t.EnsureParentAvailable(false)))
             {
                 return null;
             }

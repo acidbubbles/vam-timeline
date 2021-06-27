@@ -5,12 +5,8 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class FreeControllerAnimationTarget : TransformAnimationTargetBase, ICurveAnimationTarget
+    public class FreeControllerAnimationTarget : TransformAnimationTargetBase<FreeControllerV3Ref>, ICurveAnimationTarget
     {
-        public override string name => controllerRef.name;
-        public string GetShortName() => controllerRef.GetShortName();
-        public readonly FreeControllerV3Ref controllerRef;
-
         public bool controlPosition = true;
         public bool controlRotation = true;
         public bool recording;
@@ -19,6 +15,7 @@ namespace VamTimeline
         public string parentAtomId;
         public string parentRigidbodyId;
         public Rigidbody parentRigidbody;
+
         public void SetParent(string atomId, string rigidbodyId)
         {
             if (string.IsNullOrEmpty(rigidbodyId))
@@ -62,7 +59,7 @@ namespace VamTimeline
             var atom = SuperController.singleton.GetAtomByUid(parentAtomId);
             if (atom == null)
             {
-                if (!silent) SuperController.LogError($"Timeline: Atom '{parentAtomId}' defined as a parent of {controllerRef.name} was not found in the scene. You can remove the parenting, but the animation will not show in the expected position.");
+                if (!silent) SuperController.LogError($"Timeline: Atom '{parentAtomId}' defined as a parent of {animatableRef.name} was not found in the scene. You can remove the parenting, but the animation will not show in the expected position.");
                 return false;
             }
             var rigidbody = atom.linkableRigidbodies.FirstOrDefault(rb => rb.name == parentRigidbodyId);
@@ -82,8 +79,8 @@ namespace VamTimeline
         public Rigidbody GetPositionParentRB()
         {
              if (!ReferenceEquals(parentRigidbody, null)) return parentRigidbody;
-             var currentPositionState = controllerRef.controller.currentPositionState;
-             var linkToRB = controllerRef.controller.linkToRB;
+             var currentPositionState = animatableRef.controller.currentPositionState;
+             var linkToRB = animatableRef.controller.linkToRB;
              if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
              {
                  if (ReferenceEquals(linkToRB, null)) return _previousLinkedParentRB = null;
@@ -97,8 +94,8 @@ namespace VamTimeline
         public Rigidbody GetRotationParentRB()
         {
              if (!ReferenceEquals(parentRigidbody, null)) return parentRigidbody;
-             var currentPositionState = controllerRef.controller.currentPositionState;
-             var linkToRB = controllerRef.controller.linkToRB;
+             var currentPositionState = animatableRef.controller.currentPositionState;
+             var linkToRB = animatableRef.controller.linkToRB;
              if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
              {
                  if (ReferenceEquals(linkToRB, null)) return _previousLinkedParentRB = null;
@@ -109,23 +106,23 @@ namespace VamTimeline
              return null;
         }
 
-        public FreeControllerAnimationTarget(FreeControllerV3Ref controllerRef)
+        public FreeControllerAnimationTarget(FreeControllerV3Ref animatableRef)
+            : base(animatableRef)
         {
-            this.controllerRef = controllerRef;
         }
 
         public override void SelectInVam()
         {
             base.SelectInVam();
-            if (SuperController.singleton.GetSelectedController() == controllerRef.controller)
+            if (SuperController.singleton.GetSelectedController() == animatableRef.controller)
             {
-                var selector = controllerRef.controller.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
+                var selector = animatableRef.controller.containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
                 if (selector != null)
                     selector.SetActiveTab(selector.startingTabName);
             }
             else
             {
-                SuperController.singleton.SelectController(controllerRef.controller);
+                SuperController.singleton.SelectController(animatableRef.controller);
             }
         }
 
@@ -139,7 +136,7 @@ namespace VamTimeline
             var hasPosParent = !ReferenceEquals(posParent, null);
             var rotParent = GetRotationParentRB();
             var hasRotParent = !ReferenceEquals(rotParent, null);
-            var controllerTransform = controllerRef.controller.transform;
+            var controllerTransform = animatableRef.controller.transform;
 
             return SetKeyframe(
                 time,
@@ -152,7 +149,7 @@ namespace VamTimeline
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
-            var clone = new FreeControllerAnimationTarget(controllerRef);
+            var clone = new FreeControllerAnimationTarget(animatableRef);
             if (copyKeyframes)
             {
                 clone.x.keys.AddRange(x.keys);
@@ -201,7 +198,7 @@ namespace VamTimeline
         {
             var t = target as FreeControllerAnimationTarget;
             if (t == null) return false;
-            return t.controllerRef == controllerRef;
+            return t.animatableRef == animatableRef;
         }
 
         public override string ToString()
@@ -213,7 +210,7 @@ namespace VamTimeline
         {
             public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
             {
-                return string.Compare(t1.controllerRef.name, t2.controllerRef.name, StringComparison.Ordinal);
+                return string.Compare(t1.animatableRef.name, t2.animatableRef.name, StringComparison.Ordinal);
             }
         }
     }

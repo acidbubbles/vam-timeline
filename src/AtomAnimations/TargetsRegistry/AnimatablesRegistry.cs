@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -9,12 +10,15 @@ namespace VamTimeline
         public List<FreeControllerV3Ref> controllers = new List<FreeControllerV3Ref>();
         public List<TriggerTrackRef> triggers = new List<TriggerTrackRef>();
 
+        public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
+
         public StorableFloatParamRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName)
         {
             var t = storableFloats.FirstOrDefault(x => x.Targets(storableId, floatParamName));
             if (t != null) return t;
             t = new StorableFloatParamRef(atom, storableId, floatParamName);
             storableFloats.Add(t);
+            RegisterAnimatableRef(t);
             return t;
         }
 
@@ -24,6 +28,7 @@ namespace VamTimeline
             if (t != null) return t;
             t = new StorableFloatParamRef(storable, floatParam);
             storableFloats.Add(t);
+            RegisterAnimatableRef(t);
             return t;
         }
 
@@ -39,6 +44,7 @@ namespace VamTimeline
             }
             t = new FreeControllerV3Ref(controller);
             controllers.Add(t);
+            RegisterAnimatableRef(t);
             return t;
         }
 
@@ -48,6 +54,7 @@ namespace VamTimeline
             if (t != null) return t;
             t = new FreeControllerV3Ref(controller);
             controllers.Add(t);
+            RegisterAnimatableRef(t);
             return t;
         }
 
@@ -57,7 +64,18 @@ namespace VamTimeline
             if (t != null) return t;
             t = new TriggerTrackRef(triggerTrackName);
             triggers.Add(t);
+            RegisterAnimatableRef(t);
             return t;
+        }
+
+        public void RegisterAnimatableRef(AnimatableRefBase animatableRef)
+        {
+            animatableRef.onSelectedChanged.AddListener(OnSelectedChanged);
+        }
+
+        private void OnSelectedChanged()
+        {
+            onTargetsSelectionChanged.Invoke();
         }
     }
 }

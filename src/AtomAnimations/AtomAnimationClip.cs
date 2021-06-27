@@ -350,7 +350,7 @@ namespace VamTimeline
         {
             yield return targetTriggers;
             yield return targetControllers;
-            foreach (var group in targetFloatParams.GroupBy(t => t.floatParamRef.storableId))
+            foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storableId))
                 yield return new AtomAnimationTargetsList<FloatParamAnimationTarget>(group) {label = group.Key};
         }
 
@@ -453,20 +453,20 @@ namespace VamTimeline
 
         public FreeControllerAnimationTarget Add(FreeControllerV3Ref controllerRef)
         {
-            if (targetControllers.Any(c => c.controllerRef == controllerRef)) return null;
+            if (targetControllers.Any(c => c.animatableRef == controllerRef)) return null;
             return Add(new FreeControllerAnimationTarget(controllerRef));
         }
 
         public FreeControllerAnimationTarget Add(FreeControllerAnimationTarget target)
         {
-            if (targetControllers.Any(t => t.controllerRef == target.controllerRef)) return null;
+            if (targetControllers.Any(t => t.animatableRef == target.animatableRef)) return null;
             foreach (var curve in target.curves) { curve.loop = _loop; }
             return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
         }
 
         public FloatParamAnimationTarget Add(StorableFloatParamRef floatParamRef)
         {
-            if (targetFloatParams.Any(t => t.floatParamRef == floatParamRef)) return null;
+            if (targetFloatParams.Any(t => t.animatableRef == floatParamRef)) return null;
             return Add(new FloatParamAnimationTarget(floatParamRef));
         }
 
@@ -520,12 +520,14 @@ namespace VamTimeline
                 return;
             }
 
+            #warning Cleanup unused refs?
+
             throw new NotSupportedException($"Cannot remove unknown target type {target}");
         }
 
         public void Remove(FreeControllerV3 controller)
         {
-            Remove(targetControllers.FirstOrDefault(c => c.controllerRef.Targets(controller)));
+            Remove(targetControllers.FirstOrDefault(c => c.animatableRef.Targets(controller)));
         }
 
         public void Remove(FreeControllerAnimationTarget target)
@@ -573,7 +575,7 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 controllers.Add(new FreeControllerV3ClipboardEntry
                 {
-                    controllerRef = target.controllerRef,
+                    controllerRef = target.animatableRef,
                     snapshot = snapshot
                 });
             }
@@ -584,7 +586,7 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
-                    floatParamRef = target.floatParamRef,
+                    floatParamRef = target.animatableRef,
                     snapshot = snapshot
                 });
             }
@@ -617,7 +619,7 @@ namespace VamTimeline
 
             foreach (var entry in clipboard.controllers)
             {
-                var target = targetControllers.FirstOrDefault(c => c.controllerRef == entry.controllerRef);
+                var target = targetControllers.FirstOrDefault(c => c.animatableRef == entry.controllerRef);
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste controller {entry.controllerRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
@@ -627,7 +629,7 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.floatParamRef == entry.floatParamRef);
+                var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.floatParamRef);
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste storable {entry.floatParamRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");

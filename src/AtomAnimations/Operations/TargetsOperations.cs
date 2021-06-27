@@ -18,7 +18,7 @@ namespace VamTimeline
         public FreeControllerAnimationTarget Add(FreeControllerV3 fc)
         {
             if (fc == null || fc.containingAtom != _containingAtom) return null;
-            var target = _clip.targetControllers.FirstOrDefault(t => t.controllerRef.Targets(fc));
+            var target = _clip.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(fc));
             if (target != null) return target;
             foreach (var clip in _animation.index.ByLayer(_clip.animationLayer))
             {

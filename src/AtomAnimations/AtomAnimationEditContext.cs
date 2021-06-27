@@ -27,9 +27,7 @@ namespace VamTimeline
         public readonly TimeChangedEvent onTimeChanged = new TimeChangedEvent();
         public readonly ScrubberRangeChangedEvent onScrubberRangeChanged = new ScrubberRangeChangedEvent();
         public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
-        public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
 
-        public readonly HashSet<IAtomAnimationTarget> selectedTargets = new HashSet<IAtomAnimationTarget>();
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         private bool _sampleAfterRebuild;
@@ -511,16 +509,7 @@ namespace VamTimeline
         {
             if (current == clip) return;
             var previous = current;
-            var previousSelected = selectedTargets;
             current = clip;
-            selectedTargets.Clear();
-            foreach (var target in previousSelected)
-            {
-                var t = current.GetAllTargets().FirstOrDefault(x => x.TargetsSameAs(target));
-                if (t == null) continue;
-                selectedTargets.Add(t);
-            }
-            onTargetsSelectionChanged.Invoke();
             onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
             {
                 before = previous,
@@ -539,32 +528,14 @@ namespace VamTimeline
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
         {
-            return selectedTargets.Count > 0 ? selectedTargets : current.GetAllTargets();
+            var targets = GetSelectedTargets().ToList();
+            if (targets.Count == 0) return current.GetAllTargets();
+            return targets;
         }
 
         public IEnumerable<IAtomAnimationTarget> GetSelectedTargets()
         {
-            return selectedTargets;
-        }
-
-        public void DeselectAll()
-        {
-            selectedTargets.Clear();
-            onTargetsSelectionChanged.Invoke();
-        }
-
-        public void SetSelected(IAtomAnimationTarget target, bool selected)
-        {
-            if (selected && !selectedTargets.Contains(target))
-                selectedTargets.Add(target);
-            else if (!selected && selectedTargets.Contains(target))
-                selectedTargets.Remove(target);
-            onTargetsSelectionChanged.Invoke();
-        }
-
-        public bool IsSelected(IAtomAnimationTarget t)
-        {
-            return selectedTargets.Contains(t);
+            return current.GetAllTargets().Where(t => t.selected);
         }
 
         #endregion

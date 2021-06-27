@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public abstract class TransformAnimationTargetBase : CurveAnimationTargetBase
+    public abstract class TransformAnimationTargetBase<TAnimatableRef> : CurveAnimationTargetBase<TAnimatableRef> where TAnimatableRef : AnimatableRefBase
     {
         public readonly BezierAnimationCurve x = new BezierAnimationCurve();
         public readonly BezierAnimationCurve y = new BezierAnimationCurve();
@@ -31,9 +31,11 @@ namespace VamTimeline
 
         public bool playbackEnabled { get; set; } = true;
 
-        protected TransformAnimationTargetBase()
+        protected TransformAnimationTargetBase(TAnimatableRef animatableRef)
+            : base(animatableRef)
         {
-            curves = new List<BezierAnimationCurve> {
+            curves = new List<BezierAnimationCurve>
+            {
                 x, y, z, rotX, rotY, rotZ, rotW
             };
         }

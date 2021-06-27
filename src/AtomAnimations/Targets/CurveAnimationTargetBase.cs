@@ -5,9 +5,12 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public abstract class CurveAnimationTargetBase : AnimationTargetBase
+    public abstract class CurveAnimationTargetBase<TAnimatableRef> : AnimationTargetBase<TAnimatableRef> where TAnimatableRef : AnimatableRefBase
     {
-        public abstract string name { get; }
+        protected CurveAnimationTargetBase(TAnimatableRef animatableRef)
+            : base(animatableRef)
+        {
+        }
 
         public abstract BezierAnimationCurve GetLeadCurve();
         public abstract IEnumerable<BezierAnimationCurve> GetCurves();

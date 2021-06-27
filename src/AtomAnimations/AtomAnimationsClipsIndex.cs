@@ -68,10 +68,10 @@ namespace VamTimeline
                 foreach (var target in clip.targetControllers)
                 {
                     List<FreeControllerAnimationTarget> byController;
-                    if (!_clipsByController.TryGetValue(target.controllerRef, out byController))
+                    if (!_clipsByController.TryGetValue(target.animatableRef, out byController))
                     {
                         byController = new List<FreeControllerAnimationTarget>();
-                        _clipsByController.Add(target.controllerRef, byController);
+                        _clipsByController.Add(target.animatableRef, byController);
                     }
                     byController.Add(target);
                 }
@@ -79,10 +79,10 @@ namespace VamTimeline
                 foreach (var target in clip.targetFloatParams)
                 {
                     List<FloatParamAnimationTarget> byFloatParam;
-                    if (!_clipsByFloatParam.TryGetValue(target.floatParamRef, out byFloatParam))
+                    if (!_clipsByFloatParam.TryGetValue(target.animatableRef, out byFloatParam))
                     {
                         byFloatParam = new List<FloatParamAnimationTarget>();
-                        _clipsByFloatParam.Add(target.floatParamRef, byFloatParam);
+                        _clipsByFloatParam.Add(target.animatableRef, byFloatParam);
                     }
                     byFloatParam.Add(target);
                 }

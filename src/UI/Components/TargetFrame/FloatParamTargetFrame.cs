@@ -8,7 +8,7 @@ namespace VamTimeline
         private RectTransform _sliderFillRect;
         private SimpleSlider _simpleSlider;
 
-        private JSONStorableFloat floatParam => target.floatParamRef.floatParam;
+        private JSONStorableFloat floatParam => target.animatableRef.floatParam;
 
         protected override void CreateCustom()
         {
@@ -21,7 +21,7 @@ namespace VamTimeline
             {
                 if (plugin.animationEditContext.locked) return;
                 if (plugin.animationEditContext.locked) return;
-                if (!target.floatParamRef.EnsureAvailable()) return;
+                if (!target.animatableRef.EnsureAvailable()) return;
                 SetValue(floatParam.min + val * (floatParam.max - floatParam.min));
             });
         }
@@ -88,7 +88,7 @@ namespace VamTimeline
             group.childAlignment = TextAnchor.MiddleCenter;
 
             // ReSharper disable once Unity.NoNullPropagation
-            var morph = (target.floatParamRef.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(floatParam.name);
+            var morph = (target.animatableRef.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(floatParam.name);
 
             CreateExpandButton(group.transform, "Default", () => SetValue(floatParam.defaultVal));
 
@@ -129,7 +129,7 @@ namespace VamTimeline
         private void SetValue(float val)
         {
             if (plugin.animationEditContext.locked) return;
-            if (!target.floatParamRef.EnsureAvailable(false)) return;
+            if (!target.animatableRef.EnsureAvailable(false)) return;
             var time = plugin.animationEditContext.clipTime.Snap();
             if (plugin.animation.isPlaying)
             {
@@ -151,7 +151,7 @@ namespace VamTimeline
         {
             base.SetTime(time, stopped);
 
-            if (!target.floatParamRef.EnsureAvailable())
+            if (!target.animatableRef.EnsureAvailable())
             {
                 if (stopped)
                 {
@@ -176,7 +176,7 @@ namespace VamTimeline
 
         protected override void ToggleKeyframeImpl(float time, bool enable)
         {
-            if (!target.floatParamRef.EnsureAvailable(false))
+            if (!target.animatableRef.EnsureAvailable(false))
             {
                 SetToggle(!enabled);
                 return;

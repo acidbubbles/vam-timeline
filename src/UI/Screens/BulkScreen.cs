@@ -52,7 +52,7 @@ namespace VamTimeline
                 _startJSON.valNoCallback = 0f;
                 _endJSON.valNoCallback = current.animationLength;
             }
-            animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
 
@@ -278,7 +278,7 @@ namespace VamTimeline
         {
             base.OnDestroy();
 
-            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
         }
     }
 }

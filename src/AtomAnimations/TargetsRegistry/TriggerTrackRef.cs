@@ -2,12 +2,14 @@
 {
     public class TriggerTrackRef : AnimatableRefBase
     {
-        public string name { get; }
+        public override string name { get; }
 
         public TriggerTrackRef(string triggerTrackName)
         {
             name = triggerTrackName;
         }
+
+        public override string GetShortName() => name;
 
         public bool Targets(string triggerTrackName)
         {

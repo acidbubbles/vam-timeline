@@ -40,7 +40,7 @@ namespace VamTimeline
             if (settings.minMeaningfulFloatParamRangeRatio <= 0) return false;
             var value1 = source.value.GetKeyframeByKey(key1).value;
             var value2 = source.value.GetKeyframeByKey(key2).value;
-            return Mathf.Abs(value2 - value1) / (source.floatParamRef.floatParam.max - source.floatParamRef.floatParam.min) < (settings.minMeaningfulFloatParamRangeRatio / 10f);
+            return Mathf.Abs(value2 - value1) / (source.animatableRef.floatParam.max - source.animatableRef.floatParam.min) < (settings.minMeaningfulFloatParamRangeRatio / 10f);
         }
 
         public override ReducerBucket CreateBucket(int from, int to)
@@ -55,7 +55,7 @@ namespace VamTimeline
                     delta = Mathf.Abs(
                         branch.value.Evaluate(time) -
                         source.value.Evaluate(time)
-                    ) / (source.floatParamRef.floatParam.max - source.floatParamRef.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
+                    ) / (source.animatableRef.floatParam.max - source.animatableRef.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
                 else
                     delta = 1f;
                 if (delta > bucket.largestDelta)

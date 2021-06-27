@@ -156,7 +156,7 @@ namespace VamTimeline
         {
             if (_animationEditContext != null) throw new InvalidOperationException("Cannot bind to animation twice");
             _animationEditContext = animationEditContext;
-            _animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            _animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
             OnTargetsSelectionChanged();
         }
@@ -313,7 +313,7 @@ namespace VamTimeline
         {
             if (_animationEditContext != null)
             {
-                _animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+                _animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
                 _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
             }
 

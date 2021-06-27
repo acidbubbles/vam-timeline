@@ -388,7 +388,7 @@ namespace VamTimeline
             {
                 var controllerJSON = new JSONClass
                     {
-                        { "Controller", controller.controllerRef.name },
+                        { "Controller", controller.animatableRef.name },
                         { "ControlPosition", controller.controlPosition ? "1" : "0" },
                         { "ControlRotation", controller.controlRotation ? "1" : "0" },
                         { "X", SerializeCurve(controller.x) },
@@ -419,8 +419,8 @@ namespace VamTimeline
             {
                 var paramJSON = new JSONClass
                     {
-                        { "Storable", target.floatParamRef.storableId },
-                        { "Name", target.floatParamRef.floatParamName },
+                        { "Storable", target.animatableRef.storableId },
+                        { "Name", target.animatableRef.floatParamName },
                         { "Value", SerializeCurve(target.value) }
                     };
                 paramsJSON.Add(paramJSON);

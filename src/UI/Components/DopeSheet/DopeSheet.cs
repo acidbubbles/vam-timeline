@@ -371,7 +371,7 @@ namespace VamTimeline
                     }
                     text.text = someInactive ? "\u25BA" : "\u25BC";
                     // var targets = group.GetTargets().ToList();
-                    // var selected = targets.Any(t => _animationEditContext.IsSelected(t));
+                    // var selected = targets.Any(t => t.selected);
                     // foreach (var target in targets)
                     //     _animationEditContext.SetSelected(target, !selected);
                 });
@@ -398,9 +398,9 @@ namespace VamTimeline
                 click.onClick.AddListener(_ =>
                 {
                     var targets = group.GetTargets().ToList();
-                    var selected = targets.Any(t => _animationEditContext.IsSelected(t));
+                    var selected = targets.Any(t => t.selected);
                     foreach (var target in targets)
-                        _animationEditContext.SetSelected(target, !selected);
+                        target.selected = !selected;
                 });
             }
         }
@@ -465,7 +465,7 @@ namespace VamTimeline
                 var listener = child.AddComponent<Listener>();
                 // TODO: Change this for a dictionary and listen once instead of once per row!
                 listener.Bind(
-                    _animationEditContext.onTargetsSelectionChanged,
+                    _animationEditContext.animation.animatables.onTargetsSelectionChanged,
                     // ReSharper disable once AccessToModifiedClosure
                     () => UpdateSelected(target, keyframes, labelBackgroundImage)
                 );
@@ -474,7 +474,7 @@ namespace VamTimeline
 
                 click.onClick.AddListener(_ =>
                 {
-                    _animationEditContext.SetSelected(target, !_animationEditContext.IsSelected(target));
+                    target.selected = !target.selected;
                 });
 
                 click.onRightClick.AddListener(_ =>
@@ -515,10 +515,9 @@ namespace VamTimeline
 
         private void UpdateSelected(IAtomAnimationTarget target, DopeSheetKeyframes keyframes, GradientImage image)
         {
-            var selected = _animationEditContext.IsSelected(target);
-            if (keyframes.selected == selected) return;
+            if (keyframes.selected == target.selected) return;
 
-            if (selected)
+            if (target.selected)
             {
                 keyframes.selected = true;
                 image.top = _style.LabelBackgroundColorTopSelected;
@@ -544,22 +543,22 @@ namespace VamTimeline
             var clickedTime = (ratio * _animationEditContext.scrubberRange.rangeDuration) + _animationEditContext.scrubberRange.rangeBegin;
             var previousClipTime = _animationEditContext.clipTime;
             _animationEditContext.clipTime = target.GetTimeClosestTo(clickedTime);
-            if (!_animationEditContext.IsSelected(target))
+            if (!target.selected)
             {
-                _animationEditContext.SetSelected(target, true);
+                target.selected = true;
                 if (!Input.GetKey(KeyCode.LeftControl))
                 {
-                    foreach (var t in _animationEditContext.selectedTargets.Where(x => x != target).ToList())
-                        _animationEditContext.SetSelected(t, false);
+                    foreach (var t in _animationEditContext.GetSelectedTargets().Where(x => x != target))
+                        t.selected = false;
                 }
             }
             else if (previousClipTime == _animationEditContext.clipTime)
             {
-                _animationEditContext.SetSelected(target, false);
+                target.selected = false;
                 if (!Input.GetKey(KeyCode.LeftControl))
                 {
-                    foreach (var t in _animationEditContext.selectedTargets.Where(x => x != target).ToList())
-                        _animationEditContext.SetSelected(t, false);
+                    foreach (var t in _animationEditContext.GetSelectedTargets().Where(x => x != target))
+                        t.selected = false;
                 }
             }
         }

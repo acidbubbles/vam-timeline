@@ -64,7 +64,7 @@ namespace VamTimeline
             if (!grabEnd && (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply)) return;
 
             // Only track animated targets
-            var target = animationEditContext.current.targetControllers.FirstOrDefault(t => t.controllerRef.Targets(controller));
+            var target = animationEditContext.current.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(controller));
             if (target == null) return;
 
             // Ignore grab release at the end of a mocap recording

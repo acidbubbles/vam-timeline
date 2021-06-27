@@ -92,7 +92,6 @@
     <Compile Include="src\AtomAnimations\Smoothing\BezierAnimationCurveSmoothingLooping.cs" />
     <Compile Include="src\AtomAnimations\Smoothing\BezierAnimationCurveSmoothingNonLooping.cs" />
     <Compile Include="src\AtomAnimations\Smoothing\IBezierAnimationCurveSmoothing.cs" />
-    <Compile Include="src\AtomAnimations\TargetsRegistry\TriggerTrackRef.cs" />
     <Compile Include="src\AtomAnimations\Targets\AnimationTargetBase.cs" />
     <Compile Include="src\AtomAnimations\Targets\AtomAnimationTrigger.cs" />
     <Compile Include="src\AtomAnimations\Targets\CurveAnimationTargetBase.cs" />
@@ -107,6 +106,7 @@
     <Compile Include="src\AtomAnimations\TargetsRegistry\AnimatablesRegistry.cs" />
     <Compile Include="src\AtomAnimations\TargetsRegistry\FreeControllerV3Ref.cs" />
     <Compile Include="src\AtomAnimations\TargetsRegistry\StorableFloatParamRef.cs" />
+    <Compile Include="src\AtomAnimations\TargetsRegistry\TriggerTrackRef.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimation.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\AtomAnimationEditContext.cs" />

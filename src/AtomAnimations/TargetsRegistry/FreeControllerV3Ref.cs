@@ -9,11 +9,13 @@
             this.controller = controller;
         }
 
-        public string GetShortName()
+        public override string name => controller.name;
+
+        public override string GetShortName()
         {
-            if (controller.name.EndsWith("Control"))
-                return controller.name.Substring(0, controller.name.Length - "Control".Length);
-            return controller.name;
+            return controller.name.EndsWith("Control")
+                ? controller.name.Substring(0, controller.name.Length - "Control".Length)
+                : controller.name;
         }
 
         public bool Targets(string controllerName)

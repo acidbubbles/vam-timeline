@@ -40,7 +40,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<i>Go to <b>reduce</b> screen...</i>", ReduceScreen.ScreenName);
 
-            animationEditContext.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();
         }
 
@@ -51,7 +51,7 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
-            animationEditContext.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
             base.OnDestroy();
         }
 
