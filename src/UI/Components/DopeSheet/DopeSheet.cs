@@ -23,6 +23,7 @@ namespace VamTimeline
 
         private class RowRef
         {
+            public IAtomAnimationTarget target;
             public GameObject gameObject;
             public DopeSheetKeyframes keyframes;
         }
@@ -319,7 +320,7 @@ namespace VamTimeline
             }
         }
 
-        private void CreateHeader(IAtomAnimationTargetsList @group, List<RowRef> rows)
+        private void CreateHeader(IAtomAnimationTargetsList group, List<RowRef> rows)
         {
             var go = new GameObject("Header");
             go.transform.SetParent(_content, false);
@@ -351,7 +352,7 @@ namespace VamTimeline
                 rect.anchoredPosition = new Vector2(_style.GroupToggleWidth / 2f + _style.LabelHorizontalPadding, 0);
 
                 var text = child.AddComponent<Text>();
-                text.text = "\u25BC"; //"\u25BA";
+                text.text = group.GetTargets().Any(t => t.collapsed) ? "\u25BA" : "\u25BC";
                 text.font = _style.Font;
                 text.fontSize = 24;
                 text.color = _style.FontColor;
@@ -362,14 +363,13 @@ namespace VamTimeline
                 var click = child.AddComponent<Clickable>();
                 click.onClick.AddListener(_ =>
                 {
-                    var someInactive = false;
+                    var collapsed = !rows.Any(r => r.target.collapsed);
                     foreach (var row in rows)
                     {
-                        var isActiveNow = !row.gameObject.activeSelf;
-                        row.gameObject.SetActive(isActiveNow);
-                        if (!isActiveNow) someInactive = true;
+                        row.target.collapsed = collapsed;
+                        row.gameObject.SetActive(row.target.selected || !row.target.collapsed);
                     }
-                    text.text = someInactive ? "\u25BA" : "\u25BC";
+                    text.text = collapsed ? "\u25BA" : "\u25BC";
                     // var targets = group.GetTargets().ToList();
                     // var selected = targets.Any(t => t.selected);
                     // foreach (var target in targets)
@@ -409,6 +409,7 @@ namespace VamTimeline
         {
             var go = new GameObject("Row");
             go.transform.SetParent(_content, false);
+            go.SetActive(target.selected || !target.collapsed);
 
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
@@ -508,6 +509,7 @@ namespace VamTimeline
 
             return new RowRef
             {
+                target = target,
                 gameObject = go,
                 keyframes = keyframes
             };

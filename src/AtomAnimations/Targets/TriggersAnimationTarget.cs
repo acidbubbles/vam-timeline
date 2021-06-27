@@ -11,7 +11,6 @@ namespace VamTimeline
         private float[] keyframes { get; set; } = new float[0];
         private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
 
-
         public TriggersAnimationTarget(TriggerTrackRef triggerTrackRef)
             : base(triggerTrackRef)
         {

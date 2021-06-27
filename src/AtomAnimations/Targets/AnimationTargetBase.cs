@@ -36,8 +36,19 @@ namespace VamTimeline
             }
             set
             {
-                #warning Events to update dope sheet
                 animatableRef.selected = value;
+            }
+        }
+
+        public bool collapsed
+        {
+            get
+            {
+                return animatableRef.collapsed;
+            }
+            set
+            {
+                animatableRef.collapsed = value;
             }
         }
 

@@ -17,6 +17,8 @@ namespace VamTimeline
         }
         public readonly UnityEvent onSelectedChanged = new UnityEvent();
 
+        public bool collapsed { get; set; }
+
         public abstract string name { get; }
         public abstract string GetShortName();
     }
