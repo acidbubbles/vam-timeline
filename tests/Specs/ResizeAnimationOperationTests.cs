@@ -243,7 +243,7 @@ namespace VamTimeline
 
         #region Setup
 
-        private static FreeControllerAnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
+        private static FreeControllerV3AnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
             var controller = new GameObject("Test Controller");
             controller.SetActive(false);
@@ -261,10 +261,10 @@ namespace VamTimeline
             return target;
         }
 
-        private static FloatParamAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
+        private static JSONStorableFloatAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
         {
             var storable = context.gameObject.AddComponent<JSONStorable>();
-            var floatParam = new StorableFloatParamRef(storable, new JSONStorableFloat("Test", 0, 0, 1));
+            var floatParam = new JSONStorableFloatRef(storable, new JSONStorableFloat("Test", 0, 0, 1));
             var target = clip.Add(floatParam);
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, 0f);
@@ -275,13 +275,13 @@ namespace VamTimeline
             return target;
         }
 
-        private static TriggersAnimationTarget GivenThreeKeyframesTrigger(TestContext context, AtomAnimationClip clip)
+        private static TriggersTrackAnimationTarget GivenThreeKeyframesTrigger(TestContext context, AtomAnimationClip clip)
         {
-            var target = clip.Add(new TriggersAnimationTarget(new TriggerTrackRef("Triggers 1")));
+            var target = clip.Add(new TriggersTrackAnimationTarget(new TriggersTrackRef("Triggers 1")));
             context.Assert(clip.animationLength, 2f, "Default animation length");
-            target.SetKeyframe(0f, new AtomAnimationTrigger());
-            target.SetKeyframe(1f, new AtomAnimationTrigger());
-            target.SetKeyframe(2f, new AtomAnimationTrigger());
+            target.SetKeyframe(0f, new CustomTrigger());
+            target.SetKeyframe(1f, new CustomTrigger());
+            target.SetKeyframe(2f, new CustomTrigger());
             context.animation.RebuildAnimationNow();
             context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map before resize");
             return target;

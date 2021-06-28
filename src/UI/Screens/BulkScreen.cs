@@ -232,7 +232,7 @@ namespace VamTimeline
                 return;
             }
 
-            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>());
+            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>());
 
             if (_offsetSnapshot == null) return;
 

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    public class FloatParamTargetFrame : TargetFrameBase<FloatParamAnimationTarget>
+    public class FloatParamTargetFrame : AnimationTargetFrameComponentBase<JSONStorableFloatAnimationTarget>
     {
         private RectTransform _sliderFillRect;
         private SimpleSlider _simpleSlider;

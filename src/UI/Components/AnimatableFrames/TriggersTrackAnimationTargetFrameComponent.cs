@@ -5,12 +5,12 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    public class TriggersTargetFrame : TargetFrameBase<TriggersAnimationTarget>, TriggerHandler
+    public class TriggersTrackAnimationTargetFrameComponent : AnimationTargetFrameComponentBase<TriggersTrackAnimationTarget>, TriggerHandler
     {
         public Transform popupParent;
 
         private UIDynamicButton _editTriggersButton;
-        private AtomAnimationTrigger _trigger;
+        private CustomTrigger _trigger;
 
         protected override void CreateCustom()
         {
@@ -32,7 +32,7 @@ namespace VamTimeline
                 if (!ReferenceEquals(_trigger, null) && _trigger.startTime != time)
                     CloseTriggersPanel();
 
-                AtomAnimationTrigger trigger;
+                CustomTrigger trigger;
                 var ms = plugin.animationEditContext.clipTime.ToMilliseconds();
                 if (target.triggersMap.TryGetValue(ms, out trigger))
                 {
@@ -88,13 +88,13 @@ namespace VamTimeline
             _trigger.SetPanelParent(popupParent);
         }
 
-        private AtomAnimationTrigger GetOrCreateTriggerAtCurrentTime()
+        private CustomTrigger GetOrCreateTriggerAtCurrentTime()
         {
-            AtomAnimationTrigger trigger;
+            CustomTrigger trigger;
             var ms = plugin.animationEditContext.clipTime.Snap().ToMilliseconds();
             if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
-                trigger = new AtomAnimationTrigger();
+                trigger = new CustomTrigger();
                 target.SetKeyframe(ms, trigger);
             }
             return trigger;

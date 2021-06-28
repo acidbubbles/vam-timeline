@@ -29,7 +29,7 @@ namespace VamTimeline
             var startTime = Time.realtimeSinceStartup;
             var done = 0;
 
-            foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
+            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
             {
                 if (Input.GetKey(KeyCode.Escape)) continue;
                 var initialFrames = target.x.length;
@@ -61,7 +61,7 @@ namespace VamTimeline
                 yield return 0;
             }
 
-            foreach (var target in targets.OfType<FloatParamAnimationTarget>())
+            foreach (var target in targets.OfType<JSONStorableFloatAnimationTarget>())
             {
                 if (Input.GetKey(KeyCode.Escape)) continue;
                 var initialFrames = target.value.length;

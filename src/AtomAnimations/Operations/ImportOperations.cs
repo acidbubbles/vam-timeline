@@ -64,7 +64,7 @@ namespace VamTimeline
                 {
                     if (!clip.targetFloatParams.Any(t => target.TargetsSameAs(t)))
                     {
-                        var missing = new FloatParamAnimationTarget(target);
+                        var missing = new JSONStorableFloatAnimationTarget(target);
                         missing.AddEdgeFramesIfMissing(clip.animationLength);
                         clip.Add(missing);
                     }
@@ -73,7 +73,7 @@ namespace VamTimeline
                 {
                     if (!clip.targetControllers.Any(t => target.TargetsSameAs(t)))
                     {
-                        var missing = new FreeControllerAnimationTarget(target.animatableRef);
+                        var missing = new FreeControllerV3AnimationTarget(target.animatableRef);
                         missing.AddEdgeFramesIfMissing(clip.animationLength);
                         clip.Add(missing);
                     }

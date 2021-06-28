@@ -87,7 +87,7 @@ namespace VamTimeline
 
             foreach (var mot in motControls)
             {
-                FreeControllerAnimationTarget target = null;
+                FreeControllerV3AnimationTarget target = null;
                 FreeControllerV3 ctrl;
 
                 yield return new Progress { controllersProcessed = ++controlCounter, controllersTotal = motControls.Count };
@@ -128,7 +128,7 @@ namespace VamTimeline
             }
         }
 
-        protected IEnumerable ProcessController(MotionAnimationClip motClip, FreeControllerAnimationTarget target, FreeControllerV3 ctrl)
+        protected IEnumerable ProcessController(MotionAnimationClip motClip, FreeControllerV3AnimationTarget target, FreeControllerV3 ctrl)
         {
             var frameLength = 0.001f;
 

@@ -206,9 +206,9 @@ namespace VamTimeline
             var lead = target.GetLeadCurve();
             _targets.Add(target);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
-            if (target is FreeControllerAnimationTarget)
+            if (target is FreeControllerV3AnimationTarget)
             {
-                var t = (FreeControllerAnimationTarget)target;
+                var t = (FreeControllerV3AnimationTarget)target;
                 if (_lines.Count > _maxCurves - 3) return;
                 BindCurve(t.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
                 BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
@@ -243,10 +243,10 @@ namespace VamTimeline
                 BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
                 */
             }
-            else if (target is FloatParamAnimationTarget)
+            else if (target is JSONStorableFloatAnimationTarget)
             {
                 if (_lines.Count > _maxCurves - 1) return;
-                var t = (FloatParamAnimationTarget)target;
+                var t = (JSONStorableFloatAnimationTarget)target;
                 BindCurve(t.value, _style.CurveLineColorFloat, target.GetShortName());
             }
             else

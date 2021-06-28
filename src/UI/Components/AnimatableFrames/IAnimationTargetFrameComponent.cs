@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public interface ITargetFrame
+    public interface IAnimationTargetFrameComponent
     {
         GameObject gameObject { get; }
     }

@@ -28,16 +28,16 @@ namespace VamTimeline
             foreach (var origTarget in _clip.targetFloatParams)
             {
                 if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(new FloatParamAnimationTarget(origTarget));
+                var newTarget = clip.Add(new JSONStorableFloatAnimationTarget(origTarget));
                 newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                 newTarget.dirty = true;
             }
             foreach (var origTarget in _clip.targetTriggers)
             {
-                var newTarget = clip.Add(new TriggersAnimationTarget (origTarget.animatableRef));
+                var newTarget = clip.Add(new TriggersTrackAnimationTarget (origTarget.animatableRef));
                 foreach (var origTrigger in origTarget.triggersMap)
                 {
-                    var trigger = new AtomAnimationTrigger();
+                    var trigger = new CustomTrigger();
                     trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
                     newTarget.SetKeyframe(origTrigger.Key, trigger);
                 }
@@ -106,7 +106,7 @@ namespace VamTimeline
             return clip;
         }
 
-        private static FreeControllerAnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerAnimationTarget origTarget)
+        private static FreeControllerV3AnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerV3AnimationTarget origTarget)
         {
             var newTarget = clip.Add(origTarget.animatableRef);
             newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);

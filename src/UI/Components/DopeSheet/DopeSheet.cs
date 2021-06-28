@@ -370,10 +370,6 @@ namespace VamTimeline
                         row.gameObject.SetActive(row.target.selected || !row.target.collapsed);
                     }
                     text.text = collapsed ? "\u25BA" : "\u25BC";
-                    // var targets = group.GetTargets().ToList();
-                    // var selected = targets.Any(t => t.selected);
-                    // foreach (var target in targets)
-                    //     _animationEditContext.SetSelected(target, !selected);
                 });
             }
 

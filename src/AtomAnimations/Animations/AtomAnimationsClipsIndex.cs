@@ -10,8 +10,8 @@ namespace VamTimeline
 
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayer = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
-        private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerAnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerAnimationTarget>>();
-        private readonly Dictionary<StorableFloatParamRef, List<FloatParamAnimationTarget>> _clipsByFloatParam = new Dictionary<StorableFloatParamRef, List<FloatParamAnimationTarget>>();
+        private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
+        private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
         private bool _paused;
 
@@ -67,10 +67,10 @@ namespace VamTimeline
 
                 foreach (var target in clip.targetControllers)
                 {
-                    List<FreeControllerAnimationTarget> byController;
+                    List<FreeControllerV3AnimationTarget> byController;
                     if (!_clipsByController.TryGetValue(target.animatableRef, out byController))
                     {
-                        byController = new List<FreeControllerAnimationTarget>();
+                        byController = new List<FreeControllerV3AnimationTarget>();
                         _clipsByController.Add(target.animatableRef, byController);
                     }
                     byController.Add(target);
@@ -78,10 +78,10 @@ namespace VamTimeline
 
                 foreach (var target in clip.targetFloatParams)
                 {
-                    List<FloatParamAnimationTarget> byFloatParam;
+                    List<JSONStorableFloatAnimationTarget> byFloatParam;
                     if (!_clipsByFloatParam.TryGetValue(target.animatableRef, out byFloatParam))
                     {
-                        byFloatParam = new List<FloatParamAnimationTarget>();
+                        byFloatParam = new List<JSONStorableFloatAnimationTarget>();
                         _clipsByFloatParam.Add(target.animatableRef, byFloatParam);
                     }
                     byFloatParam.Add(target);
@@ -101,12 +101,12 @@ namespace VamTimeline
             return _clipsByLayer.TryGetValue(layer, out clips) ? clips : _emptyClipList;
         }
 
-        public IEnumerable<KeyValuePair<FreeControllerV3Ref, List<FreeControllerAnimationTarget>>> ByController()
+        public IEnumerable<KeyValuePair<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>> ByController()
         {
             return _clipsByController;
         }
 
-        public IEnumerable<KeyValuePair<StorableFloatParamRef, List<FloatParamAnimationTarget>>> ByFloatParam()
+        public IEnumerable<KeyValuePair<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>> ByFloatParam()
         {
             return _clipsByFloatParam;
         }

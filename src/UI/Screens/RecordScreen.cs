@@ -60,8 +60,8 @@ namespace VamTimeline
             // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
             var targets = animationEditContext.GetSelectedTargets().ToList();
             var enumerator = operations.Record().StartRecording(
-                targets.Count > 0 ? targets.OfType<FreeControllerAnimationTarget>().ToList() : current.targetControllers,
-                targets.Count > 0 ? targets.OfType<FloatParamAnimationTarget>().ToList() : current.targetFloatParams
+                targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : current.targetControllers,
+                targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : current.targetFloatParams
             );
 
             ChangeScreen(TargetsScreen.ScreenName);

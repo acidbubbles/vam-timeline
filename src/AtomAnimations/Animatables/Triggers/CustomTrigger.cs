@@ -1,17 +1,16 @@
 using System;
 using SimpleJSON;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace VamTimeline
 {
-    public class AtomAnimationTrigger : Trigger, IDisposable
+    public class CustomTrigger : Trigger, IDisposable
     {
         public Atom atom;
         public float startTime;
         public float endTime;
 
-        public AtomAnimationTrigger()
+        public CustomTrigger()
         {
             SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
         }

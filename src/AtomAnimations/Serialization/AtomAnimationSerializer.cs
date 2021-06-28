@@ -105,7 +105,7 @@ namespace VamTimeline
                     var controllerName = controllerJSON["Controller"].Value;
                     var controllerRef = targetsRegistry.GetOrCreateController(_atom, controllerName);
                     if (controllerRef == null) continue;
-                    var target = new FreeControllerAnimationTarget(controllerRef)
+                    var target = new FreeControllerV3AnimationTarget(controllerRef)
                     {
                         controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true),
                         controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true),
@@ -138,7 +138,7 @@ namespace VamTimeline
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
                     var floatParamRef = targetsRegistry.GetOrCreateStorableFloat(_atom, storableId, floatParamName);
-                    var target = new FloatParamAnimationTarget(floatParamRef);
+                    var target = new JSONStorableFloatAnimationTarget(floatParamRef);
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -154,10 +154,10 @@ namespace VamTimeline
                 {
                     var triggerTrackName = DeserializeString(triggerJSON["Name"], "Triggers");
                     var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(triggerTrackName);
-                    var target = new TriggersAnimationTarget(triggerTrackRef);
+                    var target = new TriggersTrackAnimationTarget(triggerTrackRef);
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
-                        var trigger = new AtomAnimationTrigger();
+                        var trigger = new CustomTrigger();
                         trigger.RestoreFromJSON(entryJSON);
                         target.SetKeyframe(trigger.startTime, trigger);
                     }

@@ -615,7 +615,7 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private static void SampleFloatParam(JSONStorableFloat floatParam, List<FloatParamAnimationTarget> targets)
+        private static void SampleFloatParam(JSONStorableFloat floatParam, List<JSONStorableFloatAnimationTarget> targets)
         {
             const float minimumDelta = 0.00000015f;
             var weightedSum = 0f;
@@ -662,7 +662,7 @@ namespace VamTimeline
         private float[] _rotationBlendWeights = new float[0];
 
         [MethodImpl(256)]
-        private void SampleController(FreeControllerV3 controller, IList<FreeControllerAnimationTarget> targets, bool force)
+        private void SampleController(FreeControllerV3 controller, IList<FreeControllerV3AnimationTarget> targets, bool force)
         {
             if (ReferenceEquals(controller, null)) return;
             var control = controller.control;

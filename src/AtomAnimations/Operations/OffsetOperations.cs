@@ -72,7 +72,7 @@ namespace VamTimeline
             }
         }
 
-        public AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerAnimationTarget> targets)
+        public AtomClipboardEntry Start(float clipTime, IEnumerable<FreeControllerV3AnimationTarget> targets)
         {
             // ReSharper disable once RedundantEnumerableCastCall
             var snapshot = AtomAnimationClip.Copy(clipTime, targets.Cast<IAtomAnimationTarget>().ToList());

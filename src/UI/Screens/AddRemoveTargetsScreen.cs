@@ -109,13 +109,13 @@ namespace VamTimeline
             }
 
             var clipList = current.GetAllTargets()
-                .Where(t => !(t is TriggersAnimationTarget))
+                .Where(t => !(t is TriggersTrackAnimationTarget))
                 .Select(t => t.name)
                 .OrderBy(x => x);
             var otherList = animation.index
                 .ByLayer(current.animationLayer)
                 .Where(c => c != current)
-                .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersAnimationTarget)))
+                .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)))
                 .Select(t => t.name)
                 .Distinct()
                 .OrderBy(x => x);
@@ -140,7 +140,7 @@ namespace VamTimeline
             var btn = prefabFactory.CreateButton("Add triggers track");
             btn.button.onClick.AddListener(() =>
             {
-                var target = new TriggersAnimationTarget(animation.animatables.GetOrCreateTriggerTrack($"Triggers {current.targetTriggers.Count + 1}"));
+                var target = new TriggersTrackAnimationTarget(animation.animatables.GetOrCreateTriggerTrack($"Triggers {current.targetTriggers.Count + 1}"));
                 target.AddEdgeFramesIfMissing(current.animationLength);
                 current.Add(target);
             });
@@ -315,13 +315,13 @@ namespace VamTimeline
                 // We remove every selected target on every clip on the current layer, except triggers
                 foreach (var clip in animation.index.ByLayer(current.animationLayer))
                 {
-                    var target = clip.GetAllTargets().Where(t => !(t is TriggersAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
+                    var target = clip.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
                     if (target == null) continue;
                     clip.Remove(target);
                 }
 
                 // We remove the selected  trigger targets
-                if (s is TriggersAnimationTarget)
+                if (s is TriggersTrackAnimationTarget)
                 {
                     // So other clips won't keep the deleted selection
                     s.selected = false;
@@ -329,14 +329,14 @@ namespace VamTimeline
                 }
 
                 {
-                    var target = s as FreeControllerAnimationTarget;
+                    var target = s as FreeControllerV3AnimationTarget;
                     if (target != null)
                     {
                         _addControllerListJSON.val = target.name;
                     }
                 }
                 {
-                    var target = s as FloatParamAnimationTarget;
+                    var target = s as JSONStorableFloatAnimationTarget;
                     if (target != null)
                     {
                         _addStorableListJSON.val = target.animatableRef.storableId;
@@ -404,7 +404,7 @@ namespace VamTimeline
                             }
                         }
                     }
-                    clip.targetControllers.Sort(new FreeControllerAnimationTarget.Comparer());
+                    clip.targetControllers.Sort(new FreeControllerV3AnimationTarget.Comparer());
 
                     foreach (var floatParamRef in allFloatParams)
                     {
@@ -416,7 +416,7 @@ namespace VamTimeline
                         target.SetKeyframe(0f, floatParamRef.floatParam.val);
                         target.SetKeyframe(clip.animationLength, floatParamRef.floatParam.val);
                     }
-                    clip.targetFloatParams.Sort(new FloatParamAnimationTarget.Comparer());
+                    clip.targetFloatParams.Sort(new JSONStorableFloatAnimationTarget.Comparer());
                 }
             }
             catch (Exception exc)

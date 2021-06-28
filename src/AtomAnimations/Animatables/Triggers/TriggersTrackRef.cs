@@ -1,10 +1,10 @@
 ﻿namespace VamTimeline
 {
-    public class TriggerTrackRef : AnimatableRefBase
+    public class TriggersTrackRef : AnimatableRefBase
     {
         public override string name { get; }
 
-        public TriggerTrackRef(string triggerTrackName)
+        public TriggersTrackRef(string triggerTrackName)
         {
             name = triggerTrackName;
         }

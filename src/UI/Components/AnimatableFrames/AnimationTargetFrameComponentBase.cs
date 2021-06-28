@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    public abstract class TargetFrameBase<T> : MonoBehaviour, ITargetFrame
+    public abstract class AnimationTargetFrameComponentBase<T> : MonoBehaviour, IAnimationTargetFrameComponent
         where T : IAtomAnimationTarget
     {
         protected virtual float expandSize => 70f;

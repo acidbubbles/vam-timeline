@@ -46,9 +46,9 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(animationPattern));
             }
         }
-        public readonly AtomAnimationTargetsList<TriggersAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersAnimationTarget> { label = "Triggers" };
-        public readonly AtomAnimationTargetsList<FreeControllerAnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerAnimationTarget> { label = "Controllers" };
-        public readonly AtomAnimationTargetsList<FloatParamAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<FloatParamAnimationTarget> { label = "Float Params" };
+        public readonly AtomAnimationTargetsList<TriggersTrackAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersTrackAnimationTarget> { label = "Triggers" };
+        public readonly AtomAnimationTargetsList<FreeControllerV3AnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerV3AnimationTarget> { label = "Controllers" };
+        public readonly AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> { label = "Float Params" };
 
         public IEnumerable<ICurveAnimationTarget> GetAllCurveTargets()
         {
@@ -351,7 +351,7 @@ namespace VamTimeline
             yield return targetTriggers;
             yield return targetControllers;
             foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storableId))
-                yield return new AtomAnimationTargetsList<FloatParamAnimationTarget>(group) {label = group.Key};
+                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) {label = group.Key};
         }
 
         public void Validate()
@@ -442,43 +442,43 @@ namespace VamTimeline
 
         public IAtomAnimationTarget Add(IAtomAnimationTarget target)
         {
-            if (target is FreeControllerAnimationTarget)
-                return Add((FreeControllerAnimationTarget)target);
-            if (target is FloatParamAnimationTarget)
-                return Add((FloatParamAnimationTarget)target);
-            if (target is TriggersAnimationTarget)
-                return Add((TriggersAnimationTarget)target);
+            if (target is FreeControllerV3AnimationTarget)
+                return Add((FreeControllerV3AnimationTarget)target);
+            if (target is JSONStorableFloatAnimationTarget)
+                return Add((JSONStorableFloatAnimationTarget)target);
+            if (target is TriggersTrackAnimationTarget)
+                return Add((TriggersTrackAnimationTarget)target);
             throw new NotSupportedException($"Cannot add unknown target type {target}");
         }
 
-        public FreeControllerAnimationTarget Add(FreeControllerV3Ref controllerRef)
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef)
         {
             if (targetControllers.Any(c => c.animatableRef == controllerRef)) return null;
-            return Add(new FreeControllerAnimationTarget(controllerRef));
+            return Add(new FreeControllerV3AnimationTarget(controllerRef));
         }
 
-        public FreeControllerAnimationTarget Add(FreeControllerAnimationTarget target)
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3AnimationTarget target)
         {
             if (targetControllers.Any(t => t.animatableRef == target.animatableRef)) return null;
             foreach (var curve in target.curves) { curve.loop = _loop; }
-            return Add(targetControllers, new FreeControllerAnimationTarget.Comparer(), target);
+            return Add(targetControllers, new FreeControllerV3AnimationTarget.Comparer(), target);
         }
 
-        public FloatParamAnimationTarget Add(StorableFloatParamRef floatParamRef)
+        public JSONStorableFloatAnimationTarget Add(JSONStorableFloatRef floatRef)
         {
-            if (targetFloatParams.Any(t => t.animatableRef == floatParamRef)) return null;
-            return Add(new FloatParamAnimationTarget(floatParamRef));
+            if (targetFloatParams.Any(t => t.animatableRef == floatRef)) return null;
+            return Add(new JSONStorableFloatAnimationTarget(floatRef));
         }
 
-        public FloatParamAnimationTarget Add(FloatParamAnimationTarget target)
+        public JSONStorableFloatAnimationTarget Add(JSONStorableFloatAnimationTarget target)
         {
             target.value.loop = _loop;
-            return Add(targetFloatParams, new FloatParamAnimationTarget.Comparer(), target);
+            return Add(targetFloatParams, new JSONStorableFloatAnimationTarget.Comparer(), target);
         }
 
-        public TriggersAnimationTarget Add(TriggersAnimationTarget target)
+        public TriggersTrackAnimationTarget Add(TriggersTrackAnimationTarget target)
         {
-            return Add(targetTriggers, new TriggersAnimationTarget.Comparer(), target);
+            return Add(targetTriggers, new TriggersTrackAnimationTarget.Comparer(), target);
         }
 
         private T Add<T>(AtomAnimationTargetsList<T> list, IComparer<T> comparer, T target) where T : IAtomAnimationTarget
@@ -499,21 +499,21 @@ namespace VamTimeline
 
             target.clip = null;
 
-            var freeControllerAnimationTarget = target as FreeControllerAnimationTarget;
+            var freeControllerAnimationTarget = target as FreeControllerV3AnimationTarget;
             if (freeControllerAnimationTarget != null)
             {
                 Remove(freeControllerAnimationTarget);
                 return;
             }
 
-            var floatParamAnimationTarget = target as FloatParamAnimationTarget;
+            var floatParamAnimationTarget = target as JSONStorableFloatAnimationTarget;
             if (floatParamAnimationTarget != null)
             {
                 Remove(floatParamAnimationTarget);
                 return;
             }
 
-            var animationTarget = target as TriggersAnimationTarget;
+            var animationTarget = target as TriggersTrackAnimationTarget;
             if (animationTarget != null)
             {
                 Remove(animationTarget);
@@ -530,17 +530,17 @@ namespace VamTimeline
             Remove(targetControllers.FirstOrDefault(c => c.animatableRef.Targets(controller)));
         }
 
-        public void Remove(FreeControllerAnimationTarget target)
+        public void Remove(FreeControllerV3AnimationTarget target)
         {
             Remove(targetControllers, target);
         }
 
-        public void Remove(FloatParamAnimationTarget target)
+        public void Remove(JSONStorableFloatAnimationTarget target)
         {
             Remove(targetFloatParams, target);
         }
 
-        public void Remove(TriggersAnimationTarget target)
+        public void Remove(TriggersTrackAnimationTarget target)
         {
             Remove(targetTriggers, target);
         }
@@ -569,7 +569,7 @@ namespace VamTimeline
         public static AtomClipboardEntry Copy(float time, IList<IAtomAnimationTarget> targets)
         {
             var controllers = new List<FreeControllerV3ClipboardEntry>();
-            foreach (var target in targets.OfType<FreeControllerAnimationTarget>())
+            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -580,18 +580,18 @@ namespace VamTimeline
                 });
             }
             var floatParams = new List<FloatParamValClipboardEntry>();
-            foreach (var target in targets.OfType<FloatParamAnimationTarget>())
+            foreach (var target in targets.OfType<JSONStorableFloatAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
-                    floatParamRef = target.animatableRef,
+                    floatRef = target.animatableRef,
                     snapshot = snapshot
                 });
             }
             var triggers = new List<TriggersClipboardEntry>();
-            foreach (var target in targets.OfType<TriggersAnimationTarget>())
+            foreach (var target in targets.OfType<TriggersTrackAnimationTarget>())
             {
                 var snapshot = target.GetCurveSnapshot(time);
                 if (snapshot == null) continue;
@@ -629,10 +629,10 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.floatParamRef);
+                var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.floatRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste storable {entry.floatParamRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste storable {entry.floatRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);

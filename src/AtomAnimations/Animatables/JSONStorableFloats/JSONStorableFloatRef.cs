@@ -2,7 +2,7 @@
 
 namespace VamTimeline
 {
-    public class StorableFloatParamRef : AnimatableRefBase
+    public class JSONStorableFloatRef : AnimatableRefBase
     {
         public override string name => $"{storableId}/{floatParamName}";
 
@@ -14,14 +14,14 @@ namespace VamTimeline
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
 
-        public StorableFloatParamRef(Atom atom, string storableId, string floatParamName)
+        public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName)
         {
             _atom = atom;
             this.storableId = storableId;
             this.floatParamName = floatParamName;
         }
 
-        public StorableFloatParamRef(JSONStorable storable, JSONStorableFloat floatParam)
+        public JSONStorableFloatRef(JSONStorable storable, JSONStorableFloat floatParam)
             : this(storable.containingAtom, storable.storeId, floatParam.name)
         {
             this.storable = storable;

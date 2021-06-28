@@ -14,7 +14,7 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        private readonly List<ITargetFrame> _targets = new List<ITargetFrame>();
+        private readonly List<IAnimationTargetFrameComponent> _targets = new List<IAnimationTargetFrameComponent>();
         private bool _selectionChangedPending;
         private UIDynamicToggle _filterUI;
         private UIDynamicButton _manageTargetsUI;
@@ -103,28 +103,28 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
 
             var hasTargets = false;
 
-            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<TriggersAnimationTarget>() : current.targetTriggers)
+            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<TriggersTrackAnimationTarget>() : current.targetTriggers)
             {
                 hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
-                var component = keyframeUI.gameObject.AddComponent<TriggersTargetFrame>();
+                var component = keyframeUI.gameObject.AddComponent<TriggersTrackAnimationTargetFrameComponent>();
                 component.popupParent = popupParent;
                 component.Bind(plugin, animationEditContext.current, target);
                 _targets.Add(component);
             }
 
-            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>() : current.targetControllers)
+            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>() : current.targetControllers)
             {
                 hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();
                 keyframeUI.height = 60f;
-                var component = keyframeUI.gameObject.AddComponent<ControllerTargetFrame>();
+                var component = keyframeUI.gameObject.AddComponent<FreeControllerV2AnimationTargetFrameComponent>();
                 component.Bind(plugin, animationEditContext.current, target);
                 _targets.Add(component);
             }
 
-            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<FloatParamAnimationTarget>() : current.targetFloatParams)
+            foreach (var target in _filterJSON.val ? animationEditContext.GetAllOrSelectedTargets().OfType<JSONStorableFloatAnimationTarget>() : current.targetFloatParams)
             {
                 hasTargets = true;
                 var keyframeUI = prefabFactory.CreateSpacer();

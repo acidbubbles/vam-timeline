@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class TriggersAnimationTarget : AnimationTargetBase<TriggerTrackRef>, IAtomAnimationTarget
+    public class TriggersTrackAnimationTarget : AnimationTargetBase<TriggersTrackRef>, IAtomAnimationTarget
     {
-        public readonly SortedDictionary<int, AtomAnimationTrigger> triggersMap = new SortedDictionary<int, AtomAnimationTrigger>();
+        public readonly SortedDictionary<int, CustomTrigger> triggersMap = new SortedDictionary<int, CustomTrigger>();
         private float[] keyframes { get; set; } = new float[0];
-        private readonly List<AtomAnimationTrigger> _triggers = new List<AtomAnimationTrigger>();
+        private readonly List<CustomTrigger> _triggers = new List<CustomTrigger>();
 
-        public TriggersAnimationTarget(TriggerTrackRef triggerTrackRef)
-            : base(triggerTrackRef)
+        public TriggersTrackAnimationTarget(TriggersTrackRef triggersTrackRef)
+            : base(triggersTrackRef)
         {
         }
 
@@ -74,12 +74,12 @@ namespace VamTimeline
             }
         }
 
-        public void SetKeyframe(float time, AtomAnimationTrigger value)
+        public void SetKeyframe(float time, CustomTrigger value)
         {
             SetKeyframe(time.ToMilliseconds(), value);
         }
 
-        public void SetKeyframe(int ms, AtomAnimationTrigger value)
+        public void SetKeyframe(int ms, CustomTrigger value)
         {
             if (value == null)
                 DeleteFrameByMs(ms);
@@ -95,7 +95,7 @@ namespace VamTimeline
 
         public void DeleteFrameByMs(int ms)
         {
-            AtomAnimationTrigger trigger;
+            CustomTrigger trigger;
             if (triggersMap.TryGetValue(ms, out trigger))
                 trigger.Dispose();
             triggersMap.Remove(ms);
@@ -105,9 +105,9 @@ namespace VamTimeline
         public void AddEdgeFramesIfMissing(float animationLength)
         {
             if (!triggersMap.ContainsKey(0))
-                SetKeyframe(0, new AtomAnimationTrigger());
+                SetKeyframe(0, new CustomTrigger());
             if (!triggersMap.ContainsKey(animationLength.ToMilliseconds()))
-                SetKeyframe(animationLength.ToMilliseconds(), new AtomAnimationTrigger());
+                SetKeyframe(animationLength.ToMilliseconds(), new CustomTrigger());
         }
 
         public float[] GetAllKeyframesTime()
@@ -152,18 +152,18 @@ namespace VamTimeline
 
         public TriggerTargetSnapshot GetCurveSnapshot(float time)
         {
-            AtomAnimationTrigger trigger;
+            CustomTrigger trigger;
             if (!triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) return null;
             return new TriggerTargetSnapshot { json = trigger.GetJSON() };
         }
 
         public void SetCurveSnapshot(float time, TriggerTargetSnapshot snapshot)
         {
-            AtomAnimationTrigger trigger;
+            CustomTrigger trigger;
             var ms = time.ToMilliseconds();
             if (!triggersMap.TryGetValue(ms, out trigger))
             {
-                trigger = new AtomAnimationTrigger();
+                trigger = new CustomTrigger();
                 SetKeyframe(ms, trigger);
             }
             trigger.RestoreFromJSON(snapshot.json);
@@ -184,9 +184,9 @@ namespace VamTimeline
             return $"[Trigger Target: {name}]";
         }
 
-        public class Comparer : IComparer<TriggersAnimationTarget>
+        public class Comparer : IComparer<TriggersTrackAnimationTarget>
         {
-            public int Compare(TriggersAnimationTarget t1, TriggersAnimationTarget t2)
+            public int Compare(TriggersTrackAnimationTarget t1, TriggersTrackAnimationTarget t2)
             {
                 return string.Compare(t1.name, t2.name, StringComparison.Ordinal);
 

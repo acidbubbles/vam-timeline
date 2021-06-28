@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerAnimationTarget>, ITargetReduceProcessor
+    public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerV3AnimationTarget>, ITargetReduceProcessor
     {
         ICurveAnimationTarget ITargetReduceProcessor.target => base.source;
 
-        public ControllerTargetReduceProcessor(FreeControllerAnimationTarget source, ReduceSettings settings)
+        public ControllerTargetReduceProcessor(FreeControllerV3AnimationTarget source, ReduceSettings settings)
             : base(source, settings)
         {
         }

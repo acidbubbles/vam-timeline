@@ -4,17 +4,17 @@ using System.Linq;
 
 namespace VamTimeline
 {
-    public class FloatParamAnimationTarget : CurveAnimationTargetBase<StorableFloatParamRef>, ICurveAnimationTarget
+    public class JSONStorableFloatAnimationTarget : CurveAnimationTargetBase<JSONStorableFloatRef>, ICurveAnimationTarget
     {
         public readonly BezierAnimationCurve value = new BezierAnimationCurve();
         public bool recording;
 
-        public FloatParamAnimationTarget(FloatParamAnimationTarget source)
+        public JSONStorableFloatAnimationTarget(JSONStorableFloatAnimationTarget source)
             : this(source.animatableRef)
         {
         }
 
-        public FloatParamAnimationTarget(StorableFloatParamRef animatableRef)
+        public JSONStorableFloatAnimationTarget(JSONStorableFloatRef animatableRef)
             : base(animatableRef)
         {
         }
@@ -36,7 +36,7 @@ namespace VamTimeline
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
-            var clone = new FloatParamAnimationTarget(animatableRef);
+            var clone = new JSONStorableFloatAnimationTarget(animatableRef);
             if (copyKeyframes)
             {
                 clone.value.keys.AddRange(value.keys);
@@ -52,7 +52,7 @@ namespace VamTimeline
 
         public void RestoreFrom(ICurveAnimationTarget backup)
         {
-            var target = backup as FloatParamAnimationTarget;
+            var target = backup as JSONStorableFloatAnimationTarget;
             if (target == null) return;
             var maxTime = value.GetLastFrame().time;
             value.keys.Clear();
@@ -135,7 +135,7 @@ namespace VamTimeline
 
         public bool TargetsSameAs(IAtomAnimationTarget target)
         {
-            var t = target as FloatParamAnimationTarget;
+            var t = target as JSONStorableFloatAnimationTarget;
             if (t == null) return false;
             return t.animatableRef == animatableRef;
         }
@@ -145,9 +145,9 @@ namespace VamTimeline
             return $"[Float Param Target: {name}]";
         }
 
-        public class Comparer : IComparer<FloatParamAnimationTarget>
+        public class Comparer : IComparer<JSONStorableFloatAnimationTarget>
         {
-            public int Compare(FloatParamAnimationTarget t1, FloatParamAnimationTarget t2)
+            public int Compare(JSONStorableFloatAnimationTarget t1, JSONStorableFloatAnimationTarget t2)
             {
                 return string.Compare(t1.name, t2.name, StringComparison.Ordinal);
             }

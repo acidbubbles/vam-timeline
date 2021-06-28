@@ -10,7 +10,7 @@ namespace VamTimeline
         private static string _lastArg;
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _rigidbodyJSON;
-        private FreeControllerAnimationTarget _target;
+        private FreeControllerV3AnimationTarget _target;
 
         public override string screenId => ScreenName;
 

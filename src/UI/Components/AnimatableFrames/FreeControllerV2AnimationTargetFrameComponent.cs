@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace VamTimeline
 {
-    public class ControllerTargetFrame : TargetFrameBase<FreeControllerAnimationTarget>
+    public class FreeControllerV2AnimationTargetFrameComponent : AnimationTargetFrameComponentBase<FreeControllerV3AnimationTarget>
     {
         protected override float expandSize => 140f;
         private LineDrawer _line;
@@ -182,7 +182,7 @@ namespace VamTimeline
             }
         }
 
-        private void SetControllerKeyframe(float time, FreeControllerAnimationTarget target)
+        private void SetControllerKeyframe(float time, FreeControllerV3AnimationTarget target)
         {
             var key = plugin.animationEditContext.SetKeyframeToCurrentTransform(target, time);
             var keyframe = target.x.keys[key];

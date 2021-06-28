@@ -15,7 +15,7 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator StartRecording(List<FreeControllerAnimationTarget> controllers, List<FloatParamAnimationTarget> floatParams)
+        public IEnumerator StartRecording(List<FreeControllerV3AnimationTarget> controllers, List<JSONStorableFloatAnimationTarget> floatParams)
         {
             // TODO: Handle stopping in the middle of it
             // TODO: Handle starting while it's already recording

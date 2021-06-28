@@ -121,12 +121,12 @@ namespace VamTimeline
 
 #endif
 
-        public void RecordFreeControllerPosition(FreeControllerAnimationTarget target)
+        public void RecordFreeControllerPosition(FreeControllerV3AnimationTarget target)
         {
             var time = animationEditContext.clipTime.Snap();
             if (animationEditContext.autoKeyframeAllControllers)
             {
-                foreach (var t in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
+                foreach (var t in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>())
                     animationEditContext.SetKeyframeToCurrentTransform(target, time);
             }
             else

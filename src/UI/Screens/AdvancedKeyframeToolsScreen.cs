@@ -79,11 +79,11 @@ namespace VamTimeline
                             curve.Reverse();
                         }
                     }
-                    else if (target is TriggersAnimationTarget)
+                    else if (target is TriggersTrackAnimationTarget)
                     {
-                        var triggersTarget = (TriggersAnimationTarget)target;
+                        var triggersTarget = (TriggersTrackAnimationTarget)target;
                         var keyframes = new List<int>(triggersTarget.triggersMap.Count);
-                        var triggers = new List<AtomAnimationTrigger>(triggersTarget.triggersMap.Count);
+                        var triggers = new List<CustomTrigger>(triggersTarget.triggersMap.Count);
                         foreach (var kvp in triggersTarget.triggersMap)
                         {
                             keyframes.Add(kvp.Key);

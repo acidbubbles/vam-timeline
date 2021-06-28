@@ -30,7 +30,7 @@ namespace VamTimeline
 
     public class FloatParamValClipboardEntry
     {
-        public StorableFloatParamRef floatParamRef;
+        public JSONStorableFloatRef floatRef;
         public FloatParamTargetSnapshot snapshot;
     }
 

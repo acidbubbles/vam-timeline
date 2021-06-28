@@ -423,7 +423,7 @@ namespace VamTimeline
 
         #region Keyframing
 
-        public int SetKeyframeToCurrentTransform(FreeControllerAnimationTarget target, float time)
+        public int SetKeyframeToCurrentTransform(FreeControllerV3AnimationTarget target, float time)
         {
             time = time.Snap();
             if (time > current.animationLength)

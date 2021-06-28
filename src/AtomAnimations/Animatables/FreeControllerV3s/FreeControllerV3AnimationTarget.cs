@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class FreeControllerAnimationTarget : TransformAnimationTargetBase<FreeControllerV3Ref>, ICurveAnimationTarget
+    public class FreeControllerV3AnimationTarget : TransformAnimationTargetBase<FreeControllerV3Ref>, ICurveAnimationTarget
     {
         public bool controlPosition = true;
         public bool controlRotation = true;
@@ -106,7 +106,7 @@ namespace VamTimeline
              return null;
         }
 
-        public FreeControllerAnimationTarget(FreeControllerV3Ref animatableRef)
+        public FreeControllerV3AnimationTarget(FreeControllerV3Ref animatableRef)
             : base(animatableRef)
         {
         }
@@ -149,7 +149,7 @@ namespace VamTimeline
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
-            var clone = new FreeControllerAnimationTarget(animatableRef);
+            var clone = new FreeControllerV3AnimationTarget(animatableRef);
             if (copyKeyframes)
             {
                 clone.x.keys.AddRange(x.keys);
@@ -171,7 +171,7 @@ namespace VamTimeline
 
         public void RestoreFrom(ICurveAnimationTarget backup)
         {
-            var target = backup as FreeControllerAnimationTarget;
+            var target = backup as FreeControllerV3AnimationTarget;
             if (target == null) return;
             var maxTime = x.GetLastFrame().time;
             x.keys.Clear();
@@ -196,7 +196,7 @@ namespace VamTimeline
 
         public bool TargetsSameAs(IAtomAnimationTarget target)
         {
-            var t = target as FreeControllerAnimationTarget;
+            var t = target as FreeControllerV3AnimationTarget;
             if (t == null) return false;
             return t.animatableRef == animatableRef;
         }
@@ -206,9 +206,9 @@ namespace VamTimeline
             return $"[FreeControllerV3 Target: {name}]";
         }
 
-        public class Comparer : IComparer<FreeControllerAnimationTarget>
+        public class Comparer : IComparer<FreeControllerV3AnimationTarget>
         {
-            public int Compare(FreeControllerAnimationTarget t1, FreeControllerAnimationTarget t2)
+            public int Compare(FreeControllerV3AnimationTarget t1, FreeControllerV3AnimationTarget t2)
             {
                 return string.Compare(t1.animatableRef.name, t2.animatableRef.name, StringComparison.Ordinal);
             }

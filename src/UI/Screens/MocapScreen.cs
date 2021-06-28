@@ -89,7 +89,7 @@ namespace VamTimeline
 
         private IEnumerator ImportRecordedCoroutine()
         {
-            var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>().Select(t => t.animatableRef.controller).ToList();
+            var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().Select(t => t.animatableRef.controller).ToList();
             var enumerator = operations.MocapImport().Execute(controllers);
 
             while (true)
@@ -140,7 +140,7 @@ namespace VamTimeline
             }
             _lastAutoRecordStop = SuperController.singleton.motionAnimationMaster.autoRecordStop;
             SuperController.singleton.motionAnimationMaster.autoRecordStop = false;
-            foreach (var target in animationEditContext.GetSelectedTargets().OfType<FreeControllerAnimationTarget>())
+            foreach (var target in animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>())
             {
                 var mac = target.animatableRef.controller.GetComponent<MotionAnimationControl>();
                 if (mac == null) continue;
