@@ -36,8 +36,10 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitDisableSync();
+#if (VAM_GT_1_20)
             if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
                 InitSyncSubsceneOnly();
+#endif
 
             prefabFactory.CreateSpacer();
 

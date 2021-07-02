@@ -360,7 +360,9 @@ namespace VamTimeline
                 {
                     var storable = _peers[i];
                     if (storable == null) continue;
+#if (VAM_GT_1_20)
                     if (animation.syncSubsceneOnly && storable.containingAtom.containingSubScene != _containingAtom.containingSubScene) continue;
+#endif
                     storable.SendMessage(nameof(IRemoteAtomPlugin.OnTimelineEvent), e);
                 }
             }
