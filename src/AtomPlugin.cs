@@ -905,6 +905,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("ZoomMoveBackward", () => animationEditContext.MoveScrubberRangeBackward()));
             bindings.Add(new JSONStorableAction("ZoomMoveForward", () => animationEditContext.MoveScrubberRangeForward()));
             bindings.Add(new JSONStorableAction("ZoomReset", () => animationEditContext.ResetScrubberRange()));
+            bindings.Add(new JSONStorableAction("Lock", () => animationEditContext.locked = true));
+            bindings.Add(new JSONStorableAction("Unlock", () => animationEditContext.locked = false));
             // TODO: Check if already recording
             bindings.Add(new JSONStorableAction("StartRecord", () =>
             {
