@@ -20,7 +20,7 @@ namespace VamTimeline
 
         public ResizeAnimationOperations Resize()
         {
-            return new ResizeAnimationOperations(_clip);
+            return new ResizeAnimationOperations();
         }
 
         public TargetsOperations Targets()

@@ -62,7 +62,7 @@ namespace VamTimeline
             }
             if (resize && length != clip.animationLength)
             {
-                new ResizeAnimationOperations(clip).CropOrExtendEnd(length);
+                new ResizeAnimationOperations().CropOrExtendEnd(clip, length);
                 requiresRebuild = true;
             }
             if (requiresRebuild)

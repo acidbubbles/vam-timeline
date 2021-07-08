@@ -312,7 +312,7 @@ namespace VamTimeline
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
-                new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd((float)e[3]);
+                new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd(clip, (float)e[3]);
                 var nextAnimationName = (string)e[4];
                 if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextAnimationName))
                 {

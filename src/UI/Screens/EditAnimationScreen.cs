@@ -240,21 +240,21 @@ namespace VamTimeline
             switch (_lengthModeJSON.val)
             {
                 case _changeLengthModeStretch:
-                    operations.Resize().Stretch(newLength);
+                    operations.Resize().Stretch(current, newLength);
                     break;
                 case _changeLengthModeCropExtendEnd:
-                    operations.Resize().CropOrExtendEnd(newLength);
+                    operations.Resize().CropOrExtendEnd(current, newLength);
                     break;
                 case _changeLengthModeCropExtendBegin:
-                    operations.Resize().CropOrExtendAt(newLength, 0f);
+                    operations.Resize().CropOrExtendAt(current, newLength, 0f);
                     break;
                 case _changeLengthModeCropExtendAtTime:
                     if (_lengthJSON.valNoCallback < animationEditContext.clipTime + animationEditContext.snap)
                         _lengthJSON.valNoCallback = animationEditContext.clipTime + animationEditContext.snap;
-                    operations.Resize().CropOrExtendAt(newLength, time);
+                    operations.Resize().CropOrExtendAt(current, newLength, time);
                     break;
                 case _changeLengthModeLoop:
-                    operations.Resize().Loop(newLength);
+                    operations.Resize().Loop(current, newLength);
                     break;
                 default:
                     SuperController.LogError($"Timeline: Unknown animation length type: {_lengthModeJSON.val}");

@@ -4,13 +4,6 @@ namespace VamTimeline
 {
     public class ResizeAnimationOperations
     {
-        private readonly AtomAnimationClip _clip;
-
-        public ResizeAnimationOperations(AtomAnimationClip clip)
-        {
-            _clip = clip;
-        }
-
         private class SnapshotAt
         {
             public float time;
@@ -19,13 +12,13 @@ namespace VamTimeline
 
         #region Stretch
 
-        public void Stretch(float newAnimationLength)
+        public void Stretch(AtomAnimationClip clip, float newAnimationLength)
         {
-            var keyframeOps = new KeyframesOperations(_clip);
-            var originalAnimationLength = _clip.animationLength;
-            _clip.animationLength = newAnimationLength;
+            var keyframeOps = new KeyframesOperations(clip);
+            var originalAnimationLength = clip.animationLength;
+            clip.animationLength = newAnimationLength;
             var ratio = newAnimationLength / originalAnimationLength;
-            foreach (var target in _clip.GetAllTargets())
+            foreach (var target in clip.GetAllTargets())
             {
                 var snapshots = target
                     .GetAllKeyframesTime()
@@ -44,24 +37,24 @@ namespace VamTimeline
 
         #region CropOrExtendEnd
 
-        public void CropOrExtendEnd(float newAnimationLength)
+        public void CropOrExtendEnd(AtomAnimationClip clip, float newAnimationLength)
         {
-            var originalAnimationLength = _clip.animationLength;
-            _clip.animationLength = newAnimationLength;
+            var originalAnimationLength = clip.animationLength;
+            clip.animationLength = newAnimationLength;
 
             if (newAnimationLength < originalAnimationLength)
             {
-                CropEnd(newAnimationLength);
+                CropEnd(clip, newAnimationLength);
             }
             else if (newAnimationLength > originalAnimationLength)
             {
-                ExtendEnd(newAnimationLength);
+                ExtendEnd(clip, newAnimationLength);
             }
         }
 
-        private void CropEnd(float newAnimationLength)
+        private void CropEnd(AtomAnimationClip clip, float newAnimationLength)
         {
-            foreach (var target in _clip.GetAllCurveTargets())
+            foreach (var target in clip.GetAllCurveTargets())
             {
                 foreach (var curve in target.GetCurves())
                 {
@@ -74,7 +67,7 @@ namespace VamTimeline
                 foreach (var t in keyframesToDelete)
                     target.DeleteFrame(t);
             }
-            foreach (var target in _clip.targetTriggers)
+            foreach (var target in clip.targetTriggers)
             {
                 while (target.triggersMap.Count > 0)
                 {
@@ -90,9 +83,9 @@ namespace VamTimeline
             }
         }
 
-        private void ExtendEnd(float newAnimationLength)
+        private void ExtendEnd(AtomAnimationClip clip, float newAnimationLength)
         {
-            foreach (var target in _clip.GetAllTargets())
+            foreach (var target in clip.GetAllTargets())
             {
                 target.AddEdgeFramesIfMissing(newAnimationLength);
             }
@@ -102,26 +95,26 @@ namespace VamTimeline
 
         #region CropOrExtendAt
 
-        public void CropOrExtendAt(float newAnimationLength, float time)
+        public void CropOrExtendAt(AtomAnimationClip clip, float newAnimationLength, float time)
         {
-            var originalAnimationLength = _clip.animationLength;
-            _clip.animationLength = newAnimationLength;
+            var originalAnimationLength = clip.animationLength;
+            clip.animationLength = newAnimationLength;
             var delta = newAnimationLength - originalAnimationLength;
 
             if (newAnimationLength < originalAnimationLength)
             {
-                CropAt(delta, time);
+                CropAt(clip, delta, time);
             }
             else if (newAnimationLength > originalAnimationLength)
             {
-                ExtendAt(delta, time);
+                ExtendAt(clip, delta, time);
             }
         }
 
-        private void CropAt(float delta, float time)
+        private void CropAt(AtomAnimationClip clip, float delta, float time)
         {
-            var keyframeOps = new KeyframesOperations(_clip);
-            foreach (var target in _clip.GetAllTargets())
+            var keyframeOps = new KeyframesOperations(clip);
+            foreach (var target in clip.GetAllTargets())
             {
                 // TODO: Create new keyframe if missing from evaluate curve
                 var snapshots = target
@@ -140,14 +133,14 @@ namespace VamTimeline
                     target.SetSnapshot(s.time, s.snapshot);
                 }
 
-                target.AddEdgeFramesIfMissing(_clip.animationLength);
+                target.AddEdgeFramesIfMissing(clip.animationLength);
             }
         }
 
-        private void ExtendAt(float delta, float time)
+        private void ExtendAt(AtomAnimationClip clip, float delta, float time)
         {
-            var keyframeOps = new KeyframesOperations(_clip);
-            foreach (var target in _clip.GetAllTargets())
+            var keyframeOps = new KeyframesOperations(clip);
+            foreach (var target in clip.GetAllTargets())
             {
                 // TODO: Create new keyframe if missing from evaluate curve
                 var snapshots = target
@@ -161,18 +154,18 @@ namespace VamTimeline
                     target.SetSnapshot(s.time, s.snapshot);
                 }
 
-                target.AddEdgeFramesIfMissing(_clip.animationLength);
+                target.AddEdgeFramesIfMissing(clip.animationLength);
             }
         }
 
         #endregion
 
-        public void Loop(float newAnimationLength)
+        public void Loop(AtomAnimationClip clip, float newAnimationLength)
         {
-            var keyframeOps = new KeyframesOperations(_clip);
-            var originalAnimationLength = _clip.animationLength;
-            _clip.animationLength = newAnimationLength;
-            foreach (var target in _clip.GetAllTargets())
+            var keyframeOps = new KeyframesOperations(clip);
+            var originalAnimationLength = clip.animationLength;
+            clip.animationLength = newAnimationLength;
+            foreach (var target in clip.GetAllTargets())
             {
                 var snapshots = target
                     .GetAllKeyframesTime()
@@ -192,7 +185,7 @@ namespace VamTimeline
                     if (i >= snapshots.Count) { i = 0; iteration++; }
                 }
 
-                target.AddEdgeFramesIfMissing(_clip.animationLength);
+                target.AddEdgeFramesIfMissing(clip.animationLength);
             }
         }
     }

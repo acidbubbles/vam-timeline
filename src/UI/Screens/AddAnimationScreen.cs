@@ -51,6 +51,9 @@ namespace VamTimeline
             var createCopyUI = prefabFactory.CreateButton("Create copy");
             createCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
 
+            var splitAtScrubberUI = prefabFactory.CreateButton("Split at scrubber position");
+            splitAtScrubberUI.button.onClick.AddListener(SplitAnimationAtScrubber);
+
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
 
@@ -79,6 +82,23 @@ namespace VamTimeline
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
+        }
+
+        private void SplitAnimationAtScrubber()
+        {
+            var time = current.clipTime.Snap();
+            if (time < 0.001 || time > current.animationLength - 0.001)
+            {
+                SuperController.LogError("Timeline: To split animations, move the scrubber to a position other than the first or last frame");
+                return;
+            }
+
+            var clip = operations.AddAnimation().AddAnimationAsCopy();
+            if(clip == null) return;
+            clip.loop = false;
+            operations.Resize().CropOrExtendAt(clip, clip.animationLength - time, 0);
+            current.loop = false;
+            operations.Resize().CropOrExtendEnd(current, time);
         }
 
         private void AddAnimationFromCurrentFrame(bool copySettings)
