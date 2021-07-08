@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -114,6 +115,32 @@ namespace VamTimeline
             newTarget.controlPosition = origTarget.controlPosition;
             newTarget.controlRotation = origTarget.controlPosition;
             return newTarget;
+        }
+
+        public void DeleteAnimation(AtomAnimationClip clip)
+        {
+            try
+            {
+                if (clip == null) return;
+                if (_animation.clips.Count == 1)
+                {
+                    SuperController.LogError("Timeline: Cannot delete the only animation.");
+                    return;
+                }
+                _animation.RemoveClip(clip);
+                foreach (var matchingClip in _animation.clips)
+                {
+                    if (matchingClip.nextAnimationName == clip.animationName)
+                    {
+                        matchingClip.nextAnimationName = null;
+                        matchingClip.nextAnimationTime = 0;
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline.{nameof(ManageAnimationsScreen)}.{nameof(DeleteAnimation)}: {exc}");
+            }
         }
     }
 }

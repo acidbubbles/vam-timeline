@@ -131,30 +131,8 @@ namespace VamTimeline
 
         private void DeleteAnimationConfirm()
         {
-            try
-            {
-                var anim = current;
-                if (anim == null) return;
-                if (animation.clips.Count == 1)
-                {
-                    SuperController.LogError("Timeline: Cannot delete the only animation.");
-                    return;
-                }
-                animation.RemoveClip(anim);
-                foreach (var clip in animation.clips)
-                {
-                    if (clip.nextAnimationName == anim.animationName)
-                    {
-                        clip.nextAnimationName = null;
-                        clip.nextAnimationTime = 0;
-                    }
-                }
-                animationEditContext.SelectAnimation(animation.clips[0]);
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(ManageAnimationsScreen)}.{nameof(DeleteAnimation)}: {exc}");
-            }
+            operations.AddAnimation().DeleteAnimation(current);
+            animationEditContext.SelectAnimation(animation.index.ByLayer(current.animationLayer).FirstOrDefault());
         }
 
         private void DeleteLayer()

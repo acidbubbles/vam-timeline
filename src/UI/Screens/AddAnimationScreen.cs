@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace VamTimeline
 {
     public class AddAnimationScreen : ScreenBase
@@ -54,6 +56,9 @@ namespace VamTimeline
             var splitAtScrubberUI = prefabFactory.CreateButton("Split at scrubber position");
             splitAtScrubberUI.button.onClick.AddListener(SplitAnimationAtScrubber);
 
+            var mergeUI = prefabFactory.CreateButton("Merge with next animation");
+            mergeUI.button.onClick.AddListener(MergeWithNext);
+
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
 
@@ -99,6 +104,46 @@ namespace VamTimeline
             operations.Resize().CropOrExtendAt(clip, clip.animationLength - time, 0);
             current.loop = false;
             operations.Resize().CropOrExtendEnd(current, time);
+        }
+
+        private void MergeWithNext()
+        {
+            var next = animation.index.ByLayer(current.animationLayer).SkipWhile(c => c != current).Skip(1).FirstOrDefault();
+            if (next == null) return;
+
+            var animationLengthOffset = current.animationLength;
+            current.animationLength = (current.animationLength + next.animationLength).Snap();
+
+            foreach (var curT in current.GetAllCurveTargets())
+            {
+                var nextT = next.GetAllCurveTargets().FirstOrDefault(c => c.TargetsSameAs(curT));
+                if (nextT == null) continue;
+                var curEnum = curT.GetCurves().GetEnumerator();
+                var nextEnum = nextT.GetCurves().GetEnumerator();
+                while (curEnum.MoveNext() && nextEnum.MoveNext())
+                {
+                    curEnum.Current.keys.RemoveAt(curEnum.Current.keys.Count - 1);
+                    curEnum.Current.keys.AddRange(nextEnum.Current.keys.Select(k =>
+                    {
+                        k.time += animationLengthOffset;
+                        return k;
+                    }));
+                }
+            }
+
+            foreach (var curT in current.targetTriggers)
+            {
+                var nextT = next.targetTriggers.FirstOrDefault(c => c.TargetsSameAs(curT));
+                if (nextT == null) continue;
+                foreach (var trigger in nextT.triggersMap)
+                {
+                    curT.SetKeyframe(trigger.Value.startTime + animationLengthOffset, trigger.Value);
+                }
+            }
+
+            operations.AddAnimation().DeleteAnimation(next);
+
+            current.DirtyAll();
         }
 
         private void AddAnimationFromCurrentFrame(bool copySettings)
