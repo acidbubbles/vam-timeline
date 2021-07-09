@@ -96,7 +96,6 @@ namespace VamTimeline
             _controlPanel.Bind(plugin);
 
             InitClipboardUI();
-
             InitChangeCurveTypeUI();
 
             tabs.Add(AnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f));
