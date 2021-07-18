@@ -1,9 +1,9 @@
-src\Common\RectTransformExtensions.cs
-src\Common\IRemoteAtomPlugin.cs
-src\Common\IRemoteControllerPlugin.cs
-src\Common\ITimelineListener.cs
-src\Common\StorableNames.cs
-src\Common\SyncProxy.cs
+src\Interop\RectTransformExtensions.cs
+src\Interop\IRemoteAtomPlugin.cs
+src\Interop\IRemoteControllerPlugin.cs
+src\Interop\ITimelineListener.cs
+src\Interop\StorableNames.cs
+src\Interop\SyncProxy.cs
 src\UI\Components\GradientImage.cs
 src\Controller\SimpleSignUI.cs
 src\ControllerPlugin.cs
