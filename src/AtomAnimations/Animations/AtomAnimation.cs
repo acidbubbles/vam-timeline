@@ -301,7 +301,7 @@ namespace VamTimeline
             }
             else
             {
-                if (clip.clipTime == clip.animationLength) clip.clipTime = 0f;
+                if (clip.clipTime >= clip.animationLength) clip.clipTime = 0f;
                 Blend(clip, 1f, clip.blendInDuration);
                 clip.playbackMainInLayer = true;
             }
@@ -504,7 +504,14 @@ namespace VamTimeline
 
             if (!to.playbackEnabled)
             {
-                to.clipTime = to.loop && from.loop && to.preserveLoops ? from.clipTime : 0f;
+                to.clipTime = 0f;
+                if (to.loop)
+                {
+                    if (!from.loop)
+                        to.clipTime = Mathf.Abs(to.animationLength - (from.animationLength - from.clipTime));
+                    else if (to.preserveLoops)
+                        to.clipTime = from.clipTime;
+                }
             }
 
             // if(!from.loop && to.blendInDuration > from.animationLength - from.clipTime)
@@ -572,14 +579,24 @@ namespace VamTimeline
             if (next == null) return;
 
             var nextTime = source.nextAnimationTime;
-            if (source.preserveLoops && source.loop)
+            if (source.loop)
             {
-                nextTime = nextTime.RoundToNearest(source.animationLength) - (next.blendInDuration / 2f) + source.clipTime;
+                if (source.preserveLoops)
+                {
+                    nextTime = nextTime.RoundToNearest(source.animationLength) - (next.blendInDuration / 2f) + source.clipTime;
+                }
+
+                if (source.nextAnimationTimeRandomize > 0f)
+                {
+                    nextTime = Random.Range(nextTime, nextTime + (source.preserveLoops ? source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) : source.nextAnimationTimeRandomize));
+                }
             }
-            if (source.nextAnimationTimeRandomize > 0f)
+            else
             {
-                nextTime = Random.Range(nextTime, nextTime + (source.preserveLoops ? source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) : source.nextAnimationTimeRandomize));
+                nextTime = Mathf.Min(nextTime, source.animationLength - next.blendInDuration);
+                if (nextTime < float.Epsilon) nextTime = float.Epsilon;
             }
+
             source.SetNext(next.animationName, nextTime);
         }
 

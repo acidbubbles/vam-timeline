@@ -107,11 +107,11 @@ namespace VamTimeline
 
         private void InitSequenceUI()
         {
-            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => ChangeNextAnimation());
+            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => SyncPlayNext());
             var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true, true);
             nextAnimationUI.popupPanelHeight = 360f;
 
-            _nextAnimationTimeJSON = new JSONStorableFloat("Play next in (seconds)", 0f, (float val) => ChangeNextAnimation(), 0f, 60f, false)
+            _nextAnimationTimeJSON = new JSONStorableFloat("Play next in (seconds)", 0f, (float val) => SyncPlayNext(), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTime
             };
@@ -268,11 +268,9 @@ namespace VamTimeline
 
         private void UpdateBlendDuration(float v)
         {
+            v = v.Snap();
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
-            v = v.Snap();
-            if (!current.loop && v >= current.animationLength - 0.001f)
-                _blendDurationJSON.valNoCallback = v = (current.animationLength - 0.001f).Snap();
             current.blendInDuration = v;
         }
 
@@ -290,7 +288,7 @@ namespace VamTimeline
             plugin.animationEditContext.Sample();
         }
 
-        private void ChangeNextAnimation()
+        private void SyncPlayNext()
         {
             RoundNextTimeToNearestLoop();
             var nextTime = _nextAnimationTimeJSON.val;
@@ -313,7 +311,7 @@ namespace VamTimeline
                         continue;
 
                     if (!clip.loop)
-                        nextTime = Mathf.Min(nextTime, Mathf.Max((clip.animationLength - clip.blendInDuration).Snap(), 0f));
+                        nextTime = Mathf.Min(nextTime, clip.animationLength);
                 }
 
                 foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
