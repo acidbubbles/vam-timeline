@@ -418,6 +418,7 @@ namespace VamTimeline
         {
             if (delta == 0) return;
 
+            #warning Try to avoid enumerable here
             foreach (var layer in index.ByLayer())
             {
                 var layerClips = layer.Value;
@@ -471,12 +472,21 @@ namespace VamTimeline
             }
         }
 
-        private void Blend(AtomAnimationClip clip, float weight, float duration)
+        private void Blend(AtomAnimationClip clip, float targetWeight, float blendDuration)
         {
-            if (!clip.playbackEnabled) clip.playbackBlendWeight = 0f;
-            clip.playbackBlendRate = (weight - clip.playbackBlendWeight) / duration;
-            if (clip.playbackEnabled) return;
-            clip.playbackEnabled = true;
+            if (blendDuration == 0)
+            {
+                clip.playbackBlendWeight = clip.weight;
+                clip.playbackBlendRate = 0f;
+                clip.playbackEnabled = targetWeight > 0;
+            }
+            else
+            {
+                if (!clip.playbackEnabled) clip.playbackBlendWeight = 0f;
+                clip.playbackBlendRate = (targetWeight - clip.playbackBlendWeight) / blendDuration;
+                if (clip.playbackEnabled) return;
+                clip.playbackEnabled = true;
+            }
             onClipIsPlayingChanged.Invoke(clip);
         }
 
