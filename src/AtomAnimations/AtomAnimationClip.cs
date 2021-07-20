@@ -664,10 +664,9 @@ namespace VamTimeline
             {
                 if (loop) return;
                 if (nextAnimationName == null)
-                {
                     nextAnimationTime = 0;
-                }
-                nextAnimationTime = (animationLength - blendInDuration).Snap();
+                else
+                    nextAnimationTime = animationLength;
             }
             finally
             {
