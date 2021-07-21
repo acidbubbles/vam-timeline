@@ -296,8 +296,7 @@ namespace VamTimeline
 
             if (nextName == NoNextAnimation)
             {
-
-                foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
+                foreach (var clip in animation.GetClips(current.animationName))
                 {
                     clip.nextAnimationName = null;
                     clip.nextAnimationTime = 0f;
@@ -305,16 +304,18 @@ namespace VamTimeline
             }
             else
             {
-                foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
+                foreach (var clip in animation.GetClips(current.animationName))
                 {
                     if (!NextExists(clip, nextName))
                         continue;
 
                     if (!clip.loop)
-                        nextTime = Mathf.Min(nextTime, clip.animationLength);
+                        nextTime = clip.nextAnimationTime == 0 ? clip.animationLength : Mathf.Min(nextTime, clip.animationLength);
+                    else if (clip.nextAnimationTime == 0)
+                        nextTime = clip.animationLength;
                 }
 
-                foreach (var clip in animation.GetClips(current.animationName).Where(c => c.nextAnimationName == current.nextAnimationName))
+                foreach (var clip in animation.GetClips(current.animationName))
                 {
                     if (!NextExists(clip, nextName))
                         continue;
