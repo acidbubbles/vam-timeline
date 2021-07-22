@@ -15,7 +15,7 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator StartRecording(List<FreeControllerV3AnimationTarget> controllers, List<JSONStorableFloatAnimationTarget> floatParams)
+        public IEnumerator StartRecording(int recordInSeconds, List<FreeControllerV3AnimationTarget> controllers, List<JSONStorableFloatAnimationTarget> floatParams)
         {
             // TODO: Handle stopping in the middle of it
             // TODO: Handle starting while it's already recording
@@ -26,7 +26,7 @@ namespace VamTimeline
 
             var keyframesOps = new KeyframesOperations(_clip);
 
-            for (var i = 5; i > 0; i--)
+            for (var i = recordInSeconds; i > 0; i--)
             {
                 SuperController.singleton.helpText = $"Start recording in {i}...";
                 var next = Time.realtimeSinceStartup + 1f;

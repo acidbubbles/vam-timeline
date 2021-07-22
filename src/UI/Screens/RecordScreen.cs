@@ -12,7 +12,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -23,17 +22,19 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Record options", 1);
             var recordInJSON = new JSONStorableFloat("Record delay timer", 5f, 0f, 30f, false);
+            recordInJSON.valNoCallback = animationEditContext.startRecordIn;
             recordInJSON.setCallbackFunction = val =>
             {
-                recordInJSON.valNoCallback = Mathf.Round(val);
-                _recordButton.label = $"Start recording in {recordInJSON.valNoCallback:0}...";
+                animationEditContext.startRecordIn = (int) Mathf.Round(val);
+                recordInJSON.valNoCallback = animationEditContext.startRecordIn;
+                _recordButton.label = $"Start recording in {animationEditContext.startRecordIn}...";
             };
             prefabFactory.CreateSlider(recordInJSON);
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
-            _recordButton = prefabFactory.CreateButton($"Start recording in {recordInJSON.valNoCallback:0}...");
+            _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
             _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo()));
 
             prefabFactory.CreateSpacer();
@@ -60,6 +61,7 @@ namespace VamTimeline
             // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
             var targets = animationEditContext.GetSelectedTargets().ToList();
             var enumerator = operations.Record().StartRecording(
+                animationEditContext.startRecordIn,
                 targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : current.targetControllers,
                 targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : current.targetFloatParams
             );

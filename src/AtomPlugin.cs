@@ -912,6 +912,7 @@ namespace VamTimeline
             {
                 var targets = animationEditContext.GetSelectedTargets().ToList();
                 StartCoroutine(operations.Record().StartRecording(
+                    animationEditContext.startRecordIn,
                     targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : animationEditContext.current.targetControllers,
                     targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : animationEditContext.current.targetFloatParams
                 ));
