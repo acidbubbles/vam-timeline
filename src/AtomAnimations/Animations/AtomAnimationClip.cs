@@ -28,6 +28,8 @@ namespace VamTimeline
         private bool _ensureQuaternionContinuity = true;
         private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
+        private AtomPose _pose;
+        private bool _applyPoseOnTransition;
 
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
@@ -321,6 +323,37 @@ namespace VamTimeline
                 if (playbackBlendRate > 0) playbackBlendRate = 0;
                 if (playbackBlendWeight != _weight && playbackBlendRate == 0) playbackBlendWeight = _weight;
                 onPlaybackSettingsChanged.Invoke();
+            }
+        }
+
+        public AtomPose pose
+        {
+            get
+            {
+                return _pose;
+            }
+            set
+            {
+                _pose = value;
+                if (value == null) applyPoseOnTransition = false;
+                onAnimationSettingsChanged.Invoke(nameof(pose));
+            }
+        }
+
+        public bool applyPoseOnTransition
+        {
+            get
+            {
+                return _applyPoseOnTransition;
+            }
+            set
+            {
+                #warning This means zero transition time
+                #warning This should skip an animation frame before applying morphs, to validate (see collider bug)
+                _applyPoseOnTransition = value;
+                onAnimationSettingsChanged.Invoke(nameof(applyPoseOnTransition));
+                #warning We should make some effort to keep those settings in a valid state in both directions
+                blendInDuration = 0;
             }
         }
 

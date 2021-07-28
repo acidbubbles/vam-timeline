@@ -69,6 +69,9 @@ namespace VamTimeline
             {
                 _current = value;
                 _lastCurrentAnimationLength = value.animationLength;
+                #warning Review
+                if (!_animation.isPlaying)
+                    _current.pose?.Apply();
                 ResetScrubberRange();
             }
         }

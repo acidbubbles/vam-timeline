@@ -27,6 +27,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimationClip.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimationsClipsIndex.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimationTargetsList.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomPose.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\IAtomAnimationClip.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\IAtomAnimationTargetsList.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\TimeTypeValues.cs",

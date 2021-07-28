@@ -28,6 +28,10 @@ namespace VamTimeline
         private JSONStorableFloat _clipSpeedJSON;
         private JSONStorableFloat _clipWeightJSON;
         private UIDynamicButton _applyLengthUI;
+        private UIDynamicButton _savePoseUI;
+        private UIDynamicButton _applyPoseUI;
+        private UIDynamicButton _clearPoseUI;
+        private JSONStorableBool _applyPoseOnTransition;
 
         #region Init
 
@@ -47,6 +51,12 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Length", 1);
             InitAnimationLengthUI();
 
+            if (plugin.containingAtom.type == "Person")
+            {
+                prefabFactory.CreateHeader("Pose", 1);
+                InitPoseUI();
+            }
+
             prefabFactory.CreateHeader("Advanced", 1);
             InitWeightUI();
             InitEnsureQuaternionContinuityUI();
@@ -57,7 +67,7 @@ namespace VamTimeline
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
             OnSpeedChanged();
             OnPlaybackSettingsChanged();
-            UpdateValues();
+            OnAnimationSettingsChanged();
         }
 
         private void InitPlaybackUI()
@@ -195,9 +205,25 @@ namespace VamTimeline
             _applyLengthUI.button.interactable = false;
         }
 
+        private void InitPoseUI()
+        {
+            #warning Update buttons enabled/disabled and storable bool on animation settings changed
+            _savePoseUI = prefabFactory.CreateButton("Save pose");
+            _savePoseUI.button.onClick.AddListener(() => current.pose = AtomPose.FromAtom(plugin.containingAtom));
+            #warning: Check if null
+            _applyPoseUI = prefabFactory.CreateButton("Apply pose");
+            _applyPoseUI.button.onClick.AddListener(() => current.pose.Apply());
+                _clearPoseUI = prefabFactory.CreateButton("Clear pose");
+            _clearPoseUI.button.onClick.AddListener(() => current.pose = null);
+            #warning This button should be in the transition tab
+            #warning Update the toggle value on clip change
+            _applyPoseOnTransition = new JSONStorableBool("Apply pose on transition", false, v => current.applyPoseOnTransition = v);
+            prefabFactory.CreateToggle(_applyPoseOnTransition);
+        }
+
         private void InitEnsureQuaternionContinuityUI()
         {
-            _ensureQuaternionContinuity = new JSONStorableBool("Ensure Quaternion Continuity", true, SetEnsureQuaternionContinuity);
+            _ensureQuaternionContinuity = new JSONStorableBool("Ensure quaternion continuity", true, SetEnsureQuaternionContinuity);
             prefabFactory.CreateToggle(_ensureQuaternionContinuity);
         }
 
@@ -308,12 +334,12 @@ namespace VamTimeline
             args.after.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
 
             OnPlaybackSettingsChanged();
-            UpdateValues();
+            OnAnimationSettingsChanged();
         }
 
         private void OnAnimationSettingsChanged(string _)
         {
-            UpdateValues();
+            OnAnimationSettingsChanged();
         }
 
         private void OnPlaybackSettingsChanged()
@@ -327,7 +353,7 @@ namespace VamTimeline
             _animationSpeedJSON.valNoCallback = animation.speed;
         }
 
-        private void UpdateValues()
+        private void OnAnimationSettingsChanged()
         {
             _animationNameJSON.valNoCallback = current.animationName;
             _layerNameJSON.valNoCallback = current.animationLayer;
@@ -337,6 +363,11 @@ namespace VamTimeline
             _loopUI.toggle.interactable = !current.autoTransitionNext;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
+            _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
+            _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
+            _applyPoseUI.button.interactable = current.pose != null;
+            _clearPoseUI.button.interactable = current.pose != null;
+            _applyPoseOnTransition.toggle.interactable = current.pose != null;
         }
 
         public override void OnDestroy()

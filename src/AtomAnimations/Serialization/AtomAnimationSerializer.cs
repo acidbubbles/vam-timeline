@@ -79,7 +79,9 @@ namespace VamTimeline
                 speed = DeserializeFloat(clipJSON["Speed"], 1),
                 weight = DeserializeFloat(clipJSON["Weight"], 1),
                 uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
-                animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap()
+                animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap(),
+                pose = AtomPose.FromJSON(_atom, clipJSON["Pose"]),
+                applyPoseOnTransition = DeserializeBool(clipJSON["ApplyPoseOnTransition"], false)
             };
             DeserializeClip(clip, clipJSON, targetsRegistry);
             return clip;
@@ -362,7 +364,7 @@ namespace VamTimeline
                     { "AnimationLayer", clip.animationLayer },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
-                    { "Uninterruptible", clip.uninterruptible ? "1" : "0" }
+                    { "Uninterruptible", clip.uninterruptible ? "1" : "0" },
                 };
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
@@ -372,6 +374,10 @@ namespace VamTimeline
                 clipJSON["NextAnimationTimeRandomize"] = clip.nextAnimationTimeRandomize .ToString(CultureInfo.InvariantCulture);
             if (clip.autoPlay)
                 clipJSON["AutoPlay"] = "1";
+            if (clip.pose != null)
+                clipJSON["Pose"] = clip.pose.ToJSON();
+            if (clip.applyPoseOnTransition)
+                clipJSON["ApplyPoseOnTransition"] = "1";
 
             SerializeClip(clip, clipJSON);
             return clipJSON;

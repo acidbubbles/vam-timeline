@@ -44,6 +44,9 @@ namespace VamTimeline
                 }
                 newTarget.dirty = true;
             }
+
+            clip.pose = _clip.pose.Clone();
+            clip.applyPoseOnTransition = _clip.applyPoseOnTransition;
             return clip;
         }
 

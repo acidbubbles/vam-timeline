@@ -16,6 +16,7 @@
 ..\src\AtomAnimations\Animations\AtomAnimationClip.cs
 ..\src\AtomAnimations\Animations\AtomAnimationsClipsIndex.cs
 ..\src\AtomAnimations\Animations\AtomAnimationTargetsList.cs
+..\src\AtomAnimations\Animations\AtomPose.cs
 ..\src\AtomAnimations\Animations\IAtomAnimationClip.cs
 ..\src\AtomAnimations\Animations\IAtomAnimationTargetsList.cs
 ..\src\AtomAnimations\Animations\TimeTypeValues.cs
