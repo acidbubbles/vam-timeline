@@ -25,7 +25,6 @@ namespace VamTimeline
         {
             public IAtomAnimationTarget target;
             public GameObject gameObject;
-            public DopeSheetKeyframes keyframes;
         }
 
         public DopeSheet()
@@ -295,7 +294,7 @@ namespace VamTimeline
                         rows.Add(CreateRow(target));
                 }
             }
-            _scrubberRect?.gameObject.SetActive(any);
+            _scrubberRect.gameObject.SetActive(any);
             _clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
         }
 
@@ -506,8 +505,7 @@ namespace VamTimeline
             return new RowRef
             {
                 target = target,
-                gameObject = go,
-                keyframes = keyframes
+                gameObject = go
             };
         }
 

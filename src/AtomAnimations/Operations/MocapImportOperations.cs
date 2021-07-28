@@ -47,10 +47,10 @@ namespace VamTimeline
 
         public void Prepare(bool resize)
         {
-            if (SuperController.singleton.motionAnimationMaster == null || _containingAtom?.motionAnimationControls == null)
+            if (SuperController.singleton.motionAnimationMaster == null || _containingAtom.motionAnimationControls == null)
                 throw new Exception("Timeline: Missing motion animation controls");
 
-            var length = _containingAtom.motionAnimationControls.Select(m => m?.clip?.clipLength ?? 0).Max().Snap(0.01f);
+            var length = _containingAtom.motionAnimationControls.Select(m => m.clip.clipLength).Max().Snap(0.01f);
             if (length < 0.01f)
                 throw new Exception("Timeline: No motion animation to import.");
 
@@ -80,7 +80,7 @@ namespace VamTimeline
 
             var controlCounter = 0;
             var motControls = _containingAtom.motionAnimationControls
-                .Where(m => m?.clip?.clipLength > 0.1f)
+                .Where(m => m.clip.clipLength > 0.1f)
                 .Where(m => controllers.Count == 0 || controllers.Contains(m.controller))
                 .Where(m => m.clip.steps.Any(s => s.positionOn || s.rotationOn))
                 .ToList();

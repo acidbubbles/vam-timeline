@@ -1,11 +1,10 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VamTimeline
 {
     public class ControllerTargetReduceProcessor : TargetReduceProcessorBase<FreeControllerV3AnimationTarget>, ITargetReduceProcessor
     {
-        ICurveAnimationTarget ITargetReduceProcessor.target => base.source;
+        ICurveAnimationTarget ITargetReduceProcessor.target => source;
 
         public ControllerTargetReduceProcessor(FreeControllerV3AnimationTarget source, ReduceSettings settings)
             : base(source, settings)

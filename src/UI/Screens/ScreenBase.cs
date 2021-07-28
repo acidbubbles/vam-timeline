@@ -16,12 +16,12 @@ namespace VamTimeline
 
         protected AtomAnimation animation => plugin.animation;
         protected AtomAnimationEditContext animationEditContext => plugin.animationEditContext;
-        protected AtomAnimationClip current => animationEditContext?.current;
+        protected AtomAnimationClip current => animationEditContext.current;
         protected OperationsFactory operations => new OperationsFactory(plugin.containingAtom, animation, current);
 
         protected IAtomPlugin plugin;
         protected VamPrefabFactory prefabFactory;
-        protected bool _disposing;
+        protected bool disposing;
 
         public virtual void Init(IAtomPlugin plugin, object arg)
         {
@@ -51,7 +51,7 @@ namespace VamTimeline
         public virtual void OnDestroy()
         {
             prefabFactory.ClearConfirm();
-            _disposing = true;
+            disposing = true;
             onScreenChangeRequested.RemoveAllListeners();
             plugin.animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
         }

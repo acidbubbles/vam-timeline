@@ -4,7 +4,7 @@ namespace VamTimeline
 {
     public class FloatParamTargetReduceProcessor : TargetReduceProcessorBase<JSONStorableFloatAnimationTarget>, ITargetReduceProcessor
     {
-        ICurveAnimationTarget ITargetReduceProcessor.target => base.source;
+        ICurveAnimationTarget ITargetReduceProcessor.target => source;
 
         public FloatParamTargetReduceProcessor(JSONStorableFloatAnimationTarget source, ReduceSettings settings)
             : base(source, settings)

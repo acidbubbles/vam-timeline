@@ -75,6 +75,7 @@ namespace VamTimeline
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
+            context.Assert(layer1.animationLayer != layer2.animationLayer, "Layouts must all be different");
             context.Assert(context.animation.clips.Count, 2, "The animation is not added");
             yield break;
         }

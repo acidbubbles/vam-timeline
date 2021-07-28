@@ -10,8 +10,8 @@ namespace VamTimeline
         private readonly RectTransform _scrubberRect;
         private readonly Text _timeText;
 
-        private int _lastScrubberHash = 0;
-        private int _lastTextHash = 0;
+        private int _lastScrubberHash;
+        private int _lastTextHash;
         private ScrubberMarkers _markers;
 
         public AtomAnimationEditContext animationEditContext;
@@ -19,15 +19,17 @@ namespace VamTimeline
 
         public Scrubber()
         {
-            var image = gameObject.AddComponent<Image>();
+            var go = gameObject;
+
+            var image = go.AddComponent<Image>();
             image.raycastTarget = false;
 
-            var mask = gameObject.AddComponent<Mask>();
+            var mask = go.AddComponent<Mask>();
             mask.showMaskGraphic = false;
 
-            CreateBackground(gameObject, _style.BackgroundColor);
+            CreateBackground(go, _style.BackgroundColor);
             CreateMarkers();
-            _scrubberRect = CreateLine(gameObject, _style.ScrubberColor).GetComponent<RectTransform>();
+            _scrubberRect = CreateLine(go, _style.ScrubberColor).GetComponent<RectTransform>();
             _timeText = CreateTime();
         }
 

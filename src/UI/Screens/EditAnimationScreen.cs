@@ -128,7 +128,7 @@ namespace VamTimeline
         private void InitRenameAnimation()
         {
             _animationNameJSON = new JSONStorableString("Animation name (group with 'group/anim')", "", UpdateAnimationName);
-            var animationNameUI = prefabFactory.CreateTextInput(_animationNameJSON);
+            prefabFactory.CreateTextInput(_animationNameJSON);
             _animationNameJSON.valNoCallback = current.animationName;
         }
 
@@ -362,6 +362,7 @@ namespace VamTimeline
             _loop.valNoCallback = current.loop;
             _loopUI.toggle.interactable = !current.autoTransitionNext;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
+            // ReSharper disable once Unity.NoNullPropagation
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
             _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
             _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";

@@ -91,7 +91,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
         {
             yield return new WaitForEndOfFrame();
             _selectionChangedPending = false;
-            if (_disposing) yield break;
+            if (disposing) yield break;
             RefreshTargetsList();
         }
 
@@ -176,7 +176,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 Destroy(targetRef.gameObject);
             }
             _targets.Clear();
-            Destroy(_manageTargetsUI?.gameObject);
+            if(_manageTargetsUI != null) Destroy(_manageTargetsUI.gameObject);
         }
 
         private void RemoveTargetSiblingComponents()
@@ -184,11 +184,11 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
             if (_filterUI != null) prefabFactory.RemoveToggle(_filterJSON, _filterUI);
             if (_textUI != null) prefabFactory.RemoveTextField(_textJSON, _textUI);
             _filterUI = null;
-            Destroy(_noTargetsUI?.gameObject);
+            if (_noTargetsUI != null) Destroy(_noTargetsUI.gameObject);
             _noTargetsUI = null;
-            Destroy(_spacerUI?.gameObject);
+            if (_spacerUI != null) Destroy(_spacerUI.gameObject);
             _spacerUI = null;
-            Destroy(_manageTargetsUI?.gameObject);
+            if (_manageTargetsUI != null) Destroy(_manageTargetsUI.gameObject);
             _manageTargetsUI = null;
         }
     }

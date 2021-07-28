@@ -47,7 +47,9 @@ namespace VamTimeline
         private Atom GetAtom()
         {
             // Note: Yeah, that's horrible, but containingAtom is null
+            // ReSharper disable Unity.NoNullPropagation
             var container = gameObject?.transform?.parent?.parent?.parent?.parent?.parent?.gameObject;
+            // ReSharper restore Unity.NoNullPropagation
             if (container == null)
                 throw new NullReferenceException("Could not find the parent gameObject.");
             var atom = container.GetComponent<Atom>();

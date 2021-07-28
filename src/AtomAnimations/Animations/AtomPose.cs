@@ -57,7 +57,7 @@ namespace VamTimeline
 
         public void Apply()
         {
-            var posePresetsManagerControls = _atom.presetManagerControls.FirstOrDefault(pmc => pmc.name == "PosePresets");
+            var posePresetsManagerControls = _atom.presetManagerControls.First(pmc => pmc.name == "PosePresets");
             var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
             posePresetsManager.LoadPresetFromJSON(_poseJSON);
         }

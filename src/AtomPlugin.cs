@@ -43,7 +43,7 @@ namespace VamTimeline
         public JSONStorableBool pausedJSON { get; private set; }
 
         private JSONStorableFloat _scrubberAnalogControlJSON;
-        private bool _scrubbing = false;
+        private bool _scrubbing;
 
         private bool _restoring;
         private FreeControllerV3Hook _freeControllerHook;

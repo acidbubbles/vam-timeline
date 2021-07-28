@@ -122,6 +122,8 @@ namespace VamTimeline
                 var nextEnum = nextT.GetCurves().GetEnumerator();
                 while (curEnum.MoveNext() && nextEnum.MoveNext())
                 {
+                    if (curEnum.Current == null) continue;
+                    if (nextEnum.Current == null) continue;
                     curEnum.Current.keys.RemoveAt(curEnum.Current.keys.Count - 1);
                     curEnum.Current.keys.AddRange(nextEnum.Current.keys.Select(k =>
                     {
@@ -129,6 +131,8 @@ namespace VamTimeline
                         return k;
                     }));
                 }
+                curEnum.Dispose();
+                nextEnum.Dispose();
             }
 
             foreach (var curT in current.targetTriggers)

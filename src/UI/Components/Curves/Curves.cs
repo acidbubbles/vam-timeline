@@ -203,16 +203,16 @@ namespace VamTimeline
 
         private void BindCurves(ICurveAnimationTarget target)
         {
-            var lead = target.GetLeadCurve();
+            // ReSharper disable once RedundantJumpStatement
             _targets.Add(target);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
-            if (target is FreeControllerV3AnimationTarget)
+            var freeControllerV3AnimationTarget = target as FreeControllerV3AnimationTarget;
+            if (freeControllerV3AnimationTarget != null)
             {
-                var t = (FreeControllerV3AnimationTarget)target;
                 if (_lines.Count > _maxCurves - 3) return;
-                BindCurve(t.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
-                BindCurve(t.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
-                BindCurve(t.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
+                BindCurve(freeControllerV3AnimationTarget.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
+                BindCurve(freeControllerV3AnimationTarget.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
+                BindCurve(freeControllerV3AnimationTarget.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
                 // To display rotation as euleur angles, we have to build custom curves. But it's not that useful.
                 /*
                 var rotVX = new BezierKeyframe[t.rotX.length];
@@ -242,15 +242,15 @@ namespace VamTimeline
                 BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
                 BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
                 */
+                return;
             }
-            else if (target is JSONStorableFloatAnimationTarget)
+
+            var floatAnimationTarget = target as JSONStorableFloatAnimationTarget;
+            if (floatAnimationTarget != null)
             {
                 if (_lines.Count > _maxCurves - 1) return;
-                var t = (JSONStorableFloatAnimationTarget)target;
-                BindCurve(t.value, _style.CurveLineColorFloat, target.GetShortName());
-            }
-            else
-            {
+                BindCurve(floatAnimationTarget.value, _style.CurveLineColorFloat, target.GetShortName());
+                return;
             }
         }
 

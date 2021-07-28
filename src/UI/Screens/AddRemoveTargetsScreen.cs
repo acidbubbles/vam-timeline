@@ -123,14 +123,11 @@ namespace VamTimeline
             if (ok) return;
 
             prefabFactory.CreateSpacer();
-            UIDynamicButton enableAllTargetsUI = null;
-            UIDynamic spacerUI = null;
-            enableAllTargetsUI = prefabFactory.CreateButton("Add all other animations' targets");
+            var enableAllTargetsUI = prefabFactory.CreateButton("Add all other animations' targets");
             enableAllTargetsUI.button.onClick.AddListener(() =>
             {
                 AddMissingTargets();
                 Destroy(enableAllTargetsUI);
-                Destroy(spacerUI);
             });
             enableAllTargetsUI.buttonColor = Color.yellow;
         }

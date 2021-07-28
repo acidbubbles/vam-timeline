@@ -57,7 +57,7 @@ namespace VamTimeline
             var jsc = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", val =>
             {
                 if (_ignoreAnimationChange) return;
-                _animationEditContext?.SelectAnimation(val);
+                _animationEditContext.SelectAnimation(val);
             });
 
             var popup = _prefabFactory.CreatePopup(jsc, false, true);

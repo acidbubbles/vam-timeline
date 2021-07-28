@@ -17,7 +17,6 @@ namespace VamTimeline
 
             var rect = rectTransform.rect;
             var width = rect.width;
-            var height = rect.height;
 
             var x1 = (time / animationLength) * width;
             var timeWidth = style.ScrubberWidth / 2f;

@@ -234,20 +234,20 @@ namespace VamTimeline
             var ui = Instantiate(plugin.manager.configurableTogglePrefab, transform, false);
             ui.transform.SetParent(parent, true);
 
-            var toggle = ui.GetComponent<UIDynamicToggle>();
-            jsb.toggle = toggle.toggle;
+            var uiToggle = ui.GetComponent<UIDynamicToggle>();
+            jsb.toggle = uiToggle.toggle;
 
-            var label = toggle.labelText;
+            var label = uiToggle.labelText;
             label.fontSize = 24;
             label.alignment = TextAnchor.MiddleLeft;
             label.raycastTarget = false;
             label.text = jsb.name;
 
-            var layout = toggle.GetComponent<LayoutElement>();
+            var layout = uiToggle.GetComponent<LayoutElement>();
             layout.minHeight = 52f;
             layout.preferredHeight = 52f;
 
-            return toggle;
+            return uiToggle;
         }
 
         protected abstract void CreateCustom();

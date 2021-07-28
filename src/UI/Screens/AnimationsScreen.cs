@@ -70,7 +70,7 @@ namespace VamTimeline
         {
             yield return 0;
             var playLabel = $" \u25B6 {clip.animationName}";
-            while (!_disposing)
+            while (!disposing)
             {
                 if (!clip.playbackEnabled && !clip.playbackMainInLayer)
                 {
