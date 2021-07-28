@@ -328,7 +328,7 @@ namespace VamTimeline
                     if (current.loop) return;
                     foreach (var target in GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
                     {
-                        target.ChangeCurve(current.animationLength, CurveTypeValues.CopyPrevious);
+                        target.ChangeCurveByTime(current.animationLength, CurveTypeValues.CopyPrevious);
                     }
 
                     return;

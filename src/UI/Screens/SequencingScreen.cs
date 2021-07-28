@@ -8,7 +8,7 @@ namespace VamTimeline
     public class SequencingScreen : ScreenBase
     {
         public const string ScreenName = "Sequence";
-        public const string NoNextAnimation = "[None]";
+        private const string _noNextAnimation = "[None]";
 
         public override string screenId => ScreenName;
 
@@ -119,7 +119,7 @@ namespace VamTimeline
             nextAnimationTimeUI.valueFormat = "F3";
         }
 
-        protected void InitRandomizeLengthUI()
+        private void InitRandomizeLengthUI()
         {
             _randomizeRangeJSON = new JSONStorableFloat("Randomize time range (seconds)", 0f, ChangeRandomizeLength, 0f, 60f, false)
             {
@@ -247,7 +247,7 @@ namespace VamTimeline
                     var i = x.IndexOf("/", StringComparison.Ordinal);
                     return i == -1 ? null : x.Substring(0, i);
                 });
-            return new[] { NoNextAnimation }
+            return new[] { _noNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
                 .ToList();
@@ -294,7 +294,7 @@ namespace VamTimeline
             var nextTime = _nextAnimationTimeJSON.val;
             var nextName = _nextAnimationJSON.val;
 
-            if (nextName == NoNextAnimation)
+            if (nextName == _noNextAnimation)
             {
                 foreach (var clip in animation.GetClips(current.animationName))
                 {
@@ -371,7 +371,7 @@ namespace VamTimeline
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
             _preserveLoopsJSON.valNoCallback = current.preserveLoops;
-            _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? NoNextAnimation : current.nextAnimationName;
+            _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? _noNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;

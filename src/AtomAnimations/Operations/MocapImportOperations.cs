@@ -16,7 +16,6 @@ namespace VamTimeline
 
         protected struct ControllerKeyframe
         {
-            public float time;
             public Vector3 position;
             public Quaternion rotation;
 
@@ -27,7 +26,6 @@ namespace VamTimeline
                 var locationRotation = s.rotationOn ? s.rotation : controllerTransform.localRotation;
                 return new ControllerKeyframe
                 {
-                    time = time,
                     position = localPosition,
                     rotation = locationRotation
                 };
@@ -122,8 +120,11 @@ namespace VamTimeline
                 finally
                 {
                     // NOTE: This should not be necessary, but for some reason dirty is set back to false too early and some changes are not picked up
-                    target.dirty = true;
-                    target?.EndBulkUpdates();
+                    if (target != null)
+                    {
+                        target.dirty = true;
+                        target.EndBulkUpdates();
+                    }
                 }
             }
         }

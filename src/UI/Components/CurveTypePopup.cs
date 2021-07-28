@@ -55,7 +55,7 @@ namespace VamTimeline
             var curveType = CurveTypeValues.ToInt(val);
 
             foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
-                target.ChangeCurve(time, curveType);
+                target.ChangeCurveByTime(time, curveType);
 
             if (curveType == CurveTypeValues.CopyPrevious)
                 _animationEditContext.Sample();
@@ -71,7 +71,7 @@ namespace VamTimeline
             _curveTypes.Clear();
             foreach (var target in _animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
             {
-                var curveType = target.GetKeyframeCurveType(time);
+                var curveType = target.GetKeyframeCurveTypeByTime(time);
                 if (curveType == BezierKeyframe.NullKeyframeCurveType) continue;
                 _curveTypes.Add(CurveTypeValues.FromInt(curveType));
             }

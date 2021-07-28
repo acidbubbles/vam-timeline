@@ -9,7 +9,7 @@ namespace VamTimeline
     public class DopeSheet : MonoBehaviour
     {
         private readonly List<DopeSheetKeyframes> _keyframesRows = new List<DopeSheetKeyframes>();
-        private readonly DopeSheetStyle _style = new DopeSheetStyle();
+        private readonly DopeSheetStyle _style = DopeSheetStyle.Default();
         private readonly RectTransform _scrubberRect;
         private readonly RectTransform _content;
         private AtomAnimationEditContext _animationEditContext;
@@ -248,7 +248,7 @@ namespace VamTimeline
         {
             if (_animationEditContext == null) return;
             if (!_animationEditContext.animation.isPlaying) return;
-            if (UIPerformance.ShouldSkip()) return;
+            if (UIPerformance.ShouldSkip(UIPerformance.HighFrequency)) return;
 
             SetScrubberPosition(_animationEditContext.clipTime, false);
         }

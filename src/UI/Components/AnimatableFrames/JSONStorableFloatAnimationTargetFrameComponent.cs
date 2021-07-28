@@ -186,7 +186,7 @@ namespace VamTimeline
                 var key = target.SetKeyframe(time, floatParam.val);
                 var keyframe = target.value.keys[key];
                 if (keyframe.curveType == CurveTypeValues.CopyPrevious)
-                    target.ChangeCurve(time, CurveTypeValues.SmoothLocal);
+                    target.ChangeCurveByTime(time, CurveTypeValues.SmoothLocal);
             }
             else
             {

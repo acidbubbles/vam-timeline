@@ -17,7 +17,6 @@ namespace VamTimeline
 
         private static readonly Regex _lastDigitsRegex = new Regex(@"^(?<name>.+)(?<index>[0-9]+)$", RegexOptions.Compiled);
 
-        public const float PaddingBeforeLoopFrame = 0.001f;
         public const string RandomizeAnimationName = "(Randomize)";
         public const string RandomizeGroupSuffix = "/*";
 
@@ -917,7 +916,7 @@ namespace VamTimeline
                 if (sourceParent == currentParent)
                 {
                     currentTarget.SetCurveSnapshot(clipTime, sourceTarget.GetCurveSnapshot(sourceTime), false);
-                    currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, false);
+                    currentTarget.ChangeCurveByTime(clipTime, CurveTypeValues.Linear, false);
                 }
                 else
                 {
@@ -931,7 +930,7 @@ namespace VamTimeline
                 var currentTarget = clip.targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(sourceTarget));
                 if (currentTarget == null) continue;
                 currentTarget.value.SetKeySnapshot(clipTime, sourceTarget.value.GetKeyframeAt(sourceTime));
-                currentTarget.ChangeCurve(clipTime, CurveTypeValues.Linear, false);
+                currentTarget.ChangeCurveByTime(clipTime, CurveTypeValues.Linear, false);
             }
         }
 

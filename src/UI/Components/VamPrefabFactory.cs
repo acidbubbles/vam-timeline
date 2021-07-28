@@ -9,12 +9,14 @@ namespace VamTimeline
 {
     public class VamPrefabFactory : MonoBehaviour
     {
+        // ReSharper disable MemberCanBePrivate.Global
         public static RectTransform triggerActionsPrefab;
         public static RectTransform triggerActionMiniPrefab;
         public static RectTransform triggerActionDiscretePrefab;
         public static RectTransform triggerActionTransitionPrefab;
         public static RectTransform scrollbarPrefab;
         public static RectTransform buttonPrefab;
+        // ReSharper restore MemberCanBePrivate.Global
 
         public static IEnumerator LoadUIAssets()
         {

@@ -186,7 +186,7 @@ namespace VamTimeline
             var key = plugin.animationEditContext.SetKeyframeToCurrentTransform(target, time);
             var keyframe = target.x.keys[key];
             if (keyframe.curveType == CurveTypeValues.CopyPrevious)
-                target.ChangeCurve(time, CurveTypeValues.SmoothLocal);
+                target.ChangeCurveByTime(time, CurveTypeValues.SmoothLocal);
         }
 
         public override void OnDestroy()

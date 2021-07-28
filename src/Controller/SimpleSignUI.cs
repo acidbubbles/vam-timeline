@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace VamTimeline
 {
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class SimpleSignUI : IDisposable
     {
         private readonly MVRScript _owner;

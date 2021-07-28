@@ -11,7 +11,7 @@ namespace VamTimeline
     {
         private const int _maxCurves = 9;
 
-        private readonly CurvesStyle _style = new CurvesStyle();
+        private readonly CurvesStyle _style = CurvesStyle.Default();
         private readonly RectTransform _scrubberLineRect;
         private readonly GameObject _noCurves;
         private readonly GameObject _linesContainer;
@@ -203,7 +203,6 @@ namespace VamTimeline
 
         private void BindCurves(ICurveAnimationTarget target)
         {
-            // ReSharper disable once RedundantJumpStatement
             _targets.Add(target);
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             var freeControllerV3AnimationTarget = target as FreeControllerV3AnimationTarget;
@@ -250,6 +249,7 @@ namespace VamTimeline
             {
                 if (_lines.Count > _maxCurves - 1) return;
                 BindCurve(floatAnimationTarget.value, _style.CurveLineColorFloat, target.GetShortName());
+                // ReSharper disable once RedundantJumpStatement
                 return;
             }
         }
@@ -300,7 +300,7 @@ namespace VamTimeline
             if (_animationEditContext == null) return;
             if (_animationEditContext.clipTime == _lastClipTime) return;
             if (_animationEditContext.scrubberRange.rangeDuration == 0) return;
-            if (UIPerformance.ShouldSkip()) return;
+            if (UIPerformance.ShouldSkip(UIPerformance.HighFrequency)) return;
 
             _lastClipTime = _animationEditContext.clipTime;
             var ratio = (_animationEditContext.clipTime - _animationEditContext.scrubberRange.rangeBegin) / _animationEditContext.scrubberRange.rangeDuration;

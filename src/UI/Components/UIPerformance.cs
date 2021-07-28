@@ -4,15 +4,15 @@ namespace VamTimeline
 {
     public static class UIPerformance
     {
-        public const int ReducedFPSUIRate = 2;
-        public const int LowFPSUIRate = 6;
+        public const int HighFrequency = 2;
+        public const int LowFrequency = 6;
 
-        public static bool ShouldSkip(int everyNFrames = ReducedFPSUIRate)
+        public static bool ShouldSkip(int everyNFrames)
         {
             return Time.frameCount % everyNFrames != 0;
         }
 
-        public static bool ShouldRun(int everyNFrames = ReducedFPSUIRate)
+        public static bool ShouldRun(int everyNFrames)
         {
             return Time.frameCount % everyNFrames == 0;
         }

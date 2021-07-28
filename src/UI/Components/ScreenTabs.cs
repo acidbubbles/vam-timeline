@@ -27,7 +27,7 @@ namespace VamTimeline
             return tabs;
         }
 
-        public TabSelectedEvent onTabSelected = new TabSelectedEvent();
+        public readonly TabSelectedEvent onTabSelected = new TabSelectedEvent();
         public List<UIDynamicButton> tabs = new List<UIDynamicButton>();
         public Transform buttonPrefab;
 

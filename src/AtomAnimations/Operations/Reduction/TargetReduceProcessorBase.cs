@@ -2,8 +2,8 @@
 {
     public abstract class TargetReduceProcessorBase<T> where T : class, ICurveAnimationTarget
     {
-        public readonly T source;
-        public readonly ReduceSettings settings;
+        protected readonly T source;
+        protected readonly ReduceSettings settings;
         protected T branch;
 
         protected TargetReduceProcessorBase(T source, ReduceSettings settings)

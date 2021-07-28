@@ -558,22 +558,17 @@ namespace VamTimeline
             throw new NotSupportedException($"Cannot remove unknown target type {target}");
         }
 
-        public void Remove(FreeControllerV3 controller)
-        {
-            Remove(targetControllers.FirstOrDefault(c => c.animatableRef.Targets(controller)));
-        }
-
-        public void Remove(FreeControllerV3AnimationTarget target)
+        private void Remove(FreeControllerV3AnimationTarget target)
         {
             Remove(targetControllers, target);
         }
 
-        public void Remove(JSONStorableFloatAnimationTarget target)
+        private void Remove(JSONStorableFloatAnimationTarget target)
         {
             Remove(targetFloatParams, target);
         }
 
-        public void Remove(TriggersTrackAnimationTarget target)
+        private void Remove(TriggersTrackAnimationTarget target)
         {
             Remove(targetTriggers, target);
         }

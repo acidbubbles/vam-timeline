@@ -8,10 +8,9 @@ namespace VamTimeline
     {
         string animationNameQualified { get; }
         bool loop { get; }
-        float animationLength { get; }
         bool playbackEnabled { get; }
         float playbackBlendWeight { get; }
-        bool temporarilyEnabled { get; set; }
+        bool temporarilyEnabled { get; }
         float clipTime { get; }
         float scaledWeight { get; }
         UnityEvent onTargetsListChanged { get; }

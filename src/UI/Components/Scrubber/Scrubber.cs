@@ -112,11 +112,11 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (UIPerformance.ShouldSkip()) return;
+            if (UIPerformance.ShouldSkip(UIPerformance.HighFrequency)) return;
 
             // var currentUpdate = new Vector2(animationEditContext.clipTime, animationEditContext.scrubberRange.rangeDuration);
 
-            if (UIPerformance.ShouldRun())
+            if (UIPerformance.ShouldRun(UIPerformance.HighFrequency))
             {
                 int currentScrubberHash;
                 unchecked
@@ -137,7 +137,7 @@ namespace VamTimeline
                 _scrubberRect.anchorMax = new Vector2(ratio, 1);
             }
 
-            if (UIPerformance.ShouldRun(UIPerformance.LowFPSUIRate))
+            if (UIPerformance.ShouldRun(UIPerformance.LowFrequency))
             {
                 int currentTextHash;
                 unchecked { currentTextHash = animationEditContext.clipTime.GetHashCode() + 31 * animationEditContext.current.animationLength.GetHashCode(); }

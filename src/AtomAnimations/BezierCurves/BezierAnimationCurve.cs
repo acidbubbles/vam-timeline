@@ -23,11 +23,6 @@ namespace VamTimeline
             keys = new List<BezierKeyframe>();
         }
 
-        public BezierAnimationCurve(IEnumerable<BezierKeyframe> keys)
-        {
-            this.keys = new List<BezierKeyframe>(keys);
-        }
-
         [MethodImpl(256)]
         public BezierKeyframe GetFirstFrame()
         {

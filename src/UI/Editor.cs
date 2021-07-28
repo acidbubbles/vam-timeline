@@ -5,8 +5,8 @@ namespace VamTimeline
 {
     public class Editor : MonoBehaviour
     {
-        public const float RightPanelExpandedWidth = 500f;
-        public const float RightPanelCollapsedWidth = 0f;
+        private const float _rightPanelExpandedWidth = 500f;
+        private const float _rightPanelCollapsedWidth = 0f;
 
         public static Editor AddTo(Transform transform)
         {
@@ -38,7 +38,7 @@ namespace VamTimeline
             panelsGroup.childForceExpandHeight = false;
 
             var leftPanel = CreatePanel(panels.transform, 0f, 1f);
-            var rightPanel = CreatePanel(panels.transform, RightPanelExpandedWidth, 0f);
+            var rightPanel = CreatePanel(panels.transform, _rightPanelExpandedWidth, 0f);
 
             var editor = go.AddComponent<Editor>();
             editor.tabs = tabs;
@@ -134,7 +134,7 @@ namespace VamTimeline
             _curveType = CurveTypePopup.Create(_leftPanelPrefabFactory);
         }
 
-        protected void InitClipboardUI()
+        private void InitClipboardUI()
         {
             var container = _leftPanelPrefabFactory.CreateSpacer();
             container.height = 48f;
@@ -185,14 +185,14 @@ namespace VamTimeline
             {
                 _expanded = false;
                 screensManager.enabled = false;
-                rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelCollapsedWidth;
+                rightPanel.GetComponent<LayoutElement>().preferredWidth = _rightPanelCollapsedWidth;
                 _expandButton.label = "< Expand";
             }
             else if (open && !_expanded)
             {
                 _expanded = true;
                 screensManager.enabled = true;
-                rightPanel.GetComponent<LayoutElement>().preferredWidth = RightPanelExpandedWidth;
+                rightPanel.GetComponent<LayoutElement>().preferredWidth = _rightPanelExpandedWidth;
                 _expandButton.label = "Collapse >";
             }
         }

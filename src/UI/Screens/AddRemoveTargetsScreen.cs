@@ -458,7 +458,7 @@ namespace VamTimeline
                         added.SetKeyframeToCurrentTransform(0f);
                         added.SetKeyframeToCurrentTransform(clip.animationLength);
                         if (!clip.loop)
-                            added.ChangeCurve(clip.animationLength, CurveTypeValues.CopyPrevious);
+                            added.ChangeCurveByTime(clip.animationLength, CurveTypeValues.CopyPrevious);
                     }
                 }
             }

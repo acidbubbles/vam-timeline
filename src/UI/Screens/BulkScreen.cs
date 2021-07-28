@@ -66,7 +66,7 @@ namespace VamTimeline
             _offsetControllerUI.button.onClick.AddListener(OffsetController);
         }
 
-        protected void InitBulkClipboardUI()
+        private void InitBulkClipboardUI()
         {
             var deleteUI = prefabFactory.CreateButton("Delete frame(s)");
             deleteUI.button.onClick.AddListener(() => CopyDeleteSelected(false, true));
@@ -203,7 +203,7 @@ namespace VamTimeline
                         var keyTime = leadCurve.GetKeyframeByKey(key).time;
                         if (keyTime >= _startJSON.valNoCallback && keyTime <= _endJSON.valNoCallback)
                         {
-                            target.ChangeCurve(keyTime, CurveTypeValues.ToInt(val));
+                            target.ChangeCurveByTime(keyTime, CurveTypeValues.ToInt(val));
                         }
                     }
                 }

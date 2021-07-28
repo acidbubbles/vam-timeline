@@ -4,7 +4,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Help";
 
-        public const string HelpText = @"
+        private const string _helpText = @"
 <b>Welcome to Timeline!</b>
 
 This plugin allows for advanced keyframe-based editing.
@@ -53,7 +53,7 @@ Check out the wiki for more details and videos. There's a ton of things you can 
 
         private void InitExplanation()
         {
-            var textJSON = new JSONStorableString("Help", HelpText);
+            var textJSON = new JSONStorableString("Help", _helpText);
             var textUI = prefabFactory.CreateTextField(textJSON);
             textUI.height = 1070f;
         }

@@ -17,7 +17,7 @@ namespace VamTimeline
             var sourceFrame = source.value.keys[sourceKey];
             var branchKey = branch.value.SetKeyframe(sourceFrame.time, sourceFrame.value, CurveTypeValues.SmoothLocal);
             if(curveType != CurveTypeValues.Undefined)
-                branch.ChangeCurve(branchKey, curveType);
+                branch.ChangeCurveByTime(branchKey, curveType);
             branch.value.RecomputeKey(branchKey);
         }
 

@@ -53,7 +53,7 @@ namespace VamTimeline
             }
         }
 
-        public void ChangeCurve(float time, int curveType, bool makeDirty = true)
+        public void ChangeCurveByTime(float time, int curveType, bool makeDirty = true)
         {
             var key = GetLeadCurve().KeyframeBinarySearch(time);
             ChangeCurveByKey(key, curveType, makeDirty);
@@ -94,7 +94,7 @@ namespace VamTimeline
             return CurveTypeValues.SmoothLocal;
         }
 
-        public int GetKeyframeCurveType(float time)
+        public int GetKeyframeCurveTypeByTime(float time)
         {
             return GetLeadCurve().GetKeyframeAt(time).curveType;
         }

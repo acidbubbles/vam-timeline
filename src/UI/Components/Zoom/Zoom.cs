@@ -130,7 +130,7 @@ namespace VamTimeline
 
         public void Update()
         {
-            if (!UIPerformance.ShouldRun()) return;
+            if (!UIPerformance.ShouldRun(UIPerformance.HighFrequency)) return;
             if (_time.time == _animationEditContext.clipTime) return;
             _time.time = _animationEditContext.clipTime;
             _time.SetVerticesDirty();

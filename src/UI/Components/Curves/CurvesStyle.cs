@@ -4,9 +4,9 @@ namespace VamTimeline
 {
     public class CurvesStyle : StyleBase
     {
-        public static ScrubberStyle Default()
+        public static CurvesStyle Default()
         {
-            return new ScrubberStyle();
+            return new CurvesStyle();
         }
 
         public float Padding { get; } = 16f;

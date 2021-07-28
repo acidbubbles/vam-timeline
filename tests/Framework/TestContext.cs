@@ -10,35 +10,36 @@ namespace VamTimeline
         private const string _assertionFailedMessage = "Assertion failed";
 
         public readonly GameObject gameObject;
-        public readonly StringBuilder output;
         public readonly AtomAnimation animation;
+
+        private readonly StringBuilder _output;
 
         public TestContext(GameObject gameObject, StringBuilder output, AtomAnimation animation)
         {
             this.gameObject = gameObject;
-            this.output = output;
             this.animation = animation;
+            _output = output;
         }
 
         public bool Assert(bool truthy, string message)
         {
-            if (!truthy) output.AppendLine(message);
+            if (!truthy) _output.AppendLine(message);
             return truthy;
         }
 
         public bool Assert<T>(T actual, T expected, string message = _assertionFailedMessage) where T : struct
         {
             if (actual.Equals(expected)) return true;
-            output.AppendLine(message);
-            output.AppendLine($"Expected '{expected}', received '{actual}'");
+            _output.AppendLine(message);
+            _output.AppendLine($"Expected '{expected}', received '{actual}'");
             return false;
         }
 
         public bool Assert(string actual, string expected, string message = _assertionFailedMessage)
         {
             if (actual == expected) return true;
-            output.AppendLine(message);
-            output.AppendLine($"Expected '{expected}', received '{actual}'");
+            _output.AppendLine(message);
+            _output.AppendLine($"Expected '{expected}', received '{actual}'");
             return false;
         }
 

@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 namespace VamTimeline
 {
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static class RectTransformExtensions
     {
         public static void StretchParent(this RectTransform rect)
