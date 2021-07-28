@@ -127,7 +127,7 @@ namespace VamTimeline
             if (animationEditContext.autoKeyframeAllControllers)
             {
                 foreach (var t in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerAnimationTarget>())
-                    animationEditContext.SetKeyframeToCurrentTransform(target, time);
+                    animationEditContext.SetKeyframeToCurrentTransform(t, time);
             }
             else
             {
