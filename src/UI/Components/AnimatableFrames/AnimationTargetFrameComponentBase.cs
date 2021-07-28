@@ -123,13 +123,10 @@ namespace VamTimeline
             if (_ignoreNextToggleEvent > 0) return;
             if (!plugin.animationEditContext.CanEdit()) return;
             var time = plugin.animationEditContext.clipTime.Snap();
-            if (time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength))
-            {
-                if (!on)
-                    SetToggle(true);
-                return;
-            }
-            ToggleKeyframeImpl(time, on);
+            var mustBeOn = time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength);
+            if (mustBeOn && !on)
+                SetToggle(true);
+            ToggleKeyframeImpl(time, on, mustBeOn);
         }
 
         protected Text CreateValueText()
@@ -191,7 +188,7 @@ namespace VamTimeline
         {
             if (stopped)
             {
-                toggle.toggle.interactable = time > 0 && time < clip.animationLength;
+                toggle.toggle.interactable = !clip.loop || time < clip.animationLength;
                 SetToggle(target.HasKeyframe(time.Snap()));
             }
             else
@@ -255,7 +252,7 @@ namespace VamTimeline
 
         protected abstract void CreateCustom();
         protected abstract void CreateExpandPanel(RectTransform container);
-        protected abstract void ToggleKeyframeImpl(float time, bool enable);
+        protected abstract void ToggleKeyframeImpl(float time, bool on, bool mustBeOn);
 
         public virtual void OnDestroy()
         {

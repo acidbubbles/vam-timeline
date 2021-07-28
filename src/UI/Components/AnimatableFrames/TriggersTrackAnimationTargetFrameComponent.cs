@@ -28,28 +28,31 @@ namespace VamTimeline
             base.SetTime(time, stopped);
 
             if (stopped)
-            {
-                if (!ReferenceEquals(_trigger, null) && _trigger.startTime != time)
-                    CloseTriggersPanel();
+                SyncEditButton(time);
+        }
 
-                CustomTrigger trigger;
-                var ms = plugin.animationEditContext.clipTime.ToMilliseconds();
-                if (target.triggersMap.TryGetValue(ms, out trigger))
-                {
-                    valueText.text = string.IsNullOrEmpty(trigger.displayName) ? "Has Triggers" : trigger.displayName;
-                    if (_editTriggersButton != null) _editTriggersButton.label = "Edit Triggers";
-                }
-                else
-                {
-                    valueText.text = "-";
-                    if (_editTriggersButton != null) _editTriggersButton.label = "Create Trigger";
-                }
+        private void SyncEditButton(float time)
+        {
+            if (!ReferenceEquals(_trigger, null) && _trigger.startTime != time)
+                CloseTriggersPanel();
+
+            CustomTrigger trigger;
+            var ms = plugin.animationEditContext.clipTime.ToMilliseconds();
+            if (target.triggersMap.TryGetValue(ms, out trigger))
+            {
+                valueText.text = string.IsNullOrEmpty(trigger.displayName) ? "Has Triggers" : trigger.displayName;
+                if (_editTriggersButton != null) _editTriggersButton.label = "Edit Triggers";
+            }
+            else
+            {
+                valueText.text = "-";
+                if (_editTriggersButton != null) _editTriggersButton.label = "Create Trigger";
             }
         }
 
-        protected override void ToggleKeyframeImpl(float time, bool enable)
+        protected override void ToggleKeyframeImpl(float time, bool on, bool mustBeOn)
         {
-            if (enable)
+            if (on)
             {
                 GetOrCreateTriggerAtCurrentTime();
             }
@@ -57,7 +60,7 @@ namespace VamTimeline
             {
                 target.DeleteFrame(time);
             }
-            SetTime(time, true);
+            SyncEditButton(time);
         }
 
         protected override void CreateExpandPanel(RectTransform container)

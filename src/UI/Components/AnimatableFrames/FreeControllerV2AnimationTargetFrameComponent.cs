@@ -114,7 +114,6 @@ namespace VamTimeline
 
         protected override void CreateExpandPanel(RectTransform container)
         {
-
             var group = container.gameObject.AddComponent<VerticalLayoutGroup>();
             group.spacing = 4f;
             group.padding = new RectOffset(8, 8, 8, 8);
@@ -154,9 +153,9 @@ namespace VamTimeline
             }
         }
 
-        protected override void ToggleKeyframeImpl(float time, bool enable)
+        protected override void ToggleKeyframeImpl(float time, bool on, bool mustBeOn)
         {
-            if (enable)
+            if (on)
             {
                 if (plugin.animationEditContext.autoKeyframeAllControllers)
                 {

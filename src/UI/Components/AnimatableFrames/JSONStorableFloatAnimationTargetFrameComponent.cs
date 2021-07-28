@@ -174,14 +174,14 @@ namespace VamTimeline
             _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-floatParam.min + floatParam.val) / (floatParam.max - floatParam.min)), 1f);
         }
 
-        protected override void ToggleKeyframeImpl(float time, bool enable)
+        protected override void ToggleKeyframeImpl(float time, bool on, bool mustBeOn)
         {
             if (!target.animatableRef.EnsureAvailable(false))
             {
-                SetToggle(!enabled);
+                if (!mustBeOn) SetToggle(!enabled);
                 return;
             }
-            if (enable)
+            if (on)
             {
                 var key = target.SetKeyframe(time, floatParam.val);
                 var keyframe = target.value.keys[key];
