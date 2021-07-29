@@ -215,6 +215,15 @@ namespace VamTimeline
                 animation.RemoveClip(animation.clips[0]);
             animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
             animationEditContext.SelectAnimation(animation.clips[0]);
+            animationEditContext.clipboard.Clear();
+            animationEditContext.locked = false;
+            animationEditContext.snap = AtomAnimationEditContext.DefaultSnap;
+            animationEditContext.showPaths = true;
+            animationEditContext.autoKeyframeAllControllers = false;
+            animation.master = false;
+            animation.timeMode = 0;
+            animation.syncSubsceneOnly = false;
+            animation.syncWithPeers = true;
         }
     }
 }

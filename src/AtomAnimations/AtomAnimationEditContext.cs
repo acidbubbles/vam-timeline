@@ -9,6 +9,8 @@ namespace VamTimeline
 {
     public class AtomAnimationEditContext : MonoBehaviour
     {
+        public const float DefaultSnap = 0.1f;
+
         public struct TimeChangedEventArgs { public float time; public float currentClipTime; }
         public class TimeChangedEvent : UnityEvent<TimeChangedEventArgs> { }
         public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
@@ -25,7 +27,7 @@ namespace VamTimeline
 
         private bool _sampleAfterRebuild;
 
-        private float _snap = 0.1f;
+        private float _snap = DefaultSnap;
         public float snap
         {
             get { return _snap; }
