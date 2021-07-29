@@ -10,6 +10,7 @@ namespace VamTimeline
         public const string ScreenName = "Reduce";
 
         private static string _backupTime;
+        private static string _backupFullyQualifiedAnimationName;
         private static List<ICurveAnimationTarget> _backup;
         private static readonly JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private static readonly JSONStorableBool _averageToSnapJSON;
@@ -62,19 +63,25 @@ namespace VamTimeline
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);
 
-            _restoreUI.button.interactable = _backup != null;
-            if (_backup != null) _restoreUI.label = $"Restore [{_backupTime}]";
+            _restoreUI.button.interactable = HasBackup();
+            if (HasBackup()) _restoreUI.label = $"Restore [{_backupTime}]";
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-            _backup = null;
             _restoreUI.button.interactable = false;
+        }
+
+        private bool HasBackup()
+        {
+            return _backup != null && _backupFullyQualifiedAnimationName == current.animationNameQualified;
         }
 
         private void TakeBackup()
         {
+            _backup = null;
+            _backupFullyQualifiedAnimationName = current.animationNameQualified;
             _backup = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().Select(t => t.Clone(true)).ToList();
             _backupTime = DateTime.Now.ToShortTimeString();
             _restoreUI.label = $"Restore [{_backupTime}]";
@@ -83,7 +90,7 @@ namespace VamTimeline
 
         private void RestoreBackup()
         {
-            if (_backup == null) return;
+            if (!HasBackup()) return;
             var targets = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
             foreach (var backup in _backup)
             {
@@ -94,8 +101,10 @@ namespace VamTimeline
 
         private void Reduce()
         {
-            if(_backup == null)
+            if (!HasBackup())
                 TakeBackup();
+            else
+                RestoreBackup();
 
             _reduceUI.button.interactable = false;
             _reduceUI.label = "Please be patient...";
