@@ -81,6 +81,8 @@ namespace VamTimeline
                 uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
                 animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap()
             };
+            if (clipJSON.HasKey("Pose"))
+                SuperController.LogError($"Timeline: Atom {_atom.uid}, animation clip '{clip.animationNameQualified}' has a pose. Timeline 5 is required to correctly play this animation.");
             DeserializeClip(clip, clipJSON);
             return clip;
         }
