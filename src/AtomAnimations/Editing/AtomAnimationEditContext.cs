@@ -15,6 +15,8 @@ namespace VamTimeline
 
     public class AtomAnimationEditContext : MonoBehaviour
     {
+        public const float DefaultSnap = 0.1f;
+
         public struct TimeChangedEventArgs { public float time; public float currentClipTime; }
         public class TimeChangedEvent : UnityEvent<TimeChangedEventArgs> { }
         public struct ScrubberRangeChangedEventArgs { public ScrubberRange scrubberRange; }
@@ -35,7 +37,7 @@ namespace VamTimeline
 
         public int startRecordIn = 5;
 
-        private float _snap = 0.1f;
+        private float _snap = DefaultSnap;
         public float snap
         {
             get { return _snap; }
