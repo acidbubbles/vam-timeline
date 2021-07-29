@@ -348,12 +348,16 @@ namespace VamTimeline
             }
             set
             {
+                if (value == _applyPoseOnTransition) return;
                 #warning This means zero transition time
                 #warning This should skip an animation frame before applying morphs, to validate (see collider bug)
                 _applyPoseOnTransition = value;
                 onAnimationSettingsChanged.Invoke(nameof(applyPoseOnTransition));
                 #warning We should make some effort to keep those settings in a valid state in both directions
-                blendInDuration = 0;
+                if (_applyPoseOnTransition)
+                    blendInDuration = 0;
+                else
+                    blendInDuration = DefaultBlendDuration;
             }
         }
 
