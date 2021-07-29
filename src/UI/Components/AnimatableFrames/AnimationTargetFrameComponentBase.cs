@@ -126,7 +126,7 @@ namespace VamTimeline
             var mustBeOn = time.IsSameFrame(0f) || time.IsSameFrame(clip.animationLength);
             if (mustBeOn && !on)
                 SetToggle(true);
-            ToggleKeyframeImpl(time, on, mustBeOn);
+            ToggleKeyframeImpl(time, mustBeOn || on, mustBeOn);
         }
 
         protected Text CreateValueText()
