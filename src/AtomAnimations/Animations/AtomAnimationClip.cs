@@ -340,6 +340,7 @@ namespace VamTimeline
             }
         }
 
+        private float _applyPoseOnTransitionRestoredBlendDuration = DefaultBlendDuration;
         public bool applyPoseOnTransition
         {
             get
@@ -355,9 +356,14 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(applyPoseOnTransition));
                 #warning We should make some effort to keep those settings in a valid state in both directions
                 if (_applyPoseOnTransition)
+                {
+                    _applyPoseOnTransitionRestoredBlendDuration = _blendDuration;
                     blendInDuration = 0;
+                }
                 else
-                    blendInDuration = DefaultBlendDuration;
+                {
+                    blendInDuration = _applyPoseOnTransitionRestoredBlendDuration;
+                }
             }
         }
 
