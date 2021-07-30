@@ -207,16 +207,12 @@ namespace VamTimeline
 
         private void InitPoseUI()
         {
-            #warning Update buttons enabled/disabled and storable bool on animation settings changed
             _savePoseUI = prefabFactory.CreateButton("Save pose");
             _savePoseUI.button.onClick.AddListener(() => current.pose = AtomPose.FromAtom(plugin.containingAtom));
-            #warning: Check if null
             _applyPoseUI = prefabFactory.CreateButton("Apply pose");
             _applyPoseUI.button.onClick.AddListener(() => current.pose.Apply());
-                _clearPoseUI = prefabFactory.CreateButton("Clear pose");
+            _clearPoseUI = prefabFactory.CreateButton("Clear pose");
             _clearPoseUI.button.onClick.AddListener(() => current.pose = null);
-            #warning This button should be in the transition tab
-            #warning Update the toggle value on clip change
             _applyPoseOnTransition = new JSONStorableBool("Apply pose on transition", false, v => current.applyPoseOnTransition = v);
             prefabFactory.CreateToggle(_applyPoseOnTransition);
         }
@@ -364,11 +360,14 @@ namespace VamTimeline
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             // ReSharper disable once Unity.NoNullPropagation
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
-            _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
-            _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
-            _applyPoseUI.button.interactable = current.pose != null;
-            _clearPoseUI.button.interactable = current.pose != null;
-            _applyPoseOnTransition.toggle.interactable = current.pose != null;
+            if (_applyPoseOnTransition != null)
+            {
+                _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
+                _applyPoseOnTransition.toggle.interactable = current.pose != null;
+            }
+            if (_savePoseUI) _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
+            if (_applyPoseUI) _applyPoseUI.button.interactable = current.pose != null;
+            if (_clearPoseUI) _clearPoseUI.button.interactable = current.pose != null;
         }
 
         public override void OnDestroy()

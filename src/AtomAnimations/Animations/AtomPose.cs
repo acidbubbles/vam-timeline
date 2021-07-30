@@ -11,17 +11,7 @@ namespace VamTimeline
 
         public static AtomPose FromAtom(Atom atom)
         {
-            // var pose = new JSONArray();
-            // foreach(var x in atom.GetStorableIDs()
-            //     .Select(atom.GetStorableByID)
-            //     .Select(s => s.ToString())
-            //     .Distinct())
-            //     SuperController.LogMessage(x);
-            // var posePresetsManagerControls = atom.presetManagerControls.FirstOrDefault(pmc => pmc.name == "PosePresets");
-            // var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
-            // SuperController.LogMessage(posePresetsManager.);
-
-            #warning This is only for Person atoms, check for exists and hide controls in Timeline UI
+            if (atom.type != "Person") return null;
 
             var storables = atom.GetStorableIDs()
                 .Select(atom.GetStorableByID)
@@ -57,6 +47,7 @@ namespace VamTimeline
 
         public void Apply()
         {
+            if (_atom.type != "Person") return;
             var posePresetsManagerControls = _atom.presetManagerControls.First(pmc => pmc.name == "PosePresets");
             var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
             posePresetsManager.LoadPresetFromJSON(_poseJSON);

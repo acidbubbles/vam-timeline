@@ -23,6 +23,7 @@ namespace VamTimeline
         private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
+        private JSONStorableBool _applyPoseOnTransition;
         private JSONStorableBool _preserveLoopsJSON;
         private UIDynamicToggle _preserveLoopsUI;
         private JSONStorableFloat _randomizeRangeJSON;
@@ -47,6 +48,8 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Transition (auto keyframes)", 1);
             InitLoopUI();
             InitTransitionUI();
+            if (plugin.containingAtom.type == "Person")
+                InitPoseUI();
 
             // To allow selecting in the popup
             prefabFactory.CreateSpacer().height = 200f;
@@ -149,6 +152,12 @@ namespace VamTimeline
 
             _transitionNextJSON = new JSONStorableBool("Sync last frame with next", false, ChangeTransitionNext);
             prefabFactory.CreateToggle(_transitionNextJSON);
+        }
+
+        private void InitPoseUI()
+        {
+            _applyPoseOnTransition = new JSONStorableBool("Apply pose on transition", false, v => current.applyPoseOnTransition = v);
+            prefabFactory.CreateToggle(_applyPoseOnTransition);
         }
 
         private void InitLoopUI()
@@ -382,6 +391,11 @@ namespace VamTimeline
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
+            if (_applyPoseOnTransition != null)
+            {
+                _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
+                _applyPoseOnTransition.toggle.interactable = current.pose != null;
+            }
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }

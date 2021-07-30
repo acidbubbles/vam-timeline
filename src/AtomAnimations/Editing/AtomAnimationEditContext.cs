@@ -71,10 +71,9 @@ namespace VamTimeline
             {
                 _current = value;
                 _lastCurrentAnimationLength = value.animationLength;
-                #warning Review
+                ResetScrubberRange();
                 if (!_animation.isPlaying)
                     _current.pose?.Apply();
-                ResetScrubberRange();
             }
         }
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
