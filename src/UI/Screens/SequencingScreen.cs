@@ -268,6 +268,11 @@ namespace VamTimeline
 
         private void UpdateBlendDuration(float v)
         {
+            if (current.applyPoseOnTransition)
+            {
+                _blendDurationJSON.valNoCallback = 0;
+                return;
+            }
             v = v.Snap();
             if (v < 0)
                 _blendDurationJSON.valNoCallback = v = 0f;
