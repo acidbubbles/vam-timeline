@@ -453,13 +453,22 @@ namespace VamTimeline
                 foreach (var clip in animation.index.ByLayer(current.animationLayer))
                 {
                     var added = clip.Add(animation.animatables.GetOrCreateController(controller));
-                    if (added != null)
+                    if (added == null) continue;
+
+                    var controllerPose = clip.pose?.GetControllerPose(controller.name);
+                    if (controllerPose == null)
                     {
                         added.SetKeyframeToCurrentTransform(0f);
                         added.SetKeyframeToCurrentTransform(clip.animationLength);
-                        if (!clip.loop)
-                            added.ChangeCurveByTime(clip.animationLength, CurveTypeValues.CopyPrevious);
                     }
+                    else
+                    {
+                        added.SetKeyframe(0f, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
+                        added.SetKeyframe(clip.animationLength, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
+                    }
+
+                    if (!clip.loop)
+                        added.ChangeCurveByTime(clip.animationLength, CurveTypeValues.CopyPrevious);
                 }
             }
             catch (Exception exc)

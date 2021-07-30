@@ -15,7 +15,7 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator StartRecording(int recordInSeconds, List<FreeControllerV3AnimationTarget> controllers, List<JSONStorableFloatAnimationTarget> floatParams)
+        public IEnumerator StartRecording(int recordInSeconds, List<FreeControllerV3AnimationTarget> controllers, List<JSONStorableFloatAnimationTarget> floatParams, FreeControllerV3AnimationTarget cameraTarget)
         {
             // TODO: Handle stopping in the middle of it
             // TODO: Handle starting while it's already recording
@@ -71,6 +71,8 @@ namespace VamTimeline
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                     break;
+                if (!ReferenceEquals(cameraTarget, null))
+                    PositionCameraTarget(cameraTarget);
                 yield return 0;
             }
 
@@ -91,6 +93,24 @@ namespace VamTimeline
             }
 
             _clip.DirtyAll();
+        }
+
+        private static void PositionCameraTarget(FreeControllerV3AnimationTarget cameraTarget)
+        {
+            var cameraTransform = SuperController.singleton.centerCameraTarget.transform;
+            var cameraPosition = cameraTransform.position;
+            var cameraForward = cameraTransform.forward;
+            var distance = 1.7f;
+            RaycastHit hit;
+            const int layerMask = ~(1 << 8);
+            if (Physics.Raycast(cameraPosition + cameraForward * 0.3f, cameraForward, out hit, 10f, layerMask))
+            {
+                SuperController.singleton.ClearMessages();
+                SuperController.LogMessage(hit.collider.name);
+                distance = hit.distance;
+            }
+
+            cameraTarget.animatableRef.controller.control.position = cameraPosition + cameraForward * (0.3f + distance);
         }
     }
 }

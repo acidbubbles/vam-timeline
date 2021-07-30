@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using MeshVR;
 using SimpleJSON;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -52,6 +53,33 @@ namespace VamTimeline
             var posePresetsManagerControls = _atom.presetManagerControls.First(pmc => pmc.name == "PosePresets");
             var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
             posePresetsManager.LoadPresetFromJSON(_poseJSON);
+        }
+
+        public PositionAndRotation GetControllerPose(string name)
+        {
+            var storable = _poseJSON["storables"]?.Childs.FirstOrDefault(c => c["id"].Value == name)?.AsObject;
+            if (storable == null || !storable.HasKey("localPosition") || !storable.HasKey("localRotation")) return null;
+            var position = storable["localPosition"].AsObject;
+            var rotation = storable["localRotation"].AsObject;
+            return new PositionAndRotation
+            {
+                position = new Vector3(
+                    position["x"].AsFloat,
+                    position["y"].AsFloat,
+                    position["z"].AsFloat
+                ),
+                rotation = new Vector3(
+                    rotation["x"].AsFloat,
+                    rotation["y"].AsFloat,
+                    rotation["z"].AsFloat
+                )
+            };
+        }
+
+        public class PositionAndRotation
+        {
+            public Vector3 position;
+            public Vector3 rotation;
         }
 
         public JSONNode ToJSON()

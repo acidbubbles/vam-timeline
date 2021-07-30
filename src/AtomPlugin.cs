@@ -919,7 +919,8 @@ namespace VamTimeline
                 StartCoroutine(operations.Record().StartRecording(
                     animationEditContext.startRecordIn,
                     targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : animationEditContext.current.targetControllers,
-                    targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : animationEditContext.current.targetFloatParams
+                    targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : animationEditContext.current.targetFloatParams,
+                    null
                 ));
             }));
             bindings.Add(new JSONStorableAction("AddTarget_SelectControllerFromScene", () =>
