@@ -36,7 +36,8 @@ namespace VamTimeline
 
         public static AtomPose FromJSON(Atom atom, JSONNode jsonNode)
         {
-            return new AtomPose(atom, jsonNode.AsObject);
+            var jc = jsonNode.AsObject;
+            return jc.HasKey("storables") ? new AtomPose(atom, jc) : null;
         }
 
         private AtomPose(Atom atom, JSONClass poseJSON)
