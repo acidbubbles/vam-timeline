@@ -80,7 +80,7 @@ namespace VamTimeline
                 weight = DeserializeFloat(clipJSON["Weight"], 1),
                 uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
                 animationLength = DeserializeFloat(clipJSON["AnimationLength"]).Snap(),
-                pose = AtomPose.FromJSON(_atom, clipJSON["Pose"]),
+                pose = clipJSON.HasKey("Pose") ? AtomPose.FromJSON(_atom, clipJSON["Pose"]) : null,
                 applyPoseOnTransition = DeserializeBool(clipJSON["ApplyPoseOnTransition"], false)
             };
             DeserializeClip(clip, clipJSON, targetsRegistry);
