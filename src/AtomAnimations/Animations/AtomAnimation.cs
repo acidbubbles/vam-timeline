@@ -474,17 +474,10 @@ namespace VamTimeline
 
         private void Blend(AtomAnimationClip clip, float targetWeight, float blendDuration)
         {
-            if (clip.applyPoseOnTransition)
+            if (clip.applyPoseOnTransition && targetWeight > 0)
             {
-                if (targetWeight > 0)
-                {
-                    clip.pose?.Apply();
-                    clip.playbackEnabled = true;
-                }
-                else
-                {
-                    clip.playbackEnabled = false;
-                }
+                clip.pose?.Apply();
+                clip.playbackEnabled = true;
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
             }
