@@ -418,10 +418,10 @@ namespace VamTimeline
         {
             if (delta == 0) return;
 
-            #warning Try to avoid enumerable here
-            foreach (var layer in index.ByLayer())
+            var layers = index.ByLayer();
+            for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
-                var layerClips = layer.Value;
+                var layerClips = layers[layerIndex];
                 float clipSpeed;
                 if (layerClips.Count > 1)
                 {
@@ -437,6 +437,7 @@ namespace VamTimeline
                         totalBlendWeights += smoothBlendWeight;
                         clipSpeed = clip.speed;
                     }
+
                     clipSpeed = weightedClipSpeedSum == 0 ? clipSpeed : weightedClipSpeedSum / totalBlendWeights;
                 }
                 else
@@ -844,7 +845,7 @@ namespace VamTimeline
             foreach (var layer in index.ByLayer())
             {
                 AtomAnimationClip last = null;
-                foreach (var clip in layer.Value)
+                foreach (var clip in layer)
                 {
                     clip.Validate();
                     RebuildClip(clip, last);

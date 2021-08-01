@@ -493,9 +493,9 @@ namespace VamTimeline
                 .ByLayer()
                 .Select(g =>
                 {
-                    return g.Key == current.animationLayer
+                    return g[0].animationLayer == current.animationLayer
                         ? current
-                        : g.Value.FirstOrDefault(c => c.playbackMainInLayer) ?? g.Value.FirstOrDefault(c => c.animationName == current.animationName) ?? g.Value.FirstOrDefault(c => c.autoPlay) ?? g.Value[0];
+                        : g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.animationName == current.animationName) ?? g.FirstOrDefault(c => c.autoPlay) ?? g[0];
                 }));
             return list;
         }

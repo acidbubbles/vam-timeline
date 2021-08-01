@@ -8,7 +8,8 @@ namespace VamTimeline
 
         private readonly List<AtomAnimationClip> _clips;
 
-        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayer = new Dictionary<string, List<AtomAnimationClip>>();
+        private readonly IList<List<AtomAnimationClip>> _clipsByLayer = new List<List<AtomAnimationClip>>();
+        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayerName = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
@@ -33,8 +34,9 @@ namespace VamTimeline
 
         public void Rebuild()
         {
-            _clipsByName.Clear();
             _clipsByLayer.Clear();
+            _clipsByLayerName.Clear();
+            _clipsByName.Clear();
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
 
@@ -57,10 +59,11 @@ namespace VamTimeline
             {
                 {
                     List<AtomAnimationClip> layerClips;
-                    if (!_clipsByLayer.TryGetValue(clip.animationLayer, out layerClips))
+                    if (!_clipsByLayerName.TryGetValue(clip.animationLayer, out layerClips))
                     {
                         layerClips = new List<AtomAnimationClip>();
-                        _clipsByLayer.Add(clip.animationLayer, layerClips);
+                        _clipsByLayer.Add(layerClips);
+                        _clipsByLayerName.Add(clip.animationLayer, layerClips);
                     }
                     layerClips.Add(clip);
                 }
@@ -90,7 +93,7 @@ namespace VamTimeline
             // TODO: This could be optimized but it would be more complex (e.g. adding/removing targets, renaming layers, etc.)
         }
 
-        public IEnumerable<KeyValuePair<string, List<AtomAnimationClip>>> ByLayer()
+        public IList<List<AtomAnimationClip>> ByLayer()
         {
             return _clipsByLayer;
         }
@@ -98,7 +101,7 @@ namespace VamTimeline
         public IList<AtomAnimationClip> ByLayer(string layer)
         {
             List<AtomAnimationClip> clips;
-            return _clipsByLayer.TryGetValue(layer, out clips) ? clips : _emptyClipList;
+            return _clipsByLayerName.TryGetValue(layer, out clips) ? clips : _emptyClipList;
         }
 
         public IEnumerable<KeyValuePair<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>> ByController()
