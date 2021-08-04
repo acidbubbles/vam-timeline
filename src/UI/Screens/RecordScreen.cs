@@ -9,6 +9,7 @@ namespace VamTimeline
     {
         private UIDynamicButton _recordButton;
         private JSONStorableStringChooser _useCameraRaycast;
+        private JSONStorableBool _recordExtendsLength;
         public const string ScreenName = "Record";
 
         public override string screenId => ScreenName;
@@ -22,8 +23,13 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             prefabFactory.CreateHeader("Record options", 1);
-            var recordInJSON = new JSONStorableFloat("Record delay timer", 5f, 0f, 30f, false);
-            recordInJSON.valNoCallback = animationEditContext.startRecordIn;
+
+            _recordExtendsLength = new JSONStorableBool("Record extends length", false);
+
+            var recordInJSON = new JSONStorableFloat("Record delay timer", 5f, 0f, 30f, false)
+            {
+                valNoCallback = animationEditContext.startRecordIn
+            };
             recordInJSON.setCallbackFunction = val =>
             {
                 animationEditContext.startRecordIn = (int) Mathf.Round(val);
@@ -51,7 +57,7 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
             _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
-            _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo(raycastTarget)));
+            _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo(_recordExtendsLength.val, raycastTarget)));
 
             prefabFactory.CreateSpacer();
 
@@ -63,7 +69,19 @@ namespace VamTimeline
 
         private void OnTargetsSelectionChanged()
         {
+            SyncAnimationFields();
+        }
+
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
+        {
+            base.OnCurrentAnimationChanged(args);
+            SyncAnimationFields();
+        }
+
+        private void SyncAnimationFields()
+        {
             _recordButton.button.interactable = animationEditContext.GetSelectedTargets().Any();
+            _recordExtendsLength.valNoCallback = current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2);
         }
 
         public override void OnDestroy()
@@ -72,7 +90,7 @@ namespace VamTimeline
             base.OnDestroy();
         }
 
-        private IEnumerator OnRecordCo(FreeControllerV3AnimationTarget raycastTarget)
+        private IEnumerator OnRecordCo(bool recordExtendsLength, FreeControllerV3AnimationTarget raycastTarget)
         {
             if (!raycastTarget.selected)
             {
@@ -86,6 +104,7 @@ namespace VamTimeline
             var targetFloatParams = targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : current.targetFloatParams;
 
             var enumerator = operations.Record().StartRecording(
+                recordExtendsLength,
                 animationEditContext.startRecordIn,
                 targetControllers,
                 targetFloatParams,

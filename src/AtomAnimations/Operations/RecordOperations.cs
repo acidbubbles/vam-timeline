@@ -15,7 +15,13 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public IEnumerator StartRecording(int recordInSeconds, List<FreeControllerV3AnimationTarget> controllers, List<JSONStorableFloatAnimationTarget> floatParams, FreeControllerV3AnimationTarget cameraTarget)
+        public IEnumerator StartRecording(
+            bool recordExtendsLength,
+            int recordInSeconds,
+            List<FreeControllerV3AnimationTarget> controllers,
+            List<JSONStorableFloatAnimationTarget> floatParams,
+            FreeControllerV3AnimationTarget raycastTarget
+        )
         {
             // TODO: Handle stopping in the middle of it
             // TODO: Handle starting while it's already recording
@@ -44,9 +50,16 @@ namespace VamTimeline
             {
                 keyframesOps.RemoveAll(target);
             }
+
             foreach (var target in floatParams)
             {
                 keyframesOps.RemoveAll(target);
+            }
+
+            if (recordExtendsLength)
+            {
+                // We extend to a super long duration, we'll crop after.
+                new ResizeAnimationOperations().CropOrExtendAt(_clip, 60 * 60 * 24, 0);
             }
 
             _clip.DirtyAll();
@@ -59,6 +72,7 @@ namespace VamTimeline
                 target.recording = true;
                 target.StartBulkUpdates();
             }
+
             foreach (var target in floatParams)
             {
                 target.recording = true;
@@ -67,12 +81,16 @@ namespace VamTimeline
 
             _animation.PlayClip(_clip, false);
 
+            var lastRecordedTime = 0f;
             while (_animation.playTime <= _clip.animationLength && _animation.isPlaying)
             {
+                lastRecordedTime = Mathf.Max(lastRecordedTime, _animation.playTime);
                 if (Input.GetKeyDown(KeyCode.Escape))
                     break;
-                if (!ReferenceEquals(cameraTarget, null))
-                    PositionCameraTarget(cameraTarget);
+                if (!_clip.playbackMainInLayer)
+                    break;
+                if (!ReferenceEquals(raycastTarget, null))
+                    PositionCameraTarget(raycastTarget);
                 yield return 0;
             }
 
@@ -80,12 +98,19 @@ namespace VamTimeline
             _animation.ResetAll();
             SuperController.singleton.helpText = "";
 
+            if (recordExtendsLength && lastRecordedTime > _clip.animationLength)
+            {
+                // We now crop back to a reasonable length
+                new ResizeAnimationOperations().CropOrExtendAt(_clip, lastRecordedTime.Snap(), 0);
+            }
+
             // TODO: This needs to be guaranteed. We could register the enumerator inside a disposable class, dispose being called in different cancel situations
             foreach (var target in controllers)
             {
                 target.recording = false;
                 target.EndBulkUpdates();
             }
+
             foreach (var target in floatParams)
             {
                 target.recording = false;
