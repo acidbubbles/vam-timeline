@@ -373,7 +373,7 @@ namespace VamTimeline
 
         public bool IsEmpty()
         {
-            return !GetAllTargets().Any();
+            return !GetAllTargets().Any() && pose == null;
         }
 
         public bool IsDirty()

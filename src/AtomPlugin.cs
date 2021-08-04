@@ -912,6 +912,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("ZoomReset", () => animationEditContext.ResetScrubberRange()));
             bindings.Add(new JSONStorableAction("Lock", () => animationEditContext.locked = true));
             bindings.Add(new JSONStorableAction("Unlock", () => animationEditContext.locked = false));
+            bindings.Add(new JSONStorableAction("ApplyPose", () => animationEditContext.current.pose?.Apply()));
+            bindings.Add(new JSONStorableAction("SavePose", () => animationEditContext.current.pose = AtomPose.FromAtom(containingAtom, animationEditContext.current.pose)));
             // TODO: Check if already recording
             bindings.Add(new JSONStorableAction("StartRecord", () =>
             {

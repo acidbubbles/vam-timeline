@@ -14,6 +14,8 @@ namespace VamTimeline
         private const string _changeLengthModeStretch = "Stretch";
         private const string _changeLengthModeLoop = "Loop";
 
+        private static AtomPose _poseClipboard;
+
         public override string screenId => ScreenName;
 
         private JSONStorableStringChooser _lengthModeJSON;
@@ -32,6 +34,11 @@ namespace VamTimeline
         private UIDynamicButton _applyPoseUI;
         private UIDynamicButton _clearPoseUI;
         private JSONStorableBool _applyPoseOnTransition;
+        private JSONStorableBool _savePoseIncludeRoot;
+        private JSONStorableBool _savePoseIncludePose;
+        private JSONStorableBool _savePoseIncludeMorphs;
+        private UIDynamicButton _copyPoseUI;
+        private UIDynamicButton _pastePoseUI;
 
         #region Init
 
@@ -208,11 +215,20 @@ namespace VamTimeline
         private void InitPoseUI()
         {
             _savePoseUI = prefabFactory.CreateButton("Save pose");
-            _savePoseUI.button.onClick.AddListener(() => current.pose = AtomPose.FromAtom(plugin.containingAtom));
-            _applyPoseUI = prefabFactory.CreateButton("Apply pose");
+            #warning Overwrite only specific things; morphs only, pose only
+            _savePoseUI.button.onClick.AddListener(() => current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val));
+            _savePoseIncludeRoot = new JSONStorableBool("Pose: Include Root", AtomPose.DefaultIncludeRoot, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            _savePoseIncludePose = new JSONStorableBool("Pose: Include Bones & Controls", AtomPose.DefaultIncludePose, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            _savePoseIncludeMorphs = new JSONStorableBool("Pose: Include Pose Morphs", AtomPose.DefaultIncludeMorphs, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            _applyPoseUI = prefabFactory.CreateButton("Apply saved pose");
             _applyPoseUI.button.onClick.AddListener(() => current.pose.Apply());
-            _clearPoseUI = prefabFactory.CreateButton("Clear pose");
+            _clearPoseUI = prefabFactory.CreateButton("Clear saved pose");
             _clearPoseUI.button.onClick.AddListener(() => current.pose = null);
+            _copyPoseUI = prefabFactory.CreateButton("Copy current pose");
+            _copyPoseUI.button.onClick.AddListener(() => { _poseClipboard = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val); _pastePoseUI.button.interactable = true; });
+            _pastePoseUI = prefabFactory.CreateButton("Paste current pose");
+            _pastePoseUI.button.onClick.AddListener(() => current.pose = _poseClipboard.Clone());
+            _pastePoseUI.button.interactable = _poseClipboard != null;
             _applyPoseOnTransition = new JSONStorableBool("Apply pose on transition", false, v => current.applyPoseOnTransition = v);
             prefabFactory.CreateToggle(_applyPoseOnTransition);
         }
@@ -368,6 +384,21 @@ namespace VamTimeline
             if (_savePoseUI) _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
             if (_applyPoseUI) _applyPoseUI.button.interactable = current.pose != null;
             if (_clearPoseUI) _clearPoseUI.button.interactable = current.pose != null;
+            if (_savePoseIncludeRoot != null && _savePoseIncludePose != null && _savePoseIncludeMorphs != null)
+            {
+                if (current.pose == null)
+                {
+                    _savePoseIncludeRoot.valNoCallback = AtomPose.DefaultIncludeRoot;
+                    _savePoseIncludePose.valNoCallback = AtomPose.DefaultIncludePose;
+                    _savePoseIncludeMorphs.valNoCallback = AtomPose.DefaultIncludeMorphs;
+                }
+                else
+                {
+                    _savePoseIncludeRoot.valNoCallback = current.pose.includeRoot;
+                    _savePoseIncludePose.valNoCallback = current.pose.includePose;
+                    _savePoseIncludeMorphs.valNoCallback = current.pose.includeMorphs;
+                }
+            }
         }
 
         public override void OnDestroy()
