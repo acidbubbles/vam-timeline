@@ -25,6 +25,7 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Record options", 1);
 
             _recordExtendsLength = new JSONStorableBool("Record extends length", false);
+            prefabFactory.CreateToggle(_recordExtendsLength);
 
             var recordInJSON = new JSONStorableFloat("Record delay timer", 5f, 0f, 30f, false)
             {
@@ -42,6 +43,11 @@ namespace VamTimeline
             _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast", new List<string>(), "", "Use camera raycast");
             _useCameraRaycast.setCallbackFunction = val =>
             {
+                if (string.IsNullOrEmpty(val))
+                {
+                    raycastTarget = null;
+                    return;
+                }
                 raycastTarget = current.targetControllers.FirstOrDefault(t => t.animatableRef.name == val);
                 if (raycastTarget == null)
                 {
@@ -57,14 +63,15 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
             _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
-            _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo(_recordExtendsLength.val, raycastTarget)));
+            _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(_recordExtendsLength.val, raycastTarget)));
 
             prefabFactory.CreateSpacer();
 
             CreateChangeScreenButton("<i>Go to <b>reduce</b> screen...</i>", ReduceScreen.ScreenName);
 
             animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
-            OnTargetsSelectionChanged();
+            SyncAnimationFields();
+            SyncRaycastTargets();
         }
 
         private void OnTargetsSelectionChanged()
@@ -76,6 +83,13 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
             SyncAnimationFields();
+            SyncRaycastTargets();
+        }
+
+        private void SyncRaycastTargets()
+        {
+            _useCameraRaycast.choices = new[] {""}.Concat(current.targetControllers.Select(t => t.name)).ToList();
+            _useCameraRaycast.valNoCallback = "";
         }
 
         private void SyncAnimationFields()
@@ -92,7 +106,7 @@ namespace VamTimeline
 
         private IEnumerator OnRecordCo(bool recordExtendsLength, FreeControllerV3AnimationTarget raycastTarget)
         {
-            if (!raycastTarget.selected)
+            if (raycastTarget != null && !raycastTarget.selected)
             {
                 SuperController.LogError($"Cannot record raycast target {raycastTarget.name} because it is not selected. Either select it or remove it from the raycast target list.");
                 yield break;
@@ -111,7 +125,8 @@ namespace VamTimeline
                 raycastTarget
             );
 
-            ChangeScreen(TargetsScreen.ScreenName);
+            if (targetControllers.Count == 0 && targetFloatParams.Count > 0)
+                ChangeScreen(TargetsScreen.ScreenName);
 
             while (enumerator.MoveNext())
                 yield return enumerator.Current;

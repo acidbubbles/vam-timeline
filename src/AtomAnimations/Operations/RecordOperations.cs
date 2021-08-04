@@ -30,6 +30,9 @@ namespace VamTimeline
             _animation.StopAll();
             _animation.ResetAll();
 
+            var exitOnMenuOpen = controllers.Count > 0 && (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR);
+            if (exitOnMenuOpen) SuperController.singleton.HideMainHUD();
+
             var keyframesOps = new KeyframesOperations(_clip);
 
             for (var i = recordInSeconds; i > 0; i--)
@@ -46,6 +49,7 @@ namespace VamTimeline
 
             SuperController.singleton.helpText = "Recording...";
 
+            #warning No need to specify controllers and floatParams separately, just use a single list
             foreach (var target in controllers)
             {
                 keyframesOps.RemoveAll(target);
@@ -56,6 +60,7 @@ namespace VamTimeline
                 keyframesOps.RemoveAll(target);
             }
 
+            var originalLength = _clip.animationLength;
             if (recordExtendsLength)
             {
                 // We extend to a super long duration, we'll crop after.
@@ -82,12 +87,19 @@ namespace VamTimeline
             _animation.PlayClip(_clip, false);
 
             var lastRecordedTime = 0f;
-            while (_animation.playTime <= _clip.animationLength && _animation.isPlaying)
+            while (true)
             {
                 lastRecordedTime = Mathf.Max(lastRecordedTime, _animation.playTime);
+                if (!_animation.isPlaying)
+                    break;
+                #warning This will probably overwrite the first frame for looping animations?
+                if (_animation.playTime > _clip.animationLength)
+                    break;
                 if (Input.GetKeyDown(KeyCode.Escape))
                     break;
                 if (!_clip.playbackMainInLayer)
+                    break;
+                if (exitOnMenuOpen && SuperController.singleton.mainHUD.gameObject.activeSelf)
                     break;
                 if (!ReferenceEquals(raycastTarget, null))
                     PositionCameraTarget(raycastTarget);
@@ -98,10 +110,10 @@ namespace VamTimeline
             _animation.ResetAll();
             SuperController.singleton.helpText = "";
 
-            if (recordExtendsLength && lastRecordedTime > _clip.animationLength)
+            if (recordExtendsLength)
             {
                 // We now crop back to a reasonable length
-                new ResizeAnimationOperations().CropOrExtendAt(_clip, lastRecordedTime.Snap(), 0);
+                new ResizeAnimationOperations().CropOrExtendEnd(_clip, Mathf.Max(lastRecordedTime.Snap(), originalLength));
             }
 
             // TODO: This needs to be guaranteed. We could register the enumerator inside a disposable class, dispose being called in different cancel situations
@@ -117,7 +129,7 @@ namespace VamTimeline
                 target.EndBulkUpdates();
             }
 
-            _clip.DirtyAll();
+            SuperController.singleton.ShowMainHUD();
         }
 
         private static void PositionCameraTarget(FreeControllerV3AnimationTarget cameraTarget)
@@ -129,11 +141,7 @@ namespace VamTimeline
             RaycastHit hit;
             const int layerMask = ~(1 << 8);
             if (Physics.Raycast(cameraPosition + cameraForward * 0.3f, cameraForward, out hit, 10f, layerMask))
-            {
-                SuperController.singleton.ClearMessages();
-                SuperController.LogMessage(hit.collider.name);
                 distance = hit.distance;
-            }
 
             cameraTarget.animatableRef.controller.control.position = cameraPosition + cameraForward * (0.3f + distance);
         }
