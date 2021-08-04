@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace VamTimeline
     public class RecordScreen : ScreenBase
     {
         private UIDynamicButton _recordButton;
+        private JSONStorableStringChooser _useCameraRaycast;
         public const string ScreenName = "Record";
 
         public override string screenId => ScreenName;
@@ -30,28 +32,26 @@ namespace VamTimeline
             };
             prefabFactory.CreateSlider(recordInJSON);
 
-            var recordEyeTargetControl = new JSONStorableBool("Use camera for eyeTarget", false);
-            if (plugin.containingAtom.type == "Person")
+            FreeControllerV3AnimationTarget raycastTarget = null;
+            _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast", new List<string>(), "", "Use camera raycast");
+            _useCameraRaycast.setCallbackFunction = val =>
             {
-                recordEyeTargetControl.setCallbackFunction = (bool val) =>
+                raycastTarget = current.targetControllers.FirstOrDefault(t => t.animatableRef.name == val);
+                if (raycastTarget == null)
                 {
-                    var eyeTargetControlTarget = current.targetControllers.FirstOrDefault(t => t.animatableRef.controller.name == "eyeTargetControl");
-                    if (eyeTargetControlTarget == null)
-                    {
-                        SuperController.LogError("Timeline: To use eyeTargetControl using camera, you must add eyeTargetControl to the list");
-                        recordEyeTargetControl.valNoCallback = false;
-                        return;
-                    }
-                    eyeTargetControlTarget.animatableRef.selected = true;
-                };
-                prefabFactory.CreateToggle(recordEyeTargetControl);
-            }
+                    SuperController.LogError($"Timeline: Target '{val}' was not in the list of targets");
+                    _useCameraRaycast.valNoCallback = "";
+                    return;
+                }
+                raycastTarget.animatableRef.selected = true;
+            };
+            prefabFactory.CreatePopup(_useCameraRaycast, true, false);
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
             _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
-            _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo(recordEyeTargetControl.val)));
+            _recordButton.button.onClick.AddListener(() => plugin.StartCoroutine(OnRecordCo(raycastTarget)));
 
             prefabFactory.CreateSpacer();
 
@@ -72,29 +72,24 @@ namespace VamTimeline
             base.OnDestroy();
         }
 
-        private IEnumerator OnRecordCo(bool recordEyeTargetControl)
+        private IEnumerator OnRecordCo(FreeControllerV3AnimationTarget raycastTarget)
         {
+            if (!raycastTarget.selected)
+            {
+                SuperController.LogError($"Cannot record raycast target {raycastTarget.name} because it is not selected. Either select it or remove it from the raycast target list.");
+                yield break;
+            }
+
             // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
             var targets = animationEditContext.GetSelectedTargets().ToList();
             var targetControllers = targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : current.targetControllers;
             var targetFloatParams = targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : current.targetFloatParams;
 
-            FreeControllerV3AnimationTarget eyeTargetControlTarget = null;
-            if (recordEyeTargetControl)
-            {
-                eyeTargetControlTarget = targetControllers.FirstOrDefault(t => t.animatableRef.controller.name == "eyeTargetControl");
-                if (eyeTargetControlTarget == null)
-                {
-                    SuperController.LogError("Timeline: To use eyeTargetControl using camera, you must add eyeTargetControl to the list");
-                    yield break;
-                }
-            }
-
             var enumerator = operations.Record().StartRecording(
                 animationEditContext.startRecordIn,
                 targetControllers,
                 targetFloatParams,
-                eyeTargetControlTarget
+                raycastTarget
             );
 
             ChangeScreen(TargetsScreen.ScreenName);
