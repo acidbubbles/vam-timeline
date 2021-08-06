@@ -274,6 +274,14 @@ namespace VamTimeline
         {
             paused = false;
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
+            // if (clip.recording)
+            // {
+            //     clip.clipTime = 0f;
+            //     Blend(clip, 1f, 0f);
+            //     clip.playbackMainInLayer = true;
+            //     onIsPlayingChanged.Invoke(clip);
+            //     return;
+            // }
             if (!isPlaying)
             {
                 isPlaying = true;
@@ -355,8 +363,11 @@ namespace VamTimeline
                 StopClip(clip);
         }
 
+        // private int x;
         public void StopClip(AtomAnimationClip clip)
         {
+            // if(++x == 2)
+            //     throw new Exception("X");
             if (clip.playbackEnabled)
             {
                 clip.Leave();
@@ -1017,9 +1028,9 @@ namespace VamTimeline
         {
             switch (timeMode)
             {
-                case 0:
+                case TimeModes.UnityTime:
                     return Time.deltaTime;
-                case 1:
+                case TimeModes.RealTime:
                     return Time.unscaledDeltaTime * Time.timeScale;
                 default:
                     return Time.deltaTime;
@@ -1040,7 +1051,7 @@ namespace VamTimeline
                 if (clip.playbackScheduledNextAnimationName != null)
                     clipsQueued++;
 
-                if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength)
+                if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength && !clip.infinite)
                 {
                     clip.playbackEnabled = false;
                     onClipIsPlayingChanged.Invoke(clip);

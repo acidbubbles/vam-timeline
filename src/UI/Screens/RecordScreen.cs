@@ -40,7 +40,7 @@ namespace VamTimeline
             prefabFactory.CreateSlider(recordInJSON);
 
             FreeControllerV3AnimationTarget raycastTarget = null;
-            _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast", new List<string>(), "", "Use camera raycast");
+            _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast on", new List<string>(), "", "Use camera raycast on");
             _useCameraRaycast.setCallbackFunction = val =>
             {
                 if (string.IsNullOrEmpty(val))
@@ -112,6 +112,8 @@ namespace VamTimeline
                 yield break;
             }
 
+            _recordButton.button.interactable = false;
+
             // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
             var targets = animationEditContext.GetSelectedTargets().ToList();
             var targetControllers = targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : current.targetControllers;
@@ -130,6 +132,11 @@ namespace VamTimeline
 
             while (enumerator.MoveNext())
                 yield return enumerator.Current;
+
+            _recordButton.button.interactable = true;
+            animationEditContext.Stop();
+            animationEditContext.ResetScrubberRange();
+            animationEditContext.clipTime = 0f;
         }
     }
 }

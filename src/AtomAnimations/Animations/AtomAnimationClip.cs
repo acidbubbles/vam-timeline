@@ -415,6 +415,8 @@ namespace VamTimeline
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;
         public float playbackScheduledNextTimeLeft;
+        public bool recording;
+        public bool infinite;
 
         public float clipTime
         {
@@ -425,7 +427,11 @@ namespace VamTimeline
 
             set
             {
-                if (loop)
+                if (infinite)
+                {
+                    _clipTime = value;
+                }
+                else if (loop)
                 {
                     if (value >= 0)
                     {

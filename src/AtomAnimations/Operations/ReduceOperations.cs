@@ -164,6 +164,7 @@ namespace VamTimeline
                         var curveType = leadCurve.keys[key].curveType;
                         if (curveType == CurveTypeValues.FlatLinear)
                         {
+                            #warning Seems to be an issue with flat at 0 (tbd)
                             // Bucket from the section start until the key before. This one will be skipped.
                             buckets.Add(processor.CreateBucket(sectionStart, key - 1));
                             processor.CopyToBranch(key);

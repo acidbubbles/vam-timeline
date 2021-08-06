@@ -91,6 +91,7 @@
     <Compile Include="src\AtomAnimations\Animations\AtomPose.cs" />
     <Compile Include="src\AtomAnimations\Animations\IAtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\Animations\IAtomAnimationTargetsList.cs" />
+    <Compile Include="src\AtomAnimations\Animations\TimeModes.cs" />
     <Compile Include="src\AtomAnimations\Animations\TimeTypeValues.cs" />
     <Compile Include="src\AtomAnimations\Animations\UnitySpecific.cs" />
     <Compile Include="src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingBase.cs" />

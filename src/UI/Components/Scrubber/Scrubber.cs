@@ -145,7 +145,10 @@ namespace VamTimeline
                 if (currentTextHash != _lastTextHash)
                 {
                     _lastTextHash = currentTextHash;
-                    _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
+                    if (animationEditContext.current.infinite)
+                        _timeText.text = $"{animationEditContext.clipTime:0.000}s";
+                    else
+                        _timeText.text = $"{animationEditContext.clipTime:0.000}s / {animationEditContext.current.animationLength:0.000}s";
                 }
             }
         }

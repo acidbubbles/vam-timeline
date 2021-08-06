@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -60,11 +61,13 @@ namespace VamTimeline
                 keyframesOps.RemoveAll(target);
             }
 
-            var originalLength = _clip.animationLength;
+            var resizeOp = new ResizeAnimationOperations();
+            // var originalLength = _clip.animationLength;
             if (recordExtendsLength)
             {
-                // We extend to a super long duration, we'll crop after.
-                new ResizeAnimationOperations().CropOrExtendAt(_clip, 60 * 60 * 24, 0);
+                _clip.infinite = true;
+                //     // We extend to a super long duration, we'll crop after.
+                //     resizeOp.CropOrExtendAt(_clip, 60 * 60 * 24, 0);
             }
 
             _clip.DirtyAll();
@@ -72,12 +75,15 @@ namespace VamTimeline
 
             yield return 0;
 
+            var timeMode = _animation.timeMode;
+            _animation.timeMode = TimeModes.RealTime;
+            _clip.recording = true;
+            _clip.infinite = recordExtendsLength;
             foreach (var target in controllers)
             {
                 target.recording = true;
                 target.StartBulkUpdates();
             }
-
             foreach (var target in floatParams)
             {
                 target.recording = true;
@@ -90,10 +96,11 @@ namespace VamTimeline
             while (true)
             {
                 lastRecordedTime = Mathf.Max(lastRecordedTime, _animation.playTime);
+                // resizeOp.CropOrExtendEnd(_clip, _clip.animationLength + 1f);
                 if (!_animation.isPlaying)
                     break;
                 #warning This will probably overwrite the first frame for looping animations?
-                if (_animation.playTime > _clip.animationLength)
+                if (!recordExtendsLength && _animation.playTime > _clip.animationLength)
                     break;
                 if (Input.GetKeyDown(KeyCode.Escape))
                     break;
@@ -112,17 +119,23 @@ namespace VamTimeline
 
             if (recordExtendsLength)
             {
-                // We now crop back to a reasonable length
-                new ResizeAnimationOperations().CropOrExtendEnd(_clip, Mathf.Max(lastRecordedTime.Snap(), originalLength));
+                // // We now crop back to a reasonable length
+                // new ResizeAnimationOperations().CropOrExtendEnd(_clip, Mathf.Max(lastRecordedTime.Snap(), originalLength));
             }
 
             // TODO: This needs to be guaranteed. We could register the enumerator inside a disposable class, dispose being called in different cancel situations
+            _clip.recording = false;
+            if (_clip.infinite)
+            {
+                _clip.infinite = false;
+                resizeOp.CropOrExtendEnd(_clip, _clip.GetAllCurveTargets().Select(t => t.GetLeadCurve().duration).Max());
+            }
+            _animation.timeMode = timeMode;
             foreach (var target in controllers)
             {
                 target.recording = false;
                 target.EndBulkUpdates();
             }
-
             foreach (var target in floatParams)
             {
                 target.recording = false;

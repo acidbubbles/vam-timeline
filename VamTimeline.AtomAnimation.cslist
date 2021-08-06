@@ -19,6 +19,7 @@ src\AtomAnimations\Animations\AtomAnimationTargetsList.cs
 src\AtomAnimations\Animations\AtomPose.cs
 src\AtomAnimations\Animations\IAtomAnimationClip.cs
 src\AtomAnimations\Animations\IAtomAnimationTargetsList.cs
+src\AtomAnimations\Animations\TimeModes.cs
 src\AtomAnimations\Animations\TimeTypeValues.cs
 src\AtomAnimations\Animations\UnitySpecific.cs
 src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingBase.cs
