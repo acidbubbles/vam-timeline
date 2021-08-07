@@ -98,10 +98,9 @@ namespace VamTimeline
                 return;
             }
 
-            var clip = operations.AddAnimation().AddAnimationAsCopy();
-            if(clip == null) return;
-            clip.loop = false;
-            operations.Resize().CropOrExtendAt(clip, clip.animationLength - time, 0);
+            var newClip = operations.AddAnimation().AddAnimationAsCopy();
+            newClip.loop = false;
+            operations.Resize().CropOrExtendAt(newClip, newClip.animationLength - time, 0);
             current.loop = false;
             operations.Resize().CropOrExtendEnd(current, time);
         }
