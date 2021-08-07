@@ -7,10 +7,11 @@ namespace VamTimeline
 {
     public class RecordScreen : ScreenBase
     {
-        private UIDynamicButton _recordButton;
-        private JSONStorableStringChooser _useCameraRaycast;
-        private JSONStorableBool _recordExtendsLength;
         public const string ScreenName = "Record";
+
+        private static UIDynamicButton _recordButton;
+        private static JSONStorableStringChooser _useCameraRaycast;
+        private static JSONStorableBool _recordExtendsLength;
 
         public override string screenId => ScreenName;
 
@@ -94,7 +95,7 @@ namespace VamTimeline
 
         private void SyncAnimationFields()
         {
-            _recordButton.button.interactable = animationEditContext.GetSelectedTargets().Any();
+            _recordButton.button.interactable = !current.recording && animationEditContext.GetSelectedTargets().Any();
             _recordExtendsLength.valNoCallback = current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2);
         }
 
@@ -137,6 +138,10 @@ namespace VamTimeline
             animationEditContext.Stop();
             animationEditContext.ResetScrubberRange();
             animationEditContext.clipTime = 0f;
+
+            // This is a hack, not sure why it's necessary to update the keyframes
+            yield return 0;
+            current.DirtyAll();
         }
     }
 }
