@@ -218,8 +218,11 @@ namespace VamTimeline
             #warning Overwrite only specific things; morphs only, pose only
             _savePoseUI.button.onClick.AddListener(() => current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val));
             _savePoseIncludeRoot = new JSONStorableBool("Pose: Include Root", AtomPose.DefaultIncludeRoot, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            prefabFactory.CreateToggle(_savePoseIncludeRoot);
             _savePoseIncludePose = new JSONStorableBool("Pose: Include Bones & Controls", AtomPose.DefaultIncludePose, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            prefabFactory.CreateToggle(_savePoseIncludePose);
             _savePoseIncludeMorphs = new JSONStorableBool("Pose: Include Pose Morphs", AtomPose.DefaultIncludeMorphs, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            prefabFactory.CreateToggle(_savePoseIncludeMorphs);
             _applyPoseUI = prefabFactory.CreateButton("Apply saved pose");
             _applyPoseUI.button.onClick.AddListener(() => current.pose.Apply());
             _clearPoseUI = prefabFactory.CreateButton("Clear saved pose");
