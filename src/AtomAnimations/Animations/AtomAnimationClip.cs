@@ -474,9 +474,9 @@ namespace VamTimeline
 
         public void Leave()
         {
-            foreach (var target in targetTriggers)
+            for (var trigIdx = 0; trigIdx < targetTriggers.Count; trigIdx++)
             {
-                foreach (var trigger in target.triggersMap.Values)
+                foreach (var trigger in targetTriggers[trigIdx].triggersMap.Values)
                 {
                     trigger.Leave();
                 }
