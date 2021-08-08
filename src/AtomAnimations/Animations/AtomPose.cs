@@ -60,14 +60,7 @@ namespace VamTimeline
         {
             if (includePose && t is FreeControllerV3) return includeRoot || ((FreeControllerV3) t).name != "control";
             if (includePose && t is DAZBone) return true;
-            if (includeMorphs && t.storeId == "geometry" && t is DAZCharacterSelector)
-            {
-                var test = (DAZCharacterSelector) t;
-                if(test.morphsControlUI == null) SuperController.LogError("Nope");
-                var morphs = test.morphsControlUI.GetMorphs().Where(m => m.isPoseControl).Select(m => m.displayName).ToArray();
-                SuperController.LogMessage($"Morphs: {string.Join(", ", morphs)}");
-                return true;
-            }
+            if (includeMorphs && t.storeId == "geometry" && t is DAZCharacterSelector) return true;
             return false;
         }
 
