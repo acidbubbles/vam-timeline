@@ -384,11 +384,11 @@ namespace VamTimeline
                 _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
                 _applyPoseOnTransition.toggle.interactable = current.pose != null;
             }
-            if (_savePoseUI) _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
-            if (_applyPoseUI) _applyPoseUI.button.interactable = current.pose != null;
-            if (_clearPoseUI) _clearPoseUI.button.interactable = current.pose != null;
-            if (_savePoseIncludeRoot != null && _savePoseIncludePose != null && _savePoseIncludeMorphs != null)
+            if (plugin.containingAtom.type == "Person")
             {
+                _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
+                _applyPoseUI.button.interactable = current.pose != null;
+                _clearPoseUI.button.interactable = current.pose != null;
                 if (current.pose == null)
                 {
                     _savePoseIncludeRoot.valNoCallback = AtomPose.DefaultIncludeRoot;
