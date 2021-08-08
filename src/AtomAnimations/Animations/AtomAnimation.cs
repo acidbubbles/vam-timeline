@@ -498,6 +498,8 @@ namespace VamTimeline
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
                 clip.playbackEnabled = targetWeight > 0;
+                if (!clip.playbackEnabled)
+                    clip.Leave();
             }
             else
             {
