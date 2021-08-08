@@ -24,6 +24,8 @@ namespace VamTimeline
         private JSONStorableStringChooser _animationLegacyJSON;
         private JSONStorableAction _nextAnimationLegacyJSON;
         private JSONStorableAction _previousAnimationLegacyJSON;
+        private JSONStorableAction _nextAnimationInMainLayerJSON;
+        private JSONStorableAction _previousAnimationInMainLayerJSON;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableFloat _timeJSON;
         private JSONStorableAction _playJSON;
@@ -233,7 +235,7 @@ namespace VamTimeline
             };
             RegisterStringChooser(_animationLegacyJSON);
 
-            _nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
+            _nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimationLegacy, () =>
             {
                 if (_animationLegacyJSON.choices.Count < 2) return;
                 var clip = string.IsNullOrEmpty(_animationLegacyJSON.val)
@@ -248,7 +250,7 @@ namespace VamTimeline
             });
             RegisterAction(_nextAnimationLegacyJSON);
 
-            _previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
+            _previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimationLegacy, () =>
             {
                 if (_animationLegacyJSON.choices.Count < 2) return;
                 var clip = string.IsNullOrEmpty(_animationLegacyJSON.val)
@@ -262,6 +264,30 @@ namespace VamTimeline
                     _animationLegacyJSON.val = inLayer[i - 1].animationName;
             });
             RegisterAction(_previousAnimationLegacyJSON);
+
+            _nextAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.NextAnimationInMainLayer, () =>
+            {
+                var layer = animation.index.ByLayer(animation.clips[0].animationLayer);
+                var main = layer.FirstOrDefault(c => c.playbackMainInLayer);
+                if (main == null) return;
+                var animIdx = layer.IndexOf(main);
+                if (animIdx == layer.Count - 1) return;
+                var next = layer[animIdx + 1];
+                animation.PlayClips(next.animationName, true);
+            });
+            RegisterAction(_nextAnimationInMainLayerJSON);
+
+            _previousAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.PreviousAnimationInMainLayer, () =>
+            {
+                var layer = animation.index.ByLayer(animation.clips[0].animationLayer);
+                var main = layer.FirstOrDefault(c => c.playbackMainInLayer);
+                if (main == null) return;
+                var animIdx = layer.IndexOf(main);
+                if (animIdx == 0) return;
+                var prev = layer[animIdx - 1];
+                animation.PlayClips(prev.animationName, true);
+            });
+            RegisterAction(_previousAnimationInMainLayerJSON);
 
             _scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animationEditContext.clipTime = v.Snap(animationEditContext.snap), 0f, AtomAnimationClip.DefaultAnimationLength)
             {
