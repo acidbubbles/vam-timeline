@@ -10,10 +10,12 @@ namespace VamTimeline
         public const bool DefaultIncludeRoot = true;
         public const bool DefaultIncludePose = true;
         public const bool DefaultIncludeMorphs = true;
+        public const bool DefaultUseMergeLoad = true;
 
         public bool includeRoot { get; private set; }
         public bool includePose { get; private set; }
         public bool includeMorphs { get; private set; }
+        public bool useMergeLoad { get; private set; }
 
         private readonly Atom _atom;
         private readonly JSONClass _poseJSON;
@@ -21,12 +23,12 @@ namespace VamTimeline
         public static AtomPose FromAtom(Atom atom, AtomPose inheritSettingsFrom)
         {
             if (inheritSettingsFrom != null)
-                return FromAtom(atom, inheritSettingsFrom.includeRoot, inheritSettingsFrom.includePose, inheritSettingsFrom.includeMorphs);
+                return FromAtom(atom, inheritSettingsFrom.includeRoot, inheritSettingsFrom.includePose, inheritSettingsFrom.includeMorphs, inheritSettingsFrom.useMergeLoad);
             else
-                return FromAtom(atom, DefaultIncludeRoot, DefaultIncludePose, DefaultIncludeMorphs);
+                return FromAtom(atom, DefaultIncludeRoot, DefaultIncludePose, DefaultIncludeMorphs, DefaultUseMergeLoad);
         }
 
-        public static AtomPose FromAtom(Atom atom, bool includeRoot, bool includePose, bool includeMorphs)
+        public static AtomPose FromAtom(Atom atom, bool includeRoot, bool includePose, bool includeMorphs, bool useMergeLoad)
         {
             if (atom.type != "Person") return null;
 
@@ -47,7 +49,8 @@ namespace VamTimeline
                 {
                     ["includeRoot"] = { AsBool = includeRoot },
                     ["includePose"] = { AsBool = includePose },
-                    ["includeMorphs"] = { AsBool = includeMorphs }
+                    ["includeMorphs"] = { AsBool = includeMorphs },
+                    ["useMergeLoad"] = { AsBool = useMergeLoad },
                 },
                 ["setUnlistedParamsToDefault"] = { AsBool = true },
                 ["V2"] = { AsBool = true },
@@ -58,7 +61,8 @@ namespace VamTimeline
             {
                 includeRoot = includeRoot,
                 includePose = includePose,
-                includeMorphs = includeMorphs
+                includeMorphs = includeMorphs,
+                useMergeLoad = useMergeLoad
             };
         }
 
@@ -79,6 +83,7 @@ namespace VamTimeline
                 includeRoot = embodyJc["includeRoot"].AsBool,
                 includePose = embodyJc["includePose"].AsBool,
                 includeMorphs = embodyJc["includeMorphs"].AsBool,
+                useMergeLoad = embodyJc["useMergeLoad"].AsBool,
             }: null;
         }
 
@@ -93,7 +98,7 @@ namespace VamTimeline
             if (_atom.type != "Person") return;
             var posePresetsManagerControls = _atom.presetManagerControls.First(pmc => pmc.name == "PosePresets");
             var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
-            posePresetsManager.LoadPresetFromJSON(_poseJSON);
+            posePresetsManager.LoadPresetFromJSON(_poseJSON, useMergeLoad);
         }
 
         public PositionAndRotation GetControllerPose(string name)
@@ -135,7 +140,8 @@ namespace VamTimeline
             {
                 includeMorphs = includeMorphs,
                 includePose = includePose,
-                includeRoot = includeRoot
+                includeRoot = includeRoot,
+                useMergeLoad = useMergeLoad,
             };
         }
     }

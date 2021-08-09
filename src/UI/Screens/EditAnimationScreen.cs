@@ -37,6 +37,7 @@ namespace VamTimeline
         private JSONStorableBool _savePoseIncludeRoot;
         private JSONStorableBool _savePoseIncludePose;
         private JSONStorableBool _savePoseIncludeMorphs;
+        private JSONStorableBool _savePoseUseMergeLoad;
         private UIDynamicButton _copyPoseUI;
         private UIDynamicButton _pastePoseUI;
 
@@ -216,19 +217,25 @@ namespace VamTimeline
         {
             _savePoseUI = prefabFactory.CreateButton("Save pose");
             #warning Overwrite only specific things; morphs only, pose only
-            _savePoseUI.button.onClick.AddListener(() => current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val));
+            _savePoseUI.button.onClick.AddListener(() =>
+            {
+                current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val);
+                _savePoseUI.buttonColor = new Color(0.4f, 0.6f, 0.4f);
+            });
             _savePoseIncludeRoot = new JSONStorableBool("Pose: Include Root", AtomPose.DefaultIncludeRoot, (bool val) => _savePoseUI.buttonColor = Color.yellow);
             prefabFactory.CreateToggle(_savePoseIncludeRoot);
             _savePoseIncludePose = new JSONStorableBool("Pose: Include Bones & Controls", AtomPose.DefaultIncludePose, (bool val) => _savePoseUI.buttonColor = Color.yellow);
             prefabFactory.CreateToggle(_savePoseIncludePose);
             _savePoseIncludeMorphs = new JSONStorableBool("Pose: Include Pose Morphs", AtomPose.DefaultIncludeMorphs, (bool val) => _savePoseUI.buttonColor = Color.yellow);
             prefabFactory.CreateToggle(_savePoseIncludeMorphs);
+            _savePoseUseMergeLoad = new JSONStorableBool("Pose: Use Merge Load", AtomPose.DefaultUseMergeLoad, (bool val) => _savePoseUI.buttonColor = Color.yellow);
+            prefabFactory.CreateToggle(_savePoseUseMergeLoad);
             _applyPoseUI = prefabFactory.CreateButton("Apply saved pose");
             _applyPoseUI.button.onClick.AddListener(() => current.pose.Apply());
             _clearPoseUI = prefabFactory.CreateButton("Clear saved pose");
             _clearPoseUI.button.onClick.AddListener(() => current.pose = null);
             _copyPoseUI = prefabFactory.CreateButton("Copy current pose");
-            _copyPoseUI.button.onClick.AddListener(() => { _poseClipboard = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val); _pastePoseUI.button.interactable = true; });
+            _copyPoseUI.button.onClick.AddListener(() => { _poseClipboard = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val); _pastePoseUI.button.interactable = true; });
             _pastePoseUI = prefabFactory.CreateButton("Paste current pose");
             _pastePoseUI.button.onClick.AddListener(() => current.pose = _poseClipboard.Clone());
             _pastePoseUI.button.interactable = _poseClipboard != null;
@@ -394,12 +401,14 @@ namespace VamTimeline
                     _savePoseIncludeRoot.valNoCallback = AtomPose.DefaultIncludeRoot;
                     _savePoseIncludePose.valNoCallback = AtomPose.DefaultIncludePose;
                     _savePoseIncludeMorphs.valNoCallback = AtomPose.DefaultIncludeMorphs;
+                    _savePoseUseMergeLoad.valNoCallback = AtomPose.DefaultUseMergeLoad;
                 }
                 else
                 {
                     _savePoseIncludeRoot.valNoCallback = current.pose.includeRoot;
                     _savePoseIncludePose.valNoCallback = current.pose.includePose;
                     _savePoseIncludeMorphs.valNoCallback = current.pose.includeMorphs;
+                    _savePoseUseMergeLoad.valNoCallback = current.pose.useMergeLoad;
                 }
             }
         }
