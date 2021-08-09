@@ -119,7 +119,12 @@ namespace VamTimeline
         public AtomPose Clone()
         {
             // NOTE: We don't deep clone because the pose JSON is immutable currently
-            return new AtomPose(_atom, _poseJSON);
+            return new AtomPose(_atom, _poseJSON)
+            {
+                includeMorphs = includeMorphs,
+                includePose = includePose,
+                includeRoot = includeRoot
+            };
         }
     }
 }
