@@ -7,7 +7,7 @@ namespace VamTimeline
     public class JSONStorableFloatAnimationTarget : CurveAnimationTargetBase<JSONStorableFloatRef>, ICurveAnimationTarget
     {
         public readonly BezierAnimationCurve value = new BezierAnimationCurve();
-        public bool recording;
+        public bool recording { get; set; }
 
         public JSONStorableFloatAnimationTarget(JSONStorableFloatAnimationTarget source)
             : this(source.animatableRef)

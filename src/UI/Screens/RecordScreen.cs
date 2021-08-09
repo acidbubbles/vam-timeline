@@ -123,8 +123,7 @@ namespace VamTimeline
             var enumerator = operations.Record().StartRecording(
                 recordExtendsLength,
                 animationEditContext.startRecordIn,
-                targetControllers,
-                targetFloatParams,
+                targetControllers.Cast<ICurveAnimationTarget>().Concat(targetFloatParams).ToList(),
                 raycastTarget
             );
 

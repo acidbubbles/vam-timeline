@@ -7,14 +7,16 @@ namespace VamTimeline
 {
     public class FreeControllerV3AnimationTarget : TransformAnimationTargetBase<FreeControllerV3Ref>, ICurveAnimationTarget
     {
+        public bool recording { get; set; }
+
         public bool controlPosition = true;
         public bool controlRotation = true;
-        public bool recording;
-        private bool _parentAvailable;
-        private int _lastParentAvailableCheck;
         public string parentAtomId;
         public string parentRigidbodyId;
-        public Rigidbody parentRigidbody;
+
+        private Rigidbody _parentRigidbody;
+        private bool _parentAvailable;
+        private int _lastParentAvailableCheck;
 
         public void SetParent(string atomId, string rigidbodyId)
         {
@@ -22,14 +24,14 @@ namespace VamTimeline
             {
                 parentAtomId = null;
                 parentRigidbodyId = null;
-                parentRigidbody = null;
+                _parentRigidbody = null;
                 _parentAvailable = true;
                 return;
             }
             _parentAvailable = false;
             parentAtomId = atomId;
             parentRigidbodyId = rigidbodyId;
-            parentRigidbody = null;
+            _parentRigidbody = null;
             TryBindParent(false);
         }
 
@@ -38,10 +40,10 @@ namespace VamTimeline
             if (parentRigidbodyId == null) return true;
             if (_parentAvailable)
             {
-                if (parentRigidbody == null)
+                if (_parentRigidbody == null)
                 {
                     _parentAvailable = false;
-                    parentRigidbody = null;
+                    _parentRigidbody = null;
                     return false;
                 }
                 return true;
@@ -69,7 +71,7 @@ namespace VamTimeline
                 return false;
             }
 
-            parentRigidbody = rigidbody;
+            _parentRigidbody = rigidbody;
             _parentAvailable = true;
             return true;
         }
@@ -78,7 +80,7 @@ namespace VamTimeline
 
         public Rigidbody GetPositionParentRB()
         {
-             if (!ReferenceEquals(parentRigidbody, null)) return parentRigidbody;
+             if (!ReferenceEquals(_parentRigidbody, null)) return _parentRigidbody;
              var currentPositionState = animatableRef.controller.currentPositionState;
              var linkToRB = animatableRef.controller.linkToRB;
              if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
@@ -93,7 +95,7 @@ namespace VamTimeline
 
         public Rigidbody GetRotationParentRB()
         {
-             if (!ReferenceEquals(parentRigidbody, null)) return parentRigidbody;
+             if (!ReferenceEquals(_parentRigidbody, null)) return _parentRigidbody;
              var currentPositionState = animatableRef.controller.currentPositionState;
              var linkToRB = animatableRef.controller.linkToRB;
              if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)

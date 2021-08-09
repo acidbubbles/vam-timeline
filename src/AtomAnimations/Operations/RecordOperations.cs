@@ -19,8 +19,7 @@ namespace VamTimeline
         public IEnumerator StartRecording(
             bool recordExtendsLength,
             int recordInSeconds,
-            List<FreeControllerV3AnimationTarget> controllers,
-            List<JSONStorableFloatAnimationTarget> floatParams,
+            List<ICurveAnimationTarget> targets,
             FreeControllerV3AnimationTarget raycastTarget
         )
         {
@@ -31,7 +30,7 @@ namespace VamTimeline
             _animation.StopAll();
             _animation.ResetAll();
 
-            var exitOnMenuOpen = controllers.Count > 0 && (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR);
+            var exitOnMenuOpen = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && targets.OfType<FreeControllerV3AnimationTarget>().Any();
             if (exitOnMenuOpen) SuperController.singleton.HideMainHUD();
 
             var keyframesOps = new KeyframesOperations(_clip);
@@ -50,13 +49,7 @@ namespace VamTimeline
 
             SuperController.singleton.helpText = "Recording...";
 
-            #warning No need to specify controllers and floatParams separately, just use a single list
-            foreach (var target in controllers)
-            {
-                keyframesOps.RemoveAll(target);
-            }
-
-            foreach (var target in floatParams)
+            foreach (var target in targets)
             {
                 keyframesOps.RemoveAll(target);
             }
@@ -79,12 +72,7 @@ namespace VamTimeline
             _animation.timeMode = TimeModes.RealTime;
             _clip.recording = true;
             _clip.infinite = recordExtendsLength;
-            foreach (var target in controllers)
-            {
-                target.recording = true;
-                target.StartBulkUpdates();
-            }
-            foreach (var target in floatParams)
+            foreach (var target in targets)
             {
                 target.recording = true;
                 target.StartBulkUpdates();
@@ -131,12 +119,7 @@ namespace VamTimeline
                 resizeOp.CropOrExtendEnd(_clip, _clip.GetAllCurveTargets().Select(t => t.GetLeadCurve().duration).Max());
             }
             _animation.timeMode = timeMode;
-            foreach (var target in controllers)
-            {
-                target.recording = false;
-                target.EndBulkUpdates();
-            }
-            foreach (var target in floatParams)
+            foreach (var target in targets)
             {
                 target.recording = false;
                 target.EndBulkUpdates();
