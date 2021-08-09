@@ -11,5 +11,7 @@ namespace VamTimeline
         int GetKeyframeCurveTypeByTime(float time);
         ICurveAnimationTarget Clone(bool copyKeyframes);
         void RestoreFrom(ICurveAnimationTarget backup);
+        void IncreaseCapacity(int capacity);
+        void TrimCapacity();
     }
 }

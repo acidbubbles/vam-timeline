@@ -61,6 +61,16 @@ namespace VamTimeline
             dirty = true;
         }
 
+        public void IncreaseCapacity(int capacity)
+        {
+            value.keys.Capacity = Math.Max(value.keys.Capacity, capacity);
+        }
+
+        public void TrimCapacity()
+        {
+            value.keys.TrimExcess();
+        }
+
         public int SetKeyframe(float time, float setValue, bool makeDirty = true)
         {
             var curveType = SelectCurveType(time, CurveTypeValues.Undefined);

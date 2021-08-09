@@ -194,6 +194,22 @@ namespace VamTimeline
             dirty = true;
         }
 
+        public void IncreaseCapacity(int capacity)
+        {
+            foreach (var curve in curves)
+            {
+                curve.keys.Capacity = Math.Max(curve.keys.Capacity, capacity);
+            }
+        }
+
+        public void TrimCapacity()
+        {
+            foreach (var curve in curves)
+            {
+                curve.keys.TrimExcess();
+            }
+        }
+
         #endregion
 
         public bool TargetsSameAs(IAtomAnimationTarget target)

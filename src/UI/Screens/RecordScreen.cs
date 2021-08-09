@@ -116,18 +116,16 @@ namespace VamTimeline
             _recordButton.button.interactable = false;
 
             // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
-            var targets = animationEditContext.GetSelectedTargets().ToList();
-            var targetControllers = targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : current.targetControllers;
-            var targetFloatParams = targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : current.targetFloatParams;
+            var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
 
             var enumerator = operations.Record().StartRecording(
                 recordExtendsLength,
                 animationEditContext.startRecordIn,
-                targetControllers.Cast<ICurveAnimationTarget>().Concat(targetFloatParams).ToList(),
+                targets.ToList(),
                 raycastTarget
             );
 
-            if (targetControllers.Count == 0 && targetFloatParams.Count > 0)
+            if (!targets.OfType<FreeControllerV3AnimationTarget>().Any() && targets.OfType<JSONStorableFloatAnimationTarget>().Any())
                 ChangeScreen(TargetsScreen.ScreenName);
 
             while (enumerator.MoveNext())

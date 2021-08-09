@@ -943,12 +943,15 @@ namespace VamTimeline
             // TODO: Check if already recording
             bindings.Add(new JSONStorableAction("StartRecord", () =>
             {
-                var targets = animationEditContext.GetSelectedTargets().ToList();
+                var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
+                if (targets.Count == 0)
+                {
+                    SuperController.LogError("Timeline: No targets selected for recording");
+                }
                 StartCoroutine(operations.Record().StartRecording(
                     animationEditContext.current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2),
                     animationEditContext.startRecordIn,
-                    targets.Count > 0 ? targets.OfType<FreeControllerV3AnimationTarget>().ToList() : animationEditContext.current.targetControllers,
-                    targets.Count > 0 ? targets.OfType<JSONStorableFloatAnimationTarget>().ToList() : animationEditContext.current.targetFloatParams,
+                    targets,
                     null
                 ));
             }));

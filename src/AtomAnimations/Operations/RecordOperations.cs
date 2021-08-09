@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,6 +8,9 @@ namespace VamTimeline
 {
     public class RecordOperations
     {
+        private static bool _recording;
+        private static int _timeMode;
+
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
@@ -23,9 +27,12 @@ namespace VamTimeline
             FreeControllerV3AnimationTarget raycastTarget
         )
         {
-            // TODO: Handle stopping in the middle of it
-            // TODO: Handle starting while it's already recording
             // TODO: Counter should use in-game rather than helptext
+            if (_recording)
+            {
+                SuperController.LogError("Timeline: Already recording");
+                yield break;
+            }
 
             _animation.StopAll();
             _animation.ResetAll();
@@ -33,7 +40,9 @@ namespace VamTimeline
             var exitOnMenuOpen = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && targets.OfType<FreeControllerV3AnimationTarget>().Any();
             if (exitOnMenuOpen) SuperController.singleton.HideMainHUD();
 
-            var keyframesOps = new KeyframesOperations(_clip);
+            CleanupClip(targets, recordExtendsLength);
+
+            yield return 0;
 
             for (var i = recordInSeconds; i > 0; i--)
             {
@@ -49,36 +58,7 @@ namespace VamTimeline
 
             SuperController.singleton.helpText = "Recording...";
 
-            foreach (var target in targets)
-            {
-                keyframesOps.RemoveAll(target);
-            }
-
-            var resizeOp = new ResizeAnimationOperations();
-            // var originalLength = _clip.animationLength;
-            if (recordExtendsLength)
-            {
-                _clip.infinite = true;
-                //     // We extend to a super long duration, we'll crop after.
-                //     resizeOp.CropOrExtendAt(_clip, 60 * 60 * 24, 0);
-            }
-
-            _clip.DirtyAll();
-            _animation.RebuildAnimationNow();
-
-            yield return 0;
-
-            var timeMode = _animation.timeMode;
-            _animation.timeMode = TimeModes.RealTime;
-            _clip.recording = true;
-            _clip.infinite = recordExtendsLength;
-            foreach (var target in targets)
-            {
-                target.recording = true;
-                target.StartBulkUpdates();
-            }
-
-            _animation.PlayClip(_clip, false);
+            StartRecording(recordExtendsLength, targets);
 
             var lastRecordedTime = 0f;
             while (true)
@@ -101,15 +81,59 @@ namespace VamTimeline
                 yield return 0;
             }
 
+            StopRecording(targets);
+        }
+
+        private void CleanupClip(List<ICurveAnimationTarget> targets, bool recordExtendsLength)
+        {
+            var keyframesOps = new KeyframesOperations(_clip);
+
+            foreach (var target in targets)
+            {
+                keyframesOps.RemoveAll(target);
+            }
+
+            _clip.DirtyAll();
+            _animation.RebuildAnimationNow();
+
+            foreach (var target in targets)
+            {
+                target.IncreaseCapacity(90 * (int)(recordExtendsLength ? 60 * 60 : target.GetLeadCurve().duration.Snap(1000)));
+            }
+
+            GC.Collect();
+        }
+
+        private void StartRecording(bool recordExtendsLength, List<ICurveAnimationTarget> targets)
+        {
+            _timeMode = _animation.timeMode;
+
+            _animation.timeMode = TimeModes.RealTime;
+            _clip.recording = true;
+            _clip.infinite = recordExtendsLength;
+            foreach (var target in targets)
+            {
+                target.recording = true;
+                target.StartBulkUpdates();
+            }
+
+            _animation.PlayClip(_clip, false);
+
+            _recording = true;
+        }
+
+        private void StopRecording(List<ICurveAnimationTarget> targets)
+        {
+            if (!_recording) return;
+
+            _recording = false;
+
+            _animation.timeMode = _timeMode;
+
+            var resizeOp = new ResizeAnimationOperations();
             _animation.StopAll();
             _animation.ResetAll();
             SuperController.singleton.helpText = "";
-
-            if (recordExtendsLength)
-            {
-                // // We now crop back to a reasonable length
-                // new ResizeAnimationOperations().CropOrExtendEnd(_clip, Mathf.Max(lastRecordedTime.Snap(), originalLength));
-            }
 
             // TODO: This needs to be guaranteed. We could register the enumerator inside a disposable class, dispose being called in different cancel situations
             _clip.recording = false;
@@ -118,12 +142,15 @@ namespace VamTimeline
                 _clip.infinite = false;
                 resizeOp.CropOrExtendEnd(_clip, _clip.GetAllCurveTargets().Select(t => t.GetLeadCurve().duration).Max());
             }
-            _animation.timeMode = timeMode;
+
             foreach (var target in targets)
             {
                 target.recording = false;
+                target.TrimCapacity();
                 target.EndBulkUpdates();
             }
+
+            GC.Collect();
 
             SuperController.singleton.ShowMainHUD();
         }
