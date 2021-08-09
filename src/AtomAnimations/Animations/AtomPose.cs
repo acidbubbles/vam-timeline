@@ -43,8 +43,14 @@ namespace VamTimeline
 
             var poseJSON = new JSONClass
             {
-                ["setUnlistedParamsToDefault"] = {AsBool = true},
-                ["V2"] = {AsBool = true},
+                ["embody"] = new JSONClass
+                {
+                    ["includeRoot"] = { AsBool = includeRoot },
+                    ["includePose"] = { AsBool = includePose },
+                    ["includeMorphs"] = { AsBool = includeMorphs }
+                },
+                ["setUnlistedParamsToDefault"] = { AsBool = true },
+                ["V2"] = { AsBool = true },
                 ["storables"] = storablesJSON
             };
 
@@ -67,7 +73,13 @@ namespace VamTimeline
         public static AtomPose FromJSON(Atom atom, JSONNode jsonNode)
         {
             var jc = jsonNode.AsObject;
-            return jc.HasKey("storables") ? new AtomPose(atom, jc) : null;
+            var embodyJc = jc["embody"].AsObject;
+            return jc.HasKey("storables") ? new AtomPose(atom, jc)
+            {
+                includeRoot = embodyJc["includeRoot"].AsBool,
+                includePose = embodyJc["includePose"].AsBool,
+                includeMorphs = embodyJc["includeMorphs"].AsBool,
+            }: null;
         }
 
         private AtomPose(Atom atom, JSONClass poseJSON)
