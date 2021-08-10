@@ -58,9 +58,9 @@ namespace VamTimeline
 
         private void InitOffsetUI()
         {
-            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode }, _lastOffsetMode ?? OffsetOperations.ChangePivotMode, "Offset mode", val => _lastOffsetMode = val);
+            _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode, OffsetOperations.RepositionMode }, _lastOffsetMode ?? OffsetOperations.ChangePivotMode, "Offset mode", val => _lastOffsetMode = val);
             var offsetModeUI = prefabFactory.CreatePopup(_offsetModeJSON, false, true);
-            offsetModeUI.popupPanelHeight = 260f;
+            offsetModeUI.popupPanelHeight = 230f;
             offsetModeUI.popup.popupPanel.offsetMin += new Vector2(0, offsetModeUI.popupPanelHeight + 60);
             offsetModeUI.popup.popupPanel.offsetMax += new Vector2(0, offsetModeUI.popupPanelHeight + 60);
 
@@ -254,6 +254,8 @@ namespace VamTimeline
             }
 
             operations.Offset().Apply(_offsetSnapshot, _startJSON.val, _endJSON.val, _offsetModeJSON.val);
+
+            animationEditContext.Sample();
         }
 
         #endregion

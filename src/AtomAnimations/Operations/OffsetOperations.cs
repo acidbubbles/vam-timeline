@@ -9,6 +9,7 @@ namespace VamTimeline
     {
         public const string ChangePivotMode = "Change pivot";
         public const string OffsetMode = "Offset";
+        public const string RepositionMode = "Reposition (move first selected)";
 
         private readonly AtomAnimationClip _clip;
 
@@ -19,6 +20,12 @@ namespace VamTimeline
 
         public void Apply(AtomClipboardEntry offsetSnapshot, float from, float to, string offsetMode)
         {
+            var repositionFromFirst = offsetMode == RepositionMode;
+            var first = true;
+            var pivot = Vector3.zero;
+            var positionDelta = Vector3.zero;
+            var rotationDelta = Quaternion.identity;
+
             foreach (var snap in offsetSnapshot.controllers)
             {
                 var target = _clip.targetControllers.First(t => t.animatableRef == snap.controllerRef);
@@ -28,10 +35,7 @@ namespace VamTimeline
                 var rotLink = target.GetRotationParentRB();
                 var hasRotLink = !ReferenceEquals(rotLink, null);
 
-                Vector3 pivot;
-                Vector3 positionDelta;
-                Quaternion rotationDelta;
-
+                if(first || !repositionFromFirst)
                 {
                     var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
                     var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
@@ -44,31 +48,42 @@ namespace VamTimeline
                     rotationDelta = Quaternion.Inverse(rotationBefore) * rotationAfter;
                 }
 
-                foreach (var key in target.GetAllKeyframesKeys())
+                target.StartBulkUpdates();
+                try
                 {
-                    var time = target.GetKeyframeTime(key);
-                    if (time < from - 0.0001f || time > to + 0.001f) continue;
-                    // Do not double-apply
-                    if (Math.Abs(time - offsetSnapshot.time) < 0.0001) continue;
-
-                    var positionBefore = target.GetKeyframePosition(key);
-                    var rotationBefore = target.GetKeyframeRotation(key);
-
-                    switch (offsetMode)
+                    foreach (var key in target.GetAllKeyframesKeys())
                     {
-                        case ChangePivotMode:
+                        var time = target.GetKeyframeTime(key);
+                        if (time < from - 0.0001f || time > to + 0.001f) continue;
+                        // Do not double-apply
+                        if (first && Math.Abs(time - offsetSnapshot.time) < 0.0001) continue;
+
+                        var positionBefore = target.GetKeyframePosition(key);
+                        var rotationBefore = target.GetKeyframeRotation(key);
+
+                        switch (offsetMode)
                         {
-                            var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
-                            target.SetKeyframeByKey(key, positionAfter, rotationBefore * rotationDelta);
-                            break;
+                            case ChangePivotMode:
+                            case RepositionMode:
+                            {
+                                var positionAfter = rotationDelta * (positionBefore - pivot) + pivot + positionDelta;
+                                target.SetKeyframeByKey(key, positionAfter, rotationBefore * rotationDelta);
+                                break;
+                            }
+                            case OffsetMode:
+                                target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
+                                break;
+                            default:
+                                throw new NotImplementedException($"Offset mode '{offsetMode}' is not implemented");
                         }
-                        case OffsetMode:
-                            target.SetKeyframeByKey(key, positionBefore + positionDelta, rotationBefore * rotationDelta);
-                            break;
-                        default:
-                            throw new NotImplementedException($"Offset mode '{offsetMode}' is not implemented");
                     }
                 }
+                finally
+                {
+                    target.EndBulkUpdates();
+                }
+
+                first = false;
             }
         }
 
