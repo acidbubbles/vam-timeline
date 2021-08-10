@@ -101,7 +101,7 @@ namespace VamTimeline
 
             foreach (var target in targets)
             {
-                target.IncreaseCapacity(90 * (int)(recordExtendsLength ? 60 * 60 : target.GetLeadCurve().duration.Snap(1000)));
+                target.IncreaseCapacity(90 * (int)(recordExtendsLength ? 60 : target.GetLeadCurve().duration.Snap(1)));
             }
 
             GC.Collect();
