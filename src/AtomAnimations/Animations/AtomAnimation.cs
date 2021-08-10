@@ -51,6 +51,8 @@ namespace VamTimeline
 
         public bool master { get; set; }
 
+        public bool simulationFrozen;
+
         private float _playTime;
         public float playTime
         {
@@ -658,6 +660,7 @@ namespace VamTimeline
         [MethodImpl(256)]
         private void SampleFloatParams()
         {
+            if (simulationFrozen) return;
             foreach (var x in index.ByFloatParam())
             {
                 if (!x.Value[0].animatableRef.EnsureAvailable()) continue;
@@ -703,6 +706,7 @@ namespace VamTimeline
         [MethodImpl(256)]
         private void SampleControllers(bool force = false)
         {
+            if (simulationFrozen) return;
             foreach (var x in index.ByController())
             {
                 SampleController(x.Key.controller, x.Value, force);

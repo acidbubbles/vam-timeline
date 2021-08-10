@@ -138,6 +138,13 @@ namespace VamTimeline
         public void Update()
         {
             if (ReferenceEquals(animation, null)) return;
+
+            if (containingAtom.physicsSimulators.Length > 0)
+            {
+                var physicsSimulator = containingAtom.physicsSimulators[0];
+                animation.simulationFrozen = physicsSimulator.resetSimulation || physicsSimulator.freezeSimulation;
+            }
+
             if (animation.isPlaying)
             {
                 _scrubberJSON.valNoCallback = animationEditContext.clipTime;
@@ -450,7 +457,6 @@ namespace VamTimeline
             animationEditContext = gameObject.AddComponent<AtomAnimationEditContext>();
             if (animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
             animationEditContext.animation = animation;
-            animationEditContext.containingAtom = containingAtom;
         }
 
         private void StartAutoPlay()

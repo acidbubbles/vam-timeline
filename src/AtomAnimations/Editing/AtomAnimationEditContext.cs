@@ -30,8 +30,6 @@ namespace VamTimeline
         public readonly ScrubberRangeChangedEvent onScrubberRangeChanged = new ScrubberRangeChangedEvent();
         public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
 
-        public Atom containingAtom;
-
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         private bool _sampleAfterRebuild;
@@ -473,8 +471,8 @@ namespace VamTimeline
         private IEnumerator LateSample(float settleDuration)
         {
             var settleTime = Time.time + settleDuration;
-            var simulator = this.containingAtom.physicsSimulators[0];
-            while (simulator.resetSimulation)
+            yield return 0;
+            while (animation.simulationFrozen)
                 yield return 0;
             // Give a little bit of time for physics to settle and re-sample
             if(Time.time > settleTime)
