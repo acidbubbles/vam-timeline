@@ -30,6 +30,8 @@ namespace VamTimeline
         public readonly ScrubberRangeChangedEvent onScrubberRangeChanged = new ScrubberRangeChangedEvent();
         public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
 
+        public Atom containingAtom;
+
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         private bool _sampleAfterRebuild;
@@ -72,8 +74,6 @@ namespace VamTimeline
                 _current = value;
                 _lastCurrentAnimationLength = value.animationLength;
                 ResetScrubberRange();
-                if (!_animation.isPlaying)
-                    _current.pose?.Apply();
             }
         }
         // This ugly property is to cleanly allow ignoring grab release at the end of a mocap recording
@@ -459,16 +459,26 @@ namespace VamTimeline
 
         public void Sample()
         {
-            SampleNow();
-            if (GetMainClipPerLayer().SelectMany(c => c.targetControllers).All(t => t.parentRigidbodyId == null)) return;
+            var hasPose = current.pose != null;
+            if(hasPose)
+                current.pose.Apply();
+            else
+                SampleNow();
+            var hasParenting = GetMainClipPerLayer().SelectMany(c => c.targetControllers).Any(t => t.parentRigidbodyId != null);
+            if (!hasPose && !hasParenting) return;
             if (_lateSample != null) StopCoroutine(_lateSample);
-            _lateSample = StartCoroutine(LateSample());
+            _lateSample = StartCoroutine(LateSample(0.1f));
         }
 
-        private IEnumerator LateSample()
+        private IEnumerator LateSample(float settleDuration)
         {
+            var settleTime = Time.time + settleDuration;
+            var simulator = this.containingAtom.physicsSimulators[0];
+            while (simulator.resetSimulation)
+                yield return 0;
             // Give a little bit of time for physics to settle and re-sample
-            yield return new WaitForSeconds(0.1f);
+            if(Time.time > settleTime)
+                yield return new WaitForSeconds(Time.time - settleTime);
             SampleNow();
         }
 

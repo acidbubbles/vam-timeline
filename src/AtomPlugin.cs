@@ -450,6 +450,7 @@ namespace VamTimeline
             animationEditContext = gameObject.AddComponent<AtomAnimationEditContext>();
             if (animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
             animationEditContext.animation = animation;
+            animationEditContext.containingAtom = containingAtom;
         }
 
         private void StartAutoPlay()
