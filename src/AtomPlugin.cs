@@ -142,7 +142,7 @@ namespace VamTimeline
             if (containingAtom.physicsSimulators.Length > 0)
             {
                 var physicsSimulator = containingAtom.physicsSimulators[0];
-                animation.simulationFrozen = physicsSimulator.resetSimulation || physicsSimulator.freezeSimulation;
+                animation.simulationFrozen = physicsSimulator.resetSimulation;
             }
 
             if (animation.isPlaying)
