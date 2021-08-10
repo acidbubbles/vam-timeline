@@ -40,6 +40,10 @@ namespace VamTimeline
             var exitOnMenuOpen = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && targets.OfType<FreeControllerV3AnimationTarget>().Any();
             if (exitOnMenuOpen) SuperController.singleton.HideMainHUD();
 
+            SuperController.singleton.helpText = $"Preparing to record...";
+
+            yield return 0;
+
             CleanupClip(targets, recordExtendsLength);
 
             yield return 0;
@@ -64,7 +68,6 @@ namespace VamTimeline
             while (true)
             {
                 lastRecordedTime = Mathf.Max(lastRecordedTime, _animation.playTime);
-                // resizeOp.CropOrExtendEnd(_clip, _clip.animationLength + 1f);
                 if (!_animation.isPlaying)
                     break;
                 #warning This will probably overwrite the first frame for looping animations?
