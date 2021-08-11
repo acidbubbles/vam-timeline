@@ -933,6 +933,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
             bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", _previousAnimationLegacyJSON.actionCallback));
             bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", _nextAnimationLegacyJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("PreviousAnimationInMainLayer", _previousAnimationInMainLayerJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("NextAnimationInMainLayer", _nextAnimationInMainLayerJSON.actionCallback));
             bindings.Add(new JSONStorableAction("PlayCurrentClip", animationEditContext.PlayCurrentClip));
             bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
             bindings.Add(new JSONStorableAction("Stop", animationEditContext.Stop));
