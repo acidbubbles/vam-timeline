@@ -139,11 +139,7 @@ namespace VamTimeline
         {
             if (ReferenceEquals(animation, null)) return;
 
-            if (containingAtom.physicsSimulators.Length > 0)
-            {
-                var physicsSimulator = containingAtom.physicsSimulators[0];
-                animation.simulationFrozen = physicsSimulator.resetSimulation;
-            }
+            animation.simulationFrozen = IsPhysicsReset();
 
             if (animation.isPlaying)
             {
@@ -161,6 +157,23 @@ namespace VamTimeline
                 animationEditContext.clipTime = animationEditContext.clipTime.Snap(animationEditContext.snap);
                 _scrubbing = false;
             }
+        }
+
+        private const float _physicsResetTimeoutSeconds = 0.5f;
+        private float _physicsResetTimeout;
+        private bool IsPhysicsReset()
+        {
+            if (containingAtom.physicsSimulators.Length == 0) return false;
+            var physicsSimulator = containingAtom.physicsSimulators[0];
+            if (!physicsSimulator.resetSimulation)
+            {
+                _physicsResetTimeout = 0;
+                return false;
+            }
+            if (_physicsResetTimeout == 0)
+                _physicsResetTimeout = Time.time + _physicsResetTimeoutSeconds;
+            return Time.time < _physicsResetTimeout;
+
         }
 
         #endregion
