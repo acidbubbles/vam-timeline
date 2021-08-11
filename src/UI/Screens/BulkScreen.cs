@@ -18,7 +18,7 @@ namespace VamTimeline
         private static float _lastLength = -1f;
         private static float _lastStart = -1f;
         private static float _lastEnd = -1f;
-        private static AtomClipboardEntry _offsetSnapshot;
+        private static OffsetOperations.Snapshot _offsetSnapshot;
 
         public override string screenId => ScreenName;
 
@@ -234,7 +234,7 @@ namespace VamTimeline
                 return;
             }
 
-            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>());
+            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>(), plugin.containingAtom.mainController, _offsetModeJSON.val);
 
             if (_offsetSnapshot == null) return;
 
@@ -247,9 +247,9 @@ namespace VamTimeline
             _offsetting = false;
             _offsetControllerUI.label = _offsetControllerUILabel;
 
-            if (animationEditContext.clipTime != _offsetSnapshot.time)
+            if (animationEditContext.clipTime != _offsetSnapshot.clipboard.time)
             {
-                SuperController.LogError($"Timeline: Time changed. Please move controllers within a single frame. Original time: {_offsetSnapshot.time}, current time: {animationEditContext.clipTime}");
+                SuperController.LogError($"Timeline: Time changed. Please move controllers within a single frame. Original time: {_offsetSnapshot.clipboard.time}, current time: {animationEditContext.clipTime}");
                 return;
             }
 

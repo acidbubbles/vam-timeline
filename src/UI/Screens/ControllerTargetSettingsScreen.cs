@@ -126,7 +126,7 @@ namespace VamTimeline
             var previousPosition = targetControllerTransform.position;
             var previousRotation = targetControllerTransform.rotation;
 
-            var snapshot = operations.Offset().Start(0f, new[] { _target });
+            var snapshot = operations.Offset().Start(0f, new[] { _target }, null, OffsetOperations.ChangePivotMode);
 
             _target.SetParent(parentAtomId, parentRigidbodyId);
             if (!_target.EnsureParentAvailable())
