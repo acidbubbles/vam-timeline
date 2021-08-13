@@ -45,13 +45,11 @@ namespace VamTimeline
         private void InitParentUI()
         {
             _atomJSON = new JSONStorableStringChooser("Atom", new[] { "None" }.Concat(SuperController.singleton.GetAtomUIDs()).ToList(), "None", "Atom", (string val) => SyncAtom());
-            var atomUI = prefabFactory.CreatePopup(_atomJSON, true, false);
-            atomUI.popupPanelHeight = 700f;
+            prefabFactory.CreatePopup(_atomJSON, true, false, 700f);
             _atomJSON.valNoCallback = _target.parentAtomId ?? "None";
 
             _rigidbodyJSON = new JSONStorableStringChooser("Rigidbody", new List<string> { "None" }, "None", "Rigidbody", (string val) => SyncRigidbody());
-            var rigidbodyUI = prefabFactory.CreatePopup(_rigidbodyJSON, true, false);
-            rigidbodyUI.popupPanelHeight = 700f;
+            prefabFactory.CreatePopup(_rigidbodyJSON, true, false, 700f);
             _rigidbodyJSON.valNoCallback = _target.parentRigidbodyId ?? "None";
 
             PopulateRigidbodies();

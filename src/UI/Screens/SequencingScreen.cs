@@ -51,8 +51,6 @@ namespace VamTimeline
             if (plugin.containingAtom.type == "Person")
                 InitPoseUI();
 
-            // To allow selecting in the popup
-            prefabFactory.CreateSpacer().height = 200f;
 
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
 
@@ -85,6 +83,29 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_autoPlayJSON);
         }
 
+        private void InitSequenceUI()
+        {
+            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => SyncPlayNext());
+            prefabFactory.CreatePopup(_nextAnimationJSON, true, true, 360f);
+
+            _nextAnimationTimeJSON = new JSONStorableFloat("Play next in (seconds)", 0f, (float val) => SyncPlayNext(), 0f, 60f, false)
+            {
+                valNoCallback = current.nextAnimationTime
+            };
+            var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
+            nextAnimationTimeUI.valueFormat = "F3";
+        }
+
+        private void InitUninterruptibleUI()
+        {
+            _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, val =>
+            {
+                foreach (var clip in animation.GetClips(current.animationName))
+                    clip.uninterruptible = val;
+            });
+            prefabFactory.CreateToggle(_uninterruptible);
+        }
+
         private void InitBlendUI()
         {
             _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, UpdateBlendDuration, 0f, 5f, false);
@@ -106,20 +127,6 @@ namespace VamTimeline
                 _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.RoundToNearest(current.animationLength);
             }
             _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.Snap();
-        }
-
-        private void InitSequenceUI()
-        {
-            _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => SyncPlayNext());
-            var nextAnimationUI = prefabFactory.CreatePopup(_nextAnimationJSON, true, true);
-            nextAnimationUI.popupPanelHeight = 360f;
-
-            _nextAnimationTimeJSON = new JSONStorableFloat("Play next in (seconds)", 0f, (float val) => SyncPlayNext(), 0f, 60f, false)
-            {
-                valNoCallback = current.nextAnimationTime
-            };
-            var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
-            nextAnimationTimeUI.valueFormat = "F3";
         }
 
         private void InitRandomizeLengthUI()
@@ -145,6 +152,17 @@ namespace VamTimeline
             nextAnimationResultUI.height = 50f;
         }
 
+        private void InitLoopUI()
+        {
+            _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
+            {
+                current.loop = val;
+                UpdateNextAnimationPreview();
+                RefreshTransitionUI();
+            });
+            _loopUI = prefabFactory.CreateToggle(_loop);
+        }
+
         private void InitTransitionUI()
         {
             _transitionPreviousJSON = new JSONStorableBool("Sync first frame with previous", false, ChangeTransitionPrevious);
@@ -160,25 +178,9 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_applyPoseOnTransition);
         }
 
-        private void InitLoopUI()
-        {
-            _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
-            {
-                current.loop = val;
-                UpdateNextAnimationPreview();
-                RefreshTransitionUI();
-            });
-            _loopUI = prefabFactory.CreateToggle(_loop);
-        }
 
-        private void InitUninterruptibleUI()
         {
-            _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, val =>
             {
-                foreach (var clip in animation.GetClips(current.animationName))
-                    clip.uninterruptible = val;
-            });
-            prefabFactory.CreateToggle(_uninterruptible);
         }
 
         private void RefreshTransitionUI()

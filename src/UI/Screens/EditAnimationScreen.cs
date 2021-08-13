@@ -183,8 +183,7 @@ namespace VamTimeline
                 _changeLengthModeStretch,
                 _changeLengthModeLoop
              }, _changeLengthModeCropExtendEnd, "Length mode");
-            var lengthModeUI = prefabFactory.CreatePopup(_lengthModeJSON, false, true);
-            lengthModeUI.popupPanelHeight = 350f;
+            prefabFactory.CreatePopup(_lengthModeJSON, false, true, 350f);
 
             _lengthJSON = new JSONStorableFloat(
                 "Change length to (s)",
@@ -255,8 +254,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true, true);
-            linkedAnimationPatternUI.popupPanelHeight = 240f;
+            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true, true, 240f, true);
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
         }
 

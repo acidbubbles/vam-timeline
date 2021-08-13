@@ -146,8 +146,7 @@ namespace VamTimeline
         private void InitControllersUI()
         {
             _addControllerListJSON = new JSONStorableStringChooser("Controller", new List<string>(), "", "Controller");
-            _addControllerUI = prefabFactory.CreatePopup(_addControllerListJSON, true, true);
-            _addControllerUI.popupPanelHeight = 740f;
+            _addControllerUI = prefabFactory.CreatePopup(_addControllerListJSON, true, true, 700f);
 
             _toggleControllerUI = prefabFactory.CreateButton("Add");
             _toggleControllerUI.button.onClick.AddListener(AddAnimatedController);
@@ -214,9 +213,8 @@ namespace VamTimeline
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
             _addParamListJSON = new JSONStorableStringChooser("Params", new List<string>(), "", "Param");
-            _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true);
+            _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true, 360f);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
-            _addParamListUI.popupPanelHeight = 320f;
 
             _toggleFloatParamUI = prefabFactory.CreateButton("Add");
             _toggleFloatParamUI.button.onClick.AddListener(AddAnimatedFloatParam);

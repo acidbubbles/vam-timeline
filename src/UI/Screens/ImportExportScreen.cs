@@ -46,8 +46,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            var exportAnimationsUI = prefabFactory.CreatePopup(_exportAnimationsJSON, true, true);
-            exportAnimationsUI.popupPanelHeight = 800f;
+            prefabFactory.CreatePopup(_exportAnimationsJSON, true, true, 800f);
 
             var exportUI = prefabFactory.CreateButton("Export animation");
             exportUI.button.onClick.AddListener(Export);

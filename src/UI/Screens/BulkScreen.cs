@@ -59,10 +59,7 @@ namespace VamTimeline
         private void InitOffsetUI()
         {
             _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode, OffsetOperations.RepositionMode }, _lastOffsetMode ?? OffsetOperations.RepositionMode, "Offset mode", val => _lastOffsetMode = val);
-            var offsetModeUI = prefabFactory.CreatePopup(_offsetModeJSON, false, true);
-            offsetModeUI.popupPanelHeight = 230f;
-            offsetModeUI.popup.popupPanel.offsetMin += new Vector2(0, offsetModeUI.popupPanelHeight + 60);
-            offsetModeUI.popup.popupPanel.offsetMax += new Vector2(0, offsetModeUI.popupPanelHeight + 60);
+            prefabFactory.CreatePopup(_offsetModeJSON, false, true, 230f, true);
 
             _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
             _offsetControllerUI.button.onClick.AddListener(OffsetController);

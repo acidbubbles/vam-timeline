@@ -60,8 +60,7 @@ namespace VamTimeline
                 _animationEditContext.SelectAnimation(val);
             });
 
-            var popup = _prefabFactory.CreatePopup(jsc, false, true);
-            popup.popupPanelHeight = GetComponent<UIDynamic>()?.height ?? 500;
+            _prefabFactory.CreatePopup(jsc, false, true, 500f);
 
             return jsc;
         }
