@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Globalization;
 using System.Linq;
 using SimpleJSON;
@@ -36,6 +37,8 @@ namespace VamTimeline
             animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
             animation.timeMode = DeserializeInt(animationJSON["TimeMode"], 0);
+            if (animationJSON.HasKey("FadeManager"))
+                animation.fadeManager = DeserializeFadeManager(animationJSON["FadeManager"].AsObject);
 
             animation.index.StartBulkUpdates();
             try
@@ -52,6 +55,21 @@ namespace VamTimeline
             {
                 animation.index.EndBulkUpdates();
             }
+        }
+
+        private static IFadeManager DeserializeFadeManager(JSONClass jc)
+        {
+            var fadeManager = VamOverlaysFadeManager.FromJSON(jc);
+            if (fadeManager == null) return null;
+            SuperController.singleton.StartCoroutine(TryConnectCo(fadeManager));
+            return fadeManager;
+        }
+
+        private static IEnumerator TryConnectCo(IFadeManager fadeManager)
+        {
+            if (fadeManager.TryConnectNow()) yield break;
+            yield return 0;
+            fadeManager.TryConnectNow();
         }
 
         public AtomAnimationClip DeserializeClip(JSONClass clipJSON, AnimatablesRegistry targetsRegistry)
@@ -340,6 +358,8 @@ namespace VamTimeline
                 { "SyncSubsceneOnly", animation.syncSubsceneOnly ? "1" : "0" },
                 { "TimeMode", animation.timeMode.ToString(CultureInfo.InvariantCulture) },
             };
+            if (animation.fadeManager != null)
+                animationJSON["FadeManager"] = animation.fadeManager.GetJSON();
             var clipsJSON = new JSONArray();
             foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))
             {

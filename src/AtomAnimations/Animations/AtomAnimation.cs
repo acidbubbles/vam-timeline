@@ -28,6 +28,8 @@ namespace VamTimeline
         public readonly IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
+        public IFadeManager fadeManager;
+
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
         private bool _paused;

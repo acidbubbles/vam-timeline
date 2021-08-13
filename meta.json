@@ -33,6 +33,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\TimeModes.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\TimeTypeValues.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\UnitySpecific.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\VamOverlaysFadeManager.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\BezierCurves\\Smoothing\\BezierAnimationCurveSmoothingBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\BezierCurves\\Smoothing\\BezierAnimationCurveSmoothingLooping.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\BezierCurves\\Smoothing\\BezierAnimationCurveSmoothingNonLooping.cs",

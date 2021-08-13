@@ -51,6 +51,8 @@ namespace VamTimeline
             if (plugin.containingAtom.type == "Person")
                 InitPoseUI();
 
+            prefabFactory.CreateHeader("Fading (VAMOverlays)", 1);
+            InitVaMOverlaysUI();
 
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
 
@@ -179,8 +181,32 @@ namespace VamTimeline
         }
 
 
+        private void InitVaMOverlaysUI()
         {
+            var atomSelector = new JSONStorableStringChooser("Overlays", new List<string>(), "", "Overlays", val =>
             {
+                if (string.IsNullOrEmpty(val))
+                {
+                    animation.fadeManager = null;
+                    return;
+                }
+                animation.fadeManager = VamOverlaysFadeManager.FromAtomUid(val);
+                if(!animation.fadeManager.TryConnectNow())
+                    SuperController.LogError($"Timeline: Could not find VAMOverlays on atom '{val}'");
+            })
+            {
+                valNoCallback = animation.fadeManager?.GetAtomUid()
+            };
+            prefabFactory.CreatePopup(atomSelector, false, false, 350f, true);
+            atomSelector.popupOpenCallback = () =>
+            {
+                atomSelector.choices = new List<string> { "" }.Concat(
+                    SuperController.singleton.GetAtoms()
+                        .Where(a => a.type == "Empty")
+                        .Where(a => a.GetStorableIDs().Select(a.GetStorableByID).Any(s => s.IsAction("Start Fade In")))
+                        .Select(a => a.uid)
+                ).ToList();
+            };
         }
 
         private void RefreshTransitionUI()
