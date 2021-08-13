@@ -29,6 +29,7 @@ namespace VamTimeline
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
         public IFadeManager fadeManager;
+        private bool _scheduleFadeIn;
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
@@ -288,6 +289,7 @@ namespace VamTimeline
             // }
             if (!isPlaying)
             {
+                fadeManager?.SyncFadeTime();
                 isPlaying = true;
                 this.sequencing = this.sequencing || sequencing;
                 #if(PLAYBACK_HEALTH_CHECK)
@@ -405,6 +407,12 @@ namespace VamTimeline
             foreach (var clip in clips)
             {
                 clip.Reset(false);
+            }
+
+            if (fadeManager?.black == true)
+            {
+                _scheduleFadeIn = false;
+                fadeManager.FadeIn();
             }
         }
 
@@ -1033,6 +1041,13 @@ namespace VamTimeline
             SampleFloatParams();
             SampleTriggers();
             ProcessAnimationSequence(GetDeltaTime() * speed);
+
+            if (_scheduleFadeIn && !simulationFrozen)
+            {
+                _scheduleFadeIn = false;
+                if (fadeManager?.black == true)
+                    fadeManager.FadeIn();
+            }
         }
 
         [MethodImpl(256)]
@@ -1072,6 +1087,10 @@ namespace VamTimeline
                 if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimationName != null)
                 {
                     clip.playbackScheduledNextTimeLeft = Mathf.Max(clip.playbackScheduledNextTimeLeft - deltaTime * clip.speed, 0f);
+
+                    if (fadeManager?.black == false && clip.animationLayer == index.mainLayer && clip.playbackScheduledNextTimeLeft < fadeManager.fadeOutTime + 0.1f)
+                        fadeManager.FadeOut();
+
                     if (clip.playbackScheduledNextTimeLeft == 0)
                     {
                         var nextAnimationName = clip.playbackScheduledNextAnimationName;
@@ -1079,12 +1098,13 @@ namespace VamTimeline
                         var nextClip = GetClip(clip.animationLayer, nextAnimationName);
                         if (nextClip == null)
                         {
-                            SuperController.LogError(
-                                $"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
+                            SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
                             continue;
                         }
 
                         TransitionAnimation(clip, nextClip);
+                        if (fadeManager?.black == true && clip.animationLayer == index.mainLayer)
+                            _scheduleFadeIn = true;
                     }
                 }
             }

@@ -5,6 +5,7 @@ namespace VamTimeline
     public class AtomAnimationsClipsIndex
     {
         public IEnumerable<string> clipNames => _clipsByName.Keys;
+        public string mainLayer { get; private set; }
 
         private readonly List<AtomAnimationClip> _clips;
 
@@ -39,6 +40,10 @@ namespace VamTimeline
             _clipsByName.Clear();
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
+
+            if (_clips == null || _clips.Count == 0) return;
+
+            mainLayer = _clips[0].animationLayer;
 
             foreach (var clip in _clips)
             {
