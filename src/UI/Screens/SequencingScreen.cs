@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 
@@ -181,16 +182,30 @@ namespace VamTimeline
         }
 
 
+        [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
         private void InitVaMOverlaysUI()
         {
+            UIDynamicSlider blackTimeSlider = null;
+            var blackTime = new JSONStorableFloat("Black time", 0.5f, val =>
+            {
+                if (animation.fadeManager != null)
+                    animation.fadeManager.blackTime = val;
+            }, 0f, 2f, false)
+            {
+                valNoCallback = animation.fadeManager?.blackTime ?? 0.5f
+            };
             var atomSelector = new JSONStorableStringChooser("Overlays", new List<string>(), "", "Overlays", val =>
             {
                 if (string.IsNullOrEmpty(val))
                 {
                     animation.fadeManager = null;
+                    if (blackTimeSlider != null)
+                        blackTimeSlider.slider.interactable = false;
                     return;
                 }
-                animation.fadeManager = VamOverlaysFadeManager.FromAtomUid(val);
+                animation.fadeManager = VamOverlaysFadeManager.FromAtomUid(val, blackTime.val);
+                if (blackTimeSlider != null)
+                    blackTimeSlider.slider.interactable = true;
                 if(!animation.fadeManager.TryConnectNow())
                     SuperController.LogError($"Timeline: Could not find VAMOverlays on atom '{val}'");
             })
@@ -207,6 +222,8 @@ namespace VamTimeline
                         .Select(a => a.uid)
                 ).ToList();
             };
+            blackTimeSlider = prefabFactory.CreateSlider(blackTime);
+            blackTimeSlider.slider.interactable = animation.fadeManager != null;
         }
 
         private void RefreshTransitionUI()

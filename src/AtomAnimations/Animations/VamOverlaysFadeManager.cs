@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Globalization;
+using System.Linq;
 using SimpleJSON;
 
 namespace VamTimeline
@@ -6,9 +7,11 @@ namespace VamTimeline
     public class VamOverlaysFadeManager : IFadeManager
     {
         public bool black { get; private set; }
+        public float blackTime { get; set; }
         public float fadeInTime { get; private set; }
         public float fadeOutTime { get; private set; }
 
+        private bool _connected;
         private string _atomUid;
         private Atom _atom;
 
@@ -17,9 +20,9 @@ namespace VamTimeline
         private JSONStorableFloat _fadeInTime;
         private JSONStorableFloat _fadeOutTime;
 
-        public static IFadeManager FromAtomUid(string val)
+        public static IFadeManager FromAtomUid(string atomUid, float blackTime)
         {
-            return new VamOverlaysFadeManager { _atomUid = val };
+            return new VamOverlaysFadeManager { _atomUid = atomUid, blackTime = blackTime};
         }
 
         public void SyncFadeTime()
@@ -31,13 +34,17 @@ namespace VamTimeline
         public void FadeIn()
         {
             black = false;
-            _fadeIn?.actionCallback();
+            if (TryConnectNow())
+                _fadeIn.actionCallback();
         }
 
         public void FadeOut()
         {
-            black = true;
-            _fadeOut?.actionCallback();
+            if (TryConnectNow())
+            {
+                black = true;
+                _fadeOut.actionCallback();
+            }
         }
 
         public string GetAtomUid()
@@ -47,6 +54,7 @@ namespace VamTimeline
 
         public bool TryConnectNow()
         {
+            if (_connected) return true;
             _atom = SuperController.singleton.GetAtomByUid(_atomUid);
             if (_atom == null) return false;
             var overlays = _atom.GetStorableIDs().Select(_atom.GetStorableByID).FirstOrDefault(s => s.IsAction("Start Fade In"));
@@ -55,14 +63,15 @@ namespace VamTimeline
             _fadeOut = overlays.GetAction("Start Fade Out");
             _fadeInTime = overlays.GetFloatJSONParam("Fade in time");
             _fadeOutTime = overlays.GetFloatJSONParam("Fade out time");
-            return _fadeIn != null && _fadeOut != null;
+            return _connected = (_fadeIn != null && _fadeOut != null);
         }
 
         public JSONNode GetJSON()
         {
             return new JSONClass
             {
-                ["Atom"] = GetAtomUid()
+                ["Atom"] = GetAtomUid(),
+                ["BlackTime"] = blackTime.ToString(CultureInfo.InvariantCulture)
             };
         }
 
@@ -70,12 +79,13 @@ namespace VamTimeline
         {
             var atomUid = jc["Atom"].Value;
             if (atomUid == null) return null;
-            return FromAtomUid(atomUid);
+            return FromAtomUid(atomUid, jc["BlackTime"].AsFloat);
         }
     }
 
     public interface IFadeManager
     {
+        float blackTime { get; set; }
         bool black { get; }
         float fadeInTime { get; }
         float fadeOutTime { get; }

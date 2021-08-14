@@ -1088,7 +1088,7 @@ namespace VamTimeline
                 {
                     clip.playbackScheduledNextTimeLeft = Mathf.Max(clip.playbackScheduledNextTimeLeft - deltaTime * clip.speed, 0f);
 
-                    if (fadeManager?.black == false && clip.animationLayer == index.mainLayer && clip.playbackScheduledNextTimeLeft < fadeManager.fadeOutTime + 0.1f)
+                    if (fadeManager?.black == false && clip.animationLayer == index.mainLayer && clip.playbackScheduledNextTimeLeft < fadeManager.fadeOutTime + fadeManager.blackTime)
                         fadeManager.FadeOut();
 
                     if (clip.playbackScheduledNextTimeLeft == 0)
