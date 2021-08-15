@@ -31,6 +31,9 @@ namespace VamTimeline
             var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe pose (animated targets only)");
             keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
 
+            var keyframFloatsUI = prefabFactory.CreateButton("Keyframe float params");
+            keyframFloatsUI.button.onClick.AddListener(() => KeyframeFloats());
+
             prefabFactory.CreateSpacer();
 
             _bakeUI = prefabFactory.CreateButton("Bake animation (arm & record)");
@@ -151,6 +154,14 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(KeyframeCurrentPose)}: {exc}");
             }
+        }
+
+        private void KeyframeFloats()
+        {
+            var time = animationEditContext.clipTime.Snap();
+            var targets = animationEditContext.GetAllOrSelectedTargets().OfType<JSONStorableFloatAnimationTarget>();
+            foreach (var f in targets)
+                f.SetKeyframe(time, f.animatableRef.floatParam.val);
         }
 
         private void Bake()
