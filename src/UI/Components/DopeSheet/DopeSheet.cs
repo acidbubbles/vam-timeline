@@ -284,15 +284,14 @@ namespace VamTimeline
             var any = false;
             foreach (var group in _clip.GetTargetGroups())
             {
-                if (group.Count > 0)
-                {
-                    any = true;
-                    var rows = new List<RowRef>();
-                    CreateHeader(group, rows);
+                if (group.Count <= 0) continue;
 
-                    foreach (var target in group.GetTargets())
-                        rows.Add(CreateRow(target));
-                }
+                any = true;
+                var rows = new List<RowRef>();
+                CreateHeader(@group, rows);
+
+                foreach (var target in group.GetTargets())
+                    rows.Add(CreateRow(target));
             }
             _scrubberRect.gameObject.SetActive(any);
             _clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
@@ -409,8 +408,8 @@ namespace VamTimeline
             var layout = go.AddComponent<LayoutElement>();
             layout.preferredHeight = _style.RowHeight;
 
-            DopeSheetKeyframes keyframes = null;
-            GradientImage labelBackgroundImage = null;
+            DopeSheetKeyframes keyframes;
+            GradientImage labelBackgroundImage;
 
             {
                 var child = new GameObject();

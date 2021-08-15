@@ -392,7 +392,12 @@ namespace VamTimeline
             yield return targetTriggers;
             yield return targetControllers;
             foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storableId))
-                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) {label = group.Key};
+            {
+                var groupLabel = group.Key;
+                if (groupLabel.StartsWith("plugin#"))
+                    groupLabel = groupLabel.Substring(6);
+                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = groupLabel };
+            }
         }
 
         public void Validate()
