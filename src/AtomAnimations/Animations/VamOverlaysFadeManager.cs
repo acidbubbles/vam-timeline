@@ -30,6 +30,8 @@ namespace VamTimeline
         private JSONStorableAction _fadeOut;
         private JSONStorableFloat _fadeInTime;
         private JSONStorableFloat _fadeOutTime;
+        private JSONStorableString _showText;
+        private JSONStorableAction _hideText;
 
         public static IFadeManager FromAtomUid(string atomUid, float blackTime)
         {
@@ -58,6 +60,25 @@ namespace VamTimeline
             }
         }
 
+        public bool ShowText(string text)
+        {
+            if (!TryConnectNow())
+                return false;
+
+            if (text != null)
+            {
+                if (_showText == null) return false;
+                _showText.val = text;
+            }
+            else
+            {
+                if (_hideText == null) return false;
+                _hideText.actionCallback.Invoke();
+            }
+
+            return true;
+        }
+
         public string GetAtomUid()
         {
             return _atom != null ? _atom.uid : _atomUid;
@@ -74,6 +95,8 @@ namespace VamTimeline
             _fadeOut = overlays.GetAction("Start Fade Out");
             _fadeInTime = overlays.GetFloatJSONParam("Fade in time");
             _fadeOutTime = overlays.GetFloatJSONParam("Fade out time");
+            _showText = overlays.GetStringJSONParam("Set and show subtitles instant");
+            _hideText = overlays.GetAction("Hide subtitles instant");
             return _connected = (_fadeIn != null && _fadeOut != null);
         }
 
@@ -108,5 +131,6 @@ namespace VamTimeline
         void SyncFadeTime();
         void FadeIn();
         void FadeOut();
+        bool ShowText(string text);
     }
 }

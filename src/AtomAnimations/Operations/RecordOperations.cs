@@ -40,7 +40,7 @@ namespace VamTimeline
             var exitOnMenuOpen = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && targets.OfType<FreeControllerV3AnimationTarget>().Any();
             if (exitOnMenuOpen) SuperController.singleton.HideMainHUD();
 
-            SuperController.singleton.helpText = $"Preparing to record...";
+            ShowText("Preparing to record...");
 
             yield return 0;
 
@@ -50,7 +50,7 @@ namespace VamTimeline
 
             for (var i = recordInSeconds; i > 0; i--)
             {
-                SuperController.singleton.helpText = $"Start recording in {i}...";
+                ShowText($"Start recording in {i}...");
                 var next = Time.realtimeSinceStartup + 1f;
                 while (Time.realtimeSinceStartup < next)
                 {
@@ -60,7 +60,7 @@ namespace VamTimeline
                 }
             }
 
-            SuperController.singleton.helpText = "Recording...";
+            ShowText(null);
 
             StartRecording(recordExtendsLength, targets);
 
@@ -85,6 +85,12 @@ namespace VamTimeline
             }
 
             StopRecording(targets);
+        }
+
+        private void ShowText(string text)
+        {
+            if (_animation.fadeManager?.ShowText(text) == false)
+                SuperController.singleton.helpText = text;
         }
 
         private void CleanupClip(List<ICurveAnimationTarget> targets, bool recordExtendsLength)
