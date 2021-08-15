@@ -458,7 +458,7 @@ namespace VamTimeline
         public void Sample()
         {
             var hasPose = current.pose != null;
-            if(hasPose)
+            if(hasPose && clipTime == 0f)
                 current.pose.Apply();
             else
                 SampleNow();
