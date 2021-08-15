@@ -321,6 +321,7 @@ namespace VamTimeline
                 _weight = Mathf.Clamp01(value);
                 scaledWeight = value.ExponentialScale(0.1f, 1f);
                 if (playbackBlendRate > 0) playbackBlendRate = 0;
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (playbackBlendWeight != _weight && playbackBlendRate == 0) playbackBlendWeight = _weight;
                 onPlaybackSettingsChanged.Invoke();
             }
@@ -350,7 +351,6 @@ namespace VamTimeline
             set
             {
                 if (value == _applyPoseOnTransition) return;
-                #warning This should skip an animation frame before applying morphs, to validate (see collider bug)
                 _applyPoseOnTransition = value;
                 onAnimationSettingsChanged.Invoke(nameof(applyPoseOnTransition));
                 if (_applyPoseOnTransition)
@@ -436,7 +436,7 @@ namespace VamTimeline
                 {
                     _clipTime = value;
                 }
-                else if (loop)
+                else if (loop && !recording)
                 {
                     if (value >= 0)
                     {
@@ -466,15 +466,17 @@ namespace VamTimeline
             playbackBlendWeight = 0f;
             playbackBlendRate = 0f;
             playbackMainInLayer = false;
+            if (recording)
+            {
+                recording = false;
+                foreach (var target in GetAllCurveTargets())
+                {
+                    target.recording = false;
+                }
+            }
+
             SetNext(null, 0f);
-            if (resetTime)
-            {
-                clipTime = 0f;
-            }
-            else
-            {
-                clipTime = clipTime.Snap();
-            }
+            clipTime = resetTime ? 0f : clipTime.Snap();
         }
 
         public void Leave()

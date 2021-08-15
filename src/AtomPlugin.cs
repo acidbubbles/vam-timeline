@@ -969,12 +969,14 @@ namespace VamTimeline
                 if (targets.Count == 0)
                 {
                     SuperController.LogError("Timeline: No targets selected for recording");
+                    return;
                 }
                 StartCoroutine(operations.Record().StartRecording(
                     animationEditContext.current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2),
                     animationEditContext.startRecordIn,
                     targets,
-                    null
+                    null,
+                    false
                 ));
             }));
             bindings.Add(new JSONStorableAction("AddTarget_SelectControllerFromScene", () =>
@@ -1001,7 +1003,7 @@ namespace VamTimeline
             #else
             SuperController.singleton.SelectController(containingAtom.mainController);
             #endif
-            SuperController.singleton.ShowMainHUDMonitor();
+            SuperController.singleton.ShowMainHUDAuto();
             StartCoroutine(WaitForUI());
         }
 

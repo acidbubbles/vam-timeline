@@ -33,6 +33,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
+        public float autoStop;
         private bool _paused;
         public bool paused
         {
@@ -279,14 +280,6 @@ namespace VamTimeline
         {
             paused = false;
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
-            // if (clip.recording)
-            // {
-            //     clip.clipTime = 0f;
-            //     Blend(clip, 1f, 0f);
-            //     clip.playbackMainInLayer = true;
-            //     onIsPlayingChanged.Invoke(clip);
-            //     return;
-            // }
             if (!isPlaying)
             {
                 fadeManager?.SyncFadeTime();
@@ -315,7 +308,7 @@ namespace VamTimeline
             else
             {
                 if (clip.clipTime >= clip.animationLength) clip.clipTime = 0f;
-                Blend(clip, 1f, clip.blendInDuration);
+                Blend(clip, 1f, clip.recording ? 0f : clip.blendInDuration);
                 clip.playbackMainInLayer = true;
             }
             if (clip.animationPattern)
@@ -369,11 +362,8 @@ namespace VamTimeline
                 StopClip(clip);
         }
 
-        // private int x;
         public void StopClip(AtomAnimationClip clip)
         {
-            // if(++x == 2)
-            //     throw new Exception("X");
             if (clip.playbackEnabled)
             {
                 clip.Leave();
@@ -400,6 +390,8 @@ namespace VamTimeline
 
         public void StopAll()
         {
+            autoStop = 0f;
+
             foreach (var clip in clips)
             {
                 StopClip(clip);
@@ -1125,6 +1117,13 @@ namespace VamTimeline
 
             var delta = GetDeltaTime() * _speed;
             _playTime += delta;
+
+            if (autoStop > 0f && _playTime >= autoStop)
+            {
+                StopAll();
+                return;
+            }
+
             AdvanceClipsTime(delta);
             SampleControllers();
         }

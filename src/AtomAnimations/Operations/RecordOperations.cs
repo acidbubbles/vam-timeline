@@ -24,10 +24,10 @@ namespace VamTimeline
             bool recordExtendsLength,
             int recordInSeconds,
             List<ICurveAnimationTarget> targets,
-            FreeControllerV3AnimationTarget raycastTarget
+            FreeControllerV3AnimationTarget raycastTarget,
+            bool exitOnMenuOpen
         )
         {
-            // TODO: Counter should use in-game rather than helptext
             if (_recording)
             {
                 SuperController.LogError("Timeline: Already recording");
@@ -36,9 +36,6 @@ namespace VamTimeline
 
             _animation.StopAll();
             _animation.ResetAll();
-
-            var exitOnMenuOpen = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && targets.OfType<FreeControllerV3AnimationTarget>().Any();
-            if (exitOnMenuOpen) SuperController.singleton.HideMainHUD();
 
             ShowText("Preparing to record...");
 
@@ -56,7 +53,10 @@ namespace VamTimeline
                 {
                     yield return 0;
                     if (Input.GetKeyDown(KeyCode.Escape))
+                    {
+                        ShowText(null);
                         yield break;
+                    }
                 }
             }
 
@@ -64,13 +64,14 @@ namespace VamTimeline
 
             StartRecording(recordExtendsLength, targets);
 
+            RecordFirstKeyframe();
+
             var lastRecordedTime = 0f;
             while (true)
             {
                 lastRecordedTime = Mathf.Max(lastRecordedTime, _animation.playTime);
                 if (!_animation.isPlaying)
                     break;
-                #warning This will probably overwrite the first frame for looping animations?
                 if (!recordExtendsLength && _animation.playTime > _clip.animationLength)
                     break;
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -85,6 +86,23 @@ namespace VamTimeline
             }
 
             StopRecording(targets);
+        }
+
+        private void RecordFirstKeyframe()
+        {
+            for (var i = 0; i < _clip.targetControllers.Count; i++)
+            {
+                var target = _clip.targetControllers[i];
+                if (target.recording)
+                    target.SetKeyframeToCurrentTransform(0);
+            }
+
+            for (var i = 0; i < _clip.targetFloatParams.Count; i++)
+            {
+                var target = _clip.targetFloatParams[i];
+                if (target.recording)
+                    target.SetKeyframe(0, target.animatableRef.floatParam.val);
+            }
         }
 
         private void ShowText(string text)
@@ -118,8 +136,11 @@ namespace VamTimeline
             _timeMode = _animation.timeMode;
 
             _animation.timeMode = TimeModes.RealTime;
+            _animation.autoStop = recordExtendsLength ? 0 : (_clip.loop ? _clip.animationLength - 0.0009f : _clip.animationLength + 0.0009f);
+            _animation.speed = 1f;
             _clip.recording = true;
             _clip.infinite = recordExtendsLength;
+            _clip.speed = 1f;
             foreach (var target in targets)
             {
                 target.recording = true;
@@ -142,10 +163,8 @@ namespace VamTimeline
             var resizeOp = new ResizeAnimationOperations();
             _animation.StopAll();
             _animation.ResetAll();
-            SuperController.singleton.helpText = "";
+            ShowText(null);
 
-            // TODO: This needs to be guaranteed. We could register the enumerator inside a disposable class, dispose being called in different cancel situations
-            _clip.recording = false;
             if (_clip.infinite)
             {
                 _clip.infinite = false;
@@ -154,14 +173,11 @@ namespace VamTimeline
 
             foreach (var target in targets)
             {
-                target.recording = false;
                 target.TrimCapacity();
                 target.EndBulkUpdates();
             }
 
             GC.Collect();
-
-            SuperController.singleton.ShowMainHUD();
         }
 
         private static void PositionCameraTarget(FreeControllerV3AnimationTarget cameraTarget)

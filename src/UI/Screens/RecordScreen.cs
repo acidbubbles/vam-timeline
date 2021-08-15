@@ -10,8 +10,12 @@ namespace VamTimeline
         public const string ScreenName = "Record";
 
         private static UIDynamicButton _recordButton;
-        private static JSONStorableStringChooser _useCameraRaycast;
-        private static JSONStorableBool _recordExtendsLength;
+        private static string _previousUseCameraRaycast;
+        private static bool _previousHideMenuDuringRecording;
+
+        private JSONStorableStringChooser _useCameraRaycast;
+        private JSONStorableBool _recordExtendsLength;
+        private JSONStorableBool _hideMenuDuringRecording;
 
         public override string screenId => ScreenName;
 
@@ -40,10 +44,21 @@ namespace VamTimeline
             };
             prefabFactory.CreateSlider(recordInJSON);
 
+            _hideMenuDuringRecording = new JSONStorableBool("Hide menu during recording", false)
+            {
+                valNoCallback = _previousHideMenuDuringRecording,
+                setCallbackFunction = val => _previousHideMenuDuringRecording = val
+            };
+            prefabFactory.CreateToggle(_hideMenuDuringRecording);
+
             FreeControllerV3AnimationTarget raycastTarget = null;
-            _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast on", new List<string>(), "", "Use camera raycast on");
+            _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast on", new List<string>(), "", "Use camera raycast on")
+            {
+                valNoCallback = _previousUseCameraRaycast
+            };
             _useCameraRaycast.setCallbackFunction = val =>
             {
+                _previousUseCameraRaycast = val;
                 if (string.IsNullOrEmpty(val))
                 {
                     raycastTarget = null;
@@ -90,13 +105,14 @@ namespace VamTimeline
         private void SyncRaycastTargets()
         {
             _useCameraRaycast.choices = new[] {""}.Concat(current.targetControllers.Select(t => t.name)).ToList();
-            _useCameraRaycast.valNoCallback = "";
+            _useCameraRaycast.valNoCallback = _useCameraRaycast.choices.Contains(_previousUseCameraRaycast) ? _previousUseCameraRaycast : "";
         }
 
         private void SyncAnimationFields()
         {
             _recordButton.button.interactable = !current.recording && animationEditContext.GetSelectedTargets().Any();
             _recordExtendsLength.valNoCallback = current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2);
+            _hideMenuDuringRecording.val = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && current.targetControllers.Any(c => c.animatableRef.selected);
         }
 
         public override void OnDestroy()
@@ -115,6 +131,12 @@ namespace VamTimeline
 
             _recordButton.button.interactable = false;
 
+            var hideMenuDuringRecording = _hideMenuDuringRecording.val;
+            if (hideMenuDuringRecording)
+            {
+                SuperController.singleton.HideMainHUD();
+            }
+
             // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
             var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
 
@@ -122,7 +144,8 @@ namespace VamTimeline
                 recordExtendsLength,
                 animationEditContext.startRecordIn,
                 targets.ToList(),
-                raycastTarget
+                raycastTarget,
+                hideMenuDuringRecording
             );
 
             if (!targets.OfType<FreeControllerV3AnimationTarget>().Any() && targets.OfType<JSONStorableFloatAnimationTarget>().Any())
@@ -131,14 +154,17 @@ namespace VamTimeline
             while (enumerator.MoveNext())
                 yield return enumerator.Current;
 
-            _recordButton.button.interactable = true;
+            if (_recordButton != null)
+                _recordButton.button.interactable = true;
             animationEditContext.Stop();
-            animationEditContext.ResetScrubberRange();
-            animationEditContext.clipTime = 0f;
 
             // This is a hack, not sure why it's necessary to update the keyframes
             yield return 0;
             current.DirtyAll();
+            yield return 0;
+            animationEditContext.ResetScrubberRange();
+            animationEditContext.clipTime = 0f;
+            SuperController.singleton.ShowMainHUDAuto();
         }
     }
 }

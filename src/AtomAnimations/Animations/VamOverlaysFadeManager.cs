@@ -4,6 +4,23 @@ using SimpleJSON;
 
 namespace VamTimeline
 {
+    public interface IFadeManager
+    {
+        float blackTime { get; set; }
+        float halfBlackTime { get; }
+        bool black { get; }
+        float fadeInTime { get; }
+        float fadeOutTime { get; }
+
+        string GetAtomUid();
+        bool TryConnectNow();
+        JSONNode GetJSON();
+        void SyncFadeTime();
+        void FadeIn();
+        void FadeOut();
+        bool ShowText(string text);
+    }
+
     public class VamOverlaysFadeManager : IFadeManager
     {
         public float blackTime
@@ -22,7 +39,7 @@ namespace VamTimeline
         public float fadeOutTime { get; private set; }
 
         private float _blackTime;
-        private bool _connected;
+        private JSONStorable _overlays;
         private string _atomUid;
         private Atom _atom;
 
@@ -86,18 +103,20 @@ namespace VamTimeline
 
         public bool TryConnectNow()
         {
-            if (_connected) return true;
+            if (_overlays != null) return true;
             _atom = SuperController.singleton.GetAtomByUid(_atomUid);
             if (_atom == null) return false;
-            var overlays = _atom.GetStorableIDs().Select(_atom.GetStorableByID).FirstOrDefault(s => s.IsAction("Start Fade In"));
-            if (overlays == null) return false;
-            _fadeIn = overlays.GetAction("Start Fade In");
-            _fadeOut = overlays.GetAction("Start Fade Out");
-            _fadeInTime = overlays.GetFloatJSONParam("Fade in time");
-            _fadeOutTime = overlays.GetFloatJSONParam("Fade out time");
-            _showText = overlays.GetStringJSONParam("Set and show subtitles instant");
-            _hideText = overlays.GetAction("Hide subtitles instant");
-            return _connected = (_fadeIn != null && _fadeOut != null);
+            _overlays = _atom.GetStorableIDs().Select(_atom.GetStorableByID).FirstOrDefault(s => s.IsAction("Start Fade In"));
+            if (_overlays == null) return false;
+            _fadeIn = _overlays.GetAction("Start Fade In");
+            _fadeOut = _overlays.GetAction("Start Fade Out");
+            _fadeInTime = _overlays.GetFloatJSONParam("Fade in time");
+            _fadeOutTime = _overlays.GetFloatJSONParam("Fade out time");
+            _showText = _overlays.GetStringJSONParam("Set and show subtitles instant");
+            _hideText = _overlays.GetAction("Hide subtitles instant");
+            if (_fadeIn != null && _fadeOut != null) return true;
+            _overlays = null;
+            return false;
         }
 
         public JSONNode GetJSON()
@@ -115,22 +134,5 @@ namespace VamTimeline
             if (atomUid == null) return null;
             return FromAtomUid(atomUid, jc["BlackTime"].AsFloat);
         }
-    }
-
-    public interface IFadeManager
-    {
-        float blackTime { get; set; }
-        float halfBlackTime { get; }
-        bool black { get; }
-        float fadeInTime { get; }
-        float fadeOutTime { get; }
-
-        string GetAtomUid();
-        bool TryConnectNow();
-        JSONNode GetJSON();
-        void SyncFadeTime();
-        void FadeIn();
-        void FadeOut();
-        bool ShowText(string text);
     }
 }
