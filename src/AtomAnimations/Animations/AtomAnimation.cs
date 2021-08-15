@@ -29,7 +29,7 @@ namespace VamTimeline
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
         public IFadeManager fadeManager;
-        private bool _scheduleFadeIn;
+        private float _scheduleFadeIn = float.MaxValue;
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
@@ -411,7 +411,7 @@ namespace VamTimeline
 
             if (fadeManager?.black == true)
             {
-                _scheduleFadeIn = false;
+                _scheduleFadeIn = float.MaxValue;
                 fadeManager.FadeIn();
             }
         }
@@ -1042,11 +1042,10 @@ namespace VamTimeline
             SampleTriggers();
             ProcessAnimationSequence(GetDeltaTime() * speed);
 
-            if (_scheduleFadeIn && !simulationFrozen)
+            if (fadeManager?.black == true && _playTime > _scheduleFadeIn && !simulationFrozen)
             {
-                _scheduleFadeIn = false;
-                if (fadeManager?.black == true)
-                    fadeManager.FadeIn();
+                _scheduleFadeIn = float.MaxValue;
+                fadeManager.FadeIn();
             }
         }
 
@@ -1078,7 +1077,7 @@ namespace VamTimeline
                 if (clip.playbackScheduledNextAnimationName != null)
                     clipsQueued++;
 
-                if (!clip.loop && clip.playbackEnabled && clip.clipTime == clip.animationLength && !clip.infinite)
+                if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && !clip.infinite)
                 {
                     clip.playbackEnabled = false;
                     onClipIsPlayingChanged.Invoke(clip);
@@ -1088,8 +1087,11 @@ namespace VamTimeline
                 {
                     clip.playbackScheduledNextTimeLeft = Mathf.Max(clip.playbackScheduledNextTimeLeft - deltaTime * clip.speed, 0f);
 
-                    if (fadeManager?.black == false && clip.animationLayer == index.mainLayer && clip.playbackScheduledNextTimeLeft < fadeManager.fadeOutTime + fadeManager.blackTime)
+                    if (fadeManager?.black == false && clip.animationLayer == index.mainLayer && clip.playbackScheduledNextTimeLeft < fadeManager.fadeOutTime + fadeManager.halfBlackTime)
+                    {
+                        _scheduleFadeIn = float.MaxValue;
                         fadeManager.FadeOut();
+                    }
 
                     if (clip.playbackScheduledNextTimeLeft == 0)
                     {
@@ -1104,7 +1106,9 @@ namespace VamTimeline
 
                         TransitionAnimation(clip, nextClip);
                         if (fadeManager?.black == true && clip.animationLayer == index.mainLayer)
-                            _scheduleFadeIn = true;
+                        {
+                            _scheduleFadeIn = _playTime + fadeManager.halfBlackTime;
+                        }
                     }
                 }
             }

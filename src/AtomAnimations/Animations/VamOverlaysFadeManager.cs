@@ -6,11 +6,22 @@ namespace VamTimeline
 {
     public class VamOverlaysFadeManager : IFadeManager
     {
+        public float blackTime
+        {
+            get { return _blackTime; }
+            set
+            {
+                _blackTime = value;
+                halfBlackTime = blackTime / 2f;
+            }
+        }
+        public float halfBlackTime { get; private set; }
         public bool black { get; private set; }
-        public float blackTime { get; set; }
+
         public float fadeInTime { get; private set; }
         public float fadeOutTime { get; private set; }
 
+        private float _blackTime;
         private bool _connected;
         private string _atomUid;
         private Atom _atom;
@@ -86,6 +97,7 @@ namespace VamTimeline
     public interface IFadeManager
     {
         float blackTime { get; set; }
+        float halfBlackTime { get; }
         bool black { get; }
         float fadeInTime { get; }
         float fadeOutTime { get; }
