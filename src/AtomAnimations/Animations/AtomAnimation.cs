@@ -296,7 +296,10 @@ namespace VamTimeline
                 if (previousMain.uninterruptible)
                     return;
 
-                ScheduleNextAnimation(previousMain, clip);
+                if (previousMain.loop && previousMain.preserveLoops && clip.loop && clip.preserveLoops)
+                    ScheduleNextAnimation(previousMain, clip, previousMain.animationLength - clip.blendInDuration / 2f - previousMain.clipTime);
+                else
+                    ScheduleNextAnimation(previousMain, clip, 0);
             }
             else
             {
@@ -609,7 +612,7 @@ namespace VamTimeline
             var nextTime = source.nextAnimationTime;
             if (source.loop)
             {
-                if (source.preserveLoops)
+                if (source.preserveLoops && next.preserveLoops)
                 {
                     if (source.nextAnimationTimeRandomize > 0f)
                         nextTime = Random.Range(nextTime - source.animationLength * 0.49f, nextTime + source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) + source.animationLength * 0.49f);
@@ -626,6 +629,11 @@ namespace VamTimeline
                 if (nextTime < float.Epsilon) nextTime = float.Epsilon;
             }
 
+            ScheduleNextAnimation(source, next, nextTime);
+        }
+
+        private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, float nextTime)
+        {
             source.playbackScheduledNextAnimationName = next.animationName;
             source.playbackScheduledNextTimeLeft = nextTime;
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
