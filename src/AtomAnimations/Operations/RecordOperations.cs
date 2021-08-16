@@ -67,6 +67,7 @@ namespace VamTimeline
             RecordFirstKeyframe();
 
             var lastRecordedTime = 0f;
+            var recordLengthStr = _clip.infinite ? "∞" : _clip.animationLength.ToString("0.0");
             while (true)
             {
                 lastRecordedTime = Mathf.Max(lastRecordedTime, _animation.playTime);
@@ -74,7 +75,7 @@ namespace VamTimeline
                     break;
                 if (!recordExtendsLength && _animation.playTime > _clip.animationLength)
                     break;
-                if (Input.GetKeyDown(KeyCode.Escape))
+                if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Space))
                     break;
                 if (!_clip.playbackMainInLayer)
                     break;
@@ -82,6 +83,9 @@ namespace VamTimeline
                     break;
                 if (!ReferenceEquals(raycastTarget, null))
                     PositionCameraTarget(raycastTarget);
+                if (UIPerformance.ShouldRun(UIPerformance.LowFrequency))
+                    ShowText($"Recording... {_clip.clipTime:0.0} / {recordLengthStr}");
+
                 yield return 0;
             }
 
@@ -107,7 +111,7 @@ namespace VamTimeline
 
         private void ShowText(string text)
         {
-            if (_animation.fadeManager?.ShowText(text) == false)
+            if (_animation.fadeManager?.ShowText(text) != true)
                 SuperController.singleton.helpText = text;
         }
 
