@@ -28,6 +28,7 @@ namespace VamTimeline
         private JSONStorableBool _preserveLoopsJSON;
         private UIDynamicToggle _preserveLoopsUI;
         private JSONStorableFloat _randomizeRangeJSON;
+        private JSONStorableBool _fadeOnTransition;
 
         #region Init
 
@@ -51,6 +52,7 @@ namespace VamTimeline
             InitTransitionUI();
             if (plugin.containingAtom.type == "Person")
                 InitPoseUI();
+            InitFadeUI();
 
             prefabFactory.CreateHeader("Fading (VAMOverlays)", 1);
             InitVaMOverlaysUI();
@@ -181,12 +183,19 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_applyPoseOnTransition);
         }
 
+        private void InitFadeUI()
+        {
+            _fadeOnTransition = new JSONStorableBool("Fade on transitions", false, val => current.fadeOnTransition = val);
+            var fadeOnTransitionToggle = prefabFactory.CreateToggle(_fadeOnTransition);
+            fadeOnTransitionToggle.toggle.interactable = animation.fadeManager != null;
+        }
 
         [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
         private void InitVaMOverlaysUI()
         {
+            // TODO: Make transitions optional, OR only make transitions for 0 blend, OR only when pose...
             UIDynamicSlider blackTimeSlider = null;
-            var blackTime = new JSONStorableFloat("Black time", 0.5f, val =>
+            var blackTime = new JSONStorableFloat("Black time (global)", 0.5f, val =>
             {
                 if (animation.fadeManager != null)
                     animation.fadeManager.blackTime = val;
@@ -194,18 +203,22 @@ namespace VamTimeline
             {
                 valNoCallback = animation.fadeManager?.blackTime ?? 0.5f
             };
-            var atomSelector = new JSONStorableStringChooser("Overlays", new List<string>(), "", "Overlays", val =>
+            var atomSelector = new JSONStorableStringChooser("Overlays (global)", new List<string>(), "", "Overlays", val =>
             {
                 if (string.IsNullOrEmpty(val))
                 {
                     animation.fadeManager = null;
                     if (blackTimeSlider != null)
                         blackTimeSlider.slider.interactable = false;
+                    if (_fadeOnTransition != null)
+                        _fadeOnTransition.toggle.interactable = false;
                     return;
                 }
                 animation.fadeManager = VamOverlaysFadeManager.FromAtomUid(val, blackTime.val);
                 if (blackTimeSlider != null)
                     blackTimeSlider.slider.interactable = true;
+                if (_fadeOnTransition != null)
+                    _fadeOnTransition.toggle.interactable = false;
                 if(!animation.fadeManager.TryConnectNow())
                     SuperController.LogError($"Timeline: Could not find VAMOverlays on atom '{val}'");
             })
@@ -232,6 +245,7 @@ namespace VamTimeline
             _transitionNextJSON.toggle.interactable = true;
             _loopUI.toggle.interactable = false;
             _preserveLoopsUI.toggle.interactable = current.loop;
+            _fadeOnTransition.valNoCallback = current.fadeOnTransition;
 
             if (!current.autoTransitionPrevious)
             {

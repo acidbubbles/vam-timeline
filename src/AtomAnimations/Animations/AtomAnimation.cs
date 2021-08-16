@@ -296,14 +296,7 @@ namespace VamTimeline
                 if (previousMain.uninterruptible)
                     return;
 
-                if (clip.loop && clip.preserveLoops && previousMain.loop && allowPreserveLoops)
-                {
-                    previousMain.SetNext(clip.animationName, Mathf.Max(previousMain.animationLength - previousMain.clipTime, 0f));
-                }
-                else
-                {
-                    TransitionAnimation(previousMain, clip);
-                }
+                ScheduleNextAnimation(previousMain, clip);
             }
             else
             {
@@ -528,7 +521,9 @@ namespace VamTimeline
             if (from == null) throw new ArgumentNullException(nameof(from));
             if (to == null) throw new ArgumentNullException(nameof(to));
 
-            from.SetNext(null, float.NaN);
+            from.playbackScheduledNextAnimationName = null;
+            from.playbackScheduledNextTimeLeft = float.NaN;
+            from.playbackScheduledFadeOutTimestamp = float.NaN;
 
             if (!to.playbackEnabled)
             {
@@ -606,6 +601,11 @@ namespace VamTimeline
 
             if (next == null) return;
 
+            ScheduleNextAnimation(source, next);
+        }
+
+        private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next)
+        {
             var nextTime = source.nextAnimationTime;
             if (source.loop)
             {
@@ -616,7 +616,8 @@ namespace VamTimeline
 
                 if (source.nextAnimationTimeRandomize > 0f)
                 {
-                    nextTime = Random.Range(nextTime, nextTime + (source.preserveLoops ? source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) : source.nextAnimationTimeRandomize));
+                    nextTime = Random.Range(nextTime,
+                        nextTime + (source.preserveLoops ? source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) : source.nextAnimationTimeRandomize));
                 }
             }
             else
@@ -625,7 +626,12 @@ namespace VamTimeline
                 if (nextTime < float.Epsilon) nextTime = float.Epsilon;
             }
 
-            source.SetNext(next.animationName, nextTime);
+            source.playbackScheduledNextAnimationName = next.animationName;
+            source.playbackScheduledNextTimeLeft = nextTime;
+            if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
+            {
+                source.playbackScheduledFadeOutTimestamp = fadeManager.fadeOutTime + fadeManager.halfBlackTime;
+            }
         }
 
         #endregion
@@ -1077,18 +1083,27 @@ namespace VamTimeline
 
                 if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimationName != null)
                 {
-                    clip.playbackScheduledNextTimeLeft = Mathf.Max(clip.playbackScheduledNextTimeLeft - deltaTime * clip.speed, 0f);
+                    var adjustedDeltaTime = deltaTime * clip.speed;
+                    clip.playbackScheduledNextTimeLeft -= adjustedDeltaTime;
 
-                    if (fadeManager?.black == false && clip.animationLayer == index.mainLayer && clip.playbackScheduledNextTimeLeft < fadeManager.fadeOutTime + fadeManager.halfBlackTime)
+                    if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutTimestamp)
                     {
                         _scheduleFadeIn = float.MaxValue;
-                        fadeManager.FadeOut();
+                        clip.playbackScheduledFadeOutTimestamp = float.NaN;
+                        if (fadeManager?.black == false)
+                        {
+                            if ((fadeManager.fadeOutTime + fadeManager.halfBlackTime) * clip.speed * speed > clip.playbackScheduledNextTimeLeft)
+                                fadeManager.FadeOutInstant();
+                            else
+                                fadeManager.FadeOut();
+                        }
                     }
 
-                    if (clip.playbackScheduledNextTimeLeft == 0)
+                    if (clip.playbackScheduledNextTimeLeft <= 0)
                     {
                         var nextAnimationName = clip.playbackScheduledNextAnimationName;
-                        clip.SetNext(null, float.NaN);
+                        clip.playbackScheduledNextAnimationName = null;
+                        clip.playbackScheduledNextTimeLeft = float.NaN;
                         var nextClip = GetClip(clip.animationLayer, nextAnimationName);
                         if (nextClip == null)
                         {
@@ -1097,7 +1112,7 @@ namespace VamTimeline
                         }
 
                         TransitionAnimation(clip, nextClip);
-                        if (fadeManager?.black == true && clip.animationLayer == index.mainLayer)
+                        if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayer == index.mainLayer)
                         {
                             _scheduleFadeIn = _playTime + fadeManager.halfBlackTime;
                         }

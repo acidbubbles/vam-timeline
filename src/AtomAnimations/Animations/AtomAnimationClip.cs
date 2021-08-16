@@ -364,6 +364,20 @@ namespace VamTimeline
                 }
             }
         }
+        private bool _fadeOnTransition;
+        public bool fadeOnTransition
+        {
+            get
+            {
+                return _fadeOnTransition;
+            }
+            set
+            {
+                if (value == _fadeOnTransition) return;
+                _fadeOnTransition = value;
+                onAnimationSettingsChanged.Invoke(nameof(fadeOnTransition));
+            }
+        }
 
         public AtomAnimationClip(string animationName, string animationLayer)
         {
@@ -420,6 +434,7 @@ namespace VamTimeline
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;
         public float playbackScheduledNextTimeLeft;
+        public float playbackScheduledFadeOutTimestamp = float.NaN;
         public bool recording;
         public bool infinite;
 
@@ -454,18 +469,15 @@ namespace VamTimeline
             }
         }
 
-        public void SetNext(string nextAnimationName, float nextTime)
-        {
-            playbackScheduledNextAnimationName = nextAnimationName;
-            playbackScheduledNextTimeLeft = nextTime;
-        }
-
         public void Reset(bool resetTime)
         {
             playbackEnabled = false;
             playbackBlendWeight = 0f;
             playbackBlendRate = 0f;
             playbackMainInLayer = false;
+            playbackScheduledFadeOutTimestamp = float.NaN;
+            playbackScheduledNextTimeLeft = float.NaN;
+            playbackScheduledNextAnimationName = null;
             if (recording)
             {
                 recording = false;
@@ -475,7 +487,6 @@ namespace VamTimeline
                 }
             }
 
-            SetNext(null, 0f);
             clipTime = resetTime ? 0f : clipTime.Snap();
         }
 

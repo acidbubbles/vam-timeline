@@ -18,6 +18,7 @@ namespace VamTimeline
         void SyncFadeTime();
         void FadeIn();
         void FadeOut();
+        void FadeOutInstant();
         bool ShowText(string text);
     }
 
@@ -45,6 +46,7 @@ namespace VamTimeline
 
         private JSONStorableAction _fadeIn;
         private JSONStorableAction _fadeOut;
+        private JSONStorableAction _fadeOutInstant;
         private JSONStorableFloat _fadeInTime;
         private JSONStorableFloat _fadeOutTime;
         private JSONStorableString _showText;
@@ -74,6 +76,15 @@ namespace VamTimeline
             {
                 black = true;
                 _fadeOut.actionCallback();
+            }
+        }
+
+        public void FadeOutInstant()
+        {
+            if (TryConnectNow() && _fadeOutInstant != null)
+            {
+                black = true;
+                _fadeOutInstant.actionCallback();
             }
         }
 
@@ -110,6 +121,7 @@ namespace VamTimeline
             if (_overlays == null) return false;
             _fadeIn = _overlays.GetAction("Start Fade In");
             _fadeOut = _overlays.GetAction("Start Fade Out");
+            _fadeOutInstant = _overlays.GetAction("Fade Out Instant");
             _fadeInTime = _overlays.GetFloatJSONParam("Fade in time");
             _fadeOutTime = _overlays.GetFloatJSONParam("Fade out time");
             _showText = _overlays.GetStringJSONParam("Set and show subtitles instant");
