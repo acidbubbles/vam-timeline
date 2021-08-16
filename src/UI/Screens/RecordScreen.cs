@@ -112,7 +112,6 @@ namespace VamTimeline
         {
             _recordButton.button.interactable = !current.recording && animationEditContext.GetSelectedTargets().Any();
             _recordExtendsLength.valNoCallback = current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2);
-            _hideMenuDuringRecording.val = (SuperController.singleton.isOVR || SuperController.singleton.isOpenVR) && current.targetControllers.Any(c => c.animatableRef.selected);
         }
 
         public override void OnDestroy()
@@ -164,7 +163,8 @@ namespace VamTimeline
             yield return 0;
             animationEditContext.ResetScrubberRange();
             animationEditContext.clipTime = 0f;
-            SuperController.singleton.ShowMainHUDAuto();
+            if (hideMenuDuringRecording)
+                SuperController.singleton.ShowMainHUDAuto();
         }
     }
 }
