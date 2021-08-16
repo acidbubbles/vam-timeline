@@ -12,6 +12,8 @@ namespace VamTimeline
         private const string _positionNext = "Next";
         private const string _positionLast = "Last";
 
+        private static bool _previousCreateInOtherAtoms = false;
+
         private UIDynamicButton _addAnimationTransitionUI;
         private JSONStorableStringChooser _createPosition;
         private JSONStorableString _createName;
@@ -90,7 +92,7 @@ namespace VamTimeline
             _createName = new JSONStorableString("Name", "");
             prefabFactory.CreateTextInput(_createName);
 
-            _createInOtherAtoms = new JSONStorableBool("Create in other atoms", false);
+            _createInOtherAtoms = new JSONStorableBool("Create in other atoms", _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
             prefabFactory.CreateToggle(_createInOtherAtoms);
         }
 
