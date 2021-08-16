@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -5,7 +6,16 @@ namespace VamTimeline
     public class AddAnimationScreen : ScreenBase
     {
         public const string ScreenName = "Add Animation";
+
+        private const string _positionFirst = "First";
+        private const string _positionPrevious = "Previous";
+        private const string _positionNext = "Next";
+        private const string _positionLast = "Last";
+
         private UIDynamicButton _addAnimationTransitionUI;
+        private JSONStorableStringChooser _createPosition;
+        private JSONStorableString _createName;
+        private JSONStorableBool _createInOtherAtoms;
 
         public override string screenId => ScreenName;
 
@@ -22,24 +32,29 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Add animations", 1);
 
             prefabFactory.CreateSpacer();
-
-            prefabFactory.CreateHeader("Animations", 2);
+            prefabFactory.CreateHeader("Add animations", 2);
 
             InitCreateAnimationUI();
 
             prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Add options", 2);
 
-            prefabFactory.CreateHeader("Layers", 2);
+            InitCreateAnimationOptionsUI();
+
+            prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Add layers", 1);
 
             InitCreateLayerUI();
             InitSplitLayerUI();
 
             prefabFactory.CreateSpacer();
 
-            prefabFactory.CreateHeader("More", 2);
+            prefabFactory.CreateHeader("More", 1);
 
             CreateChangeScreenButton("<i><b>Import</b> from file...</i>", ImportExportScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
+
+            RefreshUI();
         }
 
         private void InitCreateAnimationUI()
@@ -61,8 +76,22 @@ namespace VamTimeline
 
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
+        }
 
-            RefreshButtons();
+        private void InitCreateAnimationOptionsUI()
+        {
+            _createPosition = new JSONStorableStringChooser(
+                "Add at position",
+                new List<string> { _positionFirst, _positionPrevious, _positionNext, _positionLast },
+                _positionNext,
+                "Add at position");
+            prefabFactory.CreatePopup(_createPosition, false, true);
+
+            _createName = new JSONStorableString("Name", "");
+            prefabFactory.CreateTextInput(_createName);
+
+            _createInOtherAtoms = new JSONStorableBool("Create in other atoms", false);
+            prefabFactory.CreateToggle(_createInOtherAtoms);
         }
 
         public void InitCreateLayerUI()
@@ -83,10 +112,26 @@ namespace VamTimeline
 
         private void AddAnimationAsCopy()
         {
-            var clip = operations.AddAnimation().AddAnimationAsCopy();
+            var clip = operations.AddAnimation().AddAnimationAsCopy(_createName.val, GetPosition());
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
+        }
+
+        private int GetPosition()
+        {
+            switch (_createPosition.val)
+            {
+                case _positionFirst:
+                    return animation.clips.FindIndex(c => c.animationLayer == current.animationLayer);
+                case _positionPrevious:
+                    return animation.clips.IndexOf(current);
+                case _positionNext:
+                    return animation.clips.IndexOf(current) + 1;
+                default:
+                    return animation.clips.FindLastIndex(c => c.animationLayer == current.animationLayer) + 1;
+            }
         }
 
         private void SplitAnimationAtScrubber()
@@ -98,11 +143,12 @@ namespace VamTimeline
                 return;
             }
 
-            var newClip = operations.AddAnimation().AddAnimationAsCopy();
+            var newClip = operations.AddAnimation().AddAnimationAsCopy(_createName.val, GetPosition());
             newClip.loop = false;
             operations.Resize().CropOrExtendAt(newClip, newClip.animationLength - time, 0);
             current.loop = false;
             operations.Resize().CropOrExtendEnd(current, time);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(newClip);
         }
 
         private void MergeWithNext()
@@ -151,10 +197,12 @@ namespace VamTimeline
 
         private void AddAnimationFromCurrentFrame(bool copySettings)
         {
-            var clip = operations.AddAnimation().AddAnimationFromCurrentFrame(copySettings);
+            var clip = operations.AddAnimation().AddAnimationFromCurrentFrame(copySettings, _createName.val, GetPosition());
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
+
         }
 
         private void AddTransitionAnimation()
@@ -163,6 +211,7 @@ namespace VamTimeline
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
         }
 
         private void AddLayer()
@@ -171,6 +220,7 @@ namespace VamTimeline
 
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
         }
 
         private void SplitLayer()
@@ -193,10 +243,10 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
-            RefreshButtons();
+            RefreshUI();
         }
 
-        private void RefreshButtons()
+        private void RefreshUI()
         {
             var hasNext = current.nextAnimationName != null;
             var nextIsTransition = false;
@@ -215,6 +265,8 @@ namespace VamTimeline
                 _addAnimationTransitionUI.label = "Create Transition (Next is transition)";
             else
                 _addAnimationTransitionUI.label = "Create Transition (Current -> Next)";
+
+            _createName.valNoCallback = animation.GetNewAnimationName(current);
         }
 
         #endregion

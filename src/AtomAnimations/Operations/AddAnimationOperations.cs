@@ -15,9 +15,9 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public AtomAnimationClip AddAnimationAsCopy()
+        public AtomAnimationClip AddAnimationAsCopy(string animationName, int position)
         {
-            var clip = _animation.CreateClip(_clip);
+            var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, position);
             _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
@@ -50,9 +50,9 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings)
-        {
-            var clip = _animation.CreateClip(_clip);
+        public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings, string animationName, int position)
+       {
+           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, position);
             if (copySettings) _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
@@ -79,8 +79,7 @@ namespace VamTimeline
                 return null;
             }
 
-            var clip = _animation.CreateClip(_clip);
-            clip.animationName = $"{_clip.animationName} > {next.animationName}";
+            var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _animation.clips.IndexOf(_clip) + 1);
             clip.loop = false;
             clip.autoTransitionPrevious = _animation.index.ByLayer(_clip.animationLayer).Any(c => c.animationLayer == _clip.animationLayer);
             clip.autoTransitionNext = _clip.nextAnimationName != null;
@@ -102,9 +101,6 @@ namespace VamTimeline
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
-
-            _animation.clips.Remove(clip);
-            _animation.clips.Insert(_animation.clips.IndexOf(_clip) + 1, clip);
 
             _clip.nextAnimationName = clip.animationName;
             return clip;

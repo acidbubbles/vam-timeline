@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -147,10 +148,7 @@ namespace VamTimeline
         public AtomAnimationClip AddClip(AtomAnimationClip clip)
         {
             var lastIndexOfLayer = clips.FindLastIndex(c => c.animationLayer == clip.animationLayer);
-            if (lastIndexOfLayer == -1)
-                clips.Add(clip);
-            else
-                clips.Insert(lastIndexOfLayer + 1, clip);
+            AddClipAt(clip, lastIndexOfLayer == -1 ? clips.Count : lastIndexOfLayer + 1);
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
@@ -160,17 +158,30 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip CreateClip(AtomAnimationClip source)
+        public AtomAnimationClip AddClipAt(AtomAnimationClip clip, int i)
         {
-            var animationName = GetNewAnimationName(source);
-            return CreateClip(source.animationLayer, animationName);
+            if (i == -1 || i > clips.Count) throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
+            clips.Insert(i, clip);
+            clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
+            clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
+            clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
+            index.Rebuild();
+            onClipsListChanged.Invoke();
+            if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
+            return clip;
         }
 
-        public AtomAnimationClip CreateClip(string animationLayer, string animationName)
+        public AtomAnimationClip CreateClip([NotNull] string animationLayer, [NotNull] string animationName, int position = -1)
         {
+            if (animationLayer == null) throw new ArgumentNullException(nameof(animationLayer));
+            if (animationName == null) throw new ArgumentNullException(nameof(animationName));
+
             if (clips.Any(c => c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationName}' already exists");
             var clip = new AtomAnimationClip(animationName, animationLayer);
-            AddClip(clip);
+            if (position == -1)
+                AddClip(clip);
+            else
+                AddClipAt(clip, position);
             return clip;
         }
 
@@ -183,7 +194,7 @@ namespace VamTimeline
             OnAnimationKeyframesDirty();
         }
 
-        private string GetNewAnimationName(AtomAnimationClip source)
+        public string GetNewAnimationName(AtomAnimationClip source)
         {
             var match = _lastDigitsRegex.Match(source.animationName);
             string animationNameBeforeInt;

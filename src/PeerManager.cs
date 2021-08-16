@@ -264,6 +264,18 @@ namespace VamTimeline
         public void SendSyncAnimation(AtomAnimationClip clip)
         {
             if (syncing) return;
+            string previousAnimationName = null;
+            var idx = animation.clips.IndexOf(clip);
+            if (idx > 0)
+            {
+                var previousClip = animation.clips[idx - 1];
+                if (previousClip.animationLayer == clip.animationLayer)
+                    previousAnimationName = previousClip.animationName;
+            }
+            else
+            {
+                previousAnimationName = "";
+            }
             SendTimelineEvent(new object[]{
                  nameof(SendSyncAnimation), // 0
                  clip.animationName, // 1
@@ -279,7 +291,8 @@ namespace VamTimeline
                  clip.speed, // 11
                  clip.weight, // 12
                  clip.uninterruptible, // 13
-                 clip.preserveLoops // 14
+                 clip.preserveLoops, // 14
+                 previousAnimationName // 15
             });
         }
 
@@ -297,13 +310,13 @@ namespace VamTimeline
                 {
                     if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     {
-                        existing = new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer)).AddAnimation().AddAnimationFromCurrentFrame(false);
-                        existing.animationName = animationName;
+                        new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer))
+                            .AddAnimation()
+                            .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationLayer, animationName, e.Length >= 16 && e[15] != null ? (string)e[15] : null));
                     }
                     else
                     {
-                        // ReSharper disable once RedundantAssignment
-                        existing = animation.CreateClip(animationLayer, animationName);
+                        animation.CreateClip(animationLayer, animationName, GetPosition(animationLayer, animationName, e.Length >= 16 && e[15] != null ? (string)e[15] : null));
                     }
                 }
             }
@@ -332,6 +345,15 @@ namespace VamTimeline
                 clip.preserveLoops = (bool)e[14];
                 animationEditContext.SelectAnimation(clip);
             }
+        }
+
+        private int GetPosition(string animationLayer, string animationName, string previousAnimationName)
+        {
+            var previousClipPosition = animation.clips.FindIndex(c => c.animationLayer == animationLayer && c.animationName == previousAnimationName);
+            if (previousClipPosition > -1)
+                return previousClipPosition + 1;
+
+            return animation.clips.FindIndex(c => c.animationLayer == animationLayer);
         }
 
         public void SendScreen(string screenName, object screenArg)
