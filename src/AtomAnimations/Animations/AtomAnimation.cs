@@ -611,13 +611,13 @@ namespace VamTimeline
             {
                 if (source.preserveLoops)
                 {
-                    nextTime = nextTime.RoundToNearest(source.animationLength) - (next.blendInDuration / 2f) + source.clipTime;
+                    if (source.nextAnimationTimeRandomize > 0f)
+                        nextTime = Random.Range(nextTime - source.animationLength * 0.49f, nextTime + source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) + source.animationLength * 0.49f);
+                    nextTime = nextTime.RoundToNearest(source.animationLength) - next.blendInDuration / 2f - source.clipTime;
                 }
-
-                if (source.nextAnimationTimeRandomize > 0f)
+                else if (source.nextAnimationTimeRandomize > 0f)
                 {
-                    nextTime = Random.Range(nextTime,
-                        nextTime + (source.preserveLoops ? source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) : source.nextAnimationTimeRandomize));
+                    nextTime = Random.Range(nextTime, nextTime + source.nextAnimationTimeRandomize);
                 }
             }
             else
