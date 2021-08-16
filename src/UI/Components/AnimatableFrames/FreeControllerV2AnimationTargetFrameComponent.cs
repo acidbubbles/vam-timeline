@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +9,7 @@ namespace VamTimeline
     {
         protected override float expandSize => 140f;
         private LineDrawer _line;
+        private int _lastHandlesCount;
         private readonly List<GameObject> _handles = new List<GameObject>();
 
         protected override void CreateCustom()
@@ -54,7 +56,7 @@ namespace VamTimeline
             {
                 colorKeys = new[] { new GradientColorKey(new Color(0f, 0.2f, 0.8f), 0f), new GradientColorKey(new Color(0.6f, 0.65f, 0.95f), 1f) }
             };
-            line.material = GetPreviewMaterial(Color.white);
+            line.material = GetPreviewMaterial(new Color(1, 1, 1, 0.3f));
 
             return line;
         }
@@ -62,20 +64,27 @@ namespace VamTimeline
         private void UpdateLine()
         {
             const float pointsPerSecond = 32f;
-            var pointsCount = Mathf.CeilToInt(target.x.GetKeyframeByKey(target.x.length - 1).time * pointsPerSecond) + (clip.loop ? 2 : 1);
-            var points = new Vector3[pointsCount];
+            var pointsToDraw = Mathf.CeilToInt(target.x.GetKeyframeByKey(target.x.length - 1).time * pointsPerSecond) + (clip.loop ? 2 : 1);
+            var points = new List<Vector3>(pointsToDraw);
 
-            for (var t = 0; t < pointsCount - (clip.loop ? 1 : 0); t++)
+            var lastPoint = Vector3.positiveInfinity;
+            const float minMagnitude = 0.0001f;
+            pointsToDraw -= clip.loop ? 1 : 0;
+            for (var t = 0; t < pointsToDraw; t++)
             {
-                points[t] = target.EvaluatePosition(t / pointsPerSecond);
+                var point = target.EvaluatePosition(t / pointsPerSecond);
+                if (Vector3.SqrMagnitude(lastPoint - point) < minMagnitude)
+                    continue;
+                points.Add(point);
+                lastPoint = point;
             }
             if (clip.loop)
-                points[pointsCount - 1] = points[0];
+                points.Add(points[0]);
 
-            _line.points = points;
+            _line.points = points.ToArray();
 
             var handlesCount = target.x.length - (clip.loop ? 1 : 0);
-            if (_handles.Count == handlesCount)
+            if (_lastHandlesCount == handlesCount)
             {
                 for (var t = 0; t < handlesCount; t++)
                 {
@@ -86,20 +95,36 @@ namespace VamTimeline
             }
             else
             {
-                foreach (var t in _handles)
-                    Destroy(t);
+                for (var i = 0; i < _handles.Count; i++) Destroy(_handles[i]);
                 _handles.Clear();
+                const int maxKeyframes = 100;
 
-                for (var t = 0; t < handlesCount; t++)
+                if (handlesCount < maxKeyframes)
                 {
-                    var handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    handle.GetComponent<Renderer>().material = GetPreviewMaterial(_line.colorGradient.Evaluate(t / clip.animationLength));
-                    foreach (var c in handle.GetComponents<Collider>()) { c.enabled = false; Destroy(c); }
-                    handle.transform.SetParent(_line.transform, false);
-                    handle.transform.localScale = Vector3.one * 0.01f;
-                    handle.transform.localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
-                    _handles.Add(handle);
+                    _handles.Capacity = Math.Max(handlesCount / 2, _handles.Count);
+
+                    var handleScale = Vector3.one * 0.001f;
+                    var lastHandle = handlesCount - 1;
+                    const float minHandleMagnitude = 0.0005f;
+
+                    var lastLocalPosition = Vector3.positiveInfinity;
+                    for (var t = 0; t < handlesCount; t++)
+                    {
+                        var handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        handle.GetComponent<Renderer>().material = GetPreviewMaterial(_line.colorGradient.Evaluate(t / clip.animationLength));
+                        var cs = handle.GetComponents<Collider>();
+                        for (var i = 0; i < cs.Length; i++) Destroy(cs[i]);
+                        handle.transform.SetParent(_line.transform, false);
+                        handle.transform.localScale = handleScale;
+                        var localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
+                        if (t != lastHandle && Vector3.SqrMagnitude(lastLocalPosition - localPosition) < minHandleMagnitude)
+                            continue;
+                        handle.transform.localPosition = localPosition;
+                        _handles.Add(handle);
+                        lastLocalPosition = localPosition;
+                    }
                 }
+                _lastHandlesCount = handlesCount;
             }
         }
 
