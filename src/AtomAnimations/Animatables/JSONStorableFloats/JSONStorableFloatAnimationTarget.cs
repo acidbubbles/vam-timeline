@@ -78,6 +78,11 @@ namespace VamTimeline
             return value.SetKeyframe(time, setValue, curveType);
         }
 
+        public int SetKeyframeToCurrent(float time, bool makeDirty = true)
+        {
+            return SetKeyframe(time, animatableRef.floatParam.val, makeDirty);
+        }
+
         public void DeleteFrame(float time)
         {
             var key = value.KeyframeBinarySearch(time);

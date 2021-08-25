@@ -57,15 +57,15 @@ namespace VamTimeline
             foreach (var origTarget in _clip.targetControllers)
             {
                 var newTarget = CopyTarget(clip, origTarget);
-                newTarget.SetKeyframeToCurrentTransform(0f);
-                newTarget.SetKeyframeToCurrentTransform(clip.animationLength);
+                newTarget.SetKeyframeToCurrent(0f);
+                newTarget.SetKeyframeToCurrent(clip.animationLength);
             }
             foreach (var origTarget in _clip.targetFloatParams)
             {
                 if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(origTarget.animatableRef);
-                newTarget.SetKeyframe(0f, origTarget.animatableRef.floatParam.val);
-                newTarget.SetKeyframe(clip.animationLength, origTarget.animatableRef.floatParam.val);
+                newTarget.SetKeyframeToCurrent(0f);
+                newTarget.SetKeyframeToCurrent(clip.animationLength);
             }
             return clip;
         }

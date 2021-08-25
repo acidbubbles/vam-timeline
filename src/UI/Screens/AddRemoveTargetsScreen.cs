@@ -394,8 +394,8 @@ namespace VamTimeline
                             var target = clip.Add(controller);
                             if (target != null)
                             {
-                                target.SetKeyframeToCurrentTransform(0f);
-                                target.SetKeyframeToCurrentTransform(clip.animationLength);
+                                target.SetKeyframeToCurrent(0f);
+                                target.SetKeyframeToCurrent(clip.animationLength);
                             }
                         }
                     }
@@ -408,8 +408,8 @@ namespace VamTimeline
                         var target = clip.Add(storableFloat);
                         if (target == null) continue;
                         if (!target.animatableRef.EnsureAvailable(false)) continue;
-                        target.SetKeyframe(0f, floatParamRef.floatParam.val);
-                        target.SetKeyframe(clip.animationLength, floatParamRef.floatParam.val);
+                        target.SetKeyframeToCurrent(0f);
+                        target.SetKeyframeToCurrent(clip.animationLength);
                     }
                     clip.targetFloatParams.Sort(new JSONStorableFloatAnimationTarget.Comparer());
                 }
@@ -456,8 +456,8 @@ namespace VamTimeline
                     var controllerPose = clip.pose?.GetControllerPose(controller.name);
                     if (controllerPose == null)
                     {
-                        added.SetKeyframeToCurrentTransform(0f);
-                        added.SetKeyframeToCurrentTransform(clip.animationLength);
+                        added.SetKeyframeToCurrent(0f);
+                        added.SetKeyframeToCurrent(clip.animationLength);
                     }
                     else
                     {

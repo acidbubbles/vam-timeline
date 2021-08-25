@@ -161,7 +161,7 @@ namespace VamTimeline
             var time = animationEditContext.clipTime.Snap();
             var targets = animationEditContext.GetAllOrSelectedTargets().OfType<JSONStorableFloatAnimationTarget>();
             foreach (var f in targets)
-                f.SetKeyframe(time, f.animatableRef.floatParam.val);
+                f.SetKeyframeToCurrent(time);
         }
 
         private void Bake()

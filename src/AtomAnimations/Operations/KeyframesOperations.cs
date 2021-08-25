@@ -42,14 +42,14 @@ namespace VamTimeline
             var selected = SuperController.singleton.GetSelectedController();
             if (selected == null) return;
             var target = _clip.targetControllers.FirstOrDefault(t => t.animatableRef.controller == selected);
-            target?.SetKeyframeToCurrentTransform(_clip.clipTime.Snap());
+            target?.SetKeyframeToCurrent(_clip.clipTime.Snap());
         }
 
         public void AddAllControllers()
         {
             foreach (var target in _clip.targetControllers)
             {
-                target.SetKeyframeToCurrentTransform(_clip.clipTime.Snap());
+                target.SetKeyframeToCurrent(_clip.clipTime.Snap());
             }
         }
     }

@@ -130,7 +130,7 @@ namespace VamTimeline
 
         #region Keyframes control
 
-        public int SetKeyframeToCurrentTransform(float time, bool makeDirty = true)
+        public int SetKeyframeToCurrent(float time, bool makeDirty = true)
         {
             // TODO: Fix this while possessing
             if (!EnsureParentAvailable(false)) return -1;

@@ -768,7 +768,7 @@ namespace VamTimeline
                 var clip = target.clip;
                 if(target.recording)
                 {
-                    target.SetKeyframeToCurrentTransform(clip.clipTime.Snap(), false);
+                    target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     return;
                 }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;

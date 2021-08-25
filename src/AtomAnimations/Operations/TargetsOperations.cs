@@ -24,8 +24,8 @@ namespace VamTimeline
             {
                 var t = clip.Add(_animation.animatables.GetOrCreateController(fc));
                 if (t == null) continue;
-                t.SetKeyframeToCurrentTransform(0f);
-                t.SetKeyframeToCurrentTransform(clip.animationLength);
+                t.SetKeyframeToCurrent(0f);
+                t.SetKeyframeToCurrent(clip.animationLength);
                 if (clip == _clip) target = t;
             }
             return target;

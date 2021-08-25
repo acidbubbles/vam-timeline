@@ -37,6 +37,7 @@ namespace VamTimeline
 
             _animation.StopAll();
             _animation.ResetAll();
+            _animation.Sample();
 
             ShowText("Preparing to record...");
 
@@ -63,9 +64,8 @@ namespace VamTimeline
 
             ShowText(null);
 
+            RecordFirstKeyframe(targets);
             StartRecording(timeMode, recordExtendsLength, targets);
-
-            RecordFirstKeyframe();
 
             var lastRecordedTime = 0f;
             var recordLengthStr = _clip.infinite ? "∞" : _clip.animationLength.ToString("0.0");
@@ -93,37 +93,16 @@ namespace VamTimeline
             AfterRecording(targets);
         }
 
-        private void RecordFirstKeyframe()
+        private void RecordFirstKeyframe(IList<ICurveAnimationTarget> targets)
         {
-            var clipTime = _clip.clipTime.Snap();
-
-            for (var i = 0; i < _clip.targetControllers.Count; i++)
+            for (var i = 0; i < targets.Count; i++)
             {
-                var target = _clip.targetControllers[i];
-                if (target.recording)
-                {
-                    target.SetKeyframeToCurrentTransform(clipTime);
-                    if (_clip.loop && clipTime == 0)
-                        target.SetKeyframeToCurrentTransform(_clip.animationLength);
-                }
+                var target = targets[i];
+                if (!target.recording) continue;
+                target.SetKeyframeToCurrent(0);
+                if (_clip.loop)
+                    target.SetKeyframeToCurrent(_clip.animationLength);
             }
-
-            for (var i = 0; i < _clip.targetFloatParams.Count; i++)
-            {
-                var target = _clip.targetFloatParams[i];
-                if (target.recording)
-                {
-                    target.SetKeyframe(clipTime, target.animatableRef.floatParam.val);
-                    if (_clip.loop && clipTime == 0)
-                        target.SetKeyframe(_clip.animationLength, target.animatableRef.floatParam.val);
-                }
-            }
-        }
-
-        private void ShowText(string text)
-        {
-            if (_animation.fadeManager?.ShowText(text) != true)
-                SuperController.singleton.helpText = text;
         }
 
         private void BeforeRecording(List<ICurveAnimationTarget> targets, bool recordExtendsLength)
@@ -193,6 +172,12 @@ namespace VamTimeline
             }
 
             GC.Collect();
+        }
+
+        private void ShowText(string text)
+        {
+            if (_animation.fadeManager?.ShowText(text) != true)
+                SuperController.singleton.helpText = text;
         }
 
         private static void PositionCameraTarget(FreeControllerV3AnimationTarget cameraTarget)

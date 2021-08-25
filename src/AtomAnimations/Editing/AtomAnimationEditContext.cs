@@ -432,7 +432,7 @@ namespace VamTimeline
             time = time.Snap();
             if (time > current.animationLength)
                 time = current.animationLength;
-            return target.SetKeyframeToCurrentTransform(time);
+            return target.SetKeyframeToCurrent(time);
         }
 
         #endregion
