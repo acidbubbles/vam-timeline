@@ -412,7 +412,6 @@ namespace VamTimeline
                 clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
 
             var controllersJSON = new JSONArray();
-            clipJSON.Add("Controllers", controllersJSON);
             foreach (var controller in clip.targetControllers)
             {
                 var controllerJSON = new JSONClass
@@ -441,9 +440,10 @@ namespace VamTimeline
                 }
                 controllersJSON.Add(controllerJSON);
             }
+            if(controllersJSON.Count > 0)
+                clipJSON.Add("Controllers", controllersJSON);
 
-            var paramsJSON = new JSONArray();
-            clipJSON.Add("FloatParams", paramsJSON);
+            var floatParamsJSON = new JSONArray();
             foreach (var target in clip.targetFloatParams)
             {
                 var paramJSON = new JSONClass
@@ -452,12 +452,12 @@ namespace VamTimeline
                         { "Name", target.animatableRef.floatParamName },
                         { "Value", SerializeCurve(target.value) }
                     };
-                paramsJSON.Add(paramJSON);
+                floatParamsJSON.Add(paramJSON);
             }
+            if(floatParamsJSON.Count > 0)
+                clipJSON.Add("FloatParams", floatParamsJSON);
 
             var triggersJSON = new JSONArray();
-            clipJSON.Add("", triggersJSON);
-            clipJSON.Add("Triggers", triggersJSON);
             foreach (var target in clip.targetTriggers)
             {
                 var triggerJSON = new JSONClass
@@ -472,6 +472,8 @@ namespace VamTimeline
                 triggerJSON["Triggers"] = entriesJSON;
                 triggersJSON.Add(triggerJSON);
             }
+            if (triggersJSON.Count > 0)
+                clipJSON.Add("Triggers", triggersJSON);
         }
 
         private static JSONNode SerializeCurve(BezierAnimationCurve curve)
