@@ -63,13 +63,18 @@ namespace VamTimeline
 
         private void UpdateLine()
         {
+            CancelInvoke(nameof(UpdateLineAsync));
+            Invoke(nameof(UpdateLineAsync), 0.001f);
+        }
+
+        private void UpdateLineAsync()
+        {
             const float pointsPerSecond = 32f;
-            var pointsToDraw = Mathf.CeilToInt(target.x.GetKeyframeByKey(target.x.length - 1).time * pointsPerSecond) + (clip.loop ? 2 : 1);
-            var points = new List<Vector3>(pointsToDraw);
+            var pointsToDraw = Mathf.CeilToInt(target.x.GetKeyframeByKey(target.x.length - 1).time * pointsPerSecond) + 1;
+            var points = new List<Vector3>(pointsToDraw + 1);
 
             var lastPoint = Vector3.positiveInfinity;
             const float minMagnitude = 0.0001f;
-            pointsToDraw -= clip.loop ? 1 : 0;
             for (var t = 0; t < pointsToDraw; t++)
             {
                 var point = target.EvaluatePosition(t / pointsPerSecond);
@@ -78,8 +83,7 @@ namespace VamTimeline
                 points.Add(point);
                 lastPoint = point;
             }
-            if (clip.loop)
-                points.Add(points[0]);
+            points.Add(clip.loop ? points[0] : target.EvaluatePosition(clip.animationLength));
 
             _line.points = points.ToArray();
 
@@ -123,6 +127,10 @@ namespace VamTimeline
                         _handles.Add(handle);
                         lastLocalPosition = localPosition;
                     }
+                }
+                else
+                {
+                    _handles.Capacity = 0;
                 }
                 _lastHandlesCount = handlesCount;
             }
