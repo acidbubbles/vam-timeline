@@ -95,18 +95,28 @@ namespace VamTimeline
 
         private void RecordFirstKeyframe()
         {
+            var clipTime = _clip.clipTime.Snap();
+
             for (var i = 0; i < _clip.targetControllers.Count; i++)
             {
                 var target = _clip.targetControllers[i];
                 if (target.recording)
-                    target.SetKeyframeToCurrentTransform(0);
+                {
+                    target.SetKeyframeToCurrentTransform(clipTime);
+                    if (_clip.loop && clipTime == 0)
+                        target.SetKeyframeToCurrentTransform(_clip.animationLength);
+                }
             }
 
             for (var i = 0; i < _clip.targetFloatParams.Count; i++)
             {
                 var target = _clip.targetFloatParams[i];
                 if (target.recording)
-                    target.SetKeyframe(0, target.animatableRef.floatParam.val);
+                {
+                    target.SetKeyframe(clipTime, target.animatableRef.floatParam.val);
+                    if (_clip.loop && clipTime == 0)
+                        target.SetKeyframe(_clip.animationLength, target.animatableRef.floatParam.val);
+                }
             }
         }
 
