@@ -215,7 +215,6 @@ namespace VamTimeline
         private void InitPoseUI()
         {
             _savePoseUI = prefabFactory.CreateButton("Save pose");
-            #warning Overwrite only specific things; morphs only, pose only
             _savePoseUI.button.onClick.AddListener(() =>
             {
                 current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val);

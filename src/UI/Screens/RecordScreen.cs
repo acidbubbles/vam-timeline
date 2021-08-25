@@ -32,6 +32,17 @@ namespace VamTimeline
             _recordExtendsLength = new JSONStorableBool("Record extends length", false);
             prefabFactory.CreateToggle(_recordExtendsLength);
 
+            var recordTimeModeJSON = new JSONStorableStringChooser(
+                "Time mode",
+                new List<string> { TimeModes.RealTime.ToString(), TimeModes.UnityTime.ToString() },
+                TimeModes.RealTime.ToString(),
+                "Time mode"
+            )
+            {
+                displayChoices = new List<string> { "Real time (better timing)", "Game time (better sync with anim. patterns)" }
+            };
+            prefabFactory.CreatePopup(recordTimeModeJSON, false, false);
+
             var recordInJSON = new JSONStorableFloat("Record delay timer", 5f, 0f, 30f, false)
             {
                 valNoCallback = animationEditContext.startRecordIn
@@ -79,7 +90,7 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
             _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
-            _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(_recordExtendsLength.val, raycastTarget)));
+            _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(int.Parse(recordTimeModeJSON.val), _recordExtendsLength.val, raycastTarget)));
 
             prefabFactory.CreateSpacer();
 
@@ -120,7 +131,7 @@ namespace VamTimeline
             base.OnDestroy();
         }
 
-        private IEnumerator OnRecordCo(bool recordExtendsLength, FreeControllerV3AnimationTarget raycastTarget)
+        private IEnumerator OnRecordCo(int timeMode, bool recordExtendsLength, FreeControllerV3AnimationTarget raycastTarget)
         {
             if (raycastTarget != null && !raycastTarget.selected)
             {
@@ -140,6 +151,7 @@ namespace VamTimeline
             var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
 
             var enumerator = operations.Record().StartRecording(
+                timeMode,
                 recordExtendsLength,
                 animationEditContext.startRecordIn,
                 targets.ToList(),

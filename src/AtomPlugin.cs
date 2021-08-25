@@ -49,6 +49,7 @@ namespace VamTimeline
 
         private bool _restoring;
         private FreeControllerV3Hook _freeControllerHook;
+        public OperationsFactory operations => new OperationsFactory(containingAtom, animation, animationEditContext.current, peers);
 
         private class AnimStorableActionMap
         {
@@ -904,8 +905,6 @@ namespace VamTimeline
 
         #region Keybindings
 
-        private OperationsFactory operations => new OperationsFactory(containingAtom, animation, animationEditContext.current);
-
         public void OnBindingsListRequested(List<object> bindings)
         {
             bindings.Add(new []
@@ -972,6 +971,7 @@ namespace VamTimeline
                     return;
                 }
                 StartCoroutine(operations.Record().StartRecording(
+                    TimeModes.RealTime,
                     animationEditContext.current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2),
                     animationEditContext.startRecordIn,
                     targets,

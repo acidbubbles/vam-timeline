@@ -7,8 +7,9 @@ namespace VamTimeline
         private readonly Atom _containingAtom;
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
+        private readonly PeerManager _peerManager;
 
-        public OperationsFactory(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
+        public OperationsFactory(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip, PeerManager peerManager)
         {
             if (containingAtom == null) throw new ArgumentNullException(nameof(containingAtom));
             _containingAtom = containingAtom;
@@ -16,6 +17,8 @@ namespace VamTimeline
             _animation = animation;
             if (clip == null) throw new ArgumentNullException(nameof(clip));
             _clip = clip;
+            if (peerManager == null) throw new ArgumentNullException(nameof(peerManager));
+            _peerManager = peerManager;
         }
 
         public ResizeAnimationOperations Resize()
@@ -65,7 +68,7 @@ namespace VamTimeline
 
         public RecordOperations Record()
         {
-            return new RecordOperations(_animation, _clip);
+            return new RecordOperations(_animation, _clip, _peerManager);
         }
     }
 }

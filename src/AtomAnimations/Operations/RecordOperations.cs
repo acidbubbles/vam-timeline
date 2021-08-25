@@ -9,24 +9,25 @@ namespace VamTimeline
     public class RecordOperations
     {
         private static bool _recording;
-        private static int _timeMode;
 
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
+        private readonly PeerManager _peerManager;
 
-        public RecordOperations(AtomAnimation animation, AtomAnimationClip clip)
+        public RecordOperations(AtomAnimation animation, AtomAnimationClip clip, PeerManager peerManager)
         {
             _animation = animation;
             _clip = clip;
+            _peerManager = peerManager;
         }
 
         public IEnumerator StartRecording(
+            int timeMode,
             bool recordExtendsLength,
             int recordInSeconds,
             List<ICurveAnimationTarget> targets,
             FreeControllerV3AnimationTarget raycastTarget,
-            bool exitOnMenuOpen
-        )
+            bool exitOnMenuOpen)
         {
             if (_recording)
             {
@@ -41,7 +42,7 @@ namespace VamTimeline
 
             yield return 0;
 
-            CleanupClip(targets, recordExtendsLength);
+            BeforeRecording(targets, recordExtendsLength);
 
             yield return 0;
 
@@ -62,7 +63,7 @@ namespace VamTimeline
 
             ShowText(null);
 
-            StartRecording(recordExtendsLength, targets);
+            StartRecording(timeMode, recordExtendsLength, targets);
 
             RecordFirstKeyframe();
 
@@ -89,7 +90,7 @@ namespace VamTimeline
                 yield return 0;
             }
 
-            StopRecording(targets);
+            AfterRecording(targets);
         }
 
         private void RecordFirstKeyframe()
@@ -115,7 +116,7 @@ namespace VamTimeline
                 SuperController.singleton.helpText = text;
         }
 
-        private void CleanupClip(List<ICurveAnimationTarget> targets, bool recordExtendsLength)
+        private void BeforeRecording(List<ICurveAnimationTarget> targets, bool recordExtendsLength)
         {
             var keyframesOps = new KeyframesOperations(_clip);
 
@@ -135,11 +136,13 @@ namespace VamTimeline
             GC.Collect();
         }
 
-        private void StartRecording(bool recordExtendsLength, List<ICurveAnimationTarget> targets)
+        private void StartRecording(int timeMode, bool recordExtendsLength, List<ICurveAnimationTarget> targets)
         {
-            _timeMode = _animation.timeMode;
+            _recording = true;
 
-            _animation.timeMode = TimeModes.RealTime;
+            _animation.SetTemporaryTimeMode(timeMode);
+            _peerManager.SendStartRecording(timeMode);
+
             _animation.autoStop = recordExtendsLength ? 0 : (_clip.loop ? _clip.animationLength - 0.0009f : _clip.animationLength + 0.0009f);
             _animation.speed = 1f;
             _clip.recording = true;
@@ -152,17 +155,15 @@ namespace VamTimeline
             }
 
             _animation.PlayClip(_clip, false);
-
-            _recording = true;
         }
 
-        private void StopRecording(List<ICurveAnimationTarget> targets)
+        private void AfterRecording(List<ICurveAnimationTarget> targets)
         {
             if (!_recording) return;
-
             _recording = false;
 
-            _animation.timeMode = _timeMode;
+            _animation.RestoreTemporaryTimeMode();
+            _peerManager.SendStopRecording();
 
             var resizeOp = new ResizeAnimationOperations();
             _animation.StopAll();

@@ -85,6 +85,12 @@ namespace VamTimeline
                     case nameof(SendPaused):
                         ReceivePaused(e);
                         break;
+                    case nameof(SendStartRecording):
+                        ReceiveStartRecording(e);
+                        break;
+                    case nameof(SendStopRecording):
+                        ReceiveStopRecording(e);
+                        break;
                     default:
                         SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
                         break;
@@ -201,7 +207,7 @@ namespace VamTimeline
 
         private void ReceivePaused(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 1)) return;
+            if (!ValidateArgumentCount(e.Length, 2)) return;
             animation.paused = (bool) e[1];
         }
 
@@ -244,8 +250,8 @@ namespace VamTimeline
         {
             if (syncing) return;
             SendTimelineEvent(new object[]{
-                 nameof(SendCurrentAnimation),
-                 clip.animationName
+                 nameof(SendCurrentAnimation), // 0
+                 clip.animationName // 1
             });
         }
 
@@ -298,7 +304,7 @@ namespace VamTimeline
 
         private void ReceiveSyncAnimation(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 15)) return;
+            if (!ValidateArgumentCount(e.Length, 16)) return;
             var animationName = (string)e[1];
             var animationLayer = (string)e[2];
 
@@ -310,8 +316,7 @@ namespace VamTimeline
                 {
                     if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     {
-                        new OperationsFactory(_plugin.containingAtom, animation, animation.clips.First(c => c.animationLayer == animationLayer))
-                            .AddAnimation()
+                        new AddAnimationOperations(animation, animation.clips.First(c => c.animationLayer == animationLayer))
                             .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationLayer, animationName, e.Length >= 16 && e[15] != null ? (string)e[15] : null));
                     }
                     else
@@ -325,7 +330,7 @@ namespace VamTimeline
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
-                new OperationsFactory(_plugin.containingAtom, animation, clip).Resize().CropOrExtendEnd(clip, (float)e[3]);
+                new ResizeAnimationOperations().CropOrExtendEnd(clip, (float)e[3]);
                 var nextAnimationName = (string)e[4];
                 if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextAnimationName))
                 {
@@ -360,9 +365,9 @@ namespace VamTimeline
         {
             if (syncing) return;
             SendTimelineEvent(new[]{
-                 nameof(SendScreen),
-                 screenName,
-                 screenArg
+                 nameof(SendScreen), // 0
+                 screenName, // 1
+                 screenArg // 2
             });
         }
 
@@ -370,6 +375,35 @@ namespace VamTimeline
         {
             if (!ValidateArgumentCount(e.Length, 3)) return;
             _plugin.ChangeScreen((string)e[1], e[2]);
+        }
+
+        public void SendStartRecording(int timeMode)
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendStartRecording), // 0
+                 timeMode // 1
+            });
+        }
+
+        private void ReceiveStartRecording(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 2)) return;
+            animation.SetTemporaryTimeMode((int)e[1]);
+        }
+
+        public void SendStopRecording()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendStopRecording) // 0
+            });
+        }
+
+        private void ReceiveStopRecording(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 1)) return;
+            animation.RestoreTemporaryTimeMode();
         }
 
         private void SendTimelineEvent(object[] e)

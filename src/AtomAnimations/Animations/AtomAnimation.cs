@@ -1176,5 +1176,18 @@ namespace VamTimeline
         }
 
         #endregion
+
+        private int _restoreTimeMode;
+        public void SetTemporaryTimeMode(int temporaryTimeMode)
+        {
+            _restoreTimeMode = timeMode;
+            timeMode = temporaryTimeMode;
+        }
+
+        public void RestoreTemporaryTimeMode()
+        {
+            timeMode = _restoreTimeMode;
+            _restoreTimeMode = 0;
+        }
     }
 }

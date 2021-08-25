@@ -17,7 +17,7 @@ namespace VamTimeline
         protected AtomAnimation animation => plugin.animation;
         protected AtomAnimationEditContext animationEditContext => plugin.animationEditContext;
         protected AtomAnimationClip current => animationEditContext.current;
-        protected OperationsFactory operations => new OperationsFactory(plugin.containingAtom, animation, current);
+        protected OperationsFactory operations => plugin.operations;
 
         protected IAtomPlugin plugin;
         protected VamPrefabFactory prefabFactory;

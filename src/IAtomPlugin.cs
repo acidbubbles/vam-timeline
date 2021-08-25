@@ -21,6 +21,7 @@ namespace VamTimeline
         AtomAnimationEditContext animationEditContext { get; }
         AtomAnimationSerializer serializer { get; }
         PeerManager peers { get; }
+        OperationsFactory operations { get; }
 
         JSONStorableAction deleteJSON { get; }
         JSONStorableAction cutJSON { get; }
