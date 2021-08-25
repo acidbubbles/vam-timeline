@@ -101,7 +101,7 @@ namespace VamTimeline
 
                 if (handlesCount < maxKeyframes)
                 {
-                    _handles.Capacity = Math.Max(handlesCount / 2, _handles.Count);
+                    _handles.Capacity = Math.Max(handlesCount / 2, 1);
 
                     var handleScale = Vector3.one * 0.001f;
                     var lastHandle = handlesCount - 1;
