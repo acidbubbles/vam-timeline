@@ -950,6 +950,10 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Keyframe_Copy", () => animationEditContext.Copy()));
             bindings.Add(new JSONStorableAction("Keyframe_Paste", () => animationEditContext.Paste()));
             bindings.Add(new JSONStorableAction("Keyframe_Delete", () => animationEditContext.Delete()));
+            bindings.Add(new JSONStorableAction("Keyframe_SetCurveType_SmoothLocal", () => animationEditContext.ChangeCurveType(CurveTypeValues.SmoothLocal)));
+            bindings.Add(new JSONStorableAction("Keyframe_SetCurveType_SmoothGlobal", () => animationEditContext.ChangeCurveType(CurveTypeValues.SmoothGlobal)));
+            bindings.Add(new JSONStorableAction("Keyframe_SetCurveType_Linear", () => animationEditContext.ChangeCurveType(CurveTypeValues.Linear)));
+            bindings.Add(new JSONStorableAction("Keyframe_SetCurveType_Flat", () => animationEditContext.ChangeCurveType(CurveTypeValues.Flat)));
             bindings.Add(new JSONStorableAction("Keyframe_Add_CurrentController", () => operations.Keyframes().AddSelectedController()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_AllControllerTargets", () => operations.Keyframes().AddAllControllers()));
             bindings.Add(new JSONStorableAction("ZoomIn", () => animationEditContext.ZoomScrubberRangeIn()));

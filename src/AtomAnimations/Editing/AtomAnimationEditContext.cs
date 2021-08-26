@@ -628,5 +628,19 @@ namespace VamTimeline
         }
 
         #endregion
+
+        public void ChangeCurveType(int curveType)
+        {
+            if (!CanEdit())
+                return;
+
+            var time = clipTime.Snap();
+
+            foreach (var target in GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
+                target.ChangeCurveByTime(time, curveType);
+
+            if (curveType == CurveTypeValues.CopyPrevious)
+                Sample();
+        }
     }
 }

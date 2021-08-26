@@ -16,21 +16,21 @@ namespace VamTimeline
             var curveTypeUI = prefabFactory.CreatePopup(curveTypeJSON, false, true, 380f, true);
 
             var curveTypePopup = curveTypeUI.gameObject.AddComponent<CurveTypePopup>();
-            curveTypePopup.curveTypeJSON = curveTypeJSON;
+            curveTypePopup._curveTypeJSON = curveTypeJSON;
             curveTypePopup.curveTypeUI = curveTypeUI;
 
             return curveTypePopup;
         }
 
-        public JSONStorableStringChooser curveTypeJSON;
         public UIDynamicPopup curveTypeUI;
+        private JSONStorableStringChooser _curveTypeJSON;
         private AtomAnimationEditContext _animationEditContext;
         private bool _listening;
 
         public void Bind(AtomAnimationEditContext animationEditContext)
         {
             _animationEditContext = animationEditContext;
-            curveTypeJSON.setCallbackFunction = ChangeCurve;
+            _curveTypeJSON.setCallbackFunction = ChangeCurve;
             OnEnable();
         }
 
@@ -62,7 +62,7 @@ namespace VamTimeline
 
         private void RefreshCurrentCurveType(float currentClipTime)
         {
-            if (curveTypeJSON == null) return;
+            if (_curveTypeJSON == null) return;
 
             var time = currentClipTime.Snap();
             _curveTypes.Clear();
@@ -76,15 +76,15 @@ namespace VamTimeline
             switch (_curveTypes.Count)
             {
                 case 0:
-                    curveTypeJSON.valNoCallback = _noKeyframeCurveType;
+                    _curveTypeJSON.valNoCallback = _noKeyframeCurveType;
                     curveTypeUI.popup.topButton.interactable = false;
                     break;
                 case 1:
-                    curveTypeJSON.valNoCallback = _curveTypes.First();
+                    _curveTypeJSON.valNoCallback = _curveTypes.First();
                     curveTypeUI.popup.topButton.interactable = true;
                     break;
                 default:
-                    curveTypeJSON.valNoCallback = "(" + string.Join("/", _curveTypes.ToArray()) + ")";
+                    _curveTypeJSON.valNoCallback = "(" + string.Join("/", _curveTypes.ToArray()) + ")";
                     curveTypeUI.popup.topButton.interactable = true;
                     break;
             }
