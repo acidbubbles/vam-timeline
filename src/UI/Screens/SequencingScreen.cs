@@ -55,7 +55,7 @@ namespace VamTimeline
             InitFadeUI();
 
             prefabFactory.CreateHeader("Fading (VAMOverlays)", 1);
-            InitVaMOverlaysUI();
+            InitOverlaysUI();
 
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
 
@@ -191,9 +191,8 @@ namespace VamTimeline
         }
 
         [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
-        private void InitVaMOverlaysUI()
+        private void InitOverlaysUI()
         {
-            // TODO: Make transitions optional, OR only make transitions for 0 blend, OR only when pose...
             UIDynamicSlider blackTimeSlider = null;
             var blackTime = new JSONStorableFloat("Black time (global)", 0.5f, val =>
             {
@@ -209,16 +208,16 @@ namespace VamTimeline
                 {
                     animation.fadeManager = null;
                     if (blackTimeSlider != null)
-                        blackTimeSlider.slider.interactable = false;
+                        blackTimeSlider.gameObject.SetActive(false);
                     if (_fadeOnTransition != null)
                         _fadeOnTransition.toggle.interactable = false;
                     return;
                 }
                 animation.fadeManager = VamOverlaysFadeManager.FromAtomUid(val, blackTime.val);
                 if (blackTimeSlider != null)
-                    blackTimeSlider.slider.interactable = true;
+                    blackTimeSlider.gameObject.SetActive(true);
                 if (_fadeOnTransition != null)
-                    _fadeOnTransition.toggle.interactable = false;
+                    _fadeOnTransition.toggle.interactable = true;
                 if(!animation.fadeManager.TryConnectNow())
                     SuperController.LogError($"Timeline: Could not find VAMOverlays on atom '{val}'");
             })
@@ -236,7 +235,7 @@ namespace VamTimeline
                 ).ToList();
             };
             blackTimeSlider = prefabFactory.CreateSlider(blackTime);
-            blackTimeSlider.slider.interactable = animation.fadeManager != null;
+            blackTimeSlider.gameObject.SetActive(animation.fadeManager != null);
         }
 
         private void RefreshTransitionUI()
