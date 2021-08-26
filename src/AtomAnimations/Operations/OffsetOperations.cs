@@ -116,6 +116,7 @@ namespace VamTimeline
         {
             if (offsetMode == RepositionMode)
             {
+                if (ReferenceEquals(mainController, null)) throw new NullReferenceException($"{nameof(mainController)} cannot be null with {nameof(offsetMode)} {nameof(RepositionMode)}");
                 mainController.canGrabPosition = true;
                 mainController.canGrabRotation = true;
                 mainController.currentPositionState = FreeControllerV3.PositionState.On;
@@ -132,6 +133,9 @@ namespace VamTimeline
             {
                 return null;
             }
+
+            if (ReferenceEquals(mainController, null))
+                return new Snapshot { clipboard = clipboard };
 
             return new Snapshot
             {

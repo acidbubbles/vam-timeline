@@ -124,7 +124,9 @@ namespace VamTimeline
             var previousPosition = targetControllerTransform.position;
             var previousRotation = targetControllerTransform.rotation;
 
-            var snapshot = operations.Offset().Start(0f, new[] { _target }, null, OffsetOperations.ChangePivotMode);
+            var offset = operations.Offset();
+
+            var snapshot = offset.Start(0f, new[] { _target }, null, OffsetOperations.ChangePivotMode);
 
             _target.SetParent(parentAtomId, parentRigidbodyId);
             if (!_target.EnsureParentAvailable())
@@ -137,7 +139,7 @@ namespace VamTimeline
             targetControllerTransform.rotation = previousRotation;
             animationEditContext.SetKeyframeToCurrentTransform(_target, 0f);
 
-            operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);
+            offset.Apply(snapshot, 0f, current.animationLength, OffsetOperations.ChangePivotMode);
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
