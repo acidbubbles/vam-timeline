@@ -434,7 +434,7 @@ namespace VamTimeline
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;
         public float playbackScheduledNextTimeLeft;
-        public float playbackScheduledFadeOutTimestamp = float.NaN;
+        public float playbackScheduledFadeOutAtRemaining = float.NaN;
         public bool recording;
         public bool infinite;
 
@@ -475,7 +475,7 @@ namespace VamTimeline
             playbackBlendWeight = 0f;
             playbackBlendRate = 0f;
             playbackMainInLayer = false;
-            playbackScheduledFadeOutTimestamp = float.NaN;
+            playbackScheduledFadeOutAtRemaining = float.NaN;
             playbackScheduledNextTimeLeft = float.NaN;
             playbackScheduledNextAnimationName = null;
             if (recording)

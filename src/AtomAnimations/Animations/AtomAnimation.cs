@@ -537,7 +537,7 @@ namespace VamTimeline
 
             from.playbackScheduledNextAnimationName = null;
             from.playbackScheduledNextTimeLeft = float.NaN;
-            from.playbackScheduledFadeOutTimestamp = float.NaN;
+            from.playbackScheduledFadeOutAtRemaining = float.NaN;
 
             if (!to.playbackEnabled)
             {
@@ -649,7 +649,12 @@ namespace VamTimeline
             source.playbackScheduledNextTimeLeft = nextTime;
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
-                source.playbackScheduledFadeOutTimestamp = fadeManager.fadeOutTime + fadeManager.halfBlackTime;
+                source.playbackScheduledFadeOutAtRemaining = fadeManager.fadeOutTime + fadeManager.halfBlackTime;
+                if (source.playbackScheduledNextTimeLeft * next.speed * speed < source.playbackScheduledFadeOutAtRemaining)
+                {
+                    fadeManager.FadeOutInstant();
+                    source.playbackScheduledFadeOutAtRemaining = float.NaN;
+                }
             }
         }
 
@@ -1105,17 +1110,12 @@ namespace VamTimeline
                     var adjustedDeltaTime = deltaTime * clip.speed;
                     clip.playbackScheduledNextTimeLeft -= adjustedDeltaTime;
 
-                    if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutTimestamp)
+                    if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutAtRemaining)
                     {
                         _scheduleFadeIn = float.MaxValue;
-                        clip.playbackScheduledFadeOutTimestamp = float.NaN;
+                        clip.playbackScheduledFadeOutAtRemaining = float.NaN;
                         if (fadeManager?.black == false)
-                        {
-                            if ((fadeManager.fadeOutTime + fadeManager.halfBlackTime) * clip.speed * speed > clip.playbackScheduledNextTimeLeft)
-                                fadeManager.FadeOutInstant();
-                            else
-                                fadeManager.FadeOut();
-                        }
+                            fadeManager.FadeOut();
                     }
 
                     if (clip.playbackScheduledNextTimeLeft <= 0)
