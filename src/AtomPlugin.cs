@@ -976,7 +976,8 @@ namespace VamTimeline
                     animationEditContext.startRecordIn,
                     targets,
                     null,
-                    false
+                    false,
+                    true
                 ));
             }));
             bindings.Add(new JSONStorableAction("AddTarget_SelectControllerFromScene", () =>

@@ -21,13 +21,13 @@ namespace VamTimeline
             _peerManager = peerManager;
         }
 
-        public IEnumerator StartRecording(
-            int timeMode,
+        public IEnumerator StartRecording(int timeMode,
             bool recordExtendsLength,
             int recordInSeconds,
             List<ICurveAnimationTarget> targets,
             FreeControllerV3AnimationTarget raycastTarget,
-            bool exitOnMenuOpen)
+            bool exitOnMenuOpen,
+            bool showStartMarkers)
         {
             if (_recording)
             {
@@ -44,6 +44,7 @@ namespace VamTimeline
             yield return 0;
 
             BeforeRecording(targets, recordExtendsLength);
+            if(showStartMarkers) ShowStartMarkers(targets);
 
             yield return 0;
 
@@ -57,6 +58,7 @@ namespace VamTimeline
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         ShowText(null);
+                        HideStartMarkers(targets);
                         yield break;
                     }
                 }
@@ -90,7 +92,25 @@ namespace VamTimeline
                 yield return 0;
             }
 
+            HideStartMarkers(targets);
             AfterRecording(targets);
+        }
+
+        private void ShowStartMarkers(List<ICurveAnimationTarget> targets)
+        {
+            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
+            {
+                target.animatableRef.controller.TakeSnapshot();
+                target.animatableRef.controller.drawSnapshot = true;
+            }
+        }
+
+        private void HideStartMarkers(List<ICurveAnimationTarget> targets)
+        {
+            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
+            {
+                target.animatableRef.controller.drawSnapshot = false;
+            }
         }
 
         private void RecordFirstKeyframe(IList<ICurveAnimationTarget> targets)

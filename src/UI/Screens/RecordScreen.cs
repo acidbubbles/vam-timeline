@@ -12,10 +12,10 @@ namespace VamTimeline
         private static UIDynamicButton _recordButton;
         private static string _previousUseCameraRaycast;
         private static bool _previousHideMenuDuringRecording;
+        private static bool _previousShowStartMarkers = true;
 
         private JSONStorableStringChooser _useCameraRaycast;
         private JSONStorableBool _recordExtendsLength;
-        private JSONStorableBool _hideMenuDuringRecording;
 
         public override string screenId => ScreenName;
 
@@ -55,12 +55,19 @@ namespace VamTimeline
             };
             prefabFactory.CreateSlider(recordInJSON);
 
-            _hideMenuDuringRecording = new JSONStorableBool("Hide menu during recording", false)
+            var hideMenuDuringRecording = new JSONStorableBool("Hide menu during recording", false)
             {
                 valNoCallback = _previousHideMenuDuringRecording,
                 setCallbackFunction = val => _previousHideMenuDuringRecording = val
             };
-            prefabFactory.CreateToggle(_hideMenuDuringRecording);
+            prefabFactory.CreateToggle(hideMenuDuringRecording);
+
+            var showStartMarkers = new JSONStorableBool("Show start markers", true)
+            {
+                valNoCallback = _previousShowStartMarkers,
+                setCallbackFunction = val => _previousShowStartMarkers = val
+            };
+            prefabFactory.CreateToggle(showStartMarkers);
 
             FreeControllerV3AnimationTarget raycastTarget = null;
             _useCameraRaycast = new JSONStorableStringChooser("Use camera raycast on", new List<string>(), "", "Use camera raycast on")
@@ -90,7 +97,12 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
             _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
-            _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(int.Parse(recordTimeModeJSON.val), _recordExtendsLength.val, raycastTarget)));
+            _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(
+                int.Parse(recordTimeModeJSON.val),
+                _recordExtendsLength.val,
+                hideMenuDuringRecording.val,
+                showStartMarkers.val,
+                raycastTarget)));
 
             prefabFactory.CreateSpacer();
 
@@ -131,7 +143,7 @@ namespace VamTimeline
             base.OnDestroy();
         }
 
-        private IEnumerator OnRecordCo(int timeMode, bool recordExtendsLength, FreeControllerV3AnimationTarget raycastTarget)
+        private IEnumerator OnRecordCo(int timeMode, bool recordExtendsLength, bool hideMenuDuringRecording, bool showStartMarkers, FreeControllerV3AnimationTarget raycastTarget)
         {
             if (raycastTarget != null && !raycastTarget.selected)
             {
@@ -141,7 +153,6 @@ namespace VamTimeline
 
             _recordButton.button.interactable = false;
 
-            var hideMenuDuringRecording = _hideMenuDuringRecording.val;
             if (hideMenuDuringRecording)
             {
                 SuperController.singleton.HideMainHUD();
@@ -156,7 +167,8 @@ namespace VamTimeline
                 animationEditContext.startRecordIn,
                 targets.ToList(),
                 raycastTarget,
-                hideMenuDuringRecording
+                hideMenuDuringRecording,
+                showStartMarkers
             );
 
             if (!targets.OfType<FreeControllerV3AnimationTarget>().Any() && targets.OfType<JSONStorableFloatAnimationTarget>().Any())
