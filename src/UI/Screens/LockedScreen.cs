@@ -15,10 +15,18 @@ namespace VamTimeline
 
         private void InitExplanation()
         {
-            var textJSON = new JSONStorableString("Help", @"
+            string text;
+            if(animationEditContext.locked)
+                text = @"Enable ""Edit Mode"" to make modifications to this animation";
+            else if (!plugin.isActiveAndEnabled)
+                text = "Enable the Timeline plugin as well as the containing atom to make modifications to this animation";
+            else
+                text = "Could not identify a lock reason";
+
+            var textJSON = new JSONStorableString("Help", $@"
 <b>Locked</b>
 
-Enable ""Edit Mode"" to make modifications to this animation.
+{text}
 ");
             var textUI = prefabFactory.CreateTextField(textJSON);
             textUI.height = 350f;

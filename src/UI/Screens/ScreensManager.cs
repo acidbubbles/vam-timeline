@@ -45,7 +45,7 @@ namespace VamTimeline
 
         public void ChangeScreen(string screen, object screenArg)
         {
-            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit)
+            if (SuperController.singleton.gameMode != SuperController.GameMode.Edit || !_plugin.isActiveAndEnabled)
             {
                 _currentScreen = LockedScreen.ScreenName;
                 _currentScreenArg = null;

@@ -53,7 +53,7 @@ namespace VamTimeline
         public bool showPaths
         {
             get { return _showPaths; }
-            set { _showPaths = value; }
+            set { _showPaths = value; onEditorSettingsChanged.Invoke(nameof(showPaths)); }
         }
         private bool _locked;
         public bool locked
@@ -61,6 +61,7 @@ namespace VamTimeline
             get { return _locked; }
             set { _locked = value; onEditorSettingsChanged.Invoke(nameof(locked)); }
         }
+
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
         private AtomAnimationClip _current;
 
@@ -104,8 +105,10 @@ namespace VamTimeline
                 Sample();
             }
 
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (_lastCurrentAnimationLength != current.animationLength)
             {
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (scrubberRange.rangeDuration == _lastCurrentAnimationLength || scrubberRange.rangeDuration > current.animationLength)
                 {
                     ResetScrubberRange();
@@ -188,6 +191,7 @@ namespace VamTimeline
         {
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) return false;
             if (locked) return false;
+            if (!isActiveAndEnabled) return false;
             if (animation.isPlaying) return false;
             return true;
         }

@@ -5,6 +5,7 @@ namespace VamTimeline
 {
     public interface IMonoBehavior
     {
+        bool isActiveAndEnabled { get; }
         Coroutine StartCoroutine(IEnumerator routine);
         void StopCoroutine(Coroutine routine);
     }
