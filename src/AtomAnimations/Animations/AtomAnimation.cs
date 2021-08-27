@@ -19,6 +19,7 @@ namespace VamTimeline
         private static readonly Regex _lastDigitsRegex = new Regex(@"^(?<name>.+)(?<index>[0-9]+)$", RegexOptions.Compiled);
 
         public const string RandomizeAnimationName = "(Randomize)";
+        public const string SlaveAnimationName = "(Slave)";
         public const string RandomizeGroupSuffix = "/*";
 
         public UnityEvent onAnimationSettingsChanged = new UnityEvent();
@@ -176,7 +177,7 @@ namespace VamTimeline
             if (animationLayer == null) throw new ArgumentNullException(nameof(animationLayer));
             if (animationName == null) throw new ArgumentNullException(nameof(animationName));
 
-            if (clips.Any(c => c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationName}' already exists");
+            if (clips.Any(c => c.animationLayer == animationLayer && c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationLayer}::{animationName}' already exists");
             var clip = new AtomAnimationClip(animationName, animationLayer);
             if (position == -1)
                 AddClip(clip);
@@ -212,7 +213,8 @@ namespace VamTimeline
             for (var i = animationNameInt + 1; i < 999; i++)
             {
                 var animationName = animationNameBeforeInt + i;
-                if (clips.All(c => c.animationName != animationName)) return animationName;
+                if (index.ByLayer(source.animationLayer).All(c => c.animationName != animationName))
+                    return animationName;
             }
             return Guid.NewGuid().ToString();
         }
@@ -308,9 +310,13 @@ namespace VamTimeline
                     return;
 
                 if (previousMain.loop && previousMain.preserveLoops && clip.loop && clip.preserveLoops)
+                {
                     ScheduleNextAnimation(previousMain, clip, previousMain.animationLength - clip.blendInDuration / 2f - previousMain.clipTime);
+                }
                 else
+                {
                     ScheduleNextAnimation(previousMain, clip, 0);
+                }
             }
             else
             {
@@ -323,8 +329,11 @@ namespace VamTimeline
                 clip.animationPattern.SetBoolParamValue("loopOnce", false);
                 clip.animationPattern.ResetAndPlay();
             }
+
             if (sequencing && clip.nextAnimationName != null)
+            {
                 AssignNextAnimation(clip);
+            }
 
             onIsPlayingChanged.Invoke(clip);
         }
@@ -584,6 +593,9 @@ namespace VamTimeline
             if (source.nextAnimationTime <= 0)
                 return;
 
+            if (source.nextAnimationName == SlaveAnimationName)
+                return;
+
             AtomAnimationClip next;
 
             string group;
@@ -626,8 +638,18 @@ namespace VamTimeline
                 if (source.preserveLoops && next.preserveLoops)
                 {
                     if (source.nextAnimationTimeRandomize > 0f)
-                        nextTime = Random.Range(nextTime - source.animationLength * 0.49f, nextTime + source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) + source.animationLength * 0.49f);
-                    nextTime = nextTime.RoundToNearest(source.animationLength) - next.blendInDuration / 2f - source.clipTime;
+                    {
+                        nextTime += Random
+                            .Range(source.animationLength * -0.49f, source.nextAnimationTimeRandomize.RoundToNearest(source.animationLength) + source.animationLength * 0.49f)
+                            .RoundToNearest(source.animationLength);
+                    }
+                    else
+                    {
+
+                        nextTime = nextTime.RoundToNearest(source.animationLength);
+                    }
+                    nextTime = nextTime - next.blendInDuration / 2f + (source.animationLength - source.clipTime);
+                    //SuperController.LogMessage($"T{Time.time:0.000}s: clip: {source.clipTime}, next: {nextTime:0.000}s");
                 }
                 else if (source.nextAnimationTimeRandomize > 0f)
                 {
@@ -656,6 +678,33 @@ namespace VamTimeline
                     source.playbackScheduledFadeOutAtRemaining = float.NaN;
                 }
             }
+            SyncSiblingClips(source, next);
+        }
+
+        private void SyncSiblingClips(AtomAnimationClip source, AtomAnimationClip next)
+        {
+            AtomAnimationClip siblingSourceClip = null;
+            AtomAnimationClip siblingNextClip = null;
+
+            var layers = index.ByLayer();
+            for (var i = 0; i < layers.Count; i++)
+            {
+                var layer = layers[i];
+                if (layer[0].animationLayer == source.animationLayer) continue;
+                for (var j = 0; j < layer.Count; j++)
+                {
+                    var clip = layer[j];
+                    if (clip.animationName == source.animationName) siblingSourceClip = clip;
+                    else if (clip.animationName == next.animationName) siblingNextClip = clip;
+                    if (siblingSourceClip != null && siblingNextClip != null) break;
+                }
+                if (siblingSourceClip != null && siblingNextClip != null) break;
+            }
+
+            if (siblingSourceClip == null || siblingNextClip == null) return;
+
+            siblingSourceClip.playbackScheduledNextAnimationName = siblingNextClip.animationName;
+            siblingSourceClip.playbackScheduledNextTimeLeft = source.playbackScheduledNextTimeLeft;
         }
 
         #endregion

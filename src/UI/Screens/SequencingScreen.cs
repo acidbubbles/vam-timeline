@@ -146,8 +146,7 @@ namespace VamTimeline
 
         private void ChangeRandomizeLength(float val)
         {
-            current.nextAnimationTimeRandomize = current.preserveLoops ? val.RoundToNearest(current.animationLength) : val.Snap(animationEditContext.snap);
-            _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
+            SyncPlayNext();
         }
 
         private void InitPreviewUI()
@@ -365,13 +364,19 @@ namespace VamTimeline
             RoundNextTimeToNearestLoop();
             var nextTime = _nextAnimationTimeJSON.val;
             var nextName = _nextAnimationJSON.val;
+            var randomizeTime = current.preserveLoops ? _randomizeRangeJSON.val.RoundToNearest(current.animationLength) : _randomizeRangeJSON.val.Snap(animationEditContext.snap);
 
-            if (nextName == _noNextAnimation)
+            if (nextName == "(Slave)")
+            {
+                // Do nothing, but this shouldn't be "set"
+            }
+            else if (nextName == _noNextAnimation)
             {
                 foreach (var clip in animation.GetClips(current.animationName))
                 {
                     clip.nextAnimationName = null;
                     clip.nextAnimationTime = 0f;
+                    clip.nextAnimationTimeRandomize = 0f;
                 }
             }
             else
@@ -392,11 +397,13 @@ namespace VamTimeline
                     if (!NextExists(clip, nextName))
                         continue;
 
-                    clip.nextAnimationName = _nextAnimationJSON.val;
+                    clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimation.SlaveAnimationName;
                     clip.nextAnimationTime = nextTime;
+                    clip.nextAnimationTimeRandomize = randomizeTime;
                 }
 
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
+                _randomizeRangeJSON.valNoCallback = randomizeTime;
             }
 
             RefreshTransitionUI();

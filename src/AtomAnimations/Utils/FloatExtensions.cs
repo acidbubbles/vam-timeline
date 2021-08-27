@@ -50,10 +50,10 @@ namespace VamTimeline
             return a + b * Mathf.Exp(c * value);
         }
 
-        public static float RoundToNearest(this float value, float multiple)
+        public static float RoundToNearest(this float value, float modulo)
         {
-            var half = multiple / 2;
-            return value + half - (value + half) % multiple;
+            var half = modulo / 2;
+            return value + half - (value + half) % modulo;
         }
     }
 }

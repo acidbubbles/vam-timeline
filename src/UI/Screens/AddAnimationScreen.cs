@@ -33,12 +33,8 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Add animations", 1);
 
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Add animations", 2);
-
             InitCreateAnimationUI();
 
-            prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Add options", 2);
 
             InitCreateAnimationOptionsUI();
@@ -82,6 +78,9 @@ namespace VamTimeline
 
         private void InitCreateAnimationOptionsUI()
         {
+            _createName = new JSONStorableString("New animation name", "");
+            prefabFactory.CreateTextInput(_createName);
+
             _createPosition = new JSONStorableStringChooser(
                 "Add at position",
                 new List<string> { _positionFirst, _positionPrevious, _positionNext, _positionLast },
@@ -89,10 +88,7 @@ namespace VamTimeline
                 "Add at position");
             prefabFactory.CreatePopup(_createPosition, false, true);
 
-            _createName = new JSONStorableString("Name", "");
-            prefabFactory.CreateTextInput(_createName);
-
-            _createInOtherAtoms = new JSONStorableBool("Create in other atoms", _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
+            _createInOtherAtoms = new JSONStorableBool("Auto create in other atoms", _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
             prefabFactory.CreateToggle(_createInOtherAtoms);
         }
 
