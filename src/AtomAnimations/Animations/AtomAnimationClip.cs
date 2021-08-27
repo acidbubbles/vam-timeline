@@ -125,6 +125,22 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
             }
         }
+        private string _animationSet;
+
+        public string animationSet
+        {
+            get
+            {
+                return _animationSet;
+            }
+            set
+            {
+                if (_animationSet == value) return;
+                _animationSet = value == string.Empty ? null : value;
+                onAnimationSettingsChanged.Invoke(nameof(animationSet));
+            }
+        }
+
         public float animationLength
         {
             get

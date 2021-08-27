@@ -177,7 +177,8 @@ namespace VamTimeline
             if (animationLayer == null) throw new ArgumentNullException(nameof(animationLayer));
             if (animationName == null) throw new ArgumentNullException(nameof(animationName));
 
-            if (clips.Any(c => c.animationLayer == animationLayer && c.animationName == animationName)) throw new InvalidOperationException($"Animation '{animationLayer}::{animationName}' already exists");
+            if (clips.Any(c => c.animationLayer == animationLayer && c.animationName == animationName))
+                throw new InvalidOperationException($"Animation '{animationLayer}::{animationName}' already exists");
             var clip = new AtomAnimationClip(animationName, animationLayer);
             if (position == -1)
                 AddClip(clip);

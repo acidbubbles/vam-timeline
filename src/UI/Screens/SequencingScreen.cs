@@ -22,6 +22,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
+        private JSONStorableString _animationSetJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
         private JSONStorableBool _applyPoseOnTransition;
@@ -46,6 +47,9 @@ namespace VamTimeline
             InitBlendUI();
             InitRandomizeLengthUI();
             InitPreviewUI();
+
+            prefabFactory.CreateHeader("Sync", 1);
+            InitAnimationSetUI();
 
             prefabFactory.CreateHeader("Transition (auto keyframes)", 1);
             InitLoopUI();
@@ -154,6 +158,12 @@ namespace VamTimeline
             _nextAnimationPreviewJSON = new JSONStorableString("Next preview", "");
             var nextAnimationResultUI = prefabFactory.CreateTextField(_nextAnimationPreviewJSON);
             nextAnimationResultUI.height = 50f;
+        }
+
+        private void InitAnimationSetUI()
+        {
+            _animationSetJSON = new JSONStorableString("Animation set", "", val => current.animationSet = val);
+            prefabFactory.CreateTextInput(_animationSetJSON);
         }
 
         private void InitLoopUI()
@@ -456,6 +466,7 @@ namespace VamTimeline
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
+            _animationSetJSON.valNoCallback = current.animationSet;
             if (_applyPoseOnTransition != null)
             {
                 _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;

@@ -101,6 +101,7 @@ namespace VamTimeline
                 pose = clipJSON.HasKey("Pose") ? AtomPose.FromJSON(_atom, clipJSON["Pose"]) : null,
                 applyPoseOnTransition = DeserializeBool(clipJSON["ApplyPoseOnTransition"], false),
                 fadeOnTransition = DeserializeBool(clipJSON["FadeOnTransition"], false),
+                animationSet = DeserializeString(clipJSON["AnimationSet"], null),
             };
             DeserializeClip(clip, clipJSON, targetsRegistry);
             return clip;
@@ -401,6 +402,8 @@ namespace VamTimeline
                 clipJSON["ApplyPoseOnTransition"] = "1";
             if (clip.fadeOnTransition)
                 clipJSON["FadeOnTransition"] = "1";
+            if (clip.animationSet != null)
+                clipJSON["AnimationSet"] = clip.animationSet;
 
             SerializeClip(clip, clipJSON);
             return clipJSON;

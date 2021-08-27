@@ -466,7 +466,9 @@ namespace VamTimeline
                 current.pose.Apply();
             else
                 SampleNow();
-            var hasParenting = GetMainClipPerLayer().SelectMany(c => c.targetControllers).Any(t => t.parentRigidbodyId != null);
+            var hasParenting = GetMainClipPerLayer()
+                .SelectMany(c => c.targetControllers)
+                .Any(t => t.parentRigidbodyId != null);
             if (!hasPose && !hasParenting) return;
             if (_lateSample != null) StopCoroutine(_lateSample);
             _lateSample = StartCoroutine(LateSample(0.1f));
@@ -494,21 +496,37 @@ namespace VamTimeline
 
             var clips = GetMainClipPerLayer();
             foreach (var clip in clips) clip.temporarilyEnabled = true;
-            animation.Sample();
-            foreach (var clip in clips) clip.temporarilyEnabled = false;
+            try
+            {
+                animation.Sample();
+            }
+            finally
+            {
+                foreach (var clip in clips) clip.temporarilyEnabled = false;
+            }
         }
 
-        private List<AtomAnimationClip> GetMainClipPerLayer()
+        private AtomAnimationClip[] GetMainClipPerLayer()
         {
-            var list = new List<AtomAnimationClip>(animation.index.ByLayer().Count());
-            list.AddRange(animation.index
-                .ByLayer()
-                .Select(g =>
+            var layers = animation.index.ByLayer();
+            var list = new AtomAnimationClip[layers.Count];
+            for (var i = 0; i < layers.Count; i++)
+            {
+                var layer = layers[i];
+                if (layer[0].animationLayer == current.animationLayer)
                 {
-                    return g[0].animationLayer == current.animationLayer
-                        ? current
-                        : g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.animationName == current.animationName) ?? g.FirstOrDefault(c => c.autoPlay) ?? g[0];
-                }));
+                    list[i] = current;
+                }
+                else
+                {
+                    list[i] = (current.animationSet != null ? layer.FirstOrDefault(c => c.animationSet == current.animationSet) : null) ??
+                              layer.FirstOrDefault(c => c.playbackMainInLayer) ??
+                              layer.FirstOrDefault(c => c.animationName == current.animationName) ??
+                              layer.FirstOrDefault(c => c.autoPlay) ??
+                              layer[0];
+                }
+            }
+
             return list;
         }
 
