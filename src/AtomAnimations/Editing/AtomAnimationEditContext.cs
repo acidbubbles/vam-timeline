@@ -127,7 +127,7 @@ namespace VamTimeline
             {
                 animation.playTime = value;
                 if (current == null) return;
-                var clips = animation.GetClips(current.animationName);
+                var clips = animation.index.GetSiblings(current);
                 for(var i = 0; i < clips.Count; i++)
                 {
                     var clip = clips[i];
@@ -267,7 +267,7 @@ namespace VamTimeline
 
         public void PlayCurrentClip()
         {
-            animation.PlayClips(current.animationName, false);
+            animation.PlayClip(current, false);
         }
 
         public void PlayAll()
@@ -283,6 +283,54 @@ namespace VamTimeline
         public void NextFrame()
         {
             clipTime = GetNextFrame(clipTime);
+        }
+
+        public void GoToPreviousAnimation(string layerName)
+        {
+            if (!animation.isPlaying && current.animationLayer != layerName) return;
+            var layer = animation.index.ByLayer(layerName);
+            var main = animation.isPlaying ? layer.FirstOrDefault(c => c.playbackMainInLayer) : current;
+            if (main == null) return;
+            var animIdx = layer.IndexOf(main);
+            if (animIdx == 0) return;
+            var prev = layer[animIdx - 1];
+            if (animation.isPlaying)
+                animation.PlayClips(prev.animationName, true);
+            else
+                SelectAnimation(prev);
+        }
+
+        public void GoToNextAnimation(string layerName)
+        {
+            if (!animation.isPlaying && current.animationLayer != layerName) return;
+            var layer = animation.index.ByLayer(layerName);
+            var main = animation.isPlaying ? layer.FirstOrDefault(c => c.playbackMainInLayer) : current;
+            if (main == null) return;
+            var animIdx = layer.IndexOf(main);
+            if (animIdx == layer.Count - 1) return;
+            var next = layer[animIdx + 1];
+            if (animation.isPlaying)
+                animation.PlayClips(next.animationName, true);
+            else
+                SelectAnimation(next);
+        }
+
+        public void GoToPreviousLayer()
+        {
+            var layers = animation.index.ByLayer().Select(l => l[0].animationLayer).ToList();
+            var animIdx = layers.IndexOf(current.animationLayer);
+            if (animIdx == 0) return;
+            var prev = layers[animIdx - 1];
+            SelectAnimation(GetMainClipInLayer(animation.index.ByLayer(prev)));
+        }
+
+        public void GoToNextLayer()
+        {
+            var layers = animation.index.ByLayer().Select(l => l[0].animationLayer).ToList();
+            var animIdx = layers.IndexOf(current.animationLayer);
+            if (animIdx == layers.Count - 1) return;
+            var next = layers[animIdx + 1];
+            SelectAnimation(GetMainClipInLayer(animation.index.ByLayer(next)));
         }
 
         public void RewindSeconds(float seconds)
@@ -455,6 +503,7 @@ namespace VamTimeline
         {
             foreach (var clip in GetMainClipPerLayer())
             {
+                if (clip == null) continue;
                 animation.PlayClip(clip, sequencing);
             }
         }
@@ -467,6 +516,7 @@ namespace VamTimeline
             else
                 SampleNow();
             var hasParenting = GetMainClipPerLayer()
+                .Where(c => c != null)
                 .SelectMany(c => c.targetControllers)
                 .Any(t => t.parentRigidbodyId != null);
             if (!hasPose && !hasParenting) return;
@@ -495,14 +545,18 @@ namespace VamTimeline
             }
 
             var clips = GetMainClipPerLayer();
-            foreach (var clip in clips) clip.temporarilyEnabled = true;
+            foreach (var clip in clips)
+                if (clip != null)
+                    clip.temporarilyEnabled = true;
             try
             {
                 animation.Sample();
             }
             finally
             {
-                foreach (var clip in clips) clip.temporarilyEnabled = false;
+                foreach (var clip in clips)
+                    if (clip != null)
+                        clip.temporarilyEnabled = false;
             }
         }
 
@@ -512,22 +566,41 @@ namespace VamTimeline
             var list = new AtomAnimationClip[layers.Count];
             for (var i = 0; i < layers.Count; i++)
             {
-                var layer = layers[i];
-                if (layer[0].animationLayer == current.animationLayer)
-                {
-                    list[i] = current;
-                }
-                else
-                {
-                    list[i] = (current.animationSet != null ? layer.FirstOrDefault(c => c.animationSet == current.animationSet) : null) ??
-                              layer.FirstOrDefault(c => c.playbackMainInLayer) ??
-                              layer.FirstOrDefault(c => c.animationName == current.animationName) ??
-                              layer.FirstOrDefault(c => c.autoPlay) ??
-                              layer[0];
-                }
+                list[i] = GetMainClipInLayer(layers[i]);
+            }
+
+            // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer
+            var currentIdx = Array.IndexOf(list, current);
+            if (currentIdx > -1)
+            {
+                list[currentIdx] = list[0];
+                list[0] = current;
             }
 
             return list;
+        }
+
+        private AtomAnimationClip GetMainClipInLayer(IList<AtomAnimationClip> layer)
+        {
+            AtomAnimationClip clip;
+            if (layer[0].animationLayer == current.animationLayer)
+            {
+                clip = current;
+            }
+            else
+            {
+                clip = (current.animationSet != null ? layer.FirstOrDefault(c => c.animationSet == current.animationSet) : null) ??
+                       layer.FirstOrDefault(c => c.playbackMainInLayer) ??
+                       layer.FirstOrDefault(c => c.animationName == current.animationName) ??
+                       layer.FirstOrDefault(c => c.autoPlay) ??
+                       layer[0];
+
+                // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
+                if (clip.animationSet != null && clip.animationSet != current.animationSet)
+                    clip = null;
+            }
+
+            return clip;
         }
 
         #endregion
@@ -544,6 +617,7 @@ namespace VamTimeline
         public void SelectAnimation(AtomAnimationClip clip)
         {
             if (current == clip) return;
+            if (clip == null) return;
             var previous = current;
             current = clip;
             onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs

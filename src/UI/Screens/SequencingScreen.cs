@@ -10,6 +10,7 @@ namespace VamTimeline
     {
         public const string ScreenName = "Sequence";
         private const string _noNextAnimation = "[None]";
+        private const string _animationSetAuto = "[Sync with other layers by name]";
 
         public override string screenId => ScreenName;
 
@@ -162,7 +163,7 @@ namespace VamTimeline
 
         private void InitAnimationSetUI()
         {
-            _animationSetJSON = new JSONStorableString("Animation set", "", val => current.animationSet = val);
+            _animationSetJSON = new JSONStorableString("Anim set (sync across layers)", "", val => current.animationSet = val != _animationSetAuto ? val : null);
             prefabFactory.CreateTextInput(_animationSetJSON);
         }
 
@@ -376,13 +377,15 @@ namespace VamTimeline
             var nextName = _nextAnimationJSON.val;
             var randomizeTime = current.preserveLoops ? _randomizeRangeJSON.val.RoundToNearest(current.animationLength) : _randomizeRangeJSON.val.Snap(animationEditContext.snap);
 
-            if (nextName == "(Slave)")
+            var clips = animation.index.ByName(current.animationName);
+
+            if (nextName == AtomAnimation.SlaveAnimationName)
             {
                 // Do nothing, but this shouldn't be "set"
             }
             else if (nextName == _noNextAnimation)
             {
-                foreach (var clip in animation.GetClips(current.animationName))
+                foreach (var clip in clips)
                 {
                     clip.nextAnimationName = null;
                     clip.nextAnimationTime = 0f;
@@ -391,7 +394,7 @@ namespace VamTimeline
             }
             else
             {
-                foreach (var clip in animation.GetClips(current.animationName))
+                foreach (var clip in clips)
                 {
                     if (!NextExists(clip, nextName))
                         continue;
@@ -400,16 +403,24 @@ namespace VamTimeline
                         nextTime = clip.nextAnimationTime == 0 ? clip.animationLength : Mathf.Min(nextTime, clip.animationLength);
                     else if (clip.nextAnimationTime == 0)
                         nextTime = clip.animationLength;
+
+                    break;
                 }
 
-                foreach (var clip in animation.GetClips(current.animationName))
+                foreach (var clip in clips)
                 {
                     if (!NextExists(clip, nextName))
-                        continue;
-
-                    clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimation.SlaveAnimationName;
-                    clip.nextAnimationTime = nextTime;
-                    clip.nextAnimationTimeRandomize = randomizeTime;
+                    {
+                        clip.nextAnimationName = null;
+                        clip.nextAnimationTime = 0f;
+                        clip.nextAnimationTimeRandomize = 0f;
+                    }
+                    else
+                    {
+                        clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimation.SlaveAnimationName;
+                        clip.nextAnimationTime = nextTime;
+                        clip.nextAnimationTimeRandomize = randomizeTime;
+                    }
                 }
 
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
@@ -428,8 +439,7 @@ namespace VamTimeline
             if (AtomAnimation.TryGetRandomizedGroup(nextName, out group))
                 return true;
 
-            var next = animation.index.ByLayer(clip.animationLayer).FirstOrDefault(c => c.animationName == nextName);
-            return next != null;
+            return animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextName);
         }
 
         #endregion
@@ -466,7 +476,7 @@ namespace VamTimeline
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
-            _animationSetJSON.valNoCallback = current.animationSet;
+            _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationName).Count > 1 ? _animationSetAuto : "");
             if (_applyPoseOnTransition != null)
             {
                 _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;

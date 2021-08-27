@@ -286,8 +286,9 @@ namespace VamTimeline
 
         public void PlayClips(string animationName, bool sequencing)
         {
-            foreach (var clip in GetClips(animationName))
-                PlayClip(clip, sequencing);
+            var clip = GetClips(animationName).FirstOrDefault();
+            if (clip == null) return;
+            PlayClip(clip, sequencing);
         }
 
         public void PlayClip(AtomAnimationClip clip, bool sequencing, bool allowPreserveLoops = true)
@@ -325,6 +326,7 @@ namespace VamTimeline
                 Blend(clip, 1f, clip.recording ? 0f : clip.blendInDuration);
                 clip.playbackMainInLayer = true;
             }
+
             if (clip.animationPattern)
             {
                 clip.animationPattern.SetBoolParamValue("loopOnce", false);
@@ -336,10 +338,44 @@ namespace VamTimeline
                 AssignNextAnimation(clip);
             }
 
+            if (clip.playbackEnabled)
+            {
+                PlaySiblings(clip);
+            }
+
             onIsPlayingChanged.Invoke(clip);
         }
 
-        #if(PLAYBACK_HEALTH_CHECK)
+        private void PlaySiblings(AtomAnimationClip clip, bool allowPreserveLoops = true)
+        {
+            var siblings = clip.animationSet != null ? index.BySet(clip.animationSet) : index.ByName(clip.animationName);
+            if (siblings.Count < 2) return;
+            for (var i = 0; i < siblings.Count; i++)
+            {
+                var sibling = siblings[i];
+                if (sibling == clip) continue;
+                if (sibling.animationLayer == clip.animationLayer) continue;
+                if (sibling.playbackEnabled) continue;
+                var layer = index.ByLayer(sibling.animationLayer);
+                AtomAnimationClip main = null;
+                for (var j = 0; j < layer.Count; j++)
+                {
+                    var c = layer[j];
+                    if (!c.playbackMainInLayer) continue;
+                    main = c;
+                    break;
+                }
+                if (main == null)
+                {
+                    PlayClip(sibling, sequencing, allowPreserveLoops);
+                    continue;
+                }
+                if (clip.animationSet != null && main.animationSet == clip.animationSet) return;
+                TransitionAnimation(main, sibling);
+            }
+        }
+
+#if(PLAYBACK_HEALTH_CHECK)
         private static void PlaybackHealthCheck(AtomAnimationClip clip)
         {
             for (var i = 0; i < clip.targetControllers.Count; i++)
@@ -371,12 +407,6 @@ namespace VamTimeline
                 {
                     return g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First();
                 });
-        }
-
-        public void StopClips(string animationName)
-        {
-            foreach (var clip in GetClips(animationName))
-                StopClip(clip);
         }
 
         public void StopClip(AtomAnimationClip clip)
@@ -1155,37 +1185,39 @@ namespace VamTimeline
                     onClipIsPlayingChanged.Invoke(clip);
                 }
 
-                if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimationName != null)
+                if (!clip.playbackMainInLayer || clip.playbackScheduledNextAnimationName == null)
+                    continue;
+
+                var adjustedDeltaTime = deltaTime * clip.speed;
+                clip.playbackScheduledNextTimeLeft -= adjustedDeltaTime;
+
+                if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutAtRemaining)
                 {
-                    var adjustedDeltaTime = deltaTime * clip.speed;
-                    clip.playbackScheduledNextTimeLeft -= adjustedDeltaTime;
+                    _scheduleFadeIn = float.MaxValue;
+                    clip.playbackScheduledFadeOutAtRemaining = float.NaN;
+                    if (fadeManager?.black == false)
+                        fadeManager.FadeOut();
+                }
 
-                    if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutAtRemaining)
-                    {
-                        _scheduleFadeIn = float.MaxValue;
-                        clip.playbackScheduledFadeOutAtRemaining = float.NaN;
-                        if (fadeManager?.black == false)
-                            fadeManager.FadeOut();
-                    }
+                if (!(clip.playbackScheduledNextTimeLeft <= 0))
+                    continue;
 
-                    if (clip.playbackScheduledNextTimeLeft <= 0)
-                    {
-                        var nextAnimationName = clip.playbackScheduledNextAnimationName;
-                        clip.playbackScheduledNextAnimationName = null;
-                        clip.playbackScheduledNextTimeLeft = float.NaN;
-                        var nextClip = GetClip(clip.animationLayer, nextAnimationName);
-                        if (nextClip == null)
-                        {
-                            SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
-                            continue;
-                        }
+                var nextAnimationName = clip.playbackScheduledNextAnimationName;
+                clip.playbackScheduledNextAnimationName = null;
+                clip.playbackScheduledNextTimeLeft = float.NaN;
+                var nextClip = GetClip(clip.animationLayer, nextAnimationName);
+                if (nextClip == null)
+                {
+                    SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
+                    continue;
+                }
 
-                        TransitionAnimation(clip, nextClip);
-                        if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayer == index.mainLayer)
-                        {
-                            _scheduleFadeIn = _playTime + fadeManager.halfBlackTime;
-                        }
-                    }
+                TransitionAnimation(clip, nextClip);
+                PlaySiblings(nextClip);
+
+                if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayer == index.mainLayer)
+                {
+                    _scheduleFadeIn = _playTime + fadeManager.halfBlackTime;
                 }
             }
 

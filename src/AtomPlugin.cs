@@ -288,25 +288,13 @@ namespace VamTimeline
 
             _nextAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.NextAnimationInMainLayer, () =>
             {
-                var layer = animation.index.ByLayer(animation.clips[0].animationLayer);
-                var main = layer.FirstOrDefault(c => c.playbackMainInLayer);
-                if (main == null) return;
-                var animIdx = layer.IndexOf(main);
-                if (animIdx == layer.Count - 1) return;
-                var next = layer[animIdx + 1];
-                animation.PlayClips(next.animationName, true);
+                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayer);
             });
             RegisterAction(_nextAnimationInMainLayerJSON);
 
             _previousAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.PreviousAnimationInMainLayer, () =>
             {
-                var layer = animation.index.ByLayer(animation.clips[0].animationLayer);
-                var main = layer.FirstOrDefault(c => c.playbackMainInLayer);
-                if (main == null) return;
-                var animIdx = layer.IndexOf(main);
-                if (animIdx == 0) return;
-                var prev = layer[animIdx - 1];
-                animation.PlayClips(prev.animationName, true);
+                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayer);
             });
             RegisterAction(_previousAnimationInMainLayerJSON);
 
@@ -936,10 +924,12 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Options", () => { ChangeScreen(OptionsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
-            bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", _previousAnimationLegacyJSON.actionCallback));
-            bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", _nextAnimationLegacyJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", () => animationEditContext.GoToPreviousAnimation(animationEditContext.current.animationLayer)));
+            bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", () => animationEditContext.GoToNextAnimation(animationEditContext.current.animationLayer)));
             bindings.Add(new JSONStorableAction("PreviousAnimationInMainLayer", _previousAnimationInMainLayerJSON.actionCallback));
             bindings.Add(new JSONStorableAction("NextAnimationInMainLayer", _nextAnimationInMainLayerJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("PreviousLayer", () => animationEditContext.GoToPreviousLayer()));
+            bindings.Add(new JSONStorableAction("NextLayer", () => animationEditContext.GoToNextLayer()));
             bindings.Add(new JSONStorableAction("PlayCurrentClip", animationEditContext.PlayCurrentClip));
             bindings.Add(new JSONStorableAction("PlayAll", animationEditContext.PlayAll));
             bindings.Add(new JSONStorableAction("Stop", animationEditContext.Stop));

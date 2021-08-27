@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 
 namespace VamTimeline
@@ -12,6 +13,7 @@ namespace VamTimeline
         private readonly IList<List<AtomAnimationClip>> _clipsByLayer = new List<List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayerName = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
+        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsBySet = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
@@ -38,6 +40,7 @@ namespace VamTimeline
             _clipsByLayer.Clear();
             _clipsByLayerName.Clear();
             _clipsByName.Clear();
+            _clipsBySet.Clear();
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
 
@@ -56,8 +59,20 @@ namespace VamTimeline
                     }
                     nameClips.Add(clip);
                 }
+
+                if(clip.animationSet != null)
+                {
+                    List<AtomAnimationClip> setClips;
+                    if (!_clipsBySet.TryGetValue(clip.animationSet, out setClips))
+                    {
+                        setClips = new List<AtomAnimationClip>();
+                        _clipsBySet.Add(clip.animationSet, setClips);
+                    }
+                    setClips.Add(clip);
+                }
             }
 
+            // TODO: Why?
             if (_paused) return;
 
             foreach (var clip in _clips)
@@ -123,6 +138,17 @@ namespace VamTimeline
         {
             List<AtomAnimationClip> clips;
             return _clipsByName.TryGetValue(name, out clips) ? clips : _emptyClipList;
+        }
+
+        public IList<AtomAnimationClip> BySet(string set)
+        {
+            List<AtomAnimationClip> clips;
+            return _clipsBySet.TryGetValue(set, out clips) ? clips : _emptyClipList;
+        }
+
+        public IList<AtomAnimationClip> GetSiblings(AtomAnimationClip clip)
+        {
+            return clip.animationSet != null ? BySet(clip.animationSet) : ByName(clip.animationName);
         }
     }
 }
