@@ -806,7 +806,13 @@ namespace VamTimeline
 
             try
             {
-                if (animation.isPlaying) animation.PlayClips(animationName, true);
+                var clip = animation.clips.FirstOrDefault(c => c.animationName == animationName);
+                if (clip == null) return;
+                if (animationEditContext.current != clip)
+                    animationEditContext.SelectAnimation(clip);
+                else if (animation.isPlaying)
+                    animation.PlayClips(animationName, true);
+                _animationLegacyJSON.valNoCallback = "";
             }
             catch (Exception exc)
             {
