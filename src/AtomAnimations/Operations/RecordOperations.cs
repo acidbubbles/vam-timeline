@@ -135,7 +135,6 @@ namespace VamTimeline
             for (var i = 0; i < targets.Count; i++)
             {
                 var target = targets[i];
-                if (!target.recording) continue;
                 target.SetKeyframeToCurrent(0);
                 if (_clip.loop)
                     target.SetKeyframeToCurrent(_clip.animationLength);

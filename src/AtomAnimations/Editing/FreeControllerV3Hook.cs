@@ -55,7 +55,10 @@ namespace VamTimeline
             if (!animationEditContext.CanEdit()) return;
 
             // Ignore grabbed event, we will receive the grab end later
-            if (controller.isGrabbing || controller.possessed) return;
+            if (controller.isGrabbing) return;
+
+            // Ignore while possessed and startedPossess so that Embody restoring pose won't trigger recording
+            if (controller.possessed || controller.startedPossess) return;
 
             // Do not create a keyframe when loading a preset
             if (controller.isPresetRestore) return;
