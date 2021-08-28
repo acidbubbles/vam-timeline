@@ -145,12 +145,15 @@ namespace VamTimeline
         private void BeforeRecording(List<ICurveAnimationTarget> targets, bool recordExtendsLength)
         {
             var keyframesOps = new KeyframesOperations(_clip);
+            var isEmpty = _clip.IsEmpty();
 
             foreach (var target in targets)
             {
                 keyframesOps.RemoveAll(target);
             }
 
+            if (isEmpty)
+                _clip.loop = false;
             _clip.DirtyAll();
             _animation.RebuildAnimationNow();
 
