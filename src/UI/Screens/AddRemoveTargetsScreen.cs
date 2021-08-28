@@ -340,6 +340,8 @@ namespace VamTimeline
                 }
             }
 
+            animation.CleanupAnimatables();
+
             // Ensures shows on top
             _addControllerListJSON.popup.visible = true;
             _addControllerListJSON.popup.visible = false;

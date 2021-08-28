@@ -1271,5 +1271,29 @@ namespace VamTimeline
             timeMode = _restoreTimeMode;
             _restoreTimeMode = 0;
         }
+
+        public void CleanupAnimatables()
+        {
+            for (var i = animatables.storableFloats.Count - 1; i >= 0; i--)
+            {
+                var a = animatables.storableFloats[i];
+                if(!clips.Any(c => c.targetFloatParams.Any(t => t.animatableRef == a)))
+                    animatables.RemoveStorableFloat(a);
+            }
+
+            for (var i = animatables.controllers.Count - 1; i >= 0; i--)
+            {
+                var a = animatables.controllers[i];
+                if(!clips.Any(c => c.targetControllers.Any(t => t.animatableRef == a)))
+                    animatables.RemoveController(a);
+            }
+
+            for (var i = animatables.triggers.Count - 1; i >= 0; i--)
+            {
+                var a = animatables.triggers[i];
+                if(!clips.Any(c => c.targetTriggers.Any(t => t.animatableRef == a)))
+                    animatables.RemoveTriggerTrack(a);
+            }
+        }
     }
 }

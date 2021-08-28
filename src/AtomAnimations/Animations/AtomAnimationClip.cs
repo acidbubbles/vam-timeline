@@ -601,8 +601,6 @@ namespace VamTimeline
                 return;
             }
 
-            #warning Cleanup unused refs?
-
             throw new NotSupportedException($"Cannot remove unknown target type {target}");
         }
 

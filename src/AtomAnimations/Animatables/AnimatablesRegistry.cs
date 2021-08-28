@@ -1,16 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Events;
 
 namespace VamTimeline
 {
-    public class AnimatablesRegistry
+    public class AnimatablesRegistry : IDisposable
     {
         private readonly List<JSONStorableFloatRef> _storableFloats = new List<JSONStorableFloatRef>();
         private readonly List<FreeControllerV3Ref> _controllers = new List<FreeControllerV3Ref>();
         private readonly List<TriggersTrackRef> _triggers = new List<TriggersTrackRef>();
 
         public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
+
+        public IList<JSONStorableFloatRef> storableFloats => _storableFloats;
 
         public JSONStorableFloatRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName)
         {
@@ -31,6 +34,14 @@ namespace VamTimeline
             RegisterAnimatableRef(t);
             return t;
         }
+
+        public void RemoveStorableFloat(JSONStorableFloatRef t)
+        {
+            _storableFloats.Remove(t);
+            UnregisterAnimatableRef(t);
+        }
+
+        public IList<FreeControllerV3Ref> controllers => _controllers;
 
         public FreeControllerV3Ref GetOrCreateController(Atom atom, string controllerName)
         {
@@ -58,6 +69,14 @@ namespace VamTimeline
             return t;
         }
 
+        public void RemoveController(FreeControllerV3Ref t)
+        {
+            _controllers.Remove(t);
+            UnregisterAnimatableRef(t);
+        }
+
+        public IList<TriggersTrackRef> triggers => _triggers;
+
         public TriggersTrackRef GetOrCreateTriggerTrack(string triggerTrackName)
         {
             var t = _triggers.FirstOrDefault(x => x.Targets(triggerTrackName));
@@ -68,14 +87,37 @@ namespace VamTimeline
             return t;
         }
 
+        public void RemoveTriggerTrack(TriggersTrackRef t)
+        {
+            _triggers.Remove(t);
+            UnregisterAnimatableRef(t);
+        }
+
         private void RegisterAnimatableRef(AnimatableRefBase animatableRef)
         {
             animatableRef.onSelectedChanged.AddListener(OnSelectedChanged);
         }
 
+        private void UnregisterAnimatableRef(AnimatableRefBase animatableRef)
+        {
+            animatableRef.onSelectedChanged.RemoveListener(OnSelectedChanged);
+        }
+
         private void OnSelectedChanged()
         {
             onTargetsSelectionChanged.Invoke();
+        }
+
+        public void Dispose()
+        {
+            foreach (var t in _storableFloats)
+                t.onSelectedChanged.RemoveAllListeners();
+
+            foreach (var t in _controllers)
+                t.onSelectedChanged.RemoveAllListeners();
+
+            foreach (var t in _triggers)
+                t.onSelectedChanged.RemoveAllListeners();
         }
     }
 }
