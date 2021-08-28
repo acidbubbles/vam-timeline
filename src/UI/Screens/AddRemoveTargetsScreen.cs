@@ -60,23 +60,9 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Presets", 2);
 
-            // TODO: Extract
             if (plugin.containingAtom.type == "Person")
             {
-                prefabFactory.CreateButton("Add fingers").button.onClick.AddListener(() =>
-                {
-                    var leftHandControl = plugin.containingAtom.GetStorableByID("LeftHandControl");
-                    leftHandControl.SetStringChooserParamValue("fingerControlMode", "JSONParams");
-                    var leftHandFingerControl = plugin.containingAtom.GetStorableByID("LeftHandFingerControl");
-                    foreach (var paramName in leftHandFingerControl.GetFloatParamNames())
-                        AddFloatParam(leftHandFingerControl, leftHandFingerControl.GetFloatJSONParam(paramName));
-
-                    var rightHandControl = plugin.containingAtom.GetStorableByID("RightHandControl");
-                    rightHandControl.SetStringChooserParamValue("fingerControlMode", "JSONParams");
-                    var rightHandFingerControl = plugin.containingAtom.GetStorableByID("RightHandFingerControl");
-                    foreach (var paramName in rightHandFingerControl.GetFloatParamNames())
-                        AddFloatParam(rightHandFingerControl, rightHandFingerControl.GetFloatJSONParam(paramName));
-                });
+                InitFingersPresetUI();
             }
 
             UpdateSelectDependentUI();
@@ -349,6 +335,24 @@ namespace VamTimeline
             _addStorableListJSON.popup.visible = false;
             _addParamListJSON.popup.visible = true;
             _addParamListJSON.popup.visible = false;
+        }
+
+        private void InitFingersPresetUI()
+        {
+            prefabFactory.CreateButton("Add fingers").button.onClick.AddListener(() =>
+            {
+                var leftHandControl = plugin.containingAtom.GetStorableByID("LeftHandControl");
+                leftHandControl.SetStringChooserParamValue("fingerControlMode", "JSONParams");
+                var leftHandFingerControl = plugin.containingAtom.GetStorableByID("LeftHandFingerControl");
+                foreach (var paramName in leftHandFingerControl.GetFloatParamNames())
+                    AddFloatParam(leftHandFingerControl, leftHandFingerControl.GetFloatJSONParam(paramName));
+
+                var rightHandControl = plugin.containingAtom.GetStorableByID("RightHandControl");
+                rightHandControl.SetStringChooserParamValue("fingerControlMode", "JSONParams");
+                var rightHandFingerControl = plugin.containingAtom.GetStorableByID("RightHandFingerControl");
+                foreach (var paramName in rightHandFingerControl.GetFloatParamNames())
+                    AddFloatParam(rightHandFingerControl, rightHandFingerControl.GetFloatJSONParam(paramName));
+            });
         }
 
         private void UpdateSelectDependentUI()
