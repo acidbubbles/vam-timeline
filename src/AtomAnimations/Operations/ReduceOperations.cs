@@ -134,17 +134,16 @@ namespace VamTimeline
                 var sectionStart = 0;
                 for (var key = 1; key < lastKey; key++)
                 {
-                    if (!processor.IsStable(sectionStart, key))
+                    if (processor.IsStable(sectionStart, key)) continue;
+
+                    var duration = lead.keys[key].time - lead.keys[sectionStart].time;
+                    if (key - sectionStart > 3 && duration > 0.2f)
                     {
-                        var duration = lead.keys[key].time - lead.keys[sectionStart].time;
-                        if (key - sectionStart > 3 && duration > 0.5f)
-                        {
-                            processor.CopyToBranch(sectionStart, CurveTypeValues.FlatLinear);
-                            processor.CopyToBranch(key - 1, CurveTypeValues.LinearFlat);
-                        }
-                        processor.CopyToBranch(key);
-                        sectionStart = ++key;
+                        processor.CopyToBranch(sectionStart, CurveTypeValues.FlatLinear);
+                        processor.CopyToBranch(key - 1, CurveTypeValues.LinearFlat);
                     }
+                    processor.CopyToBranch(key);
+                    sectionStart = key;
                 }
                 processor.Commit();
             }
@@ -164,7 +163,6 @@ namespace VamTimeline
                         var curveType = leadCurve.keys[key].curveType;
                         if (curveType == CurveTypeValues.FlatLinear)
                         {
-                            #warning Seems to be an issue with flat at 0 (tbd)
                             // Bucket from the section start until the key before. This one will be skipped.
                             buckets.Add(processor.CreateBucket(sectionStart, key - 1));
                             processor.CopyToBranch(key);

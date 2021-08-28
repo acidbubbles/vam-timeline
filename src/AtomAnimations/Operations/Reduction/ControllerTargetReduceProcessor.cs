@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Leap.Unity;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -46,11 +47,11 @@ namespace VamTimeline
                 source.GetKeyframePosition(key2)
             );
             if (positionDiff >= settings.minMeaningfulDistance / 10f) return false;
-            var rotationAngle = Quaternion.Angle(
-                source.EvaluateRotation(key1),
-                source.EvaluateRotation(key2)
-            );
-            if (rotationAngle >= settings.minMeaningfulRotation / 10f) return false;
+            var rotationDot = 1f - Mathf.Abs(Quaternion.Dot(
+                source.GetKeyframeRotation(key1),
+                source.GetKeyframeRotation(key2)
+            ));
+            if (rotationDot >= settings.minMeaningfulRotation / 10f) return false;
             return true;
         }
 
@@ -65,14 +66,14 @@ namespace VamTimeline
                     branch.EvaluatePosition(time),
                     source.EvaluatePosition(time)
                 );
-                var rotationAngle = Quaternion.Angle(
+                var rotationDot = 1f - Mathf.Abs(Quaternion.Dot(
                     branch.EvaluateRotation(time),
                     source.EvaluateRotation(time)
-                );
+                ));
                 // This is an attempt to compare translations and rotations
                 // TODO: Normalize the values, investigate how to do this with settings
                 var normalizedPositionDistance = settings.minMeaningfulDistance > 0 ? positionDiff / settings.minMeaningfulDistance : 1f;
-                var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationAngle / settings.minMeaningfulRotation : 1f;
+                var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationDot / settings.minMeaningfulRotation : 1f;
                 var delta = normalizedPositionDistance + normalizedRotationAngle;
                 if (delta > bucket.largestDelta)
                 {

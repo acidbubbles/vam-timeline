@@ -33,8 +33,8 @@ namespace VamTimeline
             _averageToSnapJSON = new JSONStorableBool("Average and snap to fps", true);
             _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
             _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
-            _reduceMinDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f);
-            _reduceMinRotationJSON = new JSONStorableFloat("Minimum meaningful rotation", 1f, 0f, 10f);
+            _reduceMinDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f, false);
+            _reduceMinRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
             _reduceMinFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
         }
 
@@ -57,7 +57,7 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
             prefabFactory.CreateToggle(_simplifyKeyframes);
             prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F3";
-            prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F2";
+            prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F4";
             prefabFactory.CreateSlider(_reduceMinFloatParamRangeRatioJSON).valueFormat = "F3";
 
             _reduceUI = prefabFactory.CreateButton("Reduce");
