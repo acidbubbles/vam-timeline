@@ -971,6 +971,7 @@ namespace VamTimeline
                     return;
                 }
                 StartCoroutine(operations.Record().StartRecording(
+                    this,
                     TimeModes.RealTime,
                     animationEditContext.current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2),
                     animationEditContext.startRecordIn,

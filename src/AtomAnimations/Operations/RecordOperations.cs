@@ -21,7 +21,9 @@ namespace VamTimeline
             _peerManager = peerManager;
         }
 
-        public IEnumerator StartRecording(int timeMode,
+        public IEnumerator StartRecording(
+            IMonoBehavior owner,
+            int timeMode,
             bool recordExtendsLength,
             int recordInSeconds,
             List<ICurveAnimationTarget> targets,
@@ -43,10 +45,23 @@ namespace VamTimeline
 
             yield return 0;
 
+            if (!owner.isActiveAndEnabled)
+            {
+                ShowText(null);
+                yield break;
+            }
+
             BeforeRecording(targets, recordExtendsLength);
             if(showStartMarkers) ShowStartMarkers(targets);
 
             yield return 0;
+
+            if (!owner.isActiveAndEnabled)
+            {
+                ShowText(null);
+                HideStartMarkers(targets);
+                yield break;
+            }
 
             for (var i = recordInSeconds; i > 0; i--)
             {
@@ -55,7 +70,7 @@ namespace VamTimeline
                 while (Time.realtimeSinceStartup < next)
                 {
                     yield return 0;
-                    if (Input.GetKeyDown(KeyCode.Escape))
+                    if (!owner.isActiveAndEnabled || Input.GetKeyDown(KeyCode.Escape))
                     {
                         ShowText(null);
                         HideStartMarkers(targets);
@@ -83,6 +98,8 @@ namespace VamTimeline
                 if (!_clip.playbackMainInLayer)
                     break;
                 if (exitOnMenuOpen && SuperController.singleton.mainHUD.gameObject.activeSelf)
+                    break;
+                if (!owner.isActiveAndEnabled)
                     break;
                 if (!ReferenceEquals(raycastTarget, null))
                     PositionCameraTarget(raycastTarget);

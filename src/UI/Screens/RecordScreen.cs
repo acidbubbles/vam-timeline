@@ -158,10 +158,10 @@ namespace VamTimeline
                 SuperController.singleton.HideMainHUD();
             }
 
-            // TODO: This enumerator should be registered as a "current operation" in AtomAnimationEditContext
             var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
 
             var enumerator = operations.Record().StartRecording(
+                plugin,
                 timeMode,
                 recordExtendsLength,
                 animationEditContext.startRecordIn,
