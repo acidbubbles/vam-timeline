@@ -772,12 +772,12 @@ namespace VamTimeline
             foreach (var x in index.ByFloatParam())
             {
                 if (!x.Value[0].animatableRef.EnsureAvailable()) continue;
-                SampleFloatParam(x.Value[0].animatableRef.floatParam, x.Value);
+                SampleFloatParam(x.Value[0].animatableRef, x.Value);
             }
         }
 
         [MethodImpl(256)]
-        private static void SampleFloatParam(JSONStorableFloat floatParam, List<JSONStorableFloatAnimationTarget> targets)
+        private static void SampleFloatParam(JSONStorableFloatRef floatParamRef, List<JSONStorableFloatAnimationTarget> targets)
         {
             const float minimumDelta = 0.00000015f;
             var weightedSum = 0f;
@@ -804,9 +804,9 @@ namespace VamTimeline
             if (totalBlendWeights > minimumDelta)
             {
                 var val = weightedSum / totalBlendWeights;
-                if(Mathf.Abs(val - floatParam.val) > minimumDelta)
+                if(Mathf.Abs(val - floatParamRef.val) > minimumDelta)
                 {
-                    floatParam.val = val;
+                    floatParamRef.val = val;
                 }
             }
         }

@@ -8,7 +8,8 @@ namespace VamTimeline
         private RectTransform _sliderFillRect;
         private SimpleSlider _simpleSlider;
 
-        private JSONStorableFloat floatParam => target.animatableRef.floatParam;
+        private JSONStorableFloatRef floatParamRef => target.animatableRef;
+        private JSONStorableFloat floatParam => floatParamRef.floatParam;
 
         protected override void CreateCustom()
         {
@@ -113,8 +114,8 @@ namespace VamTimeline
                 CreateExpandButton(group.transform, "Reset Range", () =>
                 {
                     morph.ResetRange();
-                    if (floatParam.val < floatParam.min) SetValue(floatParam.min);
-                    if (floatParam.val > floatParam.max) SetValue(floatParam.max);
+                    if (floatParamRef.val < floatParam.min) SetValue(floatParam.min);
+                    if (floatParamRef.val > floatParam.max) SetValue(floatParam.max);
                     SetTime(plugin.animationEditContext.clipTime, true);
                 });
 
@@ -138,7 +139,7 @@ namespace VamTimeline
                     return;
             }
             target.SetKeyframe(time, val);
-            floatParam.val = val;
+            floatParamRef.val = val;
             if (!plugin.animation.isPlaying)
             {
                 SetTime(time, true);
@@ -162,7 +163,7 @@ namespace VamTimeline
 
             if (stopped)
             {
-                valueText.text = floatParam.val.ToString("0.00");
+                valueText.text = floatParamRef.val.ToString("0.00");
             }
 
             if (!_simpleSlider.interacting)
@@ -171,7 +172,7 @@ namespace VamTimeline
 
         private void UpdateSliderFromValue()
         {
-            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-floatParam.min + floatParam.val) / (floatParam.max - floatParam.min)), 1f);
+            _sliderFillRect.anchorMax = new Vector2(Mathf.Clamp01((-floatParam.min + floatParamRef.val) / (floatParam.max - floatParam.min)), 1f);
         }
 
         protected override void ToggleKeyframeImpl(float time, bool on, bool mustBeOn)
@@ -183,7 +184,7 @@ namespace VamTimeline
             }
             if (on)
             {
-                var key = target.SetKeyframe(time, floatParam.val);
+                var key = target.SetKeyframe(time, floatParamRef.val);
                 var keyframe = target.value.keys[key];
                 if (keyframe.curveType == CurveTypeValues.CopyPrevious)
                     target.ChangeCurveByTime(time, CurveTypeValues.SmoothLocal);

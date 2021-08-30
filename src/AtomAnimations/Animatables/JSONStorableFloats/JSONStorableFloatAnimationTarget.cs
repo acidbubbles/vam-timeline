@@ -80,7 +80,7 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrent(float time, bool makeDirty = true)
         {
-            return SetKeyframe(time, animatableRef.floatParam.val, makeDirty);
+            return SetKeyframe(time, animatableRef.val, makeDirty);
         }
 
         public void DeleteFrame(float time)

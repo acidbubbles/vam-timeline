@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -34,6 +35,18 @@ namespace VamTimeline
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
             return floatParamName;
+        }
+
+        public float val
+        {
+            get
+            {
+                return floatParam.val;
+            }
+            set
+            {
+                floatParam.val = Mathf.Clamp(value, floatParam.min, floatParam.max);
+            }
         }
 
         public bool EnsureAvailable(bool silent = true)
