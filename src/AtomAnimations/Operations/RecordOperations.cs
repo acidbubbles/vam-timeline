@@ -81,6 +81,7 @@ namespace VamTimeline
 
             ShowText(null);
 
+            AtomAnimationBackup.singleton.ClearBackup();
             RecordFirstKeyframe(targets);
             StartRecording(timeMode, recordExtendsLength, targets);
 

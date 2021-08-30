@@ -90,6 +90,9 @@ namespace VamTimeline
         private IEnumerator ImportRecordedCoroutine()
         {
             var controllers = animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().Select(t => t.animatableRef.controller).ToList();
+
+            AtomAnimationBackup.singleton.ClearBackup();
+
             var enumerator = operations.MocapImport().Execute(controllers);
 
             while (true)
