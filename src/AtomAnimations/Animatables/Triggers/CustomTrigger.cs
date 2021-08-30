@@ -37,7 +37,7 @@ namespace VamTimeline
 
         #region JSON
 
-        public override JSONClass GetJSON()
+        public override JSONClass GetJSON(string subScenePrefix = null)
         {
             var jSON = base.GetJSON();
             jSON["startTime"].AsFloat = startTime;
@@ -45,9 +45,9 @@ namespace VamTimeline
             return jSON;
         }
 
-        public override void RestoreFromJSON(JSONClass jc)
+        public override void RestoreFromJSON(JSONClass jc, string subScenePrefix, bool isMerge)
         {
-            base.RestoreFromJSON(jc);
+            base.RestoreFromJSON(jc, subScenePrefix, isMerge);
             if (jc["startTime"] != null)
                 startTime = jc["startTime"].AsFloat;
             if (jc["endTime"] != null)
