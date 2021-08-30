@@ -31,6 +31,7 @@
 ..\src\AtomAnimations\BezierCurves\BezierKeyframe.cs
 ..\src\AtomAnimations\BezierCurves\CurveTypeValues.cs
 ..\src\AtomAnimations\Clipboard\AtomClipboardEntry.cs
+..\src\AtomAnimations\Editing\AtomAnimationBackup.cs
 ..\src\AtomAnimations\Editing\AtomAnimationEditContext.cs
 ..\src\AtomAnimations\Editing\FreeControllerV3Hook.cs
 ..\src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs

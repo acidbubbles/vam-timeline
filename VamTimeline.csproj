@@ -103,6 +103,7 @@
     <Compile Include="src\AtomAnimations\BezierCurves\BezierKeyframe.cs" />
     <Compile Include="src\AtomAnimations\BezierCurves\CurveTypeValues.cs" />
     <Compile Include="src\AtomAnimations\Clipboard\AtomClipboardEntry.cs" />
+    <Compile Include="src\AtomAnimations\Editing\AtomAnimationBackup.cs" />
     <Compile Include="src\AtomAnimations\Editing\AtomAnimationEditContext.cs" />
     <Compile Include="src\AtomAnimations\Editing\FreeControllerV3Hook.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs" />

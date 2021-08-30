@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,9 +8,6 @@ namespace VamTimeline
     {
         public const string ScreenName = "Reduce";
 
-        private static string _backupTime;
-        private static string _backupFullyQualifiedAnimationName;
-        private static List<ICurveAnimationTarget> _backup;
         private static readonly JSONStorableFloat _reduceMaxFramesPerSecondJSON;
         private static readonly JSONStorableBool _averageToSnapJSON;
         private static readonly JSONStorableBool _removeFlatSectionsKeyframes;
@@ -64,39 +60,16 @@ namespace VamTimeline
             _reduceUI.button.onClick.AddListener(Reduce);
 
             _restoreUI.button.interactable = HasBackup();
-            if (HasBackup()) _restoreUI.label = $"Restore [{_backupTime}]";
+            if (HasBackup()) _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
+
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
+            OnTargetsSelectionChanged();
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
             _restoreUI.button.interactable = false;
-        }
-
-        private bool HasBackup()
-        {
-            return _backup != null && _backupFullyQualifiedAnimationName == current.animationNameQualified;
-        }
-
-        private void TakeBackup()
-        {
-            _backup = null;
-            _backupFullyQualifiedAnimationName = current.animationNameQualified;
-            _backup = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().Select(t => t.Clone(true)).ToList();
-            _backupTime = DateTime.Now.ToShortTimeString();
-            _restoreUI.label = $"Restore [{_backupTime}]";
-            _restoreUI.button.interactable = true;
-        }
-
-        private void RestoreBackup()
-        {
-            if (!HasBackup()) return;
-            var targets = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
-            foreach (var backup in _backup)
-            {
-                var target = targets.FirstOrDefault(t => t.TargetsSameAs(backup));
-                target?.RestoreFrom(backup);
-            }
         }
 
         private void Reduce()
@@ -118,10 +91,9 @@ namespace VamTimeline
                 minMeaningfulRotation = _reduceMinRotationJSON.val,
                 minMeaningfulFloatParamRangeRatio = _reduceMinFloatParamRangeRatioJSON.val,
             };
-            var targets = animationEditContext.GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
             StartCoroutine(operations.Reduce(settings).ReduceKeyframes(
-                targets,
-            progress =>
+                animationEditContext.current.GetAllCurveTargets().Where(t => t.selected).ToList(),
+                progress =>
                 {
                     _reduceUI.label = $"{progress.stepsDone} of {progress.stepsTotal} ({progress.timeLeft:0}s left)";
                 },
@@ -130,6 +102,34 @@ namespace VamTimeline
                     _reduceUI.button.interactable = true;
                     _reduceUI.label = "Reduce";
                 }));
+        }
+
+        private void OnTargetsSelectionChanged()
+        {
+            _reduceUI.button.interactable = current.GetAllCurveTargets().Any(t => t.selected);
+        }
+
+        private bool HasBackup()
+        {
+            return AtomAnimationBackup.singleton.HasBackup(current);
+        }
+
+        private void TakeBackup()
+        {
+            AtomAnimationBackup.singleton.TakeBackup(current);
+            _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
+            _restoreUI.button.interactable = true;
+        }
+
+        private void RestoreBackup()
+        {
+            AtomAnimationBackup.singleton.RestoreBackup(current);
+        }
+
+        public override void OnDestroy()
+        {
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);
+            base.OnDestroy();
         }
     }
 }
