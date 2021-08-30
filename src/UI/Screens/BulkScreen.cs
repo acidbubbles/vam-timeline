@@ -252,7 +252,7 @@ namespace VamTimeline
 
             operations.Offset().Apply(_offsetSnapshot, _startJSON.val, _endJSON.val, _offsetModeJSON.val);
 
-            animationEditContext.Sample();
+            animationEditContext.Sample(false, true);
         }
 
         #endregion

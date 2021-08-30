@@ -55,7 +55,7 @@ namespace VamTimeline
                 target.ChangeCurveByTime(time, curveType);
 
             if (curveType == CurveTypeValues.CopyPrevious)
-                _animationEditContext.Sample();
+                _animationEditContext.Sample(false, true);
 
             RefreshCurrentCurveType(_animationEditContext.clipTime);
         }

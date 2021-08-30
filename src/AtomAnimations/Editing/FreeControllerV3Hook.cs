@@ -138,9 +138,9 @@ namespace VamTimeline
             }
 
             if (animationEditContext.current.autoTransitionPrevious && time == 0)
-                animationEditContext.Sample();
+                animationEditContext.Sample(false, true);
             else if (animationEditContext.current.autoTransitionNext && time == animationEditContext.current.animationLength)
-                animationEditContext.Sample();
+                animationEditContext.Sample(false, true);
         }
     }
 }

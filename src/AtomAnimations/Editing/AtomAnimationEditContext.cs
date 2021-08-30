@@ -102,7 +102,7 @@ namespace VamTimeline
             if (_sampleAfterRebuild)
             {
                 _sampleAfterRebuild = false;
-                Sample();
+                Sample(false, true);
             }
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -467,7 +467,7 @@ namespace VamTimeline
                 {
                     current.Paste(clipTime + entry.time - timeOffset, entry);
                 }
-                Sample();
+                Sample(false, true);
             }
             catch (Exception exc)
             {
@@ -496,7 +496,7 @@ namespace VamTimeline
             animation.StopAndReset();
             SelectAnimation(animation.GetDefaultClip());
             onTimeChanged.Invoke(timeArgs);
-            Sample();
+            Sample(true);
         }
 
         public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
@@ -508,10 +508,10 @@ namespace VamTimeline
             }
         }
 
-        public void Sample()
+        public void Sample(bool forceApplyPose = false, bool forceSkipPose = false)
         {
             var hasPose = current.pose != null;
-            if(hasPose && clipTime == 0f)
+            if(hasPose && (forceApplyPose || clipTime == 0f) && !forceSkipPose)
                 current.pose.Apply();
             else
                 SampleNow();
@@ -632,7 +632,7 @@ namespace VamTimeline
             }
             else if (!SuperController.singleton.freezeAnimation)
             {
-                Sample();
+                Sample(true);
             }
         }
 
@@ -736,7 +736,7 @@ namespace VamTimeline
                 target.ChangeCurveByTime(time, curveType);
 
             if (curveType == CurveTypeValues.CopyPrevious)
-                Sample();
+                Sample(false, true);
         }
     }
 }

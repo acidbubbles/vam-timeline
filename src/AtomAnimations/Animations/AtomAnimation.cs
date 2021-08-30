@@ -470,10 +470,6 @@ namespace VamTimeline
         {
             if (isPlaying) StopAll();
             ResetAll();
-            foreach (var layer in index.ByLayer())
-            {
-                layer.FirstOrDefault()?.pose?.Apply();
-            }
         }
 
         #endregion

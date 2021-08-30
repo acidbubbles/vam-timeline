@@ -1,5 +1,4 @@
-﻿using Leap.Unity;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VamTimeline
 {
