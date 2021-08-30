@@ -134,7 +134,8 @@ namespace VamTimeline
         private void SyncAnimationFields()
         {
             _recordButton.button.interactable = !current.recording && animationEditContext.GetSelectedTargets().Any();
-            _recordExtendsLength.valNoCallback = current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2);
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            _recordExtendsLength.valNoCallback = current.animationLength == AtomAnimationClip.DefaultAnimationLength && current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2);
         }
 
         public override void OnDestroy()
