@@ -102,7 +102,7 @@ namespace VamTimeline
             if (_sampleAfterRebuild)
             {
                 _sampleAfterRebuild = false;
-                Sample(false, true);
+                Sample();
             }
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -467,7 +467,7 @@ namespace VamTimeline
                 {
                     current.Paste(clipTime + entry.time - timeOffset, entry);
                 }
-                Sample(false, true);
+                Sample();
             }
             catch (Exception exc)
             {
@@ -496,7 +496,10 @@ namespace VamTimeline
             animation.StopAndReset();
             SelectAnimation(animation.GetDefaultClip());
             onTimeChanged.Invoke(timeArgs);
-            Sample(true);
+            if (current.pose != null)
+                current.pose.Apply();
+            else
+                Sample();
         }
 
         public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
@@ -508,18 +511,14 @@ namespace VamTimeline
             }
         }
 
-        public void Sample(bool forceApplyPose = false, bool forceSkipPose = false)
+        public void Sample()
         {
-            var hasPose = current.pose != null;
-            if(hasPose && (forceApplyPose || clipTime == 0f) && !forceSkipPose)
-                current.pose.Apply();
-            else
-                SampleNow();
+            SampleNow();
             var hasParenting = GetMainClipPerLayer()
                 .Where(c => c != null)
                 .SelectMany(c => c.targetControllers)
                 .Any(t => t.parentRigidbodyId != null);
-            if (!hasPose && !hasParenting) return;
+            if (!hasParenting) return;
             if (_lateSample != null) StopCoroutine(_lateSample);
             _lateSample = StartCoroutine(LateSample(0.1f));
         }
@@ -630,10 +629,10 @@ namespace VamTimeline
             {
                 animation.PlayClip(current, animation.sequencing);
             }
+            if (current.pose != null)
+                current.pose.Apply();
             else if (!SuperController.singleton.freezeAnimation)
-            {
-                Sample(true);
-            }
+                Sample();
         }
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
@@ -736,7 +735,7 @@ namespace VamTimeline
                 target.ChangeCurveByTime(time, curveType);
 
             if (curveType == CurveTypeValues.CopyPrevious)
-                Sample(false, true);
+                Sample();
         }
     }
 }

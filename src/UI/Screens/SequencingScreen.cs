@@ -360,14 +360,14 @@ namespace VamTimeline
         {
             current.autoTransitionPrevious = val;
             RefreshTransitionUI();
-            plugin.animationEditContext.Sample(false, true);
+            plugin.animationEditContext.Sample();
         }
 
         private void ChangeTransitionNext(bool val)
         {
             current.autoTransitionNext = val;
             RefreshTransitionUI();
-            plugin.animationEditContext.Sample(false, true);
+            plugin.animationEditContext.Sample();
         }
 
         private void SyncPlayNext()
