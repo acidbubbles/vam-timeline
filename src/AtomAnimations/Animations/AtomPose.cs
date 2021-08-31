@@ -45,7 +45,7 @@ namespace VamTimeline
 
             var poseJSON = new JSONClass
             {
-                ["embody"] = new JSONClass
+                ["clipPoseSettings"] = new JSONClass
                 {
                     ["includeRoot"] = { AsBool = includeRoot },
                     ["includePose"] = { AsBool = includePose },
@@ -77,13 +77,13 @@ namespace VamTimeline
         public static AtomPose FromJSON(Atom atom, JSONNode jsonNode)
         {
             var jc = jsonNode.AsObject;
-            var embodyJc = jc["embody"].AsObject;
+            var clipPoseSettingsJSON = jc.HasKey("clipPoseSettings") ? jc["clipPoseSettings"].AsObject : jc["embody"].AsObject;
             return jc.HasKey("storables") ? new AtomPose(atom, jc)
             {
-                includeRoot = embodyJc["includeRoot"].AsBool,
-                includePose = embodyJc["includePose"].AsBool,
-                includeMorphs = embodyJc["includeMorphs"].AsBool,
-                useMergeLoad = embodyJc["useMergeLoad"].AsBool,
+                includeRoot = clipPoseSettingsJSON["includeRoot"].AsBool,
+                includePose = clipPoseSettingsJSON["includePose"].AsBool,
+                includeMorphs = clipPoseSettingsJSON["includeMorphs"].AsBool,
+                useMergeLoad = clipPoseSettingsJSON["useMergeLoad"].AsBool,
             }: null;
         }
 
