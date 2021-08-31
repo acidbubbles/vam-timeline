@@ -10,7 +10,7 @@ namespace VamTimeline
         public const bool DefaultIncludeRoot = true;
         public const bool DefaultIncludePose = true;
         public const bool DefaultIncludeMorphs = true;
-        public const bool DefaultUseMergeLoad = true;
+        public const bool DefaultUseMergeLoad = false;
 
         public bool includeRoot { get; private set; }
         public bool includePose { get; private set; }
