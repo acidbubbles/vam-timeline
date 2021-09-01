@@ -255,12 +255,20 @@ namespace VamTimeline
 
         #region Animation Control
 
+        private float lastStop = 0f;
+
         public void Stop()
         {
             if (animation.isPlaying)
                 animation.StopAll();
             else
                 animation.ResetAll();
+
+            // Apply pose on stop fast double-click
+            if (lastStop > Time.realtimeSinceStartup - 0.2f)
+                current.pose?.Apply();
+            lastStop = Time.realtimeSinceStartup;
+
             onTimeChanged.Invoke(timeArgs);
             Sample();
         }
