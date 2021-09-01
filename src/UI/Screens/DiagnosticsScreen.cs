@@ -50,10 +50,8 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
-            prefabFactory.CreateSpacer();
-
             _resultJSON = new JSONStorableString("Result", "Analyzing...");
-            prefabFactory.CreateTextField(_resultJSON).height = 1200f;
+            prefabFactory.CreateTextField(_resultJSON).height = 1060f;
 
             DoAnalysis();
         }
