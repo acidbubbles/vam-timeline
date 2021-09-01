@@ -461,22 +461,22 @@ namespace VamTimeline
             if (v is JSONStorableStringChooser)
             {
                 if (((JSONStorableStringChooser)v).popup != null)
-                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable '{v.name}' of atom '{plugin.containingAtom.name}' was not correctly unregistered.");
             }
             else if (v is JSONStorableFloat)
             {
                 if (((JSONStorableFloat)v).slider != null)
-                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable '{v.name}' of atom '{plugin.containingAtom.name}' was not correctly unregistered.");
             }
             else if (v is JSONStorableString)
             {
                 if (((JSONStorableString)v).inputField != null)
-                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable '{v.name}' of atom '{plugin.containingAtom.name}' was not correctly unregistered.");
             }
             else if (v is JSONStorableBool)
             {
                 if (((JSONStorableBool)v).toggle != null)
-                    SuperController.LogError($"Storable {v.name} of atom {plugin.containingAtom.name} was not correctly unregistered.");
+                    SuperController.LogError($"Storable '{v.name}' of atom '{plugin.containingAtom.name}' was not correctly unregistered.");
             }
         }
     }
