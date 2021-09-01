@@ -22,11 +22,11 @@ namespace VamTimeline
         public const string SlaveAnimationName = "(Slave)";
         public const string RandomizeGroupSuffix = "/*";
 
-        public UnityEvent onAnimationSettingsChanged = new UnityEvent();
-        public UnityEvent onSpeedChanged = new UnityEvent();
-        public UnityEvent onClipsListChanged = new UnityEvent();
-        public UnityEvent onAnimationRebuilt = new UnityEvent();
-        public UnityEvent onPausedChanged = new UnityEvent();
+        public readonly UnityEvent onAnimationSettingsChanged = new UnityEvent();
+        public readonly UnityEvent onSpeedChanged = new UnityEvent();
+        public readonly UnityEvent onClipsListChanged = new UnityEvent();
+        public readonly UnityEvent onAnimationRebuilt = new UnityEvent();
+        public readonly UnityEvent onPausedChanged = new UnityEvent();
         public readonly IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
@@ -294,12 +294,14 @@ namespace VamTimeline
         public void PlayClip(AtomAnimationClip clip, bool sequencing, bool allowPreserveLoops = true)
         {
             paused = false;
+            var playingChanged = false;
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
             if (!isPlaying)
             {
-                fadeManager?.SyncFadeTime();
+                playingChanged = true;
                 isPlaying = true;
                 this.sequencing = this.sequencing || sequencing;
+                fadeManager?.SyncFadeTime();
                 #if(PLAYBACK_HEALTH_CHECK)
                 PlaybackHealthCheck(clip);
                 #endif
@@ -338,12 +340,13 @@ namespace VamTimeline
                 AssignNextAnimation(clip);
             }
 
+            if (playingChanged)
+                onIsPlayingChanged.Invoke(clip);
+
             if (clip.playbackEnabled)
             {
                 PlaySiblings(clip);
             }
-
-            onIsPlayingChanged.Invoke(clip);
         }
 
         private void PlaySiblings(AtomAnimationClip clip, bool allowPreserveLoops = true)
@@ -417,6 +420,7 @@ namespace VamTimeline
                 clip.Reset(false);
                 if (clip.animationPattern)
                     clip.animationPattern.SetBoolParamValue("loopOnce", true);
+                onClipIsPlayingChanged.Invoke(clip);
             }
             else
             {
@@ -429,9 +433,8 @@ namespace VamTimeline
                 {
                     isPlaying = false;
                     sequencing = false;
+                    onIsPlayingChanged.Invoke(clip);
                 }
-
-                onIsPlayingChanged.Invoke(clip);
             }
         }
 
@@ -1244,6 +1247,7 @@ namespace VamTimeline
         {
             onAnimationSettingsChanged.RemoveAllListeners();
             onIsPlayingChanged.RemoveAllListeners();
+            onClipIsPlayingChanged.RemoveAllListeners();
             onSpeedChanged.RemoveAllListeners();
             onClipsListChanged.RemoveAllListeners();
             onAnimationRebuilt.RemoveAllListeners();

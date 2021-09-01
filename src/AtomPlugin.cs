@@ -755,7 +755,10 @@ namespace VamTimeline
         {
             _isPlayingJSON.valNoCallback = animation.isPlaying;
             _freeControllerHook.enabled = !animation.isPlaying;
-            peers.SendPlaybackState(clip);
+            if (!animation.isPlaying)
+                peers.SendStop();
+            else
+                peers.SendPlaybackState(clip);
         }
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)

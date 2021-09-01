@@ -82,6 +82,9 @@ namespace VamTimeline
                     case nameof(SendStopAndReset):
                         ReceiveStopAndReset(e);
                         break;
+                    case nameof(SendStop):
+                        ReceiveStop(e);
+                        break;
                     case nameof(SendPaused):
                         ReceivePaused(e);
                         break;
@@ -194,6 +197,20 @@ namespace VamTimeline
                 animation.PlayClip(clip, true, false);
                 clip.clipTime = (float) e[2];
             }
+        }
+
+        public void SendStop()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendStop), // 0
+            });
+        }
+
+        private void ReceiveStop(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 1)) return;
+            animationEditContext.Stop();
         }
 
         public void SendPaused()
