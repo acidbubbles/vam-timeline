@@ -504,6 +504,7 @@ namespace VamTimeline
                             clip.playbackBlendWeight = 0f;
                             clip.Leave();
                             clip.playbackEnabled = false;
+                            clip.clipTime = 0f;
                             onClipIsPlayingChanged.Invoke(clip);
                         }
                     }
