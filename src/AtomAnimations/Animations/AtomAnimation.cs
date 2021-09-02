@@ -688,8 +688,8 @@ namespace VamTimeline
             source.playbackScheduledNextTimeLeft = nextTime;
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
-                source.playbackScheduledFadeOutAtRemaining = fadeManager.fadeOutTime + fadeManager.halfBlackTime;
-                if (source.playbackScheduledNextTimeLeft * next.speed * speed < source.playbackScheduledFadeOutAtRemaining)
+                source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * speed;
+                if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
                 {
                     fadeManager.FadeOutInstant();
                     source.playbackScheduledFadeOutAtRemaining = float.NaN;
@@ -1185,7 +1185,7 @@ namespace VamTimeline
                         fadeManager.FadeOut();
                 }
 
-                if (!(clip.playbackScheduledNextTimeLeft <= 0))
+                if (clip.playbackScheduledNextTimeLeft > 0)
                     continue;
 
                 var nextAnimationName = clip.playbackScheduledNextAnimationName;
