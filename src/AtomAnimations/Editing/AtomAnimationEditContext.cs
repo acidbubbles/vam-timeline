@@ -255,7 +255,7 @@ namespace VamTimeline
 
         #region Animation Control
 
-        private float lastStop = 0f;
+        private float _lastStop;
 
         public void Stop()
         {
@@ -265,9 +265,9 @@ namespace VamTimeline
                 animation.ResetAll();
 
             // Apply pose on stop fast double-click
-            if (lastStop > Time.realtimeSinceStartup - 0.2f)
+            if (_lastStop > Time.realtimeSinceStartup - 0.2f)
                 current.pose?.Apply();
-            lastStop = Time.realtimeSinceStartup;
+            _lastStop = Time.realtimeSinceStartup;
 
             onTimeChanged.Invoke(timeArgs);
             Sample();
@@ -504,10 +504,6 @@ namespace VamTimeline
             animation.StopAndReset();
             SelectAnimation(animation.GetDefaultClip());
             onTimeChanged.Invoke(timeArgs);
-            if (current.pose != null)
-                current.pose.Apply();
-            else
-                Sample();
         }
 
         public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
@@ -637,6 +633,7 @@ namespace VamTimeline
             {
                 animation.PlayClip(current, animation.sequencing);
             }
+
             if (current.pose != null)
                 current.pose.Apply();
             else if (!SuperController.singleton.freezeAnimation)

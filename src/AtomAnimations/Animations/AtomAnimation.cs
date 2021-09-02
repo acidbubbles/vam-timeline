@@ -313,19 +313,17 @@ namespace VamTimeline
                 if (previousMain.uninterruptible)
                     return;
 
-                if (previousMain.loop && previousMain.preserveLoops && clip.loop && clip.preserveLoops)
-                {
-                    ScheduleNextAnimation(previousMain, clip, previousMain.animationLength - clip.blendInDuration / 2f - previousMain.clipTime);
-                }
-                else
-                {
-                    ScheduleNextAnimation(previousMain, clip, 0);
-                }
+                ScheduleNextAnimation(
+                    previousMain,
+                    clip,
+                    previousMain.loop && previousMain.preserveLoops && clip.loop && clip.preserveLoops
+                        ? previousMain.animationLength - clip.blendInDuration / 2f - previousMain.clipTime
+                        : 0f);
             }
             else
             {
                 if (clip.clipTime >= clip.animationLength) clip.clipTime = 0f;
-                Blend(clip, 1f, clip.recording ? 0f : clip.blendInDuration);
+                BlendIn(clip, clip.recording ? 0f : clip.blendInDuration);
                 clip.playbackMainInLayer = true;
             }
 
@@ -336,17 +334,13 @@ namespace VamTimeline
             }
 
             if (sequencing && clip.nextAnimationName != null)
-            {
                 AssignNextAnimation(clip);
-            }
 
             if (playingChanged)
                 onIsPlayingChanged.Invoke(clip);
 
             if (clip.playbackEnabled)
-            {
                 PlaySiblings(clip);
-            }
         }
 
         private void PlaySiblings(AtomAnimationClip clip, bool allowPreserveLoops = true)
@@ -538,12 +532,11 @@ namespace VamTimeline
             }
         }
 
-        private void Blend(AtomAnimationClip clip, float targetWeight, float blendDuration)
+        private void BlendIn(AtomAnimationClip clip, float blendDuration)
         {
-            if (clip.applyPoseOnTransition && targetWeight > 0)
+            if (clip.applyPoseOnTransition)
             {
                 clip.pose?.Apply();
-                clip.playbackEnabled = true;
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
             }
@@ -551,18 +544,32 @@ namespace VamTimeline
             {
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
-                clip.playbackEnabled = targetWeight > 0;
-                if (!clip.playbackEnabled)
-                    clip.Leave();
             }
             else
             {
                 if (!clip.playbackEnabled) clip.playbackBlendWeight = 0f;
-                clip.playbackBlendRate = (targetWeight - clip.playbackBlendWeight) / blendDuration;
-                if (clip.playbackEnabled) return;
-                clip.playbackEnabled = true;
+                clip.playbackBlendRate = (1f - clip.playbackBlendWeight) / blendDuration;
             }
-            onClipIsPlayingChanged.Invoke(clip);
+
+            var wasEnabled = clip.playbackEnabled;
+            clip.playbackEnabled = true;
+            if (!wasEnabled)
+                onClipIsPlayingChanged.Invoke(clip);
+        }
+
+        private void BlendOut(AtomAnimationClip clip, float blendDuration)
+        {
+            if (!clip.playbackEnabled) return;
+
+            if (blendDuration == 0)
+            {
+                clip.Reset(true);
+                clip.Leave();
+            }
+            else
+            {
+                clip.playbackBlendRate = (0f - clip.playbackBlendWeight) / blendDuration;
+            }
         }
 
         #endregion
@@ -592,9 +599,9 @@ namespace VamTimeline
 
             // if(!from.loop && to.blendInDuration > from.animationLength - from.clipTime)
             //     SuperController.LogError($"Timeline: Transition from '{from.animationName}' to '{to.animationName}' will stop the former animation after it ends, because the blend-in time of the latter is too long for the sequenced time.");
-            Blend(from, 0f, to.blendInDuration);
+            BlendOut(from, to.blendInDuration);
             from.playbackMainInLayer = false;
-            Blend(to, 1f, to.blendInDuration);
+            BlendIn(to, to.blendInDuration);
             to.playbackMainInLayer = true;
 
             if (sequencing)
