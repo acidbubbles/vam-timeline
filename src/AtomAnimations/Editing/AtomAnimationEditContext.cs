@@ -250,14 +250,17 @@ namespace VamTimeline
 
         public void Stop()
         {
+            var wasCurrentMainInLayer = current.playbackMainInLayer;
+
             if (animation.isPlaying)
                 animation.StopAll();
             else
                 animation.ResetAll();
 
             // Apply pose on stop fast double-click
-            if (_lastStop > Time.realtimeSinceStartup - 0.2f)
+            if (!wasCurrentMainInLayer || _lastStop > Time.realtimeSinceStartup - 0.2f)
                 current.pose?.Apply();
+
             _lastStop = Time.realtimeSinceStartup;
 
             onTimeChanged.Invoke(timeArgs);
@@ -492,8 +495,13 @@ namespace VamTimeline
 
         public void StopAndReset()
         {
+            var wasCurrentMainInLayer = current.playbackMainInLayer;
             animation.StopAndReset();
-            SelectAnimation(animation.GetDefaultClip());
+            var defaultClip = animation.GetDefaultClip();
+            if (defaultClip != current)
+                SelectAnimation(defaultClip);
+            else if(!wasCurrentMainInLayer)
+                SampleOrPose();
             onTimeChanged.Invoke(timeArgs);
         }
 
@@ -611,7 +619,6 @@ namespace VamTimeline
         public void SelectAnimation(AtomAnimationClip clip)
         {
             if (current == clip) return;
-            if (clip == null) return;
             var previous = current;
             current = clip;
             onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
@@ -627,11 +634,16 @@ namespace VamTimeline
             else
             {
                 previous.clipTime = 0f;
-                if (current.pose != null)
-                    current.pose.Apply();
-                else if (!SuperController.singleton.freezeAnimation)
-                    Sample();
+                SampleOrPose();
             }
+        }
+
+        private void SampleOrPose()
+        {
+            if (current.pose != null)
+                current.pose.Apply();
+            else if (!SuperController.singleton.freezeAnimation)
+                Sample();
         }
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()

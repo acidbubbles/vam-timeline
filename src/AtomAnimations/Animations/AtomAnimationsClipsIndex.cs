@@ -109,7 +109,6 @@ namespace VamTimeline
                     byFloatParam.Add(target);
                 }
             }
-            // TODO: This could be optimized but it would be more complex (e.g. adding/removing targets, renaming layers, etc.)
         }
 
         public IList<List<AtomAnimationClip>> ByLayer()
