@@ -255,6 +255,7 @@ namespace VamTimeline
             }
         }
 
+        public float halfBlendInDuration { get; private set; } = DefaultBlendDuration / 2f;
         public float blendInDuration
         {
             get
@@ -265,6 +266,7 @@ namespace VamTimeline
             {
                 if (_blendDuration == value) return;
                 _blendDuration = value;
+                halfBlendInDuration = value / 2f;
                 UpdateForcedNextAnimationTime();
                 onAnimationSettingsChanged.Invoke(nameof(blendInDuration));
             }

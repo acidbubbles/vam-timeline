@@ -276,11 +276,11 @@ namespace VamTimeline
         public void PlayClip(AtomAnimationClip clip, bool sequencing, bool allowPreserveLoops = true)
         {
             paused = false;
-            var playingChanged = false;
+            var isPlayingChanged = false;
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
             if (!isPlaying)
             {
-                playingChanged = true;
+                isPlayingChanged = true;
                 isPlaying = true;
                 this.sequencing = this.sequencing || sequencing;
                 fadeManager?.SyncFadeTime();
@@ -315,17 +315,17 @@ namespace VamTimeline
                 clip.animationPattern.ResetAndPlay();
             }
 
-            if (sequencing && clip.nextAnimationName != null)
-                AssignNextAnimation(clip);
-
-            if (playingChanged)
+            if (isPlayingChanged)
                 onIsPlayingChanged.Invoke(clip);
 
             if (clip.playbackEnabled)
                 PlaySiblings(clip);
+
+            if (sequencing && clip.nextAnimationName != null)
+                AssignNextAnimation(clip);
         }
 
-        private void PlaySiblings(AtomAnimationClip clip, bool allowPreserveLoops = true)
+        private void PlaySiblings(AtomAnimationClip clip)
         {
             var siblings = clip.animationSet != null ? index.BySet(clip.animationSet) : index.ByName(clip.animationName);
             if (siblings.Count < 2) return;
@@ -346,7 +346,13 @@ namespace VamTimeline
                 }
                 if (main == null)
                 {
-                    PlayClip(sibling, sequencing, allowPreserveLoops);
+                    BlendIn(sibling, sibling.blendInDuration);
+                    sibling.playbackMainInLayer = true;
+                    if (!ReferenceEquals(sibling.animationPattern, null))
+                    {
+                        sibling.animationPattern.SetBoolParamValue("loopOnce", false);
+                        sibling.animationPattern.ResetAndPlay();
+                    }
                     continue;
                 }
                 if (clip.animationSet != null && main.animationSet == clip.animationSet) return;
@@ -665,18 +671,26 @@ namespace VamTimeline
 
                         nextTime = nextTime.RoundToNearest(source.animationLength);
                     }
-                    nextTime = nextTime - next.blendInDuration / 2f + (source.animationLength - source.clipTime);
-                    //SuperController.LogMessage($"T{Time.time:0.000}s: clip: {source.clipTime}, next: {nextTime:0.000}s");
+
+                    if (source.playbackBlendWeight > 0f)
+                        nextTime += source.animationLength - source.clipTime;
                 }
                 else if (source.nextAnimationTimeRandomize > 0f)
                 {
                     nextTime = Random.Range(nextTime, nextTime + source.nextAnimationTimeRandomize);
                 }
+                nextTime -= next.halfBlendInDuration;
             }
             else
             {
                 nextTime = Mathf.Min(nextTime, source.animationLength - next.blendInDuration);
-                if (nextTime < float.Epsilon) nextTime = float.Epsilon;
+            }
+
+            if (nextTime < float.Epsilon)
+            {
+                // SuperController.LogError($"Timeline: Blending from animation {source.animationNameQualified} to {next.animationNameQualified} with blend time {next.blendInDuration} results in negative value: {nextTime}. Transition will be skipped.");
+                // return;
+                nextTime = 0f;
             }
 
             ScheduleNextAnimation(source, next, nextTime);
@@ -685,7 +699,8 @@ namespace VamTimeline
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, float nextTime)
         {
             source.playbackScheduledNextAnimationName = next.animationName;
-            source.playbackScheduledNextTimeLeft = nextTime - source.clipTime;
+            source.playbackScheduledNextTimeLeft = nextTime;
+
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * speed;
@@ -695,33 +710,45 @@ namespace VamTimeline
                     source.playbackScheduledFadeOutAtRemaining = float.NaN;
                 }
             }
-            SyncSiblingClips(source, next);
+
+            ScheduleSiblingsNextAnimation(source, next);
         }
 
-        private void SyncSiblingClips(AtomAnimationClip source, AtomAnimationClip next)
+        private void ScheduleSiblingsNextAnimation(AtomAnimationClip source, AtomAnimationClip next)
         {
-            AtomAnimationClip siblingSourceClip = null;
-            AtomAnimationClip siblingNextClip = null;
-
             var layers = index.ByLayer();
             for (var i = 0; i < layers.Count; i++)
             {
                 var layer = layers[i];
                 if (layer[0].animationLayer == source.animationLayer) continue;
+
+                AtomAnimationClip siblingSourceClip = null;
                 for (var j = 0; j < layer.Count; j++)
                 {
                     var clip = layer[j];
-                    if (clip.animationName == source.animationName) siblingSourceClip = clip;
-                    else if (clip.animationName == next.animationName) siblingNextClip = clip;
-                    if (siblingSourceClip != null && siblingNextClip != null) break;
+                    if (clip.animationSet == source.animationSet || clip.animationName == source.animationName)
+                    {
+                        siblingSourceClip = clip;
+                        break;
+                    }
                 }
-                if (siblingSourceClip != null && siblingNextClip != null) break;
+                if (siblingSourceClip == null) continue;
+
+                AtomAnimationClip siblingNextClip = null;
+                for (var j = 0; j < layer.Count; j++)
+                {
+                    var clip = layer[j];
+                    if (clip.animationSet == next.animationSet || clip.animationName == next.animationName)
+                    {
+                        siblingNextClip = clip;
+                        break;
+                    }
+                }
+                if (siblingNextClip == null) continue;
+
+                siblingSourceClip.playbackScheduledNextAnimationName = siblingNextClip.animationName;
+                siblingSourceClip.playbackScheduledNextTimeLeft = source.playbackScheduledNextTimeLeft;
             }
-
-            if (siblingSourceClip == null || siblingNextClip == null) return;
-
-            siblingSourceClip.playbackScheduledNextAnimationName = siblingNextClip.animationName;
-            siblingSourceClip.playbackScheduledNextTimeLeft = source.playbackScheduledNextTimeLeft;
         }
 
         #endregion
