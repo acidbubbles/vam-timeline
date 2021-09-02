@@ -305,7 +305,7 @@ namespace VamTimeline
             };
             RegisterFloat(_scrubberJSON);
 
-            _timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animationEditContext.playTime = v.Snap(), 0f, float.MaxValue)
+            _timeJSON = new JSONStorableFloat(StorableNames.Time, 0f, v => animationEditContext.clipTime = v, 0f, float.MaxValue)
             {
                 isStorable = false,
                 isRestorable = false

@@ -59,25 +59,7 @@ namespace VamTimeline
 
         public bool simulationFrozen;
 
-        private float _playTime;
-        public float playTime
-        {
-            get
-            {
-                return _playTime;
-            }
-            set
-            {
-                _playTime = value;
-                for (var i = 0; i < clips.Count; i++)
-                {
-                    var clip = clips[i];
-                    clip.clipTime = _playTime;
-                    if (clip.animationPattern != null)
-                        clip.animationPattern.SetFloatParamValue("currentTime", clip.clipTime);
-                }
-            }
-        }
+        public float playTime { get; private set; }
 
         private float _speed = 1f;
         public float speed
@@ -251,7 +233,7 @@ namespace VamTimeline
             }
 
             speed = 1f;
-            _playTime = 0f;
+            playTime = 0f;
         }
 
         #endregion
@@ -455,12 +437,9 @@ namespace VamTimeline
         public void ResetAll()
         {
             isPlaying = false;
-            _playTime = 0f;
+            playTime = 0f;
             foreach (var clip in clips)
-            {
                 clip.Reset(true);
-            }
-            playTime = playTime;
         }
 
         public void StopAndReset()
@@ -1150,7 +1129,7 @@ namespace VamTimeline
             SampleTriggers();
             ProcessAnimationSequence(GetDeltaTime() * speed);
 
-            if (fadeManager?.black == true && _playTime > _scheduleFadeIn && !simulationFrozen)
+            if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)
             {
                 _scheduleFadeIn = float.MaxValue;
                 fadeManager.FadeIn();
@@ -1223,7 +1202,7 @@ namespace VamTimeline
 
                 if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayer == index.mainLayer)
                 {
-                    _scheduleFadeIn = _playTime + fadeManager.halfBlackTime;
+                    _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
                 }
             }
 
@@ -1238,9 +1217,9 @@ namespace VamTimeline
             if (!allowAnimationProcessing || paused) return;
 
             var delta = GetDeltaTime() * _speed;
-            _playTime += delta;
+            playTime += delta;
 
-            if (autoStop > 0f && _playTime >= autoStop)
+            if (autoStop > 0f && playTime >= autoStop)
             {
                 StopAll();
                 return;

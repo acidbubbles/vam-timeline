@@ -125,10 +125,10 @@ namespace VamTimeline
             }
             set
             {
-                animation.playTime = value;
                 if (current == null) return;
                 var clips = animation.index.GetSiblings(current);
-                for(var i = 0; i < clips.Count; i++)
+                var clipsToUpdate = GetMainClipPerLayer();
+                for(var i = 0; i < clipsToUpdate.Length; i++)
                 {
                     var clip = clips[i];
                     clip.clipTime = value;
@@ -164,15 +164,6 @@ namespace VamTimeline
             get
             {
                 return animation.playTime;
-            }
-            set
-            {
-                animation.playTime = value;
-                if (!current.playbackEnabled)
-                    current.clipTime = value;
-                if (!animation.isPlaying || animation.paused)
-                    Sample();
-                onTimeChanged.Invoke(timeArgs);
             }
         }
 
@@ -633,11 +624,14 @@ namespace VamTimeline
             {
                 animation.PlayClip(current, animation.sequencing);
             }
-
-            if (current.pose != null)
-                current.pose.Apply();
-            else if (!SuperController.singleton.freezeAnimation)
-                Sample();
+            else
+            {
+                previous.clipTime = 0f;
+                if (current.pose != null)
+                    current.pose.Apply();
+                else if (!SuperController.singleton.freezeAnimation)
+                    Sample();
+            }
         }
 
         public IEnumerable<IAtomAnimationTarget> GetAllOrSelectedTargets()
