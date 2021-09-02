@@ -506,11 +506,8 @@ namespace VamTimeline
                         }
                         else if (clip.playbackBlendWeight <= 0f)
                         {
-                            clip.playbackBlendRate = 0f;
-                            clip.playbackBlendWeight = 0f;
                             clip.Leave();
-                            clip.playbackEnabled = false;
-                            clip.clipTime = 0f;
+                            clip.Reset(true);
                             onClipIsPlayingChanged.Invoke(clip);
                         }
                     }
@@ -533,8 +530,8 @@ namespace VamTimeline
             }
             else
             {
-                if (!clip.playbackEnabled) clip.playbackBlendWeight = 0f;
-                clip.playbackBlendRate = (1f - clip.playbackBlendWeight) / blendDuration;
+                if (!clip.playbackEnabled) clip.playbackBlendWeight = float.Epsilon;
+                clip.playbackBlendRate = 1f / blendDuration;
             }
 
             var wasEnabled = clip.playbackEnabled;
@@ -549,12 +546,12 @@ namespace VamTimeline
 
             if (blendDuration == 0)
             {
-                clip.Reset(true);
                 clip.Leave();
+                clip.Reset(true);
             }
             else
             {
-                clip.playbackBlendRate = (0f - clip.playbackBlendWeight) / blendDuration;
+                clip.playbackBlendRate = -1f / blendDuration;
             }
         }
 
