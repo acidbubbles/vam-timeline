@@ -126,9 +126,8 @@ namespace VamTimeline
             set
             {
                 if (current == null) return;
-                var clips = animation.index.GetSiblings(current);
-                var clipsToUpdate = GetMainClipPerLayer();
-                for(var i = 0; i < clipsToUpdate.Length; i++)
+                var clips = animation.index.GetSiblingsByLayer(current);
+                for(var i = 0; i < clips.Count; i++)
                 {
                     var clip = clips[i];
                     clip.clipTime = value;
