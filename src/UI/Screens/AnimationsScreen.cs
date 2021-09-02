@@ -50,7 +50,7 @@ namespace VamTimeline
 
         private void InitAnimButton(AtomAnimationClip clip)
         {
-            var btn = prefabFactory.CreateButton("...");
+            var btn = prefabFactory.CreateButton("");
             btn.buttonText.alignment = TextAnchor.MiddleLeft;
             btn.button.onClick.AddListener(() =>
             {
@@ -72,18 +72,21 @@ namespace VamTimeline
             var playLabel = $" \u25B6 {clip.animationName}";
             while (!disposing)
             {
-                if (!clip.playbackEnabled && !clip.playbackMainInLayer)
+                if (UIPerformance.ShouldSkip(UIPerformance.LowFrequency))
+                    yield return 0;
+
+                if (!clip.playbackMainInLayer)
                 {
                     if (btn.label != playLabel)
                         btn.label = playLabel;
                 }
                 else
                 {
-                    btn.label = $" \u25A0 [time: {clip.clipTime:00.000}, weight: {Mathf.Round(clip.playbackBlendWeight * 100f):000}%]";
+                    //btn.label = $" \u25A0 [{clip.clipTime:00.000}, weight: {Mathf.Round(clip.playbackBlendWeight * 100f):000}%]";
+                    btn.label = $" \u25A0 [{clip.clipTime:00.00}] {clip.animationName}";
                 }
 
-                for (var i = 0; i < 4; i++)
-                    yield return 0;
+                yield return 0;
             }
         }
     }
