@@ -685,7 +685,7 @@ namespace VamTimeline
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, float nextTime)
         {
             source.playbackScheduledNextAnimationName = next.animationName;
-            source.playbackScheduledNextTimeLeft = nextTime;
+            source.playbackScheduledNextTimeLeft = nextTime - source.clipTime;
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * speed;
