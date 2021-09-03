@@ -300,14 +300,20 @@ namespace VamTimeline
                 ScheduleNextAnimation(
                     previousMain,
                     clip,
-                    previousMain.loop && previousMain.preserveLoops && clip.loop && clip.preserveLoops
+                    previousMain.loop && previousMain.preserveLoops && clip.preserveLoops
                         ? previousMain.animationLength - clip.blendInDuration / 2f - previousMain.clipTime
                         : 0f);
             }
             else
             {
+                var blendInDuration = clip.recording ? 0f : clip.blendInDuration;
+                if (previousMain != null)
+                {
+                    BlendOut(previousMain, blendInDuration);
+                    previousMain.playbackMainInLayer = false;
+                }
                 if (clip.clipTime >= clip.animationLength) clip.clipTime = 0f;
-                BlendIn(clip, clip.recording ? 0f : clip.blendInDuration);
+                BlendIn(clip, blendInDuration);
                 clip.playbackMainInLayer = true;
             }
 
@@ -647,7 +653,7 @@ namespace VamTimeline
             }
             else
             {
-                next = GetClip(source.animationLayer, source.nextAnimationName);
+                next = index.ByLayer(source.animationLayer).FirstOrDefault(c => c.animationName == source.nextAnimationName);
             }
 
             if (next == null) return;
@@ -730,7 +736,7 @@ namespace VamTimeline
                 for (var j = 0; j < layer.Count; j++)
                 {
                     var clip = layer[j];
-                    if (clip.animationSet == source.animationSet || clip.animationName == source.animationName)
+                    if (clip.animationSet != null && clip.animationSet == source.animationSet || clip.animationName == source.animationName)
                     {
                         siblingSourceClip = clip;
                         break;
@@ -742,7 +748,7 @@ namespace VamTimeline
                 for (var j = 0; j < layer.Count; j++)
                 {
                     var clip = layer[j];
-                    if (clip.animationSet == next.animationSet || clip.animationName == next.animationName)
+                    if (clip.animationSet != null && clip.animationSet == next.animationSet || clip.animationName == next.animationName)
                     {
                         siblingNextClip = clip;
                         break;
@@ -1225,7 +1231,7 @@ namespace VamTimeline
                 var nextAnimationName = clip.playbackScheduledNextAnimationName;
                 clip.playbackScheduledNextAnimationName = null;
                 clip.playbackScheduledNextTimeLeft = float.NaN;
-                var nextClip = GetClip(clip.animationLayer, nextAnimationName);
+                var nextClip = index.ByLayer(clip.animationLayer).FirstOrDefault(c => c.animationName == nextAnimationName);
                 if (nextClip == null)
                 {
                     SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
