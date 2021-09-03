@@ -34,6 +34,7 @@
 ..\src\AtomAnimations\Editing\AtomAnimationBackup.cs
 ..\src\AtomAnimations\Editing\AtomAnimationEditContext.cs
 ..\src\AtomAnimations\Editing\FreeControllerV3Hook.cs
+..\src\AtomAnimations\Logging\FloatExtensions.cs
 ..\src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs
 ..\src\AtomAnimations\Operations\Reduction\FloatParamTargetReduceProcessor.cs
 ..\src\AtomAnimations\Operations\Reduction\ITargetReduceProcessor.cs
@@ -105,6 +106,7 @@
 ..\src\UI\Screens\HelpScreen.cs
 ..\src\UI\Screens\ImportExportScreen.cs
 ..\src\UI\Screens\LockedScreen.cs
+..\src\UI\Screens\LoggingScreen.cs
 ..\src\UI\Screens\ManageAnimationsScreen.cs
 ..\src\UI\Screens\MocapScreen.cs
 ..\src\UI\Screens\MoreScreen.cs

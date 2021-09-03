@@ -8,7 +8,6 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -32,6 +31,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b>Diagnostics</b> and scene analysis...", DiagnosticsScreen.ScreenName);
             CreateChangeScreenButton("<b>Options</b>...", OptionsScreen.ScreenName);
+            CreateChangeScreenButton("<b>Logging</b>...", LoggingScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 

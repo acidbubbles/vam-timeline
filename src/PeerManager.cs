@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 // ReSharper disable UnusedParameter.Local
 
@@ -15,14 +16,16 @@ namespace VamTimeline
         private readonly List<JSONStorable> _peers = new List<JSONStorable>();
         private readonly Atom _containingAtom;
         private readonly IAtomPlugin _plugin;
+        private readonly Logger _logger;
         private bool _receiving;
         private int _sending;
         private bool _reportedLengthErrorOnce;
 
-        public PeerManager(Atom containingAtom, IAtomPlugin plugin)
+        public PeerManager(Atom containingAtom, IAtomPlugin plugin, Logger logger)
         {
             _containingAtom = containingAtom;
             _plugin = plugin;
+            _logger = logger;
         }
 
         #region Unity integration
@@ -55,6 +58,9 @@ namespace VamTimeline
 
             if (_receiving)
                 throw new InvalidOperationException("Already syncing, infinite loop avoided!");
+
+            if (_logger.peersSync)
+                _logger.Log(_logger.peersSyncCategory, $"Receiving '{e[0]}'");
 
             _receiving = true;
             try
@@ -93,6 +99,9 @@ namespace VamTimeline
                         break;
                     case nameof(SendStopRecording):
                         ReceiveStopRecording(e);
+                        break;
+                    case nameof(SendLoggingSettings):
+                        ReceiveLoggingSettings(e);
                         break;
                     default:
                         SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
@@ -426,9 +435,34 @@ namespace VamTimeline
             animation.RestoreTemporaryTimeMode();
         }
 
+        public void SendLoggingSettings()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendLoggingSettings), // 0
+                 _logger.filter, // 1
+                 _logger.triggers, // 2
+                 _logger.sequencing, // 3
+                 _logger.peersSync, // 4
+                 _logger.blending // 5
+            });
+        }
+
+        private void ReceiveLoggingSettings(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 5)) return;
+            _logger.filter = (Regex)e[1];
+            _logger.triggers = (bool)e[2];
+            _logger.sequencing = (bool)e[3];
+            _logger.peersSync = (bool)e[4];
+            _logger.blending = (bool)e[5];
+        }
+
         private void SendTimelineEvent(object[] e)
         {
             if (!animation.syncWithPeers) return;
+            if (_logger.peersSync)
+                _logger.Log(_logger.peersSyncCategory, $"Broadcasting '{e[0]}'");
             Begin();
             try
             {

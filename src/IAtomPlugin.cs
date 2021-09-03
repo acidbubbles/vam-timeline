@@ -20,6 +20,7 @@ namespace VamTimeline
     {
         AtomAnimation animation { get; }
         AtomAnimationEditContext animationEditContext { get; }
+        Logger logger { get; }
         AtomAnimationSerializer serializer { get; }
         PeerManager peers { get; }
         OperationsFactory operations { get; }

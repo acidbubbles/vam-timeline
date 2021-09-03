@@ -80,6 +80,8 @@ namespace VamTimeline
         private AtomAnimation _animation;
         private Coroutine _lateSample;
 
+        public Logger logger;
+
         public AtomAnimation animation
         {
             get
@@ -249,6 +251,8 @@ namespace VamTimeline
 
         public void Stop()
         {
+            if (logger.general) logger.Log(logger.generalCategory, "Request Stop");
+
             var wasCurrentMainInLayer = current.playbackMainInLayer;
 
             if (animation.isPlaying)
@@ -268,11 +272,17 @@ namespace VamTimeline
 
         public void PlayCurrentClip()
         {
+            logger.Begin();
+            if (logger.general) logger.Log(logger.generalCategory, $"Request Play {current.animationNameQualified}");
+
             animation.PlayClip(current, false);
         }
 
         public void PlayAll()
         {
+            logger.Begin();
+            if (logger.general) logger.Log(logger.generalCategory,"Request Play All");
+
             PlayCurrentAndOtherMainsInLayers();
         }
 

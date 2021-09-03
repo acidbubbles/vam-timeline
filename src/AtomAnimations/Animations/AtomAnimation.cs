@@ -30,6 +30,8 @@ namespace VamTimeline
         public readonly IsPlayingEvent onIsPlayingChanged = new IsPlayingEvent();
         public readonly IsPlayingEvent onClipIsPlayingChanged = new IsPlayingEvent();
 
+        public Logger logger;
+
         public IFadeManager fadeManager;
         private float _scheduleFadeIn = float.MaxValue;
 
