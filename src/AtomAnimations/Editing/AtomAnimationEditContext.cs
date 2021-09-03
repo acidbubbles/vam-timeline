@@ -30,6 +30,8 @@ namespace VamTimeline
         public readonly ScrubberRangeChangedEvent onScrubberRangeChanged = new ScrubberRangeChangedEvent();
         public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
 
+        public PeerManager peers;
+
         public AtomClipboard clipboard { get; } = new AtomClipboard();
 
         private bool _sampleAfterRebuild;
@@ -268,6 +270,8 @@ namespace VamTimeline
 
             onTimeChanged.Invoke(timeArgs);
             Sample();
+
+            peers.SendStop();
         }
 
         public void PlayCurrentClip()

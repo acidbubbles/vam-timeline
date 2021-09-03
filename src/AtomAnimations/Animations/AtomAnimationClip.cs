@@ -504,7 +504,6 @@ namespace VamTimeline
                     target.recording = false;
                 }
             }
-
             clipTime = resetTime ? 0f : clipTime.Snap();
         }
 

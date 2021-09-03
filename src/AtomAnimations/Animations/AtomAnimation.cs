@@ -300,7 +300,7 @@ namespace VamTimeline
                 ScheduleNextAnimation(
                     previousMain,
                     clip,
-                    previousMain.loop && previousMain.preserveLoops && clip.preserveLoops
+                    previousMain.loop && previousMain.preserveLoops && clip.loop && clip.preserveLoops
                         ? previousMain.animationLength - clip.blendInDuration / 2f - previousMain.clipTime
                         : 0f);
             }

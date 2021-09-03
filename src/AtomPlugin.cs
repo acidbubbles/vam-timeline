@@ -479,6 +479,7 @@ namespace VamTimeline
             animationEditContext = gameObject.AddComponent<AtomAnimationEditContext>();
             if (animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
             animationEditContext.logger = logger;
+            animationEditContext.peers = peers;
             animationEditContext.animation = animation;
         }
 
@@ -781,9 +782,7 @@ namespace VamTimeline
         {
             _isPlayingJSON.valNoCallback = animation.isPlaying;
             _freeControllerHook.enabled = !animation.isPlaying;
-            if (!animation.isPlaying)
-                peers.SendStop();
-            else
+            if (animation.isPlaying)
                 peers.SendPlaybackState(clip);
         }
 

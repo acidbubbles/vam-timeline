@@ -17,6 +17,7 @@ namespace VamTimeline
 
         public void Update(float clipTime)
         {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (clipTime >= startTime && (clipTime < endTime || startTime == endTime))
             {
                 active = true;
@@ -37,7 +38,7 @@ namespace VamTimeline
 
         #region JSON
 
-        public override JSONClass GetJSON(string subScenePrefix = null)
+        public override JSONClass GetJSON(string subScenePrefix)
         {
             var jc = base.GetJSON(subScenePrefix);
             jc["startTime"].AsFloat = startTime;
