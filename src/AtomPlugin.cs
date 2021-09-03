@@ -254,7 +254,7 @@ namespace VamTimeline
             _animationLegacyJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val =>
             {
                 if (string.IsNullOrEmpty(val)) return;
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.Animation} = '{val}'");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
                 var clip = animation.clips.FirstOrDefault(c => c.animationName == val);
                 if (clip == null) return;
                 if (animationEditContext.current != clip)
@@ -271,7 +271,7 @@ namespace VamTimeline
 
             _nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimationLegacy, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.NextAnimationLegacy}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimationLegacy}'");
                 if (_animationLegacyJSON.choices.Count < 2) return;
                 var clip = string.IsNullOrEmpty(_animationLegacyJSON.val)
                     ? animation.clips[0]
@@ -287,7 +287,7 @@ namespace VamTimeline
 
             _previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimationLegacy, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.PreviousAnimationLegacy}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimationLegacy}'");
                 if (_animationLegacyJSON.choices.Count < 2) return;
                 var clip = string.IsNullOrEmpty(_animationLegacyJSON.val)
                     ? animation.clips[0]
@@ -303,14 +303,14 @@ namespace VamTimeline
 
             _nextAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.NextAnimationInMainLayer, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.NextAnimationInMainLayer}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimationInMainLayer}'");
                 animationEditContext.GoToNextAnimation(animation.clips[0].animationLayer);
             });
             RegisterAction(_nextAnimationInMainLayerJSON);
 
             _previousAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.PreviousAnimationInMainLayer, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.PreviousAnimationInMainLayer}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimationInMainLayer}'");
                 animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayer);
             });
             RegisterAction(_previousAnimationInMainLayerJSON);
@@ -331,7 +331,7 @@ namespace VamTimeline
 
             _playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.Play}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Play}'");
                 var selected = string.IsNullOrEmpty(_animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(_animationLegacyJSON.val).FirstOrDefault();
                 animation.PlayOneAndOtherMainsInLayers(selected);
             });
@@ -339,7 +339,7 @@ namespace VamTimeline
 
             _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.PlayIfNotPlaying}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PlayIfNotPlaying}'");
                 var selected = string.IsNullOrEmpty(_animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(_animationLegacyJSON.val).FirstOrDefault();
                 if (selected == null) return;
                 if (!animation.isPlaying)
@@ -364,7 +364,7 @@ namespace VamTimeline
 
             _stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.Stop}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Stop}'");
                 if (animation.isPlaying)
                     animation.StopAll();
                 else
@@ -375,14 +375,14 @@ namespace VamTimeline
             _stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
                 if (!animation.isPlaying) return;
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.StopIfPlaying}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopIfPlaying}'");
                 animation.StopAll();
             });
             RegisterAction(_stopIfPlayingJSON);
 
             _stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {StorableNames.StopAndReset}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopAndReset}'");
                 animationEditContext.StopAndReset();
                 peers.SendStopAndReset();
             });
@@ -681,7 +681,7 @@ namespace VamTimeline
             var playRandomizedGroupName = $"Play {groupKey}{AtomAnimation.RandomizeGroupSuffix}";
             RegisterAction(new JSONStorableAction(playRandomizedGroupName, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {playRandomizedGroupName}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playRandomizedGroupName}'");
                 animation.PlayRandom(groupKey);
             }));
 
@@ -710,7 +710,7 @@ namespace VamTimeline
             var playName = $"Play {animationName}";
             var playClipJSON = new JSONStorableAction(playName, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered {playName}");
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playName}'");
                 animation.PlayClips(animationName, true);
             });
             RegisterAction(playClipJSON);
@@ -1018,13 +1018,20 @@ namespace VamTimeline
                     operations.Targets().Add(targetCtrl);
                 });
             }));
-            bindings.Add(new JSONStorableAction("Logging_EnableDefault", () =>
+            bindings.Add(new JSONStorableAction("Logging_EnableDefaultThis", () =>
             {
                 logger.clearOnPlay = true;
                 logger.general = true;
                 logger.triggers = true;
                 logger.sequencing = true;
-                logger.peersSync = true;
+            }));
+            bindings.Add(new JSONStorableAction("Logging_EnableDefaultAll", () =>
+            {
+                logger.clearOnPlay = true;
+                logger.general = true;
+                logger.triggers = true;
+                logger.sequencing = true;
+                peers.SendLoggingSettings();
             }));
 
             bindings.Add(_scrubberAnalogControlJSON);

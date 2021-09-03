@@ -52,6 +52,11 @@ namespace VamTimeline
             _peers.Remove(storable);
         }
 
+        private bool IsExcludedFromLogging(string eventName)
+        {
+            return eventName == nameof(SendScreen) || eventName == nameof(SendLoggingSettings);
+        }
+
         public void OnTimelineEvent(object[] e)
         {
             if (!animation.syncWithPeers) return;
@@ -59,13 +64,15 @@ namespace VamTimeline
             if (_receiving)
                 throw new InvalidOperationException("Already syncing, infinite loop avoided!");
 
-            if (_logger.peersSync)
+            var eventName = (string)e[0];
+
+            if (_logger.peersSync && !IsExcludedFromLogging(eventName))
                 _logger.Log(_logger.peersSyncCategory, $"Receiving '{e[0]}'");
 
             _receiving = true;
             try
             {
-                switch ((string)e[0])
+                switch (eventName)
                 {
                     case nameof(SendPlaybackState):
                         ReceivePlaybackState(e);
@@ -441,27 +448,29 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendLoggingSettings), // 0
                  _logger.filter, // 1
-                 _logger.triggers, // 2
-                 _logger.sequencing, // 3
-                 _logger.peersSync, // 4
-                 _logger.blending // 5
+                 _logger.clearOnPlay, // 2
+                 _logger.general, // 3
+                 _logger.triggers, // 4
+                 _logger.sequencing, // 5
+                 _logger.peersSync, // 6
             });
         }
 
         private void ReceiveLoggingSettings(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 5)) return;
+            if (!ValidateArgumentCount(e.Length, 7)) return;
             _logger.filter = (Regex)e[1];
-            _logger.triggers = (bool)e[2];
-            _logger.sequencing = (bool)e[3];
-            _logger.peersSync = (bool)e[4];
-            _logger.blending = (bool)e[5];
+            _logger.clearOnPlay = (bool)e[2];
+            _logger.general = (bool)e[3];
+            _logger.triggers = (bool)e[4];
+            _logger.sequencing = (bool)e[5];
+            _logger.peersSync = (bool)e[6];
         }
 
         private void SendTimelineEvent(object[] e)
         {
             if (!animation.syncWithPeers) return;
-            if (_logger.peersSync)
+            if (_logger.peersSync && !IsExcludedFromLogging((string)e[0]))
                 _logger.Log(_logger.peersSyncCategory, $"Broadcasting '{e[0]}'");
             Begin();
             try
@@ -502,7 +511,7 @@ namespace VamTimeline
             if (actualLength >= expectedLength) return true;
             if (_reportedLengthErrorOnce) return false;
             _reportedLengthErrorOnce = true;
-            SuperController.LogError($"Atom {_plugin.containingAtom.name} received a peer message with the wrong number of arguments. This usually means you have more than one version of Timeline in your scene. Make sure all Timeline instances are running the same version.");
+            SuperController.LogError($"Atom {_plugin.containingAtom.name} received a peer message with the wrong number of arguments. This usually means you have more than one version of Timeline in your scene. Make sure all Timeline instances are running the same version. Actual: {actualLength}, Expected: {expectedLength}.");
             return false;
 
         }

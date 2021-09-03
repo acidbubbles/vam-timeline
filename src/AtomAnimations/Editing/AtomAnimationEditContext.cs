@@ -251,7 +251,7 @@ namespace VamTimeline
 
         public void Stop()
         {
-            if (logger.general) logger.Log(logger.generalCategory, "Request Stop");
+            if (logger.general) logger.Log(logger.generalCategory, "Edit: Stop");
 
             var wasCurrentMainInLayer = current.playbackMainInLayer;
 
@@ -273,7 +273,7 @@ namespace VamTimeline
         public void PlayCurrentClip()
         {
             logger.Begin();
-            if (logger.general) logger.Log(logger.generalCategory, $"Request Play {current.animationNameQualified}");
+            if (logger.general) logger.Log(logger.generalCategory, $"Edit: Play {current.animationNameQualified}");
 
             animation.PlayClip(current, false);
         }
@@ -281,7 +281,7 @@ namespace VamTimeline
         public void PlayAll()
         {
             logger.Begin();
-            if (logger.general) logger.Log(logger.generalCategory,"Request Play All");
+            if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
             PlayCurrentAndOtherMainsInLayers();
         }

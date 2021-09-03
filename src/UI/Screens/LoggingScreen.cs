@@ -23,7 +23,7 @@ namespace VamTimeline
 
             var toggleAllJSON = new JSONStorableBool("Toggle all", false)
             {
-                valNoCallback = plugin.logger.general || plugin.logger.triggers || plugin.logger.sequencing || plugin.logger.peersSync || plugin.logger.blending
+                valNoCallback = plugin.logger.clearOnPlay || plugin.logger.general || plugin.logger.triggers || plugin.logger.sequencing || plugin.logger.peersSync
             };
             prefabFactory.CreateToggle(toggleAllJSON);
 
@@ -41,9 +41,6 @@ namespace VamTimeline
             var peerSyncJSON = new JSONStorableBool("Peer syncing", false, val => plugin.logger.peersSync = val) { valNoCallback = plugin.logger.peersSync };
             prefabFactory.CreateToggle(peerSyncJSON);
 
-            var blendingJSON = new JSONStorableBool("Blending", false, val => plugin.logger.blending = val) { valNoCallback = plugin.logger.blending };
-            prefabFactory.CreateToggle(blendingJSON);
-
             var filterJSON = new JSONStorableString("Filter", "", val =>
             {
                 if (string.IsNullOrEmpty(val))
@@ -53,7 +50,7 @@ namespace VamTimeline
                 }
                 var regex = new Regex(val, RegexOptions.Compiled);
                 plugin.logger.filter = regex;
-            });
+            }){valNoCallback = plugin.logger.filter?.ToString()};
             prefabFactory.CreateTextInput(filterJSON);
 
             prefabFactory.CreateSpacer();
@@ -70,12 +67,11 @@ namespace VamTimeline
 
             toggleAllJSON.setCallbackFunction = val =>
             {
+                clearOnPlayJSON.val = val;
                 generalJSON.val = val;
                 triggersJSON.val = val;
                 sequencingJSON.val = val;
                 peerSyncJSON.val = val;
-                blendingJSON.val = val;
-                clearOnPlayJSON.val = val;
             };
         }
     }

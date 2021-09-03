@@ -15,8 +15,6 @@ namespace VamTimeline
         public readonly string sequencingCategory = "seq";
         public bool peersSync { get; set; }
         public readonly string peersSyncCategory = "peer";
-        public bool blending { get; set; }
-        public readonly string blendingCategory = "blend";
 
         public Regex filter { get; set; }
 
@@ -35,7 +33,7 @@ namespace VamTimeline
         public void Log(string category, string message)
         {
             if (filter != null && !filter.IsMatch(message)) return;
-            SuperController.LogMessage($"[{Time.time:0.000} {_containingAtom.name} {category}] {message}");
+            SuperController.LogMessage($"[{Time.time % 100:00.000} {_containingAtom.name} {category}] {message}");
         }
     }
 }

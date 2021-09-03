@@ -143,7 +143,7 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip AddClipAt(AtomAnimationClip clip, int i)
+        private AtomAnimationClip AddClipAt(AtomAnimationClip clip, int i)
         {
             if (i == -1 || i > clips.Count) throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
             clips.Insert(i, clip);
@@ -379,10 +379,9 @@ namespace VamTimeline
         {
             foreach (var clip in GetMainClipPerLayer())
             {
-                if (clip.animationLayer == selected.animationLayer)
-                    PlayClip(selected, sequencing);
-                else
-                    PlayClip(clip, sequencing);
+                PlayClip(
+                    clip.animationLayer == selected.animationLayer ? selected : clip,
+                    sequencing);
             }
         }
 
@@ -400,6 +399,7 @@ namespace VamTimeline
         {
             if (clip.playbackEnabled)
             {
+                if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (stop)");
                 clip.Leave();
                 clip.Reset(false);
                 if (clip.animationPattern)
@@ -508,6 +508,7 @@ namespace VamTimeline
                         }
                         else if (clip.playbackBlendWeight <= 0f)
                         {
+                            if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (blend out complete)");
                             clip.Leave();
                             clip.Reset(true);
                             onClipIsPlayingChanged.Invoke(clip);
@@ -536,10 +537,11 @@ namespace VamTimeline
                 clip.playbackBlendRate = 1f / blendDuration;
             }
 
-            var wasEnabled = clip.playbackEnabled;
+            if (clip.playbackEnabled) return;
+
             clip.playbackEnabled = true;
-            if (!wasEnabled)
-                onClipIsPlayingChanged.Invoke(clip);
+            if (logger.general) logger.Log(logger.generalCategory, $"Enter '{clip.animationNameQualified}'");
+            onClipIsPlayingChanged.Invoke(clip);
         }
 
         private void BlendOut(AtomAnimationClip clip, float blendDuration)
@@ -548,6 +550,7 @@ namespace VamTimeline
 
             if (blendDuration == 0)
             {
+                if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (immediate blend out)");
                 clip.Leave();
                 clip.Reset(true);
             }
@@ -699,6 +702,8 @@ namespace VamTimeline
         {
             source.playbackScheduledNextAnimationName = next.animationName;
             source.playbackScheduledNextTimeLeft = nextTime;
+
+            if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s)");
 
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
@@ -1193,6 +1198,7 @@ namespace VamTimeline
 
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && !clip.infinite)
                 {
+                    if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (non-looping complete)");
                     clip.Leave();
                     clip.Reset(true);
                     onClipIsPlayingChanged.Invoke(clip);
