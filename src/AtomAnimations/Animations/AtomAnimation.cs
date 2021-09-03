@@ -276,8 +276,8 @@ namespace VamTimeline
         public void PlayClip(AtomAnimationClip clip, bool sequencing, bool allowPreserveLoops = true)
         {
             paused = false;
-            var isPlayingChanged = false;
             if (clip.playbackEnabled && clip.playbackMainInLayer) return;
+            var isPlayingChanged = false;
             if (!isPlaying)
             {
                 isPlayingChanged = true;
@@ -1191,8 +1191,10 @@ namespace VamTimeline
 
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && !clip.infinite)
                 {
-                    clip.playbackEnabled = false;
+                    clip.Leave();
+                    clip.Reset(true);
                     onClipIsPlayingChanged.Invoke(clip);
+                    continue;
                 }
 
                 if (!clip.playbackMainInLayer || clip.playbackScheduledNextAnimationName == null)

@@ -159,15 +159,18 @@ namespace VamTimeline
         {
             if (!ValidateArgumentCount(e.Length, 5)) return;
             var clips = GetClips(e);
-            for(var i = 0; i < clips.Count; i++)
+            var isPlaying = (bool)e[2];
+            var clipTime = (float)e[3];
+            var sequencing = (bool)e[4];
+            for (var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
                 if (clip == null) continue;
-                if ((bool)e[2])
-                    animation.PlayClip(clip, (bool)e[4]);
+                if (isPlaying)
+                    animation.PlayClip(clip, sequencing);
                 else
                     animation.StopClip(clip);
-                clip.clipTime = (float)e[3];
+                clip.clipTime = clipTime;
             }
         }
 
