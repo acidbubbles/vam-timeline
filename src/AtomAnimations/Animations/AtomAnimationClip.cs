@@ -22,6 +22,7 @@ namespace VamTimeline
         private bool _preserveLoops = true;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
+        private float _nextAnimationRandomizeWeight;
         private float _nextAnimationTimeRandomize;
         private string _animationName;
         private string _animationLayer;
@@ -296,6 +297,19 @@ namespace VamTimeline
                 if (_nextAnimationTime == value) return;
                 _nextAnimationTime = value;
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(nextAnimationTime));
+            }
+        }
+        public float nextAnimationRandomizeWeight
+        {
+            get
+            {
+                return _nextAnimationRandomizeWeight;
+            }
+            set
+            {
+                if (_nextAnimationRandomizeWeight == value) return;
+                _nextAnimationRandomizeWeight = value;
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(nextAnimationRandomizeWeight));
             }
         }
         public float nextAnimationTimeRandomize

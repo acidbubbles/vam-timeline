@@ -22,6 +22,7 @@ namespace VamTimeline
         private JSONStorableFloat _blendDurationJSON;
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
+        private JSONStorableFloat _nextAnimationRandomizeWeightJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
         private JSONStorableString _animationSetJSON;
         private JSONStorableBool _transitionPreviousJSON;
@@ -41,11 +42,13 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Options", 1);
             InitSequenceMasterUI();
             InitAutoPlayUI();
+            InitBlendUI();
+            InitPreserveLoopsUI();
+            InitUninterruptibleUI();
 
             prefabFactory.CreateHeader("Sequencing", 1);
             InitSequenceUI();
-            InitUninterruptibleUI();
-            InitBlendUI();
+            RandomizeWeightUI();
             InitRandomizeLengthUI();
             InitPreviewUI();
 
@@ -106,6 +109,12 @@ namespace VamTimeline
             nextAnimationTimeUI.valueFormat = "F3";
         }
 
+        private void RandomizeWeightUI()
+        {
+            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, (float val) => SyncPlayNext(), 0f, 10f, false);
+            prefabFactory.CreateSlider(_nextAnimationRandomizeWeightJSON);
+        }
+
         private void InitUninterruptibleUI()
         {
             _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, val =>
@@ -121,7 +130,10 @@ namespace VamTimeline
             _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, UpdateBlendDuration, 0f, 5f, false);
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
+        }
 
+        private void InitPreserveLoopsUI()
+        {
             _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, val =>
             {
                 current.preserveLoops = val;
@@ -141,17 +153,12 @@ namespace VamTimeline
 
         private void InitRandomizeLengthUI()
         {
-            _randomizeRangeJSON = new JSONStorableFloat("Randomize time range (seconds)", 0f, ChangeRandomizeLength, 0f, 60f, false)
+            _randomizeRangeJSON = new JSONStorableFloat("Add random time range", 0f, (float _) => SyncPlayNext(), 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTimeRandomize
             };
             var randomizeRangeUI = prefabFactory.CreateSlider(_randomizeRangeJSON);
             randomizeRangeUI.valueFormat = "F3";
-        }
-
-        private void ChangeRandomizeLength(float val)
-        {
-            SyncPlayNext();
         }
 
         private void InitPreviewUI()
@@ -376,6 +383,7 @@ namespace VamTimeline
             var nextTime = _nextAnimationTimeJSON.val;
             var nextName = _nextAnimationJSON.val;
             var randomizeTime = current.preserveLoops ? _randomizeRangeJSON.val.RoundToNearest(current.animationLength) : _randomizeRangeJSON.val.Snap(animationEditContext.snap);
+            var randomizeWeight = _nextAnimationRandomizeWeightJSON.val;
 
             var clips = animation.index.ByName(current.animationName);
 
@@ -390,6 +398,7 @@ namespace VamTimeline
                     clip.nextAnimationName = null;
                     clip.nextAnimationTime = 0f;
                     clip.nextAnimationTimeRandomize = 0f;
+                    clip.nextAnimationRandomizeWeight = 0f;
                 }
             }
             else
@@ -407,6 +416,15 @@ namespace VamTimeline
                     break;
                 }
 
+                if (nextName != null && nextName.EndsWith("*"))
+                {
+                    if (randomizeWeight == 0) randomizeWeight = 1f;
+                }
+                else
+                {
+                    randomizeWeight = 0f;
+                }
+
                 foreach (var clip in clips)
                 {
                     if (!NextExists(clip, nextName))
@@ -414,17 +432,20 @@ namespace VamTimeline
                         clip.nextAnimationName = null;
                         clip.nextAnimationTime = 0f;
                         clip.nextAnimationTimeRandomize = 0f;
+                        clip.nextAnimationRandomizeWeight = 0f;
                     }
                     else
                     {
                         clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimation.SlaveAnimationName;
                         clip.nextAnimationTime = nextTime;
                         clip.nextAnimationTimeRandomize = randomizeTime;
+                        clip.nextAnimationRandomizeWeight = randomizeWeight;
                     }
                 }
 
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
                 _randomizeRangeJSON.valNoCallback = randomizeTime;
+                _nextAnimationRandomizeWeightJSON.valNoCallback = randomizeWeight;
             }
 
             RefreshTransitionUI();
@@ -474,6 +495,8 @@ namespace VamTimeline
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
+            _nextAnimationRandomizeWeightJSON.valNoCallback = current.nextAnimationRandomizeWeight;
+            _nextAnimationRandomizeWeightJSON.slider.enabled = current.nextAnimationName != null && current.nextAnimationName.EndsWith("*");
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
             _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationName).Count > 1 ? _animationSetAuto : "");
