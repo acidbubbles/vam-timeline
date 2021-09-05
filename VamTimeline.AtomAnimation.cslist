@@ -34,7 +34,7 @@ src\AtomAnimations\Clipboard\AtomClipboardEntry.cs
 src\AtomAnimations\Editing\AtomAnimationBackup.cs
 src\AtomAnimations\Editing\AtomAnimationEditContext.cs
 src\AtomAnimations\Editing\FreeControllerV3Hook.cs
-src\AtomAnimations\Logging\FloatExtensions.cs
+src\AtomAnimations\Logging\Logger.cs
 src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs
 src\AtomAnimations\Operations\Reduction\FloatParamTargetReduceProcessor.cs
 src\AtomAnimations\Operations\Reduction\ITargetReduceProcessor.cs

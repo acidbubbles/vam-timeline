@@ -106,7 +106,7 @@
     <Compile Include="src\AtomAnimations\Editing\AtomAnimationBackup.cs" />
     <Compile Include="src\AtomAnimations\Editing\AtomAnimationEditContext.cs" />
     <Compile Include="src\AtomAnimations\Editing\FreeControllerV3Hook.cs" />
-    <Compile Include="src\AtomAnimations\Logging\FloatExtensions.cs" />
+    <Compile Include="src\AtomAnimations\Logging\Logger.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\FloatParamTargetReduceProcessor.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\ITargetReduceProcessor.cs" />
