@@ -272,8 +272,7 @@ namespace VamTimeline
             if (candidates.Count == 0)
                 return;
 
-            var idx = Random.Range(0, candidates.Count);
-            var clip = candidates[idx];
+            var clip = SelectRandomClip(candidates);
             PlayClip(clip, true);
         }
 
@@ -606,6 +605,22 @@ namespace VamTimeline
             return null;
         }
 
+        private static AtomAnimationClip SelectRandomClip(IList<AtomAnimationClip> candidates)
+        {
+            if (candidates.Count == 1) return candidates[0];
+            var weightSum = candidates.Sum(c => c.nextAnimationRandomizeWeight);
+            var val = Random.Range(0f, weightSum);
+            var cumulativeWeight = 0f;
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var c = candidates[i];
+                cumulativeWeight += c.nextAnimationRandomizeWeight;
+                if (val < cumulativeWeight)
+                    return c;
+            }
+            return candidates[candidates.Count - 1];
+        }
+
         #endregion
 
         #region Animation state
@@ -792,8 +807,7 @@ namespace VamTimeline
                     .Where(c => c.animationName != source.animationName)
                     .ToList();
                 if (candidates.Count == 0) return;
-                var idx = Random.Range(0, candidates.Count);
-                next = candidates[idx];
+                next = SelectRandomClip(candidates);
             }
             else if (TryGetRandomizedGroup(source.nextAnimationName, out group))
             {
@@ -803,8 +817,7 @@ namespace VamTimeline
                     .Where(c => c.animationNameGroup == group)
                     .ToList();
                 if (candidates.Count == 0) return;
-                var idx = Random.Range(0, candidates.Count);
-                next = candidates[idx];
+                next = SelectRandomClip(candidates);
             }
             else
             {
