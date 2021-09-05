@@ -37,8 +37,7 @@ namespace VamTimeline
                 yield break;
             }
 
-            _animation.StopAll();
-            _animation.ResetAll();
+            _animation.StopAndReset();
             _animation.Sample();
 
             ShowText("Preparing to record...");
@@ -195,8 +194,7 @@ namespace VamTimeline
             _peerManager.SendStopRecording();
 
             var resizeOp = new ResizeAnimationOperations();
-            _animation.StopAll();
-            _animation.ResetAll();
+            _animation.StopAndReset();
             ShowText(null);
 
             if (_clip.infinite)

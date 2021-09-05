@@ -277,7 +277,7 @@ namespace VamTimeline
         public void PlayCurrentClip()
         {
             logger.Begin();
-            if (logger.general) logger.Log(logger.generalCategory, $"Edit: Play {current.animationNameQualified}");
+            if (logger.general) logger.Log(logger.generalCategory, $"Edit: Play '{current.animationNameQualified}'");
 
             animation.PlayClip(current, false);
         }
@@ -287,7 +287,11 @@ namespace VamTimeline
             logger.Begin();
             if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
-            PlayCurrentAndOtherMainsInLayers();
+            foreach (var clip in GetMainClipPerLayer())
+            {
+                if (clip == null) continue;
+                animation.PlayClip(clip, true);
+            }
         }
 
         public void PreviousFrame()
@@ -310,7 +314,7 @@ namespace VamTimeline
             if (animIdx == 0) return;
             var prev = layer[animIdx - 1];
             if (animation.isPlaying)
-                animation.PlayClips(prev.animationName, true);
+                animation.PlayClip(prev, true);
             else
                 SelectAnimation(prev);
         }
@@ -325,7 +329,7 @@ namespace VamTimeline
             if (animIdx == layer.Count - 1) return;
             var next = layer[animIdx + 1];
             if (animation.isPlaying)
-                animation.PlayClips(next.animationName, true);
+                animation.PlayClip(next, true);
             else
                 SelectAnimation(next);
         }
@@ -336,7 +340,7 @@ namespace VamTimeline
             var animIdx = layers.IndexOf(current.animationLayer);
             if (animIdx == 0) return;
             var prev = layers[animIdx - 1];
-            SelectAnimation(GetMainClipInLayer(animation.index.ByLayer(prev)));
+            SelectAnimation(animation.index.ByLayer(prev)[0]);
         }
 
         public void GoToNextLayer()
@@ -345,7 +349,7 @@ namespace VamTimeline
             var animIdx = layers.IndexOf(current.animationLayer);
             if (animIdx == layers.Count - 1) return;
             var next = layers[animIdx + 1];
-            SelectAnimation(GetMainClipInLayer(animation.index.ByLayer(next)));
+            SelectAnimation(animation.index.ByLayer(next)[0]);
         }
 
         public void RewindSeconds(float seconds)
@@ -518,15 +522,6 @@ namespace VamTimeline
             onTimeChanged.Invoke(timeArgs);
         }
 
-        public void PlayCurrentAndOtherMainsInLayers(bool sequencing = true)
-        {
-            foreach (var clip in GetMainClipPerLayer())
-            {
-                if (clip == null) continue;
-                animation.PlayClip(clip, sequencing);
-            }
-        }
-
         public void Sample()
         {
             SampleNow();
@@ -581,7 +576,10 @@ namespace VamTimeline
             var list = new AtomAnimationClip[layers.Count];
             for (var i = 0; i < layers.Count; i++)
             {
-                list[i] = GetMainClipInLayer(layers[i]);
+                var layer = layers[i];
+                list[i] = layer[0].animationLayer == current.animationLayer
+                    ? current
+                    : AtomAnimation.GetPrincipalClipInLayer(layer, current.animationName, current.animationSet);
             }
 
             // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer
@@ -593,29 +591,6 @@ namespace VamTimeline
             }
 
             return list;
-        }
-
-        private AtomAnimationClip GetMainClipInLayer(IList<AtomAnimationClip> layer)
-        {
-            AtomAnimationClip clip;
-            if (layer[0].animationLayer == current.animationLayer)
-            {
-                clip = current;
-            }
-            else
-            {
-                clip = (current.animationSet != null ? layer.FirstOrDefault(c => c.animationSet == current.animationSet) : null) ??
-                       layer.FirstOrDefault(c => c.playbackMainInLayer) ??
-                       layer.FirstOrDefault(c => c.animationName == current.animationName) ??
-                       layer.FirstOrDefault(c => c.autoPlay) ??
-                       layer[0];
-
-                // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
-                if (clip.animationSet != null && clip.animationSet != current.animationSet)
-                    clip = null;
-            }
-
-            return clip;
         }
 
         #endregion

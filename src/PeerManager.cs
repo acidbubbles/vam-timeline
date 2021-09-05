@@ -167,25 +167,25 @@ namespace VamTimeline
                  clip.animationName, // 1
                  clip.playbackEnabled, // 2
                  clip.clipTime, // 3
-                 animation.sequencing // 4
+                 animation.sequencing, // 4
+                 clip.animationSet // 5
             });
         }
 
         private void ReceivePlaybackState(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 5)) return;
-            var clips = GetClips(e);
+            if (!ValidateArgumentCount(e.Length, 6)) return;
+            var animationName = (string)e[1];
+            var animationSet = (string)e[5];
             var isPlaying = (bool)e[2];
             var clipTime = (float)e[3];
             var sequencing = (bool)e[4];
-            for (var i = 0; i < clips.Count; i++)
+            if (isPlaying) animation.PlayClipBySet(animationName, animationSet, sequencing);
+
+            var clipsToSyncTime = animation.index.ByName(animationName);
+            for (var i = 0; i < clipsToSyncTime.Count; i++)
             {
-                var clip = clips[i];
-                if (clip == null) continue;
-                if (isPlaying)
-                    animation.PlayClip(clip, sequencing);
-                else
-                    animation.StopClip(clip);
+                var clip = clipsToSyncTime[i];
                 clip.clipTime = clipTime;
             }
         }

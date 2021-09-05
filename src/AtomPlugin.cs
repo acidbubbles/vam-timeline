@@ -260,7 +260,7 @@ namespace VamTimeline
                 if (animationEditContext.current != clip)
                     animationEditContext.SelectAnimation(clip);
                 else if (animation.isPlaying)
-                    animation.PlayClips(val, true);
+                    animation.PlayClipByName(val, true);
                 _animationLegacyJSON.valNoCallback = "";
             })
             {
@@ -712,7 +712,7 @@ namespace VamTimeline
             var playClipJSON = new JSONStorableAction(playName, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playName}'");
-                animation.PlayClips(animationName, true);
+                animation.PlayClipByName(animationName, true);
             });
             RegisterAction(playClipJSON);
 
@@ -827,7 +827,7 @@ namespace VamTimeline
                 if (animationEditContext.current != clip)
                     animationEditContext.SelectAnimation(clip);
                 else if (animation.isPlaying)
-                    animation.PlayClips(animationName, true);
+                    animation.PlayClipByName(animationName, true);
                 _animationLegacyJSON.valNoCallback = "";
             }
             catch (Exception exc)

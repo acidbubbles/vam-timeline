@@ -149,8 +149,7 @@ namespace VamTimeline
                 if (mac == null) continue;
                 mac.armedForRecord = true;
             }
-            animation.StopAll();
-            animation.ResetAll();
+            animation.StopAndReset();
             _recordingControllersCoroutine = plugin.StartCoroutine(PlayAndRecordControllersCoroutine());
         }
 
@@ -178,7 +177,7 @@ namespace VamTimeline
             var excludedControllers = current.targetControllers.Where(t => t.animatableRef.controller.GetComponent<MotionAnimationControl>()?.armedForRecord == true).ToList();
             foreach (var target in excludedControllers)
                 target.playbackEnabled = false;
-            animationEditContext.PlayCurrentAndOtherMainsInLayers(false);
+            animationEditContext.PlayCurrentClip();
             while ((_lastResizeAnimation || animationEditContext.playTime <= animationEditContext.clipTime) && IsRecording())
             {
                 yield return 0;
