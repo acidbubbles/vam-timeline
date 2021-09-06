@@ -335,13 +335,10 @@ namespace VamTimeline
                             ? previous.animationLength - next.blendInDuration / 2f - previous.clipTime
                             : 0f);
 
-                    if (isPlayingChanged)
-                        onIsPlayingChanged.Invoke(next);
-
                     return;
                 }
 
-                // Blend immediately, but unlike TransitionAnimation, recording will ignore blending
+                // Blend immediately, but unlike TransitionClips, recording will ignore blending
                 var blendInDuration = next.recording ? 0f : next.blendInDuration;
                 BlendOut(previous, blendInDuration);
                 previous.playbackMainInLayer = false;
@@ -351,6 +348,7 @@ namespace VamTimeline
             }
             else
             {
+                // Blend immediately (first animation to play on that layer)
                 var blendInDuration = next.recording ? 0f : next.blendInDuration;
                 if (next.clipTime >= next.animationLength) next.clipTime = 0f;
                 BlendIn(next, blendInDuration);
