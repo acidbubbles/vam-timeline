@@ -1020,6 +1020,7 @@ namespace VamTimeline
                 }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
                 if (!target.playbackEnabled) continue;
+                if (controller.possessed) return;
                 var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight * target.scaledWeight;
                 if (weight < float.Epsilon) continue;
 
