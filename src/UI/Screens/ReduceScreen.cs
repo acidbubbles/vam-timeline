@@ -41,6 +41,10 @@ namespace VamTimeline
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);
 
+            prefabFactory.CreateSpacer();
+
+            CreateChangeScreenButton("<i>Go to <b>record</b> screen...</i>", RecordScreen.ScreenName);
+
             _restoreUI.button.interactable = HasBackup();
             if (HasBackup()) _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
 
