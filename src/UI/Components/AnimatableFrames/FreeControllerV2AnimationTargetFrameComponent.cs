@@ -90,7 +90,8 @@ namespace VamTimeline
             var handlesCount = target.x.length - (clip.loop ? 1 : 0);
             if (_lastHandlesCount == handlesCount)
             {
-                for (var t = 0; t < handlesCount; t++)
+                // TODO: This is incorrect, if we move keyframes in a way that would make the handle visible, the handle won't show up
+                for (var t = 0; t < _handles.Count; t++)
                 {
                     var handle = _handles[t];
                     handle.GetComponent<Renderer>().material.color = _line.colorGradient.Evaluate(t / clip.animationLength);
@@ -99,6 +100,9 @@ namespace VamTimeline
             }
             else
             {
+                _lastHandlesCount = handlesCount;
+
+                // TODO: Instead of doing Clear, trim excess and set localPosition on existing, only add missing handles
                 for (var i = 0; i < _handles.Count; i++) Destroy(_handles[i]);
                 _handles.Clear();
                 const int maxKeyframes = 100;
@@ -114,15 +118,15 @@ namespace VamTimeline
                     var lastLocalPosition = Vector3.positiveInfinity;
                     for (var t = 0; t < handlesCount; t++)
                     {
+                        var localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
+                        if (t != lastHandle && Vector3.SqrMagnitude(lastLocalPosition - localPosition) < minHandleMagnitude)
+                            continue;
                         var handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        handle.GetComponent<Renderer>().material = GetPreviewMaterial(_line.colorGradient.Evaluate(t / clip.animationLength));
                         var cs = handle.GetComponents<Collider>();
                         for (var i = 0; i < cs.Length; i++) Destroy(cs[i]);
                         handle.transform.SetParent(_line.transform, false);
                         handle.transform.localScale = handleScale;
-                        var localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
-                        if (t != lastHandle && Vector3.SqrMagnitude(lastLocalPosition - localPosition) < minHandleMagnitude)
-                            continue;
+                        handle.GetComponent<Renderer>().material = GetPreviewMaterial(_line.colorGradient.Evaluate(t / clip.animationLength));
                         handle.transform.localPosition = localPosition;
                         _handles.Add(handle);
                         lastLocalPosition = localPosition;
@@ -132,7 +136,6 @@ namespace VamTimeline
                 {
                     _handles.Capacity = 0;
                 }
-                _lastHandlesCount = handlesCount;
             }
         }
 
