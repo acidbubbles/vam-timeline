@@ -22,11 +22,12 @@ namespace VamTimeline
 
         public void SplitLayer(List<IAtomAnimationTarget> targets)
         {
-            var layerName = GetSplitAnimationName(_clip.animationLayer, _animation.index.ByLayer().Select(c => c[0].animationLayer).ToList());
-            foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayer).Reverse().ToList())
+            var layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.ByLayer().Select(c => c[0].animationLayer).ToList());
+            foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayer).ToList())
             {
-                var newClip = _animation.CreateClip(layerName, GetSplitAnimationName(sourceClip.animationName, _animation.clips.Select(c => c.animationName).ToList()));
+                var newClip = _animation.CreateClip(layerName, sourceClip.animationName);
                 sourceClip.CopySettingsTo(newClip);
+                newClip.animationLayer = layerName;
                 foreach (var t in sourceClip.GetAllTargets().Where(t => targets.Any(t.TargetsSameAs)).ToList())
                 {
                     sourceClip.Remove(t);
@@ -56,11 +57,11 @@ namespace VamTimeline
             return Guid.NewGuid().ToString();
         }
 
-        private static string GetSplitAnimationName(string sourceAnimationName, IList<string> list)
+        private static string GetSplitLayerName(string sourceLayerName, IList<string> list)
         {
             for (var i = 1; i < 999; i++)
             {
-                var animationName = $"{sourceAnimationName} (Split {i})";
+                var animationName = $"{sourceLayerName} (Split {i})";
                 if (list.All(n => n != animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();
