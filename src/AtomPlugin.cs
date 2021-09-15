@@ -332,6 +332,7 @@ namespace VamTimeline
             _playJSON = new JSONStorableAction(StorableNames.Play, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Play}'");
+                if (animation.paused) { animation.paused = false; return; }
                 var selected = string.IsNullOrEmpty(_animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(_animationLegacyJSON.val).FirstOrDefault();
                 animation.PlayOneAndOtherMainsInLayers(selected);
             });
@@ -340,6 +341,7 @@ namespace VamTimeline
             _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PlayIfNotPlaying}'");
+                if (animation.paused) { animation.paused = false; return; }
                 var selected = string.IsNullOrEmpty(_animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(_animationLegacyJSON.val).FirstOrDefault();
                 if (selected == null) return;
                 if (!animation.isPlaying)

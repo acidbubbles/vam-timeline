@@ -430,6 +430,7 @@ namespace VamTimeline
                 {
                     isPlaying = false;
                     sequencing = false;
+                    paused = false;
                     onIsPlayingChanged.Invoke(clip);
                 }
             }
