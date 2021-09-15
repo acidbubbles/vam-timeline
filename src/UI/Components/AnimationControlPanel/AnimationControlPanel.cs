@@ -249,5 +249,10 @@ namespace VamTimeline
                 _animationEditContext.current?.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             }
         }
+
+        public void ToggleDopeSheetMode()
+        {
+            _dopeSheet.ToggleMode();
+        }
     }
 }

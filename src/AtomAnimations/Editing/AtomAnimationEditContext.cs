@@ -736,5 +736,13 @@ namespace VamTimeline
             if (curveType == CurveTypeValues.CopyPrevious)
                 Sample();
         }
+
+        public void SelectAll(bool selected)
+        {
+            foreach (var target in current.GetAllTargets())
+            {
+                target.selected = selected;
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@ namespace VamTimeline
         private Scrubber _scrubber;
         private Canvas _canvas;
         private Zoom _zoom;
+        private MiniButton _modeSwitcher;
 
         private class RowRef
         {
@@ -73,28 +74,30 @@ namespace VamTimeline
 
         private void CreateCurvesToggle(GameObject go)
         {
-            var switcher = MiniButton.Create(go, "∿");
-            switcher.text.fontSize = 32;
-            switcher.text.fontStyle = FontStyle.Bold;
-            switcher.rectTransform.StretchLeft();
-            switcher.rectTransform.sizeDelta = new Vector2(_style.LabelWidth, 0);
-            switcher.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
-            switcher.clickable.onClick.AddListener(_ =>
+            _modeSwitcher = MiniButton.Create(go, "∿");
+            _modeSwitcher.text.fontSize = 32;
+            _modeSwitcher.text.fontStyle = FontStyle.Bold;
+            _modeSwitcher.rectTransform.StretchLeft();
+            _modeSwitcher.rectTransform.sizeDelta = new Vector2(_style.LabelWidth, 0);
+            _modeSwitcher.rectTransform.anchoredPosition = new Vector2(_style.LabelWidth / 2f, 0);
+            _modeSwitcher.clickable.onClick.AddListener(_ => ToggleMode());
+        }
+
+        public void ToggleMode()
+        {
+            var selected = !_modeSwitcher.selected;
+            _modeSwitcher.selected = selected;
+            _curves.gameObject.SetActive(selected);
+            foreach (var row in _keyframesRows) row.gameObject.SetActive(!selected);
+            if (selected)
             {
-                var selected = !switcher.selected;
-                switcher.selected = selected;
-                _curves.gameObject.SetActive(selected);
-                foreach (var row in _keyframesRows) row.gameObject.SetActive(!selected);
-                if (selected)
-                {
-                    _content.GetComponent<RectTransform>().sizeDelta = new Vector2(_style.LabelWidth, 0);
-                    _content.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
-                }
-                else
-                {
-                    _content.GetComponent<RectTransform>().StretchTop();
-                }
-            });
+                _content.GetComponent<RectTransform>().sizeDelta = new Vector2(_style.LabelWidth, 0);
+                _content.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
+            }
+            else
+            {
+                _content.GetComponent<RectTransform>().StretchTop();
+            }
         }
 
         private void CreateZoom(GameObject parent)

@@ -218,5 +218,15 @@ namespace VamTimeline
             _controlPanel.Bind(ctx);
             _curveType.Bind(ctx);
         }
+
+        public void ToggleExpandCollapse()
+        {
+            Expand(!_expanded);
+        }
+
+        public void ToggleDopeSheetMode()
+        {
+            _controlPanel.ToggleDopeSheetMode();
+        }
     }
 }

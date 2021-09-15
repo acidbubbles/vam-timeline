@@ -951,6 +951,9 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Diagnostics", () => { ChangeScreen(DiagnosticsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Options", () => { ChangeScreen(OptionsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_MoreTab_Logging", () => { ChangeScreen(LoggingScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("Toggle_DopeSheetMode", () => _ui.ToggleDopeSheetMode()));
+            bindings.Add(new JSONStorableAction("Toggle_ExpandCollapseRightPanel", () => _ui.ToggleExpandCollapse()));
+            bindings.Add(new JSONStorableAction("Toggle_SelectAllTargets", () => animationEditContext.SelectAll(!animationEditContext.current.GetAllTargets().Any(t => t.selected))));
             bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
             bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", () => animationEditContext.GoToPreviousAnimation(animationEditContext.current.animationLayer)));

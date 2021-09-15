@@ -212,7 +212,7 @@ namespace VamTimeline
                 BindCurve(freeControllerV3AnimationTarget.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
                 BindCurve(freeControllerV3AnimationTarget.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
                 // To display rotation as euler angles, we have to build custom curves. But it's not that useful.
-                /*
+#if(SHOW_CURVES_ROT)
                 var rotVXCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
                 var rotVYCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
                 var rotVZCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
@@ -221,7 +221,7 @@ namespace VamTimeline
                 BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
                 BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
                 target.onAnimationKeyframesRebuilt.AddListener(() => ConvertQuaternionCurvesToEuleur(rotVXCurve, rotVYCurve, rotVZCurve, freeControllerV3AnimationTarget));
-                */
+#endif
                 target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
                 return;
             }
@@ -236,8 +236,8 @@ namespace VamTimeline
             }
         }
 
-        private static void ConvertQuaternionCurvesToEuleur(BezierAnimationCurve rotVXCurve, BezierAnimationCurve rotVYCurve, BezierAnimationCurve rotVZCurve,
-            FreeControllerV3AnimationTarget freeControllerV3AnimationTarget)
+#if(SHOW_CURVES_ROT)
+        private static void ConvertQuaternionCurvesToEuleur(BezierAnimationCurve rotVXCurve, BezierAnimationCurve rotVYCurve, BezierAnimationCurve rotVZCurve, FreeControllerV3AnimationTarget freeControllerV3AnimationTarget)
         {
             rotVXCurve.keys.Clear();
             rotVYCurve.keys.Clear();
@@ -260,6 +260,7 @@ namespace VamTimeline
                 rotVZCurve.keys.Add(new BezierKeyframe(keyW.time, eulerAngles.z, keyW.curveType));
             }
         }
+#endif
 
         private void BindCurve(BezierAnimationCurve lead, Color color, string label)
         {
