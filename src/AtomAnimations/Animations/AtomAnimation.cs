@@ -278,6 +278,7 @@ namespace VamTimeline
 
         public void PlayClip(AtomAnimationClip clip, bool seq, bool allowPreserveLoops = true)
         {
+            paused = false;
             if (clip.playbackMainInLayer) return;
 
             PlayClip(
