@@ -25,7 +25,7 @@ namespace VamTimeline
         public void AverageToBranch(float keyTime, int fromKey, int toKey)
         {
             var position = Vector3.zero;
-            var rotationCum = Vector4.zero;
+            var rotationSum = Vector4.zero;
             var firstRotation = source.GetKeyframeRotation(fromKey);
             var duration = source.x.GetKeyframeByKey(toKey).time - source.x.GetKeyframeByKey(fromKey).time;
             for (var key = fromKey; key < toKey; key++)
@@ -33,7 +33,7 @@ namespace VamTimeline
                 var frameDuration = source.x.GetKeyframeByKey(key + 1).time - source.x.GetKeyframeByKey(key).time;
                 var weight = frameDuration / duration;
                 position += source.GetKeyframePosition(key) * weight;
-                QuaternionUtil.AverageQuaternion(ref rotationCum, source.GetKeyframeRotation(key), firstRotation, weight);
+                QuaternionUtil.AverageQuaternion(ref rotationSum, source.GetKeyframeRotation(key), firstRotation, weight);
             }
             branch.SetKeyframe(keyTime, position, source.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
 
@@ -54,33 +54,24 @@ namespace VamTimeline
             return true;
         }
 
-        public override ReducerBucket CreateBucket(int from, int to)
+        public override float GetComparableNormalizedValue(int key)
         {
-            var bucket = base.CreateBucket(from, to);
-            for (var i = from; i <= to; i++)
-            {
-                var time = source.x.keys[i].time;
+            var time = source.x.keys[key].time;
 
-                var positionDiff = Vector3.Distance(
-                    branch.EvaluatePosition(time),
-                    source.EvaluatePosition(time)
-                );
-                var rotationDot = 1f - Mathf.Abs(Quaternion.Dot(
-                    branch.EvaluateRotation(time),
-                    source.EvaluateRotation(time)
-                ));
-                // This is an attempt to compare translations and rotations
-                // TODO: Normalize the values, investigate how to do this with settings
-                var normalizedPositionDistance = settings.minMeaningfulDistance > 0 ? positionDiff / settings.minMeaningfulDistance : 1f;
-                var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationDot / settings.minMeaningfulRotation : 1f;
-                var delta = normalizedPositionDistance + normalizedRotationAngle;
-                if (delta > bucket.largestDelta)
-                {
-                    bucket.largestDelta = delta;
-                    bucket.keyWithLargestDelta = i;
-                }
-            }
-            return bucket;
+            var positionDiff = Vector3.Distance(
+                branch.EvaluatePosition(time),
+                source.EvaluatePosition(time)
+            );
+            var rotationDot = 1f - Mathf.Abs(Quaternion.Dot(
+                branch.EvaluateRotation(time),
+                source.EvaluateRotation(time)
+            ));
+            // This is an attempt to compare translations and rotations
+            // TODO: Normalize the values, investigate how to do this with settings
+            var normalizedPositionDistance = settings.minMeaningfulDistance > 0 ? positionDiff / settings.minMeaningfulDistance : 1f;
+            var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationDot / settings.minMeaningfulRotation : 1f;
+            var delta = normalizedPositionDistance + normalizedRotationAngle;
+            return delta;
         }
     }
 }

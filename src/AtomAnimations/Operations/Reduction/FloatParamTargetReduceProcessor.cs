@@ -43,29 +43,19 @@ namespace VamTimeline
             return Mathf.Abs(value2 - value1) / (source.animatableRef.floatParam.max - source.animatableRef.floatParam.min) < (settings.minMeaningfulFloatParamRangeRatio / 10f);
         }
 
-        public override ReducerBucket CreateBucket(int from, int to)
+        public override float GetComparableNormalizedValue(int key)
         {
-            var bucket = base.CreateBucket(from, to);
-            for (var i = from; i <= to; i++)
-            {
-                var time = source.value.keys[i].time;
-                // TODO: Normalize the delta values based on range
-                float delta;
-                if (settings.minMeaningfulFloatParamRangeRatio > 0)
-                    delta = Mathf.Abs(
-                        branch.value.Evaluate(time) -
-                        source.value.Evaluate(time)
-                    ) / (source.animatableRef.floatParam.max - source.animatableRef.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
-                else
-                    delta = 1f;
-                if (delta > bucket.largestDelta)
-                {
-                    bucket.largestDelta = delta;
-                    bucket.keyWithLargestDelta = i;
-                }
-            }
-
-            return bucket;
+            var time = source.value.keys[key].time;
+            // TODO: Normalize the delta values based on range
+            float delta;
+            if (settings.minMeaningfulFloatParamRangeRatio > 0)
+                delta = Mathf.Abs(
+                    branch.value.Evaluate(time) -
+                    source.value.Evaluate(time)
+                ) / (source.animatableRef.floatParam.max - source.animatableRef.floatParam.min) / settings.minMeaningfulFloatParamRangeRatio;
+            else
+                delta = 1f;
+            return delta;
         }
     }
 }

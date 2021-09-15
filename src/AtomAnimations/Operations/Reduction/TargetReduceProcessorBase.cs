@@ -23,14 +23,26 @@
             branch = null;
         }
 
-        public virtual ReducerBucket CreateBucket(int from, int to)
+        public ReducerBucket CreateBucket(int from, int to)
         {
-            return new ReducerBucket
+            var bucket = new ReducerBucket
             {
                 @from = from,
                 to = to,
                 keyWithLargestDelta = -1
             };
+            for (var i = from; i <= to; i++)
+            {
+                var delta = GetComparableNormalizedValue(i);
+                if (delta > bucket.largestDelta)
+                {
+                    bucket.largestDelta = delta;
+                    bucket.keyWithLargestDelta = i;
+                }
+            }
+            return bucket;
         }
+
+        public abstract float GetComparableNormalizedValue(int key);
     }
 }

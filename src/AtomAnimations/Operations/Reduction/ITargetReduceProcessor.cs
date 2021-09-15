@@ -9,5 +9,6 @@
         void CopyToBranch(int sourceKey, int curveType = CurveTypeValues.Undefined);
         void AverageToBranch(float keyTime, int fromKey, int toKey);
         bool IsStable(int key1, int key2);
+        float GetComparableNormalizedValue(int key);
     }
 }

@@ -7,13 +7,13 @@ namespace VamTimeline
     {
         public const string ScreenName = "Reduce";
 
-        private JSONStorableFloat _reduceMaxFramesPerSecondJSON;
-        private JSONStorableBool _averageToSnapJSON;
+        private JSONStorableFloat _maxFramesPerSecondJSON;
+        private JSONStorableBool _roundJSON;
         private JSONStorableBool _removeFlatSectionsKeyframes;
         private JSONStorableBool _simplifyKeyframes;
-        private JSONStorableFloat _reduceMinDistanceJSON;
-        private JSONStorableFloat _reduceMinRotationJSON;
-        private JSONStorableFloat _reduceMinFloatParamRangeRatioJSON;
+        private JSONStorableFloat _minDistanceJSON;
+        private JSONStorableFloat _minRotationJSON;
+        private JSONStorableFloat _minFloatParamRangeRatioJSON;
 
         public override string screenId => ScreenName;
 
@@ -53,23 +53,23 @@ namespace VamTimeline
 
         private void CreateReduceSettingsUI()
         {
-            _averageToSnapJSON = new JSONStorableBool("Round to frames per second", true);
-            _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Frames per second", 25f, 1f, 100f);
-            _reduceMaxFramesPerSecondJSON.setCallbackFunction = val => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
+            _roundJSON = new JSONStorableBool("Round key time to fps", false);
+            _maxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 10f, 1f, 50f);
+            _maxFramesPerSecondJSON.setCallbackFunction = val => _maxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
             _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
             _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
-            _reduceMinDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f, false);
-            _reduceMinRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
-            _reduceMinFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
+            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f, false);
+            _minRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
+            _minFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
             prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
             prefabFactory.CreateSpacer();
             prefabFactory.CreateToggle(_simplifyKeyframes);
-            prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F3";
-            prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F4";
-            prefabFactory.CreateSlider(_reduceMinFloatParamRangeRatioJSON).valueFormat = "F3";
+            prefabFactory.CreateSlider(_minDistanceJSON).valueFormat = "F3";
+            prefabFactory.CreateSlider(_minRotationJSON).valueFormat = "F4";
+            prefabFactory.CreateSlider(_minFloatParamRangeRatioJSON).valueFormat = "F3";
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateToggle(_averageToSnapJSON);
-            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F1";
+            prefabFactory.CreateSlider(_maxFramesPerSecondJSON).valueFormat = "F1";
+            prefabFactory.CreateToggle(_roundJSON);
             prefabFactory.CreateSpacer();
         }
 
@@ -90,13 +90,13 @@ namespace VamTimeline
             _reduceUI.label = "Please be patient...";
             var settings = new ReduceSettings
             {
-                fps = (int)_reduceMaxFramesPerSecondJSON.val,
-                avgToSnap = _averageToSnapJSON.val,
+                fps = (int)_maxFramesPerSecondJSON.val,
+                round = _roundJSON.val,
                 removeFlats = _removeFlatSectionsKeyframes.val,
                 simplify = _simplifyKeyframes.val,
-                minMeaningfulDistance = _reduceMinDistanceJSON.val,
-                minMeaningfulRotation = _reduceMinRotationJSON.val,
-                minMeaningfulFloatParamRangeRatio = _reduceMinFloatParamRangeRatioJSON.val,
+                minMeaningfulDistance = _minDistanceJSON.val,
+                minMeaningfulRotation = _minRotationJSON.val,
+                minMeaningfulFloatParamRangeRatio = _minFloatParamRangeRatioJSON.val,
             };
             StartCoroutine(operations.Reduce(settings).ReduceKeyframes(
                 animationEditContext.current.GetAllCurveTargets().Where(t => t.selected).ToList(),

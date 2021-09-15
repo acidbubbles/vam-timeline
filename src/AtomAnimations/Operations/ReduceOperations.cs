@@ -132,9 +132,9 @@ namespace VamTimeline
             yield return 0;
 
             // STEP 3: Average keyframes based on the desired FPS
-            if (_settings.avgToSnap && fps <= 50)
+            if (fps < 50)
             {
-                AverageToFPS(processor, fps, animationLength);
+                AverageToFPS(processor, fps, animationLength, _settings.round);
             }
 
             yield return 0;
@@ -228,30 +228,44 @@ namespace VamTimeline
                 buckets.RemoveAt(bucketToSplitIndex);
                 if (bucketToSplit.to - keyWithLargestDelta + 1 > 2)
                     buckets.Insert(bucketToSplitIndex, processor.CreateBucket(keyWithLargestDelta + 1, bucketToSplit.to));
-                if (keyWithLargestDelta - 1 - bucketToSplit.@from > 2)
-                    buckets.Insert(bucketToSplitIndex, processor.CreateBucket(bucketToSplit.@from, keyWithLargestDelta - 1));
+                if (keyWithLargestDelta - 1 - bucketToSplit.from > 2)
+                    buckets.Insert(bucketToSplitIndex, processor.CreateBucket(bucketToSplit.from, keyWithLargestDelta - 1));
             }
 
             return true;
         }
 
-        private static void AverageToFPS(ITargetReduceProcessor processor, float fps, float animationLength)
+        private static void AverageToFPS(ITargetReduceProcessor processor, float fps, float animationLength, bool round)
         {
-            var minFrameDistance = Mathf.Max(1f / fps, 0.001f);
-            var groupByTimeRange = minFrameDistance / 2f;
+            var frameDistance = Mathf.Max(1f / fps, 0.001f);
+            var halfFrameDistance = frameDistance / 2f;
             var lead = processor.target.GetLeadCurve();
             var toKey = 0;
             processor.Branch();
-            for (var keyTime = 0f; keyTime <= animationLength; keyTime += minFrameDistance)
+            for (var keyTime = -halfFrameDistance; keyTime <= animationLength; keyTime += frameDistance)
             {
                 var fromKey = toKey;
-                while (toKey < lead.length - 1 && lead.keys[toKey].time < keyTime + groupByTimeRange)
+                var fromNormalized = processor.GetComparableNormalizedValue(fromKey);
+                var mostMeaningfulKey = fromKey;
+                var maxDelta = 0f;
+                while (toKey < lead.length - 1)
                 {
+                    var time = lead.keys[toKey].time;
+                    if (time >= keyTime + frameDistance) break;
+                    var delta = Mathf.Abs(fromNormalized - processor.GetComparableNormalizedValue(toKey));
+                    if (delta > maxDelta)
+                    {
+                        mostMeaningfulKey = toKey;
+                        maxDelta = delta;
+                    }
                     toKey++;
                 }
 
                 if (toKey - fromKey > 0)
-                    processor.AverageToBranch(keyTime + ((lead.keys[toKey].time - keyTime) / 2f).Snap(), fromKey, toKey);
+                {
+                    var time = round ? keyTime + halfFrameDistance : lead.keys[mostMeaningfulKey].time;
+                    processor.AverageToBranch(time.Snap(), fromKey, toKey);
+                }
             }
 
             processor.Commit();
