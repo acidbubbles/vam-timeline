@@ -99,28 +99,28 @@ namespace VamTimeline
 
         private IEnumerator Process(ITargetReduceProcessor processor)
         {
-            var maxFramesPerSecond = (float) _settings.fps;
-            var minFrameDistance = Mathf.Max(1f / maxFramesPerSecond, 0.001f);
+            var fps = (float) _settings.fps;
             var animationLength = _clip.animationLength;
             var maxIterations = (int)(animationLength * 10);
 
             // STEP 1: Average keyframes based on the desired FPS
-            if (_settings.avgToSnap && maxFramesPerSecond <= 50)
+            if (_settings.avgToSnap && fps <= 50)
             {
-                var avgTimeRange = minFrameDistance / 2f;
+                var minFrameDistance = Mathf.Max(1f / fps, 0.001f);
+                var groupByTimeRange = minFrameDistance / 2f;
                 var lead = processor.target.GetLeadCurve();
                 var toKey = 0;
                 processor.Branch();
                 for (var keyTime = 0f; keyTime <= animationLength; keyTime += minFrameDistance)
                 {
                     var fromKey = toKey;
-                    while (toKey < lead.length - 1 && lead.keys[toKey].time < keyTime + avgTimeRange)
+                    while (toKey < lead.length - 1 && lead.keys[toKey].time < keyTime + groupByTimeRange)
                     {
                         toKey++;
                     }
 
                     if (toKey - fromKey > 0)
-                        processor.AverageToBranch(keyTime.Snap(), fromKey, toKey);
+                        processor.AverageToBranch(keyTime + ((lead.keys[toKey].time - keyTime) / 2f).Snap(), fromKey, toKey);
                 }
                 processor.Commit();
             }

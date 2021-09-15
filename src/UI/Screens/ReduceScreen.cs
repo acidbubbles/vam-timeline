@@ -41,8 +41,6 @@ namespace VamTimeline
             _reduceUI = prefabFactory.CreateButton("Reduce");
             _reduceUI.button.onClick.AddListener(Reduce);
 
-            prefabFactory.CreateSpacer();
-
             CreateChangeScreenButton("<i>Go to <b>record</b> screen...</i>", RecordScreen.ScreenName);
 
             _restoreUI.button.interactable = HasBackup();
@@ -54,21 +52,24 @@ namespace VamTimeline
 
         private void CreateReduceSettingsUI()
         {
+            _averageToSnapJSON = new JSONStorableBool("Averaged frames per second", true);
             _reduceMaxFramesPerSecondJSON = new JSONStorableFloat("Frames per second", 25f, 1f, 100f);
             _reduceMaxFramesPerSecondJSON.setCallbackFunction = val => _reduceMaxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
-            _averageToSnapJSON = new JSONStorableBool("Average and snap to fps", true);
             _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
             _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
             _reduceMinDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f, false);
             _reduceMinRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
             _reduceMinFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
-            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F1";
             prefabFactory.CreateToggle(_averageToSnapJSON);
+            prefabFactory.CreateSlider(_reduceMaxFramesPerSecondJSON).valueFormat = "F1";
+            prefabFactory.CreateSpacer();
             prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
+            prefabFactory.CreateSpacer();
             prefabFactory.CreateToggle(_simplifyKeyframes);
             prefabFactory.CreateSlider(_reduceMinDistanceJSON).valueFormat = "F3";
             prefabFactory.CreateSlider(_reduceMinRotationJSON).valueFormat = "F4";
             prefabFactory.CreateSlider(_reduceMinFloatParamRangeRatioJSON).valueFormat = "F3";
+            prefabFactory.CreateSpacer();
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
