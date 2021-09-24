@@ -101,7 +101,7 @@ namespace VamTimeline
         {
             var fps = (float) _settings.fps;
             var animationLength = _clip.animationLength;
-            var maxIterations = (int)(animationLength * 10);
+            var maxIterations = (int)(animationLength * 100);
 
             // STEP 1: Fine flat sections
             if (_settings.removeFlats)
