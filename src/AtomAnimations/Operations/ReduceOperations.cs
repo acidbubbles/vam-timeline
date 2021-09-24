@@ -226,9 +226,15 @@ namespace VamTimeline
                 var bucketToSplit = buckets[bucketToSplitIndex];
                 buckets.RemoveAt(bucketToSplitIndex);
                 if (bucketToSplit.to - keyWithLargestDelta + 1 > 2)
-                    buckets.Insert(bucketToSplitIndex, processor.CreateBucket(keyWithLargestDelta + 1, bucketToSplit.to));
+                {
+                    var bucket = processor.CreateBucket(keyWithLargestDelta + 1, bucketToSplit.to);
+                    if (bucket.largestDelta > 1f) buckets.Insert(bucketToSplitIndex, bucket);
+                }
                 if (keyWithLargestDelta - 1 - bucketToSplit.from > 2)
-                    buckets.Insert(bucketToSplitIndex, processor.CreateBucket(bucketToSplit.from, keyWithLargestDelta - 1));
+                {
+                    var bucket = processor.CreateBucket(bucketToSplit.@from, keyWithLargestDelta - 1);
+                    if (bucket.largestDelta >= 1f) buckets.Insert(bucketToSplitIndex, bucket);
+                }
             }
 
             return true;
