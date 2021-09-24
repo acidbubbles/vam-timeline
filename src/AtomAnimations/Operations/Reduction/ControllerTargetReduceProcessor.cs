@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -11,13 +12,14 @@ namespace VamTimeline
         {
         }
 
-        public void CopyToBranch(int key, int curveType = CurveTypeValues.Undefined)
+        public void CopyToBranch(int key, int curveType = CurveTypeValues.Undefined, float time = -1)
         {
-            var time = source.x.keys[key].time;
-            branch.SetSnapshot(time, source.GetSnapshot(time));
+            if (time < -Mathf.Epsilon)
+                time = source.x.keys[key].time;
+            branch.SetSnapshot(time, source.GetSnapshot(source.x.keys[key].time));
             var branchKey = branch.x.KeyframeBinarySearch(time);
             if (branchKey == -1) return;
-            if(curveType != CurveTypeValues.Undefined)
+            if (curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurveByKey(branchKey, curveType, false);
             branch.RecomputeKey(branchKey);
         }

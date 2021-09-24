@@ -256,6 +256,7 @@ namespace VamTimeline
         {
             return GetCurveSnapshot(time);
         }
+
         public void SetSnapshot(float time, ISnapshot snapshot)
         {
             SetCurveSnapshot(time, (TransformTargetSnapshot)snapshot);

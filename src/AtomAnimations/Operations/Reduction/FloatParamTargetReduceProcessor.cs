@@ -12,10 +12,12 @@ namespace VamTimeline
         }
 
 
-        public void CopyToBranch(int sourceKey, int curveType = CurveTypeValues.Undefined)
+        public void CopyToBranch(int sourceKey, int curveType = CurveTypeValues.Undefined, float time = -1)
         {
             var sourceFrame = source.value.keys[sourceKey];
-            var branchKey = branch.value.SetKeyframe(sourceFrame.time, sourceFrame.value, CurveTypeValues.SmoothLocal);
+            if (time < -Mathf.Epsilon)
+                time = sourceFrame.time;
+            var branchKey = branch.value.SetKeyframe(time, sourceFrame.value, CurveTypeValues.SmoothLocal);
             if(curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurveByTime(branchKey, curveType);
             branch.value.RecomputeKey(branchKey);

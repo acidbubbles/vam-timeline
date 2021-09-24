@@ -247,27 +247,33 @@ namespace VamTimeline
                 var fromKey = toKey;
                 var fromNormalized = processor.GetComparableNormalizedValue(fromKey);
                 var mostMeaningfulKey = fromKey;
+                var specialKey = -1;
                 var maxDelta = 0f;
                 while (toKey < lead.length - 1)
                 {
-                    var time = lead.keys[toKey].time;
-                    if (time >= keyTime + frameDistance) break;
+                    var key = lead.keys[toKey];
+                    if (key.time >= keyTime + frameDistance) break;
                     var delta = Mathf.Abs(fromNormalized - processor.GetComparableNormalizedValue(toKey));
                     if (delta > maxDelta)
                     {
                         mostMeaningfulKey = toKey;
                         maxDelta = delta;
                     }
+                    if (key.curveType != CurveTypeValues.SmoothLocal)
+                        specialKey = toKey;
                     toKey++;
                 }
 
-                if (toKey - fromKey > 0)
+                var time = (round ? keyTime + halfFrameDistance : lead.keys[mostMeaningfulKey].time).Snap();
+                if (specialKey > -1)
                 {
-                    var time = round ? keyTime + halfFrameDistance : lead.keys[mostMeaningfulKey].time;
-                    processor.AverageToBranch(time.Snap(), fromKey, toKey);
+                    processor.CopyToBranch(specialKey, CurveTypeValues.Undefined, time);
+                }
+                else if (toKey - fromKey > 0)
+                {
+                    processor.AverageToBranch(time, fromKey, toKey);
                 }
             }
-
             processor.Commit();
         }
     }
