@@ -160,7 +160,6 @@ namespace VamTimeline
                 processor.CopyToBranch(key);
                 sectionStart = key;
             }
-
             processor.Commit();
         }
 
@@ -170,19 +169,19 @@ namespace VamTimeline
             var leadCurve = processor.target.GetLeadCurve();
             if (_settings.removeFlats)
             {
-                var sectionStart = 1;
-                for (var key = 1; key < leadCurve.length - 1; key++)
+                var sectionStart = 0;
+                for (var key = 0; key < leadCurve.length - 1; key++)
                 {
                     var curveType = leadCurve.keys[key].curveType;
-                    if (curveType == CurveTypeValues.FlatLinear)
-                    {
-                        // Bucket from the section start until the key before. This one will be skipped.
-                        buckets.Add(processor.CreateBucket(sectionStart, key - 1));
-                        processor.CopyToBranch(key);
-                        processor.CopyToBranch(key + 1);
-                        // Also skip the next one (end of linear section)
-                        sectionStart = ++key;
-                    }
+                    if (curveType != CurveTypeValues.FlatLinear) continue;
+                    // Bucket from the section start until the key before. This one will be skipped.
+                    if(sectionStart <= key && key > 0) buckets.Add(processor.CreateBucket(sectionStart, key - 1));
+                    processor.CopyToBranch(key);
+                    processor.CopyToBranch(key + 1);
+                    // Skip the LinearFlat key
+                    key++;
+                    // Only start a new bucket from the key after the LinearFlat key
+                    sectionStart = key + 1;
                 }
 
                 if (sectionStart < leadCurve.length - 3)
