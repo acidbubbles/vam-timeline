@@ -91,9 +91,9 @@ namespace VamTimeline
             ));
             // This is an attempt to compare translations and rotations
             // TODO: Normalize the values, investigate how to do this with settings
-            var normalizedPositionDistance = settings.minMeaningfulDistance > 0 ? positionDiff / settings.minMeaningfulDistance : 1f;
-            var normalizedRotationAngle = settings.minMeaningfulRotation > 0 ? rotationDot / settings.minMeaningfulRotation : 1f;
-            var delta = normalizedPositionDistance + normalizedRotationAngle;
+            var normalizedPositionDistance = positionDiff / Mathf.Clamp(settings.minMeaningfulDistance, Mathf.Epsilon, Mathf.Infinity);
+            var normalizedRotationDot = rotationDot / Mathf.Clamp(settings.minMeaningfulRotation, Mathf.Epsilon, Mathf.Infinity);
+            var delta = normalizedPositionDistance + normalizedRotationDot;
             return delta;
         }
     }
