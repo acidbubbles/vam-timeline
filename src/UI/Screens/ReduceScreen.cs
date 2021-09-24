@@ -58,7 +58,7 @@ namespace VamTimeline
             _maxFramesPerSecondJSON.setCallbackFunction = val => _maxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
             _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
             _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
-            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.005f, 0f, 1f, false);
+            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.008f, 0f, 1f, false);
             _minRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
             _minFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
             prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
