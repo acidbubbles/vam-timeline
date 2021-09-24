@@ -150,11 +150,11 @@ namespace VamTimeline
             {
                 if (processor.IsStable(sectionStart, key)) continue;
 
+                var keysCount = key - sectionStart;
                 var duration = lead.keys[key].time - lead.keys[sectionStart].time;
-                if (key - sectionStart > 5 && duration > 0.5f)
+                if (keysCount > 4 && duration > 0.5f)
                 {
-                    processor.CopyToBranch(sectionStart, CurveTypeValues.FlatLinear);
-                    processor.CopyToBranch(key - 1, CurveTypeValues.LinearFlat);
+                    processor.FlattenToBranch(sectionStart, key - 1);
                 }
 
                 processor.CopyToBranch(key);

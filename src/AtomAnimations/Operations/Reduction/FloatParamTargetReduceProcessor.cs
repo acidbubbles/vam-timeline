@@ -35,6 +35,23 @@ namespace VamTimeline
             branch.SetKeyframe(keyTime, value, false);
         }
 
+        public void FlattenToBranch(int sectionStart, int sectionEnd)
+        {
+            var avg = 0f;
+            var div = 0f;
+            for (var i = sectionStart; i <= sectionEnd; i++)
+            {
+                avg += source.value.GetKeyframeByKey(i).value;
+                div += 1f;
+            }
+            avg /= div;
+
+            var branchStart = branch.value.SetKeyframe(source.value.GetKeyframeByKey(sectionStart).time, avg, CurveTypeValues.FlatLinear);
+            var branchEnd = branch.value.SetKeyframe(source.value.GetKeyframeByKey(sectionEnd).time, avg, CurveTypeValues.LinearFlat);
+            branch.value.RecomputeKey(branchStart);
+            branch.value.RecomputeKey(branchEnd);
+        }
+
         public bool IsStable(int key1, int key2)
         {
             if (settings.minMeaningfulFloatParamRangeRatio <= 0) return false;

@@ -39,6 +39,27 @@ namespace VamTimeline
 
         }
 
+        public void FlattenToBranch(int sectionStart, int sectionEnd)
+        {
+            var avgPos = Vector3.zero;
+            var cumulativeRotation = Vector4.zero;
+            var firstRotation = source.GetKeyframeRotation(sectionStart);
+            var div = 0f;
+            for (var i = sectionStart; i <= sectionEnd; i++)
+            {
+                avgPos += source.GetKeyframePosition(i);
+                QuaternionUtil.AverageQuaternion(ref cumulativeRotation, source.GetKeyframeRotation(i), firstRotation, 1f);
+                div += 1f;
+            }
+            avgPos /= div;
+            var avgRot =  QuaternionUtil.FromVector(cumulativeRotation);
+
+            var branchStart = branch.SetKeyframe(source.x.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
+            var branchEnd = branch.SetKeyframe(source.x.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
+            branch.RecomputeKey(branchStart);
+            branch.RecomputeKey(branchEnd);
+        }
+
         public bool IsStable(int key1, int key2)
         {
             var positionDiff = Vector3.Distance(
