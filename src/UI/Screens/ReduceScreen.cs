@@ -58,15 +58,15 @@ namespace VamTimeline
             _maxFramesPerSecondJSON.setCallbackFunction = val => _maxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
             _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
             _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
-            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.1f, 0f, 1f, false);
+            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.005f, 0f, 1f, false);
             _minRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
             _minFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
             prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
             prefabFactory.CreateSpacer();
             prefabFactory.CreateToggle(_simplifyKeyframes);
-            prefabFactory.CreateSlider(_minDistanceJSON).valueFormat = "F3";
+            prefabFactory.CreateSlider(_minDistanceJSON).valueFormat = "F4";
             prefabFactory.CreateSlider(_minRotationJSON).valueFormat = "F4";
-            prefabFactory.CreateSlider(_minFloatParamRangeRatioJSON).valueFormat = "F3";
+            prefabFactory.CreateSlider(_minFloatParamRangeRatioJSON).valueFormat = "F4";
             prefabFactory.CreateSpacer();
             prefabFactory.CreateSlider(_maxFramesPerSecondJSON).valueFormat = "F1";
             prefabFactory.CreateToggle(_roundJSON);

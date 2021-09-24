@@ -27,7 +27,7 @@
         {
             var bucket = new ReducerBucket
             {
-                @from = from,
+                from = from,
                 to = to,
                 keyWithLargestDelta = -1
             };
