@@ -465,7 +465,7 @@ namespace VamTimeline
         public bool playbackMainInLayer;
         public float playbackBlendRate;
         public string playbackScheduledNextAnimationName;
-        public float playbackScheduledNextTimeLeft;
+        public float playbackScheduledNextTimeLeft = float.NaN;
         public float playbackScheduledFadeOutAtRemaining = float.NaN;
         public bool recording;
         public bool infinite;
