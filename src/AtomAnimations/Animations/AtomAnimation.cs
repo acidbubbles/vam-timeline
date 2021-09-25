@@ -429,6 +429,7 @@ namespace VamTimeline
             {
                 if (!clips.Any(c => c.playbackMainInLayer))
                 {
+                    if (logger.general) logger.Log(logger.generalCategory, $"No animations currently playing, stopping Timeline");
                     isPlaying = false;
                     sequencing = false;
                     paused = false;
