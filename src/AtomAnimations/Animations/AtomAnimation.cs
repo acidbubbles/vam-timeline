@@ -674,10 +674,19 @@ namespace VamTimeline
                         }
                         else if (clip.playbackBlendWeight <= 0f)
                         {
-                            if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (blend out complete)");
-                            clip.Leave();
-                            clip.Reset(true);
-                            onClipIsPlayingChanged.Invoke(clip);
+                            if (!float.IsNaN(clip.playbackScheduledNextTimeLeft))
+                            {
+                                // Wait for the sequence time to be reached
+                                if (logger.general) logger.Log(logger.generalCategory, $"Waiting for next animation...'{clip.animationNameQualified}'");
+                                clip.playbackBlendWeight = 0;
+                            }
+                            else
+                            {
+                                if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (blend out complete)");
+                                clip.Leave();
+                                clip.Reset(true);
+                                onClipIsPlayingChanged.Invoke(clip);
+                            }
                         }
                     }
                 }
@@ -890,7 +899,7 @@ namespace VamTimeline
             source.playbackScheduledNextTimeLeft = nextTime;
             source.playbackScheduledFadeOutAtRemaining = float.NaN;
 
-            if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s)");
+            if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s");
 
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
@@ -1345,7 +1354,7 @@ namespace VamTimeline
                 if (clip.playbackScheduledNextAnimationName != null)
                     clipsQueued++;
 
-                if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && !clip.infinite)
+                if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && float.IsNaN(clip.playbackScheduledNextTimeLeft) && !clip.infinite)
                 {
                     if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (non-looping complete)");
                     clip.Leave();
