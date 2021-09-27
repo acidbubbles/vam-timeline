@@ -697,7 +697,8 @@ namespace VamTimeline
         {
             if (clip.applyPoseOnTransition)
             {
-                clip.pose?.Apply();
+                if (!clip.recording)
+                    clip.pose?.Apply();
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
             }
