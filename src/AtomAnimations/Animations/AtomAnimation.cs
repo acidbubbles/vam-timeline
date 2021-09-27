@@ -16,7 +16,7 @@ namespace VamTimeline
     {
         public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
 
-        private static readonly Regex _lastDigitsRegex = new Regex(@"^(?<name>.+)(?<index>[0-9]+)$", RegexOptions.Compiled);
+        private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$", RegexOptions.Compiled);
 
         public const string RandomizeAnimationName = "(Randomize)";
         public const string SlaveAnimationName = "(Slave)";
@@ -192,8 +192,8 @@ namespace VamTimeline
             }
             else
             {
-                animationNameBeforeInt = match.Groups["name"].Value;
-                animationNameInt = int.Parse(match.Groups["index"].Value);
+                animationNameBeforeInt = source.animationName.Substring(0, match.Index);
+                animationNameInt = int.Parse(match.Value);
             }
             for (var i = animationNameInt + 1; i < 999; i++)
             {
