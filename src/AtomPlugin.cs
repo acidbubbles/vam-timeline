@@ -237,6 +237,7 @@ namespace VamTimeline
                 try { Destroy(_ui); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [ui]: {exc}"); }
                 try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [panel]: {exc}"); }
                 Destroy(_freeControllerHook);
+                TimelinePrefabs.Destroy();
                 SuperController.singleton.BroadcastMessage("OnActionsProviderDestroyed", this, SendMessageOptions.DontRequireReceiver);
             }
             catch (Exception exc)

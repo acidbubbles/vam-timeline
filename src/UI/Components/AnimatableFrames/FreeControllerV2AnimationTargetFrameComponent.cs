@@ -7,10 +7,12 @@ namespace VamTimeline
 {
     public class FreeControllerV2AnimationTargetFrameComponent : AnimationTargetFrameComponentBase<FreeControllerV3AnimationTarget>
     {
+        private static readonly Shader _gizmoShader = Shader.Find("Battlehub/RTGizmos/Handles");
+
         protected override float expandSize => 140f;
         private LineDrawer _line;
         private int _lastHandlesCount;
-        private readonly List<GameObject> _handles = new List<GameObject>();
+        private readonly List<Transform> _handles = new List<Transform>();
 
         protected override void CreateCustom()
         {
@@ -25,9 +27,9 @@ namespace VamTimeline
 
             if (!target.selected && _line != null)
             {
-                Destroy(_line);
+                Destroy(_line.gameObject);
                 foreach (var t in _handles)
-                    Destroy(t);
+                    Destroy(t.gameObject);
                 _handles.Clear();
                 _line = null;
             }
@@ -56,7 +58,8 @@ namespace VamTimeline
             {
                 colorKeys = new[] { new GradientColorKey(new Color(0f, 0.2f, 0.8f), 0f), new GradientColorKey(new Color(0.6f, 0.65f, 0.95f), 1f) }
             };
-            line.material = GetPreviewMaterial(new Color(1, 1, 1, 0.3f));
+            line.material = new Material(_gizmoShader);
+            AssignPreviewMaterial(line.material, new Color(1, 1, 1, 0.3f));
 
             return line;
         }
@@ -102,8 +105,10 @@ namespace VamTimeline
             {
                 _lastHandlesCount = handlesCount;
 
+                CancelInvoke(nameof(ActivateLine));
+
                 // TODO: Instead of doing Clear, trim excess and set localPosition on existing, only add missing handles
-                for (var i = 0; i < _handles.Count; i++) Destroy(_handles[i]);
+                for (var i = 0; i < _handles.Count; i++) Destroy(_handles[i].gameObject);
                 _handles.Clear();
                 const int maxKeyframes = 100;
 
@@ -121,16 +126,15 @@ namespace VamTimeline
                         var localPosition = target.EvaluatePosition(target.x.GetKeyframeByKey(t).time);
                         if (t != lastHandle && Vector3.SqrMagnitude(lastLocalPosition - localPosition) < minHandleMagnitude)
                             continue;
-                        var handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        var cs = handle.GetComponents<Collider>();
-                        for (var i = 0; i < cs.Length; i++) Destroy(cs[i]);
-                        handle.transform.SetParent(_line.transform, false);
-                        handle.transform.localScale = handleScale;
-                        handle.GetComponent<Renderer>().material = GetPreviewMaterial(_line.colorGradient.Evaluate(t / clip.animationLength));
-                        handle.transform.localPosition = localPosition;
+                        var handle = Instantiate(TimelinePrefabs.cube, _line.transform, false);
+                        AssignPreviewMaterial(handle.GetComponent<Renderer>().material, _line.colorGradient.Evaluate(t / clip.animationLength));
+                        handle.localScale = handleScale;
+                        handle.localPosition = localPosition;
                         _handles.Add(handle);
                         lastLocalPosition = localPosition;
                     }
+
+                    Invoke(nameof(ActivateLine), 0.01f);
                 }
                 else
                 {
@@ -139,13 +143,27 @@ namespace VamTimeline
             }
         }
 
-        private static Material GetPreviewMaterial(Color color)
+        private void ActivateLine()
         {
-            var mat = new Material(Shader.Find("Battlehub/RTGizmos/Handles")) { color = color };
-            mat.SetFloat("_Offset", 1f);
-            mat.SetFloat("_MinAlpha", 1f);
-            mat.SetPass(0);
-            return mat;
+            if (_handles.Count == 0 || _handles[0] == null) return;
+
+            // NOTE: When activating _immediately_,  it causes the model to react weirdly sometimes.
+            for (var i = 0; i < _handles.Count; i++)
+            {
+                var handle = _handles[i];
+                handle.gameObject.SetActive(true);
+            }
+        }
+
+        private static void AssignPreviewMaterial(Material material, Color color)
+        {
+            if (material == null) throw new NullReferenceException("No mat");
+            if (material.shader != _gizmoShader)
+                material.shader = _gizmoShader;
+            material.color = color;
+            material.SetFloat("_Offset", 1f);
+            material.SetFloat("_MinAlpha", 1f);
+            material.SetPass(0);
         }
 
         protected override void CreateExpandPanel(RectTransform container)
@@ -230,7 +248,7 @@ namespace VamTimeline
             target.animatableRef.onSelectedChanged.RemoveListener(OnSelectedChanged);
             if (_line != null) Destroy(_line.gameObject);
             foreach (var t in _handles)
-                Destroy(t);
+                Destroy(t.gameObject);
             _handles.Clear();
             base.OnDestroy();
         }

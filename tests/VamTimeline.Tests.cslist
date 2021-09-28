@@ -56,6 +56,7 @@
 ..\src\AtomAnimations\Serialization\AtomAnimationSerializer.cs
 ..\src\AtomAnimations\Utils\FloatExtensions.cs
 ..\src\AtomAnimations\Utils\QuaternionExtensions.cs
+..\src\AtomAnimations\Utils\TimelinePrefabs.cs
 ..\src\Interop\IRemoteAtomPlugin.cs
 ..\src\Interop\IRemoteControllerPlugin.cs
 ..\src\Interop\ITimelineListener.cs
