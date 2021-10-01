@@ -22,6 +22,7 @@ namespace VamTimeline
         public Regex filter { get; set; }
 
         private readonly Atom _containingAtom;
+        private float _startTime = Time.time;
 
         public Logger(Atom containingAtom)
         {
@@ -31,12 +32,13 @@ namespace VamTimeline
         public void Begin()
         {
             if(clearOnPlay) SuperController.singleton.ClearMessages();
+            _startTime = Time.time;
         }
 
         public void Log(string category, string message)
         {
             if (filter != null && !filter.IsMatch(message)) return;
-            SuperController.LogMessage($"[{Time.time % 100:00.000}|{_containingAtom.name}|{category}] {message}");
+            SuperController.LogMessage($"[{(Time.time - _startTime) % 100:00.000}|{_containingAtom.name}|{category}] {message}");
         }
     }
 }
