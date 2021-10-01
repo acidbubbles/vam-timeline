@@ -326,6 +326,10 @@ namespace VamTimeline
                 if (previous.uninterruptible)
                     return;
 
+                previous.playbackMainInLayer = false;
+                previous.playbackScheduledNextAnimationName = null;
+                previous.playbackScheduledNextTimeLeft = float.NaN;
+
                 // Wait for the loop to sync
                 if (previous.loop && previous.preserveLoops && next.loop && next.preserveLoops && allowPreserveLoops)
                 {
@@ -342,7 +346,6 @@ namespace VamTimeline
                 // Blend immediately, but unlike TransitionClips, recording will ignore blending
                 var blendInDuration = next.recording ? 0f : next.blendInDuration;
                 BlendOut(previous, blendInDuration);
-                previous.playbackMainInLayer = false;
                 if (next.clipTime >= next.animationLength) next.clipTime = 0f;
                 BlendIn(next, blendInDuration);
                 next.playbackMainInLayer = true;
@@ -677,7 +680,6 @@ namespace VamTimeline
                             if (!float.IsNaN(clip.playbackScheduledNextTimeLeft))
                             {
                                 // Wait for the sequence time to be reached
-                                if (logger.general) logger.Log(logger.generalCategory, $"Waiting for next animation...'{clip.animationNameQualified}'");
                                 clip.playbackBlendWeight = 0;
                             }
                             else
