@@ -609,11 +609,6 @@ namespace VamTimeline
             if (current == clip) return;
             var previous = current;
             current = clip;
-            onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
-            {
-                before = previous,
-                after = current
-            });
 
             if (animation.isPlaying)
             {
@@ -624,6 +619,12 @@ namespace VamTimeline
                 previous.clipTime = 0f;
                 SampleOrPose();
             }
+
+            onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs
+            {
+                before = previous,
+                after = current
+            });
         }
 
         private void SampleOrPose()

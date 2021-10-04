@@ -28,9 +28,9 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, val => { _lastFilterVal = val; OnSelectionChanged(); });
+            _filterJSON = new JSONStorableBool("Filter unselected targets", _lastFilterVal, val => { _lastFilterVal = val; RefreshTargetsListDeferred(); });
 
-            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(RefreshTargetsListDeferred);
 
             if (animation.IsEmpty())
             {
@@ -39,7 +39,7 @@ namespace VamTimeline
             }
             else
             {
-                OnSelectionChanged();
+                RefreshTargetsListDeferred();
             }
         }
 
@@ -77,17 +77,18 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
-            RefreshTargetsList();
+            RefreshTargetsListDeferred();
         }
 
-        private void OnSelectionChanged()
+        private void RefreshTargetsListDeferred()
         {
             if (_selectionChangedPending) return;
             _selectionChangedPending = true;
-            StartCoroutine(SelectionChangedDeferred());
+
+            StartCoroutine(RefreshTargetsListCo());
         }
 
-        private IEnumerator SelectionChangedDeferred()
+        private IEnumerator RefreshTargetsListCo()
         {
             yield return new WaitForEndOfFrame();
             _selectionChangedPending = false;
@@ -131,6 +132,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(plugin, animationEditContext.current, target);
+                SuperController.LogMessage($"Bound {target.animatableRef.name} to {target.animatableRef.val}");
                 _targets.Add(component);
             }
 
@@ -163,7 +165,7 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
 
         public override void OnDestroy()
         {
-            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnSelectionChanged);
+            animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(RefreshTargetsListDeferred);
             Destroy(_manageTargetsUI);
             RemoveTargets();
             base.OnDestroy();
