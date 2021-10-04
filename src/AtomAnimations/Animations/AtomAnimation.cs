@@ -326,10 +326,6 @@ namespace VamTimeline
                 if (previous.uninterruptible)
                     return;
 
-                previous.playbackMainInLayer = false;
-                previous.playbackScheduledNextAnimationName = null;
-                previous.playbackScheduledNextTimeLeft = float.NaN;
-
                 // Wait for the loop to sync
                 if (previous.loop && previous.preserveLoops && next.loop && next.preserveLoops && allowPreserveLoops)
                 {
@@ -342,6 +338,10 @@ namespace VamTimeline
 
                     return;
                 }
+
+                previous.playbackMainInLayer = false;
+                previous.playbackScheduledNextAnimationName = null;
+                previous.playbackScheduledNextTimeLeft = float.NaN;
 
                 // Blend immediately, but unlike TransitionClips, recording will ignore blending
                 var blendInDuration = next.recording ? 0f : next.blendInDuration;
