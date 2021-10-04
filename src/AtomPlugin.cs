@@ -168,7 +168,11 @@ namespace VamTimeline
         {
             if (containingAtom.physicsSimulators.Length == 0) return false;
             var physicsSimulator = containingAtom.physicsSimulators[0];
+            #if(VAM_GT_1_20_0_9)
             if (!physicsSimulator.resetSimulation)
+            #else
+            if (!physicsSimulator.pauseSimulation)
+            #endif
             {
                 _physicsResetTimeout = 0;
                 return false;

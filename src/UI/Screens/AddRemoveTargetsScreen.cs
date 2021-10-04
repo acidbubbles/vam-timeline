@@ -144,7 +144,11 @@ namespace VamTimeline
                 SuperController.singleton.SelectModeControllers(targetCtrl =>
                 {
                     SuperController.singleton.ShowMainHUDAuto();
+                    #if(VAM_GT_1_20)
                     SuperController.singleton.SelectController(plugin.containingAtom.mainController, false, false, false, true);
+                    #else
+                    SuperController.singleton.SelectController(plugin.containingAtom.mainController, false);
+                    #endif
                     operations.Targets().Add(targetCtrl);
                 });
             });

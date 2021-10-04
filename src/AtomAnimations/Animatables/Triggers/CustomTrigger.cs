@@ -38,17 +38,29 @@ namespace VamTimeline
 
         #region JSON
 
+        #if(VAM_GT_1_20)
         public override JSONClass GetJSON(string subScenePrefix)
         {
             var jc = base.GetJSON(subScenePrefix);
+        #else
+        public override JSONClass GetJSON()
+        {
+            var jc = base.GetJSON();
+        #endif
             jc["startTime"].AsFloat = startTime;
             jc["endTime"].AsFloat = endTime;
             return jc;
         }
 
+        #if(VAM_GT_1_20)
         public override void RestoreFromJSON(JSONClass jc, string subScenePrefix, bool isMerge)
         {
             base.RestoreFromJSON(jc, subScenePrefix, isMerge);
+        #else
+        public override void RestoreFromJSON(JSONClass jc)
+        {
+            base.RestoreFromJSON(jc);
+        #endif
             if (jc["startTime"] != null)
                 startTime = jc["startTime"].AsFloat;
             if (jc["endTime"] != null)

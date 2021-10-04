@@ -96,9 +96,13 @@ namespace VamTimeline
         public void Apply()
         {
             if (_atom.type != "Person") return;
+            #if(VAM_GT_1_20)
             var posePresetsManagerControls = _atom.presetManagerControls.First(pmc => pmc.name == "PosePresets");
             var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
             posePresetsManager.LoadPresetFromJSON(_poseJSON, useMergeLoad);
+            #else
+            throw new System.NotSupportedException("Virt-A-Mate 1.20 required for pose.");
+            #endif
         }
 
         public PositionAndRotation GetControllerPose(string name)

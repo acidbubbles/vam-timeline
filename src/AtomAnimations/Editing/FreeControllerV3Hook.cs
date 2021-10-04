@@ -78,7 +78,7 @@ namespace VamTimeline
 
 #else
 
-        private FreeControllerAnimationTarget _grabbedTarget;
+        private FreeControllerV3AnimationTarget _grabbedTarget;
         private bool _cancelNextGrabbedControllerRelease;
 
         public void Update()
@@ -90,7 +90,7 @@ namespace VamTimeline
 
             if (_grabbedTarget == null && grabbingHasValue && !grabbing.possessed)
             {
-                _grabbedTarget = animationEditContext.current.targetControllers.FirstOrDefault(c => c.controller == grabbing);
+                _grabbedTarget = animationEditContext.current.targetControllers.FirstOrDefault(c => c.animatableRef.controller == grabbing);
             }
             if (_grabbedTarget != null && grabbingHasValue)
             {
