@@ -132,7 +132,6 @@ You'll find a built-in guide, and links to the more detailed wiki as well as tut
                 keyframeUI.height = 60f;
                 var component = keyframeUI.gameObject.AddComponent<FloatParamTargetFrame>();
                 component.Bind(plugin, animationEditContext.current, target);
-                SuperController.LogMessage($"Bound {target.animatableRef.name} to {target.animatableRef.val}");
                 _targets.Add(component);
             }
 

@@ -37,6 +37,7 @@ namespace VamTimeline
             animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
             animation.timeMode = DeserializeInt(animationJSON["TimeMode"], 0);
+            animation.forceBlendTime = DeserializeBool(animationJSON["ForceBlendTime"], false);
             if (animationJSON.HasKey("FadeManager"))
                 animation.fadeManager = DeserializeFadeManager(animationJSON["FadeManager"].AsObject);
 
@@ -362,6 +363,7 @@ namespace VamTimeline
                 { "SyncWithPeers", animation.syncWithPeers ? "1" : "0" },
                 { "SyncSubsceneOnly", animation.syncSubsceneOnly ? "1" : "0" },
                 { "TimeMode", animation.timeMode.ToString(CultureInfo.InvariantCulture) },
+                { "ForceBlendTime", animation.forceBlendTime ? "1" : "0" },
             };
             if (animation.fadeManager != null)
                 animationJSON["FadeManager"] = animation.fadeManager.GetJSON();

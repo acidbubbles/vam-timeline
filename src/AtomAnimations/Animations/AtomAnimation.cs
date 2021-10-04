@@ -95,6 +95,7 @@ namespace VamTimeline
 
         public bool syncSubsceneOnly { get; set; }
         public bool syncWithPeers { get; set; } = true;
+        public bool forceBlendTime { get; set; }
 
         public AtomAnimation()
         {
@@ -712,7 +713,9 @@ namespace VamTimeline
             else
             {
                 if (!clip.playbackEnabled) clip.playbackBlendWeight = float.Epsilon;
-                clip.playbackBlendRate = 1f / blendDuration;
+                clip.playbackBlendRate = forceBlendTime
+                    ? (1f - clip.playbackBlendWeight) / blendDuration
+                    : 1f / blendDuration;
             }
 
             if (clip.playbackEnabled) return;
@@ -734,7 +737,9 @@ namespace VamTimeline
             }
             else
             {
-                clip.playbackBlendRate = -1f / blendDuration;
+                clip.playbackBlendRate = forceBlendTime
+                    ? (-1f - clip.playbackBlendWeight) / blendDuration
+                    : -1f / blendDuration;
             }
         }
 

@@ -34,6 +34,10 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            InitForceBlendInTime();
+
+            prefabFactory.CreateSpacer();
+
             InitDisableSync();
 #if (VAM_GT_1_20)
             if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
@@ -72,6 +76,12 @@ namespace VamTimeline
             timeTypeJSON.valNoCallback = animation.timeMode.ToString();
             timeTypeJSON.setCallbackFunction = val => animation.timeMode = int.Parse(val);
             prefabFactory.CreatePopup(timeTypeJSON, true, true);
+        }
+
+        private void InitForceBlendInTime()
+        {
+            var forceBlendTimeJSON = new JSONStorableBool("Force blend time (ignore blend speed)", animation.forceBlendTime, val => animation.forceBlendTime = val);
+            prefabFactory.CreateToggle(forceBlendTimeJSON);
         }
 
         private void InitDisableSync()
