@@ -75,15 +75,21 @@ namespace VamTimeline
                 if (UIPerformance.ShouldSkip(UIPerformance.LowFrequency))
                     yield return 0;
 
-                if (!clip.playbackMainInLayer)
+                if (clip.playbackMainInLayer && clip.playbackBlendRate == 0)
                 {
-                    if (btn.label != playLabel)
-                        btn.label = playLabel;
+                    btn.label = $" \u25A0  [{clip.clipTime:00.00}] {clip.animationName}";
+                }
+                else if (clip.playbackEnabled)
+                {
+                    if(clip.playbackBlendRate > 0)
+                        btn.label = $" \u25A0  [{clip.clipTime:00.00} {clip.playbackBlendWeight * 100:00}%] {clip.animationName}";
+                    else
+                        btn.label = $" \u25B6 [{clip.clipTime:00.00} {clip.playbackBlendWeight * 100:00}%] {clip.animationName}";
                 }
                 else
                 {
-                    //btn.label = $" \u25A0 [{clip.clipTime:00.000}, weight: {Mathf.Round(clip.playbackBlendWeight * 100f):000}%]";
-                    btn.label = $" \u25A0 [{clip.clipTime:00.00}] {clip.animationName}";
+                    if (btn.label != playLabel)
+                        btn.label = playLabel;
                 }
 
                 yield return 0;
