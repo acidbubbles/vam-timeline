@@ -56,9 +56,9 @@ namespace VamTimeline
             {
                 if (clip.playbackMainInLayer)
                 {
-                    animation.StopClip(clip);
+                    animation.SoftStopClip(clip);
                 }
-                else if (!clip.playbackEnabled)
+                else
                 {
                     animation.PlayClip(clip, true);
                 }

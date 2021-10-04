@@ -319,9 +319,6 @@ namespace VamTimeline
             if (sequencing && !next.playbackEnabled)
                 next.clipTime = 0;
 
-            if (previous != null && previous.uninterruptible)
-                return;
-
             if (previous != null)
             {
                 if (previous.uninterruptible)
@@ -413,7 +410,15 @@ namespace VamTimeline
             }
         }
 
-        public void StopClip(AtomAnimationClip clip)
+        public void SoftStopClip(AtomAnimationClip clip)
+        {
+            clip.playbackMainInLayer = false;
+            clip.playbackScheduledNextAnimationName = null;
+            clip.playbackScheduledNextTimeLeft = float.NaN;
+            BlendOut(clip, clip.blendInDuration);
+        }
+
+        private void StopClip(AtomAnimationClip clip)
         {
             if (clip.playbackEnabled)
             {
