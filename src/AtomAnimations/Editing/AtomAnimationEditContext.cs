@@ -579,7 +579,7 @@ namespace VamTimeline
                 var layer = layers[i];
                 list[i] = layer[0].animationLayer == current.animationLayer
                     ? current
-                    : AtomAnimation.GetPrincipalClipInLayer(layer, current.animationName, current.animationSet);
+                    : GetPrincipalClipInLayer(layer, current.animationName, current.animationSet);
             }
 
             // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer
@@ -591,6 +591,22 @@ namespace VamTimeline
             }
 
             return list;
+        }
+
+        private static AtomAnimationClip GetPrincipalClipInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet)
+        {
+            #warning Optimize and move to a Layer object
+            var clip = (animationSet != null ? layer.FirstOrDefault(c => c.animationSet == animationSet) : null) ??
+                       layer.FirstOrDefault(c => c.playbackMainInLayer) ??
+                       layer.FirstOrDefault(c => c.animationName == animationName) ??
+                       layer.FirstOrDefault(c => c.autoPlay) ??
+                       layer[0];
+
+            // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
+            if (clip.animationSet != null && clip.animationSet != animationSet)
+                clip = null;
+
+            return clip;
         }
 
         #endregion
