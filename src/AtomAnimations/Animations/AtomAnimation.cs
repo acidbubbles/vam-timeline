@@ -257,9 +257,9 @@ namespace VamTimeline
                 var clip = siblings[i];
                 if (clip.target == null) continue;
                 if(isPlaying && clip.main != null)
-                    PlayClip(clip.main, clip.target, seq, true);
+                    PlayClipCore(clip.main, clip.target, seq, true);
                 else
-                    PlayClip(null, clip.target, seq, true);
+                    PlayClipCore(null, clip.target, seq, true);
             }
         }
 
@@ -281,7 +281,7 @@ namespace VamTimeline
             paused = false;
             if (clip.playbackMainInLayer) return;
 
-            PlayClip(
+            PlayClipCore(
                 isPlaying
                     ? GetMainClipPerLayer(index.ByLayer(clip.animationLayer))
                     : null,
@@ -295,7 +295,7 @@ namespace VamTimeline
 
         #region Playback (Core)
 
-        public void PlayClip(AtomAnimationClip previous, AtomAnimationClip next, bool seq, bool allowPreserveLoops)
+        private void PlayClipCore(AtomAnimationClip previous, AtomAnimationClip next, bool seq, bool allowPreserveLoops)
         {
             paused = false;
 
