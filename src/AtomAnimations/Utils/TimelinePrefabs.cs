@@ -10,8 +10,8 @@ namespace VamTimeline
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.SetActive(false);
-            var cs = go.GetComponentsInChildren<Collider>(true);
-            for (var i = 0; i < cs.Length; i++) Object.Destroy(cs[i]);
+            var cs = go.GetComponent<Collider>();
+            Object.DestroyImmediate(cs);
             return go.transform;
         }
 
