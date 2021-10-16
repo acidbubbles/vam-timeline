@@ -15,11 +15,11 @@ namespace VamTimeline
 
         public IList<JSONStorableFloatRef> storableFloats => _storableFloats;
 
-        public JSONStorableFloatRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName)
+        public JSONStorableFloatRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
             var t = _storableFloats.FirstOrDefault(x => x.Targets(storableId, floatParamName));
             if (t != null) return t;
-            t = new JSONStorableFloatRef(atom, storableId, floatParamName);
+            t = new JSONStorableFloatRef(atom, storableId, floatParamName, assignMinValueOnBound, assignMaxValueOnBound);
             _storableFloats.Add(t);
             RegisterAnimatableRef(t);
             return t;

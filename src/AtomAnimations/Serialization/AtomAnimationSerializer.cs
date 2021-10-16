@@ -163,7 +163,13 @@ namespace VamTimeline
                 {
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
-                    var floatParamRef = targetsRegistry.GetOrCreateStorableFloat(_atom, storableId, floatParamName);
+                    var floatParamRef = targetsRegistry.GetOrCreateStorableFloat(
+                        _atom,
+                        storableId,
+                        floatParamName,
+                        paramJSON.HasKey("Min") ? (float?)paramJSON["Min"].AsFloat : null,
+                        paramJSON.HasKey("Max") ? (float?)paramJSON["Max"].AsFloat : null
+                    );
                     var target = new JSONStorableFloatAnimationTarget(floatParamRef);
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
@@ -462,6 +468,10 @@ namespace VamTimeline
                         { "Name", target.animatableRef.floatParamName },
                         { "Value", SerializeCurve(target.value) }
                     };
+                var min = target.animatableRef.floatParam?.min ?? target.animatableRef.assignMinValueOnBound;
+                if (min != null) paramJSON["Min"] = min.Value.ToString(CultureInfo.InvariantCulture);
+                var max = target.animatableRef.floatParam?.max ?? target.animatableRef.assignMaxValueOnBound;
+                if (max != null) paramJSON["Max"] = max.Value.ToString(CultureInfo.InvariantCulture);
                 floatParamsJSON.Add(paramJSON);
             }
             if(floatParamsJSON.Count > 0)

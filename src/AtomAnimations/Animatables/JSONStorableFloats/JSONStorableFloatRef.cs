@@ -10,16 +10,28 @@ namespace VamTimeline
         private bool _available;
         private readonly Atom _atom;
         private int _lastAvailableCheck;
+        public float? assignMinValueOnBound {get; private set; }
+        public float? assignMaxValueOnBound {get; private set; }
         public readonly string storableId;
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
 
-        public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName)
+        public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
             _atom = atom;
             this.storableId = storableId;
             this.floatParamName = floatParamName;
+            if (assignMinValueOnBound == 0 && assignMaxValueOnBound == 0)
+            {
+                this.assignMinValueOnBound = null;
+                this.assignMaxValueOnBound = null;
+            }
+            else
+            {
+                this.assignMinValueOnBound = assignMinValueOnBound;
+                this.assignMaxValueOnBound = assignMaxValueOnBound;
+            }
         }
 
         public JSONStorableFloatRef(JSONStorable storable, JSONStorableFloat floatParam)
@@ -53,14 +65,10 @@ namespace VamTimeline
         {
             if (_available)
             {
-                if (storable == null)
-                {
-                    _available = false;
-                    storable = null;
-                    floatParam = null;
-                    return false;
-                }
-                return true;
+                if (storable != null) return true;
+                _available = false;
+                storable = null;
+                floatParam = null;
             }
             if (Time.frameCount == _lastAvailableCheck) return false;
             if (TryBind(silent)) return true;
@@ -68,7 +76,7 @@ namespace VamTimeline
             return false;
         }
 
-        public bool TryBind(bool silent)
+        private bool TryBind(bool silent)
         {
             if (SuperController.singleton.isLoading) return false;
             var storable = _atom.GetStorableByID(storableId);
@@ -102,6 +110,16 @@ namespace VamTimeline
             this.floatParam = floatParam;
             // May be replaced (might use alt name)
             floatParamName = floatParam.name;
+            if (assignMinValueOnBound != null)
+            {
+                floatParam.min = assignMinValueOnBound.Value;
+                assignMinValueOnBound = null;
+            }
+            if (assignMaxValueOnBound != null)
+            {
+                floatParam.max = assignMaxValueOnBound.Value;
+                assignMaxValueOnBound = null;
+            }
             _available = true;
             return true;
         }
