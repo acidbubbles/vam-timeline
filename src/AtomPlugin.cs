@@ -48,6 +48,7 @@ namespace VamTimeline
         private bool _scrubbing;
 
         private bool _restoring;
+        private string _legacyAnimationNext;
         private FreeControllerV3Hook _freeControllerHook;
         public Logger logger { get; private set; }
         public OperationsFactory operations => new OperationsFactory(containingAtom, animation, animationEditContext.current, peers);
@@ -164,6 +165,7 @@ namespace VamTimeline
 
         private const float _physicsResetTimeoutSeconds = 0.5f;
         private float _physicsResetTimeout;
+
         private bool IsPhysicsReset()
         {
             if (containingAtom.physicsSimulators.Length == 0) return false;
@@ -260,6 +262,7 @@ namespace VamTimeline
             {
                 if (string.IsNullOrEmpty(val)) return;
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
+                _legacyAnimationNext = val;
                 var clip = animation.clips.FirstOrDefault(c => c.animationName == val);
                 if (clip == null) return;
                 if (animationEditContext.current != clip)
@@ -334,25 +337,13 @@ namespace VamTimeline
             };
             RegisterFloat(_timeJSON);
 
-            _playJSON = new JSONStorableAction(StorableNames.Play, () =>
-            {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Play}'");
-                if (animation.paused) { animation.paused = false; return; }
-                var selected = string.IsNullOrEmpty(_animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(_animationLegacyJSON.val).FirstOrDefault();
-                animation.PlayOneAndOtherMainsInLayers(selected);
-            });
+            _playJSON = new JSONStorableAction(StorableNames.Play, () => StorablePlay(StorableNames.Play));
             RegisterAction(_playJSON);
 
             _playIfNotPlayingJSON = new JSONStorableAction(StorableNames.PlayIfNotPlaying, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PlayIfNotPlaying}'");
-                if (animation.paused) { animation.paused = false; return; }
-                var selected = string.IsNullOrEmpty(_animationLegacyJSON.val) ? animation.GetDefaultClip() : animation.GetClips(_animationLegacyJSON.val).FirstOrDefault();
-                if (selected == null) return;
-                if (!animation.isPlaying)
-                    animation.PlayOneAndOtherMainsInLayers(selected);
-                else if (!selected.playbackEnabled)
-                    animation.PlayClip(selected, true);
+                if (animation.isPlaying) return;
+                StorablePlay(StorableNames.PlayIfNotPlaying);
             });
             RegisterAction(_playIfNotPlayingJSON);
 
@@ -428,6 +419,36 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterBool(_pausedJSON);
+        }
+
+        private void StorablePlay(string storableName)
+        {
+            if (animation.paused)
+            {
+                animation.paused = false;
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (unpause)");
+                return;
+            }
+
+            AtomAnimationClip selected;
+            if (string.IsNullOrEmpty(_legacyAnimationNext))
+            {
+                selected = animation.GetDefaultClip();
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using default clip)");
+            }
+            else
+            {
+                selected = animation.GetClips(_legacyAnimationNext).FirstOrDefault();
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using 'Animation' = '{_legacyAnimationNext}')");
+                if (selected == null)
+                {
+                    SuperController.LogError($"Timeline: Atom '{containingAtom.uid}' failed to play animation '{_legacyAnimationNext}' specified in Animations storable: no animation found with that name.");
+                    _legacyAnimationNext = null;
+                    return;
+                }
+            }
+
+            animation.PlayOneAndOtherMainsInLayers(selected);
         }
 
         private IEnumerator DeferredInit()
