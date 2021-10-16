@@ -208,11 +208,13 @@ namespace VamTimeline
             if (freeControllerV3AnimationTarget != null)
             {
                 if (_lines.Count > _maxCurves - 3) return;
+#if(!HIDE_CURVES_POS)
                 BindCurve(freeControllerV3AnimationTarget.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
                 BindCurve(freeControllerV3AnimationTarget.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
                 BindCurve(freeControllerV3AnimationTarget.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
-                // To display rotation as euler angles, we have to build custom curves. But it's not that useful.
+#endif
 #if(SHOW_CURVES_ROT)
+                // To display rotation as euler angles, we have to build custom curves. But it's not that useful.
                 var rotVXCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
                 var rotVYCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
                 var rotVZCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);

@@ -33,14 +33,14 @@ namespace VamTimeline
         }
 
         private readonly AtomAnimation _animation;
-        protected readonly AtomAnimationClip clip;
+        private readonly AtomAnimationClip _clip;
         private readonly Atom _containingAtom;
 
         public MocapImportOperations(Atom containingAtom, AtomAnimation animation, AtomAnimationClip clip)
         {
             _containingAtom = containingAtom;
             _animation = animation;
-            this.clip = clip;
+            _clip = clip;
         }
 
         public void Prepare(bool resize)
@@ -53,14 +53,14 @@ namespace VamTimeline
                 throw new Exception("Timeline: No motion animation to import.");
 
             var requiresRebuild = false;
-            if (clip.loop)
+            if (_clip.loop)
             {
-                clip.loop = SuperController.singleton.motionAnimationMaster.loop;
+                _clip.loop = SuperController.singleton.motionAnimationMaster.loop;
                 requiresRebuild = true;
             }
-            if (resize && length != clip.animationLength)
+            if (resize && length != _clip.animationLength)
             {
-                new ResizeAnimationOperations().CropOrExtendEnd(clip, length);
+                new ResizeAnimationOperations().CropOrExtendEnd(_clip, length);
                 requiresRebuild = true;
             }
             if (requiresRebuild)
@@ -71,8 +71,8 @@ namespace VamTimeline
 
         public IEnumerator Execute(List<FreeControllerV3> controllers)
         {
-            var keyOps = new KeyframesOperations(clip);
-            var targetOps = new TargetsOperations(_containingAtom, _animation, clip);
+            var keyOps = new KeyframesOperations(_clip);
+            var targetOps = new TargetsOperations(_containingAtom, _animation, _clip);
 
             yield return 0;
 
@@ -93,9 +93,9 @@ namespace VamTimeline
                 try
                 {
                     ctrl = mot.controller;
-                    target = clip.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(ctrl));
+                    target = _clip.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(ctrl));
 
-                    if (_animation.index.ByLayer().Where(l => l[0].animationLayer != clip.animationLayer).Select(l => l[0]).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(ctrl)))
+                    if (_animation.index.ByLayer().Where(l => l[0].animationLayer != _clip.animationLayer).Select(l => l[0]).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(ctrl)))
                     {
                         SuperController.LogError($"Skipping controller {ctrl.name} because it was used in another layer.");
                         continue;
@@ -104,14 +104,14 @@ namespace VamTimeline
                     if (target == null)
                     {
                         target = targetOps.Add(ctrl);
-                        target.AddEdgeFramesIfMissing(clip.animationLength);
+                        target.AddEdgeFramesIfMissing(_clip.animationLength);
                     }
                     else
                     {
                         keyOps.RemoveAll(target);
                     }
                     target.StartBulkUpdates();
-                    target.Validate(clip.animationLength);
+                    target.Validate(_clip.animationLength);
 
                     var enumerator = ProcessController(mot.clip, target, ctrl).GetEnumerator();
                     while (enumerator.MoveNext())
@@ -136,13 +136,13 @@ namespace VamTimeline
             var lastRecordedFrame = float.MinValue;
             // Vector3? previousPosition = null;
             // var previousTime = 0f;
-            for (var stepIndex = 0; stepIndex < motClip.steps.Count - (clip.loop ? 1 : 0); stepIndex++)
+            for (var stepIndex = 0; stepIndex < motClip.steps.Count - (_clip.loop ? 1 : 0); stepIndex++)
             {
                 var step = motClip.steps[stepIndex];
                 var time = step.timeStep.Snap(0.01f);
                 if (time - lastRecordedFrame < frameLength) continue;
-                if (time > clip.animationLength) break;
-                if (Mathf.Abs(time - clip.animationLength) < 0.001f) time = clip.animationLength;
+                if (time > _clip.animationLength) break;
+                if (Mathf.Abs(time - _clip.animationLength) < 0.001f) time = _clip.animationLength;
                 var k = ControllerKeyframe.FromStep(time, step, ctrl);
                 target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
                 // SuperController.LogMessage($"{k.position.x:0.0000}, {k.position.y:0.0000},{k.position.z:0.0000}");
@@ -155,7 +155,7 @@ namespace VamTimeline
                 // previousTime = time;
             }
 
-            target.AddEdgeFramesIfMissing(clip.animationLength);
+            target.AddEdgeFramesIfMissing(_clip.animationLength);
             yield break;
         }
     }
