@@ -140,13 +140,18 @@ namespace VamTimeline
             var hasRotParent = !ReferenceEquals(rotParent, null);
             var controllerTransform = animatableRef.controller.transform;
 
-            return SetKeyframe(
+            return SetKeyframeByTime(
                 time,
                 hasPosParent ? posParent.transform.InverseTransformPoint(controllerTransform.position) : controllerTransform.localPosition,
                 hasRotParent ? Quaternion.Inverse(rotParent.rotation) * controllerTransform.rotation : controllerTransform.localRotation,
                 -1,
                 makeDirty
             );
+        }
+
+        public int AddKeyframeAtTime(float time, bool makeDirty = true)
+        {
+            return SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), -1, makeDirty);
         }
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
@@ -164,8 +169,8 @@ namespace VamTimeline
             }
             else
             {
-                clone.SetKeyframe(0f, GetKeyframePosition(0), GetKeyframeRotation(0), CurveTypeValues.SmoothLocal);
-                clone.SetKeyframe(GetKeyframeTime(x.length - 1), GetKeyframePosition(x.length - 1), GetKeyframeRotation(x.length - 1), CurveTypeValues.SmoothLocal);
+                clone.SetKeyframeByTime(0f, GetKeyframePosition(0), GetKeyframeRotation(0), CurveTypeValues.SmoothLocal);
+                clone.SetKeyframeByTime(GetKeyframeTime(x.length - 1), GetKeyframePosition(x.length - 1), GetKeyframeRotation(x.length - 1), CurveTypeValues.SmoothLocal);
                 clone.ComputeCurves();
             }
             return clone;

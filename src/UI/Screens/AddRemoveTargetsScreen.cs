@@ -471,8 +471,8 @@ namespace VamTimeline
                     }
                     else
                     {
-                        added.SetKeyframe(0f, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
-                        added.SetKeyframe(clip.animationLength, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
+                        added.SetKeyframeByTime(0f, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
+                        added.SetKeyframeByTime(clip.animationLength, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
                     }
 
                     if (!clip.loop)

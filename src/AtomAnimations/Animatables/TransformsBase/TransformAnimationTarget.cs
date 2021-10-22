@@ -69,7 +69,7 @@ namespace VamTimeline
                 for (var i = 0; i < x.length; i++)
                 {
                     var time = x.keys[i].time;
-                    SetKeyframe(time, EvaluatePosition(time), EvaluateRotation(time), x.keys[i].curveType, false);
+                    SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), x.keys[i].curveType, false);
                 }
             }
             if (x.length < rotW.length)
@@ -77,7 +77,7 @@ namespace VamTimeline
                 for (var i = 0; i < rotW.length; i++)
                 {
                     var time = rotW.keys[i].time;
-                    SetKeyframe(time, EvaluatePosition(time), EvaluateRotation(time), rotW.keys[i].curveType, false);
+                    SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), rotW.keys[i].curveType, false);
                 }
             }
         }
@@ -96,7 +96,7 @@ namespace VamTimeline
 
         #region Keyframe control
 
-        public int SetKeyframe(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool makeDirty = true)
+        public int SetKeyframeByTime(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool makeDirty = true)
         {
             curveType = SelectCurveType(time, curveType);
             var key = x.SetKeyframe(time, localPosition.x, curveType);

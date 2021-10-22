@@ -37,7 +37,7 @@ namespace VamTimeline
                 position += source.GetKeyframePosition(key) * weight;
                 QuaternionUtil.AverageQuaternion(ref rotationSum, source.GetKeyframeRotation(key), firstRotation, weight);
             }
-            branch.SetKeyframe(keyTime, position, source.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
+            branch.SetKeyframeByTime(keyTime, position, source.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
 
         }
 
@@ -56,8 +56,8 @@ namespace VamTimeline
             avgPos /= div;
             var avgRot =  QuaternionUtil.FromVector(cumulativeRotation);
 
-            var branchStart = branch.SetKeyframe(source.x.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
-            var branchEnd = branch.SetKeyframe(source.x.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
+            var branchStart = branch.SetKeyframeByTime(source.x.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
+            var branchEnd = branch.SetKeyframeByTime(source.x.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
             branch.RecomputeKey(branchStart);
             branch.RecomputeKey(branchEnd);
         }

@@ -253,9 +253,9 @@ namespace VamTimeline
             fc.UITransformsPlayMode = new Transform[0];
             var target = clip.Add(new FreeControllerV3Ref(fc));
             context.Assert(clip.animationLength, 2f, "Default animation length");
-            target.SetKeyframe(0f, Vector3.zero, Quaternion.identity);
-            target.SetKeyframe(1f, Vector3.one, Quaternion.identity);
-            target.SetKeyframe(2f, Vector3.zero, Quaternion.identity);
+            target.SetKeyframeByTime(0f, Vector3.zero, Quaternion.identity);
+            target.SetKeyframeByTime(1f, Vector3.one, Quaternion.identity);
+            target.SetKeyframeByTime(2f, Vector3.zero, Quaternion.identity);
             context.animation.RebuildAnimationNow();
             context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
             return target;

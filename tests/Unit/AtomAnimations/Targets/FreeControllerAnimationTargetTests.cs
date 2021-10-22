@@ -18,9 +18,9 @@ namespace VamTimeline
         public IEnumerable AddEdgeFramesIfMissing_SameLengthStaysUntouched(TestContext context)
         {
             var target = GivenAFreeController(context);
-            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(2, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(2, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
 
             target.AddEdgeFramesIfMissing(2f);
 
@@ -33,8 +33,8 @@ namespace VamTimeline
         public IEnumerable AddEdgeFramesIfMissing_WithTwoKeyframes_Moves(TestContext context)
         {
             var target = GivenAFreeController(context);
-            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
 
             target.AddEdgeFramesIfMissing(2f);
 
@@ -47,9 +47,9 @@ namespace VamTimeline
         public IEnumerable AddEdgeFramesIfMissing_WithThreeKeyframes_Adds(TestContext context)
         {
             var target = GivenAFreeController(context);
-            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(2, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(2, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
 
             target.AddEdgeFramesIfMissing(3f);
 
@@ -62,9 +62,9 @@ namespace VamTimeline
         public IEnumerable AddEdgeFramesIfMissing_WithCopyPrevious_AlwaysExtends(TestContext context)
         {
             var target = GivenAFreeController(context);
-            target.SetKeyframe(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
-            target.SetKeyframe(2, Vector3.zero, Quaternion.identity, CurveTypeValues.CopyPrevious);
+            target.SetKeyframeByTime(0, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(1, Vector3.zero, Quaternion.identity, CurveTypeValues.Linear);
+            target.SetKeyframeByTime(2, Vector3.zero, Quaternion.identity, CurveTypeValues.CopyPrevious);
 
             target.AddEdgeFramesIfMissing(3f);
 

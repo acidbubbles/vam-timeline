@@ -1221,7 +1221,7 @@ namespace VamTimeline
                 {
                     var position = sourceParent.TransformPoint(sourceTarget.EvaluatePosition(sourceTime));
                     var rotation = Quaternion.Inverse(sourceParent.rotation) * sourceTarget.EvaluateRotation(sourceTime);
-                    currentTarget.SetKeyframe(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, CurveTypeValues.Linear, false);
+                    currentTarget.SetKeyframeByTime(clipTime, currentParent.TransformPoint(position), Quaternion.Inverse(currentParent.rotation) * rotation, CurveTypeValues.Linear, false);
                 }
             }
             foreach (var sourceTarget in source.targetFloatParams)

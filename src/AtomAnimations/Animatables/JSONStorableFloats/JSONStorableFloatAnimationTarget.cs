@@ -83,6 +83,11 @@ namespace VamTimeline
             return SetKeyframe(time, animatableRef.val, makeDirty);
         }
 
+        public int AddKeyframeAtTime(float time, bool makeDirty = true)
+        {
+            return SetKeyframe(time, value.Evaluate(time), makeDirty);
+        }
+
         public void DeleteFrame(float time)
         {
             var key = value.KeyframeBinarySearch(time);

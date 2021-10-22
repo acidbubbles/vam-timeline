@@ -132,7 +132,7 @@ namespace VamTimeline
                 if (time > _clip.animationLength) break;
                 if (Mathf.Abs(time - _clip.animationLength) < 0.001f) time = _clip.animationLength;
                 var k = ControllerKeyframe.FromStep(step, ctrl);
-                target.SetKeyframe(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
+                target.SetKeyframeByTime(time, k.position, k.rotation, CurveTypeValues.SmoothLocal);
                 lastRecordedFrame = time;
             }
 

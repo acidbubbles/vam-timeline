@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -116,14 +117,16 @@ namespace VamTimeline
             var keyframeOps = new KeyframesOperations(clip);
             foreach (var target in clip.GetAllTargets())
             {
-                // TODO: Create new keyframe if missing from evaluate curve
+                var newTime = Mathf.Max(time - delta, 0f).Snap();
+                if(time == 0) EnsureKeyAtCropTime(target, newTime);
+
                 var snapshots = target
                     .GetAllKeyframesTime()
-                    .Where(t => t <= time || t >= time - delta)
+                    .Where(t => time == 0 ? t >= newTime : t <= time || t > newTime)
                     .Select(t =>
                     {
-                        var newTime = t <= time ? t : t + delta;
-                        return new SnapshotAt { time = newTime, snapshot = target.GetSnapshot(t) };
+                        var offsetTime = t <= time ? t : t + delta;
+                        return new SnapshotAt { time = offsetTime.Snap(), snapshot = target.GetSnapshot(t) };
                     })
                     .ToList();
                 keyframeOps.RemoveAll(target, true);
@@ -142,7 +145,6 @@ namespace VamTimeline
             var keyframeOps = new KeyframesOperations(clip);
             foreach (var target in clip.GetAllTargets())
             {
-                // TODO: Create new keyframe if missing from evaluate curve
                 var snapshots = target
                     .GetAllKeyframesTime()
                     .Select(t => new SnapshotAt { time = t <= time ? t : t + delta, snapshot = target.GetSnapshot(t) })
@@ -156,6 +158,17 @@ namespace VamTimeline
 
                 target.AddEdgeFramesIfMissing(clip.animationLength);
             }
+        }
+
+        private static void EnsureKeyAtCropTime(IAtomAnimationTarget target, float time)
+        {
+            var curveTarget = target as ICurveAnimationTarget;
+            if (curveTarget == null) return;
+            if (curveTarget.HasKeyframe(time)) return;
+            var key = curveTarget.AddKeyframeAtTime(time);
+            if (key == -1) return;
+            foreach (var c in curveTarget.GetCurves())
+                c.RecomputeKey(key);
         }
 
         #endregion
