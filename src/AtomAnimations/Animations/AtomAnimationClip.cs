@@ -744,6 +744,7 @@ namespace VamTimeline
             target.loop = loop;
             target.animationLength = animationLength;
             target.animationLayer = animationLayer;
+            target.animationSet = animationSet;
             target.nextAnimationName = nextAnimationName;
             target.nextAnimationTime = nextAnimationTime;
             target.ensureQuaternionContinuity = ensureQuaternionContinuity;
