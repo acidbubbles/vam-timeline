@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -22,6 +23,10 @@ namespace VamTimeline
             _atom = atom;
             this.storableId = storableId;
             this.floatParamName = floatParamName;
+            if (this.floatParamName.StartsWith("morph: "))
+                this.floatParamName = this.floatParamName.Substring("morph: ".Length);
+            if (this.floatParamName.StartsWith("morphOtherGender: "))
+                this.floatParamName = this.floatParamName.Substring("morphOtherGender: ".Length);
             if (assignMinValueOnBound == 0 && assignMaxValueOnBound == 0)
             {
                 this.assignMinValueOnBound = null;
@@ -65,13 +70,21 @@ namespace VamTimeline
         {
             if (_available)
             {
-                if (storable != null) return true;
+                if (storable != null)
+                {
+                    TryAssignMinMax();
+                    return true;
+                }
                 _available = false;
                 storable = null;
                 floatParam = null;
             }
             if (Time.frameCount == _lastAvailableCheck) return false;
-            if (TryBind(silent)) return true;
+            if (TryBind(silent))
+            {
+                TryAssignMinMax();
+                return true;
+            }
             _lastAvailableCheck = Time.frameCount;
             return false;
         }
@@ -108,20 +121,52 @@ namespace VamTimeline
 
             this.storable = storable;
             this.floatParam = floatParam;
-            // May be replaced (might use alt name)
-            floatParamName = floatParam.name;
-            if (assignMinValueOnBound != null)
-            {
-                floatParam.min = assignMinValueOnBound.Value;
-                assignMinValueOnBound = null;
-            }
-            if (assignMaxValueOnBound != null)
-            {
-                floatParam.max = assignMaxValueOnBound.Value;
-                assignMaxValueOnBound = null;
-            }
+            floatParamName = IsMorph() ? floatParam.altName : floatParam.name;
             _available = true;
             return true;
+        }
+
+        private void TryAssignMinMax()
+        {
+            if (assignMinValueOnBound.HasValue)
+            {
+                var min = assignMinValueOnBound.Value;
+                if (IsMorph())
+                {
+                    var dazMorph = AsMorph();
+                    if (dazMorph != null)
+                    {
+                        dazMorph.min = min;
+                        floatParam.min = min;
+                        assignMinValueOnBound = null;
+                    }
+                }
+                else
+                {
+                    floatParam.min = min;
+                    assignMinValueOnBound = null;
+                }
+            }
+
+            if (assignMaxValueOnBound.HasValue)
+            {
+                var max = assignMaxValueOnBound.Value;
+                if (IsMorph())
+                {
+                    var dazMorph = AsMorph();
+                    if (dazMorph != null)
+                    {
+                        floatParam.max = max;
+                        dazMorph.max = max;
+                        assignMaxValueOnBound = null;
+                    }
+                }
+                else
+                {
+                    floatParam.max = max;
+                    assignMaxValueOnBound = null;
+                }
+            }
         }
 
         public bool Targets(string storableId, string floatParamName)
@@ -136,6 +181,40 @@ namespace VamTimeline
         public bool Targets(JSONStorable storable, JSONStorableFloat floatParam)
         {
             return Targets(storable.storeId, floatParam.name);
+        }
+
+        public bool IsMorph()
+        {
+            return storableId == "geometry";
+        }
+
+        public DAZMorph AsMorph()
+        {
+            if (storable == null) throw new NullReferenceException("Storable was not set");
+            var selector = storable as DAZCharacterSelector;
+            if (selector == null) throw new InvalidOperationException($"Storable '{storable.name}' expected to be {nameof(DAZCharacterSelector)} but was {storable}");
+            DAZMorph morph;
+            if (selector.morphsControlUI != null)
+            {
+                morph = selector.morphsControlUI.GetMorphByUid(floatParamName);
+                if (morph != null) return morph;
+            }
+            if (selector.morphBank1 != null)
+            {
+                morph = selector.morphBank1.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
+                if (morph != null) return morph;
+            }
+            if (selector.morphBank2 != null)
+            {
+                morph = selector.morphBank2.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
+                if (morph != null) return morph;
+            }
+            if (selector.morphBank3 != null)
+            {
+                morph = selector.morphBank3.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
+                if (morph != null) return morph;
+            }
+            return null;
         }
     }
 }

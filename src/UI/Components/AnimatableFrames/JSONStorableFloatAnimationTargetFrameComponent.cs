@@ -89,11 +89,27 @@ namespace VamTimeline
             group.childAlignment = TextAnchor.MiddleCenter;
 
             // ReSharper disable once Unity.NoNullPropagation
-            var morph = (target.animatableRef.storable as DAZCharacterSelector)?.morphsControlUI?.GetMorphByUid(floatParam.name);
 
             CreateExpandButton(group.transform, "Default", () => SetValue(floatParam.defaultVal));
 
-            if (morph == null)
+            if (target.animatableRef.IsMorph())
+            {
+                var morph = target.animatableRef.AsMorph();
+                CreateExpandButton(group.transform, "Reset Range", () =>
+                {
+                    morph.ResetRange();
+                    if (floatParamRef.val < floatParam.min) SetValue(floatParam.min);
+                    if (floatParamRef.val > floatParam.max) SetValue(floatParam.max);
+                    SetTime(plugin.animationEditContext.clipTime, true);
+                });
+
+                CreateExpandButton(group.transform, "+ Range", () =>
+                {
+                    morph.IncreaseRange();
+                    SetTime(plugin.animationEditContext.clipTime, true);
+                });
+            }
+            else
             {
                 CreateExpandButton(group.transform, "Range .1X", () =>
                 {
@@ -108,22 +124,6 @@ namespace VamTimeline
                     floatParam.max *= 10f;
                     SetTime(plugin.animationEditContext.clipTime, true);
                 }).button.interactable = !floatParam.constrained;
-            }
-            else
-            {
-                CreateExpandButton(group.transform, "Reset Range", () =>
-                {
-                    morph.ResetRange();
-                    if (floatParamRef.val < floatParam.min) SetValue(floatParam.min);
-                    if (floatParamRef.val > floatParam.max) SetValue(floatParam.max);
-                    SetTime(plugin.animationEditContext.clipTime, true);
-                });
-
-                CreateExpandButton(group.transform, "+ Range", () =>
-                {
-                    morph.IncreaseRange();
-                    SetTime(plugin.animationEditContext.clipTime, true);
-                });
             }
         }
 
