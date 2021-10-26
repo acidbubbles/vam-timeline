@@ -12,7 +12,7 @@ namespace VamTimeline
         private const string _positionNext = "Next";
         private const string _positionLast = "Last";
 
-        private static bool _previousCreateInOtherAtoms = false;
+        private static bool _previousCreateInOtherAtoms;
 
         private UIDynamicButton _addAnimationTransitionUI;
         private JSONStorableStringChooser _createPosition;
@@ -143,6 +143,7 @@ namespace VamTimeline
 
             var newClip = operations.AddAnimation().AddAnimationAsCopy(_createName.val, GetPosition());
             newClip.loop = false;
+            newClip.Rebuild(current);
             operations.Resize().CropOrExtendAt(newClip, newClip.animationLength - time, 0);
             current.loop = false;
             operations.Resize().CropOrExtendEnd(current, time);

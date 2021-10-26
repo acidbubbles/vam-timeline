@@ -756,6 +756,56 @@ namespace VamTimeline
 
         #endregion
 
+        #region Animation rebuilding
+
+        public void Rebuild(AtomAnimationClip previous)
+        {
+            foreach (var target in targetControllers)
+            {
+                if (!target.dirty) continue;
+
+                if (loop)
+                    target.SetCurveSnapshot(animationLength, target.GetCurveSnapshot(0f), false);
+
+                target.ComputeCurves();
+
+                if (ensureQuaternionContinuity)
+                {
+                    var lastMatching = previous?.targetControllers.FirstOrDefault(t => t.TargetsSameAs(target));
+                    var q = lastMatching?.GetRotationAtKeyframe(lastMatching.rotX.length - 1) ?? target.GetRotationAtKeyframe(target.rotX.length - 1);
+                    UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
+                        target.rotX,
+                        target.rotY,
+                        target.rotZ,
+                        target.rotW,
+                        q);
+                }
+
+                foreach (var curve in target.GetCurves())
+                    curve.ComputeCurves();
+            }
+
+            foreach (var target in targetFloatParams)
+            {
+                if (!target.dirty) continue;
+
+                if (loop)
+                    target.SetCurveSnapshot(animationLength, target.GetCurveSnapshot(0), false);
+
+                target.value.ComputeCurves();
+            }
+
+            foreach (var target in targetTriggers)
+            {
+                if (!target.dirty) continue;
+
+                target.RebuildKeyframes(animationLength);
+            }
+        }
+
+
+        #endregion
+
         private void UpdateForcedNextAnimationTime()
         {
             _skipNextAnimationSettingsModified = true;
