@@ -53,7 +53,7 @@ namespace VamTimeline
                 throw new Exception("Timeline: No motion animation to import.");
 
             _clip.loop = SuperController.singleton.motionAnimationMaster.loop;
-            if (resize && !Mathf.Approximately(length, _clip.animationLength)) ;
+            if (resize && !Mathf.Approximately(length, _clip.animationLength))
                 new ResizeAnimationOperations().CropOrExtendEnd(_clip, length);
             _animation.RebuildAnimationNow();
         }
