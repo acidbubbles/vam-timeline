@@ -140,7 +140,8 @@ namespace VamTimeline
                 if (!animation.isPlaying || animation.paused)
                     Sample();
                 if (current.animationPattern != null)
-                    current.animationPattern.SetFloatParamValue("currentTime", playTime);
+                    current.animationPattern.SetFloatParamValue("currentTime", value);
+
                 // TODO: If the scrubber range does not contain the time, update the range
                 onTimeChanged.Invoke(timeArgs);
             }
