@@ -131,6 +131,8 @@ namespace VamTimeline
             {
                 clip.animationLayer = to;
             }
+
+            animation.index.Rebuild();
         }
 
         private void InitRenameAnimation()
@@ -172,6 +174,7 @@ namespace VamTimeline
                     other.nextAnimationName = val;
                 }
             }
+            animation.index.Rebuild();
         }
 
         private void InitAnimationLengthUI()

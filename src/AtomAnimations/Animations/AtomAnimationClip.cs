@@ -122,6 +122,10 @@ namespace VamTimeline
                 {
                     animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
                 }
+                else
+                {
+                    animationNameGroup = null;
+                }
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
             }
