@@ -51,14 +51,12 @@ namespace VamTimeline
             }
 
             BeforeRecording(targets, recordExtendsLength);
-            if(showStartMarkers) ShowStartMarkers(targets);
 
             yield return 0;
 
             if (!owner.isActiveAndEnabled)
             {
                 ShowText(null);
-                HideStartMarkers(targets);
                 yield break;
             }
 
@@ -72,7 +70,6 @@ namespace VamTimeline
                     if (!owner.isActiveAndEnabled || Input.GetKeyDown(KeyCode.Escape))
                     {
                         ShowText(null);
-                        HideStartMarkers(targets);
                         yield break;
                     }
                 }
@@ -83,6 +80,7 @@ namespace VamTimeline
             AtomAnimationBackup.singleton.ClearBackup();
             RecordFirstKeyframe(targets);
             StartRecording(timeMode, recordExtendsLength, targets);
+            if(showStartMarkers) ShowStartMarkers(targets);
 
             var lastRecordedTime = 0f;
             var recordLengthStr = _clip.infinite ? "∞" : _clip.animationLength.ToString("0.0");
