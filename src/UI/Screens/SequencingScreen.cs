@@ -111,7 +111,7 @@ namespace VamTimeline
 
         private void RandomizeWeightUI()
         {
-            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, (float val) => SyncPlayNext(), 0f, 10f, false);
+            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, (float val) => current.nextAnimationRandomizeWeight = val, 0f, 1f, false);
             prefabFactory.CreateSlider(_nextAnimationRandomizeWeightJSON);
         }
 
@@ -383,10 +383,8 @@ namespace VamTimeline
             var nextTime = _nextAnimationTimeJSON.val;
             var nextName = _nextAnimationJSON.val;
             var randomizeTime = current.preserveLoops ? _randomizeRangeJSON.val.RoundToNearest(current.animationLength) : _randomizeRangeJSON.val.Snap(animationEditContext.snap);
-            var randomizeWeight = _nextAnimationRandomizeWeightJSON.val;
 
             var clips = animation.index.ByName(current.animationName);
-            var changed = clips[0].animationName != nextName;
 
             if (nextName == AtomAnimation.SlaveAnimationName)
             {
@@ -417,15 +415,6 @@ namespace VamTimeline
                     break;
                 }
 
-                if (nextName == null || !nextName.EndsWith("/*"))
-                {
-                    randomizeWeight = 1f;
-                }
-                else if (changed && randomizeWeight == 0)
-                {
-                    randomizeWeight = 1f;
-                }
-
                 foreach (var clip in clips)
                 {
                     if (!NextExists(clip, nextName))
@@ -433,20 +422,17 @@ namespace VamTimeline
                         clip.nextAnimationName = null;
                         clip.nextAnimationTime = 0f;
                         clip.nextAnimationTimeRandomize = 0f;
-                        clip.nextAnimationRandomizeWeight = 1f;
                     }
                     else
                     {
                         clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimation.SlaveAnimationName;
                         clip.nextAnimationTime = nextTime;
                         clip.nextAnimationTimeRandomize = randomizeTime;
-                        clip.nextAnimationRandomizeWeight = randomizeWeight;
                     }
                 }
 
                 _nextAnimationTimeJSON.valNoCallback = nextTime;
                 _randomizeRangeJSON.valNoCallback = randomizeTime;
-                _nextAnimationRandomizeWeightJSON.valNoCallback = randomizeWeight;
             }
 
             RefreshTransitionUI();
@@ -497,7 +483,6 @@ namespace VamTimeline
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
             _nextAnimationRandomizeWeightJSON.valNoCallback = current.nextAnimationRandomizeWeight;
-            _nextAnimationRandomizeWeightJSON.slider.enabled = current.nextAnimationName != null && current.nextAnimationName.EndsWith("*");
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
             _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationName).Count > 1 ? _animationSetAuto : "");
