@@ -98,6 +98,7 @@ namespace VamTimeline
                 if (idx <= 0 || animation.clips[idx - 1].animationLayer != current.animationLayer) return;
                 animation.clips.RemoveAt(idx);
                 animation.clips.Insert(idx - 1, anim);
+                animation.index.Rebuild();
                 animation.onClipsListChanged.Invoke();
             }
             catch (Exception exc)
@@ -116,6 +117,7 @@ namespace VamTimeline
                 if (idx >= animation.clips.Count - 1 || animation.clips[idx + 1].animationLayer != current.animationLayer) return;
                 animation.clips.RemoveAt(idx);
                 animation.clips.Insert(idx + 1, anim);
+                animation.index.Rebuild();
                 animation.onClipsListChanged.Invoke();
             }
             catch (Exception exc)
