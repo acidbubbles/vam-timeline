@@ -22,7 +22,7 @@ namespace VamTimeline
         private bool _preserveLoops = true;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
-        private float _nextAnimationRandomizeWeight;
+        private float _nextAnimationRandomizeWeight = 1;
         private float _nextAnimationTimeRandomize;
         private string _animationName;
         private string _animationLayer;

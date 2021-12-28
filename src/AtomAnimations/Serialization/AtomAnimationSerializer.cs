@@ -93,7 +93,7 @@ namespace VamTimeline
                 ensureQuaternionContinuity = DeserializeBool(clipJSON["EnsureQuaternionContinuity"], true),
                 nextAnimationName = clipJSON["NextAnimationName"]?.Value,
                 nextAnimationTime = DeserializeFloat(clipJSON["NextAnimationTime"]),
-                nextAnimationRandomizeWeight = DeserializeFloat(clipJSON["NextAnimationRandomizeWeight"]),
+                nextAnimationRandomizeWeight = DeserializeFloat(clipJSON["NextAnimationRandomizeWeight"], 1),
                 nextAnimationTimeRandomize = DeserializeFloat(clipJSON["NextAnimationTimeRandomize"]),
                 autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
                 speed = DeserializeFloat(clipJSON["Speed"], 1),

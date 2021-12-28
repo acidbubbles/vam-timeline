@@ -386,6 +386,7 @@ namespace VamTimeline
             var randomizeWeight = _nextAnimationRandomizeWeightJSON.val;
 
             var clips = animation.index.ByName(current.animationName);
+            var changed = clips[0].animationName != nextName;
 
             if (nextName == AtomAnimation.SlaveAnimationName)
             {
@@ -398,7 +399,7 @@ namespace VamTimeline
                     clip.nextAnimationName = null;
                     clip.nextAnimationTime = 0f;
                     clip.nextAnimationTimeRandomize = 0f;
-                    clip.nextAnimationRandomizeWeight = 0f;
+                    clip.nextAnimationRandomizeWeight = 1f;
                 }
             }
             else
@@ -416,13 +417,13 @@ namespace VamTimeline
                     break;
                 }
 
-                if (nextName != null && nextName.EndsWith("*"))
+                if (nextName == null || !nextName.EndsWith("/*"))
                 {
-                    if (randomizeWeight == 0) randomizeWeight = 1f;
+                    randomizeWeight = 1f;
                 }
-                else
+                else if (changed && randomizeWeight == 0)
                 {
-                    randomizeWeight = 0f;
+                    randomizeWeight = 1f;
                 }
 
                 foreach (var clip in clips)
@@ -432,7 +433,7 @@ namespace VamTimeline
                         clip.nextAnimationName = null;
                         clip.nextAnimationTime = 0f;
                         clip.nextAnimationTimeRandomize = 0f;
-                        clip.nextAnimationRandomizeWeight = 0f;
+                        clip.nextAnimationRandomizeWeight = 1f;
                     }
                     else
                     {
