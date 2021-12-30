@@ -764,7 +764,7 @@ namespace VamTimeline
                     if (!from.loop)
                         to.clipTime = Mathf.Abs(to.animationLength - (from.animationLength - from.clipTime));
                     else if (to.preserveLoops)
-                        to.clipTime = from.clipTime;
+                        to.clipTime = (to.animationLength - (from.animationLength - from.clipTime)).Modulo(to.animationLength);
                 }
             }
 

@@ -55,5 +55,10 @@ namespace VamTimeline
             var half = modulo / 2;
             return value + half - (value + half) % modulo;
         }
+
+        public static float Modulo(this float value, float mod)
+        {
+            return (value % mod + mod) % mod;
+        }
     }
 }
