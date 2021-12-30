@@ -21,9 +21,9 @@ namespace VamTimeline
         private Editor _controllerInjectedUI;
         public PeerManager peers { get; private set; }
 
-        private JSONStorableStringChooser _animationLegacyJSON;
-        private JSONStorableAction _nextAnimationLegacyJSON;
-        private JSONStorableAction _previousAnimationLegacyJSON;
+        private JSONStorableStringChooser _animationJSON;
+        private JSONStorableAction _nextAnimationJSON;
+        private JSONStorableAction _previousAnimationJSON;
         private JSONStorableAction _nextAnimationInMainLayerJSON;
         private JSONStorableAction _previousAnimationInMainLayerJSON;
         private JSONStorableFloat _scrubberJSON;
@@ -258,7 +258,7 @@ namespace VamTimeline
 
         public void InitStorables()
         {
-            _animationLegacyJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val =>
+            _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val =>
             {
                 if (string.IsNullOrEmpty(val)) return;
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
@@ -269,45 +269,27 @@ namespace VamTimeline
                     animationEditContext.SelectAnimation(clip);
                 else if (animation.isPlaying)
                     animation.PlayClipByName(val, true);
-                _animationLegacyJSON.valNoCallback = "";
+                _animationJSON.valNoCallback = "";
             })
             {
                 isStorable = false,
                 isRestorable = false
             };
-            RegisterStringChooser(_animationLegacyJSON);
+            RegisterStringChooser(_animationJSON);
 
-            _nextAnimationLegacyJSON = new JSONStorableAction(StorableNames.NextAnimationLegacy, () =>
+            _nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimationLegacy}'");
-                if (_animationLegacyJSON.choices.Count < 2) return;
-                var clip = string.IsNullOrEmpty(_animationLegacyJSON.val)
-                    ? animation.clips[0]
-                    : animation.clips.First(c => c.animationName == _animationLegacyJSON.val);
-                var inLayer = animation.index.ByLayer(clip.animationLayer);
-                var i = inLayer.IndexOf(clip);
-                if (i < 0 || i > inLayer.Count - 2)
-                    _animationLegacyJSON.val = inLayer[0].animationName;
-                else
-                    _animationLegacyJSON.val = inLayer[i + 1].animationName;
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimation}'");
+                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayer);
             });
-            RegisterAction(_nextAnimationLegacyJSON);
+            RegisterAction(_nextAnimationJSON);
 
-            _previousAnimationLegacyJSON = new JSONStorableAction(StorableNames.PreviousAnimationLegacy, () =>
+            _previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimationLegacy}'");
-                if (_animationLegacyJSON.choices.Count < 2) return;
-                var clip = string.IsNullOrEmpty(_animationLegacyJSON.val)
-                    ? animation.clips[0]
-                    : animation.clips.First(c => c.animationName == _animationLegacyJSON.val);
-                var inLayer = animation.index.ByLayer(clip.animationLayer);
-                var i = inLayer.IndexOf(clip);
-                if (i < 1 || i > inLayer.Count - 1)
-                    _animationLegacyJSON.val = inLayer[inLayer.Count - 1].animationName;
-                else
-                    _animationLegacyJSON.val = inLayer[i - 1].animationName;
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimation}'");
+                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayer);
             });
-            RegisterAction(_previousAnimationLegacyJSON);
+            RegisterAction(_previousAnimationJSON);
 
             _nextAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.NextAnimationInMainLayer, () =>
             {
@@ -625,7 +607,7 @@ namespace VamTimeline
             if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
 
-            _animationLegacyJSON.valNoCallback = "";
+            _animationJSON.valNoCallback = "";
 
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
@@ -669,7 +651,7 @@ namespace VamTimeline
             {
                 var animationNames = animation.index.clipNames.ToList();
 
-                _animationLegacyJSON.choices = animationNames;
+                _animationJSON.choices = animationNames;
 
                 for (var i = 0; i < animationNames.Count; i++)
                 {
@@ -856,7 +838,7 @@ namespace VamTimeline
                     animationEditContext.SelectAnimation(clip);
                 else if (animation.isPlaying)
                     animation.PlayClipByName(animationName, true);
-                _animationLegacyJSON.valNoCallback = "";
+                _animationJSON.valNoCallback = "";
             }
             catch (Exception exc)
             {
@@ -884,7 +866,7 @@ namespace VamTimeline
         {
             var proxy = SyncProxy.Wrap(dict);
             // TODO: This or just use the storables dict already on storable??
-            proxy.animation = _animationLegacyJSON;
+            proxy.animation = _animationJSON;
             proxy.isPlaying = _isPlayingJSON;
             proxy.nextFrame = _nextFrameJSON;
             proxy.play = _playJSON;

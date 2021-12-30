@@ -103,7 +103,7 @@ namespace VamTimeline
             };
             RegisterFloat(_timeJSON);
 
-            var nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimationLegacy, () =>
+            var nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
                 var i = _animationJSON.choices.IndexOf(_selectedLink?.animation.val);
                 if (i < 0 || i > _animationJSON.choices.Count - 2) return;
@@ -111,7 +111,7 @@ namespace VamTimeline
             });
             RegisterAction(nextAnimationJSON);
 
-            var previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimationLegacy, () =>
+            var previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
                 var i = _animationJSON.choices.IndexOf(_selectedLink?.animation.val);
                 if (i < 1 || i > _animationJSON.choices.Count - 1) return;
