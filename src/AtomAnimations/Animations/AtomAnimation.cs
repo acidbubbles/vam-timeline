@@ -693,7 +693,11 @@ namespace VamTimeline
             if (clip.applyPoseOnTransition)
             {
                 if (!clip.recording)
+                {
+                    if (logger.sequencing)
+                        logger.Log(logger.sequencingCategory, $"Applying pose '{clip.animationNameQualified}'");
                     clip.pose?.Apply();
+                }
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
             }
