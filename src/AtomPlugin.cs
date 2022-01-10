@@ -606,6 +606,8 @@ namespace VamTimeline
             animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
             animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
             animation.onPausedChanged.AddListener(OnPauseChanged);
+            animation.onSpeedChanged.AddListener(OnSpeedChanged);
+            animation.onWeightChanged.AddListener(OnWeightChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
@@ -774,8 +776,6 @@ namespace VamTimeline
                 _scrubberJSON.max = animationEditContext.current.animationLength;
                 _scrubberJSON.valNoCallback = animationEditContext.clipTime;
                 _timeJSON.valNoCallback = animationEditContext.playTime;
-                _speedJSON.valNoCallback = animation.globalSpeed;
-                _weightJSON.valNoCallback = animation.globalWeight;
 
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
@@ -783,6 +783,16 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(OnAnimationParametersChanged)}: {exc}");
             }
+        }
+
+        private void OnSpeedChanged()
+        {
+            _speedJSON.valNoCallback = animation.globalSpeed;
+        }
+
+        private void OnWeightChanged()
+        {
+            _weightJSON.valNoCallback = animation.globalWeight;
         }
 
         private void OnEditorSettingsChanged(string propertyName)
