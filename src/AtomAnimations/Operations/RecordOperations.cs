@@ -170,7 +170,7 @@ namespace VamTimeline
             _peerManager.SendStartRecording(timeMode);
 
             _animation.autoStop = recordExtendsLength ? 0 : (_clip.loop ? _clip.animationLength - 0.0009f : _clip.animationLength + 0.0009f);
-            _animation.speed = 1f;
+            _animation.globalSpeed = 1f;
             _clip.recording = true;
             _clip.infinite = recordExtendsLength;
             _clip.speed = 1f;

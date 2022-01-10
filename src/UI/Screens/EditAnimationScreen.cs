@@ -26,9 +26,10 @@ namespace VamTimeline
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
         private UIDynamicToggle _loopUI;
-        private JSONStorableFloat _animationSpeedJSON;
-        private JSONStorableFloat _clipSpeedJSON;
-        private JSONStorableFloat _clipWeightJSON;
+        private JSONStorableFloat _globalSpeedJSON;
+        private JSONStorableFloat _localSpeedJSON;
+        private JSONStorableFloat _globalWeightJSON;
+        private JSONStorableFloat _localWeightJSON;
         private UIDynamicButton _applyLengthUI;
         private UIDynamicButton _savePoseUI;
         private UIDynamicButton _applyPoseUI;
@@ -51,7 +52,7 @@ namespace VamTimeline
             InitRenameAnimation();
 
             prefabFactory.CreateHeader("Speed", 1);
-            InitPlaybackUI();
+            InitSpeedUI();
 
             prefabFactory.CreateHeader("Options", 1);
             InitLoopUI();
@@ -73,36 +74,44 @@ namespace VamTimeline
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             current.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
+            animation.onWeightChanged.RemoveListener(OnWeightChanged);
             OnSpeedChanged();
             OnPlaybackSettingsChanged();
             OnAnimationSettingsChanged();
         }
 
-        private void InitPlaybackUI()
+        private void InitSpeedUI()
         {
-            _animationSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, val => animation.speed = val, -1f, 5f, false)
+            _globalSpeedJSON = new JSONStorableFloat("Speed (Global)", 1f, val => animation.globalSpeed = val, -1f, 5f, false)
             {
-                valNoCallback = animation.speed
+                valNoCallback = animation.globalSpeed
             };
-            var animationSpeedUI = prefabFactory.CreateSlider(_animationSpeedJSON);
-            animationSpeedUI.valueFormat = "F3";
+            var globalSpeedUI = prefabFactory.CreateSlider(_globalSpeedJSON);
+            globalSpeedUI.valueFormat = "F3";
 
-            _clipSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, val => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
+            _localSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, val => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
             {
                 valNoCallback = current.speed
             };
-            var clipSpeedUI = prefabFactory.CreateSlider(_clipSpeedJSON);
-            clipSpeedUI.valueFormat = "F3";
+            var localSpeedUI = prefabFactory.CreateSlider(_localSpeedJSON);
+            localSpeedUI.valueFormat = "F3";
         }
 
         private void InitWeightUI()
         {
-            _clipWeightJSON = new JSONStorableFloat("Weight", 1f, val => current.weight = val, 0f, 1f)
+            _globalWeightJSON = new JSONStorableFloat("Weight (Global)", 1f, val => animation.globalWeight = val, 0f, 1f)
+            {
+                valNoCallback = animation.globalWeight
+            };
+            var globalWeightUI = prefabFactory.CreateSlider(_globalWeightJSON);
+            globalWeightUI.valueFormat = "F4";
+
+            _localWeightJSON = new JSONStorableFloat("Weight (Local)", 1f, val => current.weight = val, 0f, 1f)
             {
                 valNoCallback = current.weight
             };
-            var clipWeightUI = prefabFactory.CreateSlider(_clipWeightJSON);
-            clipWeightUI.valueFormat = "F4";
+            var localWeightUI = prefabFactory.CreateSlider(_localWeightJSON);
+            localWeightUI.valueFormat = "F4";
         }
 
         private void InitRenameLayer()
@@ -337,7 +346,7 @@ namespace VamTimeline
             animationPattern.SetBoolParamValue("pause", false);
             animationPattern.SetBoolParamValue("loop", false);
             animationPattern.SetBoolParamValue("loopOnce", false);
-            animationPattern.SetFloatParamValue("speed", animation.speed);
+            animationPattern.SetFloatParamValue("speed", animation.globalSpeed);
             animationPattern.ResetAnimation();
             current.animationPattern = animationPattern;
         }
@@ -366,13 +375,18 @@ namespace VamTimeline
 
         private void OnPlaybackSettingsChanged()
         {
-            _clipWeightJSON.valNoCallback = current.weight;
-            _clipSpeedJSON.valNoCallback = current.speed;
+            _localWeightJSON.valNoCallback = current.weight;
+            _localSpeedJSON.valNoCallback = current.speed;
         }
 
         private void OnSpeedChanged()
         {
-            _animationSpeedJSON.valNoCallback = animation.speed;
+            _globalSpeedJSON.valNoCallback = animation.globalSpeed;
+        }
+
+        private void OnWeightChanged()
+        {
+            _globalWeightJSON.valNoCallback = animation.globalWeight;
         }
 
         private void OnAnimationSettingsChanged()
@@ -416,6 +430,7 @@ namespace VamTimeline
         public override void OnDestroy()
         {
             animation.onSpeedChanged.RemoveListener(OnSpeedChanged);
+            animation.onWeightChanged.RemoveListener(OnWeightChanged);
             current.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
             current.onPlaybackSettingsChanged.RemoveListener(OnPlaybackSettingsChanged);
             base.OnDestroy();

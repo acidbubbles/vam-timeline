@@ -24,6 +24,7 @@ namespace VamTimeline
 
         public readonly UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public readonly UnityEvent onSpeedChanged = new UnityEvent();
+        public readonly UnityEvent onWeightChanged = new UnityEvent();
         public readonly UnityEvent onClipsListChanged = new UnityEvent();
         public readonly UnityEvent onAnimationRebuilt = new UnityEvent();
         public readonly UnityEvent onPausedChanged = new UnityEvent();
@@ -65,17 +66,17 @@ namespace VamTimeline
 
         public float playTime { get; private set; }
 
-        private float _speed = 1f;
-        public float speed
+        private float _globalSpeed = 1f;
+        public float globalSpeed
         {
             get
             {
-                return _speed;
+                return _globalSpeed;
             }
 
             set
             {
-                _speed = value;
+                _globalSpeed = value;
                 for (var i = 0; i < clips.Count; i++)
                 {
                     var clip = clips[i];
@@ -84,6 +85,23 @@ namespace VamTimeline
                 }
 
                 onSpeedChanged.Invoke();
+            }
+        }
+
+        private float _globalWeight = 1f;
+        private float _globalScaledWeight = 1f;
+        public float globalWeight
+        {
+            get
+            {
+                return _globalWeight;
+            }
+
+            set
+            {
+                _globalWeight = Mathf.Clamp01(value);
+                _globalScaledWeight = value.ExponentialScale(0.1f, 1f);
+                onWeightChanged.Invoke();
             }
         }
 
@@ -237,7 +255,7 @@ namespace VamTimeline
                 RemoveClip(clip);
             }
 
-            speed = 1f;
+            globalSpeed = 1f;
             playTime = 0f;
         }
 
@@ -907,7 +925,7 @@ namespace VamTimeline
 
             if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
             {
-                source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * speed;
+                source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
                 {
                     fadeManager.FadeOutInstant();
@@ -951,6 +969,7 @@ namespace VamTimeline
         private void SampleFloatParams()
         {
             if (simulationFrozen) return;
+            if (_globalScaledWeight <= 0) return;
             foreach (var x in index.ByFloatParam())
             {
                 if (!x.Value[0].animatableRef.EnsureAvailable()) continue;
@@ -959,7 +978,7 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private static void SampleFloatParam(JSONStorableFloatRef floatParamRef, List<JSONStorableFloatAnimationTarget> targets)
+        private void SampleFloatParam(JSONStorableFloatRef floatParamRef, List<JSONStorableFloatAnimationTarget> targets)
         {
             const float minimumDelta = 0.00000015f;
             var weightedSum = 0f;
@@ -974,12 +993,12 @@ namespace VamTimeline
                     return;
                 }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
-                var weight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
-                if (weight < float.Epsilon) continue;
+                var localScaledWeight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
+                if (localScaledWeight < float.Epsilon) continue;
 
                 var value = target.value.Evaluate(clip.clipTime);
                 var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.temporarilyEnabled ? 1f : clip.playbackBlendWeight);
-                weightedSum += value * smoothBlendWeight;
+                weightedSum += Mathf.Lerp(floatParamRef.val, value, localScaledWeight) * smoothBlendWeight;
                 totalBlendWeights += smoothBlendWeight;
             }
 
@@ -988,7 +1007,7 @@ namespace VamTimeline
                 var val = weightedSum / totalBlendWeights;
                 if(Mathf.Abs(val - floatParamRef.val) > minimumDelta)
                 {
-                    floatParamRef.val = val;
+                    floatParamRef.val = Mathf.Lerp(floatParamRef.val, val, _globalScaledWeight);
                 }
             }
         }
@@ -997,6 +1016,7 @@ namespace VamTimeline
         private void SampleControllers(bool force = false)
         {
             if (simulationFrozen) return;
+            if (_globalScaledWeight <= 0) return;
             foreach (var x in index.ByController())
             {
                 SampleController(x.Key.controller, x.Value, force);
@@ -1006,6 +1026,7 @@ namespace VamTimeline
         public void SampleParentedControllers(AtomAnimationClip source)
         {
             if (simulationFrozen) return;
+            if (_globalScaledWeight <= 0) return;
             // TODO: Index keep track if there is any parenting
             // TODO: Setting to disable that behavior
             var layers = GetMainAndBestSiblingPerLayer(source.animationName, source.animationSet);
@@ -1026,7 +1047,7 @@ namespace VamTimeline
                     {
                         var targetPosition = positionRB.transform.TransformPoint(ctrl.EvaluatePosition(source.clipTime));
                         if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
-                            controller.control.position = targetPosition;
+                            controller.control.position = Vector3.Lerp(controller.control.position, targetPosition, _globalWeight);
                     }
 
                     var rotationParentRB = ctrl.GetRotationParentRB();
@@ -1034,7 +1055,7 @@ namespace VamTimeline
                     {
                         var targetRotation = rotationParentRB.rotation * ctrl.EvaluateRotation(source.clipTime);
                         if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
-                            controller.control.rotation = targetRotation;
+                            controller.control.rotation = Quaternion.Slerp(controller.control.rotation, targetRotation, _globalWeight);
                     }
                 }
             }
@@ -1141,14 +1162,14 @@ namespace VamTimeline
                 {
                     targetRotation = _rotations[0];
                 }
-                var rotation = Quaternion.Slerp(control.rotation, targetRotation, totalRotationControlWeights / totalRotationBlendWeights);
+                var rotation = Quaternion.Slerp(control.rotation, targetRotation, (totalRotationControlWeights / totalRotationBlendWeights) * _globalScaledWeight);
                 control.rotation = rotation;
             }
 
             if (totalPositionBlendWeights > float.Epsilon && controller.currentPositionState != FreeControllerV3.PositionState.Off)
             {
                 var targetPosition = weightedPositionSum / totalPositionBlendWeights;
-                var position = Vector3.Lerp(control.position, targetPosition, totalPositionControlWeights / totalPositionBlendWeights);
+                var position = Vector3.Lerp(control.position, targetPosition, (totalPositionControlWeights / totalPositionBlendWeights) * _globalScaledWeight);
                 control.position = position;
             }
 
@@ -1314,7 +1335,7 @@ namespace VamTimeline
 
             SampleFloatParams();
             SampleTriggers();
-            ProcessAnimationSequence(GetDeltaTime() * speed);
+            ProcessAnimationSequence(GetDeltaTime() * globalSpeed);
 
             if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)
             {
@@ -1406,7 +1427,7 @@ namespace VamTimeline
         {
             if (!allowAnimationProcessing || paused) return;
 
-            var delta = GetDeltaTime() * _speed;
+            var delta = GetDeltaTime() * _globalSpeed;
             playTime += delta;
 
             if (autoStop > 0f && playTime >= autoStop)
@@ -1425,6 +1446,7 @@ namespace VamTimeline
             onIsPlayingChanged.RemoveAllListeners();
             onClipIsPlayingChanged.RemoveAllListeners();
             onSpeedChanged.RemoveAllListeners();
+            onWeightChanged.RemoveAllListeners();
             onClipsListChanged.RemoveAllListeners();
             onAnimationRebuilt.RemoveAllListeners();
             foreach (var clip in clips)

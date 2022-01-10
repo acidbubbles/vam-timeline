@@ -32,7 +32,8 @@ namespace VamTimeline
         {
             if (animation == null) throw new ArgumentNullException(nameof(animation));
 
-            animation.speed = DeserializeFloat(animationJSON["Speed"], 1f);
+            animation.globalSpeed = DeserializeFloat(animationJSON["Speed"], 1f);
+            animation.globalWeight = DeserializeFloat(animationJSON["Weight"], 1f);
             animation.master = DeserializeBool(animationJSON["Master"], false);
             animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
@@ -365,7 +366,8 @@ namespace VamTimeline
         {
             var animationJSON = new JSONClass
             {
-                { "Speed", animation.speed.ToString(CultureInfo.InvariantCulture) },
+                { "Speed", animation.globalSpeed.ToString(CultureInfo.InvariantCulture) },
+                { "Weight", animation.globalWeight.ToString(CultureInfo.InvariantCulture) },
                 { "Master", animation.master ? "1" : "0" },
                 { "SyncWithPeers", animation.syncWithPeers ? "1" : "0" },
                 { "SyncSubsceneOnly", animation.syncSubsceneOnly ? "1" : "0" },

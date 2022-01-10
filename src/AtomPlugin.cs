@@ -37,6 +37,7 @@ namespace VamTimeline
         private JSONStorableAction _nextFrameJSON;
         private JSONStorableAction _previousFrameJSON;
         private JSONStorableFloat _speedJSON;
+        private JSONStorableFloat _weightJSON;
         private JSONStorableBool _lockedJSON;
         private JSONStorableBool _pausedJSON;
         public JSONStorableAction deleteJSON { get; private set; }
@@ -379,12 +380,19 @@ namespace VamTimeline
             copyJSON = new JSONStorableAction("Copy", () => animationEditContext.Copy());
             pasteJSON = new JSONStorableAction("Paste", () => animationEditContext.Paste());
 
-            _speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => animation.speed = v, -1f, 5f, false)
+            _speedJSON = new JSONStorableFloat(StorableNames.Speed, 1f, v => animation.globalSpeed = v, -1f, 5f, false)
             {
                 isStorable = false,
                 isRestorable = false
             };
             RegisterFloat(_speedJSON);
+
+            _weightJSON = new JSONStorableFloat(StorableNames.Weight, 1f, v => animation.globalWeight = v, 0f, 1f, true)
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterFloat(_weightJSON);
 
             _lockedJSON = new JSONStorableBool(StorableNames.Locked, false, v => animationEditContext.locked = v)
             {
@@ -766,7 +774,8 @@ namespace VamTimeline
                 _scrubberJSON.max = animationEditContext.current.animationLength;
                 _scrubberJSON.valNoCallback = animationEditContext.clipTime;
                 _timeJSON.valNoCallback = animationEditContext.playTime;
-                _speedJSON.valNoCallback = animation.speed;
+                _speedJSON.valNoCallback = animation.globalSpeed;
+                _weightJSON.valNoCallback = animation.globalWeight;
 
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
             }
