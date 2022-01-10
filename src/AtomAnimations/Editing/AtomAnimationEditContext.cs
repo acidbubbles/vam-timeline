@@ -195,7 +195,7 @@ namespace VamTimeline
 
         public void FixedUpdate()
         {
-            if(!_animation.isPlaying)
+            if(_animation.liveParenting && !_animation.isPlaying)
                 _animation.SampleParentedControllers(current);
         }
 
@@ -536,6 +536,7 @@ namespace VamTimeline
         public void Sample()
         {
             SampleNow();
+            if (_animation.liveParenting) return;
             var hasParenting = GetMainClipPerLayer()
                 .Where(c => c != null)
                 .SelectMany(c => c.targetControllers)

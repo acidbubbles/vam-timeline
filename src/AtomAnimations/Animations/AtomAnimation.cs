@@ -57,6 +57,8 @@ namespace VamTimeline
 
         public int timeMode { get; set; }
 
+        public bool liveParenting { get; set; } = true;
+
         public bool master { get; set; }
 
         public bool simulationFrozen;
