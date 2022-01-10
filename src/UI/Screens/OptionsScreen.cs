@@ -24,19 +24,13 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
 
-            prefabFactory.CreateSpacer();
-
             InitLockedUI();
 
-            prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Playback Options", 1);
 
             InitUseRealTimeUI();
-
-            prefabFactory.CreateSpacer();
-
+            InitLiveParenting();
             InitForceBlendInTime();
-
-            prefabFactory.CreateSpacer();
 
             InitDisableSync();
 #if (VAM_GT_1_20)
@@ -44,15 +38,13 @@ namespace VamTimeline
                 InitSyncSubsceneOnly();
 #endif
 
-            prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Edit Options", 1);
 
             InitSnapUI();
 
-            prefabFactory.CreateSpacer();
-
             InitAutoKeyframeUI();
 
-            prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("UI Options", 1);
 
             InitShowPathsUI();
 
@@ -80,8 +72,14 @@ namespace VamTimeline
 
         private void InitForceBlendInTime()
         {
-            var forceBlendTimeJSON = new JSONStorableBool("Force blend time (ignore blend speed)", animation.forceBlendTime, val => animation.forceBlendTime = val);
+            var forceBlendTimeJSON = new JSONStorableBool("Ignore blend speed", animation.forceBlendTime, val => animation.forceBlendTime = val);
             prefabFactory.CreateToggle(forceBlendTimeJSON);
+        }
+
+        private void InitLiveParenting()
+        {
+            var liveParentingJSON = new JSONStorableBool("Always-on parenting", animation.liveParenting, val => animation.liveParenting = val);
+            prefabFactory.CreateToggle(liveParentingJSON);
         }
 
         private void InitDisableSync()
