@@ -503,6 +503,7 @@ namespace VamTimeline
         private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationName, string animationSet)
         {
             var layers = index.ByLayer();
+            // TODO: Could be reused?
             var result = new TransitionTarget[layers.Count];
             for (var i = 0; i < layers.Count; i++)
             {
@@ -993,6 +994,43 @@ namespace VamTimeline
             foreach (var x in index.ByController())
             {
                 SampleController(x.Key.controller, x.Value, force);
+            }
+        }
+
+        public void SampleParentedControllers(AtomAnimationClip source)
+        {
+            if (simulationFrozen) return;
+            // TODO: Index keep track if there is any parenting
+            // TODO: Setting to disable that behavior
+            var layers = GetMainAndBestSiblingPerLayer(source.animationName, source.animationSet);
+            for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
+            {
+                var clip = layers[layerIndex];
+                if (clip.target == null) continue;
+                for (var controllerIndex = 0; controllerIndex < clip.target.targetControllers.Count; controllerIndex++)
+                {
+                    var ctrl = clip.target.targetControllers[controllerIndex];
+                    if (!ctrl.EnsureParentAvailable()) continue;
+                    if (!ctrl.hasParentBound) continue;
+
+                    var controller = ctrl.animatableRef.controller;
+                    if (controller.isGrabbing) continue;
+                    var positionRB = ctrl.GetPositionParentRB();
+                    if (!ReferenceEquals(positionRB, null))
+                    {
+                        var targetPosition = positionRB.transform.TransformPoint(ctrl.EvaluatePosition(source.clipTime));
+                        if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
+                            controller.control.position = targetPosition;
+                    }
+
+                    var rotationParentRB = ctrl.GetRotationParentRB();
+                    if (!ReferenceEquals(rotationParentRB, null))
+                    {
+                        var targetRotation = rotationParentRB.rotation * ctrl.EvaluateRotation(source.clipTime);
+                        if (controller.currentRotationState != FreeControllerV3.RotationState.Off)
+                            controller.control.rotation = targetRotation;
+                    }
+                }
             }
         }
 

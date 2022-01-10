@@ -18,6 +18,8 @@ namespace VamTimeline
         private bool _parentAvailable;
         private int _lastParentAvailableCheck;
 
+        public bool hasParentBound => _parentAvailable;
+
         public void SetParent(string atomId, string rigidbodyId)
         {
             if (string.IsNullOrEmpty(rigidbodyId))

@@ -191,6 +191,16 @@ namespace VamTimeline
             return true;
         }
 
+        #region Edit-Time Updates
+
+        public void FixedUpdate()
+        {
+            if(!_animation.isPlaying)
+                _animation.SampleParentedControllers(current);
+        }
+
+        #endregion
+
         #region Scrubber
 
         public void ResetScrubberRange()
