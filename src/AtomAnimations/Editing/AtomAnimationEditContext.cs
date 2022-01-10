@@ -607,18 +607,20 @@ namespace VamTimeline
 
         private static AtomAnimationClip GetPrincipalClipInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet)
         {
-            #warning Optimize and move to a Layer object
-            var clip = (animationSet != null ? layer.FirstOrDefault(c => c.animationSet == animationSet) : null) ??
-                       layer.FirstOrDefault(c => c.playbackMainInLayer) ??
-                       layer.FirstOrDefault(c => c.animationName == animationName) ??
-                       layer.FirstOrDefault(c => c.autoPlay) ??
-                       layer[0];
+            if (animationSet != null)
+            {
+                var clip = layer.FirstOrDefault(c => c.animationSet == animationSet);
+                // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
+                if (clip?.animationSet != null && clip.animationSet != animationSet)
+                    clip = null;
+                if (clip != null)
+                    return clip;
+            }
 
-            // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
-            if (clip.animationSet != null && clip.animationSet != animationSet)
-                clip = null;
-
-            return clip;
+            return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
+                   layer.FirstOrDefault(c => c.animationName == animationName) ??
+                   layer.FirstOrDefault(c => c.autoPlay) ??
+                   layer[0];
         }
 
         #endregion
