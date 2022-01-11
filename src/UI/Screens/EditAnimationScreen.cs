@@ -74,7 +74,7 @@ namespace VamTimeline
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             current.onPlaybackSettingsChanged.AddListener(OnPlaybackSettingsChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
-            animation.onWeightChanged.RemoveListener(OnWeightChanged);
+            animation.onWeightChanged.AddListener(OnWeightChanged);
             OnSpeedChanged();
             OnPlaybackSettingsChanged();
             OnAnimationSettingsChanged();
