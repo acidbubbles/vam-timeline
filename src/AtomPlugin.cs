@@ -611,6 +611,8 @@ namespace VamTimeline
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
+            OnSpeedChanged();
+            OnWeightChanged();
 
             if(_ui != null) _ui.Bind(animationEditContext);
             peers.animationEditContext = animationEditContext;
