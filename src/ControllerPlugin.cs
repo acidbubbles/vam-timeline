@@ -46,15 +46,24 @@ namespace VamTimeline
 
         private Atom GetAtom()
         {
-            // Note: Yeah, that's horrible, but containingAtom is null
-            // ReSharper disable Unity.NoNullPropagation
-            var container = gameObject?.transform?.parent?.parent?.parent?.parent?.parent?.gameObject;
-            // ReSharper restore Unity.NoNullPropagation
-            if (container == null)
-                throw new NullReferenceException("Could not find the parent gameObject.");
-            var atom = container.GetComponent<Atom>();
-            if (atom == null)
-                throw new NullReferenceException($"Could not find the parent atom in {container.name}.");
+            Atom atom;
+            if (containingAtom != null && containingAtom.containingSubScene != null)
+            {
+                throw new InvalidOperationException("Timeline: Controller plugin cannot be applied in a subscene");
+            }
+            else
+            {
+                // Note: Yeah, that's horrible, but containingAtom is null
+                // ReSharper disable Unity.NoNullPropagation
+                var container = gameObject?.transform?.parent?.parent?.parent?.parent?.parent?.gameObject;
+                // ReSharper restore Unity.NoNullPropagation
+                if (container == null)
+                    throw new NullReferenceException("Could not find the parent gameObject.");
+                atom = container.GetComponent<Atom>();
+                if (atom == null)
+                    throw new NullReferenceException($"Could not find the parent atom in {container.name}.");
+            }
+
             if (atom.type != "SimpleSign")
                 throw new InvalidOperationException("Can only be applied on SimpleSign. This plugin is used to synchronize multiple atoms; use VamTimeline.AtomAnimation.cslist to animate an atom.");
             return atom;

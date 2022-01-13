@@ -19,7 +19,7 @@ namespace VamTimeline
             _owner = owner;
 
             var canvas = atom.GetComponentsInChildren<Canvas>().FirstOrDefault(c => c.gameObject.name == "Sign");
-            if (canvas == null) throw new NullReferenceException($"Expected Sign Canvas, but found: {string.Join(",", atom.GetComponentsInChildren<Canvas>().Select(c => c.gameObject.name).ToArray())}");
+            if (canvas == null) throw new NullReferenceException($"Expected Canvas called 'Sign', but found canvases: [{string.Join(",", atom.GetComponentsInChildren<Canvas>().Select(c => c.gameObject.name).ToArray())}]");
 
             _child = new GameObject("Simple Sign UI");
             _child.transform.SetParent(canvas.transform, false);
