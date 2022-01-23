@@ -111,7 +111,7 @@ namespace VamTimeline
 
         private void RandomizeWeightUI()
         {
-            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, (float val) => current.nextAnimationRandomizeWeight = val, 0f, 1f, false);
+            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, val => current.nextAnimationRandomizeWeight = val, 0f, 1f, false);
             prefabFactory.CreateSlider(_nextAnimationRandomizeWeightJSON);
         }
 
@@ -440,11 +440,13 @@ namespace VamTimeline
 
         private bool NextExists(AtomAnimationClip clip, string nextName)
         {
+            if (nextName == null)
+                return false;
+
             if (nextName == AtomAnimation.RandomizeAnimationName)
                 return true;
 
-            string group;
-            if (AtomAnimation.TryGetRandomizedGroup(nextName, out group))
+            if (nextName.EndsWith(AtomAnimation.RandomizeGroupSuffix))
                 return true;
 
             return animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextName);

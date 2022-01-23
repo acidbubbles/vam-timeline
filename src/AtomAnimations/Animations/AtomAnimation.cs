@@ -831,7 +831,6 @@ namespace VamTimeline
 
             AtomAnimationClip next;
 
-            string group;
             if (source.nextAnimationName == RandomizeAnimationName)
             {
                 var candidates = index
@@ -841,12 +840,12 @@ namespace VamTimeline
                 if (candidates.Count == 0) return;
                 next = SelectRandomClip(candidates);
             }
-            else if (TryGetRandomizedGroup(source.nextAnimationName, out group))
+            else if (source.animationNameGroup != null)
             {
                 var candidates = index
                     .ByLayer(source.animationLayer)
                     .Where(c => c.animationName != source.animationName)
-                    .Where(c => c.animationNameGroup == group)
+                    .Where(c => c.animationNameGroup == source.animationNameGroup)
                     .ToList();
                 if (candidates.Count == 0) return;
                 next = SelectRandomClip(candidates);
@@ -859,18 +858,6 @@ namespace VamTimeline
             if (next == null) return;
 
             ScheduleNextAnimation(source, next);
-        }
-
-        public static bool TryGetRandomizedGroup(string animationName, out string groupName)
-        {
-            if (!animationName.EndsWith(RandomizeGroupSuffix))
-            {
-                groupName = null;
-                return false;
-            }
-
-            groupName = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
-            return true;
         }
 
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next)
