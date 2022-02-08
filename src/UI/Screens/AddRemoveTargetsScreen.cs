@@ -158,17 +158,40 @@ namespace VamTimeline
 
         private IEnumerable<string> GetEligibleFreeControllers()
         {
+
             yield return "";
             var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
                 .Where(c => c.animationLayer != current.animationLayer)
                 .SelectMany(c => c.targetControllers)
                 .Select(t => t.animatableRef.controller));
-            foreach (var fc in plugin.containingAtom.freeControllers)
+
+            if (plugin.containingAtom.type == "SubScene")
             {
-                if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
-                if (current.targetControllers.Any(c => c.animatableRef.Targets(fc))) continue;
-                if (reservedByOtherLayers.Contains(fc)) continue;
-                yield return fc.name;
+                foreach (string atomName in SuperController.singleton.GetAtomUIDsWithFreeControllers()) //Get all the scene atoms
+                {
+                    Atom atom = SuperController.singleton.GetAtomByUid(atomName);
+                    if (atom.subScenePath.Split('/')[0].Equals(plugin.containingAtom.name))  //Check if the atom name has a path that matches the name of the subscene atom.
+                    {
+                        foreach (var fc in atom.freeControllers)
+                        {
+                            if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
+                            if (current.targetControllers.Any(c => c.animatableRef.Targets(fc))) continue;
+                            if (reservedByOtherLayers.Contains(fc)) continue;
+                            yield return fc.name + "(" + atomName.Split('/')[1] + ")"; //Attach the atom name in brackets so we can identify different control atoms.
+                        }
+                    }
+                }
+            }
+            else
+            {
+
+                foreach (var fc in plugin.containingAtom.freeControllers)
+                {
+                    if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
+                    if (current.targetControllers.Any(c => c.animatableRef.Targets(fc))) continue;
+                    if (reservedByOtherLayers.Contains(fc)) continue;
+                    yield return fc.name;
+                }
             }
         }
 
@@ -439,7 +462,19 @@ namespace VamTimeline
 
                 SelectNextInList(_addControllerListJSON);
 
-                var controller = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == uid);
+                //new code add subscene atom controllers into targets.
+                string atomName = null;
+                bool subscene = false;
+                if (uid.Contains("(")) //Will fail if someone puts a bracket in their atom name.
+                {     
+                    var newUid = uid.Split('(')[0].Trim(')');
+                    atomName = uid.Split('(')[1].Trim(')');
+                    uid = newUid;
+                    subscene = true;
+                }
+
+                var controller = atomName != null ? SuperController.singleton.GetAtomByUid(plugin.containingAtom.name+"/" + atomName).freeControllers.FirstOrDefault(x => x.name == uid) : plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == uid);
+                
                 if (controller == null)
                 {
                     SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} does not exist");
@@ -459,11 +494,12 @@ namespace VamTimeline
                 }
 
                 foreach (var clip in animation.index.ByLayer(current.animationLayer))
-                {
-                    var added = clip.Add(animation.animatables.GetOrCreateController(controller));
+                { 
+                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, subscene));
+
                     if (added == null) continue;
 
-                    var controllerPose = clip.pose?.GetControllerPose(controller.name);
+                    var controllerPose = clip.pose?.GetControllerPose(controller.name); 
                     if (controllerPose == null)
                     {
                         added.SetKeyframeToCurrent(0f);
@@ -475,8 +511,10 @@ namespace VamTimeline
                         added.SetKeyframeByTime(clip.animationLength, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
                     }
 
+
                     if (!clip.loop)
                         added.ChangeCurveByTime(clip.animationLength, CurveTypeValues.CopyPrevious);
+
                 }
             }
             catch (Exception exc)
