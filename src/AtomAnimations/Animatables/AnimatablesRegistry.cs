@@ -45,25 +45,57 @@ namespace VamTimeline
 
         public FreeControllerV3Ref GetOrCreateController(Atom atom, string controllerName)
         {
-            var t = _controllers.FirstOrDefault(x => x.Targets(controllerName));
-            if (t != null) return t;
-            var controller = atom.freeControllers.FirstOrDefault(fc => fc.name == controllerName);
-            if (ReferenceEquals(controller, null))
+
+            bool subscene = false;
+            if (atom.type == "SubScene")
             {
-                SuperController.LogError($"Timeline: Atom '{atom.uid}' does not have a controller '{controllerName}'");
-                return null;
+                string atomName = null;
+                string cuid = null;
+                subscene = true;
+
+                if (controllerName.Contains("(")) //Will fail if someone puts a bracket in their atom name.
+                {
+                    cuid = controllerName.Split('(')[0].Trim(')');
+                    atomName = controllerName.Split('(')[1].Trim(')');
+
+                    if (!atomName.Contains("/"))
+                        atomName = atom.containingAtom.name + "/" + atomName;
+                }
+
+                var t = _controllers.FirstOrDefault(x => x.Targets(controllerName));
+                if (t != null) return t;
+
+                var controller = SuperController.singleton.GetAtomByUid(atomName).freeControllers.FirstOrDefault(x => x.name == cuid);
+
+                t = new FreeControllerV3Ref(controller, subscene);
+                _controllers.Add(t);
+                RegisterAnimatableRef(t);
+                return t;
             }
-            t = new FreeControllerV3Ref(controller);
-            _controllers.Add(t);
-            RegisterAnimatableRef(t);
-            return t;
+            else
+            {
+
+                var t = _controllers.FirstOrDefault(x => x.Targets(controllerName));
+                if (t != null) return t;
+                var controller = atom.freeControllers.FirstOrDefault(fc => fc.name == controllerName);
+                if (ReferenceEquals(controller, null))
+                {
+                    SuperController.LogError($"Timeline: Atom '{atom.uid}' does not have a controller '{controllerName}'");
+                    return null;
+                }
+                t = new FreeControllerV3Ref(controller);
+                _controllers.Add(t);
+                RegisterAnimatableRef(t);
+                return t;
+            }
         }
 
-        public FreeControllerV3Ref GetOrCreateController(FreeControllerV3 controller)
+        public FreeControllerV3Ref GetOrCreateController(FreeControllerV3 controller, bool subscene = false)
         {
-            var t = _controllers.FirstOrDefault(x => x.Targets(controller));
+          
+           var t = _controllers.FirstOrDefault(x => x.Targets(controller));
             if (t != null) return t;
-            t = new FreeControllerV3Ref(controller);
+            t = new FreeControllerV3Ref(controller, subscene);
             _controllers.Add(t);
             RegisterAnimatableRef(t);
             return t;
