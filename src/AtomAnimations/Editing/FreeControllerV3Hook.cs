@@ -54,6 +54,9 @@ namespace VamTimeline
             // Only record moves in edit mode
             if (!animationEditContext.CanEdit()) return;
 
+            // During recording AtomAnimation will update keyframes
+            if (animationEditContext.animation.recording) return;
+
             // Ignore grabbed event, we will receive the grab end later
             if (controller.isGrabbing) return;
 

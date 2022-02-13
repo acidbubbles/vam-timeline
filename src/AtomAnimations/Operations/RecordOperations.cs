@@ -8,8 +8,6 @@ namespace VamTimeline
 {
     public class RecordOperations
     {
-        private static bool _recording;
-
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
         private readonly PeerManager _peerManager;
@@ -31,7 +29,7 @@ namespace VamTimeline
             bool exitOnMenuOpen,
             bool showStartMarkers)
         {
-            if (_recording)
+            if (_animation.recording)
             {
                 SuperController.LogError("Timeline: Already recording");
                 yield break;
@@ -108,6 +106,7 @@ namespace VamTimeline
             }
 
             HideStartMarkers(targets);
+            ClearAllGrabbedControllers(targets);
             AfterRecording(targets);
         }
 
@@ -164,7 +163,7 @@ namespace VamTimeline
 
         private void StartRecording(int timeMode, bool recordExtendsLength, List<ICurveAnimationTarget> targets)
         {
-            _recording = true;
+            _animation.recording = true;
 
             _animation.SetTemporaryTimeMode(timeMode);
             _peerManager.SendStartRecording(timeMode);
@@ -185,8 +184,8 @@ namespace VamTimeline
 
         private void AfterRecording(List<ICurveAnimationTarget> targets)
         {
-            if (!_recording) return;
-            _recording = false;
+            if (!_animation.recording) return;
+            _animation.recording = false;
 
             _animation.RestoreTemporaryTimeMode();
             _peerManager.SendStopRecording();
@@ -208,6 +207,17 @@ namespace VamTimeline
             }
 
             GC.Collect();
+        }
+
+        private static void ClearAllGrabbedControllers(IEnumerable<ICurveAnimationTarget> targets)
+        {
+#if (VAM_GT_1_20)
+            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>().Where(t => t.animatableRef.controller.isGrabbing))
+            {
+                target.animatableRef.controller.RestorePreLinkState();
+                target.animatableRef.controller.isGrabbing = false;
+            }
+#endif
         }
 
         private void ShowText(string text)
