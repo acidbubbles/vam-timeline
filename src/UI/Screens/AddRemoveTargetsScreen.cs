@@ -456,6 +456,11 @@ namespace VamTimeline
                 {
                     controller.currentPositionState = FreeControllerV3.PositionState.On;
                     controller.currentRotationState = FreeControllerV3.RotationState.On;
+                    SuperController.LogMessage($"Timeline: The {controller.name} controller state had position and rotation off; their state was changed to on.");
+                }
+                else if (controller.currentPositionState == FreeControllerV3.PositionState.Off || controller.currentRotationState == FreeControllerV3.RotationState.Off)
+                {
+                    SuperController.LogMessage($"Timeline: The {controller.name} controller state had position or rotation off; animations will not affect off nodes.");
                 }
 
                 foreach (var clip in animation.index.ByLayer(current.animationLayer))
