@@ -39,7 +39,7 @@ namespace VamTimeline
             var storablesJSON = new JSONArray();
             foreach (var storable in storables)
             {
-                var storableJSON = storable.GetJSON(true, false, false);
+                var storableJSON = storable.GetJSON(true, false, storable.name != "geometry");
                 storablesJSON.Add(storableJSON);
             }
 
