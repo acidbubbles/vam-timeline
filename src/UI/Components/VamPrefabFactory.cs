@@ -173,11 +173,18 @@ namespace VamTimeline
             // ReSharper disable once JoinDeclarationAndInitializer
             Transform prefab;
 #if (VAM_GT_1_20)
-            if(filterable)
+            if (filterable && plugin.manager.configurableFilterablePopupPrefab != null)
+            {
                 prefab = plugin.manager.configurableFilterablePopupPrefab;
+            }
             else
-#endif
+            {
+                prefab = plugin.manager.configurableScrollablePopupPrefab;
+                filterable = false;
+            }
+#else
             prefab = plugin.manager.configurableScrollablePopupPrefab;
+#endif
 
             var ui = Instantiate(prefab).GetComponent<UIDynamicPopup>();
             ui.gameObject.transform.SetParent(transform, false);
