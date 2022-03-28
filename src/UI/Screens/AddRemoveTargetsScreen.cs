@@ -215,6 +215,8 @@ namespace VamTimeline
             var character = plugin.containingAtom.GetComponentInChildren<DAZCharacterSelector>();
             if (character != null)
             {
+                // TODO: Make a "show all morphs" toggle here? Only when "geometry" is selected?
+
                 var makeMorphsAnimatableUI = prefabFactory.CreateButton("<i>Fav morphs & Resync in Control tab</i>");
                 makeMorphsAnimatableUI.button.onClick.AddListener(() =>
                 {

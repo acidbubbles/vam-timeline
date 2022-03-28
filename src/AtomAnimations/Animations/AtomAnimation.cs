@@ -949,7 +949,8 @@ namespace VamTimeline
         {
             if (isPlaying && !paused || !enabled) return;
 
-            SampleFloatParams();
+            SampleFloatParams(false);
+            SampleFloatParams(true);
             SampleControllers(true);
         }
 
@@ -968,14 +969,16 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private void SampleFloatParams()
+        private void SampleFloatParams(bool affectsBones)
         {
             if (simulationFrozen) return;
             if (_globalScaledWeight <= 0) return;
             foreach (var x in index.ByFloatParam())
             {
-                if (!x.Value[0].animatableRef.EnsureAvailable()) continue;
-                SampleFloatParam(x.Value[0].animatableRef, x.Value);
+                var animatableRef = x.Value[0].animatableRef;
+                if (!animatableRef.EnsureAvailable()) continue;
+                if (animatableRef.AsMorph()?.hasBoneModificationFormulas != affectsBones) continue;
+                SampleFloatParam(animatableRef, x.Value);
             }
         }
 
@@ -1335,7 +1338,7 @@ namespace VamTimeline
         {
             if (!allowAnimationProcessing || paused) return;
 
-            SampleFloatParams();
+            SampleFloatParams(false);
             SampleTriggers();
             ProcessAnimationSequence(GetDeltaTime() * globalSpeed);
 
@@ -1439,6 +1442,7 @@ namespace VamTimeline
             }
 
             AdvanceClipsTime(delta);
+            SampleFloatParams(true);
             SampleControllers();
         }
 

@@ -17,6 +17,8 @@ namespace VamTimeline
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
+        private bool _morphCheck;
+        private DAZMorph _morph;
 
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
@@ -190,6 +192,18 @@ namespace VamTimeline
 
         public DAZMorph AsMorph()
         {
+            if(_morphCheck && _available)
+                return _morph;
+
+            if (!_available) return null;
+            _morph = GetMorph();
+            SuperController.LogMessage($"Mapped {floatParamName} to {_morph?.displayName}: {_morph.hasBoneModificationFormulas}");
+            _morphCheck = true;
+            return _morph;
+        }
+
+        private DAZMorph GetMorph()
+        {
             if (storable == null) throw new NullReferenceException("Storable was not set");
             var selector = storable as DAZCharacterSelector;
             if (selector == null) throw new InvalidOperationException($"Storable '{storable.name}' expected to be {nameof(DAZCharacterSelector)} but was {storable}");
@@ -214,6 +228,17 @@ namespace VamTimeline
                 morph = selector.morphBank3.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
                 if (morph != null) return morph;
             }
+            if (selector.morphsControlUIOtherGender != null)
+            {
+                morph = selector.morphsControlUIOtherGender.GetMorphByUid(floatParamName);
+                if (morph != null) return morph;
+            }
+            if (selector.morphBank1OtherGender != null)
+            {
+                morph = selector.morphBank1OtherGender.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
+                if (morph != null) return morph;
+            }
+
             return null;
         }
     }
