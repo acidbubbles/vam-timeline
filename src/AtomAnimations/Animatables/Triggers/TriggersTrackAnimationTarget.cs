@@ -8,7 +8,6 @@ namespace VamTimeline
     public class TriggersTrackAnimationTarget : AnimationTargetBase<TriggersTrackRef>, IAtomAnimationTarget
     {
         public readonly SortedDictionary<int, CustomTrigger> triggersMap = new SortedDictionary<int, CustomTrigger>();
-        public bool allowScrubbing = true;
         private float[] keyframes { get; set; } = new float[0];
         private readonly List<CustomTrigger> _triggers = new List<CustomTrigger>();
 

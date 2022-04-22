@@ -61,6 +61,7 @@ namespace VamTimeline
         public int timeMode { get; set; }
 
         public bool liveParenting { get; set; } = true;
+        public bool liveTriggers { get; set; }
 
         public bool master { get; set; }
 
@@ -955,6 +956,8 @@ namespace VamTimeline
 
         private void SyncTriggers()
         {
+            if (!liveTriggers && !isPlaying) return;
+
             for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
                 var clip = clips[clipIndex];

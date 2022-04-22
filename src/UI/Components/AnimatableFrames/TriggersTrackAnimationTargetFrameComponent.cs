@@ -33,6 +33,7 @@ namespace VamTimeline
 
         private void SyncEditButton(float time)
         {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (!ReferenceEquals(_trigger, null) && _trigger.startTime != time)
                 CloseTriggersPanel();
 

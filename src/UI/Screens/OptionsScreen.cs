@@ -30,6 +30,7 @@ namespace VamTimeline
 
             InitUseRealTimeUI();
             InitLiveParenting();
+            InitLiveTriggers();
             InitForceBlendInTime();
 
             InitDisableSync();
@@ -80,6 +81,12 @@ namespace VamTimeline
         {
             var liveParentingJSON = new JSONStorableBool("Always-on parenting", animation.liveParenting, val => animation.liveParenting = val);
             prefabFactory.CreateToggle(liveParentingJSON);
+        }
+
+        private void InitLiveTriggers()
+        {
+            var liveTriggersJSON = new JSONStorableBool("Invoke triggers when scrubbing", animation.liveTriggers, val => animation.liveTriggers = val);
+            prefabFactory.CreateToggle(liveTriggersJSON);
         }
 
         private void InitDisableSync()

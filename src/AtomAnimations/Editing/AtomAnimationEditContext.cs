@@ -538,7 +538,7 @@ namespace VamTimeline
             for (var triggerIndex = 0; triggerIndex < current.targetTriggers.Count; triggerIndex++)
             {
                 var target = current.targetTriggers[triggerIndex];
-                target.Sync(target.allowScrubbing, current.clipTime);
+                target.Sync(_animation.liveTriggers, current.clipTime);
             }
 
             SampleNow();
