@@ -15,20 +15,23 @@ namespace VamTimeline
             SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
         }
 
-        public void Update(float clipTime)
+        public void Sync(bool playbackEnabled, float clipTime)
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (clipTime >= startTime && (clipTime < endTime || startTime == endTime))
+            if (playbackEnabled && clipTime >= startTime && (clipTime < endTime || startTime == endTime))
             {
                 active = true;
                 transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
-                Update();
             }
             else if (active)
             {
-                transitionInterpValue = clipTime < startTime ? 0f : 1f;
                 active = false;
             }
+        }
+
+        public new void Update()
+        {
+            base.Update();
         }
 
         public void Leave()

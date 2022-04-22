@@ -535,6 +535,12 @@ namespace VamTimeline
 
         public void Sample()
         {
+            for (var triggerIndex = 0; triggerIndex < current.targetTriggers.Count; triggerIndex++)
+            {
+                var target = current.targetTriggers[triggerIndex];
+                target.Sync(target.allowScrubbing, current.clipTime);
+            }
+
             SampleNow();
             if (_animation.liveParenting) return;
             var hasParenting = GetMainClipPerLayer()

@@ -953,16 +953,16 @@ namespace VamTimeline
             SampleControllers(true);
         }
 
-        private void SampleTriggers()
+        private void SyncTriggers()
         {
             for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
                 var clip = clips[clipIndex];
-                if (!clip.playbackEnabled) continue;
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
                     var target = clip.targetTriggers[triggerIndex];
-                    target.Sample(clip.clipTime);
+                    target.Sync(clip.playbackEnabled, clip.clipTime);
+                    target.Update();
                 }
             }
         }
@@ -1333,10 +1333,11 @@ namespace VamTimeline
 
         public void Update()
         {
+            SyncTriggers();
+
             if (!allowAnimationProcessing || paused) return;
 
             SampleFloatParams();
-            SampleTriggers();
             ProcessAnimationSequence(GetDeltaTime() * globalSpeed);
 
             if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)

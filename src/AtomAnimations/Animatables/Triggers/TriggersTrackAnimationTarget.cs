@@ -8,6 +8,7 @@ namespace VamTimeline
     public class TriggersTrackAnimationTarget : AnimationTargetBase<TriggersTrackRef>, IAtomAnimationTarget
     {
         public readonly SortedDictionary<int, CustomTrigger> triggersMap = new SortedDictionary<int, CustomTrigger>();
+        public bool allowScrubbing = true;
         private float[] keyframes { get; set; } = new float[0];
         private readonly List<CustomTrigger> _triggers = new List<CustomTrigger>();
 
@@ -16,10 +17,22 @@ namespace VamTimeline
         {
         }
 
-        public void Sample(float time)
+        public void Sync(bool playbackEnabled, float time)
         {
-            foreach (var trigger in _triggers)
-                trigger.Update(time);
+            for (var i = 0; i < _triggers.Count; i++)
+            {
+                var trigger = _triggers[i];
+                trigger.Sync(playbackEnabled, time);
+            }
+        }
+
+        public void Update()
+        {
+            for (var i = 0; i < _triggers.Count; i++)
+            {
+                var trigger = _triggers[i];
+                trigger.Update();
+            }
         }
 
         public void Refresh()
