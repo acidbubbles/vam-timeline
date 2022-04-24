@@ -29,6 +29,19 @@ namespace VamTimeline
             }
         }
 
+        public void SyncAudio(float time)
+        {
+            if (!active) return;
+            foreach (var action in discreteActionsStart)
+            {
+                var audioReceiver = action.receiver as AudioSourceControl;
+                if (audioReceiver == null) continue;
+                audioReceiver.audioSource.time = Mathf.Clamp(time - startTime, 0f, action.audioClip.sourceClip.length);
+                // TODO: If not playing, auto-stop audio in 0.5s
+                // TODO: When stopping the clip, stop all audio (or when exiting the trigger, see Leave and Sync)
+            }
+        }
+
         public new void Update()
         {
             base.Update();

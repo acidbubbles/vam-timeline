@@ -25,6 +25,15 @@ namespace VamTimeline
             }
         }
 
+        public void SyncAudio(float time)
+        {
+            for (var i = 0; i < _triggers.Count; i++)
+            {
+                var trigger = _triggers[i];
+                trigger.SyncAudio(time);
+            }
+        }
+
         public void Update()
         {
             for (var i = 0; i < _triggers.Count; i++)

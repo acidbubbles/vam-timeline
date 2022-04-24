@@ -535,10 +535,14 @@ namespace VamTimeline
 
         public void Sample()
         {
-            for (var triggerIndex = 0; triggerIndex < current.targetTriggers.Count; triggerIndex++)
+            if (_animation.liveTriggers)
             {
-                var target = current.targetTriggers[triggerIndex];
-                target.Sync(_animation.liveTriggers, current.clipTime);
+                for (var triggerIndex = 0; triggerIndex < current.targetTriggers.Count; triggerIndex++)
+                {
+                    var target = current.targetTriggers[triggerIndex];
+                    target.Sync(true, current.clipTime);
+                    target.SyncAudio(current.clipTime);
+                }
             }
 
             SampleNow();

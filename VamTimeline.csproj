@@ -60,6 +60,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>../../../../VaM_Data/Managed/UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>../../../../VaM_Data/Managed/UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="SteamVR">
       <HintPath>../../../../VaM_Data/Managed/SteamVR.dll</HintPath>
     </Reference>
