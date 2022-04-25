@@ -137,6 +137,7 @@ namespace VamTimeline
                     clip.clipTime = value;
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
                 }
+                SampleTriggers();
                 if (!animation.isPlaying || animation.paused)
                     Sample();
                 if (current.animationPattern != null)
@@ -535,16 +536,6 @@ namespace VamTimeline
 
         public void Sample()
         {
-            if (_animation.liveTriggers)
-            {
-                for (var triggerIndex = 0; triggerIndex < current.targetTriggers.Count; triggerIndex++)
-                {
-                    var target = current.targetTriggers[triggerIndex];
-                    target.Sync(true, current.clipTime);
-                    target.SyncAudio(current.clipTime);
-                }
-            }
-
             SampleNow();
             if (_animation.liveParenting) return;
             var hasParenting = GetMainClipPerLayer()
@@ -554,6 +545,36 @@ namespace VamTimeline
             if (!hasParenting) return;
             if (_lateSample != null) StopCoroutine(_lateSample);
             _lateSample = StartCoroutine(LateSample(0.1f));
+        }
+
+        private void SampleTriggers()
+        {
+            var clips = GetMainClipPerLayer();
+            foreach (var clip in clips)
+            {
+                for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
+                {
+                    var target = current.targetTriggers[triggerIndex];
+                    target.Sync(current.clipTime);
+                    target.SyncAudio(current.clipTime);
+                    CancelInvoke(nameof(LeaveSampledTriggers));
+                    Invoke(nameof(LeaveSampledTriggers), 0.2f);
+                }
+            }
+        }
+
+        private void LeaveSampledTriggers()
+        {
+            if (_animation.isPlaying) return;
+            var clips = GetMainClipPerLayer();
+            foreach (var clip in clips)
+            {
+                for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
+                {
+                    var target = current.targetTriggers[triggerIndex];
+                    target.Leave();
+                }
+            }
         }
 
         private IEnumerator LateSample(float settleDuration)

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using SimpleJSON;
 using UnityEngine;
 
@@ -15,28 +16,46 @@ namespace VamTimeline
             SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
         }
 
-        public void Sync(bool playbackEnabled, float clipTime)
+        public void Sync(float clipTime)
         {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (playbackEnabled && clipTime >= startTime && (clipTime < endTime || startTime == endTime))
+            if (IsInsideTimeRange(clipTime))
             {
-                active = true;
                 transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
+                if (!active)
+                {
+                    active = true;
+                    SyncAudio(clipTime);
+                }
             }
             else if (active)
             {
-                active = false;
+                Leave();
             }
         }
 
-        public void SyncAudio(float time)
+        [MethodImpl(256)]
+        public bool IsInsideTimeRange(float clipTime)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            return clipTime >= startTime && (clipTime < endTime || startTime == endTime);
+        }
+
+        public void SyncAudio(float clipTime, bool forcePlay = false)
         {
             if (!active) return;
             foreach (var action in discreteActionsStart)
             {
                 var audioReceiver = action.receiver as AudioSourceControl;
                 if (audioReceiver == null) continue;
-                audioReceiver.audioSource.time = Mathf.Clamp(time - startTime, 0f, action.audioClip.sourceClip.length);
+                if (audioReceiver.audioSource == null) continue;
+                if (audioReceiver.audioSource.clip != action.audioClip.clipToPlay) continue;
+                if (forcePlay && !audioReceiver.audioSource.isPlaying)
+                {
+                    audioReceiver.PlayNow(action.audioClip);
+                }
+                audioReceiver.audioSource.time = Mathf.Clamp(clipTime - startTime, 0f, action.audioClip.sourceClip.length);
+                // TODO: Whenever stopping, stop ALL currently running audio clips
+                // TODO: Validate that it's indeed still the same clip
                 // TODO: If not playing, auto-stop audio in 0.5s
                 // TODO: When stopping the clip, stop all audio (or when exiting the trigger, see Leave and Sync)
             }
@@ -49,7 +68,21 @@ namespace VamTimeline
 
         public void Leave()
         {
+            if (!active) return;
+            ForceStopAudioReceivers();
             active = false;
+        }
+
+        public void ForceStopAudioReceivers()
+        {
+            foreach (var action in discreteActionsStart)
+            {
+                var audioReceiver = action.receiver as AudioSourceControl;
+                if (audioReceiver == null) continue;
+                if (audioReceiver.audioSource == null) continue;
+                if (audioReceiver.audioSource.clip != action.audioClip?.clipToPlay) continue;
+                audioReceiver.audioSource.Stop();
+            }
         }
 
         #region JSON

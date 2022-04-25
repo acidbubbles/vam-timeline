@@ -16,12 +16,12 @@ namespace VamTimeline
         {
         }
 
-        public void Sync(bool playbackEnabled, float time)
+        public void Sync(float time)
         {
             for (var i = 0; i < _triggers.Count; i++)
             {
                 var trigger = _triggers[i];
-                trigger.Sync(playbackEnabled, time);
+                trigger.Sync(time);
             }
         }
 
@@ -31,6 +31,15 @@ namespace VamTimeline
             {
                 var trigger = _triggers[i];
                 trigger.SyncAudio(time);
+            }
+        }
+
+        public void Leave()
+        {
+            for (var i = 0; i < _triggers.Count; i++)
+            {
+                var trigger = _triggers[i];
+                trigger.Leave();
             }
         }
 
