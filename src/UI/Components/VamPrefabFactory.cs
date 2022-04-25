@@ -271,26 +271,7 @@ namespace VamTimeline
                 layout.flexibleWidth = 1f;
             }
 
-            var textfield = Instantiate(plugin.manager.configurableTextFieldPrefab).GetComponent<UIDynamicTextField>();
-            textfield.gameObject.transform.SetParent(container.transform, false);
-            {
-                jss.dynamicText = textfield;
-
-                textfield.backgroundColor = Color.white;
-
-                var input = textfield.gameObject.AddComponent<InputField>();
-                input.textComponent = textfield.UItext;
-                jss.inputField = input;
-
-                Destroy(textfield.GetComponent<LayoutElement>());
-
-                var rect = textfield.GetComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0, 1);
-                rect.anchorMax = new Vector2(1, 1);
-                rect.pivot = new Vector2(0, 1);
-                rect.anchoredPosition = new Vector2(0, -30f);
-                rect.sizeDelta = new Vector2(0, 40f);
-            }
+            var textfield = CreateTextInput(jss, plugin.manager.configurableTextFieldPrefab, container.transform);
 
             var title = new GameObject();
             title.transform.SetParent(container.transform, false);
@@ -309,6 +290,31 @@ namespace VamTimeline
                 text.color = new Color(0.85f, 0.8f, 0.82f);
             }
 
+            return textfield;
+        }
+
+        public static UIDynamicTextField CreateTextInput(JSONStorableString jss, Transform configurableTextFieldPrefab, Transform container)
+        {
+            var textfield = Instantiate(configurableTextFieldPrefab).GetComponent<UIDynamicTextField>();
+            textfield.gameObject.transform.SetParent(container, false);
+            {
+                jss.dynamicText = textfield;
+
+                textfield.backgroundColor = Color.white;
+
+                var input = textfield.gameObject.AddComponent<InputField>();
+                input.textComponent = textfield.UItext;
+                jss.inputField = input;
+
+                Destroy(textfield.GetComponent<LayoutElement>());
+
+                var rect = textfield.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0, 1);
+                rect.anchorMax = new Vector2(1, 1);
+                rect.pivot = new Vector2(0, 1);
+                rect.anchoredPosition = new Vector2(0, -30f);
+                rect.sizeDelta = new Vector2(0, 40f);
+            }
             return textfield;
         }
 

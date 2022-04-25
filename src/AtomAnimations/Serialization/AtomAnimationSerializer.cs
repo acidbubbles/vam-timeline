@@ -187,7 +187,10 @@ namespace VamTimeline
                 foreach (JSONClass triggerJSON in triggersJSON)
                 {
                     var triggerTrackName = DeserializeString(triggerJSON["Name"], "Triggers");
+                    var triggerLive = DeserializeBool(triggerJSON["Live"], false);
                     var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(triggerTrackName);
+                    //NOTE: We are cheating here, the setting is on each track but the animatable will have the setting
+                    triggerTrackRef.live = triggerLive;
                     var target = new TriggersTrackAnimationTarget(triggerTrackRef);
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
@@ -486,7 +489,8 @@ namespace VamTimeline
             {
                 var triggerJSON = new JSONClass
                 {
-                    {"Name", target.name}
+                    {"Name", target.name},
+                    {"Live", target.animatableRef.live ? "1" : "0"},
                 };
                 var entriesJSON = new JSONArray();
                 foreach (var x in target.triggersMap.OrderBy(kvp => kvp.Key))

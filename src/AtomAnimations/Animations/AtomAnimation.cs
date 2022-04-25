@@ -16,7 +16,7 @@ namespace VamTimeline
     {
         public class IsPlayingEvent : UnityEvent<AtomAnimationClip> { }
 
-        private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$", RegexOptions.Compiled);
+        private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$");
 
         public const string RandomizeAnimationName = "(Randomize)";
         public const string SlaveAnimationName = "(Slave)";

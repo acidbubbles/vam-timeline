@@ -67,6 +67,12 @@ namespace VamTimeline
                 newTarget.SetKeyframeToCurrent(0f);
                 newTarget.SetKeyframeToCurrent(clip.animationLength);
             }
+            foreach (var origTarget in _clip.targetTriggers)
+            {
+                var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
+                newTarget.AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(newTarget);
+            }
             return clip;
         }
 
@@ -100,6 +106,12 @@ namespace VamTimeline
                 var newTarget = clip.Add(origTarget.animatableRef);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
+            }
+            foreach (var origTarget in _clip.targetTriggers)
+            {
+                var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
+                newTarget.AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(newTarget);
             }
 
             _clip.nextAnimationName = clip.animationName;

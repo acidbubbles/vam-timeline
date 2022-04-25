@@ -555,6 +555,7 @@ namespace VamTimeline
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
                     var target = current.targetTriggers[triggerIndex];
+                    if (!target.animatableRef.live) continue;
                     target.Sync(current.clipTime);
                     target.SyncAudio(current.clipTime);
                     CancelInvoke(nameof(LeaveSampledTriggers));
@@ -572,6 +573,7 @@ namespace VamTimeline
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
                     var target = current.targetTriggers[triggerIndex];
+                    if (!target.animatableRef.live) continue;
                     target.Leave();
                 }
             }

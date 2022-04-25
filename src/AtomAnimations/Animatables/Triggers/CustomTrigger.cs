@@ -235,5 +235,10 @@ namespace VamTimeline
                 }
             }
         }
+
+        public int Count()
+        {
+            return discreteActionsStart.Count + transitionActions.Count + discreteActionsEnd.Count;
+        }
     }
 }

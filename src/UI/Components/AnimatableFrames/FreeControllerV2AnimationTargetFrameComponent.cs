@@ -9,6 +9,9 @@ namespace VamTimeline
     {
         private static readonly Shader _gizmoShader = Shader.Find("Battlehub/RTGizmos/Handles");
 
+        protected override bool enableValueText => true;
+        protected override bool enableLabel => true;
+
         protected override float expandSize => 140f;
         private LineDrawer _line;
         private int _lastHandlesCount;

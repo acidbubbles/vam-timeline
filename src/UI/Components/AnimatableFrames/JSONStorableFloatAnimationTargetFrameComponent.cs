@@ -5,6 +5,9 @@ namespace VamTimeline
 {
     public class FloatParamTargetFrame : AnimationTargetFrameComponentBase<JSONStorableFloatAnimationTarget>
     {
+        protected override bool enableValueText => true;
+        protected override bool enableLabel => true;
+
         private RectTransform _sliderFillRect;
         private SimpleSlider _simpleSlider;
 

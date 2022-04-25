@@ -9,6 +9,8 @@ namespace VamTimeline
         where T : IAtomAnimationTarget
     {
         protected virtual float expandSize => 70f;
+        protected abstract bool enableValueText { get; }
+        protected abstract bool enableLabel { get; }
         protected readonly StyleBase style = new StyleBase();
         protected IAtomPlugin plugin;
         protected AtomAnimationClip clip;
@@ -27,11 +29,14 @@ namespace VamTimeline
             this.target = target;
 
             CreateToggle(plugin);
-            toggle.label = target.GetShortName();
+            toggle.label = enableLabel ? target.GetShortName() : "";
 
             CreateCustom();
 
-            valueText = CreateValueText();
+            if (enableValueText)
+            {
+                valueText = CreateValueText();
+            }
 
             _expandButton = CreateExpandButton();
             var expandListener = _expandButton.AddComponent<Clickable>();
@@ -194,8 +199,11 @@ namespace VamTimeline
             else
             {
                 toggle.toggle.interactable = false;
-                if (valueText.text != "")
-                    valueText.text = "";
+                if (enableValueText)
+                {
+                    if (valueText.text != "")
+                        valueText.text = "";
+                }
             }
         }
 
@@ -232,7 +240,7 @@ namespace VamTimeline
         protected UIDynamicToggle CreateExpandToggle(Transform parent, JSONStorableBool jsb)
         {
             var ui = Instantiate(plugin.manager.configurableTogglePrefab, transform, false);
-            ui.transform.SetParent(parent, true);
+            ui.transform.SetParent(parent, false);
 
             var uiToggle = ui.GetComponent<UIDynamicToggle>();
             jsb.toggle = uiToggle.toggle;
@@ -248,6 +256,18 @@ namespace VamTimeline
             layout.preferredHeight = 52f;
 
             return uiToggle;
+        }
+
+        protected UIDynamicTextField CreateExpandTextInput(Transform parent, JSONStorableString jss)
+        {
+            var ui = VamPrefabFactory.CreateTextInput(jss, plugin.manager.configurableTextFieldPrefab, parent);
+            ui.transform.SetParent(parent, false);
+
+            var layout = ui.GetComponent<LayoutElement>();
+            layout.minHeight = 52f;
+            layout.preferredHeight = 52f;
+
+            return ui;
         }
 
         protected abstract void CreateCustom();

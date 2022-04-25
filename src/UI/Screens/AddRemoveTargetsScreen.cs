@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace VamTimeline
@@ -8,6 +9,8 @@ namespace VamTimeline
     public class AddRemoveTargetsScreen : ScreenBase
     {
         public const string ScreenName = "Edit Targets";
+
+        private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$");
 
         public override string screenId => ScreenName;
 
@@ -120,13 +123,41 @@ namespace VamTimeline
 
         private void InitTriggersUI()
         {
-            var btn = prefabFactory.CreateButton("Add triggers track");
-            btn.button.onClick.AddListener(() =>
+            prefabFactory.CreateButton("Add triggers track")
+                .button.onClick.AddListener(() =>
+                {
+                    var track = animation.animatables.GetOrCreateTriggerTrack(GetUniqueTrackName("Triggers"));
+                    AddTrack(track);
+                });
+
+            prefabFactory.CreateButton("Add audio track")
+                .button.onClick.AddListener(() =>
+                {
+                    var track = animation.animatables.GetOrCreateTriggerTrack(GetUniqueTrackName("Audio"));
+                    track.live = true;
+                    AddTrack(track);
+                });
+        }
+
+        private string GetUniqueTrackName(string prefix)
+        {
+            for (var i = 1; i < 999; i++)
             {
-                var target = new TriggersTrackAnimationTarget(animation.animatables.GetOrCreateTriggerTrack($"Triggers {current.targetTriggers.Count + 1}"));
-                target.AddEdgeFramesIfMissing(current.animationLength);
-                current.Add(target);
-            });
+                var trackName = $"{prefix} {i}";
+                if (current.targetTriggers.All(c => c.name != trackName))
+                    return trackName;
+            }
+            return Guid.NewGuid().ToString();
+        }
+
+        private void AddTrack(TriggersTrackRef track)
+        {
+            foreach (var clip in animation.index.ByLayer(current.animationLayer))
+            {
+                var target = new TriggersTrackAnimationTarget(track);
+                target.AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(target);
+            }
         }
 
         private void InitControllersUI()

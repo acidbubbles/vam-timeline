@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,20 +6,41 @@ namespace VamTimeline
 {
     public class TriggersTrackAnimationTargetFrameComponent : AnimationTargetFrameComponentBase<TriggersTrackAnimationTarget>, TriggerHandler
     {
+        protected override float expandSize => 116;
+        protected override bool enableValueText => false;
+        protected override bool enableLabel => false;
+
         public Transform popupParent;
 
         private UIDynamicButton _editTriggersButton;
         private CustomTrigger _trigger;
 
+        private int _lastCount = -1;
+        private string _hasTriggerLabel = "", _noTriggerLabel;
+        private Color _hasTriggerColor, _noTriggerColor;
+
         protected override void CreateCustom()
         {
-            if (!expanded) StartCoroutine(ToggleExpandedDeferred());
+            CreateEditTriggerButton();
         }
 
-        private IEnumerator ToggleExpandedDeferred()
+        private void CreateEditTriggerButton()
         {
-            yield return 0;
-            if (!expanded) ToggleExpanded();
+            _noTriggerLabel = $"{target.animatableRef.name} (N/A)";
+            _editTriggersButton = CreateExpandButton(
+                transform,
+                "",
+                EditTriggers);
+            _hasTriggerColor = new Color(0.6f, 0.9f, 0.6f);
+            _noTriggerColor = _editTriggersButton.buttonColor;
+            SyncEditButton(clip.clipTime);
+            Destroy(_editTriggersButton.GetComponent<LayoutElement>());
+            var rect = _editTriggersButton.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(-100f, 48f);
+            rect.anchoredPosition = new Vector2(8f, -30f);
+
         }
 
         public override void SetTime(float time, bool stopped)
@@ -37,17 +57,27 @@ namespace VamTimeline
             if (!ReferenceEquals(_trigger, null) && _trigger.startTime != time)
                 CloseTriggersPanel();
 
-            CustomTrigger trigger;
-            var ms = plugin.animationEditContext.clipTime.ToMilliseconds();
-            if (target.triggersMap.TryGetValue(ms, out trigger))
+            if (_editTriggersButton != null)
             {
-                valueText.text = string.IsNullOrEmpty(trigger.displayName) ? "Has Triggers" : trigger.displayName;
-                if (_editTriggersButton != null) _editTriggersButton.label = "Edit Triggers";
-            }
-            else
-            {
-                valueText.text = "-";
-                if (_editTriggersButton != null) _editTriggersButton.label = "Create Trigger";
+                var ms = time.ToMilliseconds();
+                CustomTrigger trigger;
+                if (target.triggersMap.TryGetValue(ms, out trigger))
+                {
+                    var count = trigger.Count();
+                    if (count != _lastCount)
+                    {
+                        _hasTriggerLabel = $"{target.animatableRef.name} ({count})";
+                        _lastCount = count;
+                    }
+
+                    _editTriggersButton.label = _hasTriggerLabel;
+                    _editTriggersButton.buttonColor = _hasTriggerColor;
+                }
+                else
+                {
+                    _editTriggersButton.label = _noTriggerLabel;
+                    _editTriggersButton.buttonColor = _noTriggerColor;
+                }
             }
         }
 
@@ -66,15 +96,24 @@ namespace VamTimeline
 
         protected override void CreateExpandPanel(RectTransform container)
         {
-            var group = container.gameObject.AddComponent<HorizontalLayoutGroup>();
+            var group = container.gameObject.AddComponent<VerticalLayoutGroup>();
             group.spacing = 4f;
             group.padding = new RectOffset(8, 8, 8, 8);
             group.childAlignment = TextAnchor.MiddleCenter;
 
-            _editTriggersButton = CreateExpandButton(
-                group.transform,
-                target.triggersMap.ContainsKey(plugin.animationEditContext.clipTime.ToMilliseconds()) ? "Edit Triggers" : "Create Trigger",
-                EditTriggers);
+            var liveJSON = new JSONStorableBool("Live scrubbing (layer)", target.animatableRef.live, val => target.animatableRef.live = val);
+            CreateExpandToggle(group.transform, liveJSON);
+
+            var nameJSON = new JSONStorableString("Name", target.animatableRef.name);
+            nameJSON.setCallbackFunction = val =>
+            {
+                target.animatableRef.SetName(val);
+                _noTriggerLabel = $"{target.animatableRef.name} (N/A)";
+                _lastCount = -1;
+                SyncEditButton(clip.clipTime);
+                clip.onTargetsListChanged.Invoke();
+            };
+            CreateExpandTextInput(group.transform, nameJSON);
         }
 
         private void EditTriggers()
@@ -91,6 +130,8 @@ namespace VamTimeline
             _trigger.OpenTriggerActionsPanel();
             // When already open but in the wrong parent:
             _trigger.SetPanelParent(popupParent);
+
+            _editTriggersButton.label = $"{target.animatableRef.name} (edited)";
         }
 
         private CustomTrigger GetOrCreateTriggerAtCurrentTime()
