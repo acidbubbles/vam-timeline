@@ -153,6 +153,11 @@ namespace VamTimeline
             return clips.FirstOrDefault(c => c.animationNameQualified == animationNameQualified);
         }
 
+        public AtomAnimationClip GetClipQualified(string animationSequence, string animationLayer, string animationName)
+        {
+            return clips.FirstOrDefault(c => c.animationSequence == animationSequence && c.animationLayer == animationLayer && c.animationName == animationName);
+        }
+
         public AtomAnimationClip AddClip(AtomAnimationClip clip)
         {
             var lastIndexOfLayer = clips.FindLastIndex(c => c.animationLayer == clip.animationLayer);

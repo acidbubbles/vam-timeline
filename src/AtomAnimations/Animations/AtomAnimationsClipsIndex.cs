@@ -18,6 +18,7 @@ namespace VamTimeline
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
+        public readonly List<string> sequences = new List<string>();
         private bool _paused;
 
         public AtomAnimationsClipsIndex(List<AtomAnimationClip> clips)
@@ -45,6 +46,8 @@ namespace VamTimeline
             _clipsBySetByLayer.Clear();
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
+            sequences.Clear();
+            sequences.Add(AtomAnimationClip.DefaultAnimationSequence);
 
             if (_clips == null || _clips.Count == 0) return;
 
@@ -52,6 +55,11 @@ namespace VamTimeline
 
             foreach (var clip in _clips)
             {
+                if (!sequences.Contains(clip.animationSequence))
+                {
+                    sequences.Add(clip.animationSequence);
+                }
+
                 {
                     List<AtomAnimationClip> nameClips;
                     if (!_clipsByName.TryGetValue(clip.animationName, out nameClips))

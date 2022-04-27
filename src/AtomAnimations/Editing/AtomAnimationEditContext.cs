@@ -667,8 +667,16 @@ namespace VamTimeline
             SelectAnimation(clip);
         }
 
+        public void SelectAnimation(string animationSequence, string animationLayer, string animationName)
+        {
+            var clip = animation.GetClipQualified(animationSequence, animationLayer, animationName);
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationSequence}::{animationLayer}::{animationName}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationNameQualified).ToArray())}'.");
+            SelectAnimation(clip);
+        }
+
         public void SelectAnimation(AtomAnimationClip clip)
         {
+            if (clip == null) throw new NullReferenceException("Clip cannot be null");
             if (current == clip) return;
             var previous = current;
             current = clip;
