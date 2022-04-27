@@ -79,13 +79,14 @@ namespace VamTimeline
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
+            var animationSequence = DeserializeString(clipJSON["AnimationSequence"], AtomAnimationClip.DefaultAnimationSequence);
             bool? legacyTransition = null;
             if (clipJSON.HasKey("Transition"))
             {
                 legacyTransition = DeserializeBool(clipJSON["Transition"], false);
             }
 
-            var clip = new AtomAnimationClip(animationName, animationLayer)
+            var clip = new AtomAnimationClip(animationName, animationLayer, animationSequence)
             {
                 blendInDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                 loop = DeserializeBool(clipJSON["Loop"], true),

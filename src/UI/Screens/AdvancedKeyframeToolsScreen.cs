@@ -224,7 +224,7 @@ namespace VamTimeline
         {
             while (animation.clips.Count > 0)
                 animation.RemoveClip(animation.clips[0]);
-            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
+            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSequence));
             animationEditContext.SelectAnimation(animation.clips[0]);
             animationEditContext.clipboard.Clear();
             animationEditContext.locked = false;

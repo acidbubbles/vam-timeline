@@ -17,7 +17,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationAsCopy(string animationName, int position)
         {
-            var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, position);
+            var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSequence, position);
             _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
@@ -52,7 +52,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings, string animationName, int position)
        {
-           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, position);
+           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSequence, position);
             if (copySettings) _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
@@ -85,7 +85,7 @@ namespace VamTimeline
                 return null;
             }
 
-            var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _animation.clips.IndexOf(_clip) + 1);
+            var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _clip.animationSequence, _animation.clips.IndexOf(_clip) + 1);
             clip.loop = false;
             clip.autoTransitionPrevious = _animation.index.ByLayer(_clip.animationLayer).Any(c => c.animationLayer == _clip.animationLayer);
             clip.autoTransitionNext = _clip.nextAnimationName != null;

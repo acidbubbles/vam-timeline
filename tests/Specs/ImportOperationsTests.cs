@@ -18,7 +18,7 @@ namespace VamTimeline
         public IEnumerable OverwriteEmptyClip(TestContext context)
         {
             var existing = context.animation.clips.Single();
-            var clip = new AtomAnimationClip(existing.animationName, "New Layer");
+            var clip = new AtomAnimationClip(existing.animationName, "New Layer", null);
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
@@ -30,7 +30,7 @@ namespace VamTimeline
         public IEnumerable MatchToLayer(TestContext context)
         {
             var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
-            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, "some other layer name"), "floatparam1");
+            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, "some other layer name", null), "floatparam1");
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
@@ -42,7 +42,7 @@ namespace VamTimeline
         public IEnumerable CreateLayerIfConflict(TestContext context)
         {
             var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
-            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, existing.animationLayer), "floatparam2");
+            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, existing.animationLayer, null), "floatparam2");
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
@@ -55,7 +55,7 @@ namespace VamTimeline
         {
             var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
             WithStorable(context, existing, "floatparam2");
-            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, "any"), "floatparam1");
+            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, "any", null), "floatparam1");
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
@@ -68,8 +68,8 @@ namespace VamTimeline
         public IEnumerable RefuseMixedTargets(TestContext context)
         {
             var layer1 = WithStorable(context, context.animation.clips.Single(), "floatparam1");
-            var layer2 = WithStorable(context, context.animation.AddClip(new AtomAnimationClip("Anim 2", "Layer 2")), "floatparam2");
-            var clip = new AtomAnimationClip("New Name 1", "Any Layer 1");
+            var layer2 = WithStorable(context, context.animation.AddClip(new AtomAnimationClip("Anim 2", "Layer 2", null)), "floatparam2");
+            var clip = new AtomAnimationClip("New Name 1", "Any Layer 1", null);
             WithStorable(context, clip, "floatparam1");
             WithStorable(context, clip, "floatparam2");
 

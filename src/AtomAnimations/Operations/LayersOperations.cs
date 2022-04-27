@@ -17,7 +17,7 @@ namespace VamTimeline
 
         public AtomAnimationClip Add()
         {
-            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName());
+            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName(), _clip.animationSequence);
         }
 
         public void SplitLayer(List<IAtomAnimationTarget> targets)
@@ -25,7 +25,7 @@ namespace VamTimeline
             var layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.ByLayer().Select(c => c[0].animationLayer).ToList());
             foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayer).ToList())
             {
-                var newClip = _animation.CreateClip(layerName, sourceClip.animationName);
+                var newClip = _animation.CreateClip(layerName, sourceClip.animationName, _clip.animationSequence);
                 sourceClip.CopySettingsTo(newClip);
                 newClip.animationLayer = layerName;
                 foreach (var t in sourceClip.GetAllTargets().Where(t => targets.Any(t.TargetsSameAs)).ToList())

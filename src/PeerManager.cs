@@ -334,7 +334,8 @@ namespace VamTimeline
                  clip.weight, // 12
                  clip.uninterruptible, // 13
                  clip.preserveLoops, // 14
-                 previousAnimationName // 15
+                 previousAnimationName, // 15
+                 clip.animationSequence, // 16
             });
         }
 
@@ -343,6 +344,7 @@ namespace VamTimeline
             if (!ValidateArgumentCount(e.Length, 16)) return;
             var animationName = (string)e[1];
             var animationLayer = (string)e[2];
+            var animationSequence = (string)e[16];
 
             var existing = animation.GetClip(animationLayer, animationName);
             if (existing == null)
@@ -350,14 +352,15 @@ namespace VamTimeline
                 existing = animation.clips.FirstOrDefault(c => c.animationName == animationName);
                 if (existing == null)
                 {
+                    var previousAnimationName = e.Length >= 16 ? (string)e[15] : null;
                     if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     {
                         new AddAnimationOperations(animation, animation.clips.First(c => c.animationLayer == animationLayer))
-                            .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationLayer, animationName, e.Length >= 16 && e[15] != null ? (string)e[15] : null));
+                            .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationSequence, animationLayer, animationName, previousAnimationName));
                     }
                     else
                     {
-                        animation.CreateClip(animationLayer, animationName, GetPosition(animationLayer, animationName, e.Length >= 16 && e[15] != null ? (string)e[15] : null));
+                        animation.CreateClip(animationLayer, animationName, animationSequence, GetPosition(animationSequence, animationLayer, animationName, previousAnimationName));
                     }
                 }
             }
@@ -388,13 +391,13 @@ namespace VamTimeline
             }
         }
 
-        private int GetPosition(string animationLayer, string animationName, string previousAnimationName)
+        private int GetPosition(string animationSequence, string animationLayer, string animationName, string previousAnimationName)
         {
-            var previousClipPosition = animation.clips.FindIndex(c => c.animationLayer == animationLayer && c.animationName == previousAnimationName);
+            var previousClipPosition = animation.clips.FindIndex(c => c.animationSequence == animationSequence && c.animationLayer == animationLayer && c.animationName == previousAnimationName);
             if (previousClipPosition > -1)
                 return previousClipPosition + 1;
 
-            return animation.clips.FindIndex(c => c.animationLayer == animationLayer);
+            return animation.clips.FindIndex(c => c.animationSequence == animationSequence && c.animationLayer == animationLayer);
         }
 
         public void SendScreen(string screenName, object screenArg)

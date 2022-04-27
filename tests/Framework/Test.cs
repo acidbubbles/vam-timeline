@@ -23,7 +23,7 @@ namespace VamTimeline
             go.transform.SetParent(testPlugin.gameObject.transform, false);
 
             var animation = go.AddComponent<AtomAnimation>();
-            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer));
+            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSequence));
             animation.RebuildAnimationNow();
 
             var context = new TestContext(go, output, animation);

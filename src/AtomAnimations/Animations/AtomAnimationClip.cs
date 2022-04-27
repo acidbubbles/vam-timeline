@@ -12,6 +12,7 @@ namespace VamTimeline
 
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
+        public const string DefaultAnimationSequence = null;
         public const string DefaultAnimationLayer = "Main Layer";
 
         private bool _loop = true;
@@ -26,6 +27,7 @@ namespace VamTimeline
         private float _nextAnimationTimeRandomize;
         private string _animationName;
         private string _animationLayer;
+        private string _animationSequence;
         private bool _ensureQuaternionContinuity = true;
         private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
@@ -90,7 +92,7 @@ namespace VamTimeline
         }
 
         public string animationNameQualified { get; private set; }
-        private void UpdateAnimationNameQualified() => animationNameQualified = $"{_animationLayer}::{_animationName}";
+        private void UpdateAnimationNameQualified() => animationNameQualified = $"{_animationSequence}::{_animationLayer}::{_animationName}";
 
         public string animationLayer
         {
@@ -106,6 +108,22 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(animationLayer));
             }
         }
+
+        public string animationSequence
+        {
+            get
+            {
+                return _animationSequence;
+            }
+            set
+            {
+                if (_animationSequence == value) return;
+                _animationSequence = value;
+                UpdateAnimationNameQualified();
+                onAnimationSettingsChanged.Invoke(nameof(animationSequence));
+            }
+        }
+
         public bool ensureQuaternionContinuity
         {
             get
@@ -130,19 +148,25 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
-                var idxOfGroupSeparator = _animationName.IndexOf('/');
-                if (idxOfGroupSeparator > -1)
-                {
-                    animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
-                }
-                else
-                {
-                    animationNameGroup = null;
-                }
+                UpdateAnimationNameGroup();
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
             }
         }
+
+        private void UpdateAnimationNameGroup()
+        {
+            var idxOfGroupSeparator = _animationName.IndexOf('/');
+            if (idxOfGroupSeparator > -1)
+            {
+                animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
+            }
+            else
+            {
+                animationNameGroup = null;
+            }
+        }
+
         private string _animationSet;
 
         public string animationSet
@@ -428,10 +452,13 @@ namespace VamTimeline
             }
         }
 
-        public AtomAnimationClip(string animationName, string animationLayer)
+        public AtomAnimationClip(string animationName, string animationLayer, string animationSequence)
         {
-            this.animationName = animationName;
-            this.animationLayer = animationLayer;
+            _animationName = animationName;
+            _animationLayer = animationLayer;
+            _animationSequence = animationSequence;
+            UpdateAnimationNameGroup();
+            UpdateAnimationNameQualified();
         }
 
         public bool IsEmpty()
@@ -761,6 +788,7 @@ namespace VamTimeline
             target.loop = loop;
             target.animationLength = animationLength;
             target.animationLayer = animationLayer;
+            target.animationSequence = animationSequence;
             target.animationSet = animationSet;
             target.nextAnimationName = nextAnimationName;
             target.nextAnimationTime = nextAnimationTime;
@@ -819,7 +847,6 @@ namespace VamTimeline
                 target.RebuildKeyframes(animationLength);
             }
         }
-
 
         #endregion
 
