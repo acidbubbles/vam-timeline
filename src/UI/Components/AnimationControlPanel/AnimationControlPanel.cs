@@ -9,7 +9,7 @@ namespace VamTimeline
 {
     public class AnimationControlPanel : MonoBehaviour
     {
-        private static string NoSequenceLabel = "[No Sequence]";
+        private const string _noSequenceLabel = "[No Sequence]";
 
         public static AnimationControlPanel Configure(GameObject go)
         {
@@ -30,8 +30,7 @@ namespace VamTimeline
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
         private UIDynamicButton _playAll;
-
-        public UIDynamicButton _playClip { get; private set; }
+        private UIDynamicButton _playClip;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -223,7 +222,7 @@ namespace VamTimeline
             try
             {
                 _sequencesJSON.choices = _animationEditContext.animation.index.sequences;
-                _sequencesJSON.displayChoices = _animationEditContext.animation.index.sequences.Select(x => x == AtomAnimationClip.DefaultAnimationSequence ? NoSequenceLabel : x).ToList();
+                _sequencesJSON.displayChoices = _animationEditContext.animation.index.sequences.Select(x => x == AtomAnimationClip.DefaultAnimationSequence ? _noSequenceLabel : x).ToList();
                 _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSequence == _animationEditContext.current.animationSequence).Select(c => c.animationLayer).Distinct().ToList();
                 _animationsJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSequence == _animationEditContext.current.animationSequence && c.animationLayer == _animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
 
