@@ -170,18 +170,24 @@ namespace VamTimeline
         public UIDynamicPopup CreateMicroPopup(JSONStorableStringChooser jsc, float popupPanelHeight = 350f)
         {
             RegisterStorable(jsc);
-            var prefab = plugin.manager.configurableScrollablePopupPrefab;
+            var prefab = plugin.manager.configurablePopupPrefab;
 
             var ui = Instantiate(prefab).GetComponent<UIDynamicPopup>();
             ui.gameObject.transform.SetParent(transform, false);
             ui.label = jsc.name;
             jsc.popup = ui.popup;
 
-            ui.popup.labelText.alignment = TextAnchor.UpperCenter;
-            var labelTextRect = ui.popup.labelText.GetComponent<RectTransform>();
+            ui.popup.labelText.alignment = TextAnchor.MiddleLeft;
+            ui.labelWidth = 120f;
             ui.popup.labelText.fontSize = 24;
-            labelTextRect.anchorMax = new Vector2(0.03f, 0.95f);
+            var labelTextRect = ui.popup.labelText.GetComponent<RectTransform>();
+            labelTextRect.offsetMin += new Vector2(10f, 0f);
+            ui.popup.labelText.GetComponent<RectTransform>().anchorMax = new Vector2(0.04f, 0.91f);
 
+            var popupLayout = ui.popup.GetComponent<LayoutElement>();
+            popupLayout.minHeight = 60f;
+            popupLayout.preferredHeight = 60f;
+            /*
             {
                 var btn = Instantiate(plugin.manager.configurableButtonPrefab, ui.transform, false);
                 Destroy(btn.GetComponent<LayoutElement>());
@@ -195,7 +201,7 @@ namespace VamTimeline
                 prevBtnRect.anchoredPosition = new Vector2(10f, 0);
                 prevBtnRect.sizeDelta = new Vector2(0f, 0f);
                 prevBtnRect.offsetMin = new Vector2(5f, 5f);
-                prevBtnRect.offsetMax = new Vector2(80f, 65f);
+                prevBtnRect.offsetMax = new Vector2(80f, 70f);
                 prevBtnRect.anchorMin = new Vector2(0f, 0f);
                 prevBtnRect.anchorMax = new Vector2(0f, 0f);
             }
@@ -213,10 +219,11 @@ namespace VamTimeline
                 prevBtnRect.anchoredPosition = new Vector2(10f, 0);
                 prevBtnRect.sizeDelta = new Vector2(0f, 0f);
                 prevBtnRect.offsetMin = new Vector2(82f, 5f);
-                prevBtnRect.offsetMax = new Vector2(157f, 65f);
+                prevBtnRect.offsetMax = new Vector2(157f, 70f);
                 prevBtnRect.anchorMin = new Vector2(0f, 0f);
                 prevBtnRect.anchorMax = new Vector2(0f, 0f);
             }
+            */
 
             ui.popupPanelHeight = popupPanelHeight;
 
