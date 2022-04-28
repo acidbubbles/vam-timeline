@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using AssetBundles;
 using UnityEngine;
 using UnityEngine.UI;
@@ -187,7 +188,11 @@ namespace VamTimeline
             var popupLayout = ui.popup.GetComponent<LayoutElement>();
             popupLayout.minHeight = 60f;
             popupLayout.preferredHeight = 60f;
-            /*
+
+            var topButtonRect = ui.popup.topButton.GetComponent<RectTransform>();
+            topButtonRect.offsetMin = new Vector2(200f, 5f);
+            topButtonRect.offsetMax = new Vector2(-80f, -5f);
+
             {
                 var btn = Instantiate(plugin.manager.configurableButtonPrefab, ui.transform, false);
                 Destroy(btn.GetComponent<LayoutElement>());
@@ -196,14 +201,13 @@ namespace VamTimeline
                 {
                     ui.popup.SetPreviousValue();
                 });
-                var prevBtnRect = btn.GetComponent<RectTransform>();
-                prevBtnRect.pivot = new Vector2(0, 0);
-                prevBtnRect.anchoredPosition = new Vector2(10f, 0);
-                prevBtnRect.sizeDelta = new Vector2(0f, 0f);
-                prevBtnRect.offsetMin = new Vector2(5f, 5f);
-                prevBtnRect.offsetMax = new Vector2(80f, 70f);
-                prevBtnRect.anchorMin = new Vector2(0f, 0f);
-                prevBtnRect.anchorMax = new Vector2(0f, 0f);
+                var btnRect = btn.GetComponent<RectTransform>();
+                btnRect.anchoredPosition = new Vector2(0f, 0f);
+                btnRect.sizeDelta = new Vector2(70f, -10f);
+                btnRect.offsetMin += new Vector2(160f, 0f);
+                btnRect.offsetMax += new Vector2(160f, 0f);
+                btnRect.anchorMin = new Vector2(0f, 0f);
+                btnRect.anchorMax = new Vector2(0f, 1f);
             }
 
             {
@@ -214,16 +218,14 @@ namespace VamTimeline
                 {
                     ui.popup.SetNextValue();
                 });
-                var prevBtnRect = btn.GetComponent<RectTransform>();
-                prevBtnRect.pivot = new Vector2(0, 0);
-                prevBtnRect.anchoredPosition = new Vector2(10f, 0);
-                prevBtnRect.sizeDelta = new Vector2(0f, 0f);
-                prevBtnRect.offsetMin = new Vector2(82f, 5f);
-                prevBtnRect.offsetMax = new Vector2(157f, 70f);
-                prevBtnRect.anchorMin = new Vector2(0f, 0f);
-                prevBtnRect.anchorMax = new Vector2(0f, 0f);
+                var btnRect = btn.GetComponent<RectTransform>();
+                btnRect.anchoredPosition = new Vector2(0f, 0f);
+                btnRect.sizeDelta = new Vector2(70f, -10f);
+                btnRect.offsetMin += new Vector2(-40f, 0f);
+                btnRect.offsetMax += new Vector2(-40f, 0f);
+                btnRect.anchorMin = new Vector2(1f, 0f);
+                btnRect.anchorMax = new Vector2(1f, 1f);
             }
-            */
 
             ui.popupPanelHeight = popupPanelHeight;
 
