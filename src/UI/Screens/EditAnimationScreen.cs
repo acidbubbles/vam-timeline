@@ -24,6 +24,7 @@ namespace VamTimeline
         private JSONStorableBool _loop;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _linkedAudioSourceJSON;
+        private JSONStorableString _segmentNameJSON;
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
         private UIDynamicToggle _loopUI;
@@ -49,6 +50,7 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
+            InitRenameSegment();
             InitRenameLayer();
             InitRenameAnimation();
 
@@ -116,9 +118,39 @@ namespace VamTimeline
             localWeightUI.valueFormat = "F4";
         }
 
+        private void InitRenameSegment()
+        {
+            _segmentNameJSON = new JSONStorableString("Segment name (separate tracks)", "", UpdateSegmentName);
+            prefabFactory.CreateTextInput(_segmentNameJSON);
+            _segmentNameJSON.valNoCallback = current.animationSegment;
+        }
+
+        private void UpdateSegmentName(string to)
+        {
+            to = to.Trim();
+            if (to == "" || to == current.animationSegment)
+            {
+                _segmentNameJSON.valNoCallback = current.animationSegment;
+                return;
+            }
+
+            if (animationEditContext.animation.index.segmentNames.Any(l => l == to))
+            {
+                _segmentNameJSON.valNoCallback = current.animationSegment;
+                return;
+            }
+
+            foreach (var clip in animationEditContext.currentSegment.layers.SelectMany(c => c))
+            {
+                clip.animationSegment = to;
+            }
+
+            animation.index.Rebuild();
+        }
+
         private void InitRenameLayer()
         {
-            _layerNameJSON = new JSONStorableString("Layer name (share targets)", "", UpdateLayerName);
+            _layerNameJSON = new JSONStorableString("Layer name (track of targets)", "", UpdateLayerName);
             prefabFactory.CreateTextInput(_layerNameJSON);
             _layerNameJSON.valNoCallback = current.animationLayer;
         }

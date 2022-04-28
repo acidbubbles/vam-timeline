@@ -43,6 +43,7 @@
 ..\src\AtomAnimations\Operations\Reduction\ReduceSettings.cs
 ..\src\AtomAnimations\Operations\Reduction\TargetReduceProcessorBase.cs
 ..\src\AtomAnimations\Operations\AddAnimationOperations.cs
+..\src\AtomAnimations\Operations\ClipManagementOperationsBase.cs
 ..\src\AtomAnimations\Operations\ImportOperations.cs
 ..\src\AtomAnimations\Operations\KeyframesOperations.cs
 ..\src\AtomAnimations\Operations\LayersOperations.cs
@@ -52,6 +53,7 @@
 ..\src\AtomAnimations\Operations\RecordOperations.cs
 ..\src\AtomAnimations\Operations\ReduceOperations.cs
 ..\src\AtomAnimations\Operations\ResizeAnimationOperations.cs
+..\src\AtomAnimations\Operations\SegmentsOperations.cs
 ..\src\AtomAnimations\Operations\TargetsOperations.cs
 ..\src\AtomAnimations\Serialization\AtomAnimationSerializer.cs
 ..\src\AtomAnimations\Utils\FloatExtensions.cs

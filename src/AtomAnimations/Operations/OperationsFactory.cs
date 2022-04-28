@@ -41,6 +41,11 @@ namespace VamTimeline
             return new LayersOperations(_animation, _clip);
         }
 
+        public SegmentsOperations Segments()
+        {
+            return new SegmentsOperations(_animation, _clip);
+        }
+
         public ImportOperations Import()
         {
             return new ImportOperations(_animation);

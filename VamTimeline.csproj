@@ -118,6 +118,7 @@
     <Compile Include="src\AtomAnimations\Operations\Reduction\ReduceSettings.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\TargetReduceProcessorBase.cs" />
     <Compile Include="src\AtomAnimations\Operations\AddAnimationOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\ClipManagementOperationsBase.cs" />
     <Compile Include="src\AtomAnimations\Operations\ImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\KeyframesOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\LayersOperations.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="src\AtomAnimations\Operations\RecordOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\ReduceOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\SegmentsOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />
     <Compile Include="src\AtomAnimations\Serialization\AtomAnimationSerializer.cs" />
     <Compile Include="src\AtomAnimations\Utils\FloatExtensions.cs" />

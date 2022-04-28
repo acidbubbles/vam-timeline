@@ -4,12 +4,13 @@ using System.Linq;
 
 namespace VamTimeline
 {
-    public class LayersOperations
+    public class LayersOperations : ClipManagementOperationsBase
     {
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
         public LayersOperations(AtomAnimation animation, AtomAnimationClip clip)
+            : base(animation, clip)
         {
             _animation = animation;
             _clip = clip;
@@ -33,27 +34,6 @@ namespace VamTimeline
                     newClip.Add(t);
                 }
             }
-        }
-
-        public string GetNewLayerName()
-        {
-            var layerNames = _animation.index.segments[_clip.animationSegment].layerNames;
-            for (var i = 1; i < 999; i++)
-            {
-                var layerName = "Layer " + i;
-                if (!layerNames.Contains(layerName)) return layerName;
-            }
-            return Guid.NewGuid().ToString();
-        }
-
-        private string GetNewAnimationName()
-        {
-            for (var i = _animation.clips.Count + 1; i < 999; i++)
-            {
-                var animationName = "Anim " + i;
-                if (_animation.clips.All(c => c.animationName != animationName)) return animationName;
-            }
-            return Guid.NewGuid().ToString();
         }
 
         private static string GetSplitLayerName(string sourceLayerName, IList<string> list)

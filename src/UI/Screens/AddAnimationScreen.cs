@@ -46,6 +46,11 @@ namespace VamTimeline
             InitSplitLayerUI();
 
             prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Add segment", 1);
+
+            InitCreateSegmentUI();
+
+            prefabFactory.CreateSpacer();
 
             prefabFactory.CreateHeader("More", 1);
 
@@ -102,6 +107,12 @@ namespace VamTimeline
         {
             var splitLayerUI = prefabFactory.CreateButton("Split selection to new layer");
             splitLayerUI.button.onClick.AddListener(SplitLayer);
+        }
+
+        public void InitCreateSegmentUI()
+        {
+            var createLayerUI = prefabFactory.CreateButton("Create new segment");
+            createLayerUI.button.onClick.AddListener(AddSegment);
         }
 
         #endregion
@@ -232,6 +243,15 @@ namespace VamTimeline
             }
 
             operations.Layers().SplitLayer(targets);
+        }
+
+        private void AddSegment()
+        {
+            var clip = operations.Segments().Add();
+
+            animationEditContext.SelectAnimation(clip);
+            ChangeScreen(EditAnimationScreen.ScreenName);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
         }
 
         #endregion
