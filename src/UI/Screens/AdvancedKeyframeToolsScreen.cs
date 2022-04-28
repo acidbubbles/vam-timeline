@@ -140,7 +140,7 @@ namespace VamTimeline
                     if (target == null)
                     {
                         if (!all) continue;
-                        if (animation.EnumerateLayers().Where(l => l != current.animationLayer).Select(l => animation.clips.First(c => c.animationLayer == l)).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
+                        if (animation.index.segments[current.animationSegment].layers.Where(l => l[0].animationLayer != current.animationLayer).SelectMany(l => l).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
                         {
                             SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
                             continue;
@@ -224,7 +224,7 @@ namespace VamTimeline
         {
             while (animation.clips.Count > 0)
                 animation.RemoveClip(animation.clips[0]);
-            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSequence));
+            animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment));
             animationEditContext.SelectAnimation(animation.clips[0]);
             animationEditContext.clipboard.Clear();
             animationEditContext.locked = false;

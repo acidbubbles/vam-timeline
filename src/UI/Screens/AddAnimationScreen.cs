@@ -122,13 +122,13 @@ namespace VamTimeline
             switch (_createPosition.val)
             {
                 case _positionFirst:
-                    return animation.clips.FindIndex(c => c.animationLayer == current.animationLayer);
+                    return animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified);
                 case _positionPrevious:
                     return animation.clips.IndexOf(current);
                 case _positionNext:
                     return animation.clips.IndexOf(current) + 1;
                 default:
-                    return animation.clips.FindLastIndex(c => c.animationLayer == current.animationLayer) + 1;
+                    return animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified) + 1;
             }
         }
 
@@ -152,7 +152,7 @@ namespace VamTimeline
 
         private void MergeWithNext()
         {
-            var next = animation.index.ByLayer(current.animationLayer).SkipWhile(c => c != current).Skip(1).FirstOrDefault();
+            var next = animation.index.ByLayer(current.animationLayerQualified).SkipWhile(c => c != current).Skip(1).FirstOrDefault();
             if (next == null) return;
 
             var animationLengthOffset = current.animationLength;
@@ -251,7 +251,7 @@ namespace VamTimeline
             var nextIsTransition = false;
             if (hasNext)
             {
-                var nextClip = animation.GetClip(current.animationLayer, current.nextAnimationName);
+                var nextClip = animation.GetClip(current.animationSegment, current.animationLayer, current.nextAnimationName);
                 if (nextClip != null)
                     nextIsTransition = nextClip.autoTransitionPrevious;
                 else

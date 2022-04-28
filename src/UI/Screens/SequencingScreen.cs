@@ -86,7 +86,7 @@ namespace VamTimeline
         {
             _autoPlayJSON = new JSONStorableBool("Auto play on load", false, val =>
             {
-                foreach (var c in animation.index.ByLayer(current.animationLayer).Where(c => c != current))
+                foreach (var c in currentLayer.Where(c => c != current))
                     c.autoPlay = false;
                 current.autoPlay = val;
             })
@@ -322,8 +322,7 @@ namespace VamTimeline
 
         private List<string> GetEligibleNextAnimations()
         {
-            var animations = animation.index
-                .ByLayer(current.animationLayer)
+            var animations = currentLayer
                 .Where(c => c.animationName != current.animationName)
                 .Select(c => c.animationName)
                 .GroupBy(x =>
@@ -449,7 +448,7 @@ namespace VamTimeline
             if (nextName.EndsWith(AtomAnimation.RandomizeGroupSuffix))
                 return true;
 
-            return animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextName);
+            return currentLayer.Any(c => c.animationName == nextName);
         }
 
         #endregion

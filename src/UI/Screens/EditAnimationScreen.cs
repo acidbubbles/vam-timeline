@@ -122,6 +122,7 @@ namespace VamTimeline
             prefabFactory.CreateTextInput(_layerNameJSON);
             _layerNameJSON.valNoCallback = current.animationLayer;
         }
+
         private void UpdateLayerName(string to)
         {
             to = to.Trim();
@@ -131,14 +132,13 @@ namespace VamTimeline
                 return;
             }
 
-            var from = current.animationLayer;
-            if (animation.clips.Any(c => c.animationLayer == to))
+            if (animationEditContext.currentSegment.layerNames.Any(l => l == to))
             {
                 _layerNameJSON.valNoCallback = current.animationLayer;
                 return;
             }
 
-            foreach (var clip in animation.clips.Where(c => c.animationLayer == from))
+            foreach (var clip in animationEditContext.currentLayer)
             {
                 clip.animationLayer = to;
             }
@@ -161,7 +161,7 @@ namespace VamTimeline
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
-            if (animation.index.ByLayer(current.animationLayer).Any(c => c.animationName == val))
+            if (animationEditContext.currentLayer.Any(c => c.animationName == val))
             {
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
@@ -170,7 +170,7 @@ namespace VamTimeline
             var existing = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.animationName);
             if (existing?.nextAnimationName != null)
             {
-                var next = animation.index.ByLayer(current.animationLayer).FirstOrDefault(c => c.animationName == existing.nextAnimationName);
+                var next = currentLayer.FirstOrDefault(c => c.animationName == existing.nextAnimationName);
                 if (next != null)
                 {
                     current.nextAnimationName = next.nextAnimationName;
@@ -180,7 +180,7 @@ namespace VamTimeline
             foreach (var other in animation.clips)
             {
                 if (other == current) continue;
-                if (other.nextAnimationName == previousAnimationName && other.animationLayer == current.animationLayer)
+                if (other.nextAnimationName == previousAnimationName && other.animationLayerQualified == current.animationLayerQualified)
                 {
                     other.nextAnimationName = val;
                 }

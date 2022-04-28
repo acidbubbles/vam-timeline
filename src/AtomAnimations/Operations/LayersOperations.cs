@@ -17,17 +17,16 @@ namespace VamTimeline
 
         public AtomAnimationClip Add()
         {
-            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName(), _clip.animationSequence);
+            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName(), _clip.animationSegment);
         }
 
         public void SplitLayer(List<IAtomAnimationTarget> targets)
         {
-            var layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.ByLayer().Select(c => c[0].animationLayer).ToList());
-            foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayer).ToList())
+            var layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.segments[_clip.animationSegment].layerNames);
+            foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayerQualified).ToList())
             {
-                var newClip = _animation.CreateClip(layerName, sourceClip.animationName, _clip.animationSequence);
+                var newClip = _animation.CreateClip(layerName, sourceClip.animationName, _clip.animationSegment);
                 sourceClip.CopySettingsTo(newClip);
-                newClip.animationLayer = layerName;
                 foreach (var t in sourceClip.GetAllTargets().Where(t => targets.Any(t.TargetsSameAs)).ToList())
                 {
                     sourceClip.Remove(t);
@@ -38,11 +37,11 @@ namespace VamTimeline
 
         public string GetNewLayerName()
         {
-            var layers = new HashSet<string>(_animation.clips.Select(c => c.animationLayer));
+            var layerNames = _animation.index.segments[_clip.animationSegment].layerNames;
             for (var i = 1; i < 999; i++)
             {
                 var layerName = "Layer " + i;
-                if (!layers.Contains(layerName)) return layerName;
+                if (!layerNames.Contains(layerName)) return layerName;
             }
             return Guid.NewGuid().ToString();
         }

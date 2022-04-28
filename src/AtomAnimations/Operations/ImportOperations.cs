@@ -34,7 +34,7 @@ namespace VamTimeline
 
             foreach (var clip in importedClips)
             {
-                if (clip.autoPlay && _animation.index.ByLayer(clip.animationLayer).Any(c => c.autoPlay))
+                if (clip.autoPlay && _animation.index.ByLayer(clip.animationLayerQualified).Any(c => c.autoPlay))
                 {
                     clip.autoPlay = false;
                 }
@@ -79,14 +79,14 @@ namespace VamTimeline
                     }
                 }
             }
-            else if (_animation.index.ByLayer(clip.animationLayer).Any())
+            else if (_animation.index.ByLayer(clip.animationLayerQualified).Any())
             {
                 clip.animationLayer = new LayersOperations(_animation, clip).GetNewLayerName();
             }
 
             foreach (var controller in clip.targetControllers.Select(t => t.animatableRef))
             {
-                if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetControllers.Any(t => t.animatableRef == controller)))
+                if (_animation.clips.Where(c => c.animationLayerQualified != clip.animationLayerQualified).Any(c => c.targetControllers.Any(t => t.animatableRef == controller)))
                 {
                     if (!_silent) SuperController.LogError($"Timeline: Imported animation contains controller {controller.name} in layer {clip.animationLayer}, but that controller is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.name).ToArray())}");
                     return clips;
@@ -95,14 +95,14 @@ namespace VamTimeline
 
             foreach (var floatParam in clip.targetFloatParams.Select(t => t.name))
             {
-                if (_animation.clips.Where(c => c.animationLayer != clip.animationLayer).Any(c => c.targetFloatParams.Any(t => t.name == floatParam)))
+                if (_animation.clips.Where(c => c.animationLayerQualified != clip.animationLayerQualified).Any(c => c.targetFloatParams.Any(t => t.name == floatParam)))
                 {
-                    if (!_silent) SuperController.LogError($"Timeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayer}, but that storable is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.name).ToArray())}");
+                    if (!_silent) SuperController.LogError($"Timeline: Imported animation contains storable float {floatParam} in layer {clip.animationLayerQualified}, but that storable is already used elsewhere in your animation. To import, a layer is needed with targets: {string.Join(", ", clip.GetAllCurveTargets().Select(c => c.name).ToArray())}");
                     return clips;
                 }
             }
 
-            var existingClip = _animation.GetClip(clip.animationLayer, clip.animationName);
+            var existingClip = _animation.GetClip(clip.animationSegment, clip.animationLayer, clip.animationName);
             if (existingClip != null)
             {
                 if (existingClip.IsEmpty())
@@ -112,7 +112,7 @@ namespace VamTimeline
                 }
                 else
                 {
-                    var newAnimationName = GenerateUniqueAnimationName(clip.animationLayer, clip.animationName);
+                    var newAnimationName = GenerateUniqueAnimationName(clip.animationLayerQualified, clip.animationName);
                     if (!_silent) SuperController.LogError($"Timeline: Imported clip '{clip.animationNameQualified}' already exists and will be imported with the name {newAnimationName}");
                     clip.animationName = newAnimationName;
                 }
@@ -122,10 +122,10 @@ namespace VamTimeline
             return clips;
         }
 
-        private string GenerateUniqueAnimationName(string animationLayer, string animationName)
+        private string GenerateUniqueAnimationName(string animationLayerQualified, string animationName)
         {
             var i = 1;
-            var layerClips = _animation.clips.Where(c => c.animationLayer == animationLayer).ToList();
+            var layerClips = _animation.index.ByLayer(animationLayerQualified);
             while (true)
             {
                 var newAnimationName = $"{animationName} ({i})";

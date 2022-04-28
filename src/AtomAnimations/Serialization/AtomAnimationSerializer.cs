@@ -79,14 +79,14 @@ namespace VamTimeline
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
-            var animationSequence = DeserializeString(clipJSON["AnimationSequence"], AtomAnimationClip.DefaultAnimationSequence);
+            var animationSegment = DeserializeString(clipJSON["AnimationSegment"], AtomAnimationClip.DefaultAnimationSegment);
             bool? legacyTransition = null;
             if (clipJSON.HasKey("Transition"))
             {
                 legacyTransition = DeserializeBool(clipJSON["Transition"], false);
             }
 
-            var clip = new AtomAnimationClip(animationName, animationLayer, animationSequence)
+            var clip = new AtomAnimationClip(animationName, animationLayer, animationSegment)
             {
                 blendInDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                 loop = DeserializeBool(clipJSON["Loop"], true),
@@ -414,6 +414,7 @@ namespace VamTimeline
                     { "SyncTransitionTime", clip.preserveLoops ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" },
                     { "AnimationLayer", clip.animationLayer },
+                    { "AnimationSegment", clip.animationSegment },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
                     { "Uninterruptible", clip.uninterruptible ? "1" : "0" },

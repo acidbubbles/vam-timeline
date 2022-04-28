@@ -95,7 +95,7 @@ namespace VamTimeline
                 var anim = current;
                 if (anim == null) return;
                 var idx = animation.clips.IndexOf(anim);
-                if (idx <= 0 || animation.clips[idx - 1].animationLayer != current.animationLayer) return;
+                if (idx <= 0 || animation.clips[idx - 1].animationLayerQualified != current.animationLayerQualified) return;
                 animation.clips.RemoveAt(idx);
                 animation.clips.Insert(idx - 1, anim);
                 animation.index.Rebuild();
@@ -114,7 +114,7 @@ namespace VamTimeline
                 var anim = current;
                 if (anim == null) return;
                 var idx = animation.clips.IndexOf(anim);
-                if (idx >= animation.clips.Count - 1 || animation.clips[idx + 1].animationLayer != current.animationLayer) return;
+                if (idx >= animation.clips.Count - 1 || animation.clips[idx + 1].animationLayerQualified != current.animationLayerQualified) return;
                 animation.clips.RemoveAt(idx);
                 animation.clips.Insert(idx + 1, anim);
                 animation.index.Rebuild();
@@ -134,7 +134,7 @@ namespace VamTimeline
         private void DeleteAnimationConfirm()
         {
             operations.AddAnimation().DeleteAnimation(current);
-            animationEditContext.SelectAnimation(animation.index.ByLayer(current.animationLayer).FirstOrDefault());
+            animationEditContext.SelectAnimation(currentLayer.FirstOrDefault());
         }
 
         private void DeleteLayer()
@@ -146,13 +146,13 @@ namespace VamTimeline
         {
             try
             {
-                if (!animation.EnumerateLayers().Skip(1).Any())
+                if (!animation.EnumerateLayers(current.animationLayerQualified).Skip(1).Any())
                 {
                     SuperController.LogError("Timeline: Cannot delete the only layer.");
                     return;
                 }
-                var clips = animation.index.ByLayer(current.animationLayer);
-                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayer != current.animationLayer));
+                var clips = currentLayer;
+                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayerQualified != current.animationLayerQualified));
                 animation.index.StartBulkUpdates();
                 try
                 {
@@ -190,31 +190,26 @@ namespace VamTimeline
         {
             var sb = new StringBuilder();
 
-            string layer = null;
-            var layersCount = 0;
             var animationsInLayer = 0;
-            foreach (var clip in animation.clips)
+            foreach (var layer in currentSegment.layers)
             {
-                if (clip.animationLayer != layer)
+                sb.AppendLine($"=== {layer[0].animationLayer} ===");
+                foreach (var clip in layer)
                 {
-                    layer = clip.animationLayer;
-                    layersCount++;
-                    sb.AppendLine($"=== {layer} ===");
+                    if (clip.animationLayer == current.animationLayer)
+                        animationsInLayer++;
+
+                    if (clip == current)
+                        sb.Append("> ");
+                    else
+                        sb.Append("   ");
+                    sb.AppendLine(clip.animationName);
                 }
-
-                if (clip.animationLayer == current.animationLayer)
-                    animationsInLayer++;
-
-                if (clip == current)
-                    sb.Append("> ");
-                else
-                    sb.Append("   ");
-                sb.AppendLine(clip.animationName);
             }
 
             _animationsListJSON.val = sb.ToString();
             _deleteAnimationUI.button.interactable = animationsInLayer > 1;
-            _deleteLayerUI.button.interactable = layersCount > 1;
+            _deleteLayerUI.button.interactable = currentSegment.layers.Count > 1;
         }
 
         public override void OnDestroy()

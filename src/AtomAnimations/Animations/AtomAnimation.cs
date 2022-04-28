@@ -40,6 +40,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
+        private string _playingAnimationSegment = AtomAnimationClip.DefaultAnimationSegment;
         public float autoStop;
         private bool _paused;
         public bool paused
@@ -127,7 +128,7 @@ namespace VamTimeline
 
         public AtomAnimationClip GetDefaultClip()
         {
-            return index.ByLayer(clips[0].animationLayer).FirstOrDefault(c => c.autoPlay) ?? clips[0];
+            return index.ByLayer(clips[0].animationLayerQualified).FirstOrDefault(c => c.autoPlay) ?? clips[0];
         }
 
         public bool IsEmpty()
@@ -138,9 +139,9 @@ namespace VamTimeline
 
         #region Clips
 
-        public AtomAnimationClip GetClip(string animationLayer, string animationName)
+        public AtomAnimationClip GetClip(string animationSegment, string animationLayer, string animationName)
         {
-            return clips.FirstOrDefault(c => c.animationLayer == animationLayer && c.animationName == animationName);
+            return clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == animationName);
         }
 
         public IList<AtomAnimationClip> GetClips(string animationName)
@@ -153,15 +154,18 @@ namespace VamTimeline
             return clips.FirstOrDefault(c => c.animationNameQualified == animationNameQualified);
         }
 
-        public AtomAnimationClip GetClipQualified(string animationSequence, string animationLayer, string animationName)
-        {
-            return clips.FirstOrDefault(c => c.animationSequence == animationSequence && c.animationLayer == animationLayer && c.animationName == animationName);
-        }
-
         public AtomAnimationClip AddClip(AtomAnimationClip clip)
         {
-            var lastIndexOfLayer = clips.FindLastIndex(c => c.animationLayer == clip.animationLayer);
-            AddClipAt(clip, lastIndexOfLayer == -1 ? clips.Count : lastIndexOfLayer + 1);
+            var lastIndexOfSequence = clips.FindLastIndex(c => c.animationSegment == clip.animationSegment);
+            var lastIndexOfLayer = clips.FindLastIndex(c => c.animationLayerQualified == clip.animationLayerQualified);
+            int addIndex;
+            if (lastIndexOfLayer > -1)
+                addIndex = lastIndexOfLayer + 1;
+            else if (lastIndexOfSequence > -1)
+                addIndex = lastIndexOfSequence + 1;
+            else
+                addIndex = clips.Count;
+            AddClipAt(clip, addIndex);
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
@@ -184,14 +188,14 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip CreateClip([NotNull] string animationLayer, [NotNull] string animationName, string animationSequence, int position = -1)
+        public AtomAnimationClip CreateClip([NotNull] string animationLayer, [NotNull] string animationName, string animationSegment, int position = -1)
         {
             if (animationLayer == null) throw new ArgumentNullException(nameof(animationLayer));
             if (animationName == null) throw new ArgumentNullException(nameof(animationName));
 
-            if (clips.Any(c => c.animationLayer == animationLayer && c.animationName == animationName))
-                throw new InvalidOperationException($"Animation '{animationSequence}::{animationLayer}::{animationName}' already exists");
-            var clip = new AtomAnimationClip(animationName, animationLayer, animationSequence);
+            if (clips.Any(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == animationName))
+                throw new InvalidOperationException($"Animation '{animationSegment}::{animationLayer}::{animationName}' already exists");
+            var clip = new AtomAnimationClip(animationName, animationLayer, animationSegment);
             if (position == -1)
                 AddClip(clip);
             else
@@ -226,29 +230,41 @@ namespace VamTimeline
             for (var i = animationNameInt + 1; i < 999; i++)
             {
                 var animationName = animationNameBeforeInt + i;
-                if (index.ByLayer(source.animationLayer).All(c => c.animationName != animationName))
+                if (index.ByLayer(source.animationLayerQualified).All(c => c.animationName != animationName))
                     return animationName;
             }
             return Guid.NewGuid().ToString();
         }
 
-        public IEnumerable<string> EnumerateLayers()
+        public IEnumerable<string> EnumerateLayers(string animationSegment)
         {
             switch (clips.Count)
             {
                 case 0:
                     yield break;
                 case 1:
+                    if (clips[0].animationSegment != animationSegment) throw new InvalidOperationException($"EnumerateLayers('{animationSegment}') but only sequence is '{clips[0].animationSegment}'");
                     yield return clips[0].animationLayer;
                     yield break;
             }
 
-            var lastLayer = clips[0].animationLayer;
-            yield return lastLayer;
-            for (var i = 1; i < clips.Count; i++)
+            string lastLayer = null;
+            var clipIndex = 0;
+            for (; clipIndex < clips.Count; clipIndex++)
             {
-                var clip = clips[i];
+                var clip = clips[clipIndex];
+                if (clip.animationSegment == animationSegment)
+                    lastLayer = clip.animationLayer;
+            }
+
+            if (lastLayer == null) throw new InvalidOperationException($"No layers in animation sequence '{animationSegment}'");
+
+            yield return lastLayer;
+            for (clipIndex++; clipIndex < clips.Count; clipIndex++)
+            {
+                var clip = clips[clipIndex];
                 if (clip.animationLayer == lastLayer) continue;
+                if (clip.animationSegment != animationSegment) yield break;
                 yield return lastLayer = clip.animationLayer;
             }
         }
@@ -279,7 +295,8 @@ namespace VamTimeline
 
         public void PlayClipBySet(string animationName, string animationSet, bool seq)
         {
-            var siblings = GetMainAndBestSiblingPerLayer(animationName, animationSet);
+            #warning This should actually change the animation segment, here and when doing sequencing
+            var siblings = GetMainAndBestSiblingPerLayer(_playingAnimationSegment, animationName, animationSet);
             for (var i = 0; i < siblings.Count; i++)
             {
                 var clip = siblings[i];
@@ -311,7 +328,7 @@ namespace VamTimeline
 
             PlayClipCore(
                 isPlaying
-                    ? GetMainClipPerLayer(index.ByLayer(clip.animationLayer))
+                    ? GetMainClipPerLayer(index.ByLayer(clip.animationLayerQualified))
                     : null,
                 clip,
                 seq,
@@ -401,10 +418,10 @@ namespace VamTimeline
 
         private void PlaySiblings(AtomAnimationClip clip)
         {
-            PlaySiblings(clip.animationName, clip.animationSet);
+            PlaySiblings(clip.animationSegment, clip.animationName, clip.animationSet);
         }
 
-        private void PlaySiblings(string animationName, string animationSet)
+        private void PlaySiblings(string animationSegment, string animationName, string animationSet)
         {
             var clipsByName = index.ByName(animationName);
 
@@ -412,11 +429,11 @@ namespace VamTimeline
 
             if (animationSet == null) return;
 
-            var layers = index.ByLayer();
+            var layers = index.segments[animationSegment].layers;
             for (var i = 0; i < layers.Count; i++)
             {
                 var layer = layers[i];
-                if (LayerContainsClip(clipsByName, layer[0].animationLayer)) continue;
+                if (LayerContainsClip(clipsByName, layer[0].animationLayerQualified)) continue;
                 var sibling = GetSiblingInLayer(layer, animationSet);
                 if (sibling == null) continue;
                 var main = GetMainClipInLayer(layer);
@@ -432,7 +449,7 @@ namespace VamTimeline
                 var clip = clipsByName[i];
                 if (clip.playbackMainInLayer) continue;
                 TransitionClips(
-                    GetMainClipInLayer(index.ByLayer(clip.animationLayer)),
+                    GetMainClipInLayer(index.ByLayer(clip.animationLayerQualified)),
                     clip);
             }
         }
@@ -527,9 +544,9 @@ namespace VamTimeline
             return null;
         }
 
-        private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationName, string animationSet)
+        private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
         {
-            var layers = index.ByLayer();
+            var layers = index.segments[animationSegment].layers;
             // TODO: Could be reused?
             var result = new TransitionTarget[layers.Count];
             for (var i = 0; i < layers.Count; i++)
@@ -561,11 +578,11 @@ namespace VamTimeline
             return result;
         }
 
-        private static bool LayerContainsClip(IList<AtomAnimationClip> clipsByName, string animationLayer)
+        private static bool LayerContainsClip(IList<AtomAnimationClip> clipsByName, string animationLayerQualified)
         {
             for (var j = 0; j < clipsByName.Count; j++)
             {
-                if (clipsByName[j].animationLayer == animationLayer)
+                if (clipsByName[j].animationLayerQualified == animationLayerQualified)
                     return true;
             }
             return false;
@@ -599,18 +616,20 @@ namespace VamTimeline
 
         public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
         {
-            foreach (var clip in GetMainClipPerLayer())
+            foreach (var clip in GetMainClipPerLayer(selected.animationSegment))
             {
                 PlayClip(
-                    clip.animationLayer == selected.animationLayer ? selected : clip,
+                    clip.animationLayerQualified == selected.animationLayerQualified ? selected : clip,
                     sequencing);
             }
         }
 
-        private IEnumerable<AtomAnimationClip> GetMainClipPerLayer()
+        private IEnumerable<AtomAnimationClip> GetMainClipPerLayer(string animationSegment)
         {
             return clips
-                .GroupBy(c => c.animationLayer)
+                // TODO: Use an index?
+                .Where(c => c.animationSegment == animationSegment)
+                .GroupBy(c => c.animationLayerQualified)
                 .Select(g =>
                 {
                     return g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First();
@@ -651,7 +670,7 @@ namespace VamTimeline
         {
             if (delta == 0) return;
 
-            var layers = index.ByLayer();
+            var layers = index.clipsGroupedByLayer;
             for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
                 var layerClips = layers[layerIndex];
@@ -859,7 +878,7 @@ namespace VamTimeline
             if (source.nextAnimationName == RandomizeAnimationName)
             {
                 var candidates = index
-                    .ByLayer(source.animationLayer)
+                    .ByLayer(source.animationLayerQualified)
                     .Where(c => c.animationName != source.animationName)
                     .ToList();
                 if (candidates.Count == 0) return;
@@ -868,7 +887,7 @@ namespace VamTimeline
             else if (TryGetRandomizedGroup(source.nextAnimationName, out group))
             {
                 var candidates = index
-                    .ByLayer(source.animationLayer)
+                    .ByLayer(source.animationLayerQualified)
                     .Where(c => c.animationName != source.animationName)
                     .Where(c => c.animationNameGroup == group)
                     .ToList();
@@ -877,7 +896,7 @@ namespace VamTimeline
             }
             else
             {
-                next = index.ByLayer(source.animationLayer).FirstOrDefault(c => c.animationName == source.nextAnimationName);
+                next = index.ByLayer(source.animationLayerQualified).FirstOrDefault(c => c.animationName == source.nextAnimationName);
             }
 
             if (next == null) return;
@@ -947,7 +966,8 @@ namespace VamTimeline
 
             if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s");
 
-            if (next.fadeOnTransition && next.animationLayer == index.mainLayer && fadeManager != null)
+            #warning mainLayerNameQualified makes no sense with sequence. This should become GetMainLayer(sequenceName) but I'm not sure of the actual purpose...
+            if (next.fadeOnTransition && next.animationLayerQualified == index.mainLayerNameQualified && fadeManager != null)
             {
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
@@ -1056,7 +1076,7 @@ namespace VamTimeline
             if (_globalScaledWeight <= 0) return;
             // TODO: Index keep track if there is any parenting
             // TODO: Setting to disable that behavior
-            var layers = GetMainAndBestSiblingPerLayer(source.animationName, source.animationSet);
+            var layers = GetMainAndBestSiblingPerLayer(_playingAnimationSegment, source.animationName, source.animationSet);
             for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
                 var clip = layers[layerIndex];
@@ -1240,7 +1260,7 @@ namespace VamTimeline
         private void RebuildAnimationNowImpl()
         {
             var sw = Stopwatch.StartNew();
-            foreach (var layer in index.ByLayer())
+            foreach (var layer in index.clipsGroupedByLayer)
             {
                 AtomAnimationClip last = null;
                 foreach (var clip in layer)
@@ -1284,7 +1304,7 @@ namespace VamTimeline
             }
             if (clip.autoTransitionNext)
             {
-                var next = GetClip(clip.animationLayer, clip.nextAnimationName);
+                var next = GetClip(clip.animationSegment, clip.animationLayer, clip.nextAnimationName);
                 if (next != null && (next.IsDirty() || clip.IsDirty()))
                 {
                     CopySourceFrameToClip(next, 0f, clip, clip.animationLength);
@@ -1334,7 +1354,7 @@ namespace VamTimeline
         {
             index.Rebuild();
             onAnimationSettingsChanged.Invoke();
-            if (param == nameof(AtomAnimationClip.animationName) || param == nameof(AtomAnimationClip.animationLayer))
+            if (param == nameof(AtomAnimationClip.animationName) || param == nameof(AtomAnimationClip.animationLayer) || param == nameof(AtomAnimationClip.animationSegment))
                 onClipsListChanged.Invoke();
         }
 
@@ -1429,7 +1449,7 @@ namespace VamTimeline
                 var nextAnimationName = clip.playbackScheduledNextAnimationName;
                 clip.playbackScheduledNextAnimationName = null;
                 clip.playbackScheduledNextTimeLeft = float.NaN;
-                var nextClip = index.ByLayer(clip.animationLayer).FirstOrDefault(c => c.animationName == nextAnimationName);
+                var nextClip = index.ByLayer(clip.animationLayerQualified).FirstOrDefault(c => c.animationName == nextAnimationName);
                 if (nextClip == null)
                 {
                     SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
@@ -1439,7 +1459,8 @@ namespace VamTimeline
                 TransitionClips(clip, nextClip);
                 PlaySiblings(nextClip);
 
-                if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayer == index.mainLayer)
+                #warning Again, mainLayerNameQualified (see other warning)
+                if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayerQualified == index.mainLayerNameQualified)
                 {
                     _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
                 }

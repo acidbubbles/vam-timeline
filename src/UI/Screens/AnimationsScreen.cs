@@ -30,21 +30,20 @@ namespace VamTimeline
         {
             if (!animation.clips.Any()) return;
 
-            var hasLayers = animation.EnumerateLayers().Skip(1).Any();
+            var layers = animation.index.segments[current.animationSegment].layers;
+            var hasLayers = layers.Count > 1;
 
-            var layerName = animation.clips[0].animationLayer;
-            if (hasLayers)
-                prefabFactory.CreateHeader($"Layer: [{layerName}]", 2);
-
-            foreach (var clip in animation.clips)
+            foreach (var layer in layers)
             {
-                if (hasLayers && clip.animationLayer != layerName)
+                if (hasLayers)
                 {
-                    layerName = clip.animationLayer;
-                    prefabFactory.CreateHeader($"Layer: [{layerName}]", 2);
+                    prefabFactory.CreateHeader($"Layer: [{layer[0].animationLayer}]", 2);
                 }
 
-                InitAnimButton(clip);
+                foreach (var clip in layer)
+                {
+                    InitAnimButton(clip);
+                }
             }
         }
 

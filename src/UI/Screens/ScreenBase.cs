@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -17,6 +18,8 @@ namespace VamTimeline
         protected AtomAnimation animation => plugin.animation;
         protected AtomAnimationEditContext animationEditContext => plugin.animationEditContext;
         protected AtomAnimationClip current => animationEditContext.current;
+        protected IList<AtomAnimationClip> currentLayer => animationEditContext.currentLayer;
+        protected AtomAnimationsClipsIndex.IndexedSegment currentSegment => animationEditContext.currentSegment;
         protected OperationsFactory operations => plugin.operations;
 
         protected IAtomPlugin plugin;

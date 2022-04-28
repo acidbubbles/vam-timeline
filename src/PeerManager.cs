@@ -335,18 +335,18 @@ namespace VamTimeline
                  clip.uninterruptible, // 13
                  clip.preserveLoops, // 14
                  previousAnimationName, // 15
-                 clip.animationSequence, // 16
+                 clip.animationSegment, // 16
             });
         }
 
         private void ReceiveSyncAnimation(object[] e)
         {
             if (!ValidateArgumentCount(e.Length, 16)) return;
-            var animationName = (string)e[1];
+            var animationSegment = (string)e[16];
             var animationLayer = (string)e[2];
-            var animationSequence = (string)e[16];
+            var animationName = (string)e[1];
 
-            var existing = animation.GetClip(animationLayer, animationName);
+            var existing = animation.GetClip(animationSegment, animationLayer, animationName);
             if (existing == null)
             {
                 existing = animation.clips.FirstOrDefault(c => c.animationName == animationName);
@@ -356,11 +356,11 @@ namespace VamTimeline
                     if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     {
                         new AddAnimationOperations(animation, animation.clips.First(c => c.animationLayer == animationLayer))
-                            .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationSequence, animationLayer, animationName, previousAnimationName));
+                            .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationSegment, animationLayer, animationName, previousAnimationName));
                     }
                     else
                     {
-                        animation.CreateClip(animationLayer, animationName, animationSequence, GetPosition(animationSequence, animationLayer, animationName, previousAnimationName));
+                        animation.CreateClip(animationLayer, animationName, animationSegment, GetPosition(animationSegment, animationLayer, animationName, previousAnimationName));
                     }
                 }
             }
@@ -371,13 +371,13 @@ namespace VamTimeline
                 var clip = clips[i];
                 new ResizeAnimationOperations().CropOrExtendEnd(clip, (float)e[3]);
                 var nextAnimationName = (string)e[4];
-                if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayer).Any(c => c.animationName == nextAnimationName))
+                if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayerQualified).Any(c => c.animationName == nextAnimationName))
                 {
                     clip.nextAnimationName = nextAnimationName;
                     clip.nextAnimationTime = 0f; // Will be managed by the master setting
                     clip.autoTransitionNext = (bool)e[10];
                 }
-                if (animation.index.ByLayer(clip.animationLayer).Any(c => c.nextAnimationName == clip.animationName))
+                if (animation.index.ByLayer(clip.animationLayerQualified).Any(c => c.nextAnimationName == clip.animationName))
                 {
                     clip.autoTransitionPrevious = (bool)e[9];
                 }
@@ -391,13 +391,13 @@ namespace VamTimeline
             }
         }
 
-        private int GetPosition(string animationSequence, string animationLayer, string animationName, string previousAnimationName)
+        private int GetPosition(string animationSegment, string animationLayer, string animationName, string previousAnimationName)
         {
-            var previousClipPosition = animation.clips.FindIndex(c => c.animationSequence == animationSequence && c.animationLayer == animationLayer && c.animationName == previousAnimationName);
+            var previousClipPosition = animation.clips.FindIndex(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == previousAnimationName);
             if (previousClipPosition > -1)
                 return previousClipPosition + 1;
 
-            return animation.clips.FindIndex(c => c.animationSequence == animationSequence && c.animationLayer == animationLayer);
+            return animation.clips.FindIndex(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
         }
 
         public void SendScreen(string screenName, object screenArg)

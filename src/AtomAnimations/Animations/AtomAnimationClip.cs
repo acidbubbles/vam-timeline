@@ -12,7 +12,7 @@ namespace VamTimeline
 
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 0.75f;
-        public const string DefaultAnimationSequence = "";
+        public const string DefaultAnimationSegment = "";
         public const string DefaultAnimationLayer = "Main Layer";
 
         private bool _loop = true;
@@ -27,7 +27,7 @@ namespace VamTimeline
         private float _nextAnimationTimeRandomize;
         private string _animationName;
         private string _animationLayer;
-        private string _animationSequence;
+        private string _animationSegment;
         private bool _ensureQuaternionContinuity = true;
         private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
@@ -92,7 +92,15 @@ namespace VamTimeline
         }
 
         public string animationNameQualified { get; private set; }
-        private void UpdateAnimationNameQualified() => animationNameQualified = $"{_animationSequence}::{_animationLayer}::{_animationName}";
+        public string animationLayerQualified { get; private set; }
+        #warning Use this!!!
+        public string animationSetQualified { get; private set; }
+        private void UpdateAnimationNameQualified()
+        {
+            animationNameQualified = $"{_animationSegment}::{_animationLayer}::{_animationName}";
+            animationLayerQualified = $"{_animationSegment}::{_animationLayer}";
+            animationSetQualified = $"{_animationSegment}::{_animationSet}";
+        }
 
         public string animationLayer
         {
@@ -109,18 +117,18 @@ namespace VamTimeline
             }
         }
 
-        public string animationSequence
+        public string animationSegment
         {
             get
             {
-                return _animationSequence;
+                return _animationSegment;
             }
             set
             {
-                if (_animationSequence == value) return;
-                _animationSequence = value;
+                if (_animationSegment == value) return;
+                _animationSegment = value;
                 UpdateAnimationNameQualified();
-                onAnimationSettingsChanged.Invoke(nameof(animationSequence));
+                onAnimationSettingsChanged.Invoke(nameof(animationSegment));
             }
         }
 
@@ -179,6 +187,7 @@ namespace VamTimeline
             {
                 if (_animationSet == value) return;
                 _animationSet = value == string.Empty ? null : value;
+                UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationSet));
             }
         }
@@ -452,11 +461,11 @@ namespace VamTimeline
             }
         }
 
-        public AtomAnimationClip(string animationName, string animationLayer, string animationSequence)
+        public AtomAnimationClip(string animationName, string animationLayer, string animationSegment)
         {
             _animationName = animationName;
             _animationLayer = animationLayer;
-            _animationSequence = animationSequence;
+            _animationSegment = animationSegment;
             UpdateAnimationNameGroup();
             UpdateAnimationNameQualified();
         }
@@ -755,7 +764,7 @@ namespace VamTimeline
                 var target = targetControllers.FirstOrDefault(c => c.animatableRef == entry.controllerRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste controller {entry.controllerRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste controller {entry.controllerRef.name} in animation '{animationNameQualified}' because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
@@ -765,7 +774,7 @@ namespace VamTimeline
                 var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.floatRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste storable {entry.floatRef.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste storable {entry.floatRef.name} in animation '{animationNameQualified}' because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
@@ -776,7 +785,7 @@ namespace VamTimeline
                 var target = targetTriggers.FirstOrDefault(t => t.name == entry.name) ?? targetTriggers.FirstOrDefault();
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste triggers {entry.name} in animation [{animationLayer}] {animationName} because the target was not added.");
+                    SuperController.LogError($"Cannot paste triggers {entry.name} in animation '{animationNameQualified}' because the target was not added.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot);
@@ -787,8 +796,6 @@ namespace VamTimeline
         {
             target.loop = loop;
             target.animationLength = animationLength;
-            target.animationLayer = animationLayer;
-            target.animationSequence = animationSequence;
             target.animationSet = animationSet;
             target.nextAnimationName = nextAnimationName;
             target.nextAnimationTime = nextAnimationTime;

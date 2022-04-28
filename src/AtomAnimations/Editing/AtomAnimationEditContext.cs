@@ -175,7 +175,7 @@ namespace VamTimeline
         public void Initialize()
         {
             if (animation.clips.Count == 0)
-                animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSequence));
+                animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment));
             current = animation.GetDefaultClip();
             if (animation.clips.Any(c => c.IsDirty()))
             {
@@ -299,6 +299,7 @@ namespace VamTimeline
             logger.Begin();
             if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
+            #warning Deal with the "no sequence" sequence (let's call it global)
             foreach (var clip in GetMainClipPerLayer())
             {
                 if (clip == null) continue;
@@ -316,10 +317,10 @@ namespace VamTimeline
             clipTime = GetNextFrame(clipTime);
         }
 
-        public void GoToPreviousAnimation(string layerName)
+        public void GoToPreviousAnimation(string layerNameQualified)
         {
-            if (!animation.isPlaying && current.animationLayer != layerName) return;
-            var layer = animation.index.ByLayer(layerName);
+            if (!animation.isPlaying && current.animationLayerQualified != layerNameQualified) return;
+            var layer = animation.index.ByLayer(layerNameQualified);
             var main = animation.isPlaying ? layer.FirstOrDefault(c => c.playbackMainInLayer) : current;
             if (main == null) return;
             var animIdx = layer.IndexOf(main);
@@ -331,10 +332,10 @@ namespace VamTimeline
                 SelectAnimation(prev);
         }
 
-        public void GoToNextAnimation(string layerName)
+        public void GoToNextAnimation(string layerNameQualified)
         {
-            if (!animation.isPlaying && current.animationLayer != layerName) return;
-            var layer = animation.index.ByLayer(layerName);
+            if (!animation.isPlaying && current.animationLayerQualified != layerNameQualified) return;
+            var layer = animation.index.ByLayer(layerNameQualified);
             var main = animation.isPlaying ? layer.FirstOrDefault(c => c.playbackMainInLayer) : current;
             if (main == null) return;
             var animIdx = layer.IndexOf(main);
@@ -346,22 +347,28 @@ namespace VamTimeline
                 SelectAnimation(next);
         }
 
+        #warning Find all similar usage and call this instead
+        public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segments[current.animationSegment];
+        public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayer(current.animationLayerQualified);
+
         public void GoToPreviousLayer()
         {
-            var layers = animation.index.ByLayer().Select(l => l[0].animationLayer).ToList();
+            var sequence = currentSegment;
+            var layers = sequence.layers.Select(l => l[0].animationLayer).ToList();
             var animIdx = layers.IndexOf(current.animationLayer);
             if (animIdx == 0) return;
             var prev = layers[animIdx - 1];
-            SelectAnimation(animation.index.ByLayer(prev)[0]);
+            SelectAnimation(sequence.layersMap[prev][0]);
         }
 
         public void GoToNextLayer()
         {
-            var layers = animation.index.ByLayer().Select(l => l[0].animationLayer).ToList();
+            var sequence = currentSegment;
+            var layers = sequence.layers.Select(l => l[0].animationLayer).ToList();
             var animIdx = layers.IndexOf(current.animationLayer);
             if (animIdx == layers.Count - 1) return;
             var next = layers[animIdx + 1];
-            SelectAnimation(animation.index.ByLayer(next)[0]);
+            SelectAnimation(sequence.layersMap[next][0]);
         }
 
         public void RewindSeconds(float seconds)
@@ -617,7 +624,8 @@ namespace VamTimeline
 
         private AtomAnimationClip[] GetMainClipPerLayer()
         {
-            var layers = animation.index.ByLayer();
+            #warning Global segment! (This means we want both the current segment AND the layers not in a segment)
+            var layers = currentSegment.layers;
             var list = new AtomAnimationClip[layers.Count];
             for (var i = 0; i < layers.Count; i++)
             {
@@ -667,10 +675,10 @@ namespace VamTimeline
             SelectAnimation(clip);
         }
 
-        public void SelectAnimation(string animationSequence, string animationLayer, string animationName)
+        public void SelectAnimation(string animationSegment, string animationLayer, string animationName)
         {
-            var clip = animation.GetClipQualified(animationSequence, animationLayer, animationName);
-            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationSequence}::{animationLayer}::{animationName}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationNameQualified).ToArray())}'.");
+            var clip = animation.GetClip(animationSegment, animationLayer, animationName);
+            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationSegment}::{animationLayer}::{animationName}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationNameQualified).ToArray())}'.");
             SelectAnimation(clip);
         }
 

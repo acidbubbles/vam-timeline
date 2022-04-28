@@ -17,7 +17,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationAsCopy(string animationName, int position)
         {
-            var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSequence, position);
+            var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSegment, position);
             _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
@@ -52,7 +52,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings, string animationName, int position)
        {
-           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSequence, position);
+           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSegment, position);
             if (copySettings) _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {
@@ -78,16 +78,17 @@ namespace VamTimeline
 
         public AtomAnimationClip AddTransitionAnimation()
         {
-            var next = _animation.GetClip(_clip.animationLayer, _clip.nextAnimationName);
+            var next = _animation.GetClip(_clip.animationSegment, _clip.animationLayer, _clip.nextAnimationName);
             if (next == null)
             {
                 SuperController.LogError("There is no animation to transition to");
                 return null;
             }
 
-            var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _clip.animationSequence, _animation.clips.IndexOf(_clip) + 1);
+            var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _clip.animationSegment, _animation.clips.IndexOf(_clip) + 1);
             clip.loop = false;
-            clip.autoTransitionPrevious = _animation.index.ByLayer(_clip.animationLayer).Any(c => c.animationLayer == _clip.animationLayer);
+            #warning This makes no sense
+            clip.autoTransitionPrevious = _animation.index.segments[_clip.animationSegment].layersMap[_clip.animationLayer].Any(c => c.animationLayer == _clip.animationLayer);
             clip.autoTransitionNext = _clip.nextAnimationName != null;
             clip.nextAnimationName = _clip.nextAnimationName;
             clip.blendInDuration = AtomAnimationClip.DefaultBlendDuration;

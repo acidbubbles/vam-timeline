@@ -25,7 +25,7 @@ namespace VamTimeline
         private VamPrefabFactory _prefabFactory;
         private DopeSheet _dopeSheet;
         private AtomAnimationEditContext _animationEditContext;
-        private JSONStorableStringChooser _sequencesJSON;
+        private JSONStorableStringChooser _segmentsJSON;
         private JSONStorableStringChooser _layersJSON;
         private JSONStorableStringChooser _animationsJSON;
         private bool _ignoreAnimationChange;
@@ -57,11 +57,11 @@ namespace VamTimeline
 
         private void InitAnimationSelectorUI()
         {
-            _sequencesJSON = new JSONStorableStringChooser("Sequence", new List<string>(), "", "Sequence", val =>
+            _segmentsJSON = new JSONStorableStringChooser("Segment", new List<string>(), "", "Segment", val =>
             {
                 if (_ignoreAnimationChange) return;
                 SuperController.LogMessage("Value: '" + val + "'");
-                var clips = _animationEditContext.animation.clips.Where(c => c.animationSequence == val).ToList();
+                var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == val).ToList();
                 var clip = clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val && c.animationName == _animationsJSON.val)
                     ?? clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val || c.animationName == _animationsJSON.val)
                     ?? clips.FirstOrDefault();
@@ -71,7 +71,7 @@ namespace VamTimeline
             _layersJSON = new JSONStorableStringChooser("Layer", new List<string>(), "", "Layer", (string val) =>
             {
                 if (_ignoreAnimationChange) return;
-                var clips = _animationEditContext.animation.clips.Where(c => c.animationSequence == _sequencesJSON.val).ToList();
+                var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == _segmentsJSON.val).ToList();
                 var clip = clips.FirstOrDefault(c => c.animationLayer == val && c.animationName == _animationsJSON.val)
                     ?? clips.FirstOrDefault();
                 _animationEditContext.SelectAnimation(clip);
@@ -80,10 +80,10 @@ namespace VamTimeline
             _animationsJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string _) =>
             {
                 if (_ignoreAnimationChange) return;
-                _animationEditContext.SelectAnimation(_sequencesJSON.val, _layersJSON.val, _animationsJSON.val);
+                _animationEditContext.SelectAnimation(_segmentsJSON.val, _layersJSON.val, _animationsJSON.val);
             });
 
-            _prefabFactory.CreatePopup(_sequencesJSON, false, true, 700f);
+            _prefabFactory.CreatePopup(_segmentsJSON, false, true, 700f);
             _prefabFactory.CreatePopup(_layersJSON, false, true, 650f);
             _prefabFactory.CreatePopup(_animationsJSON, false, true, 600f);
         }
@@ -221,13 +221,13 @@ namespace VamTimeline
             _ignoreAnimationChange = true;
             try
             {
-                _sequencesJSON.choices = _animationEditContext.animation.index.sequences;
-                _sequencesJSON.displayChoices = _animationEditContext.animation.index.sequences.Select(x => x == AtomAnimationClip.DefaultAnimationSequence ? _noSequenceLabel : x).ToList();
-                _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSequence == _animationEditContext.current.animationSequence).Select(c => c.animationLayer).Distinct().ToList();
-                _animationsJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSequence == _animationEditContext.current.animationSequence && c.animationLayer == _animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
+                _segmentsJSON.choices = _animationEditContext.animation.index.segmentNames;
+                _segmentsJSON.displayChoices = _animationEditContext.animation.index.segmentNames.Select(x => x == AtomAnimationClip.DefaultAnimationSegment ? _noSequenceLabel : x).ToList();
+                _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment).Select(c => c.animationLayer).Distinct().ToList();
+                _animationsJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment && c.animationLayer == _animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
 
-                _sequencesJSON.valNoCallback = null;
-                _sequencesJSON.valNoCallback = _animationEditContext.current.animationSequence;
+                _segmentsJSON.valNoCallback = null;
+                _segmentsJSON.valNoCallback = _animationEditContext.current.animationSegment;
                 _layersJSON.valNoCallback = null;
                 _layersJSON.valNoCallback = _animationEditContext.current.animationLayer;
                 _animationsJSON.valNoCallback = null;
@@ -241,7 +241,7 @@ namespace VamTimeline
 
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
-            _sequencesJSON.valNoCallback = args.after.animationSequence;
+            _segmentsJSON.valNoCallback = args.after.animationSegment;
             _layersJSON.valNoCallback = args.after.animationLayer;
             _animationsJSON.valNoCallback = args.after.animationName;
             args.before?.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);

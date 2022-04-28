@@ -65,7 +65,7 @@ namespace VamTimeline
                 return LockedScreen.ScreenName;
             if (_currentScreen != null && _currentScreen != LockedScreen.ScreenName)
                 return _currentScreen;
-            if (_plugin.animation.clips.Count > 1 && _plugin.animation.EnumerateLayers().Skip(1).Any())
+            if (_plugin.animation.clips.Count > 1)
                 return AnimationsScreen.ScreenName;
             return TargetsScreen.ScreenName;
         }

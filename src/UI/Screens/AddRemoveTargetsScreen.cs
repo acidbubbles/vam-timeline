@@ -87,9 +87,10 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            if (animation.index.ByLayer(current.animationLayer).Count() <= 1) return;
+            var layerClips = animation.index.ByLayer(current.animationLayerQualified);
+            if (layerClips.Count <= 1) return;
 
-            foreach (var clip in animation.index.ByLayer(current.animationLayer))
+            foreach (var clip in layerClips)
             {
                 foreach (var target in clip.targetFloatParams)
                 {
@@ -102,7 +103,7 @@ namespace VamTimeline
                 .Select(t => t.name)
                 .OrderBy(x => x);
             var otherList = animation.index
-                .ByLayer(current.animationLayer)
+                .ByLayer(current.animationLayerQualified)
                 .Where(c => c != current)
                 .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)))
                 .Select(t => t.name)
@@ -152,7 +153,7 @@ namespace VamTimeline
 
         private void AddTrack(TriggersTrackRef track)
         {
-            foreach (var clip in animation.index.ByLayer(current.animationLayer))
+            foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
             {
                 var target = new TriggersTrackAnimationTarget(track);
                 target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -190,8 +191,9 @@ namespace VamTimeline
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
-            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
-                .Where(c => c.animationLayer != current.animationLayer)
+            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.index.segments[current.animationSegment].layers
+                .Where(c => c[0].animationLayer != current.animationLayer)
+                .SelectMany(c => c)
                 .SelectMany(c => c.targetControllers)
                 .Select(t => t.animatableRef.controller));
             foreach (var fc in plugin.containingAtom.freeControllers)
@@ -301,8 +303,9 @@ namespace VamTimeline
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
-            var reservedByOtherLayers = new HashSet<string>(animation.clips
-                .Where(c => c.animationLayer != current.animationLayer)
+            var reservedByOtherLayers = new HashSet<string>(animation.index.segments[current.animationSegment].layers
+                .Where(c => c[0].animationLayer != current.animationLayer)
+                .SelectMany(c => c)
                 .SelectMany(c => c.targetFloatParams)
                 .Where(t => t.animatableRef.storableId == storable.storeId)
                 .Select(t => t.animatableRef.floatParamName));
@@ -329,7 +332,7 @@ namespace VamTimeline
             foreach (var s in selected)
             {
                 // We remove every selected target on every clip on the current layer, except triggers
-                foreach (var clip in animation.index.ByLayer(current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
                 {
                     var target = clip.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
                     if (target == null) continue;
@@ -412,14 +415,14 @@ namespace VamTimeline
             try
             {
                 var allControllers = animation.index
-                    .ByLayer(current.animationLayer)
+                    .ByLayer(current.animationLayerQualified)
                     .SelectMany(c => c.targetControllers)
                     .Select(t => t.animatableRef)
                     .Distinct()
                     .ToList();
                 var h = new HashSet<JSONStorableFloat>();
                 var allFloatParams = animation.index
-                    .ByLayer(current.animationLayer)
+                    .ByLayer(current.animationLayerQualified)
                     .SelectMany(c => c.targetFloatParams)
                     .Where(t => t.animatableRef.EnsureAvailable(false))
                     .Where(t => h.Add(t.animatableRef.floatParam))
@@ -494,7 +497,7 @@ namespace VamTimeline
                     SuperController.LogMessage($"Timeline: The {controller.name} controller state had position or rotation off; animations will not affect off nodes.");
                 }
 
-                foreach (var clip in animation.index.ByLayer(current.animationLayer))
+                foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
                 {
                     var added = clip.Add(animation.animatables.GetOrCreateController(controller));
                     if (added == null) continue;
@@ -560,7 +563,7 @@ namespace VamTimeline
             if (current.targetFloatParams.Any(c => c.animatableRef.EnsureAvailable(true) && c.animatableRef.floatParam == jsf))
                 return false;
 
-            foreach (var clip in animation.index.ByLayer(current.animationLayer))
+            foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
             {
                 var storableFloat = animation.animatables.GetOrCreateStorableFloat(storable, jsf);
                 var added = clip.Add(storableFloat);

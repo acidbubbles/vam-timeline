@@ -24,6 +24,7 @@ namespace VamTimeline
 
             context.Assert(context.animation.clips.Count, 1, "When the animation is empty, replace it");
             context.Assert(clip.animationLayer, "Main Layer", "The existing animation layer is used");
+            context.Assert(clip.animationSegment, "", "The existing animation segment is used");
             yield break;
         }
 
@@ -35,19 +36,19 @@ namespace VamTimeline
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 2, "The animation is added");
-            context.Assert(context.animation.EnumerateLayers().Count(), 1, "They all share the same layer");
+            context.Assert(context.animation.EnumerateLayers(AtomAnimationClip.DefaultAnimationSegment).Count(), 1, "They all share the same layer");
             yield break;
         }
 
         public IEnumerable CreateLayerIfConflict(TestContext context)
         {
             var existing = WithStorable(context, context.animation.clips.Single(), "floatparam1");
-            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, existing.animationLayer, null), "floatparam2");
+            var clip = WithStorable(context, new AtomAnimationClip(existing.animationName, existing.animationLayer, ""), "floatparam2");
 
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 2, "The animation is added");
-            context.Assert(context.animation.EnumerateLayers().Count(), 2, "They all share the same layer");
+            context.Assert(context.animation.EnumerateLayers(AtomAnimationClip.DefaultAnimationSegment).Count(), 2, "They all share the same layer");
             yield break;
         }
 
@@ -60,7 +61,7 @@ namespace VamTimeline
             new ImportOperations(context.animation, true).ImportClips(new[] { clip });
 
             context.Assert(context.animation.clips.Count, 2, "The animation is added");
-            context.Assert(context.animation.EnumerateLayers().Count(), 1, "They all share the same layer");
+            context.Assert(context.animation.EnumerateLayers(AtomAnimationClip.DefaultAnimationSegment).Count(), 1, "They all share the same layer");
             context.Assert(clip.targetFloatParams.Count, 2, "Added the float param");
             yield break;
         }
