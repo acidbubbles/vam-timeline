@@ -4,6 +4,9 @@ using System.Globalization;
 using System.Linq;
 using SimpleJSON;
 using UnityEngine;
+#if(TIMELINE_LOG_SAVEPERF)
+using System.Diagnostics;
+#endif
 
 namespace VamTimeline
 {
@@ -32,6 +35,11 @@ namespace VamTimeline
         {
             if (animation == null) throw new ArgumentNullException(nameof(animation));
 
+            #if(TIMELINE_LOG_SAVEPERF)
+            var sw = new Stopwatch();
+            sw.Start();
+            #endif
+
             animation.globalSpeed = DeserializeFloat(animationJSON["Speed"], 1f);
             animation.globalWeight = DeserializeFloat(animationJSON["Weight"], 1f);
             animation.master = DeserializeBool(animationJSON["Master"], false);
@@ -58,6 +66,10 @@ namespace VamTimeline
             {
                 animation.index.EndBulkUpdates();
             }
+
+            #if(TIMELINE_LOG_SAVEPERF)
+            SuperController.LogMessage($"Deserialize: {animationJSON.ToString().Length} chars {sw.ElapsedMilliseconds} ms");
+            #endif
         }
 
         private static IFadeManager DeserializeFadeManager(JSONClass jc)
@@ -210,15 +222,39 @@ namespace VamTimeline
             {
                 DeserializeCurveFromArray(curve, (JSONArray)curveJSON, ref dirty);
             }
-            if (curveJSON is JSONClass)
+            else if (curveJSON is JSONClass)
             {
                 DeserializeCurveFromClassLegacy(curve, curveJSON);
                 dirty = true;
             }
-            else
+            else if (curveJSON.Value.IndexOf(',', 0, 40) > -1)
             {
                 DeserializeCurveFromStringLegacy(curve, curveJSON);
                 dirty = true;
+            }
+            else
+            {
+                DeserializeCurveCompressed(curve, curveJSON);
+            }
+        }
+
+        private static void DeserializeCurveCompressed(BezierAnimationCurve curve, JSONNode curveJSON)
+        {
+            const int keySize = 5 * 4;
+            var bytes = Convert.FromBase64String(curveJSON.Value);
+            if (bytes[0] != 1) throw new InvalidOperationException($"Unknown curve serialization version. Try using a more recent Timeline version. Curve Serialize Version: {bytes[0]}");
+            curve.keys.Capacity = keySize;
+            for (var index = 1; index < bytes.Length; index += keySize)
+            {
+                var keyframe = new BezierKeyframe
+                {
+                    time = BitConverter.ToSingle(bytes, index + 0),
+                    value = BitConverter.ToSingle(bytes, index + 4),
+                    curveType = BitConverter.ToInt32(bytes, index + 8),
+                    controlPointIn = BitConverter.ToSingle(bytes, index + 12),
+                    controlPointOut = BitConverter.ToSingle(bytes, index + 16),
+                };
+                curve.AddKey(keyframe);
             }
         }
 
@@ -367,6 +403,11 @@ namespace VamTimeline
 
         public JSONClass SerializeAnimation(AtomAnimation animation, string animationNameFilter = null)
         {
+            #if(TIMELINE_LOG_SAVEPERF)
+            var sw = new Stopwatch();
+            sw.Start();
+            #endif
+
             var animationJSON = new JSONClass
             {
                 { "Speed", animation.globalSpeed.ToString(CultureInfo.InvariantCulture) },
@@ -386,6 +427,11 @@ namespace VamTimeline
                 clipsJSON.Add(SerializeClip(clip));
             }
             animationJSON.Add("Clips", clipsJSON);
+
+            #if(TIMELINE_LOG_SAVEPERF)
+            SuperController.LogMessage($"Serialize: {animationJSON.ToString().Length} chars {sw.ElapsedMilliseconds} ms");
+            #endif
+
             return animationJSON;
         }
 
@@ -424,6 +470,8 @@ namespace VamTimeline
                 clipJSON["FadeOnTransition"] = "1";
             if (clip.animationSet != null)
                 clipJSON["AnimationSet"] = clip.animationSet;
+            if (clip.animationPattern != null)
+                clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
 
             SerializeClip(clip, clipJSON);
             return clipJSON;
@@ -431,9 +479,6 @@ namespace VamTimeline
 
         private static void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
         {
-            if (clip.animationPattern != null)
-                clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
-
             var controllersJSON = new JSONArray();
             foreach (var controller in clip.targetControllers)
             {
@@ -505,6 +550,31 @@ namespace VamTimeline
         }
 
         private static JSONNode SerializeCurve(BezierAnimationCurve curve)
+        {
+            return SerializeCurveCompressed(curve);
+        }
+
+        private static JSONNode SerializeCurveCompressed(BezierAnimationCurve curve)
+        {
+            const int keySize = 5 * 4;
+            var bytes = new byte[curve.length * keySize + 1];
+            bytes[0] = 1; // Version flag
+            var index = 1;
+            for (var key = 0; key < curve.length; key++)
+            {
+                var keyframe = curve.GetKeyframeByKey(key);
+                Array.Copy(BitConverter.GetBytes(keyframe.time), 0, bytes, index + 0, 4);
+                Array.Copy(BitConverter.GetBytes(keyframe.value), 0, bytes, index + 4, 4);
+                Array.Copy(BitConverter.GetBytes(keyframe.curveType), 0, bytes, index + 8, 4);
+                Array.Copy(BitConverter.GetBytes(keyframe.controlPointIn), 0, bytes, index + 12, 4);
+                Array.Copy(BitConverter.GetBytes(keyframe.controlPointOut), 0, bytes, index + 16, 4);
+                index += keySize;
+            }
+
+            return Convert.ToBase64String(bytes);
+        }
+
+        private static JSONNode SerializeCurveExpanded(BezierAnimationCurve curve)
         {
             var curveJSON = new JSONArray();
 
