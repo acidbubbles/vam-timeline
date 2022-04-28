@@ -9,7 +9,7 @@ namespace VamTimeline
 {
     public class AnimationControlPanel : MonoBehaviour
     {
-        private const string _noSequenceLabel = "[No Sequence]";
+        private const string _noSequenceLabel = "[Global Layers]";
 
         public static AnimationControlPanel Configure(GameObject go)
         {
@@ -31,6 +31,9 @@ namespace VamTimeline
         private bool _ignoreAnimationChange;
         private UIDynamicButton _playAll;
         private UIDynamicButton _playClip;
+        private UIDynamicPopup _segmentsUI;
+        private UIDynamicPopup _layersUI;
+        private UIDynamicPopup _animationsUI;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -83,9 +86,9 @@ namespace VamTimeline
                 _animationEditContext.SelectAnimation(_segmentsJSON.val, _layersJSON.val, _animationsJSON.val);
             });
 
-            _prefabFactory.CreateMicroPopup(_segmentsJSON, 700f);
-            _prefabFactory.CreateMicroPopup(_layersJSON, 650f);
-            _prefabFactory.CreateMicroPopup(_animationsJSON, 600f);
+            _segmentsUI = _prefabFactory.CreateMicroPopup(_segmentsJSON, 700f);
+            _layersUI = _prefabFactory.CreateMicroPopup(_layersJSON, 650f);
+            _animationsUI = _prefabFactory.CreateMicroPopup(_animationsJSON, 600f);
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab)
@@ -232,6 +235,10 @@ namespace VamTimeline
                 _layersJSON.valNoCallback = _animationEditContext.current.animationLayer;
                 _animationsJSON.valNoCallback = null;
                 _animationsJSON.valNoCallback = _animationEditContext.current.animationName;
+
+                _segmentsUI.gameObject.SetActive(_animationEditContext.animation.index.segments.Count > 1);
+                _layersUI.gameObject.SetActive(_animationEditContext.animation.index.clipsGroupedByLayer.Count > 1);
+                // _animationsUI.gameObject.SetActive(_animationEditContext.animation.clips.Count > 1);
             }
             finally
             {

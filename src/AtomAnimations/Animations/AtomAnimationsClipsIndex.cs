@@ -83,7 +83,8 @@ namespace VamTimeline
                     {
                         sequence = new IndexedSegment();
                         segments.Add(clip.animationSegment, sequence);
-                        segmentNames.Add(clip.animationSegment);
+                        if (clip.animationSegment != AtomAnimationClip.DefaultAnimationSegment)
+                            segmentNames.Add(clip.animationSegment);
                     }
                     sequence.Add(clip);
                 }
