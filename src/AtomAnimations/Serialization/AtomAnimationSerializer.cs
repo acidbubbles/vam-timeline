@@ -571,7 +571,8 @@ namespace VamTimeline
                 index += keySize;
             }
 
-            return Convert.ToBase64String(bytes);
+            var str = Convert.ToBase64String(bytes);
+            return new JSONBinaryData(str);
         }
 
         private static JSONNode SerializeCurveExpanded(BezierAnimationCurve curve)

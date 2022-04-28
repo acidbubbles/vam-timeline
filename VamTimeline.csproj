@@ -130,6 +130,7 @@
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />
     <Compile Include="src\AtomAnimations\Serialization\AtomAnimationSerializer.cs" />
     <Compile Include="src\AtomAnimations\Utils\FloatExtensions.cs" />
+    <Compile Include="src\AtomAnimations\Utils\JSONRawString.cs" />
     <Compile Include="src\AtomAnimations\Utils\QuaternionExtensions.cs" />
     <Compile Include="src\AtomAnimations\Utils\TimelinePrefabs.cs" />
     <Compile Include="src\Interop\IRemoteAtomPlugin.cs" />
