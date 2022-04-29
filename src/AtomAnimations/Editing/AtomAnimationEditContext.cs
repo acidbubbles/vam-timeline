@@ -348,6 +348,7 @@ namespace VamTimeline
         }
 
         #warning Find all similar usage and call this instead
+        public AtomAnimationsClipsIndex.IndexedSegment sharedSegment => _animation.index.segments[AtomAnimationClip.SharedAnimationSegment];
         public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segments[current.animationSegment];
         public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayer(current.animationLayerQualified);
 
@@ -625,14 +626,19 @@ namespace VamTimeline
         private AtomAnimationClip[] GetMainClipPerLayer()
         {
             #warning Global segment! (This means we want both the current segment AND the layers not in a segment)
-            var layers = currentSegment.layers;
-            var list = new AtomAnimationClip[layers.Count];
-            for (var i = 0; i < layers.Count; i++)
+            var sharedLayers = sharedSegment.layers;
+            var segmentLayers = current.animationSegment != AtomAnimationClip.SharedAnimationSegment ? currentSegment.layers : null;
+            var list = new AtomAnimationClip[sharedLayers.Count + (segmentLayers?.Count ?? 0)];
+            for (var i = 0; i < sharedLayers.Count; i++)
             {
-                var layer = layers[i];
-                list[i] = layer[0].animationLayer == current.animationLayer
-                    ? current
-                    : GetPrincipalClipInLayer(layer, current.animationName, current.animationSet);
+                list[i] = GetPrincipalClipInLayer(sharedLayers[i]);
+            }
+            if (segmentLayers != null)
+            {
+                for (var i = 0; i < segmentLayers.Count; i++)
+                {
+                    list[sharedLayers.Count + i] = GetPrincipalClipInLayer(segmentLayers[i]);
+                }
             }
 
             // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer
@@ -646,20 +652,23 @@ namespace VamTimeline
             return list;
         }
 
-        private static AtomAnimationClip GetPrincipalClipInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet)
+        private AtomAnimationClip GetPrincipalClipInLayer(IList<AtomAnimationClip> layer)
         {
-            if (animationSet != null)
+            if (layer[0].animationLayerQualified == current.animationLayerQualified)
+                return current;
+
+            if (current.animationSet != null)
             {
-                var clip = layer.FirstOrDefault(c => c.animationSet == animationSet);
+                var clip = layer.FirstOrDefault(c => c.animationSet == current.animationSet);
                 // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
-                if (clip?.animationSet != null && clip.animationSet != animationSet)
+                if (clip?.animationSet != null && clip.animationSet != current.animationSet)
                     clip = null;
                 if (clip != null)
                     return clip;
             }
 
             return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
-                   layer.FirstOrDefault(c => c.animationName == animationName) ??
+                   layer.FirstOrDefault(c => c.animationName == current.animationName) ??
                    layer.FirstOrDefault(c => c.autoPlay) ??
                    layer[0];
         }
