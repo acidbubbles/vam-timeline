@@ -14,7 +14,7 @@
 
         public AtomAnimationClip Add()
         {
-            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName(), GetNewSegmentName());
+            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, GetNewAnimationName(), GetNewSegmentName());
         }
     }
 }

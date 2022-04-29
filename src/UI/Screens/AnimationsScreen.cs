@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -15,29 +14,32 @@ namespace VamTimeline
             base.Init(plugin, arg);
 
             prefabFactory.CreateHeader("Animations", 1);
+            InitClipsUI(AtomAnimationClip.SharedAnimationSegment);
 
-            InitClipsUI();
+            if (current.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            {
+                prefabFactory.CreateSpacer();
+                prefabFactory.CreateHeader($"{current.animationSegment} animations", 1);
+                InitClipsUI(current.animationSegment);
+            }
 
             prefabFactory.CreateSpacer();
-
             prefabFactory.CreateHeader("Operations", 1);
 
             CreateChangeScreenButton("<i><b>Add</b> animations/layers...</i>", AddAnimationScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
         }
 
-        private void InitClipsUI()
+        private void InitClipsUI(string segmentName)
         {
-            if (!animation.clips.Any()) return;
-
-            var layers = animation.index.segments[current.animationSegment].layers;
+            var layers = animation.index.segments[segmentName].layers;
             var hasLayers = layers.Count > 1;
 
             foreach (var layer in layers)
             {
                 if (hasLayers)
                 {
-                    prefabFactory.CreateHeader($"Layer: [{layer[0].animationLayer}]", 2);
+                    prefabFactory.CreateHeader(layer[0].animationLayer, 2);
                 }
 
                 foreach (var clip in layer)
@@ -95,6 +97,16 @@ namespace VamTimeline
                 }
 
                 yield return 0;
+            }
+        }
+
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
+        {
+            base.OnCurrentAnimationChanged(args);
+
+            if (args.before.animationSegment != args.after.animationSegment)
+            {
+                ReloadScreen();
             }
         }
     }

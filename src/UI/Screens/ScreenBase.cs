@@ -12,6 +12,7 @@ namespace VamTimeline
         protected static readonly Color NavButtonColor = new Color(0.8f, 0.7f, 0.8f);
 
         public readonly ScreenChangeRequestedEvent onScreenChangeRequested = new ScreenChangeRequestedEvent();
+        public readonly UnityEvent onScreenReloadRequested = new UnityEvent();
         public Transform popupParent;
         public abstract string screenId { get; }
 
@@ -46,6 +47,11 @@ namespace VamTimeline
             return ui;
         }
 
+        public void ReloadScreen()
+        {
+            onScreenReloadRequested.Invoke();
+        }
+
         public void ChangeScreen(string screenName, object screenArg = null)
         {
             onScreenChangeRequested.Invoke(new ScreenChangeRequestEventArgs { screenName = screenName, screenArg = screenArg });
@@ -56,6 +62,7 @@ namespace VamTimeline
             prefabFactory.ClearConfirm();
             disposing = true;
             onScreenChangeRequested.RemoveAllListeners();
+            onScreenReloadRequested.RemoveAllListeners();
             plugin.animationEditContext.onCurrentAnimationChanged.RemoveListener(OnCurrentAnimationChanged);
         }
     }

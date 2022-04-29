@@ -38,6 +38,15 @@ namespace VamTimeline
                 ChangeScreen(GetDefaultScreen(), null);
         }
 
+        public void ReloadScreen()
+        {
+            var screen = _currentScreen;
+            DestroyImmediate(_current.gameObject);
+            _current = null;
+            _currentScreen = null;
+            ChangeScreen(screen, _currentScreenArg);
+        }
+
         public void ChangeScreen(ScreenBase.ScreenChangeRequestEventArgs args)
         {
             ChangeScreen(args.screenName, args.screenArg);
@@ -195,6 +204,7 @@ namespace VamTimeline
                 _current.transform.SetParent(transform, false);
                 _current.popupParent = popupParent;
                 _current.onScreenChangeRequested.AddListener(ChangeScreen);
+                _current.onScreenReloadRequested.AddListener(ReloadScreen);
                 _current.Init(_plugin, _currentScreenArg);
                 onScreenChanged.Invoke(new ScreenChangedEventArgs { screenName = _current.screenId, screenArg = _currentScreenArg });
             }

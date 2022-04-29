@@ -40,7 +40,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
-        private string _playingAnimationSegment = AtomAnimationClip.DefaultAnimationSegment;
+        public string playingAnimationSegment = AtomAnimationClip.SharedAnimationSegment;
         public float autoStop;
         private bool _paused;
         public bool paused
@@ -175,7 +175,7 @@ namespace VamTimeline
             return clip;
         }
 
-        private AtomAnimationClip AddClipAt(AtomAnimationClip clip, int i)
+        public AtomAnimationClip AddClipAt(AtomAnimationClip clip, int i)
         {
             if (i == -1 || i > clips.Count) throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
             clips.Insert(i, clip);
@@ -296,7 +296,7 @@ namespace VamTimeline
         public void PlayClipBySet(string animationName, string animationSet, bool seq)
         {
             #warning This should actually change the animation segment, here and when doing sequencing
-            var siblings = GetMainAndBestSiblingPerLayer(_playingAnimationSegment, animationName, animationSet);
+            var siblings = GetMainAndBestSiblingPerLayer(playingAnimationSegment, animationName, animationSet);
             for (var i = 0; i < siblings.Count; i++)
             {
                 var clip = siblings[i];
@@ -1076,7 +1076,7 @@ namespace VamTimeline
             if (_globalScaledWeight <= 0) return;
             // TODO: Index keep track if there is any parenting
             // TODO: Setting to disable that behavior
-            var layers = GetMainAndBestSiblingPerLayer(_playingAnimationSegment, source.animationName, source.animationSet);
+            var layers = GetMainAndBestSiblingPerLayer(playingAnimationSegment, source.animationName, source.animationSet);
             for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
                 var clip = layers[layerIndex];

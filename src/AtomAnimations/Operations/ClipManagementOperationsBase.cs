@@ -36,11 +36,11 @@ namespace VamTimeline
             return Guid.NewGuid().ToString();
         }
 
-        protected string GetNewAnimationName()
+        public string GetNewAnimationName(string name = "Anim")
         {
-            for (var i = _animation.clips.Count + 1; i < 999; i++)
+            for (var i = 1; i < 999; i++)
             {
-                var animationName = "Anim " + i;
+                var animationName = $"{name} {i}";
                 if (_animation.clips.All(c => c.animationName != animationName)) return animationName;
             }
             return Guid.NewGuid().ToString();

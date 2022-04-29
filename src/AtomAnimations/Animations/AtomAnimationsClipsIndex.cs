@@ -69,7 +69,6 @@ namespace VamTimeline
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
             segmentNames.Clear();
-            segmentNames.Add(AtomAnimationClip.DefaultAnimationSegment);
 
             if (_clips == null || _clips.Count == 0) return;
 
@@ -83,8 +82,7 @@ namespace VamTimeline
                     {
                         sequence = new IndexedSegment();
                         segments.Add(clip.animationSegment, sequence);
-                        if (clip.animationSegment != AtomAnimationClip.DefaultAnimationSegment)
-                            segmentNames.Add(clip.animationSegment);
+                        segmentNames.Add(clip.animationSegment);
                     }
                     sequence.Add(clip);
                 }

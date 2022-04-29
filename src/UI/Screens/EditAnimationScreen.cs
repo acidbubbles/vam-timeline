@@ -120,13 +120,14 @@ namespace VamTimeline
 
         private void InitRenameSegment()
         {
-            _segmentNameJSON = new JSONStorableString("Segment name (separate tracks)", "", UpdateSegmentName);
+            _segmentNameJSON = new JSONStorableString("Segment name (empty for shared layers)", "", UpdateSegmentName);
             prefabFactory.CreateTextInput(_segmentNameJSON);
             _segmentNameJSON.valNoCallback = current.animationSegment;
         }
 
         private void UpdateSegmentName(string to)
         {
+            var from = current.animationSegment;
             to = to.Trim();
             if (to == "" || to == current.animationSegment)
             {
@@ -145,12 +146,22 @@ namespace VamTimeline
                 clip.animationSegment = to;
             }
 
+            if (animation.playingAnimationSegment == from)
+            {
+                animation.playingAnimationSegment = to;
+            }
+
+            if (from == AtomAnimationClip.SharedAnimationSegment)
+            {
+                animation.AddClipAt(new AtomAnimationClip(operations.Layers().GetNewAnimationName(), AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment), 0);
+            }
+
             animation.index.Rebuild();
         }
 
         private void InitRenameLayer()
         {
-            _layerNameJSON = new JSONStorableString("Layer name (track of targets)", "", UpdateLayerName);
+            _layerNameJSON = new JSONStorableString("Layer name (specifies targets)", "", UpdateLayerName);
             prefabFactory.CreateTextInput(_layerNameJSON);
             _layerNameJSON.valNoCallback = current.animationLayer;
         }
