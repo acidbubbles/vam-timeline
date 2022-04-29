@@ -37,7 +37,7 @@ namespace VamTimeline
             animation.master = DeserializeBool(animationJSON["Master"], false);
             animation.syncWithPeers = DeserializeBool(animationJSON["SyncWithPeers"], true);
             animation.syncSubsceneOnly = DeserializeBool(animationJSON["SyncSubsceneOnly"], false);
-            animation.timeMode = DeserializeInt(animationJSON["TimeMode"], 0);
+            animation.timeMode = DeserializeInt(animationJSON["TimeMode"], TimeModes.UnityTime);
             animation.liveParenting = DeserializeBool(animationJSON["LiveParenting"], false);
             animation.forceBlendTime = DeserializeBool(animationJSON["ForceBlendTime"], false);
             if (animationJSON.HasKey("FadeManager"))
