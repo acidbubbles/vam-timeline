@@ -29,6 +29,7 @@ namespace VamTimeline
         private bool _ensureQuaternionContinuity = true;
         private bool _skipNextAnimationSettingsModified;
         private AnimationPattern _animationPattern;
+        private AudioSourceControl _audioSourceControl;
         private AtomPose _pose;
         private bool _applyPoseOnTransition;
 
@@ -47,6 +48,18 @@ namespace VamTimeline
             {
                 _animationPattern = value;
                 onAnimationSettingsChanged.Invoke(nameof(animationPattern));
+            }
+        }
+        public AudioSourceControl audioSourceControl
+        {
+            get
+            {
+                return _audioSourceControl;
+            }
+            set
+            {
+                _audioSourceControl = value;
+                onAnimationSettingsChanged.Invoke(nameof(audioSourceControl));
             }
         }
         public readonly AtomAnimationTargetsList<TriggersTrackAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersTrackAnimationTarget> { label = "Triggers" };

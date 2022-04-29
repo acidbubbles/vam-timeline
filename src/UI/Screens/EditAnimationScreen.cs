@@ -23,6 +23,7 @@ namespace VamTimeline
         private JSONStorableBool _ensureQuaternionContinuity;
         private JSONStorableBool _loop;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
+        private JSONStorableStringChooser _linkedAudioSourceJSON;
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
         private UIDynamicToggle _loopUI;
@@ -68,6 +69,7 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Advanced", 1);
             InitWeightUI();
+            InitAudioSourceLinkUI();
             InitEnsureQuaternionContinuityUI();
             InitAnimationPatternLinkUI();
 
@@ -259,14 +261,35 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_ensureQuaternionContinuity);
         }
 
+        private void InitAudioSourceLinkUI()
+        {
+            var choicesList = GetEligibleAudioSourceAtoms();
+            _linkedAudioSourceJSON = new JSONStorableStringChooser("Audio Link", choicesList, "", "Audio Link", LinkAudioSource)
+            {
+                isStorable = false
+            };
+            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAudioSourceJSON, true, true, 240f, true);
+            linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => GetEligibleAudioSourceAtoms();
+        }
+
+        private static List<string> GetEligibleAudioSourceAtoms()
+        {
+            return new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.GetStorableByID("AudioSource") != null || a.GetStorableByID("HeadAudioSource") != null).Select(a => a.uid)).ToList();
+        }
+
         private void InitAnimationPatternLinkUI()
         {
-            _linkedAnimationPatternJSON = new JSONStorableStringChooser("Link", new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList(), "", "Link", LinkAnimationPattern)
+            _linkedAnimationPatternJSON = new JSONStorableStringChooser("AnimPat Lnk", GetEligibleAnimationPatternAtoms(), "", "AnimPat Lnk", LinkAnimationPattern)
             {
                 isStorable = false
             };
             var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true, true, 240f, true);
-            linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
+            linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = GetEligibleAnimationPatternAtoms();
+        }
+
+        private static List<string> GetEligibleAnimationPatternAtoms()
+        {
+            return new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.type == "AnimationPattern").Select(a => a.uid)).ToList();
         }
 
         private void InitLoopUI()
@@ -327,6 +350,24 @@ namespace VamTimeline
         private void SetEnsureQuaternionContinuity(bool val)
         {
             current.ensureQuaternionContinuity = val;
+        }
+
+        private void LinkAudioSource(string uid)
+        {
+            if (string.IsNullOrEmpty(uid))
+            {
+                current.audioSourceControl = null;
+                return;
+            }
+
+            var atom = SuperController.singleton.GetAtomByUid(uid);
+            if (atom == null)
+            {
+                SuperController.LogError($"Timeline: Could not find Atom '{uid}'");
+                return;
+            }
+
+            current.audioSourceControl = (AudioSourceControl)(atom.GetStorableByID("AudioSource") ?? atom.GetStorableByID("HeadAudioSource"));
         }
 
         private void LinkAnimationPattern(string uid)
@@ -398,8 +439,8 @@ namespace VamTimeline
             _loop.valNoCallback = current.loop;
             _loopUI.toggle.interactable = !current.autoTransitionNext;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
-            // ReSharper disable once Unity.NoNullPropagation
-            _linkedAnimationPatternJSON.valNoCallback = current.animationPattern?.containingAtom.uid ?? "";
+            _linkedAudioSourceJSON.valNoCallback = current.audioSourceControl != null ? current.audioSourceControl.containingAtom.uid : "";
+            _linkedAnimationPatternJSON.valNoCallback = current.animationPattern != null ? current.animationPattern.containingAtom.uid : "";
             if (_applyPoseOnTransition != null)
             {
                 _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;

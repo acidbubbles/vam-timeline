@@ -115,14 +115,25 @@ namespace VamTimeline
 
         private void DeserializeClip(AtomAnimationClip clip, JSONClass clipJSON, AnimatablesRegistry targetsRegistry)
         {
-            var animationPatternUID = clipJSON["AnimationPattern"]?.Value;
-            if (!string.IsNullOrEmpty(animationPatternUID))
+            var animationPatternUid = clipJSON["AnimationPattern"]?.Value;
+            if (!string.IsNullOrEmpty(animationPatternUid))
             {
-                var animationPattern = SuperController.singleton.GetAtomByUid(animationPatternUID)?.GetComponentInChildren<AnimationPattern>();
+                var animationPattern = SuperController.singleton.GetAtomByUid(animationPatternUid)?.GetComponentInChildren<AnimationPattern>();
                 if (animationPattern == null)
-                    SuperController.LogError($"Animation Pattern '{animationPatternUID}' linked to animation '{clip.animationName}' of atom '{_atom.uid}' was not found in scene");
+                    SuperController.LogError($"Animation Pattern '{animationPatternUid}' linked to animation '{clip.animationName}' of atom '{_atom.uid}' was not found in scene");
                 else
                     clip.animationPattern = animationPattern;
+            }
+
+            var audioSourceControlUid = clipJSON["AudioSourceControl"]?.Value;
+            if (!string.IsNullOrEmpty(audioSourceControlUid))
+            {
+                var audioSourceControlAtom = SuperController.singleton.GetAtomByUid(audioSourceControlUid);
+                var audioSourceControl = (audioSourceControlAtom.GetStorableByID("AudioSource") ?? audioSourceControlAtom.GetStorableByID("HeadAudioSource")) as AudioSourceControl;
+                if (audioSourceControl == null)
+                    SuperController.LogError($"AudioSource '{audioSourceControlUid}' linked to animation '{clip.animationName}' of atom '{_atom.uid}' was not found in scene");
+                else
+                    clip.audioSourceControl = audioSourceControl;
             }
 
             var controllersJSON = clipJSON["Controllers"].AsArray;
@@ -433,6 +444,9 @@ namespace VamTimeline
         {
             if (clip.animationPattern != null)
                 clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
+
+            if (clip.audioSourceControl != null)
+                clipJSON.Add("AudioSourceControl", clip.audioSourceControl.containingAtom.uid);
 
             var controllersJSON = new JSONArray();
             foreach (var controller in clip.targetControllers)

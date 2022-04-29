@@ -679,7 +679,24 @@ namespace VamTimeline
                     if (!clip.playbackEnabled) continue;
 
                     var clipDelta = delta * clipSpeed;
-                    clip.clipTime += clipDelta;
+                    if (!ReferenceEquals(clip.audioSourceControl, null))
+                    {
+                        var audioTime = clip.audioSourceControl.audioSource.time;
+                        // ReSharper disable once CompareOfFloatsByEqualityOperator
+                        if (audioTime == clip.clipTime)
+                        {
+                            clip.clipTime += clipDelta * clip.audioSourceControl.audioSource.pitch;
+                        }
+                        else
+                        {
+                            clip.clipTime = audioTime;
+                        }
+                    }
+                    else
+                    {
+                        clip.clipTime += clipDelta;
+                    }
+
                     if (clip.playbackBlendRate != 0)
                     {
                         clip.playbackBlendWeight += clip.playbackBlendRate * Mathf.Abs(clipDelta);
