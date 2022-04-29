@@ -466,6 +466,7 @@ namespace VamTimeline
         {
             _animationNameJSON.valNoCallback = current.animationName;
             _layerNameJSON.valNoCallback = current.animationLayer;
+            _segmentNameJSON.valNoCallback = current.animationSegment;
             _lengthJSON.valNoCallback = current.animationLength;
             _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
             _loop.valNoCallback = current.loop;

@@ -9,7 +9,7 @@ namespace VamTimeline
 {
     public class AnimationControlPanel : MonoBehaviour
     {
-        private const string _noSequenceLabel = "[Global Layers]";
+        private const string _noSequenceLabel = "[Shared Layers]";
 
         public static AnimationControlPanel Configure(GameObject go)
         {
@@ -33,7 +33,6 @@ namespace VamTimeline
         private UIDynamicButton _playClip;
         private UIDynamicPopup _segmentsUI;
         private UIDynamicPopup _layersUI;
-        private UIDynamicPopup _animationsUI;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -63,7 +62,6 @@ namespace VamTimeline
             _segmentsJSON = new JSONStorableStringChooser("Segment", new List<string>(), "", "Segment", val =>
             {
                 if (_ignoreAnimationChange) return;
-                SuperController.LogMessage("Value: '" + val + "'");
                 var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == val).ToList();
                 var clip = clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val && c.animationName == _animationsJSON.val)
                     ?? clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val || c.animationName == _animationsJSON.val)
@@ -74,9 +72,8 @@ namespace VamTimeline
             _layersJSON = new JSONStorableStringChooser("Layer", new List<string>(), "", "Layer", (string val) =>
             {
                 if (_ignoreAnimationChange) return;
-                var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == _segmentsJSON.val).ToList();
-                var clip = clips.FirstOrDefault(c => c.animationLayer == val && c.animationName == _animationsJSON.val)
-                    ?? clips.FirstOrDefault();
+                var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == _segmentsJSON.val && c.animationLayer == val).ToList();
+                var clip = clips.FirstOrDefault(c => c.animationName == _animationsJSON.val) ?? clips.FirstOrDefault();
                 _animationEditContext.SelectAnimation(clip);
                 SyncAnimationsListNow();
             });
@@ -88,7 +85,7 @@ namespace VamTimeline
 
             _segmentsUI = _prefabFactory.CreateMicroPopup(_segmentsJSON, 700f);
             _layersUI = _prefabFactory.CreateMicroPopup(_layersJSON, 650f);
-            _animationsUI = _prefabFactory.CreateMicroPopup(_animationsJSON, 600f);
+            _prefabFactory.CreateMicroPopup(_animationsJSON, 600f);
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab)
@@ -238,7 +235,6 @@ namespace VamTimeline
 
                 _segmentsUI.gameObject.SetActive(_animationEditContext.animation.index.segments.Count > 1);
                 _layersUI.gameObject.SetActive(_animationEditContext.animation.index.clipsGroupedByLayer.Count > 1);
-                // _animationsUI.gameObject.SetActive(_animationEditContext.animation.clips.Count > 1);
             }
             finally
             {
