@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -14,6 +13,7 @@ namespace VamTimeline
         private JSONStorableString _animationsListJSON;
         private UIDynamicButton _deleteAnimationUI;
         private UIDynamicButton _deleteLayerUI;
+        private UIDynamicButton _deleteSegmentUI;
 
         #region Init
 
@@ -28,11 +28,17 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitReorderAnimationsUI();
+            InitDeleteAnimationsUI();
 
             prefabFactory.CreateSpacer();
 
-            InitDeleteAnimationsUI();
+            InitReorderLayersUI();
             InitDeleteLayerUI();
+
+            prefabFactory.CreateSpacer();
+
+            InitReorderSegmentsUI();
+            InitDeleteSegmentUI();
 
             prefabFactory.CreateSpacer();
 
@@ -70,12 +76,38 @@ namespace VamTimeline
             _deleteAnimationUI.textColor = Color.white;
         }
 
+        private void InitReorderLayersUI()
+        {
+            var moveAnimUpUI = prefabFactory.CreateButton("Reorder layer (move up)");
+            moveAnimUpUI.button.onClick.AddListener(ReorderLayerMoveUp);
+
+            var moveAnimDownUI = prefabFactory.CreateButton("Reorder layer (move down)");
+            moveAnimDownUI.button.onClick.AddListener(ReorderLayerMoveDown);
+        }
+
         private void InitDeleteLayerUI()
         {
             _deleteLayerUI = prefabFactory.CreateButton("Delete layer");
             _deleteLayerUI.button.onClick.AddListener(DeleteLayer);
             _deleteLayerUI.buttonColor = Color.red;
             _deleteLayerUI.textColor = Color.white;
+        }
+
+        private void InitReorderSegmentsUI()
+        {
+            var moveAnimUpUI = prefabFactory.CreateButton("Reorder segment (move up)");
+            moveAnimUpUI.button.onClick.AddListener(ReorderSegmentMoveUp);
+
+            var moveAnimDownUI = prefabFactory.CreateButton("Reorder segment (move down)");
+            moveAnimDownUI.button.onClick.AddListener(ReorderSegmentMoveDown);
+        }
+
+        private void InitDeleteSegmentUI()
+        {
+            _deleteSegmentUI = prefabFactory.CreateButton("Delete segment");
+            _deleteSegmentUI.button.onClick.AddListener(DeleteSegment);
+            _deleteSegmentUI.buttonColor = Color.red;
+            _deleteSegmentUI.textColor = Color.white;
         }
 
         private void InitSyncInAllAtomsUI()
@@ -90,40 +122,24 @@ namespace VamTimeline
 
         private void ReorderAnimationMoveUp()
         {
-            try
-            {
-                var anim = current;
-                if (anim == null) return;
-                var idx = animation.clips.IndexOf(anim);
-                if (idx <= 0 || animation.clips[idx - 1].animationLayerQualified != current.animationLayerQualified) return;
-                animation.clips.RemoveAt(idx);
-                animation.clips.Insert(idx - 1, anim);
-                animation.index.Rebuild();
-                animation.onClipsListChanged.Invoke();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(ManageAnimationsScreen)}.{nameof(ReorderAnimationMoveUp)}: {exc}");
-            }
+            var index = animation.clips.IndexOf(current);
+            ReorderMove(
+                index,
+                index,
+                index - 1,
+                min: animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified)
+            );
         }
 
         private void ReorderAnimationMoveDown()
         {
-            try
-            {
-                var anim = current;
-                if (anim == null) return;
-                var idx = animation.clips.IndexOf(anim);
-                if (idx >= animation.clips.Count - 1 || animation.clips[idx + 1].animationLayerQualified != current.animationLayerQualified) return;
-                animation.clips.RemoveAt(idx);
-                animation.clips.Insert(idx + 1, anim);
-                animation.index.Rebuild();
-                animation.onClipsListChanged.Invoke();
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(ManageAnimationsScreen)}.{nameof(ReorderAnimationMoveDown)}: {exc}");
-            }
+            var index = animation.clips.IndexOf(current);
+            ReorderMove(
+                index,
+                index,
+                index + 2,
+                max: animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified) + 1
+            );
         }
 
         private void DeleteAnimation()
@@ -137,6 +153,32 @@ namespace VamTimeline
             animationEditContext.SelectAnimation(currentLayer.FirstOrDefault());
         }
 
+        private void ReorderLayerMoveUp()
+        {
+            if (currentSegment.layerNames[0] == current.animationLayer) return;
+
+            var previousLayer = currentSegment.layerNames[currentSegment.layerNames.IndexOf(current.animationLayer) - 1];
+
+            ReorderMove(
+                animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified),
+                animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified),
+                animation.clips.FindIndex(c1 => c1.animationLayer == previousLayer)
+            );
+        }
+
+        private void ReorderLayerMoveDown()
+        {
+            if (currentSegment.layerNames[currentSegment.layerNames.Count - 1] == current.animationLayer) return;
+
+            var nextLayer = currentSegment.layerNames[currentSegment.layerNames.IndexOf(current.animationLayer) + 1];
+
+            ReorderMove(
+                animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified),
+                animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified),
+                animation.clips.FindLastIndex(c1 => c1.animationLayer == nextLayer) + 1
+            );
+        }
+
         private void DeleteLayer()
         {
             prefabFactory.CreateConfirm("Delete current layer", DeleteLayerConfirm);
@@ -144,30 +186,95 @@ namespace VamTimeline
 
         private void DeleteLayerConfirm()
         {
+            if (!animation.EnumerateLayers(current.animationLayerQualified).Skip(1).Any())
+            {
+                SuperController.LogError("Timeline: Cannot delete the only layer.");
+                return;
+            }
+            var clips = currentLayer;
+            animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayerQualified != current.animationLayerQualified));
+            animation.index.StartBulkUpdates();
             try
             {
-                if (!animation.EnumerateLayers(current.animationLayerQualified).Skip(1).Any())
-                {
-                    SuperController.LogError("Timeline: Cannot delete the only layer.");
-                    return;
-                }
-                var clips = currentLayer;
-                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayerQualified != current.animationLayerQualified));
-                animation.index.StartBulkUpdates();
-                try
-                {
-                    foreach (var clip in clips)
-                        animation.RemoveClip(clip);
-                }
-                finally
-                {
-                    animation.index.EndBulkUpdates();
-                }
+                foreach (var clip in clips)
+                    animation.RemoveClip(clip);
             }
-            catch (Exception exc)
+            finally
             {
-                SuperController.LogError($"Timeline.{nameof(ManageAnimationsScreen)}.{nameof(DeleteLayer)}: {exc}");
+                animation.index.EndBulkUpdates();
             }
+        }
+
+        private void ReorderSegmentMoveUp()
+        {
+            if (current.animationSegment == AtomAnimationClip.SharedAnimationSegment) return;
+            if (animation.index.segmentNames[1] == current.animationSegment) return;
+
+            var previousSegment = animation.index.segmentNames[animation.index.segmentNames.IndexOf(current.animationSegment) - 1];
+
+            ReorderMove(
+                animation.clips.FindIndex(c => c.animationSegment == current.animationSegment),
+                animation.clips.FindLastIndex(c => c.animationSegment == current.animationSegment),
+                animation.clips.FindIndex(c1 => c1.animationSegment == previousSegment)
+            );
+        }
+
+        private void ReorderSegmentMoveDown()
+        {
+            if (current.animationSegment == AtomAnimationClip.SharedAnimationSegment) return;
+            if (animation.index.segmentNames[animation.index.segmentNames.Count - 1] == current.animationSegment) return;
+
+            var nextSegment = animation.index.segmentNames[animation.index.segmentNames.IndexOf(current.animationSegment) + 1];
+
+            ReorderMove(
+                animation.clips.FindIndex(c => c.animationSegment == current.animationSegment),
+                animation.clips.FindLastIndex(c => c.animationSegment == current.animationSegment),
+                animation.clips.FindLastIndex(c1 => c1.animationSegment == nextSegment) + 1
+            );
+        }
+
+        private void DeleteSegment()
+        {
+            prefabFactory.CreateConfirm("Delete current segment", DeleteSegmentConfirm);
+        }
+
+        private void DeleteSegmentConfirm()
+        {
+            if (current.animationSegment == AtomAnimationClip.SharedAnimationSegment)
+            {
+                SuperController.LogError("Timeline: Cannot delete the shared segment.");
+                return;
+            }
+            var clips = currentSegment.layers.SelectMany(c => c).ToList();
+            animationEditContext.SelectAnimation(animation.clips.First());
+            animation.index.StartBulkUpdates();
+            try
+            {
+                foreach (var clip in clips)
+                    animation.RemoveClip(clip);
+            }
+            finally
+            {
+                animation.index.EndBulkUpdates();
+            }
+        }
+
+        private void ReorderMove(int start, int end, int to, int min = 0, int max = int.MaxValue)
+        {
+            if (to < min || to > max)
+            {
+                SuperController.LogMessage($"Move range({start}:{end}) to {to} not in range({min}:{max})");
+                return;
+            }
+            var count = end - start + 1;
+            var clips = animation.clips.GetRange(start, count);
+            animation.clips.RemoveRange(start, count);
+            SuperController.LogMessage($"Move range({start}:{end}, count = {count}) to {to}");
+            if (to > start) to -= count;
+            SuperController.LogMessage($"  - to: {to}");
+            animation.clips.InsertRange(to, clips);
+            animation.index.Rebuild();
+            animation.onClipsListChanged.Invoke();
         }
 
         private void SyncInAllAtoms()
@@ -191,25 +298,46 @@ namespace VamTimeline
             var sb = new StringBuilder();
 
             var animationsInLayer = 0;
-            foreach (var layer in currentSegment.layers)
+            foreach (var segment in animation.index.segments)
             {
-                sb.AppendLine($"=== {layer[0].animationLayer} ===");
-                foreach (var clip in layer)
+                if (segment.Key != current.animationSegment)
                 {
-                    if (clip.animationLayer == current.animationLayer)
-                        animationsInLayer++;
+                    sb.Append("<color=grey>");
+                }
 
-                    if (clip == current)
-                        sb.Append("> ");
-                    else
-                        sb.Append("   ");
-                    sb.AppendLine(clip.animationName);
+                if (segment.Key == current.animationSegment) sb.Append("<b>");
+                sb.AppendLine($"{(segment.Key == AtomAnimationClip.SharedAnimationSegment ? "[Shared]" : segment.Key)}");
+                if (segment.Key == current.animationSegment) sb.Append("</b>");
+
+                foreach (var layer in segment.Value.layers)
+                {
+                    if (layer[0].animationLayerQualified == current.animationLayerQualified) sb.Append("<b>");
+                    sb.AppendLine($"- {layer[0].animationLayer}");
+                    if (layer[0].animationLayerQualified == current.animationLayerQualified) sb.Append("</b>");
+
+                    foreach (var clip in layer)
+                    {
+                        if (clip.animationLayerQualified == current.animationLayerQualified)
+                            animationsInLayer++;
+
+                        sb.Append("  - ");
+                        if (clip == current) sb.Append("<b>");
+                        sb.Append(clip.animationName);
+                        if (clip == current) sb.Append("</b>");
+                        sb.AppendLine();
+                    }
+                }
+
+                if (segment.Key != current.animationSegment)
+                {
+                    sb.Append("</color>");
                 }
             }
 
             _animationsListJSON.val = sb.ToString();
             _deleteAnimationUI.button.interactable = animationsInLayer > 1;
             _deleteLayerUI.button.interactable = currentSegment.layers.Count > 1;
+            _deleteSegmentUI.button.interactable = currentSegment.layers.Count > 1;
         }
 
         public override void OnDestroy()

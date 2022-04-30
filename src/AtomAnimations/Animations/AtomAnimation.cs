@@ -655,14 +655,12 @@ namespace VamTimeline
             for (var i = 0; i < sharedLayers.Count; i++)
             {
                 list[i] = GetDefaultClipInLayer(sharedLayers[i], source);
-                SuperController.LogMessage($"{i}: {list[i].animationNameQualified}");
             }
             if (segmentLayers != null)
             {
                 for (var i = 0; i < segmentLayers.Count; i++)
                 {
                     list[sharedLayers.Count + i] = GetDefaultClipInLayer(segmentLayers[i], source);
-                    SuperController.LogMessage($"{sharedLayers.Count + i}: {list[sharedLayers.Count + i].animationNameQualified}");
                 }
             }
 

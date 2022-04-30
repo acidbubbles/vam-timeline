@@ -311,7 +311,7 @@ namespace VamTimeline
             if (idx > 0)
             {
                 var previousClip = animation.clips[idx - 1];
-                if (previousClip.animationLayer == clip.animationLayer)
+                if (previousClip.animationLayerQualified == clip.animationLayerQualified)
                     previousAnimationName = previousClip.animationName;
             }
             else
@@ -355,7 +355,7 @@ namespace VamTimeline
                     var previousAnimationName = e.Length >= 16 ? (string)e[15] : null;
                     if (animation.clips.Any(c => c.animationLayer == animationLayer))
                     {
-                        new AddAnimationOperations(animation, animation.clips.First(c => c.animationLayer == animationLayer))
+                        new AddAnimationOperations(animation, animation.clips.First(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer))
                             .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationSegment, animationLayer, animationName, previousAnimationName));
                     }
                     else
