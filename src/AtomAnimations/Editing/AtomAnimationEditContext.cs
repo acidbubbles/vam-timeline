@@ -299,12 +299,7 @@ namespace VamTimeline
             logger.Begin();
             if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
-            #warning Deal with the "no sequence" sequence (let's call it global)
-            foreach (var clip in GetMainClipPerLayer())
-            {
-                if (clip == null) continue;
-                animation.PlayClip(clip, true);
-            }
+            animation.PlaySegment(current);
         }
 
         public void PreviousFrame()
@@ -546,7 +541,7 @@ namespace VamTimeline
         {
             SampleNow();
             if (_animation.liveParenting) return;
-            var hasParenting = GetMainClipPerLayer()
+            var hasParenting = animation.GetDefaultClipsPerLayer(current)
                 .Where(c => c != null)
                 .SelectMany(c => c.targetControllers)
                 .Any(t => t.parentRigidbodyId != null);
@@ -557,7 +552,7 @@ namespace VamTimeline
 
         private void SampleTriggers()
         {
-            var clips = GetMainClipPerLayer();
+            var clips = animation.GetDefaultClipsPerLayer(current);
             foreach (var clip in clips)
             {
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
@@ -575,7 +570,7 @@ namespace VamTimeline
         private void LeaveSampledTriggers()
         {
             if (_animation.isPlaying) return;
-            var clips = GetMainClipPerLayer();
+            var clips = animation.GetDefaultClipsPerLayer(current);
             foreach (var clip in clips)
             {
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
@@ -607,7 +602,10 @@ namespace VamTimeline
                 return;
             }
 
-            var clips = GetMainClipPerLayer();
+            #warning Validate, is this the right place? Should this instead be in AtomAnimation.Sample? Other calls?
+            animation.playingAnimationSegment = current.animationSegment;
+
+            var clips = animation.GetDefaultClipsPerLayer(current);
             foreach (var clip in clips)
                 if (clip != null)
                     clip.temporarilyEnabled = true;
@@ -621,56 +619,6 @@ namespace VamTimeline
                     if (clip != null)
                         clip.temporarilyEnabled = false;
             }
-        }
-
-        private AtomAnimationClip[] GetMainClipPerLayer()
-        {
-            #warning Global segment! (This means we want both the current segment AND the layers not in a segment)
-            var sharedLayers = sharedSegment.layers;
-            var segmentLayers = current.animationSegment != AtomAnimationClip.SharedAnimationSegment ? currentSegment.layers : null;
-            var list = new AtomAnimationClip[sharedLayers.Count + (segmentLayers?.Count ?? 0)];
-            for (var i = 0; i < sharedLayers.Count; i++)
-            {
-                list[i] = GetPrincipalClipInLayer(sharedLayers[i]);
-            }
-            if (segmentLayers != null)
-            {
-                for (var i = 0; i < segmentLayers.Count; i++)
-                {
-                    list[sharedLayers.Count + i] = GetPrincipalClipInLayer(segmentLayers[i]);
-                }
-            }
-
-            // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer
-            var currentIdx = Array.IndexOf(list, current);
-            if (currentIdx > -1)
-            {
-                list[currentIdx] = list[0];
-                list[0] = current;
-            }
-
-            return list;
-        }
-
-        private AtomAnimationClip GetPrincipalClipInLayer(IList<AtomAnimationClip> layer)
-        {
-            if (layer[0].animationLayerQualified == current.animationLayerQualified)
-                return current;
-
-            if (current.animationSet != null)
-            {
-                var clip = layer.FirstOrDefault(c => c.animationSet == current.animationSet);
-                // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
-                if (clip?.animationSet != null && clip.animationSet != current.animationSet)
-                    clip = null;
-                if (clip != null)
-                    return clip;
-            }
-
-            return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
-                   layer.FirstOrDefault(c => c.animationName == current.animationName) ??
-                   layer.FirstOrDefault(c => c.autoPlay) ??
-                   layer[0];
         }
 
         #endregion

@@ -328,12 +328,27 @@ namespace VamTimeline
 
             PlayClipCore(
                 isPlaying
-                    ? GetMainClipPerLayer(index.ByLayer(clip.animationLayerQualified))
+                    ? GetMainClipInLayer(index.ByLayer(clip.animationLayerQualified))
                     : null,
                 clip,
                 seq,
                 allowPreserveLoops
             );
+        }
+
+        public void PlaySegment(AtomAnimationClip source)
+        {
+            if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            {
+                #warning Blend out previous segment IF the new segment does not have a pose
+                playingAnimationSegment = source.animationSegment;
+            }
+
+            foreach (var clip in GetDefaultClipsPerLayer(source))
+            {
+                if (clip == null) continue;
+                PlayClip(clip, true);
+            }
         }
 
         #endregion
@@ -358,10 +373,27 @@ namespace VamTimeline
                 isPlaying = true;
                 sequencing = sequencing || seq;
                 fadeManager?.SyncFadeTime();
+                playingAnimationSegment = next.animationSegment;
             }
 
             if (sequencing && !next.playbackEnabled)
                 next.clipTime = 0;
+
+            if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != next.animationSegment)
+            {
+                playingAnimationSegment = next.animationSegment;
+                var nextHasPose = GetDefaultClipsPerLayer(next).Any(c => c.applyPoseOnTransition);
+                var clipsToStop = clips.Where(c => c.playbackMainInLayer && c.animationSegment != AtomAnimationClip.SharedAnimationSegment && c.animationSegment != next.animationSegment);
+                foreach (var clip in clipsToStop)
+                {
+                    if(nextHasPose)
+                        StopClip(clip);
+                    else
+                        SoftStopClip(clip);
+                }
+                PlaySegment(next);
+                return;
+            }
 
             if (previous != null)
             {
@@ -614,36 +646,57 @@ namespace VamTimeline
             return sibling;
         }
 
-        public void PlayOneAndOtherMainsInLayers(AtomAnimationClip selected, bool sequencing = true)
+        public IList<AtomAnimationClip> GetDefaultClipsPerLayer(AtomAnimationClip source)
         {
-            foreach (var clip in GetMainClipPerLayer(selected.animationSegment))
-            {
-                PlayClip(
-                    clip.animationLayerQualified == selected.animationLayerQualified ? selected : clip,
-                    sequencing);
-            }
-        }
+            var sharedLayers = index.segments[AtomAnimationClip.SharedAnimationSegment].layers;
+            var segmentLayers = source.animationSegment != AtomAnimationClip.SharedAnimationSegment ? index.segments[source.animationSegment].layers : null;
+            var list = new AtomAnimationClip[sharedLayers.Count + (segmentLayers?.Count ?? 0)];
 
-        private IEnumerable<AtomAnimationClip> GetMainClipPerLayer(string animationSegment)
-        {
-            return clips
-                // TODO: Use an index?
-                .Where(c => c.animationSegment == animationSegment)
-                .GroupBy(c => c.animationLayerQualified)
-                .Select(g =>
+            for (var i = 0; i < sharedLayers.Count; i++)
+            {
+                list[i] = GetDefaultClipInLayer(sharedLayers[i], source);
+                SuperController.LogMessage($"{i}: {list[i].animationNameQualified}");
+            }
+            if (segmentLayers != null)
+            {
+                for (var i = 0; i < segmentLayers.Count; i++)
                 {
-                    return g.FirstOrDefault(c => c.playbackMainInLayer) ?? g.FirstOrDefault(c => c.autoPlay) ?? g.First();
-                });
+                    list[sharedLayers.Count + i] = GetDefaultClipInLayer(segmentLayers[i], source);
+                    SuperController.LogMessage($"{sharedLayers.Count + i}: {list[sharedLayers.Count + i].animationNameQualified}");
+                }
+            }
+
+            // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer
+            var currentIdx = Array.IndexOf(list, source);
+            if (currentIdx > -1)
+            {
+                list[currentIdx] = list[0];
+                list[0] = source;
+            }
+
+            return list;
         }
 
-        private AtomAnimationClip GetMainClipPerLayer(IList<AtomAnimationClip> layer)
+        private static AtomAnimationClip GetDefaultClipInLayer(IList<AtomAnimationClip> layer, AtomAnimationClip source)
         {
-            for (var i = 0; i < layer.Count; i++)
+            if (layer[0].animationLayerQualified == source.animationLayerQualified)
+                return source;
+
+            #warning Remove LINQ, and add indices
+            if (source.animationSet != null)
             {
-                var clip = layer[i];
-                if (clip.playbackMainInLayer) return clip;
+                var clip = layer.FirstOrDefault(c => c.animationSet == source.animationSet);
+                // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
+                if (clip?.animationSet != null && clip.animationSet != source.animationSet)
+                    clip = null;
+                if (clip != null)
+                    return clip;
             }
-            return null;
+
+            return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
+                   layer.FirstOrDefault(c => c.animationName == source.animationName) ??
+                   layer.FirstOrDefault(c => c.autoPlay) ??
+                   layer[0];
         }
 
         private static AtomAnimationClip SelectRandomClip(IList<AtomAnimationClip> candidates)

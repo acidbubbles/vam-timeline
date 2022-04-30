@@ -438,7 +438,7 @@ namespace VamTimeline
                 }
             }
 
-            animation.PlayOneAndOtherMainsInLayers(selected);
+            animation.PlaySegment(selected);
         }
 
         private IEnumerator DeferredInit()
