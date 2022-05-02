@@ -652,6 +652,7 @@ namespace VamTimeline
             }
             else
             {
+                animation.playingAnimationSegment = clip.animationSegment;
                 previous.clipTime = 0f;
                 SampleOrPose();
             }

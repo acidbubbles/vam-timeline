@@ -208,7 +208,7 @@ namespace VamTimeline
         private void ReorderSegmentMoveUp()
         {
             if (current.animationSegment == AtomAnimationClip.SharedAnimationSegment) return;
-            if (animation.index.segmentNames[1] == current.animationSegment) return;
+            if (animation.index.segmentNames[0] == current.animationSegment) return;
 
             var previousSegment = animation.index.segmentNames[animation.index.segmentNames.IndexOf(current.animationSegment) - 1];
 
@@ -246,7 +246,9 @@ namespace VamTimeline
                 return;
             }
             var clips = currentSegment.layers.SelectMany(c => c).ToList();
-            animationEditContext.SelectAnimation(animation.clips.First(c => c.animationSegment != current.animationSegment));
+            var fallbackClip = animation.clips.First(c => c.animationSegment != current.animationSegment);
+            animationEditContext.SelectAnimation(fallbackClip);
+            if (animation.isPlaying) animation.playingAnimationSegment = fallbackClip.animationSegment;
             animation.index.StartBulkUpdates();
             try
             {
@@ -337,7 +339,7 @@ namespace VamTimeline
             _animationsListJSON.val = sb.ToString();
             _deleteAnimationUI.button.interactable = animationsInLayer > 1;
             _deleteLayerUI.button.interactable = currentSegment.layers.Count > 1;
-            _deleteSegmentUI.button.interactable = currentSegment.layers.Count > 1;
+            _deleteSegmentUI.button.interactable = animation.index.segmentNames.Count > 1;
         }
 
         public override void OnDestroy()
