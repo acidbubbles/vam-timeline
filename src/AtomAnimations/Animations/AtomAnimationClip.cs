@@ -11,8 +11,7 @@ namespace VamTimeline
         public class AnimationSettingModifiedEvent : UnityEvent<string> { }
 
         public const float DefaultAnimationLength = 2f;
-        #warning Increase that to e.g. 1.5s
-        public const float DefaultBlendDuration = 0.75f;
+        public const float DefaultBlendDuration = 1.0f;
         public const string SharedAnimationSegment = "";
         public const string DefaultAnimationSegment = SharedAnimationSegment;
         public const string DefaultAnimationLayer = "Main";
