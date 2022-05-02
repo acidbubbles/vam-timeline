@@ -82,7 +82,7 @@ namespace VamTimeline
 
                 if (clip.playbackMainInLayer && clip.playbackBlendRate == 0)
                 {
-                    if (clip.playbackScheduledNextAnimationName != null)
+                    if (clip.playbackScheduledNextAnimation != null)
                         btn.label = $" \u25B6 [{clip.clipTime:00.00} seq>{clip.playbackScheduledNextTimeLeft:0.00}s] {clip.animationName}";
                     else
                         btn.label = $" \u25A0  [{clip.clipTime:00.00}] {clip.animationName}";

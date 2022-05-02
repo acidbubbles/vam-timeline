@@ -21,6 +21,7 @@ namespace VamTimeline
         public const string RandomizeAnimationName = "(Randomize)";
         public const string SlaveAnimationName = "(Slave)";
         public const string RandomizeGroupSuffix = "/*";
+        public const string NextAnimationSegmentPrefix = "Segment: ";
 
         public readonly UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public readonly UnityEvent onSpeedChanged = new UnityEvent();
@@ -449,7 +450,7 @@ namespace VamTimeline
                 }
 
                 previous.playbackMainInLayer = false;
-                previous.playbackScheduledNextAnimationName = null;
+                previous.playbackScheduledNextAnimation = null;
                 previous.playbackScheduledNextTimeLeft = float.NaN;
 
                 // Blend immediately, but unlike TransitionClips, recording will ignore blending
@@ -524,7 +525,7 @@ namespace VamTimeline
         public void SoftStopClip(AtomAnimationClip clip, float blendOutDuration)
         {
             clip.playbackMainInLayer = false;
-            clip.playbackScheduledNextAnimationName = null;
+            clip.playbackScheduledNextAnimation = null;
             clip.playbackScheduledNextTimeLeft = float.NaN;
             BlendOut(clip, blendOutDuration);
         }
@@ -613,8 +614,12 @@ namespace VamTimeline
 
         private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
         {
-            var layers = index.segments[animationSegment].layers;
-            // TODO: Could be reused?
+            AtomAnimationsClipsIndex.IndexedSegment segment;
+            if (!index.segments.TryGetValue(animationSegment, out segment))
+            {
+                throw new Exception($"Timeline: Could not find segment '{animationSegment}'");
+            }
+            var layers = segment.layers;
             var result = new TransitionTarget[layers.Count];
             for (var i = 0; i < layers.Count; i++)
             {
@@ -913,7 +918,7 @@ namespace VamTimeline
                 return;
             }
 
-            from.playbackScheduledNextAnimationName = null;
+            from.playbackScheduledNextAnimation = null;
             from.playbackScheduledNextTimeLeft = float.NaN;
             from.playbackScheduledFadeOutAtRemaining = float.NaN;
 
@@ -968,7 +973,21 @@ namespace VamTimeline
             AtomAnimationClip next;
 
             string group;
-            if (source.nextAnimationName == RandomizeAnimationName)
+            if (source.nextAnimationName.StartsWith(NextAnimationSegmentPrefix))
+            {
+                var segmentName = source.nextAnimationName.Substring(NextAnimationSegmentPrefix.Length);
+                AtomAnimationsClipsIndex.IndexedSegment segment;
+                if (index.segments.TryGetValue(segmentName, out segment))
+                {
+                    next = segment.layers[0][0];
+                }
+                else
+                {
+                    next = null;
+                    SuperController.LogError($"Timeline: Animation '{source.animationNameQualified}' could not transition to segment '{segmentName}' because it did not exist");
+                }
+            }
+            else if (source.nextAnimationName == RandomizeAnimationName)
             {
                 var candidates = index
                     .ByLayer(source.animationLayerQualified)
@@ -1053,7 +1072,7 @@ namespace VamTimeline
 
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, float nextTime)
         {
-            source.playbackScheduledNextAnimationName = next.animationName;
+            source.playbackScheduledNextAnimation = next;
             source.playbackScheduledNextTimeLeft = nextTime;
             source.playbackScheduledFadeOutAtRemaining = float.NaN;
 
@@ -1510,7 +1529,7 @@ namespace VamTimeline
                 if (clip.playbackEnabled)
                     clipsPlaying++;
 
-                if (clip.playbackScheduledNextAnimationName != null)
+                if (clip.playbackScheduledNextAnimation != null)
                     clipsQueued++;
 
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && float.IsNaN(clip.playbackScheduledNextTimeLeft) && !clip.infinite)
@@ -1522,7 +1541,7 @@ namespace VamTimeline
                     continue;
                 }
 
-                if (!clip.playbackMainInLayer || clip.playbackScheduledNextAnimationName == null)
+                if (!clip.playbackMainInLayer || clip.playbackScheduledNextAnimation == null)
                     continue;
 
                 var adjustedDeltaTime = deltaTime * clip.speed;
@@ -1539,15 +1558,9 @@ namespace VamTimeline
                 if (clip.playbackScheduledNextTimeLeft > 0)
                     continue;
 
-                var nextAnimationName = clip.playbackScheduledNextAnimationName;
-                clip.playbackScheduledNextAnimationName = null;
+                var nextClip = clip.playbackScheduledNextAnimation;
+                clip.playbackScheduledNextAnimation = null;
                 clip.playbackScheduledNextTimeLeft = float.NaN;
-                var nextClip = index.ByLayer(clip.animationLayerQualified).FirstOrDefault(c => c.animationName == nextAnimationName);
-                if (nextClip == null)
-                {
-                    SuperController.LogError($"Timeline: Cannot sequence from animation '{clip.animationName}' to '{nextAnimationName}' because the target animation does not exist.");
-                    continue;
-                }
 
                 if (nextClip.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != nextClip.animationSegment)
                 {

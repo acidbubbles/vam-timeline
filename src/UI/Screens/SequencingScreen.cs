@@ -330,9 +330,13 @@ namespace VamTimeline
                     var i = x.IndexOf("/", StringComparison.Ordinal);
                     return i == -1 ? null : x.Substring(0, i);
                 });
+            var segments = animation.index.segmentNames
+                .Where(s => s != AtomAnimationClip.SharedAnimationSegment && s != current.animationSegment)
+                .Select(s => $"{AtomAnimation.NextAnimationSegmentPrefix}{s}");
             return new[] { _noNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
                 .Concat(new[] { AtomAnimation.RandomizeAnimationName })
+                .Concat(segments)
                 .ToList();
         }
 
@@ -441,6 +445,9 @@ namespace VamTimeline
         {
             if (nextName == null)
                 return false;
+
+            if (nextName.StartsWith(AtomAnimation.NextAnimationSegmentPrefix))
+                return true;
 
             if (nextName == AtomAnimation.RandomizeAnimationName)
                 return true;

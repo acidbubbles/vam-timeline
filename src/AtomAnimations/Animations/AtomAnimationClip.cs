@@ -534,7 +534,7 @@ namespace VamTimeline
         public bool temporarilyEnabled { get; set; }
         public bool playbackMainInLayer;
         public float playbackBlendRate;
-        public string playbackScheduledNextAnimationName;
+        public AtomAnimationClip playbackScheduledNextAnimation;
         public float playbackScheduledNextTimeLeft = float.NaN;
         public float playbackScheduledFadeOutAtRemaining = float.NaN;
         public bool recording;
@@ -579,7 +579,7 @@ namespace VamTimeline
             playbackMainInLayer = false;
             playbackScheduledFadeOutAtRemaining = float.NaN;
             playbackScheduledNextTimeLeft = float.NaN;
-            playbackScheduledNextAnimationName = null;
+            playbackScheduledNextAnimation = null;
             if (recording)
             {
                 recording = false;
