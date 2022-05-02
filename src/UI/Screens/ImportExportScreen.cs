@@ -11,8 +11,10 @@ namespace VamTimeline
         private const string _saveExt = "json";
         private const string _saveFolder = "Saves\\PluginData\\animations";
         private const string _exportCurrentAnimation = "Current animation";
+        private const string _exportCurrentLayer = "Current layer";
         private const string _exportCurrentSegment = "Current segment";
-        private const string _exportAll = "All segments";
+        private const string _exportAllSegments = "All segments except the shared segment";
+        private const string _exportEverything = "All segments including the shared segment";
 
         public const string ScreenName = "Import / Export";
 
@@ -50,18 +52,14 @@ namespace VamTimeline
         {
             _exportIncludeJSON = new JSONStorableStringChooser(
                 "Include",
-                new List<string>
-                {
-                    _exportCurrentAnimation,
-                    _exportCurrentSegment,
-                    _exportAll
-                },
-                _exportCurrentSegment,
+                new List<string>(),
+                _exportCurrentAnimation,
                 "Include", (string _) => SyncExportPose()
             )
             {
                 isStorable = false
             };
+            SyncExportInclude();
             prefabFactory.CreatePopup(_exportIncludeJSON, true, true, 800f);
 
             _exportPoseJSON = new JSONStorableBool("Include Pose", true);
@@ -69,6 +67,21 @@ namespace VamTimeline
 
             var exportUI = prefabFactory.CreateButton("Export");
             exportUI.button.onClick.AddListener(Export);
+        }
+
+        private void SyncExportInclude()
+        {
+            var choices = new List<string> { _exportCurrentAnimation };
+            var defaultChoice = _exportCurrentAnimation;
+            if (animationEditContext.currentSegment.layers.Count > 1)
+                choices.Add(defaultChoice = _exportCurrentLayer);
+            if (animation.index.segmentNames.Count > 1)
+                choices.AddRange(new[] { defaultChoice = _exportCurrentSegment, _exportAllSegments });
+            if (animation.index.segmentNames.Any(s => s == AtomAnimationClip.SharedAnimationSegment))
+                choices.Add(_exportEverything);
+            _exportIncludeJSON.choices = choices;
+            if (!choices.Contains(_exportIncludeJSON.val))
+                _exportIncludeJSON.val = defaultChoice;
         }
 
         private void Export()
@@ -147,10 +160,16 @@ namespace VamTimeline
                 case _exportCurrentAnimation:
                     clips = new List<AtomAnimationClip>(new[] { animationEditContext.current });
                     break;
+                case _exportCurrentLayer:
+                    clips = animationEditContext.currentLayer.ToList();
+                    break;
                 case _exportCurrentSegment:
                     clips = animationEditContext.currentSegment.layers.SelectMany(l => l).ToList();
                     break;
-                case _exportAll:
+                case _exportAllSegments:
+                    clips = animation.clips.Where(c => c.animationSegment != AtomAnimationClip.SharedAnimationSegment).ToList();
+                    break;
+                case _exportEverything:
                     clips = animation.clips;
                     break;
                 default:
@@ -192,11 +211,15 @@ namespace VamTimeline
                 }
 
                 var jc = json.AsObject;
-                if (!ImportClips(jc)) return;
-                ImportControllerStates(jc);
+                ImportControllerStatesLegacy(jc);
+                var imported = ImportClips(jc);
+                if (imported.Count == 0)
+                {
+                    SuperController.LogError("Timeline: No animations were imported. Are you trying to load a scene rather than a Timeline exported animation?");
+                    return;
+                }
 
-                var lastAnimation = animation.clips.Select(c => c.animationNameQualified).LastOrDefault();
-                animationEditContext.SelectAnimation(lastAnimation);
+                animationEditContext.SelectAnimation(imported[0]);
             }
             catch (Exception exc)
             {
@@ -204,15 +227,15 @@ namespace VamTimeline
             }
         }
 
-        private bool ImportClips(JSONClass jc)
+        private IList<AtomAnimationClip> ImportClips(JSONClass jc)
         {
             var clipsJSON = jc["Clips"].AsArray;
             if (clipsJSON == null || clipsJSON.Count == 0)
             {
-                SuperController.LogError("Timeline: Imported file does not contain any animations. Are you trying to load a scene file?");
-                return false;
+                return new List<AtomAnimationClip>();
             }
 
+            #warning Ensure we keep the shared layer...
             if (animation.clips.Count == 1 && animation.clips[0].IsEmpty())
                 animation.RemoveClip(animation.clips[0]);
 
@@ -224,31 +247,26 @@ namespace VamTimeline
 
             operations.Import().ImportClips(imported);
 
-            if (imported.Count > 0) animationEditContext.SelectAnimation(imported.FirstOrDefault());
-            else SuperController.LogError("Timeline: No animations were imported.");
-
-            return true;
+            return imported;
         }
 
-        private void ImportControllerStates(JSONClass jc)
+        private void ImportControllerStatesLegacy(JSONClass jc)
         {
-            if (jc.HasKey("ControllersState"))
+            if (!jc.HasKey("ControllersState")) return;
+            var controllersState = jc["ControllersState"].AsObject;
+            foreach (var k in controllersState.Keys)
             {
-                var controllersState = jc["ControllersState"].AsObject;
-                foreach (var k in controllersState.Keys)
+                var fc = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == k);
+                if (fc == null)
                 {
-                    var fc = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == k);
-                    if (fc == null)
-                    {
-                        SuperController.LogError($"Timeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
-                        continue;
-                    }
-                    var state = controllersState[k];
-                    fc.currentPositionState = (FreeControllerV3.PositionState)state["currentPositionState"].AsInt;
-                    fc.transform.localPosition = AtomAnimationSerializer.DeserializeVector3(state["localPosition"].AsObject);
-                    fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
-                    fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
+                    SuperController.LogError($"Timeline: Loaded animation had state for controller {k} but no such controller were found on this atom.");
+                    continue;
                 }
+                var state = controllersState[k];
+                fc.currentPositionState = (FreeControllerV3.PositionState)state["currentPositionState"].AsInt;
+                fc.transform.localPosition = AtomAnimationSerializer.DeserializeVector3(state["localPosition"].AsObject);
+                fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
+                fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
             }
         }
 
@@ -256,6 +274,7 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
 
+            SyncExportInclude();
             SyncExportPose();
         }
 

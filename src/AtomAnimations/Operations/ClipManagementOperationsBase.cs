@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VamTimeline
@@ -6,28 +7,32 @@ namespace VamTimeline
     public abstract class ClipManagementOperationsBase
     {
         private readonly AtomAnimation _animation;
-        private readonly AtomAnimationClip _clip;
 
-        protected ClipManagementOperationsBase(AtomAnimation animation, AtomAnimationClip clip)
+        protected ClipManagementOperationsBase(AtomAnimation animation)
         {
             _animation = animation;
-            _clip = clip;
         }
 
-        public string GetNewSegmentName()
+        public string GetNewSegmentName(string prefix = "Segment")
         {
             var layerNames = _animation.index.segmentNames;
             for (var i = 1; i < 999; i++)
             {
-                var segmentName = "Segment " + i;
+                var segmentName = $"{prefix} {i}";
                 if (!layerNames.Contains(segmentName)) return segmentName;
             }
             return Guid.NewGuid().ToString();
         }
 
-        public string GetNewLayerName()
+        public string GetNewLayerName(string segmentName)
         {
-            var layerNames = _animation.index.segments[_clip.animationSegment].layerNames;
+            List<string> layerNames;
+            AtomAnimationsClipsIndex.IndexedSegment segment;
+            if (_animation.index.segments.TryGetValue(segmentName, out segment))
+                layerNames = segment.layerNames;
+            else
+                layerNames = new List<string>();
+
             for (var i = 1; i < 999; i++)
             {
                 var layerName = "Layer " + i;

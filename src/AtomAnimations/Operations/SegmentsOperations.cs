@@ -6,7 +6,7 @@
         private readonly AtomAnimationClip _clip;
 
         public SegmentsOperations(AtomAnimation animation, AtomAnimationClip clip)
-            : base(animation, clip)
+            : base(animation)
         {
             _animation = animation;
             _clip = clip;

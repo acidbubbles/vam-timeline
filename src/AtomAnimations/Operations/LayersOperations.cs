@@ -10,7 +10,7 @@ namespace VamTimeline
         private readonly AtomAnimationClip _clip;
 
         public LayersOperations(AtomAnimation animation, AtomAnimationClip clip)
-            : base(animation, clip)
+            : base(animation)
         {
             _animation = animation;
             _clip = clip;
@@ -18,7 +18,7 @@ namespace VamTimeline
 
         public AtomAnimationClip Add()
         {
-            return _animation.CreateClip(GetNewLayerName(), GetNewAnimationName(), _clip.animationSegment);
+            return _animation.CreateClip(GetNewLayerName(_clip.animationSegment), GetNewAnimationName(), _clip.animationSegment);
         }
 
         public void SplitLayer(List<IAtomAnimationTarget> targets)
