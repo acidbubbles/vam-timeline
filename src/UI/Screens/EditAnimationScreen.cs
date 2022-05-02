@@ -130,6 +130,11 @@ namespace VamTimeline
         private void UpdateSegmentName(string to)
         {
             var from = current.animationSegment;
+            if (from == AtomAnimationClip.SharedAnimationSegment)
+            {
+                _segmentNameJSON.valNoCallback = current.animationSegment;
+                return;
+            }
             to = to.Trim();
             if (to == "" || to == AtomAnimationClip.SharedAnimationSegment || to == current.animationSegment)
             {

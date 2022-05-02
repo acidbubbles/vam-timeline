@@ -116,6 +116,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AddRemoveTargetsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AddScreenBase.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AddSegmentScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AddSharedSegmentScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AdvancedKeyframeToolsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\AnimationsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\BulkScreen.cs",

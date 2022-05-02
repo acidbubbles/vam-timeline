@@ -178,13 +178,16 @@ namespace VamTimeline
                     _current = screenContainer.AddComponent<AddAnimationsScreen>();
                     break;
                 case AddClipScreen.ScreenName:
-                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
+                    _current = screenContainer.AddComponent<AddClipScreen>();
                     break;
                 case AddLayerScreen.ScreenName:
-                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
+                    _current = screenContainer.AddComponent<AddLayerScreen>();
                     break;
                 case AddSegmentScreen.ScreenName:
-                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
+                    _current = screenContainer.AddComponent<AddSegmentScreen>();
+                    break;
+                case AddSharedSegmentScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AddSharedSegmentScreen>();
                     break;
                 case ManageAnimationsScreen.ScreenName:
                     _current = screenContainer.AddComponent<ManageAnimationsScreen>();

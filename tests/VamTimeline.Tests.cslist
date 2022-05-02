@@ -104,6 +104,7 @@
 ..\src\UI\Screens\AddRemoveTargetsScreen.cs
 ..\src\UI\Screens\AddScreenBase.cs
 ..\src\UI\Screens\AddSegmentScreen.cs
+..\src\UI\Screens\AddSharedSegmentScreen.cs
 ..\src\UI\Screens\AdvancedKeyframeToolsScreen.cs
 ..\src\UI\Screens\AnimationsScreen.cs
 ..\src\UI\Screens\BulkScreen.cs

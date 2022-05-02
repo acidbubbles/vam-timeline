@@ -179,6 +179,7 @@
     <Compile Include="src\UI\Screens\AddRemoveTargetsScreen.cs" />
     <Compile Include="src\UI\Screens\AddScreenBase.cs" />
     <Compile Include="src\UI\Screens\AddSegmentScreen.cs" />
+    <Compile Include="src\UI\Screens\AddSharedSegmentScreen.cs" />
     <Compile Include="src\UI\Screens\AdvancedKeyframeToolsScreen.cs" />
     <Compile Include="src\UI\Screens\AnimationsScreen.cs" />
     <Compile Include="src\UI\Screens\BulkScreen.cs" />
