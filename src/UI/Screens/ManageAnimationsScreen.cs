@@ -246,7 +246,7 @@ namespace VamTimeline
                 return;
             }
             var clips = currentSegment.layers.SelectMany(c => c).ToList();
-            animationEditContext.SelectAnimation(animation.clips.First());
+            animationEditContext.SelectAnimation(animation.clips.First(c => c.animationSegment != current.animationSegment));
             animation.index.StartBulkUpdates();
             try
             {

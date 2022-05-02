@@ -50,8 +50,10 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            InitRenameSegment();
-            InitRenameLayer();
+            if (animation.index.segmentNames.Count > 1)
+                InitRenameSegment();
+            if (animation.index.clipsGroupedByLayer.Count > 1)
+                InitRenameLayer();
             InitRenameAnimation();
 
             prefabFactory.CreateHeader("Speed", 1);
@@ -129,7 +131,7 @@ namespace VamTimeline
         {
             var from = current.animationSegment;
             to = to.Trim();
-            if (to == "" || to == current.animationSegment)
+            if (to == "" || to == AtomAnimationClip.SharedAnimationSegment || to == current.animationSegment)
             {
                 _segmentNameJSON.valNoCallback = current.animationSegment;
                 return;
@@ -149,11 +151,6 @@ namespace VamTimeline
             if (animation.playingAnimationSegment == from)
             {
                 animation.playingAnimationSegment = to;
-            }
-
-            if (from == AtomAnimationClip.SharedAnimationSegment)
-            {
-                animation.AddClipAt(new AtomAnimationClip(operations.Layers().GetNewAnimationName(), AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment), 0);
             }
 
             animation.index.Rebuild();
@@ -476,8 +473,10 @@ namespace VamTimeline
         private void OnAnimationSettingsChanged()
         {
             _animationNameJSON.valNoCallback = current.animationName;
-            _layerNameJSON.valNoCallback = current.animationLayer;
-            _segmentNameJSON.valNoCallback = current.animationSegment;
+            if (_layerNameJSON != null)
+                _layerNameJSON.valNoCallback = current.animationLayer;
+            if (_segmentNameJSON != null)
+                _segmentNameJSON.valNoCallback = current.animationSegment;
             _lengthJSON.valNoCallback = current.animationLength;
             _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
             _loop.valNoCallback = current.loop;

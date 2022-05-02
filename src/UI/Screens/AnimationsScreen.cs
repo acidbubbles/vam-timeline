@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
@@ -13,17 +14,20 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            prefabFactory.CreateHeader("Animations", 1);
-            InitClipsUI(AtomAnimationClip.SharedAnimationSegment);
+            if (animation.clips.Any(c => c.animationSegment == AtomAnimationClip.SharedAnimationSegment))
+            {
+                prefabFactory.CreateHeader("Animations", 1);
+                InitClipsUI(AtomAnimationClip.SharedAnimationSegment);
+                prefabFactory.CreateSpacer();
+            }
 
             if (current.animationSegment != AtomAnimationClip.SharedAnimationSegment)
             {
-                prefabFactory.CreateSpacer();
                 prefabFactory.CreateHeader($"{current.animationSegment} animations", 1);
                 InitClipsUI(current.animationSegment);
+                prefabFactory.CreateSpacer();
             }
 
-            prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Operations", 1);
 
             CreateChangeScreenButton("<i><b>Add</b> animations/layers...</i>", AddAnimationScreen.ScreenName);

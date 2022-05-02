@@ -74,6 +74,7 @@ namespace VamTimeline
             {
                 _current = value;
                 _lastCurrentAnimationLength = value.animationLength;
+                animation.playingAnimationSegment = value.animationSegment;
                 ResetScrubberRange();
             }
         }
@@ -175,12 +176,10 @@ namespace VamTimeline
         public void Initialize()
         {
             if (animation.clips.Count == 0)
-                animation.AddClip(new AtomAnimationClip("Anim 1", AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment));
+                animation.AddClip(new AtomAnimationClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment));
             current = animation.GetDefaultClip();
             if (animation.clips.Any(c => c.IsDirty()))
-            {
                 animation.RebuildAnimationNow();
-            }
         }
 
         public bool CanEdit()

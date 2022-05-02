@@ -9,7 +9,7 @@ namespace VamTimeline
 {
     public class AnimationControlPanel : MonoBehaviour
     {
-        private const string _noSequenceLabel = "[Shared Layers]";
+        private const string _sharedSequenceLabel = "[Shared Layers]";
 
         public static AnimationControlPanel Configure(GameObject go)
         {
@@ -222,7 +222,7 @@ namespace VamTimeline
             try
             {
                 _segmentsJSON.choices = _animationEditContext.animation.index.segmentNames;
-                _segmentsJSON.displayChoices = _animationEditContext.animation.index.segmentNames.Select(x => x == AtomAnimationClip.DefaultAnimationSegment ? _noSequenceLabel : x).ToList();
+                _segmentsJSON.displayChoices = _animationEditContext.animation.index.segmentNames.Select(x => x == AtomAnimationClip.SharedAnimationSegment ? _sharedSequenceLabel : x).ToList();
                 _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment).Select(c => c.animationLayer).Distinct().ToList();
                 _animationsJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment && c.animationLayer == _animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
 

@@ -40,7 +40,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
-        public string playingAnimationSegment = AtomAnimationClip.SharedAnimationSegment;
+        public string playingAnimationSegment;
         public float autoStop;
         private bool _paused;
         public bool paused
@@ -179,6 +179,7 @@ namespace VamTimeline
         {
             if (i == -1 || i > clips.Count) throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
             clips.Insert(i, clip);
+            if (playingAnimationSegment == null) playingAnimationSegment = clip.animationSegment;
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
@@ -648,20 +649,27 @@ namespace VamTimeline
 
         public IList<AtomAnimationClip> GetDefaultClipsPerLayer(AtomAnimationClip source)
         {
-            var sharedLayers = index.segments[AtomAnimationClip.SharedAnimationSegment].layers;
-            var segmentLayers = source.animationSegment != AtomAnimationClip.SharedAnimationSegment ? index.segments[source.animationSegment].layers : null;
-            var list = new AtomAnimationClip[sharedLayers.Count + (segmentLayers?.Count ?? 0)];
-
-            for (var i = 0; i < sharedLayers.Count; i++)
+            AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
+            if (!index.segments.TryGetValue(AtomAnimationClip.SharedAnimationSegment, out sharedLayers))
             {
-                list[i] = GetDefaultClipInLayer(sharedLayers[i], source);
+                sharedLayers = index.emptySegment;
             }
-            if (segmentLayers != null)
+
+            AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
+            if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+                segmentLayers = index.segments[source.animationSegment];
+            else
+                segmentLayers = index.emptySegment;
+
+            var list = new AtomAnimationClip[sharedLayers.layers.Count + segmentLayers.layers.Count];
+
+            for (var i = 0; i < sharedLayers.layers.Count; i++)
             {
-                for (var i = 0; i < segmentLayers.Count; i++)
-                {
-                    list[sharedLayers.Count + i] = GetDefaultClipInLayer(segmentLayers[i], source);
-                }
+                list[i] = GetDefaultClipInLayer(sharedLayers.layers[i], source);
+            }
+            for (var i = 0; i < segmentLayers.layers.Count; i++)
+            {
+                list[sharedLayers.layers.Count + i] = GetDefaultClipInLayer(segmentLayers.layers[i], source);
             }
 
             // Always start with the selected clip to avoid animation sets starting another animation on the currently shown layer

@@ -30,6 +30,7 @@ namespace VamTimeline
 
         private readonly List<AtomAnimationClip> _clips;
 
+        public readonly IndexedSegment emptySegment = new IndexedSegment();
         public readonly Dictionary<string, IndexedSegment> segments = new Dictionary<string, IndexedSegment>();
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
