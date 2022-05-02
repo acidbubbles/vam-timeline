@@ -10,14 +10,16 @@ namespace VamTimeline
     {
         private const string _saveExt = "json";
         private const string _saveFolder = "Saves\\PluginData\\animations";
-        private const string _poseAndAllAnimations = "Pose & all animations";
-        private const string _allAnimations = "All animations";
+        private const string _exportCurrentAnimation = "Current animation";
+        private const string _exportCurrentSegment = "Current segment";
+        private const string _exportAll = "All segments";
 
         public const string ScreenName = "Import / Export";
 
         public override string screenId => ScreenName;
 
-        private JSONStorableStringChooser _exportAnimationsJSON;
+        private JSONStorableStringChooser _exportIncludeJSON;
+        private JSONStorableBool _exportPoseJSON;
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -27,9 +29,13 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            prefabFactory.CreateHeader("Import", 1);
+
             InitImportUI();
 
             prefabFactory.CreateSpacer();
+
+            prefabFactory.CreateHeader("Export", 1);
 
             InitExportUI();
         }
@@ -42,13 +48,26 @@ namespace VamTimeline
 
         private void InitExportUI()
         {
-            _exportAnimationsJSON = new JSONStorableStringChooser("Animation", new List<string> { _poseAndAllAnimations, _allAnimations }.Concat(animation.clips.Where(c => !c.autoTransitionPrevious && !c.autoTransitionNext).Select(c => c.animationName)).ToList(), _poseAndAllAnimations, "Animation")
+            _exportIncludeJSON = new JSONStorableStringChooser(
+                "Include",
+                new List<string>
+                {
+                    _exportCurrentAnimation,
+                    _exportCurrentSegment,
+                    _exportAll
+                },
+                _exportCurrentSegment,
+                "Include", (string _) => SyncExportPose()
+            )
             {
                 isStorable = false
             };
-            prefabFactory.CreatePopup(_exportAnimationsJSON, true, true, 800f);
+            prefabFactory.CreatePopup(_exportIncludeJSON, true, true, 800f);
 
-            var exportUI = prefabFactory.CreateButton("Export animation");
+            _exportPoseJSON = new JSONStorableBool("Include Pose", true);
+            prefabFactory.CreateToggle(_exportPoseJSON);
+
+            var exportUI = prefabFactory.CreateButton("Export");
             exportUI.button.onClick.AddListener(Export);
         }
 
@@ -60,7 +79,7 @@ namespace VamTimeline
                 FileManagerSecure.CreateDirectory(_saveFolder);
                 #endif
                 var fileBrowserUI = SuperController.singleton.fileBrowserUI;
-                fileBrowserUI.SetTitle("Save animation");
+                fileBrowserUI.SetTitle("Export animation");
                 fileBrowserUI.fileRemovePrefix = null;
                 fileBrowserUI.hideExtension = false;
                 fileBrowserUI.keepOpen = false;
@@ -88,9 +107,8 @@ namespace VamTimeline
             {
                 var jc = new JSONClass
                 {
-                    ["Clips"] = GetClipsJson(),
+                    ["Clips"] = GetExportClipsJson(),
                     ["AtomType"] = plugin.containingAtom.type,
-                    ["ControllersState"] = GetAtomStateJson()
                 };
                 SuperController.singleton.SaveJSON(jc, path);
                 SuperController.singleton.DoSaveScreenshot(path);
@@ -101,59 +119,45 @@ namespace VamTimeline
             }
         }
 
-        private JSONArray GetClipsJson()
+        private JSONArray GetExportClipsJson()
         {
-            var all = _exportAnimationsJSON.val == _poseAndAllAnimations || _exportAnimationsJSON.val == _allAnimations;
-            IEnumerable<AtomAnimationClip> clips;
-            if (all)
-                clips = animation.clips;
-            else
-                clips = animation.clips.Where(c => c.animationName == _exportAnimationsJSON.val);
-            var clipsJSON = new JSONArray();
+            var clips = GetExportClips();
 
+            var temporaryPose = _exportPoseJSON.val && clips[0].pose == null;
+            if (temporaryPose)
+                clips[0].pose = AtomPose.FromAtom(plugin.containingAtom, false, true, false, false);
+
+            var clipsJSON = new JSONArray();
             foreach (var clip in clips)
             {
                 clipsJSON.Add(plugin.serializer.SerializeClip(clip));
             }
 
+            if (temporaryPose)
+                clips[0].pose = null;
+
             return clipsJSON;
         }
 
-        private JSONClass GetAtomStateJson()
+        private List<AtomAnimationClip> GetExportClips()
         {
-            var atomState = new JSONClass();
-            IEnumerable<FreeControllerV3> controllers;
-            switch (_exportAnimationsJSON.val)
+            List<AtomAnimationClip> clips;
+            switch (_exportIncludeJSON.val)
             {
-                case _poseAndAllAnimations:
-                    controllers = plugin.containingAtom.freeControllers;
+                case _exportCurrentAnimation:
+                    clips = new List<AtomAnimationClip>(new[] { animationEditContext.current });
                     break;
-                case _allAnimations:
-                    controllers = animation.clips
-                        .SelectMany(c => c.targetControllers)
-                        .Select(t => t.animatableRef.controller)
-                        .Distinct();
+                case _exportCurrentSegment:
+                    clips = animationEditContext.currentSegment.layers.SelectMany(l => l).ToList();
+                    break;
+                case _exportAll:
+                    clips = animation.clips;
                     break;
                 default:
-                    controllers = animation.clips
-                        .First(c => c.animationName == _exportAnimationsJSON.val)
-                        .targetControllers
-                        .Select(t => t.animatableRef.controller);
-                    break;
+                    throw new InvalidOperationException($"Unknown export mode: {_exportIncludeJSON.val}");
             }
-            foreach (var fc in controllers)
-            {
-                if (fc.name == "control") continue;
-                if (!fc.name.EndsWith("Control")) continue;
-                atomState[fc.name] = new JSONClass
-                    {
-                        {"currentPositionState", ((int)fc.currentPositionState).ToString()},
-                        {"localPosition", AtomAnimationSerializer.SerializeVector3(fc.transform.localPosition)},
-                        {"currentRotationState", ((int)fc.currentRotationState).ToString()},
-                        {"localRotation", AtomAnimationSerializer.SerializeQuaternion(fc.transform.localRotation)}
-                    };
-            }
-            return atomState;
+
+            return clips;
         }
 
         private void Import()
@@ -246,6 +250,19 @@ namespace VamTimeline
                     fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
                 }
             }
+        }
+
+        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
+        {
+            base.OnCurrentAnimationChanged(args);
+
+            SyncExportPose();
+        }
+
+        private void SyncExportPose()
+        {
+            _exportPoseJSON.toggle.interactable = GetExportClips().GroupBy(c => c.animationLayer).Select(l => l.First()).All(c => c.pose == null);
+            if (!_exportPoseJSON.toggle.interactable) _exportPoseJSON.valNoCallback = true;
         }
     }
 }
