@@ -55,7 +55,7 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.val = operations.Segments().GetNewAnimationName("Shared");
+            clipNameJSON.val = animation.GetUniqueAnimationName("Shared 1");
             layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
         }
 

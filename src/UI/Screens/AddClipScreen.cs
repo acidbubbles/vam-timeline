@@ -205,7 +205,7 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.val = animation.GetNewAnimationName(current);
+            clipNameJSON.val = animation.GetUniqueAnimationName(current);
 
             var hasNext = current.nextAnimationName != null;
             var nextIsTransition = false;

@@ -80,7 +80,7 @@ namespace VamTimeline
             base.RefreshUI();
 
             clipNameJSON.val = current.animationName;
-            layerNameJSON.val = animation.GetNewLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
+            layerNameJSON.val = animation.GetUniqueLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
         }
 
         protected override void OptionsUpdated()

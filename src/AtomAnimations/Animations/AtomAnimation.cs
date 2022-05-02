@@ -215,24 +215,36 @@ namespace VamTimeline
             OnAnimationKeyframesDirty();
         }
 
-        #warning Maybe duplicate, maybe move
-        public string GetNewAnimationName(AtomAnimationClip source)
+        public string GetUniqueAnimationName(AtomAnimationClip source)
         {
-            return GetNewName(source.animationName, clips.Select(c => c.animationName));
+            return GetUniqueAnimationName(source.animationName);
         }
 
-        public string GetNewLayerName(AtomAnimationClip source, string baseName = null)
+        public string GetUniqueAnimationName(string sourceName)
         {
-            return GetNewName(baseName ?? source.animationLayer, index.segments[source.animationSegment].layerNames);
+            return GetUniqueName(sourceName, clips.Select(c => c.animationName).ToList());
         }
 
-        public string GetNewSegmentName(AtomAnimationClip source)
+        public string GetUniqueLayerName(AtomAnimationClip source, string baseName = null)
         {
-            return GetNewName(source.animationSegment, index.segmentNames.Where(s => s != AtomAnimationClip.SharedAnimationSegment));
+            return GetUniqueName(baseName ?? source.animationLayer, index.segments[source.animationSegment].layerNames);
         }
 
-        public string GetNewName(string sourceName, IEnumerable<string> existingNames)
+        public string GetUniqueSegmentName(AtomAnimationClip source)
         {
+            return GetUniqueSegmentName(source.animationSegment);
+        }
+
+        public string GetUniqueSegmentName(string sourceSegmentName)
+        {
+            return GetUniqueName(sourceSegmentName, index.segmentNames.Where(s => s != AtomAnimationClip.SharedAnimationSegment).ToList());
+        }
+
+        public string GetUniqueName(string sourceName, IList<string> existingNames)
+        {
+            if (!existingNames.Contains(sourceName))
+                return sourceName;
+
             var match = _lastDigitsRegex.Match(sourceName);
             string itemNameBeforeInt;
             int itemNameInt;

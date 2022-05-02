@@ -78,9 +78,9 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.val = animation.GetNewAnimationName(current);
+            clipNameJSON.val = animation.GetUniqueAnimationName(current);
             layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
-            segmentNameJSON.val = animation.GetNewSegmentName(current);
+            segmentNameJSON.val = animation.GetUniqueSegmentName(current);
         }
 
         protected override void OptionsUpdated()

@@ -22,7 +22,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationAsCopy(AtomAnimationClip source, string animationName, int position, string segmentName)
         {
-            var clip = _animation.CreateClip(source.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(source) : animationName, segmentName, position);
+            var clip = _animation.CreateClip(source.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetUniqueAnimationName(source) : animationName, segmentName, position);
             source.CopySettingsTo(clip);
             foreach (var origTarget in source.targetControllers)
             {
@@ -60,7 +60,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings, string animationName, int position)
        {
-           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSegment, position);
+           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetUniqueAnimationName(_clip) : animationName, _clip.animationSegment, position);
             if (copySettings) _clip.CopySettingsTo(clip);
             foreach (var origTarget in _clip.targetControllers)
             {

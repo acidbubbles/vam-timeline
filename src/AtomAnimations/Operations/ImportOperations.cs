@@ -3,13 +3,12 @@ using System.Linq;
 
 namespace VamTimeline
 {
-    public class ImportOperations : ClipManagementOperationsBase
+    public class ImportOperations
     {
         private readonly AtomAnimation _animation;
         private readonly bool _silent;
 
         public ImportOperations(AtomAnimation animation, bool silent = false)
-            : base(animation)
         {
             _animation = animation;
             _silent = silent;
@@ -27,9 +26,9 @@ namespace VamTimeline
                 {
                     string segmentName;
                     if (segment.Key == AtomAnimationClip.SharedAnimationSegment)
-                        segmentName = GetNewSegmentName();
-                    if (_animation.index.segmentNames.Contains(segment.Key))
-                        segmentName = GetNewSegmentName(segment.Key);
+                        segmentName = _animation.GetUniqueSegmentName("Segment 1");
+                    else if (_animation.index.segmentNames.Contains(segment.Key))
+                        segmentName = _animation.GetUniqueSegmentName(segment.Key);
                     else
                         segmentName = segment.Key;
 

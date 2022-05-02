@@ -4,13 +4,12 @@ using System.Linq;
 
 namespace VamTimeline
 {
-    public class LayersOperations : ClipManagementOperationsBase
+    public class LayersOperations
     {
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
         public LayersOperations(AtomAnimation animation, AtomAnimationClip clip)
-            : base(animation)
         {
             _animation = animation;
             _clip = clip;
@@ -18,7 +17,7 @@ namespace VamTimeline
 
         public AtomAnimationClip Add(string clipName = null, string layerName = null)
         {
-            return _animation.CreateClip(layerName ?? GetNewLayerName(_clip.animationSegment), clipName ?? GetNewAnimationName(), _clip.animationSegment);
+            return _animation.CreateClip(layerName ?? _animation.GetUniqueLayerName(_clip), clipName ?? _animation.GetUniqueAnimationName(_clip), _clip.animationSegment);
         }
 
         public void SplitLayer(List<IAtomAnimationTarget> targets, string layerName = null)
