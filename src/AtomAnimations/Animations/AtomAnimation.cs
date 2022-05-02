@@ -735,9 +735,9 @@ namespace VamTimeline
                     {
                         var clip = layerClips[i];
                         if (!clip.playbackEnabled) continue;
-                        var smoothBlendWeight = Mathf.SmoothStep(0f, 1, clip.playbackBlendWeight);
-                        weightedClipSpeedSum += clip.speed * smoothBlendWeight;
-                        totalBlendWeights += smoothBlendWeight;
+                        var blendWeight = clip.playbackBlendWeightSmoothed;
+                        weightedClipSpeedSum += clip.speed * blendWeight;
+                        totalBlendWeights += blendWeight;
                         clipSpeed = clip.speed;
                     }
 
@@ -1095,9 +1095,9 @@ namespace VamTimeline
                 if (localScaledWeight < float.Epsilon) continue;
 
                 var value = target.value.Evaluate(clip.clipTime);
-                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.temporarilyEnabled ? 1f : clip.playbackBlendWeight);
-                weightedSum += Mathf.Lerp(floatParamRef.val, value, localScaledWeight) * smoothBlendWeight;
-                totalBlendWeights += smoothBlendWeight;
+                var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
+                weightedSum += Mathf.Lerp(floatParamRef.val, value, localScaledWeight) * blendWeight;
+                totalBlendWeights += blendWeight;
             }
 
             if (totalBlendWeights > minimumDelta)
@@ -1199,7 +1199,7 @@ namespace VamTimeline
 
                 if (!target.EnsureParentAvailable()) return;
 
-                var smoothBlendWeight = Mathf.SmoothStep(0f, 1f, clip.temporarilyEnabled ? 1f : clip.playbackBlendWeight);
+                var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
 
                 if (target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
@@ -1217,9 +1217,9 @@ namespace VamTimeline
                         _rotations[rotationCount] = control.transform.parent.rotation * targetRotation;
                     }
 
-                    _rotationBlendWeights[rotationCount] = smoothBlendWeight;
-                    totalRotationBlendWeights += smoothBlendWeight;
-                    totalRotationControlWeights += weight * smoothBlendWeight;
+                    _rotationBlendWeights[rotationCount] = blendWeight;
+                    totalRotationBlendWeights += blendWeight;
+                    totalRotationControlWeights += weight * blendWeight;
                     rotationCount++;
                 }
 
@@ -1238,9 +1238,9 @@ namespace VamTimeline
                         targetPosition = control.transform.parent.TransformPoint(targetPosition);
                     }
 
-                    weightedPositionSum += targetPosition * smoothBlendWeight;
-                    totalPositionBlendWeights += smoothBlendWeight;
-                    totalPositionControlWeights += weight * smoothBlendWeight;
+                    weightedPositionSum += targetPosition * blendWeight;
+                    totalPositionBlendWeights += blendWeight;
+                    totalPositionControlWeights += weight * blendWeight;
                 }
             }
 

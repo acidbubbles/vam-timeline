@@ -11,6 +11,7 @@ namespace VamTimeline
         public class AnimationSettingModifiedEvent : UnityEvent<string> { }
 
         public const float DefaultAnimationLength = 2f;
+        #warning Increase that to e.g. 1.5s
         public const float DefaultBlendDuration = 0.75f;
         public const string SharedAnimationSegment = "";
         public const string DefaultAnimationSegment = SharedAnimationSegment;
@@ -513,7 +514,22 @@ namespace VamTimeline
         #region Animation State
 
         private float _clipTime;
-        public float playbackBlendWeight { get; set; }
+        private float _playbackBlendWeight;
+
+        public float playbackBlendWeightSmoothed { get; private set; }
+
+        public float playbackBlendWeight
+        {
+            get
+            {
+                return _playbackBlendWeight;
+            }
+            set
+            {
+                _playbackBlendWeight = value;
+                playbackBlendWeightSmoothed = value.SmootherStep();
+            }
+        }
         public bool playbackEnabled { get; set; }
         public bool temporarilyEnabled { get; set; }
         public bool playbackMainInLayer;

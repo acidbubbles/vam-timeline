@@ -60,5 +60,12 @@ namespace VamTimeline
         {
             return (value % mod + mod) % mod;
         }
+
+        [MethodImpl(256)]
+        public static float SmootherStep(this float x)
+        {
+            // Source: https://en.wikipedia.org/wiki/Smoothstep
+            return x * x * x * (x * (x * 6 - 15) + 10);
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace VamTimeline
         bool loop { get; }
         bool playbackEnabled { get; }
         float playbackBlendWeight { get; }
+        float playbackBlendWeightSmoothed { get; }
         bool temporarilyEnabled { get; }
         float clipTime { get; }
         float scaledWeight { get; }
