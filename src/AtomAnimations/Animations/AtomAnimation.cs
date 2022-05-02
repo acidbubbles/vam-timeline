@@ -355,17 +355,15 @@ namespace VamTimeline
 
         public void PlaySegment(AtomAnimationClip source)
         {
-            //if(sou)
             var clipsToPlay = GetDefaultClipsPerLayer(source);
 
             if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment && source.animationSegment != playingAnimationSegment)
             {
-                SuperController.LogMessage($"Segment changed from {playingAnimationSegment} to {source.animationSegment}");
                 playingAnimationSegment = source.animationSegment;
                 var hasPose = clipsToPlay.Any(c => c.applyPoseOnTransition);
                 if (hasPose)
                 {
-                    foreach (var clip in clips.Where(c => c.playbackEnabled))
+                    foreach (var clip in clips.Where(c => c.playbackEnabled && c.animationSegment != AtomAnimationClip.SharedAnimationSegment))
                     {
                         StopClip(clip);
                     }
@@ -373,7 +371,7 @@ namespace VamTimeline
                 else
                 {
                     var blendOutTime = clipsToPlay.Min(c => c.blendInDuration);
-                    foreach (var clip in clips.Where(c => c.playbackMainInLayer))
+                    foreach (var clip in clips.Where(c => c.playbackMainInLayer && c.animationSegment != AtomAnimationClip.SharedAnimationSegment))
                     {
                         SoftStopClip(clip, blendOutTime);
                     }
@@ -418,7 +416,6 @@ namespace VamTimeline
 
             if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != next.animationSegment)
             {
-                SuperController.LogMessage($"Received PlayCore from {playingAnimationSegment} to {next.animationSegment}");
                 PlaySegment(next);
                 return;
             }

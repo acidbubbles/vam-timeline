@@ -191,9 +191,8 @@ namespace VamTimeline
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
-            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.index.segments[current.animationSegment].layers
-                .Where(c => c[0].animationLayer != current.animationLayer)
-                .SelectMany(c => c)
+            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
+                .Where(c => current.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == current.animationSegment)
                 .SelectMany(c => c.targetControllers)
                 .Select(t => t.animatableRef.controller));
             foreach (var fc in plugin.containingAtom.freeControllers)
@@ -303,9 +302,8 @@ namespace VamTimeline
             }
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
-            var reservedByOtherLayers = new HashSet<string>(animation.index.segments[current.animationSegment].layers
-                .Where(c => c[0].animationLayer != current.animationLayer)
-                .SelectMany(c => c)
+            var reservedByOtherLayers = new HashSet<string>(animation.clips
+                .Where(c => current.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == current.animationSegment)
                 .SelectMany(c => c.targetFloatParams)
                 .Where(t => t.animatableRef.storableId == storable.storeId)
                 .Select(t => t.animatableRef.floatParamName));

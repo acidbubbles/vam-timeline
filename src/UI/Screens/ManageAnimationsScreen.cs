@@ -265,15 +265,12 @@ namespace VamTimeline
         {
             if (to < min || to > max)
             {
-                SuperController.LogMessage($"Move range({start}:{end}) to {to} not in range({min}:{max})");
                 return;
             }
             var count = end - start + 1;
             var clips = animation.clips.GetRange(start, count);
             animation.clips.RemoveRange(start, count);
-            SuperController.LogMessage($"Move range({start}:{end}, count = {count}) to {to}");
             if (to > start) to -= count;
-            SuperController.LogMessage($"  - to: {to}");
             animation.clips.InsertRange(to, clips);
             animation.index.Rebuild();
             animation.onClipsListChanged.Invoke();
