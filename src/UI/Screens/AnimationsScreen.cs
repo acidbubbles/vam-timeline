@@ -61,7 +61,7 @@ namespace VamTimeline
             {
                 if (clip.playbackMainInLayer)
                 {
-                    animation.SoftStopClip(clip);
+                    animation.SoftStopClip(clip, clip.blendInDuration);
                 }
                 else
                 {

@@ -355,13 +355,32 @@ namespace VamTimeline
 
         public void PlaySegment(AtomAnimationClip source)
         {
-            if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            //if(sou)
+            var clipsToPlay = GetDefaultClipsPerLayer(source);
+
+            if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment && source.animationSegment != playingAnimationSegment)
             {
-                #warning Blend out previous segment IF the new segment does not have a pose
+                SuperController.LogMessage($"Segment changed from {playingAnimationSegment} to {source.animationSegment}");
                 playingAnimationSegment = source.animationSegment;
+                var hasPose = clipsToPlay.Any(c => c.applyPoseOnTransition);
+                if (hasPose)
+                {
+                    foreach (var clip in clips.Where(c => c.playbackEnabled))
+                    {
+                        StopClip(clip);
+                    }
+                }
+                else
+                {
+                    var blendOutTime = clipsToPlay.Min(c => c.blendInDuration);
+                    foreach (var clip in clips.Where(c => c.playbackMainInLayer))
+                    {
+                        SoftStopClip(clip, blendOutTime);
+                    }
+                }
             }
 
-            foreach (var clip in GetDefaultClipsPerLayer(source))
+            foreach (var clip in clipsToPlay)
             {
                 if (clip == null) continue;
                 PlayClip(clip, true);
@@ -390,7 +409,8 @@ namespace VamTimeline
                 isPlaying = true;
                 sequencing = sequencing || seq;
                 fadeManager?.SyncFadeTime();
-                playingAnimationSegment = next.animationSegment;
+                if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+                    playingAnimationSegment = next.animationSegment;
             }
 
             if (sequencing && !next.playbackEnabled)
@@ -398,16 +418,7 @@ namespace VamTimeline
 
             if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != next.animationSegment)
             {
-                playingAnimationSegment = next.animationSegment;
-                var nextHasPose = GetDefaultClipsPerLayer(next).Any(c => c.applyPoseOnTransition);
-                var clipsToStop = clips.Where(c => c.playbackMainInLayer && c.animationSegment != AtomAnimationClip.SharedAnimationSegment && c.animationSegment != next.animationSegment);
-                foreach (var clip in clipsToStop)
-                {
-                    if(nextHasPose)
-                        StopClip(clip);
-                    else
-                        SoftStopClip(clip);
-                }
+                SuperController.LogMessage($"Received PlayCore from {playingAnimationSegment} to {next.animationSegment}");
                 PlaySegment(next);
                 return;
             }
@@ -503,12 +514,12 @@ namespace VamTimeline
             }
         }
 
-        public void SoftStopClip(AtomAnimationClip clip)
+        public void SoftStopClip(AtomAnimationClip clip, float blendOutDuration)
         {
             clip.playbackMainInLayer = false;
             clip.playbackScheduledNextAnimationName = null;
             clip.playbackScheduledNextTimeLeft = float.NaN;
-            BlendOut(clip, clip.blendInDuration);
+            BlendOut(clip, blendOutDuration);
         }
 
         private void StopClip(AtomAnimationClip clip)
@@ -1531,8 +1542,15 @@ namespace VamTimeline
                     continue;
                 }
 
-                TransitionClips(clip, nextClip);
-                PlaySiblings(nextClip);
+                if (nextClip.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != nextClip.animationSegment)
+                {
+                    PlaySegment(nextClip);
+                }
+                else
+                {
+                    TransitionClips(clip, nextClip);
+                    PlaySiblings(nextClip);
+                }
 
                 #warning Again, mainLayerNameQualified (see other warning)
                 if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayerQualified == index.mainLayerNameQualified)

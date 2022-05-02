@@ -74,7 +74,6 @@ namespace VamTimeline
             {
                 _current = value;
                 _lastCurrentAnimationLength = value.animationLength;
-                animation.playingAnimationSegment = value.animationSegment;
                 ResetScrubberRange();
             }
         }
@@ -601,7 +600,9 @@ namespace VamTimeline
                 return;
             }
 
-            #warning Validate, is this the right place? Should this instead be in AtomAnimation.Sample? Other calls?
+            if (animation.isPlaying)
+                return;
+
             animation.playingAnimationSegment = current.animationSegment;
 
             var clips = animation.GetDefaultClipsPerLayer(current);
