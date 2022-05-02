@@ -314,6 +314,9 @@ namespace VamTimeline
 
         public void PlayClipBySet(string animationName, string animationSet, string animationSegment, bool seq)
         {
+            if (!index.segmentNames.Contains(animationSegment))
+                return;
+
             var siblings = GetMainAndBestSiblingPerLayer(animationSegment, animationName, animationSet);
 
             if (animationSegment != playingAnimationSegment && animationSegment != AtomAnimationClip.SharedAnimationSegment)
@@ -614,12 +617,7 @@ namespace VamTimeline
 
         private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
         {
-            AtomAnimationsClipsIndex.IndexedSegment segment;
-            if (!index.segments.TryGetValue(animationSegment, out segment))
-            {
-                throw new Exception($"Timeline: Could not find segment '{animationSegment}'");
-            }
-            var layers = segment.layers;
+            var layers = index.segments[animationSegment].layers;
             var result = new TransitionTarget[layers.Count];
             for (var i = 0; i < layers.Count; i++)
             {
