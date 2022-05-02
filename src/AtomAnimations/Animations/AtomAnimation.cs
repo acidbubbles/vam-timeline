@@ -179,7 +179,8 @@ namespace VamTimeline
         {
             if (i == -1 || i > clips.Count) throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
             clips.Insert(i, clip);
-            if (playingAnimationSegment == null) playingAnimationSegment = clip.animationSegment;
+            if (playingAnimationSegment == null && clip.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+                playingAnimationSegment = clip.animationSegment;
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
@@ -310,10 +311,19 @@ namespace VamTimeline
             PlayClip(clipsByName[0], seq);
         }
 
-        public void PlayClipBySet(string animationName, string animationSet, bool seq)
+        public void PlayClipBySet(string animationName, string animationSet, string animationSegment, bool seq)
         {
-            #warning This should actually change the animation segment, here and when doing sequencing
-            var siblings = GetMainAndBestSiblingPerLayer(playingAnimationSegment, animationName, animationSet);
+            var siblings = GetMainAndBestSiblingPerLayer(animationSegment, animationName, animationSet);
+
+            if (animationSegment != playingAnimationSegment && animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            {
+                PlaySegment(siblings[0].target);
+                for (var i = 0; i < siblings.Count; i++)
+                {
+                    siblings[i] = new TransitionTarget { target = siblings[i].target };
+                }
+            }
+
             for (var i = 0; i < siblings.Count; i++)
             {
                 var clip = siblings[i];

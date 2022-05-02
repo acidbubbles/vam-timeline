@@ -168,7 +168,8 @@ namespace VamTimeline
                  clip.playbackEnabled, // 2
                  clip.clipTime, // 3
                  animation.sequencing, // 4
-                 clip.animationSet // 5
+                 clip.animationSet, // 5
+                 clip.animationSegment, // 6
             });
         }
 
@@ -177,10 +178,11 @@ namespace VamTimeline
             if (!ValidateArgumentCount(e.Length, 6)) return;
             var animationName = (string)e[1];
             var animationSet = (string)e[5];
+            var animationSegment = (string)e[6];
             var isPlaying = (bool)e[2];
             var clipTime = (float)e[3];
             var sequencing = (bool)e[4];
-            if (isPlaying) animation.PlayClipBySet(animationName, animationSet, sequencing);
+            if (isPlaying) animation.PlayClipBySet(animationName, animationSet, animationSegment, sequencing);
 
             var clipsToSyncTime = animation.index.ByName(animationName);
             for (var i = 0; i < clipsToSyncTime.Count; i++)
