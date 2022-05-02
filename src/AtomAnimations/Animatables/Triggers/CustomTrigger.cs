@@ -43,16 +43,19 @@ namespace VamTimeline
         public void SyncAudio(float clipTime, bool forcePlay = false)
         {
             if (!active) return;
-            foreach (var action in discreteActionsStart)
+            for (var i = 0; i < discreteActionsStart.Count; i++)
             {
+                var action = discreteActionsStart[i];
                 var audioReceiver = action.receiver as AudioSourceControl;
-                if (audioReceiver == null) continue;
-                if (audioReceiver.audioSource == null) continue;
+                if (ReferenceEquals(action.audioClip, null)) continue;
+                if (ReferenceEquals(audioReceiver, null)) continue;
+                if (ReferenceEquals(audioReceiver.audioSource, null)) continue;
                 if (audioReceiver.audioSource.clip != action.audioClip.clipToPlay) continue;
                 if (forcePlay && !audioReceiver.audioSource.isPlaying)
                 {
                     audioReceiver.PlayNow(action.audioClip);
                 }
+
                 audioReceiver.audioSource.time = Mathf.Clamp(clipTime - startTime, 0f, action.audioClip.sourceClip.length);
                 // TODO: Whenever stopping, stop ALL currently running audio clips
                 // TODO: Validate that it's indeed still the same clip
