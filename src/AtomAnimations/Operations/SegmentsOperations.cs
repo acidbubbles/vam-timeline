@@ -16,5 +16,10 @@
         {
             return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, GetNewAnimationName(), GetNewSegmentName());
         }
+
+        public AtomAnimationClip AddShared()
+        {
+            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, GetNewAnimationName(), AtomAnimationClip.SharedAnimationSegment, 0);
+        }
     }
 }

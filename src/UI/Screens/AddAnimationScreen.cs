@@ -111,8 +111,11 @@ namespace VamTimeline
 
         public void InitCreateSegmentUI()
         {
-            var createLayerUI = prefabFactory.CreateButton("Create new segment");
-            createLayerUI.button.onClick.AddListener(AddSegment);
+            var createSegmentUI = prefabFactory.CreateButton("Create new segment");
+            createSegmentUI.button.onClick.AddListener(AddSegment);
+
+            var createSharedSegmentUI = prefabFactory.CreateButton("Create shared segment");
+            createSharedSegmentUI.button.onClick.AddListener(AddSharedSegment);
         }
 
         #endregion
@@ -249,6 +252,20 @@ namespace VamTimeline
         {
             var clip = operations.Segments().Add();
 
+            animationEditContext.SelectAnimation(clip);
+            ChangeScreen(EditAnimationScreen.ScreenName);
+            if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
+        }
+
+        private void AddSharedSegment()
+        {
+            if (animation.index.segmentNames.Contains(AtomAnimationClip.SharedAnimationSegment))
+            {
+                animationEditContext.SelectAnimation(animation.clips.First(c => c.animationSegment == AtomAnimationClip.SharedAnimationSegment));
+                return;
+            }
+
+            var clip = operations.Segments().AddShared();
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
             if(_createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
