@@ -249,7 +249,6 @@ namespace VamTimeline
             _animationsJSON.valNoCallback = args.after.animationName;
             args.before?.onAnimationSettingsChanged.RemoveListener(OnAnimationSettingsChanged);
             args.after?.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
-            #warning Validate this?
             OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));
             OnTimeChanged(_animationEditContext.timeArgs);
         }

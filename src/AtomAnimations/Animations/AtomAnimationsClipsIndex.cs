@@ -26,7 +26,6 @@ namespace VamTimeline
         }
 
         public IEnumerable<string> clipNames => _clipsByName.Keys;
-        public string mainLayerNameQualified { get; private set; }
 
         private readonly List<AtomAnimationClip> _clips;
 
@@ -72,8 +71,6 @@ namespace VamTimeline
             segmentNames.Clear();
 
             if (_clips == null || _clips.Count == 0) return;
-
-            mainLayerNameQualified = _clips[0].animationLayerQualified;
 
             foreach (var clip in _clips)
             {
@@ -176,18 +173,11 @@ namespace VamTimeline
             return _clipsByFloatParam;
         }
 
-        #warning Scope to sequence?
+        #warning Scope to segment?
         public IList<AtomAnimationClip> ByName(string name)
         {
             List<AtomAnimationClip> clips;
             return _clipsByName.TryGetValue(name, out clips) ? clips : _emptyClipList;
-        }
-
-        #warning Delete?
-        public IList<AtomAnimationClip> BySet(string set)
-        {
-            List<AtomAnimationClip> clips;
-            return _clipsBySet.TryGetValue(set, out clips) ? clips : _emptyClipList;
         }
 
         public IList<AtomAnimationClip> GetSiblingsByLayer(AtomAnimationClip clip)

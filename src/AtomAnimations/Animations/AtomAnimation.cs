@@ -759,7 +759,6 @@ namespace VamTimeline
             if (layer[0].animationLayerQualified == source.animationLayerQualified)
                 return source;
 
-            #warning Remove LINQ, and add indices
             if (source.animationSet != null)
             {
                 var clip = layer.FirstOrDefault(c => c.animationSet == source.animationSet);
@@ -1110,8 +1109,7 @@ namespace VamTimeline
 
             if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s");
 
-            #warning mainLayerNameQualified makes no sense with sequence. This should become GetMainLayer(sequenceName) but I'm not sure of the actual purpose...
-            if (next.fadeOnTransition && next.animationLayerQualified == index.mainLayerNameQualified && fadeManager != null)
+            if (next.fadeOnTransition && next.animationLayerQualified == index.segments[next.animationSegment].layerNames[0] && fadeManager != null)
             {
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
@@ -1603,8 +1601,7 @@ namespace VamTimeline
                     PlaySiblings(nextClip);
                 }
 
-                #warning Again, mainLayerNameQualified (see other warning)
-                if (nextClip.fadeOnTransition && fadeManager?.black == true && clip.animationLayerQualified == index.mainLayerNameQualified)
+                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayerQualified == index.segments[nextClip.animationSegment].layerNames[0])
                 {
                     _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
                 }

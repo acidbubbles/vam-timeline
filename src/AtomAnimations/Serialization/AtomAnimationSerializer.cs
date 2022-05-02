@@ -356,7 +356,6 @@ namespace VamTimeline
 
         private static string DeserializeString(JSONNode node, string defaultVal)
         {
-            #warning Empty string and null are different...
             if (node == null || string.IsNullOrEmpty(node.Value))
                 return defaultVal;
             return node.Value;

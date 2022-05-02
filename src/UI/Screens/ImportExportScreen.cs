@@ -235,7 +235,6 @@ namespace VamTimeline
                 return new List<AtomAnimationClip>();
             }
 
-            #warning Ensure we keep the shared layer...
             if (animation.clips.Count == 1 && animation.clips[0].IsEmpty())
                 animation.RemoveClip(animation.clips[0]);
 
