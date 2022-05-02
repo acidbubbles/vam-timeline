@@ -98,8 +98,12 @@ src\UI\Components\SimpleSlider.cs
 src\UI\Components\UIPerformance.cs
 src\UI\Components\UIVertexHelper.cs
 src\UI\Components\VamPrefabFactory.cs
-src\UI\Screens\AddAnimationScreen.cs
+src\UI\Screens\AddAnimationsScreen.cs
+src\UI\Screens\AddClipScreen.cs
+src\UI\Screens\AddLayerScreen.cs
 src\UI\Screens\AddRemoveTargetsScreen.cs
+src\UI\Screens\AddScreenBase.cs
+src\UI\Screens\AddSegmentScreen.cs
 src\UI\Screens\AdvancedKeyframeToolsScreen.cs
 src\UI\Screens\AnimationsScreen.cs
 src\UI\Screens\BulkScreen.cs

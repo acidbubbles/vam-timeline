@@ -99,7 +99,7 @@ namespace VamTimeline
             InitChangeCurveTypeUI();
 
             tabs.Add(AnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f));
-            tabs.Add(AddAnimationScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f), "+", 60f);
+            tabs.Add(AddAnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f), "+", 60f);
             tabs.Add(TargetsScreen.ScreenName, new Color(0.780f, 0.899f, 0.780f));
             tabs.Add(AddRemoveTargetsScreen.ScreenName, new Color(0.780f, 0.899f, 0.780f), "+", 60f);
             tabs.Add(EditAnimationScreen.ScreenName, new Color(0.899f, 0.780f, 0.780f));

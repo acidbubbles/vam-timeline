@@ -174,8 +174,17 @@ namespace VamTimeline
                 case SequencingScreen.ScreenName:
                     _current = screenContainer.AddComponent<SequencingScreen>();
                     break;
-                case AddAnimationScreen.ScreenName:
-                    _current = screenContainer.AddComponent<AddAnimationScreen>();
+                case AddAnimationsScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
+                    break;
+                case AddClipScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
+                    break;
+                case AddLayerScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
+                    break;
+                case AddSegmentScreen.ScreenName:
+                    _current = screenContainer.AddComponent<AddAnimationsScreen>();
                     break;
                 case ManageAnimationsScreen.ScreenName:
                     _current = screenContainer.AddComponent<ManageAnimationsScreen>();

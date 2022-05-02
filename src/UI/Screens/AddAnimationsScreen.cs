@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace VamTimeline
 {
-    public class AddAnimationScreen : ScreenBase
+    public class AddAnimationsScreen : ScreenBase
     {
-        public const string ScreenName = "Add Animation";
+        public const string ScreenName = "Add Animations";
 
         private const string _positionFirst = "First";
         private const string _positionPrevious = "Previous";

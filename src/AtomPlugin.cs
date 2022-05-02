@@ -966,7 +966,7 @@ namespace VamTimeline
             });
             bindings.Add(new JSONStorableAction("OpenUI", SelectAndOpenUI));
             bindings.Add(new JSONStorableAction("OpenUI_AnimationsTab", () => { ChangeScreen(AnimationsScreen.ScreenName, null); SelectAndOpenUI(); }));
-            bindings.Add(new JSONStorableAction("OpenUI_AddAnimationsTab", () => { ChangeScreen(AddAnimationScreen.ScreenName, null); SelectAndOpenUI(); }));
+            bindings.Add(new JSONStorableAction("OpenUI_AddAnimationsTab", () => { ChangeScreen(AddAnimationsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_ManageAnimationsTab", () => { ChangeScreen(ManageAnimationsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_TargetsTab", () => { ChangeScreen(TargetsScreen.ScreenName, null); SelectAndOpenUI(); }));
             bindings.Add(new JSONStorableAction("OpenUI_AddRemoveTargetsTab", () => { ChangeScreen(AddRemoveTargetsScreen.ScreenName, null); SelectAndOpenUI(); }));

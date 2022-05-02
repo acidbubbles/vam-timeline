@@ -173,8 +173,12 @@
     <Compile Include="src\UI\Components\UIPerformance.cs" />
     <Compile Include="src\UI\Components\UIVertexHelper.cs" />
     <Compile Include="src\UI\Components\VamPrefabFactory.cs" />
-    <Compile Include="src\UI\Screens\AddAnimationScreen.cs" />
+    <Compile Include="src\UI\Screens\AddAnimationsScreen.cs" />
+    <Compile Include="src\UI\Screens\AddClipScreen.cs" />
+    <Compile Include="src\UI\Screens\AddLayerScreen.cs" />
     <Compile Include="src\UI\Screens\AddRemoveTargetsScreen.cs" />
+    <Compile Include="src\UI\Screens\AddScreenBase.cs" />
+    <Compile Include="src\UI\Screens\AddSegmentScreen.cs" />
     <Compile Include="src\UI\Screens\AdvancedKeyframeToolsScreen.cs" />
     <Compile Include="src\UI\Screens\AnimationsScreen.cs" />
     <Compile Include="src\UI\Screens\BulkScreen.cs" />
