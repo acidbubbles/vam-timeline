@@ -617,35 +617,57 @@ namespace VamTimeline
 
         private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
         {
-            var layers = index.segments[animationSegment].layers;
-            var result = new TransitionTarget[layers.Count];
-            for (var i = 0; i < layers.Count; i++)
+            AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
+            if (!index.segments.TryGetValue(AtomAnimationClip.SharedAnimationSegment, out sharedLayers))
             {
-                var layer = layers[i];
-                var main = GetMainClipInLayer(layer);
-                AtomAnimationClip bestSibling = null;
-                for (var j = 0; j < layer.Count; j++)
-                {
-                    var clip = layer[j];
-                    if (clip.animationName == animationName)
-                    {
-                        bestSibling = clip;
-                        break;
-                    }
+                sharedLayers = index.emptySegment;
+            }
 
-                    if (animationSet != null && clip.animationSet == animationSet)
-                    {
-                        if (bestSibling == null || clip.playbackMainInLayer)
-                            bestSibling = clip;
-                    }
-                }
-                result[i] = new TransitionTarget
-                {
-                    main = main,
-                    target = bestSibling
-                };
+            AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
+            if (animationSegment != AtomAnimationClip.SharedAnimationSegment)
+                segmentLayers = index.segments[animationSegment];
+            else
+                segmentLayers = index.emptySegment;
+
+            var result = new TransitionTarget[sharedLayers.layers.Count + segmentLayers.layers.Count];
+            for (var i = 0; i < sharedLayers.layers.Count; i++)
+            {
+                var layer = sharedLayers.layers[i];
+                result[i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet);
+            }
+            for (var i = 0; i < segmentLayers.layers.Count; i++)
+            {
+                var layer = segmentLayers.layers[i];
+                result[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet);
             }
             return result;
+        }
+
+        private static TransitionTarget GetMainAndBestSiblingInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet)
+        {
+            var main = GetMainClipInLayer(layer);
+            AtomAnimationClip bestSibling = null;
+            for (var j = 0; j < layer.Count; j++)
+            {
+                var clip = layer[j];
+                if (clip.animationName == animationName)
+                {
+                    bestSibling = clip;
+                    break;
+                }
+
+                if (animationSet != null && clip.animationSet == animationSet)
+                {
+                    if (bestSibling == null || clip.playbackMainInLayer)
+                        bestSibling = clip;
+                }
+            }
+
+            return new TransitionTarget
+            {
+                main = main,
+                target = bestSibling
+            };
         }
 
         private static bool LayerContainsClip(IList<AtomAnimationClip> clipsByName, string animationLayerQualified)
@@ -1185,7 +1207,6 @@ namespace VamTimeline
             if (simulationFrozen) return;
             if (_globalScaledWeight <= 0) return;
             // TODO: Index keep track if there is any parenting
-            // TODO: Setting to disable that behavior
             var layers = GetMainAndBestSiblingPerLayer(playingAnimationSegment, source.animationName, source.animationSet);
             for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
