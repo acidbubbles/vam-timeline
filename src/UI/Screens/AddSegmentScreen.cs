@@ -9,6 +9,7 @@ namespace VamTimeline
         public override string screenId => ScreenName;
 
         private UIDynamicButton _createSegmentUI;
+        private UIDynamicButton _copySegmentUI;
 
         #region Init
 
@@ -28,7 +29,6 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Options", 2);
 
             InitCreateInOtherAtomsUI();
-            #warning Option to copy all layers
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("More", 2);
@@ -42,6 +42,9 @@ namespace VamTimeline
         {
             _createSegmentUI = prefabFactory.CreateButton("Create new segment");
             _createSegmentUI.button.onClick.AddListener(AddSegment);
+
+            _copySegmentUI = prefabFactory.CreateButton("Copy to new segment");
+            _copySegmentUI.button.onClick.AddListener(CopySegment);
         }
 
         #endregion
@@ -57,6 +60,18 @@ namespace VamTimeline
             if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
         }
 
+        private void CopySegment()
+        {
+            foreach (var source in currentSegment.layers.SelectMany(l => l))
+            {
+                var clip = operations.AddAnimation().AddAnimationAsCopy(source, null, animation.clips.Count, segmentNameJSON.val);
+                if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
+            }
+
+            animationEditContext.SelectAnimation(animation.index.segments[segmentNameJSON.val].layers[0][0]);
+            ChangeScreen(EditAnimationScreen.ScreenName);
+        }
+
         #endregion
 
         protected override void RefreshUI()
@@ -70,12 +85,15 @@ namespace VamTimeline
 
         protected override void OptionsUpdated()
         {
-            _createSegmentUI.button.interactable =
+            var isValid =
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
                 animation.clips.All(c => c.animationName != clipNameJSON.val) &&
                 !string.IsNullOrEmpty(layerNameJSON.val) &&
                 !string.IsNullOrEmpty(segmentNameJSON.val) &&
                 !animation.index.segmentNames.Contains(segmentNameJSON.val);
+
+            _createSegmentUI.button.interactable = isValid;
+            _copySegmentUI.button.interactable = isValid;
         }
     }
 }

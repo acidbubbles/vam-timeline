@@ -17,36 +17,44 @@ namespace VamTimeline
 
         public AtomAnimationClip AddAnimationAsCopy(string animationName, int position)
         {
-            var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(_clip) : animationName, _clip.animationSegment, position);
-            _clip.CopySettingsTo(clip);
-            foreach (var origTarget in _clip.targetControllers)
+            return AddAnimationAsCopy(_clip, animationName, position, _clip.animationSegment);
+        }
+
+        public AtomAnimationClip AddAnimationAsCopy(AtomAnimationClip source, string animationName, int position, string segmentName)
+        {
+            var clip = _animation.CreateClip(source.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetNewAnimationName(source) : animationName, segmentName, position);
+            source.CopySettingsTo(clip);
+            foreach (var origTarget in source.targetControllers)
             {
                 var newTarget = CopyTarget(clip, origTarget);
                 for (var i = 0; i < origTarget.curves.Count; i++)
                     newTarget.curves[i].keys = new List<BezierKeyframe>(origTarget.curves[i].keys);
                 newTarget.dirty = true;
             }
-            foreach (var origTarget in _clip.targetFloatParams)
+
+            foreach (var origTarget in source.targetFloatParams)
             {
                 if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(new JSONStorableFloatAnimationTarget(origTarget));
                 newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                 newTarget.dirty = true;
             }
-            foreach (var origTarget in _clip.targetTriggers)
+
+            foreach (var origTarget in source.targetTriggers)
             {
-                var newTarget = clip.Add(new TriggersTrackAnimationTarget (origTarget.animatableRef));
+                var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef));
                 foreach (var origTrigger in origTarget.triggersMap)
                 {
                     var trigger = new CustomTrigger();
                     trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
                     newTarget.SetKeyframe(origTrigger.Key, trigger);
                 }
+
                 newTarget.dirty = true;
             }
 
-            clip.pose = _clip.pose?.Clone();
-            clip.applyPoseOnTransition = _clip.applyPoseOnTransition;
+            clip.pose = source.pose?.Clone();
+            clip.applyPoseOnTransition = source.applyPoseOnTransition;
             return clip;
         }
 
