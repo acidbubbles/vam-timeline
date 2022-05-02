@@ -12,14 +12,14 @@
             _clip = clip;
         }
 
-        public AtomAnimationClip Add()
+        public AtomAnimationClip Add(string clipName, string layerName, string segmentName)
         {
-            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, GetNewAnimationName(), GetNewSegmentName());
+            return _animation.CreateClip(layerName ?? AtomAnimationClip.DefaultAnimationLayer, clipName ?? GetNewAnimationName(), segmentName ?? GetNewSegmentName());
         }
 
-        public AtomAnimationClip AddShared()
+        public AtomAnimationClip AddShared(string clipName)
         {
-            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, GetNewAnimationName(), AtomAnimationClip.SharedAnimationSegment, 0);
+            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, clipName ?? GetNewAnimationName(), AtomAnimationClip.SharedAnimationSegment, 0);
         }
     }
 }

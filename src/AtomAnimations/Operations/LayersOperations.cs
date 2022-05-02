@@ -16,14 +16,15 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public AtomAnimationClip Add()
+        public AtomAnimationClip Add(string clipName = null, string layerName = null)
         {
-            return _animation.CreateClip(GetNewLayerName(_clip.animationSegment), GetNewAnimationName(), _clip.animationSegment);
+            return _animation.CreateClip(layerName ?? GetNewLayerName(_clip.animationSegment), clipName ?? GetNewAnimationName(), _clip.animationSegment);
         }
 
-        public void SplitLayer(List<IAtomAnimationTarget> targets)
+        public void SplitLayer(List<IAtomAnimationTarget> targets, string layerName = null)
         {
-            var layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.segments[_clip.animationSegment].layerNames);
+            if (layerName == null)
+                layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.segments[_clip.animationSegment].layerNames);
             foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayerQualified).ToList())
             {
                 var newClip = _animation.CreateClip(layerName, sourceClip.animationName, _clip.animationSegment);

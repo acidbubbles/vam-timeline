@@ -15,17 +15,23 @@
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Create", 1);
 
+            InitNewClipNameUI();
+            InitNewLayerNameUI();
+            InitNewSegmentNameUI();
             InitCreateSegmentUI();
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Options", 2);
 
             InitCreateInOtherAtomsUI();
+            #warning Option to copy all layers
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("More", 2);
 
             CreateChangeScreenButton("<i>Create <b>shared segment</b>...</i>", AddSharedSegmentScreen.ScreenName);
+
+            RefreshUI();
         }
 
         public void InitCreateSegmentUI()
@@ -40,7 +46,7 @@
 
         private void AddSegment()
         {
-            var clip = operations.Segments().Add();
+            var clip = operations.Segments().Add(clipNameJSON.val, layerNameJSON.val, segmentNameJSON.val);
 
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
@@ -48,5 +54,14 @@
         }
 
         #endregion
+
+        protected override void RefreshUI()
+        {
+            base.RefreshUI();
+
+            clipNameJSON.valNoCallback = animation.GetNewAnimationName(current);
+            layerNameJSON.valNoCallback = AtomAnimationClip.DefaultAnimationLayer;
+            segmentNameJSON.valNoCallback = animation.GetNewSegmentName(current);
+        }
     }
 }

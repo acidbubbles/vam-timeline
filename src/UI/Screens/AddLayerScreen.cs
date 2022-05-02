@@ -15,13 +15,18 @@
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Create", 1);
 
+            InitNewClipNameUI();
+            InitNewLayerNameUI();
             InitCreateLayerUI();
             InitSplitLayerUI();
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Options", 2);
 
+            #warning Option to create all clips with same settings on all layers
             InitCreateInOtherAtomsUI();
+
+            RefreshUI();
         }
 
         public void InitCreateLayerUI()
@@ -42,7 +47,7 @@
 
         private void AddLayer()
         {
-            var clip = operations.Layers().Add();
+            var clip = operations.Layers().Add(clipNameJSON.val, layerNameJSON.val);
 
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
@@ -58,9 +63,17 @@
                 return;
             }
 
-            operations.Layers().SplitLayer(targets);
+            operations.Layers().SplitLayer(targets, layerNameJSON.val);
         }
 
         #endregion
+
+        protected override void RefreshUI()
+        {
+            base.RefreshUI();
+
+            clipNameJSON.valNoCallback = current.animationName;
+            layerNameJSON.valNoCallback = animation.GetNewLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
+        }
     }
 }

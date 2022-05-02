@@ -17,8 +17,11 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Create", 1);
 
+            InitNewClipNameUI();
+            InitNewLayerNameUI();
             InitCreateSharedSegmentUI();
 
+            RefreshUI();
         }
 
         public void InitCreateSharedSegmentUI()
@@ -39,11 +42,18 @@ namespace VamTimeline
                 return;
             }
 
-            var clip = operations.Segments().AddShared();
+            var clip = operations.Segments().AddShared(clipNameJSON.val);
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         #endregion
+
+        protected override void RefreshUI()
+        {
+            base.RefreshUI();
+
+            clipNameJSON.valNoCallback = operations.Segments().GetNewAnimationName("Shared");
+        }
     }
 }

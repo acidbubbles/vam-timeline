@@ -213,26 +213,42 @@ namespace VamTimeline
             OnAnimationKeyframesDirty();
         }
 
+        #warning Maybe duplicate, maybe move
         public string GetNewAnimationName(AtomAnimationClip source)
         {
-            var match = _lastDigitsRegex.Match(source.animationName);
-            string animationNameBeforeInt;
-            int animationNameInt;
+            return GetNewName(source.animationName, clips.Select(c => c.animationName));
+        }
+
+        public string GetNewLayerName(AtomAnimationClip source, string baseName = null)
+        {
+            return GetNewName(baseName ?? source.animationLayer, index.segments[source.animationSegment].layerNames);
+        }
+
+        public string GetNewSegmentName(AtomAnimationClip source)
+        {
+            return GetNewName(source.animationSegment, index.segmentNames.Where(s => s != AtomAnimationClip.SharedAnimationSegment));
+        }
+
+        public string GetNewName(string sourceName, IEnumerable<string> existingNames)
+        {
+            var match = _lastDigitsRegex.Match(sourceName);
+            string itemNameBeforeInt;
+            int itemNameInt;
             if (!match.Success)
             {
-                animationNameBeforeInt = $"{source.animationName.TrimEnd()} ";
-                animationNameInt = 1;
+                itemNameBeforeInt = $"{sourceName.TrimEnd()} ";
+                itemNameInt = 1;
             }
             else
             {
-                animationNameBeforeInt = source.animationName.Substring(0, match.Index);
-                animationNameInt = int.Parse(match.Value);
+                itemNameBeforeInt = sourceName.Substring(0, match.Index);
+                itemNameInt = int.Parse(match.Value);
             }
-            for (var i = animationNameInt + 1; i < 999; i++)
+            for (var i = itemNameInt + 1; i < 999; i++)
             {
-                var animationName = animationNameBeforeInt + i;
-                if (index.ByLayer(source.animationLayerQualified).All(c => c.animationName != animationName))
-                    return animationName;
+                var itemName = itemNameBeforeInt + i;
+                if (existingNames.All(n => n != itemName))
+                    return itemName;
             }
             return Guid.NewGuid().ToString();
         }
