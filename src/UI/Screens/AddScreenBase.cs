@@ -22,19 +22,19 @@
 
         protected void InitNewClipNameUI()
         {
-            clipNameJSON = new JSONStorableString("New animation name", "");
+            clipNameJSON = new JSONStorableString("New animation name", "", (string _) => OptionsUpdated());
             prefabFactory.CreateTextInput(clipNameJSON);
         }
 
         protected void InitNewLayerNameUI()
         {
-            layerNameJSON = new JSONStorableString("New layer name", "");
+            layerNameJSON = new JSONStorableString("New layer name", "", (string _) => OptionsUpdated());
             prefabFactory.CreateTextInput(layerNameJSON);
         }
 
         protected void InitNewSegmentNameUI()
         {
-            segmentNameJSON = new JSONStorableString("New segment name", "");
+            segmentNameJSON = new JSONStorableString("New segment name", "", (string _) => OptionsUpdated());
             prefabFactory.CreateTextInput(segmentNameJSON);
         }
 
@@ -55,6 +55,9 @@
 
         protected virtual void RefreshUI()
         {
+            OptionsUpdated();
         }
+
+        protected abstract void OptionsUpdated();
     }
 }

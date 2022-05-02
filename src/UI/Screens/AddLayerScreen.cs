@@ -1,10 +1,15 @@
-﻿namespace VamTimeline
+﻿using System.Linq;
+
+namespace VamTimeline
 {
     public class AddLayerScreen : AddScreenBase
     {
         public const string ScreenName = "Add layer";
 
         public override string screenId => ScreenName;
+
+        private UIDynamicButton _createLayerUI;
+        private UIDynamicButton _splitLayerUI;
 
         #region Init
 
@@ -31,14 +36,14 @@
 
         public void InitCreateLayerUI()
         {
-            var createLayerUI = prefabFactory.CreateButton("Create new layer");
-            createLayerUI.button.onClick.AddListener(AddLayer);
+            _createLayerUI = prefabFactory.CreateButton("Create new layer");
+            _createLayerUI.button.onClick.AddListener(AddLayer);
         }
 
         private void InitSplitLayerUI()
         {
-            var splitLayerUI = prefabFactory.CreateButton("Split selection to new layer");
-            splitLayerUI.button.onClick.AddListener(SplitLayer);
+            _splitLayerUI = prefabFactory.CreateButton("Split selection to new layer");
+            _splitLayerUI.button.onClick.AddListener(SplitLayer);
         }
 
         #endregion
@@ -72,8 +77,24 @@
         {
             base.RefreshUI();
 
-            clipNameJSON.valNoCallback = current.animationName;
-            layerNameJSON.valNoCallback = animation.GetNewLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
+            clipNameJSON.val = current.animationName;
+            layerNameJSON.val = animation.GetNewLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
+        }
+
+        protected override void OptionsUpdated()
+        {
+            var nameValid =
+                !string.IsNullOrEmpty(clipNameJSON.val) &&
+                animation.index.segments
+                    .Where(s => s.Key != current.animationSegment)
+                    .SelectMany(s => s.Value.layers)
+                    .SelectMany(l => l)
+                    .All(c => c.animationName != clipNameJSON.val) &&
+                !string.IsNullOrEmpty(layerNameJSON.val) &&
+                !currentSegment.layerNames.Contains(layerNameJSON.val);
+
+            _createLayerUI.button.interactable = nameValid;
+            _splitLayerUI.button.interactable = nameValid;
         }
     }
 }

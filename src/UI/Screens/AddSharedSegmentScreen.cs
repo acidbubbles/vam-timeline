@@ -8,6 +8,8 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
+        private UIDynamicButton _createSharedSegmentUI;
+
         #region Init
 
         public override void Init(IAtomPlugin plugin, object arg)
@@ -26,8 +28,8 @@ namespace VamTimeline
 
         public void InitCreateSharedSegmentUI()
         {
-            var createSharedSegmentUI = prefabFactory.CreateButton("Create shared segment");
-            createSharedSegmentUI.button.onClick.AddListener(AddSharedSegment);
+            _createSharedSegmentUI = prefabFactory.CreateButton("Create shared segment");
+            _createSharedSegmentUI.button.onClick.AddListener(AddSharedSegment);
         }
 
         #endregion
@@ -53,7 +55,17 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.valNoCallback = operations.Segments().GetNewAnimationName("Shared");
+            clipNameJSON.val = operations.Segments().GetNewAnimationName("Shared");
+            layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
+        }
+
+        protected override void OptionsUpdated()
+        {
+            _createSharedSegmentUI.button.interactable =
+                !animation.index.segmentNames.Contains(AtomAnimationClip.SharedAnimationSegment) &&
+                !string.IsNullOrEmpty(clipNameJSON.val) &&
+                animation.clips.All(c => c.animationName != clipNameJSON.val) &&
+                !string.IsNullOrEmpty(layerNameJSON.val);
         }
     }
 }

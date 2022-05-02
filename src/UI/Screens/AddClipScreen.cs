@@ -14,6 +14,10 @@ namespace VamTimeline
 
         private UIDynamicButton _addAnimationTransitionUI;
         private JSONStorableStringChooser _createPosition;
+        private UIDynamicButton _createNewUI;
+        private UIDynamicButton _createNewCarrySettingsUI;
+        private UIDynamicButton _createCopyUI;
+        private UIDynamicButton _splitAtScrubberUI;
 
         public override string screenId => ScreenName;
 
@@ -52,17 +56,17 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI()
         {
-            var createNewUI = prefabFactory.CreateButton("Create blank");
-            createNewUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(false));
+            _createNewUI = prefabFactory.CreateButton("Create blank");
+            _createNewUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(false));
 
-            var createNewCarrySettingsUI = prefabFactory.CreateButton("Create new (carry settings)");
-            createNewCarrySettingsUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(true));
+            _createNewCarrySettingsUI = prefabFactory.CreateButton("Create new (carry settings)");
+            _createNewCarrySettingsUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(true));
 
-            var createCopyUI = prefabFactory.CreateButton("Create copy");
-            createCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
+            _createCopyUI = prefabFactory.CreateButton("Create copy");
+            _createCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
 
-            var splitAtScrubberUI = prefabFactory.CreateButton("Split at scrubber position");
-            splitAtScrubberUI.button.onClick.AddListener(SplitAnimationAtScrubber);
+            _splitAtScrubberUI = prefabFactory.CreateButton("Split at scrubber position");
+            _splitAtScrubberUI.button.onClick.AddListener(SplitAnimationAtScrubber);
 
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
@@ -201,7 +205,7 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.valNoCallback = animation.GetNewAnimationName(current);
+            clipNameJSON.val = animation.GetNewAnimationName(current);
 
             var hasNext = current.nextAnimationName != null;
             var nextIsTransition = false;
@@ -223,5 +227,22 @@ namespace VamTimeline
         }
 
         #endregion
+
+        protected override void OptionsUpdated()
+        {
+            var nameValid =
+                !string.IsNullOrEmpty(clipNameJSON.val) &&
+                animation.index.segments
+                    .Where(s => s.Key != current.animationSegment)
+                    .SelectMany(s => s.Value.layers)
+                    .SelectMany(l => l)
+                    .All(c => c.animationName != clipNameJSON.val) &&
+                currentLayer.All(c => c.animationName != clipNameJSON.val);
+
+            _createNewUI.button.interactable = nameValid;
+            _createNewCarrySettingsUI.button.interactable = nameValid;
+            _createCopyUI.button.interactable = nameValid;
+            _splitAtScrubberUI.button.interactable = nameValid;
+        }
     }
 }

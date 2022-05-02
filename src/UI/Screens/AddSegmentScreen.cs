@@ -1,10 +1,14 @@
-﻿namespace VamTimeline
+﻿using System.Linq;
+
+namespace VamTimeline
 {
     public class AddSegmentScreen : AddScreenBase
     {
         public const string ScreenName = "Add segment";
 
         public override string screenId => ScreenName;
+
+        private UIDynamicButton _createSegmentUI;
 
         #region Init
 
@@ -36,8 +40,8 @@
 
         public void InitCreateSegmentUI()
         {
-            var createSegmentUI = prefabFactory.CreateButton("Create new segment");
-            createSegmentUI.button.onClick.AddListener(AddSegment);
+            _createSegmentUI = prefabFactory.CreateButton("Create new segment");
+            _createSegmentUI.button.onClick.AddListener(AddSegment);
         }
 
         #endregion
@@ -59,9 +63,19 @@
         {
             base.RefreshUI();
 
-            clipNameJSON.valNoCallback = animation.GetNewAnimationName(current);
-            layerNameJSON.valNoCallback = AtomAnimationClip.DefaultAnimationLayer;
-            segmentNameJSON.valNoCallback = animation.GetNewSegmentName(current);
+            clipNameJSON.val = animation.GetNewAnimationName(current);
+            layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
+            segmentNameJSON.val = animation.GetNewSegmentName(current);
+        }
+
+        protected override void OptionsUpdated()
+        {
+            _createSegmentUI.button.interactable =
+                !string.IsNullOrEmpty(clipNameJSON.val) &&
+                animation.clips.All(c => c.animationName != clipNameJSON.val) &&
+                !string.IsNullOrEmpty(layerNameJSON.val) &&
+                !string.IsNullOrEmpty(segmentNameJSON.val) &&
+                !animation.index.segmentNames.Contains(segmentNameJSON.val);
         }
     }
 }
