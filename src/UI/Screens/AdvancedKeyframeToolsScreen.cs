@@ -140,7 +140,7 @@ namespace VamTimeline
                     if (target == null)
                     {
                         if (!all) continue;
-                        if (animation.index.segments[current.animationSegment].layers.Where(l => l[0].animationLayer != current.animationLayer).SelectMany(l => l).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
+                        if (currentSegment.layers.Where(l => l[0].animationLayer != current.animationLayer).SelectMany(l => l).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
                         {
                             SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
                             continue;

@@ -170,7 +170,7 @@ namespace VamTimeline
 
         private void InitAnimationSetUI()
         {
-            _animationSetJSON = new JSONStorableString("Anim set (sync across layers)", "", val => current.animationSet = val != _animationSetAuto ? val : null);
+            _animationSetJSON = new JSONStorableString("Anim set (sync across layers)", "", val => current.animationSet = val != _animationSetAuto && !string.IsNullOrWhiteSpace(val) ? val : null);
             prefabFactory.CreateTextInput(_animationSetJSON);
         }
 

@@ -95,8 +95,7 @@ namespace VamTimeline
 
             var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _clip.animationSegment, _animation.clips.IndexOf(_clip) + 1);
             clip.loop = false;
-            #warning This makes no sense
-            clip.autoTransitionPrevious = _animation.index.segments[_clip.animationSegment].layersMap[_clip.animationLayer].Any(c => c.animationLayer == _clip.animationLayer);
+            clip.autoTransitionPrevious = _animation.index.segments[_clip.animationSegment].layersMap[_clip.animationLayer].Any(c => c.nextAnimationName == _clip.animationName);
             clip.autoTransitionNext = _clip.nextAnimationName != null;
             clip.nextAnimationName = _clip.nextAnimationName;
             clip.blendInDuration = AtomAnimationClip.DefaultBlendDuration;

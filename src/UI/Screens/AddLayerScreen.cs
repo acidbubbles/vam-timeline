@@ -28,10 +28,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Options", 2);
 
-            #warning Option to create all clips with same settings on all layers
             InitCreateInOtherAtomsUI();
-
-            #warning Merge layers (if all clips match)
 
             RefreshUI();
         }

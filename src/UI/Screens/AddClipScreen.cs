@@ -38,7 +38,6 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Options", 2);
 
             InitCreateInOtherAtomsUI();
-            #warning Option to create on all layers
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Advanced", 1);
@@ -136,7 +135,7 @@ namespace VamTimeline
 
         private void MergeWithNext()
         {
-            var next = animation.index.ByLayer(current.animationLayerQualified).SkipWhile(c => c != current).Skip(1).FirstOrDefault();
+            var next = currentLayer.SkipWhile(c => c != current).Skip(1).FirstOrDefault();
             if (next == null) return;
 
             var animationLengthOffset = current.animationLength;

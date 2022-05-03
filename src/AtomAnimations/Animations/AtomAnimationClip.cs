@@ -95,7 +95,6 @@ namespace VamTimeline
 
         public string animationNameQualified { get; private set; }
         public string animationLayerQualified { get; private set; }
-        #warning Use this!!!
         public string animationSetQualified { get; private set; }
         private void UpdateAnimationNameQualified()
         {

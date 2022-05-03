@@ -87,7 +87,7 @@ namespace VamTimeline
 
         private void InitFixMissingUI()
         {
-            var layerClips = animation.index.ByLayer(current.animationLayerQualified);
+            var layerClips = currentLayer;
             if (layerClips.Count <= 1) return;
 
             foreach (var clip in layerClips)
@@ -153,7 +153,7 @@ namespace VamTimeline
 
         private void AddTrack(TriggersTrackRef track)
         {
-            foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
+            foreach (var clip in currentLayer)
             {
                 var target = new TriggersTrackAnimationTarget(track);
                 target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -330,7 +330,7 @@ namespace VamTimeline
             foreach (var s in selected)
             {
                 // We remove every selected target on every clip on the current layer, except triggers
-                foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
+                foreach (var clip in currentLayer)
                 {
                     var target = clip.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
                     if (target == null) continue;
@@ -495,7 +495,7 @@ namespace VamTimeline
                     SuperController.LogMessage($"Timeline: The {controller.name} controller state had position or rotation off; animations will not affect off nodes.");
                 }
 
-                foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
+                foreach (var clip in currentLayer)
                 {
                     var added = clip.Add(animation.animatables.GetOrCreateController(controller));
                     if (added == null) continue;
@@ -561,7 +561,7 @@ namespace VamTimeline
             if (current.targetFloatParams.Any(c => c.animatableRef.EnsureAvailable(true) && c.animatableRef.floatParam == jsf))
                 return false;
 
-            foreach (var clip in animation.index.ByLayer(current.animationLayerQualified))
+            foreach (var clip in currentLayer)
             {
                 var storableFloat = animation.animatables.GetOrCreateStorableFloat(storable, jsf);
                 var added = clip.Add(storableFloat);

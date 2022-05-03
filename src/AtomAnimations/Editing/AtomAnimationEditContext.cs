@@ -135,7 +135,8 @@ namespace VamTimeline
                 {
                     var clip = clips[i];
                     clip.clipTime = value;
-                    if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer) animation.PlayClip(clip, animation.sequencing);
+                    if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer)
+                        animation.PlayClip(clip, animation.sequencing);
                 }
                 SampleTriggers();
                 if (!animation.isPlaying || animation.paused)
@@ -340,8 +341,6 @@ namespace VamTimeline
                 SelectAnimation(next);
         }
 
-        #warning Find all similar usage and call this instead
-        public AtomAnimationsClipsIndex.IndexedSegment sharedSegment => _animation.index.segments[AtomAnimationClip.SharedAnimationSegment];
         public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segments[current.animationSegment];
         public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayer(current.animationLayerQualified);
 

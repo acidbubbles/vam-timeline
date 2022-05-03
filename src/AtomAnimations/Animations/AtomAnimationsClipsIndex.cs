@@ -35,12 +35,11 @@ namespace VamTimeline
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayerNameQualified = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
-        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsBySet = new Dictionary<string, List<AtomAnimationClip>>();
-        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsBySetByLayer = new Dictionary<string, List<AtomAnimationClip>>();
+        private readonly Dictionary<string, List<AtomAnimationClip>> _firstClipOfLayerBySetQualified = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
-        private bool _paused;
+        private bool _pendingBulkUpdate;
 
         public AtomAnimationsClipsIndex(List<AtomAnimationClip> clips)
         {
@@ -49,12 +48,12 @@ namespace VamTimeline
 
         public void StartBulkUpdates()
         {
-            _paused = true;
+            _pendingBulkUpdate = true;
         }
 
         public void EndBulkUpdates()
         {
-            _paused = false;
+            _pendingBulkUpdate = false;
             Rebuild();
         }
 
@@ -64,11 +63,12 @@ namespace VamTimeline
             clipsGroupedByLayer.Clear();
             _clipsByLayerNameQualified.Clear();
             _clipsByName.Clear();
-            _clipsBySet.Clear();
-            _clipsBySetByLayer.Clear();
+            _firstClipOfLayerBySetQualified.Clear();
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
             segmentNames.Clear();
+
+            if (_pendingBulkUpdate) return;
 
             if (_clips == null || _clips.Count == 0) return;
 
@@ -95,33 +95,18 @@ namespace VamTimeline
                     nameClips.Add(clip);
                 }
 
-                if(clip.animationSet != null)
+                if(clip.animationSetQualified != null)
                 {
                     List<AtomAnimationClip> setClips;
-                    if (!_clipsBySet.TryGetValue(clip.animationSet, out setClips))
+                    if (!_firstClipOfLayerBySetQualified.TryGetValue(clip.animationSetQualified, out setClips))
                     {
                         setClips = new List<AtomAnimationClip>();
-                        _clipsBySet.Add(clip.animationSet, setClips);
+                        _firstClipOfLayerBySetQualified.Add(clip.animationSetQualified, setClips);
                     }
-                    setClips.Add(clip);
-
-                    #warning Review this
-                    List<AtomAnimationClip> setByLayerClips;
-                    if (!_clipsBySetByLayer.TryGetValue(clip.animationSetQualified, out setByLayerClips))
-                    {
-                        setByLayerClips = new List<AtomAnimationClip>();
-                        _clipsBySetByLayer.Add(clip.animationSetQualified, setByLayerClips);
-                    }
-                    if (setByLayerClips.All(c => c.animationLayerQualified != clip.animationLayerQualified))
-                        setByLayerClips.Add(clip);
+                    if (setClips.All(c => c.animationLayerQualified != clip.animationLayerQualified))
+                        setClips.Add(clip);
                 }
-            }
 
-            // TODO: Why?
-            if (_paused) return;
-
-            foreach (var clip in _clips)
-            {
                 {
                     List<AtomAnimationClip> layerClips;
                     if (!_clipsByLayerNameQualified.TryGetValue(clip.animationLayerQualified, out layerClips))
@@ -173,7 +158,6 @@ namespace VamTimeline
             return _clipsByFloatParam;
         }
 
-        #warning Scope to segment?
         public IList<AtomAnimationClip> ByName(string name)
         {
             List<AtomAnimationClip> clips;
@@ -183,8 +167,8 @@ namespace VamTimeline
         public IList<AtomAnimationClip> GetSiblingsByLayer(AtomAnimationClip clip)
         {
             List<AtomAnimationClip> clips;
-            var result = clip.animationSet != null
-                ? _clipsBySetByLayer.TryGetValue(clip.animationSet, out clips)
+            var result = clip.animationSetQualified != null
+                ? _firstClipOfLayerBySetQualified.TryGetValue(clip.animationSetQualified, out clips)
                     ? clips
                     : _emptyClipList
                 : ByName(clip.animationName);
