@@ -186,7 +186,7 @@ namespace VamTimeline
 
         private void DeleteLayerConfirm()
         {
-            if (!animation.EnumerateLayers(current.animationLayerQualified).Skip(1).Any())
+            if (currentSegment.layerNames.Count == 1)
             {
                 SuperController.LogError("Timeline: Cannot delete the only layer.");
                 return;

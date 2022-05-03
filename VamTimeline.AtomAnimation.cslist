@@ -12,7 +12,12 @@ src\AtomAnimations\Animatables\Triggers\CustomTrigger.cs
 src\AtomAnimations\Animatables\Triggers\TriggersTrackAnimationTarget.cs
 src\AtomAnimations\Animatables\Triggers\TriggersTrackRef.cs
 src\AtomAnimations\Animatables\AnimatablesRegistry.cs
+src\AtomAnimations\Animations\AtomAnimation.Building.cs
+src\AtomAnimations\Animations\AtomAnimation.Clips.cs
 src\AtomAnimations\Animations\AtomAnimation.cs
+src\AtomAnimations\Animations\AtomAnimation.Fields.cs
+src\AtomAnimations\Animations\AtomAnimation.Playback.cs
+src\AtomAnimations\Animations\AtomAnimation.Sequencing.cs
 src\AtomAnimations\Animations\AtomAnimationClip.cs
 src\AtomAnimations\Animations\AtomAnimationsClipsIndex.cs
 src\AtomAnimations\Animations\AtomAnimationTargetsList.cs
@@ -43,7 +48,6 @@ src\AtomAnimations\Operations\Reduction\ReducerBucket.cs
 src\AtomAnimations\Operations\Reduction\ReduceSettings.cs
 src\AtomAnimations\Operations\Reduction\TargetReduceProcessorBase.cs
 src\AtomAnimations\Operations\AddAnimationOperations.cs
-src\AtomAnimations\Operations\ClipManagementOperationsBase.cs
 src\AtomAnimations\Operations\ImportOperations.cs
 src\AtomAnimations\Operations\KeyframesOperations.cs
 src\AtomAnimations\Operations\LayersOperations.cs

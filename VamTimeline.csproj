@@ -87,7 +87,12 @@
     <Compile Include="src\AtomAnimations\Animatables\Triggers\TriggersTrackAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Animatables\Triggers\TriggersTrackRef.cs" />
     <Compile Include="src\AtomAnimations\Animatables\AnimatablesRegistry.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Building.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Clips.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimation.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Fields.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Playback.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Sequencing.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimationsClipsIndex.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimationTargetsList.cs" />
@@ -218,7 +223,6 @@
     <Compile Include="tests\Plugin\TestPlugin.cs" />
     <Compile Include="tests\Plugin\TestsIndex.cs" />
     <Compile Include="tests\Specs\AnimationTests.cs" />
-    <Compile Include="tests\Specs\ImportOperationsTests.cs" />
     <Compile Include="tests\Specs\ResizeAnimationOperationTests.cs" />
     <Compile Include="tests\Unit\AtomAnimations\Targets\FreeControllerAnimationTargetTests.cs" />
     <Compile Include="tests\Unit\AtomAnimations\BezierAnimationCurveTests.cs" />
