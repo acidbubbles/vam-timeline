@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -22,6 +23,7 @@ namespace VamTimeline
             InitNewClipNameUI();
             InitNewLayerNameUI();
             InitCreateSharedSegmentUI();
+            InitSendLayerToSharedSegmentUI();
 
             RefreshUI();
         }
@@ -30,6 +32,12 @@ namespace VamTimeline
         {
             _createSharedSegmentUI = prefabFactory.CreateButton("Create shared segment");
             _createSharedSegmentUI.button.onClick.AddListener(AddSharedSegment);
+        }
+
+        public void InitSendLayerToSharedSegmentUI()
+        {
+            var sendLayerToSharedUI = prefabFactory.CreateButton("Send layer to shared segment");
+            sendLayerToSharedUI.button.onClick.AddListener(SendLayerToShared);
         }
 
         #endregion
@@ -47,6 +55,26 @@ namespace VamTimeline
             var clip = operations.Segments().AddShared(clipNameJSON.val);
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
+        }
+
+        public void SendLayerToShared()
+        {
+            if (current.animationSegment == AtomAnimationClip.SharedAnimationSegment)
+                return;
+
+            var currentTargets = new HashSet<IAtomAnimationTarget>(currentLayer.SelectMany(c => c.GetAllTargets()));
+            var reservedTargets = new HashSet<IAtomAnimationTarget>(animation.clips.Where(c => c.animationSegment != current.animationSegment).SelectMany(c => c.GetAllTargets()));
+            if (currentTargets.Any(t => reservedTargets.Any(t.TargetsSameAs)))
+            {
+                SuperController.LogError("Timeline: Cannot send current layer to the shared segment because some targets exists in the shared segment already or in another segment.");
+                return;
+            }
+
+            foreach (var clip in currentLayer)
+            {
+                clip.animationSegment = AtomAnimationClip.SharedAnimationSegment;
+                clip.animationLayer = layerNameJSON.val;
+            }
         }
 
         #endregion

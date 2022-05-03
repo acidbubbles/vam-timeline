@@ -24,6 +24,7 @@ namespace VamTimeline
             InitNewLayerNameUI();
             InitNewSegmentNameUI();
             InitCreateSegmentUI();
+            InitCopySegmentUI();
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Options", 2);
@@ -42,7 +43,10 @@ namespace VamTimeline
         {
             _createSegmentUI = prefabFactory.CreateButton("Create new segment");
             _createSegmentUI.button.onClick.AddListener(AddSegment);
+        }
 
+        public void InitCopySegmentUI()
+        {
             _copySegmentUI = prefabFactory.CreateButton("Copy to new segment");
             _copySegmentUI.button.onClick.AddListener(CopySegment);
         }
