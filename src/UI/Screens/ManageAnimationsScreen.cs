@@ -162,7 +162,7 @@ namespace VamTimeline
             ReorderMove(
                 animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified),
                 animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified),
-                animation.clips.FindIndex(c1 => c1.animationLayer == previousLayer)
+                animation.clips.FindIndex(c => c.animationSegment == current.animationSegment && c.animationLayer == previousLayer)
             );
         }
 
@@ -175,7 +175,7 @@ namespace VamTimeline
             ReorderMove(
                 animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified),
                 animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified),
-                animation.clips.FindLastIndex(c1 => c1.animationLayer == nextLayer) + 1
+                animation.clips.FindLastIndex(c => c.animationSegment == current.animationSegment && c.animationLayer == nextLayer) + 1
             );
         }
 

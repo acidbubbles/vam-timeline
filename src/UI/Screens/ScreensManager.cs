@@ -171,6 +171,9 @@ namespace VamTimeline
                 case EditAnimationScreen.ScreenName:
                     _current = screenContainer.AddComponent<EditAnimationScreen>();
                     break;
+                case PoseScreen.ScreenName:
+                    _current = screenContainer.AddComponent<PoseScreen>();
+                    break;
                 case SequencingScreen.ScreenName:
                     _current = screenContainer.AddComponent<SequencingScreen>();
                     break;

@@ -123,6 +123,7 @@ src\UI\Screens\ManageAnimationsScreen.cs
 src\UI\Screens\MocapScreen.cs
 src\UI\Screens\MoreScreen.cs
 src\UI\Screens\OptionsScreen.cs
+src\UI\Screens\PoseScreen.cs
 src\UI\Screens\RecordScreen.cs
 src\UI\Screens\ReduceScreen.cs
 src\UI\Screens\ScreenBase.cs

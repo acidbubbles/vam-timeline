@@ -103,9 +103,10 @@ namespace VamTimeline
             tabs.Add(TargetsScreen.ScreenName, new Color(0.780f, 0.899f, 0.780f));
             tabs.Add(AddRemoveTargetsScreen.ScreenName, new Color(0.780f, 0.899f, 0.780f), "+", 60f);
             tabs.Add(EditAnimationScreen.ScreenName, new Color(0.899f, 0.780f, 0.780f));
+            tabs.Add(PoseScreen.ScreenName, new Color(0.799f, 0.880f, 0.880f));
             tabs.Add(SequencingScreen.ScreenName, new Color(0.899f, 0.780f, 0.780f));
             tabs.Add(MoreScreen.ScreenName, new Color(0.889f, 0.780f, 0.889f));
-            _expandButton = tabs.Add("Collapse >", new Color(0.839f, 0.839f, 0.839f));
+            _expandButton = tabs.Add(">", new Color(0.839f, 0.839f, 0.839f),null, preferredWidth: 60f);
             InitToggleRightPanelButton(_expandButton);
             tabs.onTabSelected.AddListener(screenName =>
             {
@@ -186,14 +187,14 @@ namespace VamTimeline
                 _expanded = false;
                 screensManager.enabled = false;
                 rightPanel.GetComponent<LayoutElement>().preferredWidth = _rightPanelCollapsedWidth;
-                _expandButton.label = "< Expand";
+                _expandButton.label = "<";
             }
             else if (open && !_expanded)
             {
                 _expanded = true;
                 screensManager.enabled = true;
                 rightPanel.GetComponent<LayoutElement>().preferredWidth = _rightPanelExpandedWidth;
-                _expandButton.label = "Collapse >";
+                _expandButton.label = ">";
             }
         }
 

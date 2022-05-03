@@ -6,7 +6,7 @@ namespace VamTimeline
 {
     public class AnimationsScreen : ScreenBase
     {
-        public const string ScreenName = "Animations";
+        public const string ScreenName = "Overview";
 
         public override string screenId => ScreenName;
 

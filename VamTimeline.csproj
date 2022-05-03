@@ -198,6 +198,7 @@
     <Compile Include="src\UI\Screens\MocapScreen.cs" />
     <Compile Include="src\UI\Screens\MoreScreen.cs" />
     <Compile Include="src\UI\Screens\OptionsScreen.cs" />
+    <Compile Include="src\UI\Screens\PoseScreen.cs" />
     <Compile Include="src\UI\Screens\RecordScreen.cs" />
     <Compile Include="src\UI\Screens\ReduceScreen.cs" />
     <Compile Include="src\UI\Screens\ScreenBase.cs" />

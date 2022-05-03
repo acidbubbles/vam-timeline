@@ -14,8 +14,6 @@ namespace VamTimeline
         private const string _changeLengthModeStretch = "Stretch";
         private const string _changeLengthModeLoop = "Loop";
 
-        private static AtomPose _poseClipboard;
-
         public override string screenId => ScreenName;
 
         private JSONStorableStringChooser _lengthModeJSON;
@@ -33,16 +31,6 @@ namespace VamTimeline
         private JSONStorableFloat _globalWeightJSON;
         private JSONStorableFloat _localWeightJSON;
         private UIDynamicButton _applyLengthUI;
-        private UIDynamicButton _savePoseUI;
-        private UIDynamicButton _applyPoseUI;
-        private UIDynamicButton _clearPoseUI;
-        private JSONStorableBool _applyPoseOnTransition;
-        private JSONStorableBool _savePoseIncludeRoot;
-        private JSONStorableBool _savePoseIncludePose;
-        private JSONStorableBool _savePoseIncludeMorphs;
-        private JSONStorableBool _savePoseUseMergeLoad;
-        private UIDynamicButton _copyPoseUI;
-        private UIDynamicButton _pastePoseUI;
 
         #region Init
 
@@ -64,12 +52,6 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Length", 1);
             InitAnimationLengthUI();
-
-            if (plugin.containingAtom.type == "Person")
-            {
-                prefabFactory.CreateHeader("Pose", 1);
-                InitPoseUI();
-            }
 
             prefabFactory.CreateHeader("Advanced", 1);
             InitWeightUI();
@@ -271,35 +253,6 @@ namespace VamTimeline
             _applyLengthUI.button.interactable = false;
         }
 
-        private void InitPoseUI()
-        {
-            _savePoseUI = prefabFactory.CreateButton("Save pose");
-            _savePoseUI.button.onClick.AddListener(() =>
-            {
-                current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val);
-                _savePoseUI.buttonColor = new Color(0.4f, 0.6f, 0.4f);
-            });
-            _savePoseIncludeRoot = new JSONStorableBool("Pose: Include Root", AtomPose.DefaultIncludeRoot, (bool val) => _savePoseUI.buttonColor = Color.yellow);
-            prefabFactory.CreateToggle(_savePoseIncludeRoot);
-            _savePoseIncludePose = new JSONStorableBool("Pose: Include Bones & Controls", AtomPose.DefaultIncludePose, (bool val) => _savePoseUI.buttonColor = Color.yellow);
-            prefabFactory.CreateToggle(_savePoseIncludePose);
-            _savePoseIncludeMorphs = new JSONStorableBool("Pose: Include Pose Morphs", AtomPose.DefaultIncludeMorphs, (bool val) => _savePoseUI.buttonColor = Color.yellow);
-            prefabFactory.CreateToggle(_savePoseIncludeMorphs);
-            _savePoseUseMergeLoad = new JSONStorableBool("Pose: Use Merge Load", AtomPose.DefaultUseMergeLoad, (bool val) => _savePoseUI.buttonColor = Color.yellow);
-            prefabFactory.CreateToggle(_savePoseUseMergeLoad);
-            _applyPoseUI = prefabFactory.CreateButton("Apply saved pose");
-            _applyPoseUI.button.onClick.AddListener(() => current.pose.Apply());
-            _clearPoseUI = prefabFactory.CreateButton("Clear saved pose");
-            _clearPoseUI.button.onClick.AddListener(() => current.pose = null);
-            _copyPoseUI = prefabFactory.CreateButton("Copy current pose");
-            _copyPoseUI.button.onClick.AddListener(() => { _poseClipboard = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val); _pastePoseUI.button.interactable = true; });
-            _pastePoseUI = prefabFactory.CreateButton("Paste current pose");
-            _pastePoseUI.button.onClick.AddListener(() => current.pose = _poseClipboard.Clone());
-            _pastePoseUI.button.interactable = _poseClipboard != null;
-            _applyPoseOnTransition = new JSONStorableBool("Apply pose on transition", false, v => current.applyPoseOnTransition = v);
-            prefabFactory.CreateToggle(_applyPoseOnTransition);
-        }
-
         private void InitEnsureQuaternionContinuityUI()
         {
             _ensureQuaternionContinuity = new JSONStorableBool("Ensure quaternion continuity", true, SetEnsureQuaternionContinuity);
@@ -489,31 +442,6 @@ namespace VamTimeline
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAudioSourceJSON.valNoCallback = current.audioSourceControl != null ? current.audioSourceControl.containingAtom.uid : "";
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern != null ? current.animationPattern.containingAtom.uid : "";
-            if (_applyPoseOnTransition != null)
-            {
-                _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
-                _applyPoseOnTransition.toggle.interactable = current.pose != null;
-            }
-            if (plugin.containingAtom.type == "Person")
-            {
-                _savePoseUI.label = current.pose == null ? "Save pose" : "Overwrite pose";
-                _applyPoseUI.button.interactable = current.pose != null;
-                _clearPoseUI.button.interactable = current.pose != null;
-                if (current.pose == null)
-                {
-                    _savePoseIncludeRoot.valNoCallback = AtomPose.DefaultIncludeRoot;
-                    _savePoseIncludePose.valNoCallback = AtomPose.DefaultIncludePose;
-                    _savePoseIncludeMorphs.valNoCallback = AtomPose.DefaultIncludeMorphs;
-                    _savePoseUseMergeLoad.valNoCallback = AtomPose.DefaultUseMergeLoad;
-                }
-                else
-                {
-                    _savePoseIncludeRoot.valNoCallback = current.pose.includeRoot;
-                    _savePoseIncludePose.valNoCallback = current.pose.includePose;
-                    _savePoseIncludeMorphs.valNoCallback = current.pose.includeMorphs;
-                    _savePoseUseMergeLoad.valNoCallback = current.pose.useMergeLoad;
-                }
-            }
         }
 
         public override void OnDestroy()

@@ -63,7 +63,7 @@ namespace VamTimeline
                     PlaySiblings(nextClip);
                 }
 
-                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayerQualified == index.segments[nextClip.animationSegment].layerNames[0])
+                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayer == index.segments[nextClip.animationSegment].layerNames[0])
                 {
                     _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
                 }
@@ -255,7 +255,7 @@ namespace VamTimeline
 
             if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s");
 
-            if (next.fadeOnTransition && next.animationLayerQualified == index.segments[next.animationSegment].layerNames[0] && fadeManager != null)
+            if (next.fadeOnTransition && next.animationLayer == index.segments[next.animationSegment].layerNames[0] && fadeManager != null)
             {
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
