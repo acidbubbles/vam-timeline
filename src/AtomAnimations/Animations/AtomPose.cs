@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 using MeshVR;
 using SimpleJSON;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace VamTimeline
         public bool includePose { get; private set; }
         public bool includeMorphs { get; private set; }
         public bool useMergeLoad { get; private set; }
+        public bool applyTwice { get; private set; }
 
         private readonly Atom _atom;
         private readonly JSONClass _poseJSON;
@@ -97,12 +99,27 @@ namespace VamTimeline
         {
             if (_atom.type != "Person") return;
             #if(VAM_GT_1_20)
+            if (applyTwice)
+                _atom.StartCoroutine(ApplyCo());
+            else
+                ApplyNow();
+#else
+            throw new System.NotSupportedException("Virt-A-Mate 1.20 required for pose.");
+#endif
+        }
+
+        private IEnumerator ApplyCo()
+        {
+            ApplyNow();
+            yield return 0;
+            ApplyNow();
+        }
+
+        private void ApplyNow()
+        {
             var posePresetsManagerControls = _atom.presetManagerControls.First(pmc => pmc.name == "PosePresets");
             var posePresetsManager = posePresetsManagerControls.GetComponent<PresetManager>();
             posePresetsManager.LoadPresetFromJSON(_poseJSON, useMergeLoad);
-            #else
-            throw new System.NotSupportedException("Virt-A-Mate 1.20 required for pose.");
-            #endif
         }
 
         public PositionAndRotation GetControllerPose(string name)

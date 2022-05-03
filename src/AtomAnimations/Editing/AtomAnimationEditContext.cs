@@ -273,14 +273,13 @@ namespace VamTimeline
             else
                 animation.ResetAll();
 
-            // Apply pose on stop fast double-click
-            if (!wasCurrentMainInLayer || _lastStop > Time.realtimeSinceStartup - 0.2f)
-                current.pose?.Apply();
-
             _lastStop = Time.realtimeSinceStartup;
 
             onTimeChanged.Invoke(timeArgs);
-            Sample();
+
+            // Apply pose on stop fast double-click
+            if (!wasCurrentMainInLayer || _lastStop > Time.realtimeSinceStartup - 0.2f)
+                SampleOrPose();
 
             peers.SendStop();
         }
@@ -550,11 +549,13 @@ namespace VamTimeline
         private void SampleTriggers()
         {
             var clips = animation.GetDefaultClipsPerLayer(current);
-            foreach (var clip in clips)
+            for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
+                var clip = clips[clipIndex];
+                if (clip == null) continue;
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
-                    var target = current.targetTriggers[triggerIndex];
+                    var target = clip.targetTriggers[triggerIndex];
                     if (!target.animatableRef.live) continue;
                     target.Sync(current.clipTime);
                     target.SyncAudio(current.clipTime);
@@ -605,18 +606,25 @@ namespace VamTimeline
             animation.playingAnimationSegment = current.animationSegment;
 
             var clips = animation.GetDefaultClipsPerLayer(current);
-            foreach (var clip in clips)
+            for (var i = 0; i < clips.Count; i++)
+            {
+                var clip = clips[i];
                 if (clip != null)
                     clip.temporarilyEnabled = true;
+            }
+
             try
             {
                 animation.Sample();
             }
             finally
             {
-                foreach (var clip in clips)
+                for (var i = 0; i < clips.Count; i++)
+                {
+                    var clip = clips[i];
                     if (clip != null)
                         clip.temporarilyEnabled = false;
+                }
             }
         }
 
@@ -665,8 +673,10 @@ namespace VamTimeline
 
         private void SampleOrPose()
         {
-            if (current.pose != null)
-                current.pose.Apply();
+            var clips = animation.GetDefaultClipsPerLayer(current);
+            var poseClip = clips.FirstOrDefault(c => c?.pose != null);
+            if (poseClip != null)
+                poseClip.pose.Apply();
             else if (!SuperController.singleton.freezeAnimation)
                 Sample();
         }
