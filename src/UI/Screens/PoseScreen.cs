@@ -123,15 +123,19 @@ namespace VamTimeline
                 if (current.pose == null)
                 {
                     _savePoseUI.label = "Save pose";
-                    if(currentSegment.layers.SelectMany(l => l).Any(c => c.animationName == current.animationName))
-                        _poseStateJSON.val = "<color=black><b>Pose exists in other layer</b></color>";
+                    var poseClips = currentSegment.layers
+                        .SelectMany(l => l)
+                        .Where(c => c != current && c.animationName == current.animationName && c.pose != null)
+                        .ToList();
+                    if(poseClips.Any())
+                        _poseStateJSON.val = $"<color=black><b>Pose exists in {poseClips.First().animationLayer}</b></color>";
                     else
                         _poseStateJSON.val = "<color=grey>No pose</color>";
                 }
                 else
                 {
                     _savePoseUI.label = "Overwrite pose";
-                    _poseStateJSON.val = "<color=red><b>Pose exists</b></color>";
+                    _poseStateJSON.val = "<color=red><b>Pose saved</b></color>";
                 }
 
                 _applyPoseUI.button.interactable = current.pose != null;

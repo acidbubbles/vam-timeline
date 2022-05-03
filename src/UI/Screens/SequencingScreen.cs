@@ -310,7 +310,7 @@ namespace VamTimeline
                 .Select(s => $"{AtomAnimation.NextAnimationSegmentPrefix}{s}");
             return new[] { _noNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Concat(animations.Count() > 0 ? new[] { AtomAnimation.RandomizeAnimationName } : new string[0])
+                .Concat(animations.Count > 0 ? new[] { AtomAnimation.RandomizeAnimationName } : new string[0])
                 .Concat(segments)
                 .ToList();
         }
