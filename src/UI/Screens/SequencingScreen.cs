@@ -16,8 +16,6 @@ namespace VamTimeline
 
         private JSONStorableBool _masterJSON;
         private JSONStorableBool _autoPlayJSON;
-        private JSONStorableBool _loop;
-        private UIDynamicToggle _loopUI;
         private JSONStorableBool _uninterruptible;
         private JSONStorableFloat _blendDurationJSON;
         private JSONStorableStringChooser _nextAnimationJSON;
@@ -27,7 +25,6 @@ namespace VamTimeline
         private JSONStorableString _animationSetJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
-        private JSONStorableBool _applyPoseOnTransition;
         private JSONStorableBool _preserveLoopsJSON;
         private UIDynamicToggle _preserveLoopsUI;
         private JSONStorableFloat _randomizeRangeJSON;
@@ -56,13 +53,10 @@ namespace VamTimeline
             InitAnimationSetUI();
 
             prefabFactory.CreateHeader("Transition (auto keyframes)", 1);
-            InitLoopUI();
             InitTransitionUI();
-            if (plugin.containingAtom.type == "Person")
-                InitPoseUI();
-            InitFadeUI();
 
             prefabFactory.CreateHeader("Fading (VAMOverlays)", 1);
+            InitFadeUI();
             InitOverlaysUI();
 
             current.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
@@ -174,17 +168,6 @@ namespace VamTimeline
             prefabFactory.CreateTextInput(_animationSetJSON);
         }
 
-        private void InitLoopUI()
-        {
-            _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
-            {
-                current.loop = val;
-                UpdateNextAnimationPreview();
-                RefreshTransitionUI();
-            });
-            _loopUI = prefabFactory.CreateToggle(_loop);
-        }
-
         private void InitTransitionUI()
         {
             _transitionPreviousJSON = new JSONStorableBool("Sync first frame with previous", false, ChangeTransitionPrevious);
@@ -192,12 +175,6 @@ namespace VamTimeline
 
             _transitionNextJSON = new JSONStorableBool("Sync last frame with next", false, ChangeTransitionNext);
             prefabFactory.CreateToggle(_transitionNextJSON);
-        }
-
-        private void InitPoseUI()
-        {
-            _applyPoseOnTransition = new JSONStorableBool("Apply pose on transition", false, v => current.applyPoseOnTransition = v);
-            prefabFactory.CreateToggle(_applyPoseOnTransition);
         }
 
         private void InitFadeUI()
@@ -259,7 +236,6 @@ namespace VamTimeline
         {
             _transitionPreviousJSON.toggle.interactable = true;
             _transitionNextJSON.toggle.interactable = true;
-            _loopUI.toggle.interactable = false;
             _preserveLoopsUI.toggle.interactable = current.loop;
             _fadeOnTransition.valNoCallback = current.fadeOnTransition;
 
@@ -274,8 +250,6 @@ namespace VamTimeline
 
             if (!current.autoTransitionNext)
             {
-                _loopUI.toggle.interactable = true;
-
                 if (current.loop)
                 {
                     _transitionNextJSON.toggle.interactable = false;
@@ -329,13 +303,14 @@ namespace VamTimeline
                 {
                     var i = x.IndexOf("/", StringComparison.Ordinal);
                     return i == -1 ? null : x.Substring(0, i);
-                });
+                })
+                .ToList();
             var segments = animation.index.segmentNames
                 .Where(s => s != AtomAnimationClip.SharedAnimationSegment && s != current.animationSegment)
                 .Select(s => $"{AtomAnimation.NextAnimationSegmentPrefix}{s}");
             return new[] { _noNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Concat(new[] { AtomAnimation.RandomizeAnimationName })
+                .Concat(animations.Count() > 0 ? new[] { AtomAnimation.RandomizeAnimationName } : new string[0])
                 .Concat(segments)
                 .ToList();
         }
@@ -494,11 +469,6 @@ namespace VamTimeline
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
             _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationName).Count > 1 ? _animationSetAuto : "");
-            if (_applyPoseOnTransition != null)
-            {
-                _applyPoseOnTransition.valNoCallback = current.applyPoseOnTransition;
-                _applyPoseOnTransition.toggle.interactable = current.pose != null;
-            }
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }
