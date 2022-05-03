@@ -171,12 +171,14 @@ namespace VamTimeline
         public UIDynamicPopup CreateMicroPopup(JSONStorableStringChooser jsc, float popupPanelHeight = 350f)
         {
             RegisterStorable(jsc);
-            var prefab = plugin.manager.configurablePopupPrefab;
+            var prefab = plugin.manager.configurableScrollablePopupPrefab;
 
             var ui = Instantiate(prefab).GetComponent<UIDynamicPopup>();
             ui.gameObject.transform.SetParent(transform, false);
             ui.label = jsc.name;
             jsc.popup = ui.popup;
+
+            Destroy(ui.transform.Find("Slider").gameObject);
 
             ui.popup.labelText.alignment = TextAnchor.MiddleLeft;
             ui.labelWidth = 120f;
@@ -227,7 +229,7 @@ namespace VamTimeline
                 btnRect.anchorMax = new Vector2(1f, 1f);
             }
 
-            ui.popupPanelHeight = popupPanelHeight;
+            ui.popup.popupPanelHeight = popupPanelHeight;
 
             return ui;
         }

@@ -83,9 +83,9 @@ namespace VamTimeline
                 _animationEditContext.SelectAnimation(_segmentsJSON.val, _layersJSON.val, _animationsJSON.val);
             });
 
-            _segmentsUI = _prefabFactory.CreateMicroPopup(_segmentsJSON, 700f);
-            _layersUI = _prefabFactory.CreateMicroPopup(_layersJSON, 650f);
-            _prefabFactory.CreateMicroPopup(_animationsJSON, 600f);
+            _segmentsUI = _prefabFactory.CreateMicroPopup(_segmentsJSON, 900f);
+            _layersUI = _prefabFactory.CreateMicroPopup(_layersJSON, 850f);
+            _prefabFactory.CreateMicroPopup(_animationsJSON, 800f);
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab)
