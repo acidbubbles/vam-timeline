@@ -46,8 +46,8 @@ namespace VamTimeline
             for (var i = 0; i < discreteActionsStart.Count; i++)
             {
                 var action = discreteActionsStart[i];
+                if (ReferenceEquals(action?.audioClip?.sourceClip, null)) continue;
                 var audioReceiver = action.receiver as AudioSourceControl;
-                if (ReferenceEquals(action.audioClip, null)) continue;
                 if (ReferenceEquals(audioReceiver, null)) continue;
                 if (ReferenceEquals(audioReceiver.audioSource, null)) continue;
                 if (audioReceiver.audioSource.clip != action.audioClip.clipToPlay) continue;
