@@ -10,14 +10,14 @@ namespace VamTimeline
     {
         public const string ScreenName = "Edit Targets";
 
-        private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$");
-
         public override string screenId => ScreenName;
 
+        private JSONStorableStringChooser _addFromAtomJSON;
         private JSONStorableStringChooser _addControllerListJSON;
-        private UIDynamicPopup _addControllerUI;
         private JSONStorableStringChooser _addStorableListJSON;
         private JSONStorableStringChooser _addParamListJSON;
+        private UIDynamicPopup _addFromAtomUI;
+        private UIDynamicPopup _addControllerUI;
         private UIDynamicPopup _addStorableListUI;
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
@@ -35,32 +35,32 @@ namespace VamTimeline
             prefabFactory.CreateHeader("Add/remove targets", 1);
 
             prefabFactory.CreateSpacer();
-
             prefabFactory.CreateHeader("Triggers", 2);
 
             InitTriggersUI();
 
             prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Atom", 2);
 
+            InitAtomsUI();
+
+            prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Controllers", 2);
 
             InitControllersUI();
 
             prefabFactory.CreateSpacer();
-
             prefabFactory.CreateHeader("Storable floats", 2);
 
             InitFloatParamsUI();
 
             prefabFactory.CreateSpacer();
-
             prefabFactory.CreateHeader("Manage", 2);
 
             InitFixMissingUI();
             InitRemoveUI();
 
             prefabFactory.CreateSpacer();
-
             prefabFactory.CreateHeader("Presets", 2);
 
             if (plugin.containingAtom.type == "Person")
@@ -161,6 +161,13 @@ namespace VamTimeline
             }
         }
 
+        private void InitAtomsUI()
+        {
+            _addFromAtomJSON = new JSONStorableStringChooser("Atom", new List<string> { plugin.containingAtom.uid }, plugin.containingAtom.uid, "Atom", RefreshAllLists);
+            _addFromAtomUI = prefabFactory.CreatePopup(_addFromAtomJSON, true, true, 700f);
+            _addFromAtomUI.popup.onOpenPopupHandlers = RefreshAtoms;
+        }
+
         private void InitControllersUI()
         {
             _addControllerListJSON = new JSONStorableStringChooser("Controller", new List<string>(), "", "Controller");
@@ -188,6 +195,18 @@ namespace VamTimeline
             RefreshControllersList();
         }
 
+        private void RefreshAtoms()
+        {
+            _addFromAtomJSON.choices = SuperController.singleton.GetAtomUIDs();
+        }
+
+        private void RefreshAllLists(string val)
+        {
+            RefreshControllersList();
+            RefreshStorablesList();
+            RefreshStorableFloatsList();
+        }
+
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
@@ -195,7 +214,9 @@ namespace VamTimeline
                 .Where(c => current.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == current.animationSegment)
                 .SelectMany(c => c.targetControllers)
                 .Select(t => t.animatableRef.controller));
-            foreach (var fc in plugin.containingAtom.freeControllers)
+            var atom = SuperController.singleton.GetAtomByUid(_addFromAtomJSON.val);
+            if (atom == null) yield break;
+            foreach (var fc in atom.freeControllers)
             {
                 if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
                 if (current.targetControllers.Any(c => c.animatableRef.Targets(fc))) continue;
@@ -208,7 +229,7 @@ namespace VamTimeline
         {
             var controllers = GetEligibleFreeControllers().ToList();
             _addControllerListJSON.choices = controllers;
-            if (!string.IsNullOrEmpty(_addControllerListJSON.val))
+            if (!string.IsNullOrEmpty(_addControllerListJSON.val) && controllers.Contains(_addControllerListJSON.val))
                 return;
 
             if (controllers.Count == 2)
@@ -266,14 +287,18 @@ namespace VamTimeline
         {
             if (_addStorableListJSON == null) return;
             _addStorableListJSON.choices = GetStorablesWithFloatParams().ToList();
-            if (string.IsNullOrEmpty(_addParamListJSON.val))
-                _addStorableListJSON.valNoCallback = _addStorableListJSON.choices.Contains("geometry") ? "geometry" : _addStorableListJSON.choices.FirstOrDefault();
+            if (!string.IsNullOrEmpty(_addParamListJSON.val) && _addStorableListJSON.choices.Contains(_addParamListJSON.val))
+                return;
+
+            _addStorableListJSON.valNoCallback = _addStorableListJSON.choices.Contains("geometry") ? "geometry" : _addStorableListJSON.choices.FirstOrDefault();
         }
 
         private IEnumerable<string> GetStorablesWithFloatParams()
         {
             yield return "";
-            foreach (var storableId in plugin.containingAtom.GetStorableIDs().OrderBy(s => s))
+            var atom = SuperController.singleton.GetAtomByUid(_addFromAtomJSON.val);
+            if (atom == null) yield break;
+            foreach (var storableId in atom.GetStorableIDs().OrderBy(s => s))
             {
                 if (storableId.StartsWith("hairTool")) continue;
                 var storable = plugin.containingAtom.GetStorableByID(storableId);
@@ -293,7 +318,14 @@ namespace VamTimeline
                 return;
             }
 
-            var storable = plugin.containingAtom.GetStorableByID(_addStorableListJSON.val);
+            var atom = SuperController.singleton.GetAtomByUid(_addFromAtomJSON.val);
+            if (atom == null)
+            {
+                _addParamListJSON.choices = new List<string>();
+                return;
+            }
+
+            var storable = atom.GetStorableByID(_addStorableListJSON.val);
 
             if (storable == null)
             {
@@ -312,8 +344,10 @@ namespace VamTimeline
                 .Where(v => !reservedByOtherLayers.Contains(v))
                 .OrderBy(v => v)
                 .ToList();
-            if (string.IsNullOrEmpty(_addParamListJSON.val))
-                _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault();
+            if (!string.IsNullOrEmpty(_addParamListJSON.val) && _addParamListJSON.choices.Contains(_addParamListJSON.val))
+                return;
+
+            _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault();
         }
 
         private void InitRemoveUI()
@@ -471,16 +505,23 @@ namespace VamTimeline
 
                 SelectNextInList(_addControllerListJSON);
 
-                var controller = plugin.containingAtom.freeControllers.FirstOrDefault(x => x.name == uid);
+                var atom = SuperController.singleton.GetAtomByUid(_addFromAtomJSON.val);
+                if (atom == null)
+                {
+                    SuperController.LogError($"Timeline: Atom {_addFromAtomJSON.val} does not exist");
+                    return;
+                }
+
+                var controller = atom.freeControllers.FirstOrDefault(x => x.name == uid);
                 if (controller == null)
                 {
-                    SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"Timeline: Controller {uid} in atom {atom.uid} does not exist");
                     return;
                 }
 
                 if (current.targetControllers.Any(c => c.animatableRef.Targets(controller)))
                 {
-                    SuperController.LogError($"Timeline: Controller {uid} in atom {plugin.containingAtom.uid} was already added");
+                    SuperController.LogError($"Timeline: Controller {uid} in atom {atom.uid} was already added");
                     return;
                 }
 
@@ -532,17 +573,24 @@ namespace VamTimeline
                 if (string.IsNullOrEmpty(storableId)) return;
                 if (string.IsNullOrEmpty(floatParamName)) return;
 
-                var storable = plugin.containingAtom.GetStorableByID(storableId);
+                var atom = SuperController.singleton.GetAtomByUid(_addFromAtomJSON.val);
+                if (atom == null)
+                {
+                    SuperController.LogError($"Timeline: Atom {_addFromAtomJSON.val} does not exist");
+                    return;
+                }
+
+                var storable = atom.GetStorableByID(storableId);
                 if (storable == null)
                 {
-                    SuperController.LogError($"Timeline: Storable {storableId} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"Timeline: Storable {storableId} in atom {atom.uid} does not exist");
                     return;
                 }
 
                 var sourceFloatParam = storable.GetFloatJSONParam(floatParamName);
                 if (sourceFloatParam == null)
                 {
-                    SuperController.LogError($"Timeline: Param {floatParamName} in atom {plugin.containingAtom.uid} does not exist");
+                    SuperController.LogError($"Timeline: Param {floatParamName} in atom {atom.uid} does not exist");
                     return;
                 }
 
