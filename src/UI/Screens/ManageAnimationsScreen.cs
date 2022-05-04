@@ -192,17 +192,9 @@ namespace VamTimeline
                 return;
             }
             var clips = currentLayer;
-            animationEditContext.SelectAnimation(animation.clips.First(c => c.animationLayerQualified != current.animationLayerQualified));
-            animation.index.StartBulkUpdates();
-            try
-            {
-                foreach (var clip in clips)
-                    animation.RemoveClip(clip);
-            }
-            finally
-            {
-                animation.index.EndBulkUpdates();
-            }
+            animationEditContext.SelectAnimation(animation.clips.First(c => c.animationSegment == current.animationSegment && c.animationLayer != current.animationLayer));
+            foreach (var clip in clips)
+                animation.RemoveClip(clip);
         }
 
         private void ReorderSegmentMoveUp()
