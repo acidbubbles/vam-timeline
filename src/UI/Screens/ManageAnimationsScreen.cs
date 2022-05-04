@@ -240,25 +240,18 @@ namespace VamTimeline
 
         private void DeleteSegmentConfirm()
         {
-            if (current.animationSegment == AtomAnimationClip.SharedAnimationSegment)
+            var segmentToDelete = current.animationSegment;
+            if (segmentToDelete == AtomAnimationClip.SharedAnimationSegment)
             {
                 SuperController.LogError("Timeline: Cannot delete the shared segment.");
                 return;
             }
-            var clips = currentSegment.layers.SelectMany(c => c).ToList();
-            var fallbackClip = animation.clips.First(c => c.animationSegment != current.animationSegment);
+            var fallbackClip = animation.clips.First(c => c.animationSegment != segmentToDelete);
+            if (animation.playingAnimationSegment == segmentToDelete) animation.playingAnimationSegment = fallbackClip.animationSegment;
             animationEditContext.SelectAnimation(fallbackClip);
-            if (animation.isPlaying) animation.playingAnimationSegment = fallbackClip.animationSegment;
-            animation.index.StartBulkUpdates();
-            try
-            {
-                foreach (var clip in clips)
-                    animation.RemoveClip(clip);
-            }
-            finally
-            {
-                animation.index.EndBulkUpdates();
-            }
+            var clipsToDelete = animation.index.segments[segmentToDelete].layers.SelectMany(c => c).ToList();
+            foreach (var clip in clipsToDelete)
+                animation.RemoveClip(clip);
         }
 
         private void ReorderMove(int start, int end, int to, int min = 0, int max = int.MaxValue)
