@@ -12,6 +12,7 @@ namespace VamTimeline
         private readonly List<TriggersTrackRef> _triggers = new List<TriggersTrackRef>();
 
         public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
+        public readonly UnityEvent onControllersListChanged = new UnityEvent();
 
         public IList<JSONStorableFloatRef> storableFloats => _storableFloats;
 
@@ -43,28 +44,13 @@ namespace VamTimeline
 
         public IList<FreeControllerV3Ref> controllers => _controllers;
 
-        public FreeControllerV3Ref GetOrCreateController(Atom atom, string controllerName)
-        {
-            var t = _controllers.FirstOrDefault(x => x.Targets(controllerName));
-            if (t != null) return t;
-            var controller = atom.freeControllers.FirstOrDefault(fc => fc.name == controllerName);
-            if (ReferenceEquals(controller, null))
-            {
-                SuperController.LogError($"Timeline: Atom '{atom.uid}' does not have a controller '{controllerName}'");
-                return null;
-            }
-            t = new FreeControllerV3Ref(controller);
-            _controllers.Add(t);
-            RegisterAnimatableRef(t);
-            return t;
-        }
-
-        public FreeControllerV3Ref GetOrCreateController(FreeControllerV3 controller)
+        public FreeControllerV3Ref GetOrCreateController(FreeControllerV3 controller, bool owned)
         {
             var t = _controllers.FirstOrDefault(x => x.Targets(controller));
             if (t != null) return t;
-            t = new FreeControllerV3Ref(controller);
+            t = new FreeControllerV3Ref(controller, owned);
             _controllers.Add(t);
+            onControllersListChanged.Invoke();
             RegisterAnimatableRef(t);
             return t;
         }
@@ -72,6 +58,7 @@ namespace VamTimeline
         public void RemoveController(FreeControllerV3Ref t)
         {
             _controllers.Remove(t);
+            onControllersListChanged.Invoke();
             UnregisterAnimatableRef(t);
         }
 
@@ -118,6 +105,12 @@ namespace VamTimeline
 
             foreach (var t in _triggers)
                 t.onSelectedChanged.RemoveAllListeners();
+        }
+
+        public void RemoveAllListeners()
+        {
+            onTargetsSelectionChanged.RemoveAllListeners();
+            onControllersListChanged.RemoveAllListeners();
         }
     }
 }

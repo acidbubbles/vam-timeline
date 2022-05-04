@@ -17,12 +17,12 @@ namespace VamTimeline
 
         public FreeControllerV3AnimationTarget Add(FreeControllerV3 fc)
         {
-            if (fc == null || fc.containingAtom != _containingAtom) return null;
+            if (fc == null) return null;
             var target = _clip.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(fc));
             if (target != null) return target;
             foreach (var clip in _animation.index.ByLayer(_clip.animationLayerQualified))
             {
-                var t = clip.Add(_animation.animatables.GetOrCreateController(fc));
+                var t = clip.Add(_animation.animatables.GetOrCreateController(fc, fc.containingAtom == _containingAtom));
                 if (t == null) continue;
                 t.SetKeyframeToCurrent(0f);
                 t.SetKeyframeToCurrent(clip.animationLength);

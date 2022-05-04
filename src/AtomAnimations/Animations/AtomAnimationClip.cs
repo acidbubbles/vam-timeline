@@ -490,7 +490,13 @@ namespace VamTimeline
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
         {
             yield return targetTriggers;
-            yield return targetControllers;
+            foreach (var group in targetControllers.GroupBy(t => t.animatableRef.controller.containingAtom))
+            {
+                var atom = group.Key;
+                if (atom == null) continue;
+                var groupLabel = group.First().animatableRef.owned ? "Controllers" : $"{group.Key.name} Controllers";
+                yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = groupLabel };
+            }
             foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storableId))
             {
                 var groupLabel = group.Key;

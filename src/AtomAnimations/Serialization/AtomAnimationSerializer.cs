@@ -142,8 +142,31 @@ namespace VamTimeline
             {
                 foreach (JSONClass controllerJSON in controllersJSON)
                 {
+                    var controllerAtomUid = controllerJSON["Atom"].Value;
                     var controllerName = controllerJSON["Controller"].Value;
-                    var controllerRef = targetsRegistry.GetOrCreateController(_atom, controllerName);
+                    Atom atom;
+                    if (string.IsNullOrEmpty(controllerAtomUid))
+                    {
+                        atom = _atom;
+                    }
+                    else
+                    {
+                        atom = SuperController.singleton.GetAtomByUid(controllerAtomUid);
+                        if (atom == null)
+                        {
+                            SuperController.LogError($"Timeline: Cannot import controller {controllerName} from atom {controllerAtomUid} because this atom doesn't exist.");
+                            continue;
+                        }
+                    }
+
+                    var controller = atom.freeControllers.FirstOrDefault(fc => fc.name == controllerName);
+                    if (controller == null)
+                    {
+                        SuperController.LogError($"Timeline: Cannot import controller {controllerName} from atom {controllerAtomUid} because this controller doesn't exist.");
+                        continue;
+                    }
+
+                    var controllerRef = targetsRegistry.GetOrCreateController(controller, atom == _atom);
                     if (controllerRef == null) continue;
                     var target = new FreeControllerV3AnimationTarget(controllerRef)
                     {
@@ -466,6 +489,8 @@ namespace VamTimeline
                         { "RotZ", SerializeCurve(controller.rotZ) },
                         { "RotW", SerializeCurve(controller.rotW) }
                     };
+                if (!controller.animatableRef.owned)
+                    controllerJSON["Atom"] = controller.animatableRef.controller.containingAtom.uid;
                 if (controller.parentRigidbodyId != null)
                 {
                     controllerJSON["Parent"] = new JSONClass{

@@ -251,7 +251,7 @@ namespace VamTimeline
             var fc = controller.AddComponent<FreeControllerV3>();
             fc.UITransforms = new Transform[0];
             fc.UITransformsPlayMode = new Transform[0];
-            var target = clip.Add(new FreeControllerV3Ref(fc));
+            var target = clip.Add(new FreeControllerV3Ref(fc, true));
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframeByTime(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframeByTime(1f, Vector3.one, Quaternion.identity);

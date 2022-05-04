@@ -610,6 +610,7 @@ namespace VamTimeline
             animation.onPausedChanged.AddListener(OnPauseChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
             animation.onWeightChanged.AddListener(OnWeightChanged);
+            animation.animatables.onControllersListChanged.AddListener(OnControllersListChanged);
 
             OnClipsListChanged();
             OnAnimationParametersChanged();
@@ -633,6 +634,11 @@ namespace VamTimeline
             DeregisterAction(action.playJSON);
             DeregisterFloat(action.speedJSON);
             DeregisterFloat(action.weightJSON);
+        }
+
+        private void OnControllersListChanged()
+        {
+            _freeControllerHook.SetControllers(animation.animatables.controllers.Select(c => c.controller));
         }
 
         private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs time)

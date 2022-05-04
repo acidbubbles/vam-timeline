@@ -1,6 +1,4 @@
-#if(!VAM_GT_1_20_0_9)
 using System.Collections.Generic;
-#endif
 using System.Linq;
 using UnityEngine;
 
@@ -17,26 +15,61 @@ namespace VamTimeline
 
 #if (VAM_GT_1_20_0_9)
 
+        private List<FreeControllerV3> _controllers = new List<FreeControllerV3>();
+        private List<FreeControllerV3> _watchedControllers = new List<FreeControllerV3>();
+
+        public void SetControllers(IEnumerable<FreeControllerV3> controllers)
+        {
+            UnwatchAllControllers();
+            _controllers.Clear();
+            _controllers.AddRange(controllers);
+            if (enabled)
+                WatchAllControllers();
+        }
+
         public void OnEnable()
         {
             if (containingAtom == null) return;
-            foreach (var fc in containingAtom.freeControllers)
-            {
-                fc.onRotationChangeHandlers += OnFreeControllerPositionChanged;
-                fc.onPositionChangeHandlers += OnFreeControllerPositionChanged;
-                fc.onGrabEndHandlers += OnFreeControllerPositionChangedGrabEnd;
-            }
+            WatchAllControllers();
         }
 
         public void OnDisable()
         {
             if (containingAtom == null) return;
-            foreach (var fc in containingAtom.freeControllers)
+            UnwatchAllControllers();
+        }
+
+        private void WatchAllControllers()
+        {
+            foreach (var fc in _controllers)
             {
-                fc.onRotationChangeHandlers -= OnFreeControllerPositionChanged;
-                fc.onPositionChangeHandlers -= OnFreeControllerPositionChanged;
-                fc.onGrabEndHandlers -= OnFreeControllerPositionChangedGrabEnd;
+                WatchController(fc);
             }
+        }
+
+        private void WatchController(FreeControllerV3 fc)
+        {
+            _watchedControllers.Add(fc);
+            fc.onRotationChangeHandlers += OnFreeControllerPositionChanged;
+            fc.onPositionChangeHandlers += OnFreeControllerPositionChanged;
+            fc.onGrabEndHandlers += OnFreeControllerPositionChangedGrabEnd;
+        }
+
+        private void UnwatchAllControllers()
+        {
+            var watched = _watchedControllers.ToList();
+            foreach (var fc in watched)
+            {
+                UnwatchController(fc);
+            }
+        }
+
+        private void UnwatchController(FreeControllerV3 fc)
+        {
+            fc.onRotationChangeHandlers -= OnFreeControllerPositionChanged;
+            fc.onPositionChangeHandlers -= OnFreeControllerPositionChanged;
+            fc.onGrabEndHandlers -= OnFreeControllerPositionChangedGrabEnd;
+            _watchedControllers.Remove(fc);
         }
 
         private void OnFreeControllerPositionChangedGrabEnd(FreeControllerV3 controller)
@@ -142,6 +175,7 @@ namespace VamTimeline
 
             if (animationEditContext.current.autoTransitionPrevious && time == 0)
                 animationEditContext.Sample();
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             else if (animationEditContext.current.autoTransitionNext && time == animationEditContext.current.animationLength)
                 animationEditContext.Sample();
         }

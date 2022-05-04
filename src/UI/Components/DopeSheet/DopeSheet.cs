@@ -550,6 +550,7 @@ namespace VamTimeline
                         t.selected = false;
                 }
             }
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             else if (previousClipTime == _animationEditContext.clipTime)
             {
                 target.selected = false;

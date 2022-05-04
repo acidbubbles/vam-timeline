@@ -96,6 +96,7 @@ namespace VamTimeline
             onWeightChanged.RemoveAllListeners();
             onClipsListChanged.RemoveAllListeners();
             onAnimationRebuilt.RemoveAllListeners();
+            animatables.RemoveAllListeners();
             foreach (var clip in clips)
             {
                 clip.Dispose();

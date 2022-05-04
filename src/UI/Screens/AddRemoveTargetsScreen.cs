@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace VamTimeline
@@ -538,7 +537,7 @@ namespace VamTimeline
 
                 foreach (var clip in currentLayer)
                 {
-                    var added = clip.Add(animation.animatables.GetOrCreateController(controller));
+                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom));
                     if (added == null) continue;
 
                     var controllerPose = clip.pose?.GetControllerPose(controller.name);
