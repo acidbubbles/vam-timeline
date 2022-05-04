@@ -163,6 +163,7 @@ namespace VamTimeline
         private void InitAtomsUI()
         {
             _addFromAtomJSON = new JSONStorableStringChooser("Atom", new List<string> { plugin.containingAtom.uid }, plugin.containingAtom.uid, "Atom", RefreshAllLists);
+            RefreshAtoms();
             _addFromAtomUI = prefabFactory.CreatePopup(_addFromAtomJSON, true, true, 700f);
             _addFromAtomUI.popup.onOpenPopupHandlers = RefreshAtoms;
         }
@@ -314,6 +315,7 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(_addStorableListJSON.val))
             {
                 _addParamListJSON.choices = new List<string>();
+                _addParamListJSON.valNoCallback = "";
                 return;
             }
 
@@ -321,6 +323,7 @@ namespace VamTimeline
             if (atom == null)
             {
                 _addParamListJSON.choices = new List<string>();
+                _addParamListJSON.valNoCallback = "";
                 return;
             }
 
@@ -329,6 +332,7 @@ namespace VamTimeline
             if (storable == null)
             {
                 _addParamListJSON.choices = new List<string>();
+                _addParamListJSON.valNoCallback = "";
                 return;
             }
 
