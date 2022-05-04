@@ -11,10 +11,22 @@
             this.owned = owned;
         }
 
-        public override string name => controller.name;
+        public override string name
+        {
+            get
+            {
+                if (!owned && controller == null)
+                    return "[Deleted]";
+
+                return controller.name;
+            }
+        }
 
         public override string GetShortName()
         {
+            if (!owned && controller == null)
+                return "[Deleted]";
+
             return controller.name.EndsWith("Control")
                 ? controller.name.Substring(0, controller.name.Length - "Control".Length)
                 : controller.name;

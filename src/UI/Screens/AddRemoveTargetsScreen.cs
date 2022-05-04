@@ -44,7 +44,7 @@ namespace VamTimeline
             InitAtomsUI();
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Controllers", 2);
+            prefabFactory.CreateHeader("Controls", 2);
 
             InitControllersUI();
 
@@ -169,7 +169,7 @@ namespace VamTimeline
 
         private void InitControllersUI()
         {
-            _addControllerListJSON = new JSONStorableStringChooser("Controller", new List<string>(), "", "Controller");
+            _addControllerListJSON = new JSONStorableStringChooser("Control", new List<string>(), "", "Control");
             _addControllerUI = prefabFactory.CreatePopup(_addControllerListJSON, true, true, 700f);
 
             _toggleControllerUI = prefabFactory.CreateButton("Add");

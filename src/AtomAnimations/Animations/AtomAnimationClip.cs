@@ -67,7 +67,7 @@ namespace VamTimeline
             }
         }
         public readonly AtomAnimationTargetsList<TriggersTrackAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersTrackAnimationTarget> { label = "Triggers" };
-        public readonly AtomAnimationTargetsList<FreeControllerV3AnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerV3AnimationTarget> { label = "Controllers" };
+        public readonly AtomAnimationTargetsList<FreeControllerV3AnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerV3AnimationTarget> { label = "Controls" };
         public readonly AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> { label = "Float Params" };
 
         public IEnumerable<ICurveAnimationTarget> GetAllCurveTargets()
@@ -490,11 +490,16 @@ namespace VamTimeline
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
         {
             yield return targetTriggers;
-            foreach (var group in targetControllers.GroupBy(t => t.animatableRef.controller.containingAtom))
+            foreach (var group in targetControllers.GroupBy(t => t.animatableRef.controller != null ? t.animatableRef.controller.containingAtom : null))
             {
                 var atom = group.Key;
-                if (atom == null) continue;
-                var groupLabel = group.First().animatableRef.owned ? "Controllers" : $"{group.Key.name} Controllers";
+                string groupLabel;
+                if (atom == null)
+                    groupLabel = "[Deleted]";
+                else if (group.First().animatableRef.owned)
+                    groupLabel = "Controls";
+                else
+                    groupLabel = $"{group.Key.name} controls";
                 yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = groupLabel };
             }
             foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storableId))

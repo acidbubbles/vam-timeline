@@ -661,7 +661,14 @@ namespace VamTimeline
             {
                 animation.playingAnimationSegment = clip.animationSegment;
                 previous.clipTime = 0f;
-                SampleOrPose();
+                try
+                {
+                    SampleOrPose();
+                }
+                catch (Exception exc)
+                {
+                    SuperController.LogError($"Timeline: There was an error in animation {clip.animationNameQualified}: {exc}");
+                }
             }
 
             onCurrentAnimationChanged.Invoke(new CurrentAnimationChangedEventArgs

@@ -125,6 +125,7 @@ namespace VamTimeline
             {
                 isPlayingChanged = true;
                 isPlaying = true;
+                Validate();
                 sequencing = sequencing || seq;
                 fadeManager?.SyncFadeTime();
                 if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment)
@@ -191,6 +192,16 @@ namespace VamTimeline
                 AssignNextAnimation(next);
 
             PlaySiblings(next);
+        }
+
+        private void Validate()
+        {
+            foreach (var controllerRef in animatables.controllers)
+            {
+                if (controllerRef.owned) continue;
+                if (controllerRef.controller == null)
+                    throw new InvalidOperationException("Timeline: An external controller has been removed");
+            }
         }
 
         private void PlaySiblings(AtomAnimationClip clip)

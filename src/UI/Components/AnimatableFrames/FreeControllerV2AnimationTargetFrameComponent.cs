@@ -38,8 +38,11 @@ namespace VamTimeline
             }
             else if (target.selected && _line == null)
             {
-                _line = CreateLine();
-                UpdateLine();
+                if (target.animatableRef.owned || target.animatableRef.controller != null)
+                {
+                    _line = CreateLine();
+                    UpdateLine();
+                }
             }
         }
 
@@ -205,8 +208,15 @@ namespace VamTimeline
 
             if (stopped)
             {
-                var pos = target.animatableRef.controller.transform.position;
-                valueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
+                if (!target.animatableRef.owned && target.animatableRef.controller == null)
+                {
+                    valueText.text = "[Deleted]";
+                }
+                else
+                {
+                    var pos = target.animatableRef.controller.transform.position;
+                    valueText.text = $"x: {pos.x:0.000} y: {pos.y:0.000} z: {pos.z:0.000}";
+                }
             }
         }
 

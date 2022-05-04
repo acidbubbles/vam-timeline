@@ -154,7 +154,7 @@ namespace VamTimeline
                         atom = SuperController.singleton.GetAtomByUid(controllerAtomUid);
                         if (atom == null)
                         {
-                            SuperController.LogError($"Timeline: Cannot import controller {controllerName} from atom {controllerAtomUid} because this atom doesn't exist.");
+                            SuperController.LogError($"Timeline: Cannot import controller '{controllerName}' from atom '{controllerAtomUid}' because this atom doesn't exist.");
                             continue;
                         }
                     }
@@ -162,7 +162,7 @@ namespace VamTimeline
                     var controller = atom.freeControllers.FirstOrDefault(fc => fc.name == controllerName);
                     if (controller == null)
                     {
-                        SuperController.LogError($"Timeline: Cannot import controller {controllerName} from atom {controllerAtomUid} because this controller doesn't exist.");
+                        SuperController.LogError($"Timeline: Cannot import controller '{controllerName}' from atom '{controllerAtomUid}' because this controller doesn't exist.");
                         continue;
                     }
 
