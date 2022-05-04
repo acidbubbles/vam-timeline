@@ -4,11 +4,20 @@
     {
         public readonly bool owned;
         public readonly FreeControllerV3 controller;
+        public readonly JSONStorableFloat weightJSON;
+        public float scaledWeight = 1f;
 
         public FreeControllerV3Ref(FreeControllerV3 controller, bool owned)
         {
             this.controller = controller;
             this.owned = owned;
+            var weightJSONName = owned
+                ? $"Controller Weight {controller.name}"
+                : $"External Controller Weight {controller.containingAtom.name} / {controller.name}";
+            weightJSON = new JSONStorableFloat(weightJSONName, 1f, val => scaledWeight = val.ExponentialScale(0.1f, 1f), 0f, 1f)
+            {
+                isStorable = false
+            };
         }
 
         public override string name

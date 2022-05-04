@@ -612,6 +612,7 @@ namespace VamTimeline
             animation.onWeightChanged.AddListener(OnWeightChanged);
             animation.animatables.onControllersListChanged.AddListener(OnControllersListChanged);
 
+            OnControllersListChanged();
             OnClipsListChanged();
             OnAnimationParametersChanged();
             OnSpeedChanged();
@@ -639,6 +640,14 @@ namespace VamTimeline
         private void OnControllersListChanged()
         {
             _freeControllerHook.SetControllers(animation.animatables.controllers.Select(c => c.controller));
+
+            foreach (var animatable in animation.animatables.controllers.Where(c => c.weightJSON != null))
+            {
+                if(IsFloatJSONParam(animatable.weightJSON.name)) continue;
+                RegisterFloat(animatable.weightJSON);
+            }
+
+            // TODO: Removing would be better.
         }
 
         private void OnTimeChanged(AtomAnimationEditContext.TimeChangedEventArgs time)

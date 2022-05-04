@@ -538,7 +538,7 @@ namespace VamTimeline
             if (_globalScaledWeight <= 0) return;
             foreach (var x in index.ByController())
             {
-                SampleController(x.Key.controller, x.Value, force);
+                SampleController(x.Key.controller, x.Value, force, x.Key.scaledWeight);
             }
         }
 
@@ -583,7 +583,7 @@ namespace VamTimeline
         private float[] _rotationBlendWeights = new float[0];
 
         [MethodImpl(256)]
-        private void SampleController(FreeControllerV3 controller, IList<FreeControllerV3AnimationTarget> targets, bool force)
+        private void SampleController(FreeControllerV3 controller, IList<FreeControllerV3AnimationTarget> targets, bool force, float animatableWeight)
         {
             if (ReferenceEquals(controller, null)) return;
             var control = controller.control;
@@ -680,14 +680,14 @@ namespace VamTimeline
                 {
                     targetRotation = _rotations[0];
                 }
-                var rotation = Quaternion.Slerp(control.rotation, targetRotation, (totalRotationControlWeights / totalRotationBlendWeights) * _globalScaledWeight);
+                var rotation = Quaternion.Slerp(control.rotation, targetRotation, (totalRotationControlWeights / totalRotationBlendWeights) * _globalScaledWeight * animatableWeight);
                 control.rotation = rotation;
             }
 
             if (totalPositionBlendWeights > float.Epsilon && controller.currentPositionState != FreeControllerV3.PositionState.Off)
             {
                 var targetPosition = weightedPositionSum / totalPositionBlendWeights;
-                var position = Vector3.Lerp(control.position, targetPosition, (totalPositionControlWeights / totalPositionBlendWeights) * _globalScaledWeight);
+                var position = Vector3.Lerp(control.position, targetPosition, (totalPositionControlWeights / totalPositionBlendWeights) * _globalScaledWeight * animatableWeight);
                 control.position = position;
             }
 
