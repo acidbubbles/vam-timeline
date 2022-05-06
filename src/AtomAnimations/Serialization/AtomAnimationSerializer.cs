@@ -99,6 +99,7 @@ namespace VamTimeline
                 nextAnimationRandomizeWeight = DeserializeFloat(clipJSON["NextAnimationRandomizeWeight"], 1),
                 nextAnimationTimeRandomize = DeserializeFloat(clipJSON["NextAnimationTimeRandomize"]),
                 autoPlay = DeserializeBool(clipJSON["AutoPlay"], false),
+                timeOffset = DeserializeFloat(clipJSON["TimeOffset"]),
                 speed = DeserializeFloat(clipJSON["Speed"], 1),
                 weight = DeserializeFloat(clipJSON["Weight"], 1),
                 uninterruptible = DeserializeBool(clipJSON["Uninterruptible"], false),
@@ -452,6 +453,8 @@ namespace VamTimeline
                 clipJSON["NextAnimationTimeRandomize"] = clip.nextAnimationTimeRandomize .ToString(CultureInfo.InvariantCulture);
             if (clip.autoPlay)
                 clipJSON["AutoPlay"] = "1";
+            if (clip.timeOffset != 0)
+                clipJSON["TimeOffset"] = clip.timeOffset.ToString(CultureInfo.InvariantCulture);
             if (clip.pose != null)
                 clipJSON["Pose"] = clip.pose.ToJSON();
             if (clip.applyPoseOnTransition)
@@ -460,19 +463,17 @@ namespace VamTimeline
                 clipJSON["FadeOnTransition"] = "1";
             if (clip.animationSet != null)
                 clipJSON["AnimationSet"] = clip.animationSet;
-
-            SerializeClip(clip, clipJSON);
-            return clipJSON;
-        }
-
-        private static void SerializeClip(AtomAnimationClip clip, JSONClass clipJSON)
-        {
             if (clip.animationPattern != null)
                 clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
-
             if (clip.audioSourceControl != null)
                 clipJSON.Add("AudioSourceControl", clip.audioSourceControl.containingAtom.uid);
 
+            SerializeClipTargets(clip, clipJSON);
+            return clipJSON;
+        }
+
+        private static void SerializeClipTargets(AtomAnimationClip clip, JSONClass clipJSON)
+        {
             var controllersJSON = new JSONArray();
             foreach (var controller in clip.targetControllers)
             {

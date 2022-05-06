@@ -18,6 +18,7 @@ namespace VamTimeline
         private JSONStorableBool _autoPlayJSON;
         private JSONStorableBool _uninterruptible;
         private JSONStorableFloat _blendDurationJSON;
+        private JSONStorableFloat _timeOffsetJSON;
         private JSONStorableStringChooser _nextAnimationJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableFloat _nextAnimationRandomizeWeightJSON;
@@ -40,6 +41,7 @@ namespace VamTimeline
             InitSequenceMasterUI();
             InitAutoPlayUI();
             InitBlendUI();
+            InitTimeOffsetUI();
             InitPreserveLoopsUI();
             InitUninterruptibleUI();
 
@@ -124,6 +126,13 @@ namespace VamTimeline
             _blendDurationJSON = new JSONStorableFloat("Blend-in duration", AtomAnimationClip.DefaultBlendDuration, UpdateBlendDuration, 0f, 5f, false);
             var blendDurationUI = prefabFactory.CreateSlider(_blendDurationJSON);
             blendDurationUI.valueFormat = "F3";
+        }
+
+        private void InitTimeOffsetUI()
+        {
+            _timeOffsetJSON = new JSONStorableFloat("Time offset", 0f, val => current.timeOffset = val.Snap(), 0f, 1f, false);
+            var timeOffsetUI = prefabFactory.CreateSlider(_timeOffsetJSON);
+            timeOffsetUI.valueFormat = "F3";
         }
 
         private void InitPreserveLoopsUI()
@@ -457,6 +466,7 @@ namespace VamTimeline
             _masterJSON.valNoCallback = animation.master;
             _autoPlayJSON.valNoCallback = current.autoPlay;
             _blendDurationJSON.valNoCallback = current.blendInDuration;
+            _timeOffsetJSON.valNoCallback = current.timeOffset;
             _uninterruptible.valNoCallback = current.uninterruptible;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;

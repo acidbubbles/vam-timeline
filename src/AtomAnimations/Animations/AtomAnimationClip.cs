@@ -66,6 +66,20 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(audioSourceControl));
             }
         }
+
+        public float timeOffset
+        {
+            get
+            {
+                return timeOffset;
+            }
+            set
+            {
+                timeOffset = value;
+                onAnimationSettingsChanged.Invoke(nameof(timeOffset));
+            }
+        }
+
         public readonly AtomAnimationTargetsList<TriggersTrackAnimationTarget> targetTriggers = new AtomAnimationTargetsList<TriggersTrackAnimationTarget> { label = "Triggers" };
         public readonly AtomAnimationTargetsList<FreeControllerV3AnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerV3AnimationTarget> { label = "Controls" };
         public readonly AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> { label = "Float Params" };
