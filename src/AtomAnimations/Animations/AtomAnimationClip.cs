@@ -76,6 +76,10 @@ namespace VamTimeline
             }
             set
             {
+                if (playbackEnabled)
+                {
+                    clipTime += (value - _timeOffset);
+                }
                 _timeOffset = value;
                 onAnimationSettingsChanged.Invoke(nameof(timeOffset));
             }

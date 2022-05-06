@@ -130,7 +130,7 @@ namespace VamTimeline
 
         private void InitTimeOffsetUI()
         {
-            _timeOffsetJSON = new JSONStorableFloat("Time offset", 0f, val => current.timeOffset = val.Snap(), -1f, 1f, false);
+            _timeOffsetJSON = new JSONStorableFloat("Time offset", 0f, val => current.timeOffset = val, -1f, 1f, false);
             var timeOffsetUI = prefabFactory.CreateSlider(_timeOffsetJSON);
             timeOffsetUI.valueFormat = "F3";
         }
