@@ -59,7 +59,7 @@ namespace VamTimeline
                 }
                 else
                 {
-                    TransitionClips(clip, nextClip);
+                    TransitionClips(clip, nextClip, 0f);
                     PlaySiblings(nextClip);
                 }
 
@@ -79,12 +79,13 @@ namespace VamTimeline
 
         #region Transitions and sequencing
 
-        private void TransitionClips(AtomAnimationClip from, AtomAnimationClip to)
+        private void TransitionClips(AtomAnimationClip from, AtomAnimationClip to, float siblingClipTime = 0f)
         {
             if (to == null) throw new ArgumentNullException(nameof(to));
 
             if (from == null)
             {
+                to.clipTime = siblingClipTime + to.timeOffset;
                 BlendIn(to, to.blendInDuration);
                 to.playbackMainInLayer = true;
                 if (!ReferenceEquals(to.animationPattern, null))
@@ -101,13 +102,16 @@ namespace VamTimeline
 
             if (!to.playbackEnabled)
             {
-                to.clipTime = 0f;
                 if (to.loop)
                 {
                     if (!from.loop)
-                        to.clipTime = Mathf.Abs(to.animationLength - (from.animationLength - from.clipTime));
+                        to.clipTime = Mathf.Abs(to.animationLength - (from.animationLength - from.clipTime)) + siblingClipTime + to.timeOffset;
                     else if (to.preserveLoops)
-                        to.clipTime = (to.animationLength - (from.animationLength - from.clipTime)).Modulo(to.animationLength);
+                        to.clipTime = (to.animationLength - (from.animationLength - from.clipTime)).Modulo(to.animationLength) + siblingClipTime + to.timeOffset;
+                }
+                else
+                {
+                    to.clipTime = siblingClipTime + to.timeOffset;
                 }
             }
 

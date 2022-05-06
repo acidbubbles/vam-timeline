@@ -247,16 +247,6 @@ namespace VamTimeline
             };
         }
 
-        private static bool LayerContainsClip(IList<AtomAnimationClip> clipsByName, string animationLayerQualified)
-        {
-            for (var j = 0; j < clipsByName.Count; j++)
-            {
-                if (clipsByName[j].animationLayerQualified == animationLayerQualified)
-                    return true;
-            }
-            return false;
-        }
-
         private static AtomAnimationClip GetSiblingInLayer(IList<AtomAnimationClip> layer, string animationSet)
         {
             AtomAnimationClip sibling = null;

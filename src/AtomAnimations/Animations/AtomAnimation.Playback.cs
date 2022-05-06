@@ -101,7 +101,7 @@ namespace VamTimeline
             foreach (var clip in clipsToPlay)
             {
                 if (clip == null) continue;
-                PlayClip(clip, true);
+                PlayClipCore(null, clip, true, false);
             }
         }
 
@@ -132,14 +132,16 @@ namespace VamTimeline
                     playingAnimationSegment = next.animationSegment;
             }
 
-            if (sequencing && !next.playbackEnabled)
-                next.clipTime = 0;
-
             if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != next.animationSegment)
             {
                 PlaySegment(next);
                 return;
             }
+
+            if (!next.playbackEnabled && sequencing)
+                next.clipTime = next.timeOffset;
+
+            float blendInDuration;
 
             if (previous != null)
             {
@@ -164,20 +166,17 @@ namespace VamTimeline
                 previous.playbackScheduledNextTimeLeft = float.NaN;
 
                 // Blend immediately, but unlike TransitionClips, recording will ignore blending
-                var blendInDuration = next.recording ? 0f : next.blendInDuration;
+                blendInDuration = next.recording ? 0f : next.blendInDuration;
                 BlendOut(previous, blendInDuration);
-                if (next.clipTime >= next.animationLength) next.clipTime = 0f;
-                BlendIn(next, blendInDuration);
-                next.playbackMainInLayer = true;
             }
             else
             {
                 // Blend immediately (first animation to play on that layer)
-                var blendInDuration = next.recording ? 0f : next.blendInDuration;
-                if (next.clipTime >= next.animationLength) next.clipTime = 0f;
-                BlendIn(next, blendInDuration);
-                next.playbackMainInLayer = true;
+                blendInDuration = next.recording ? 0f : next.blendInDuration;
             }
+
+            BlendIn(next, blendInDuration);
+            next.playbackMainInLayer = true;
 
             if (next.animationPattern)
             {
@@ -206,30 +205,13 @@ namespace VamTimeline
 
         private void PlaySiblings(AtomAnimationClip clip)
         {
-            PlaySiblings(clip.animationSegment, clip.animationName, clip.animationSet);
+            var clipsByName = index.ByName(clip.animationName);
+
+            PlaySiblingsByName(clipsByName, clip.clipTime - clip.timeOffset);
+            PlaySiblingsBySet(clip, clipsByName, clip.clipTime - clip.timeOffset);
         }
 
-        private void PlaySiblings(string animationSegment, string animationName, string animationSet)
-        {
-            var clipsByName = index.ByName(animationName);
-
-            PlaySiblingsByName(clipsByName);
-
-            if (animationSet == null) return;
-
-            var layers = index.segments[animationSegment].layers;
-            for (var i = 0; i < layers.Count; i++)
-            {
-                var layer = layers[i];
-                if (LayerContainsClip(clipsByName, layer[0].animationLayerQualified)) continue;
-                var sibling = GetSiblingInLayer(layer, animationSet);
-                if (sibling == null) continue;
-                var main = GetMainClipInLayer(layer);
-                TransitionClips(main, sibling);
-            }
-        }
-
-        private void PlaySiblingsByName(IList<AtomAnimationClip> clipsByName)
+        private void PlaySiblingsByName(IList<AtomAnimationClip> clipsByName, float clipTime)
         {
             if (clipsByName.Count == 1) return;
             for (var i = 0; i < clipsByName.Count; i++)
@@ -238,8 +220,34 @@ namespace VamTimeline
                 if (clip.playbackMainInLayer) continue;
                 TransitionClips(
                     GetMainClipInLayer(index.ByLayer(clip.animationLayerQualified)),
-                    clip);
+                    clip,
+                    clipTime);
             }
+        }
+
+        private void PlaySiblingsBySet(AtomAnimationClip clip, IList<AtomAnimationClip> clipsByName, float clipTime)
+        {
+            if (clip.animationSet == null) return;
+            var layers = index.segments[clip.animationSegment].layers;
+            for (var i = 0; i < layers.Count; i++)
+            {
+                var layer = layers[i];
+                if (LayerContainsClip(clipsByName, layer[0].animationLayerQualified)) continue;
+                var sibling = GetSiblingInLayer(layer, clip.animationSet);
+                if (sibling == null) continue;
+                var main = GetMainClipInLayer(layer);
+                TransitionClips(main, sibling, clipTime);
+            }
+        }
+
+        private static bool LayerContainsClip(IList<AtomAnimationClip> clipsByName, string animationLayerQualified)
+        {
+            for (var j = 0; j < clipsByName.Count; j++)
+            {
+                if (clipsByName[j].animationLayerQualified == animationLayerQualified)
+                    return true;
+            }
+            return false;
         }
 
         public void SoftStopClip(AtomAnimationClip clip, float blendOutDuration)

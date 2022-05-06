@@ -18,6 +18,7 @@ namespace VamTimeline
         public const string DefaultAnimationName = "Anim 1";
 
         private bool _loop = true;
+        private float _timeOffset;
         private string _nextAnimationName;
         private float _animationLength = DefaultAnimationLength;
         private bool _autoTransitionPrevious;
@@ -71,11 +72,11 @@ namespace VamTimeline
         {
             get
             {
-                return timeOffset;
+                return _timeOffset;
             }
             set
             {
-                timeOffset = value;
+                _timeOffset = value;
                 onAnimationSettingsChanged.Invoke(nameof(timeOffset));
             }
         }

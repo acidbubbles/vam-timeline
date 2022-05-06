@@ -131,10 +131,11 @@ namespace VamTimeline
             {
                 if (current == null) return;
                 var clips = animation.index.GetSiblingsByLayer(current);
+                var baseOffset = current.timeOffset;
                 for(var i = 0; i < clips.Count; i++)
                 {
                     var clip = clips[i];
-                    clip.clipTime = value;
+                    clip.clipTime = value + clip.timeOffset - baseOffset;
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer)
                         animation.PlayClip(clip, animation.sequencing);
                 }
