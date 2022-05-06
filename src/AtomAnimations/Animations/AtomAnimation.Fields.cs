@@ -28,6 +28,7 @@ namespace VamTimeline
         public Logger logger;
 
         public bool recording;
+        public bool focusOnLayer;
 
         public IFadeManager fadeManager;
         private float _scheduleFadeIn = float.MaxValue;

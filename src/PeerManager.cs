@@ -474,7 +474,7 @@ namespace VamTimeline
 
         private void SendTimelineEvent(object[] e)
         {
-            if (!animation.syncWithPeers) return;
+            if (!animation.syncWithPeers || (!animation.sequencing && animation.focusOnLayer)) return;
             if (_logger.peersSync && !IsExcludedFromLogging((string)e[0]))
                 _logger.Log(_logger.peersSyncCategory, $"Broadcasting '{e[0]}'");
             Begin();

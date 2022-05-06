@@ -1083,6 +1083,7 @@ namespace VamTimeline
                 logger.sequencing = true;
                 peers.SendLoggingSettings();
             }));
+            bindings.Add(new JSONStorableAction("ToggleFocusOnLayer", () => animation.focusOnLayer = !animation.focusOnLayer));
 
             bindings.Add(_scrubberAnalogControlJSON);
         }

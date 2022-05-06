@@ -187,10 +187,11 @@ namespace VamTimeline
             if (isPlayingChanged)
                 onIsPlayingChanged.Invoke(next);
 
-            if (seq)
+            if (sequencing)
                 AssignNextAnimation(next);
 
-            PlaySiblings(next);
+            if (sequencing || !focusOnLayer)
+                PlaySiblings(next);
         }
 
         private void Validate()
