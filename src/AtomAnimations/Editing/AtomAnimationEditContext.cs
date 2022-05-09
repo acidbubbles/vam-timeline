@@ -301,8 +301,6 @@ namespace VamTimeline
             if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
             animation.PlaySegment(current);
-            if(!current.playbackMainInLayer)
-                animation.PlayClip(current, true, false);
         }
 
         public void PreviousFrame()

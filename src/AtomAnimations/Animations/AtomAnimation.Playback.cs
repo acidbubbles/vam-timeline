@@ -39,9 +39,9 @@ namespace VamTimeline
                 var clip = siblings[i];
                 if (clip.target == null) continue;
                 if(isPlaying && clip.main != null)
-                    PlayClipCore(clip.main, clip.target, seq, true);
+                    PlayClipCore(clip.main, clip.target, seq, true, false);
                 else
-                    PlayClipCore(null, clip.target, seq, true);
+                    PlayClipCore(null, clip.target, seq, true, false);
             }
         }
 
@@ -69,7 +69,8 @@ namespace VamTimeline
                     : null,
                 clip,
                 seq,
-                allowPreserveLoops
+                allowPreserveLoops,
+                true
             );
         }
 
@@ -101,7 +102,7 @@ namespace VamTimeline
             foreach (var clip in clipsToPlay)
             {
                 if (clip == null) continue;
-                PlayClipCore(null, clip, true, false);
+                PlayClipCore(null, clip, true, false, false);
             }
         }
 
@@ -109,7 +110,7 @@ namespace VamTimeline
 
         #region Playback (Core)
 
-        private void PlayClipCore(AtomAnimationClip previous, AtomAnimationClip next, bool seq, bool allowPreserveLoops)
+        private void PlayClipCore(AtomAnimationClip previous, AtomAnimationClip next, bool seq, bool allowPreserveLoops, bool allowSibling)
         {
             paused = false;
 
@@ -190,7 +191,7 @@ namespace VamTimeline
             if (sequencing)
                 AssignNextAnimation(next);
 
-            if (sequencing || !focusOnLayer)
+            if (allowSibling && (sequencing || !focusOnLayer))
                 PlaySiblings(next);
         }
 
@@ -446,7 +447,7 @@ namespace VamTimeline
         {
             if (!clip.playbackEnabled) return;
 
-            if (blendDuration == 0)
+            if (blendDuration == 0 || clip.playbackBlendWeight == 0)
             {
                 if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (immediate blend out)");
                 clip.Leave();
