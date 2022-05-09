@@ -73,6 +73,7 @@ namespace VamTimeline
                 r.created.animationSegment = segmentNameJSON.val;
                 if (createInOtherAtoms.val) plugin.peers.SendSyncAnimation(r.created);
             }
+            animation.index.Rebuild();
 
             animationEditContext.SelectAnimation(result[0].created);
             ChangeScreen(EditAnimationScreen.ScreenName);

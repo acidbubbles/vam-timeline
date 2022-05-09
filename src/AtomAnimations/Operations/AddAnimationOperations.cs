@@ -36,9 +36,13 @@ namespace VamTimeline
             if (!allLayers)
                 return new List<CreatedAnimation> { AddAnimation(_clip, animationName, position, copySettings, copyKeyframes) };
 
-            return GetSameNameAnimationsInSegment()
+            var result = GetSameNameAnimationsInSegment()
                 .Select(c => AddAnimation(c, animationName, position, copySettings, copyKeyframes))
                 .ToList();
+
+            _animation.index.Rebuild();
+
+            return result;
         }
 
         private CreatedAnimation AddAnimation(AtomAnimationClip source, string animationName, string position, bool copySettings, bool copyKeyframes)
@@ -121,9 +125,13 @@ namespace VamTimeline
             if (!allLayers)
                 return new List<CreatedAnimation> { AddTransitionAnimation(_clip) };
 
-            return GetSameNameAnimationsInSegment()
+            var result = GetSameNameAnimationsInSegment()
                 .Select(AddTransitionAnimation)
                 .ToList();
+
+            _animation.index.Rebuild();
+
+            return result;
         }
 
         private CreatedAnimation AddTransitionAnimation(AtomAnimationClip source)

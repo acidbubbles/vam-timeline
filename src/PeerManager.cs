@@ -390,8 +390,9 @@ namespace VamTimeline
                 clip.weight = (float)e[12];
                 clip.uninterruptible = (bool)e[13];
                 clip.preserveLoops = (bool)e[14];
-                animationEditContext.SelectAnimation(clip);
             }
+
+            animation.index.Rebuild();
         }
 
         private int GetPosition(string animationSegment, string animationLayer, string animationName, string previousAnimationName)
