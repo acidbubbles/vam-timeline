@@ -88,7 +88,7 @@ namespace VamTimeline
 
         private void InitCreateOnAllLayers()
         {
-            _createOnAllLayersJSON = new JSONStorableBool("Create on all layers", true);
+            _createOnAllLayersJSON = new JSONStorableBool("Create on all layers", false);
             prefabFactory.CreateToggle(_createOnAllLayersJSON);
         }
 
@@ -206,7 +206,7 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.val = animation.GetUniqueAnimationName(current);
+            clipNameJSON.val = animation.GetUniqueAnimationNameInLayer(current);
 
             var hasNext = current.nextAnimationName != null;
             var nextIsTransition = false;

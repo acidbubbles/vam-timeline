@@ -132,7 +132,7 @@ namespace VamTimeline
                 if (current == null) return;
                 var clips = animation.focusOnLayer
                     ? new[] { current }
-                    : animation.index.GetSiblingsByLayer(current);
+                    : animation.GetDefaultClipsPerLayer(current);
                 var baseOffset = current.timeOffset;
                 for(var i = 0; i < clips.Count; i++)
                 {
@@ -300,6 +300,7 @@ namespace VamTimeline
             logger.Begin();
             if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
+            peers.SendPlaySegment(current);
             animation.PlaySegment(current);
         }
 

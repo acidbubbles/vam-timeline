@@ -123,6 +123,11 @@ namespace VamTimeline
             return GetUniqueAnimationName(source.animationName);
         }
 
+        public string GetUniqueAnimationNameInLayer(AtomAnimationClip source)
+        {
+            return GetUniqueName(source.animationName, clips.Where(c => c.animationSegment != source.animationSegment || c.animationLayerQualified == source.animationLayerQualified).Select(c => c.animationName).ToList());
+        }
+
         public string GetUniqueAnimationName(string sourceName)
         {
             return GetUniqueName(sourceName, clips.Select(c => c.animationName).ToList());

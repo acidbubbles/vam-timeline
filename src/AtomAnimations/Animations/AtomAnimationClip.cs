@@ -13,6 +13,7 @@ namespace VamTimeline
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 1.0f;
         public const string SharedAnimationSegment = "[SHARED]";
+        public const string LegacyAnimationSegment = "[LEGACY]";
         public const string DefaultAnimationSegment = "Segment 1";
         public const string DefaultAnimationLayer = "Main";
         public const string DefaultAnimationName = "Anim 1";

@@ -13,12 +13,12 @@
 
         public AtomAnimationClip Add(string clipName, string layerName, string segmentName)
         {
-            return _animation.CreateClip(layerName ?? AtomAnimationClip.DefaultAnimationLayer, clipName ?? _animation.GetUniqueAnimationName(_clip), segmentName ?? _animation.GetUniqueSegmentName(_clip));
+            return _animation.CreateClip(layerName, clipName, segmentName);
         }
 
         public AtomAnimationClip AddShared(string clipName)
         {
-            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, clipName ?? _animation.GetUniqueAnimationName(_clip), AtomAnimationClip.SharedAnimationSegment, 0);
+            return _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, clipName, AtomAnimationClip.SharedAnimationSegment, 0);
         }
     }
 }

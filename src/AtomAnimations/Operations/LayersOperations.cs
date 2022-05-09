@@ -15,9 +15,9 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public AtomAnimationClip Add(string clipName = null, string layerName = null)
+        public AtomAnimationClip Add(string clipName, string layerName)
         {
-            return _animation.CreateClip(layerName ?? _animation.GetUniqueLayerName(_clip), clipName ?? _animation.GetUniqueAnimationName(_clip), _clip.animationSegment);
+            return _animation.CreateClip(layerName, clipName, _clip.animationSegment);
         }
 
         public List<AtomAnimationClip> AddAndCarry(string layerName)

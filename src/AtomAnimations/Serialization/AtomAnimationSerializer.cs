@@ -79,7 +79,7 @@ namespace VamTimeline
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
-            var animationSegment = DeserializeString(clipJSON["AnimationSegment"], AtomAnimationClip.DefaultAnimationSegment);
+            var animationSegment = DeserializeString(clipJSON["AnimationSegment"], AtomAnimationClip.LegacyAnimationSegment);
             bool? legacyTransition = null;
             if (clipJSON.HasKey("Transition"))
             {

@@ -440,6 +440,7 @@ namespace VamTimeline
                 }
             }
 
+            peers.SendPlaySegment(selected);
             animation.PlaySegment(selected);
         }
 
@@ -682,6 +683,11 @@ namespace VamTimeline
 
                 _animationJSON.choices = animationNames;
 
+                for (var i = 0; i < animation.index.segmentNames.Count; i++)
+                {
+                    RegisterPlaySegmentTrigger(animation.index.segmentNames[i]);
+                }
+
                 for (var i = 0; i < animationNames.Count; i++)
                 {
                     var animName = animationNames[i];
@@ -714,6 +720,23 @@ namespace VamTimeline
             {
                 SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(OnClipsListChanged)}: {exc}");
             }
+        }
+
+        private void RegisterPlaySegmentTrigger(string segmentName)
+        {
+            var playSegmentName = $"Play Segment {segmentName}";
+            if (IsAction(playSegmentName)) return;
+            var playSegmentJSON = new JSONStorableAction(playSegmentName, () =>
+            {
+                AtomAnimationsClipsIndex.IndexedSegment segment;
+                if (!animation.index.segments.TryGetValue(segmentName, out segment))
+                    return;
+                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playSegmentName}'");
+                var segmentClip = segment.layers[0][0];
+                peers.SendPlaySegment(segmentClip);
+                animation.PlaySegment(segmentClip);
+            });
+            RegisterAction(playSegmentJSON);
         }
 
         private void CreateAndRegisterGroupStorables(string groupKey)

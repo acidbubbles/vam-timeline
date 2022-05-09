@@ -101,6 +101,9 @@ namespace VamTimeline
                     case nameof(SendPaused):
                         ReceivePaused(e);
                         break;
+                    case nameof(SendPlaySegment):
+                        ReceivePlaySegment(e);
+                        break;
                     case nameof(SendStartRecording):
                         ReceiveStartRecording(e);
                         break;
@@ -190,6 +193,23 @@ namespace VamTimeline
                 var clip = clipsToSyncTime[i];
                 clip.clipTime = clipTime;
             }
+        }
+
+        public void SendPlaySegment(AtomAnimationClip clip)
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendPlaySegment), // 0
+                 clip.animationSegment, // 1
+            });
+        }
+
+        private void ReceivePlaySegment(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 1)) return;
+            var animationSegment = (string)e[1];
+            if(!animation.isPlaying || animation.playingAnimationSegment != animationSegment)
+                animation.PlaySegment(animation.index.segments[animationSegment].layers[0][0]);
         }
 
         public void SendMasterClipState(AtomAnimationClip clip)
