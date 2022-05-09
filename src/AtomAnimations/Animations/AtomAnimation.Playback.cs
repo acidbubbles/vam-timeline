@@ -209,8 +209,9 @@ namespace VamTimeline
         {
             var clipsByName = index.ByName(clip.animationName);
 
-            PlaySiblingsByName(clipsByName, clip.clipTime - clip.timeOffset);
-            PlaySiblingsBySet(clip, clipsByName, clip.clipTime - clip.timeOffset);
+            var clipTime = clip.clipTime - clip.timeOffset;
+            PlaySiblingsByName(clipsByName, clipTime);
+            PlaySiblingsBySet(clip, clipsByName, clipTime);
         }
 
         private void PlaySiblingsByName(IList<AtomAnimationClip> clipsByName, float clipTime)

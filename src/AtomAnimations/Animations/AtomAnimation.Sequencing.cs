@@ -104,14 +104,17 @@ namespace VamTimeline
             {
                 if (to.loop)
                 {
+                    var fromClipTime = from.clipTime - from.timeOffset;
                     if (!from.loop)
-                        to.clipTime = Mathf.Abs(to.animationLength - (from.animationLength - from.clipTime)) + siblingClipTime + to.timeOffset;
+                        to.clipTime = Mathf.Abs(to.animationLength - (from.animationLength - fromClipTime)) + to.timeOffset;
                     else if (to.preserveLoops)
-                        to.clipTime = (to.animationLength - (from.animationLength - from.clipTime)).Modulo(to.animationLength) + siblingClipTime + to.timeOffset;
+                        to.clipTime = (to.animationLength - (from.animationLength - fromClipTime)).Modulo(to.animationLength) + to.timeOffset;
+                    else
+                        to.clipTime = to.timeOffset;
                 }
                 else
                 {
-                    to.clipTime = siblingClipTime + to.timeOffset;
+                    to.clipTime = to.timeOffset;
                 }
             }
 
