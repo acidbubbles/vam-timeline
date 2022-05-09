@@ -20,6 +20,18 @@ namespace VamTimeline
             return _animation.CreateClip(layerName ?? _animation.GetUniqueLayerName(_clip), clipName ?? _animation.GetUniqueAnimationName(_clip), _clip.animationSegment);
         }
 
+        public List<AtomAnimationClip> AddAndCarry(string layerName)
+        {
+            return _animation.index.ByLayer(_clip.animationLayerQualified)
+                .Select(c =>
+                {
+                    var r = _animation.CreateClip(layerName, c.animationName, c.animationSegment);
+                    c.CopySettingsTo(r);
+                    return r;
+                })
+                .ToList();
+        }
+
         public void SplitLayer(List<IAtomAnimationTarget> targets, string layerName = null)
         {
             if (layerName == null)

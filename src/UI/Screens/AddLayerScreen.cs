@@ -8,6 +8,7 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
+        private JSONStorableBool _createAllAnimationsJSON;
         private UIDynamicButton _createLayerUI;
         private UIDynamicButton _splitLayerUI;
 
@@ -22,20 +23,28 @@ namespace VamTimeline
 
             InitNewClipNameUI();
             InitNewLayerNameUI();
+            InitCreateAllAnimationsUI();
+            InitCreateInOtherAtomsUI();
             InitCreateLayerUI();
-            InitSplitLayerUI();
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Options", 2);
+            prefabFactory.CreateHeader("Advanced", 2);
 
-            #warning TODO
-            //InitCreateAllAnimations();
-            InitCreateInOtherAtomsUI();
+            InitSplitLayerUI();
 
             RefreshUI();
         }
 
-        public void InitCreateLayerUI()
+        private void InitCreateAllAnimationsUI()
+        {
+            _createAllAnimationsJSON = new JSONStorableBool("Create all layer animations", false, val =>
+            {
+                if (val) clipNameJSON.val = current.animationName;
+            });
+            prefabFactory.CreateToggle(_createAllAnimationsJSON);
+        }
+
+        private void InitCreateLayerUI()
         {
             _createLayerUI = prefabFactory.CreateButton("Create new layer");
             _createLayerUI.button.onClick.AddListener(AddLayer);
@@ -53,11 +62,24 @@ namespace VamTimeline
 
         private void AddLayer()
         {
-            var clip = operations.Layers().Add(clipNameJSON.val, layerNameJSON.val);
+            AtomAnimationClip clip;
+            if (_createAllAnimationsJSON.val)
+            {
+                var clips = operations.Layers().AddAndCarry(layerNameJSON.val);
+                if (createInOtherAtoms.val)
+                    foreach (var c in clips)
+                        plugin.peers.SendSyncAnimation(c);
+                clip = clips[0];
+            }
+            else
+            {
+                clip = operations.Layers().Add(clipNameJSON.val, layerNameJSON.val);
+            }
+
+            if (clip == null) return;
 
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
         }
 
         private void SplitLayer()
