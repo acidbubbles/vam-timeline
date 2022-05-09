@@ -6,6 +6,22 @@ namespace VamTimeline
 {
     public class AddAnimationOperations
     {
+        public static class Positions
+        {
+            public const string PositionFirst = "First";
+            public const string PositionPrevious = "Previous";
+            public const string PositionNext = "Next";
+            public const string PositionLast = "Last";
+            public const string NotSpecified = "[N/A]";
+            public static readonly List<string> all = new List<string> { PositionFirst, PositionPrevious, PositionNext, PositionLast };
+        }
+
+        public class CreatedAnimation
+        {
+            public AtomAnimationClip source;
+            public AtomAnimationClip created;
+        }
+
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationClip _clip;
 
@@ -15,115 +31,141 @@ namespace VamTimeline
             _clip = clip;
         }
 
-        public AtomAnimationClip AddAnimationAsCopy(string animationName, int position)
+        public List<CreatedAnimation> AddAnimation(string animationName, string position, bool copySettings, bool copyKeyframes, bool allLayers)
         {
-            return AddAnimationAsCopy(_clip, animationName, position, _clip.animationSegment);
+            if (!allLayers)
+                return new List<CreatedAnimation> { AddAnimation(_clip, animationName, position, copySettings, copyKeyframes) };
+
+            return GetSameNameAnimationsInSegment()
+                .Select(c => AddAnimation(c, animationName, position, copySettings, copyKeyframes))
+                .ToList();
         }
 
-        public AtomAnimationClip AddAnimationAsCopy(AtomAnimationClip source, string animationName, int position, string segmentName)
+        private CreatedAnimation AddAnimation(AtomAnimationClip source, string animationName, string position, bool copySettings, bool copyKeyframes)
         {
-            var clip = _animation.CreateClip(source.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetUniqueAnimationName(source) : animationName, segmentName, position);
-            source.CopySettingsTo(clip);
-            foreach (var origTarget in source.targetControllers)
+            var clip = _animation.CreateClip(source.animationLayer, animationName, source.animationSegment, GetPosition(source, position));
+
+            if (copySettings)
             {
-                var newTarget = CopyTarget(clip, origTarget);
-                for (var i = 0; i < origTarget.curves.Count; i++)
-                    newTarget.curves[i].keys = new List<BezierKeyframe>(origTarget.curves[i].keys);
-                newTarget.dirty = true;
+                source.CopySettingsTo(clip);
             }
 
-            foreach (var origTarget in source.targetFloatParams)
+            if (copyKeyframes)
             {
-                if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(new JSONStorableFloatAnimationTarget(origTarget));
-                newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
-                newTarget.dirty = true;
-            }
-
-            foreach (var origTarget in source.targetTriggers)
-            {
-                var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef));
-                foreach (var origTrigger in origTarget.triggersMap)
+                foreach (var origTarget in source.targetControllers)
                 {
-                    var trigger = new CustomTrigger();
-                    trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
-                    newTarget.SetKeyframe(origTrigger.Key, trigger);
+                    var newTarget = CopyTarget(clip, origTarget);
+                    for (var i = 0; i < origTarget.curves.Count; i++)
+                        newTarget.curves[i].keys = new List<BezierKeyframe>(origTarget.curves[i].keys);
+                    newTarget.dirty = true;
                 }
 
-                newTarget.dirty = true;
+                foreach (var origTarget in source.targetFloatParams)
+                {
+                    if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                    var newTarget = clip.Add(new JSONStorableFloatAnimationTarget(origTarget));
+                    newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
+                    newTarget.dirty = true;
+                }
+
+                foreach (var origTarget in source.targetTriggers)
+                {
+                    var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef));
+                    foreach (var origTrigger in origTarget.triggersMap)
+                    {
+                        var trigger = new CustomTrigger();
+                        trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
+                        newTarget.SetKeyframe(origTrigger.Key, trigger);
+                    }
+
+                    newTarget.dirty = true;
+                }
+
+                clip.pose = source.pose?.Clone();
+                clip.applyPoseOnTransition = source.applyPoseOnTransition;
+            }
+            else
+            {
+                foreach (var origTarget in source.targetControllers)
+                {
+                    var newTarget = CopyTarget(clip, origTarget);
+                    newTarget.SetKeyframeToCurrent(0f);
+                    newTarget.SetKeyframeToCurrent(clip.animationLength);
+                }
+
+                foreach (var origTarget in source.targetFloatParams)
+                {
+                    if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                    var newTarget = clip.Add(origTarget.animatableRef);
+                    newTarget.SetKeyframeToCurrent(0f);
+                    newTarget.SetKeyframeToCurrent(clip.animationLength);
+                }
+
+                foreach (var origTarget in source.targetTriggers)
+                {
+                    var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
+                    newTarget.AddEdgeFramesIfMissing(clip.animationLength);
+                    clip.Add(newTarget);
+                }
             }
 
-            clip.pose = source.pose?.Clone();
-            clip.applyPoseOnTransition = source.applyPoseOnTransition;
-            return clip;
+            return new CreatedAnimation
+            {
+                source = source,
+                created = clip
+            };
         }
 
-        public AtomAnimationClip AddAnimationFromCurrentFrame(bool copySettings, string animationName, int position)
-       {
-           var clip = _animation.CreateClip(_clip.animationLayer, string.IsNullOrEmpty(animationName) ? _animation.GetUniqueAnimationName(_clip) : animationName, _clip.animationSegment, position);
-            if (copySettings) _clip.CopySettingsTo(clip);
-            foreach (var origTarget in _clip.targetControllers)
-            {
-                var newTarget = CopyTarget(clip, origTarget);
-                newTarget.SetKeyframeToCurrent(0f);
-                newTarget.SetKeyframeToCurrent(clip.animationLength);
-            }
-            foreach (var origTarget in _clip.targetFloatParams)
-            {
-                if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.animatableRef);
-                newTarget.SetKeyframeToCurrent(0f);
-                newTarget.SetKeyframeToCurrent(clip.animationLength);
-            }
-            foreach (var origTarget in _clip.targetTriggers)
-            {
-                var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
-                newTarget.AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(newTarget);
-            }
-            return clip;
-        }
-
-        public AtomAnimationClip AddTransitionAnimation()
+        public List<CreatedAnimation> AddTransitionAnimation(bool allLayers)
         {
-            var next = _animation.GetClip(_clip.animationSegment, _clip.animationLayer, _clip.nextAnimationName);
+            if (!allLayers)
+                return new List<CreatedAnimation> { AddTransitionAnimation(_clip) };
+
+            return GetSameNameAnimationsInSegment()
+                .Select(AddTransitionAnimation)
+                .ToList();
+        }
+
+        private CreatedAnimation AddTransitionAnimation(AtomAnimationClip source)
+        {
+            var next = _animation.GetClip(source.animationSegment, source.animationLayer, source.nextAnimationName);
             if (next == null)
             {
                 SuperController.LogError("There is no animation to transition to");
                 return null;
             }
 
-            var clip = _animation.CreateClip(_clip.animationLayer, $"{_clip.animationName} > {next.animationName}", _clip.animationSegment, _animation.clips.IndexOf(_clip) + 1);
+            var clip = _animation.CreateClip(source.animationLayer, $"{source.animationName} > {next.animationName}", source.animationSegment, _animation.clips.IndexOf(source) + 1);
             clip.loop = false;
-            clip.autoTransitionPrevious = _animation.index.segments[_clip.animationSegment].layersMap[_clip.animationLayer].Any(c => c.nextAnimationName == _clip.animationName);
-            clip.autoTransitionNext = _clip.nextAnimationName != null;
-            clip.nextAnimationName = _clip.nextAnimationName;
-            clip.blendInDuration = AtomAnimationClip.DefaultBlendDuration;
+            clip.autoTransitionPrevious = _animation.index.segments[source.animationSegment].layersMap[source.animationLayer].Any(c => c.nextAnimationName == source.animationName);
+            clip.autoTransitionNext = source.nextAnimationName != null;
+            clip.nextAnimationName = source.nextAnimationName;
             clip.nextAnimationTime = clip.animationLength - clip.blendInDuration;
-            clip.ensureQuaternionContinuity = _clip.ensureQuaternionContinuity;
 
-            foreach (var origTarget in _clip.targetControllers)
+            foreach (var origTarget in source.targetControllers)
             {
                 var newTarget = CopyTarget(clip, origTarget);
-                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
+                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(source.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetControllers.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
-            foreach (var origTarget in _clip.targetFloatParams)
+
+            foreach (var origTarget in source.targetFloatParams)
             {
                 if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
                 var newTarget = clip.Add(origTarget.animatableRef);
-                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(_clip.animationLength));
+                newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(source.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
-            foreach (var origTarget in _clip.targetTriggers)
+
+            foreach (var origTarget in source.targetTriggers)
             {
                 var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
                 newTarget.AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(newTarget);
             }
 
-            _clip.nextAnimationName = clip.animationName;
-            return clip;
+            source.nextAnimationName = clip.animationName;
+            return new CreatedAnimation { source = source, created = clip };
         }
 
         private static FreeControllerV3AnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerV3AnimationTarget origTarget)
@@ -159,6 +201,32 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"Timeline.{nameof(ManageAnimationsScreen)}.{nameof(DeleteAnimation)}: {exc}");
+            }
+        }
+
+        private IEnumerable<AtomAnimationClip> GetSameNameAnimationsInSegment()
+        {
+            return _animation.index.segments[_clip.animationSegment].layers
+                .Select(l => l.FirstOrDefault(c => c.animationName == _clip.animationName))
+                .Where(l => l != null);
+        }
+
+        private int GetPosition(AtomAnimationClip clip, string position)
+        {
+            switch (position)
+            {
+                case Positions.PositionFirst:
+                    return _animation.clips.FindIndex(c => c.animationLayerQualified == clip.animationLayerQualified);
+                case Positions.PositionPrevious:
+                    return _animation.clips.IndexOf(clip);
+                case Positions.PositionNext:
+                    return _animation.clips.IndexOf(clip) + 1;
+                case Positions.PositionLast:
+                    return _animation.clips.FindLastIndex(c => c.animationLayerQualified == clip.animationLayerQualified) + 1;
+                case Positions.NotSpecified:
+                    return _animation.clips.Count;
+                default:
+                    throw new NotSupportedException($"Unknown position '{position}'");
             }
         }
     }

@@ -275,6 +275,8 @@ namespace VamTimeline
 
         public IList<AtomAnimationClip> GetDefaultClipsPerLayer(AtomAnimationClip source)
         {
+            if (!sequencing && focusOnLayer) return new[] { source };
+
             AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
             if (!index.segments.TryGetValue(AtomAnimationClip.SharedAnimationSegment, out sharedLayers))
             {

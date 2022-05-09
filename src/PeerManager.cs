@@ -355,10 +355,11 @@ namespace VamTimeline
                 if (existing == null)
                 {
                     var previousAnimationName = e.Length >= 16 ? (string)e[15] : null;
-                    if (animation.clips.Any(c => c.animationLayer == animationLayer))
+                    var clipOnLayer = animation.clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
+                    if (clipOnLayer != null)
                     {
-                        new AddAnimationOperations(animation, animation.clips.First(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer))
-                            .AddAnimationFromCurrentFrame(false, animationName, GetPosition(animationSegment, animationLayer, animationName, previousAnimationName));
+                        new AddAnimationOperations(animation, clipOnLayer)
+                            .AddAnimation(animationName, AddAnimationOperations.Positions.PositionLast, false, false, false);
                     }
                     else
                     {
@@ -474,7 +475,7 @@ namespace VamTimeline
 
         private void SendTimelineEvent(object[] e)
         {
-            if (!animation.syncWithPeers || (!animation.sequencing && animation.focusOnLayer)) return;
+            if (!animation.syncWithPeers) return;
             if (_logger.peersSync && !IsExcludedFromLogging((string)e[0]))
                 _logger.Log(_logger.peersSyncCategory, $"Broadcasting '{e[0]}'");
             Begin();

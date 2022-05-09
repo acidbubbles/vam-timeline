@@ -843,13 +843,16 @@ namespace VamTimeline
             target.loop = loop;
             target.animationLength = animationLength;
             target.animationSet = animationSet;
+            target.ensureQuaternionContinuity = ensureQuaternionContinuity;
+            target.speed = speed;
+            target.preserveLoops = preserveLoops;
+            target.timeOffset = timeOffset;
+            target.weight = weight;
+            target.blendInDuration = blendInDuration;
             target.nextAnimationName = nextAnimationName;
             target.nextAnimationTime = nextAnimationTime;
-            target.ensureQuaternionContinuity = ensureQuaternionContinuity;
-            target.blendInDuration = blendInDuration;
-            target.speed = speed;
             target.nextAnimationTimeRandomize = nextAnimationTimeRandomize;
-            target.preserveLoops = preserveLoops;
+            target.nextAnimationRandomizeWeight = nextAnimationRandomizeWeight;
         }
 
         #endregion

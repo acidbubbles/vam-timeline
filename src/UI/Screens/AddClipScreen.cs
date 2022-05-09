@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace VamTimeline
 {
@@ -7,16 +6,12 @@ namespace VamTimeline
     {
         public const string ScreenName = "Add animation";
 
-        private const string _positionFirst = "First";
-        private const string _positionPrevious = "Previous";
-        private const string _positionNext = "Next";
-        private const string _positionLast = "Last";
-
-        private UIDynamicButton _addAnimationTransitionUI;
         private JSONStorableStringChooser _createPosition;
+        private JSONStorableBool _copySettingsJSON;
+        private JSONStorableBool _copyKeyframesJSON;
+        private JSONStorableBool _createOnAllLayersJSON;
+        private UIDynamicButton _addAnimationTransitionUI;
         private UIDynamicButton _createNewUI;
-        private UIDynamicButton _createNewCarrySettingsUI;
-        private UIDynamicButton _createCopyUI;
         private UIDynamicButton _splitAtScrubberUI;
 
         public override string screenId => ScreenName;
@@ -33,15 +28,17 @@ namespace VamTimeline
 
             InitNewClipNameUI();
             InitNewPositionUI();
-            InitCreateAnimationUI();
-
-            prefabFactory.CreateHeader("Options", 2);
-
+            InitCopySettings();
+            InitCopyKeyframes();
+            InitCreateOnAllLayers();
             InitCreateInOtherAtomsUI();
+            InitCreateAnimationUI();
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Advanced", 1);
 
+            InitSplitAtScubberUI();
+            InitCreateTransitionUI();
             InitMergeUI();
 
             prefabFactory.CreateSpacer();
@@ -55,20 +52,44 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI()
         {
-            _createNewUI = prefabFactory.CreateButton("Create blank");
-            _createNewUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(false));
+            _createNewUI = prefabFactory.CreateButton("Create animation");
+            _createNewUI.button.onClick.AddListener(AddAnimation);
+        }
 
-            _createNewCarrySettingsUI = prefabFactory.CreateButton("Create new (carry settings)");
-            _createNewCarrySettingsUI.button.onClick.AddListener(() => AddAnimationFromCurrentFrame(true));
-
-            _createCopyUI = prefabFactory.CreateButton("Create copy");
-            _createCopyUI.button.onClick.AddListener(AddAnimationAsCopy);
-
-            _splitAtScrubberUI = prefabFactory.CreateButton("Split at scrubber position");
-            _splitAtScrubberUI.button.onClick.AddListener(SplitAnimationAtScrubber);
-
+        private void InitCreateTransitionUI()
+        {
             _addAnimationTransitionUI = prefabFactory.CreateButton("Create transition (current -> next)");
             _addAnimationTransitionUI.button.onClick.AddListener(AddTransitionAnimation);
+        }
+
+        private void InitSplitAtScubberUI()
+        {
+            _splitAtScrubberUI = prefabFactory.CreateButton("Split at scrubber position");
+            _splitAtScrubberUI.button.onClick.AddListener(SplitAnimationAtScrubber);
+        }
+
+        private void InitCopySettings()
+        {
+            _copySettingsJSON = new JSONStorableBool("Copy settings", false, val =>
+            {
+                if (!val) _copyKeyframesJSON.valNoCallback = false;
+            });
+            prefabFactory.CreateToggle(_copySettingsJSON);
+        }
+
+        private void InitCopyKeyframes()
+        {
+            _copyKeyframesJSON = new JSONStorableBool("Copy keyframes", false, val =>
+            {
+                if (val) _copySettingsJSON.valNoCallback = true;
+            });
+            prefabFactory.CreateToggle(_copyKeyframesJSON);
+        }
+
+        private void InitCreateOnAllLayers()
+        {
+            _createOnAllLayersJSON = new JSONStorableBool("Create on all layers", true);
+            prefabFactory.CreateToggle(_createOnAllLayersJSON);
         }
 
         private void InitMergeUI()
@@ -81,8 +102,8 @@ namespace VamTimeline
         {
             _createPosition = new JSONStorableStringChooser(
                 "Add at position",
-                new List<string> { _positionFirst, _positionPrevious, _positionNext, _positionLast },
-                _positionNext,
+                AddAnimationOperations.Positions.all,
+                AddAnimationOperations.Positions.PositionNext,
                 "Add at position");
             prefabFactory.CreatePopup(_createPosition, false, true);
         }
@@ -90,30 +111,6 @@ namespace VamTimeline
         #endregion
 
         #region Callbacks
-
-        private void AddAnimationAsCopy()
-        {
-            var clip = operations.AddAnimation().AddAnimationAsCopy(clipNameJSON.val, GetPosition());
-            if(clip == null) return;
-            animationEditContext.SelectAnimation(clip);
-            ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
-        }
-
-        private int GetPosition()
-        {
-            switch (_createPosition.val)
-            {
-                case _positionFirst:
-                    return animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified);
-                case _positionPrevious:
-                    return animation.clips.IndexOf(current);
-                case _positionNext:
-                    return animation.clips.IndexOf(current) + 1;
-                default:
-                    return animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified) + 1;
-            }
-        }
 
         private void SplitAnimationAtScrubber()
         {
@@ -124,13 +121,16 @@ namespace VamTimeline
                 return;
             }
 
-            var newClip = operations.AddAnimation().AddAnimationAsCopy(clipNameJSON.val, GetPosition());
-            newClip.loop = false;
-            newClip.Rebuild(current);
-            operations.Resize().CropOrExtendAt(newClip, newClip.animationLength - time, 0);
-            current.loop = false;
-            operations.Resize().CropOrExtendEnd(current, time);
-            if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(newClip);
+            foreach (var created in operations.AddAnimation().AddAnimation(clipNameJSON.val, _createPosition.val, true, false, _createOnAllLayersJSON.val))
+            {
+                created.source.loop = false;
+                created.source.DirtyAll();
+                created.created.loop = false;
+                created.created.DirtyAll();
+                operations.Resize().CropOrExtendAt(created.created, created.created.animationLength - time, 0);
+                operations.Resize().CropOrExtendEnd(created.source, time);
+                if (createInOtherAtoms.val) plugin.peers.SendSyncAnimation(created.created);
+            }
         }
 
         private void MergeWithNext()
@@ -177,9 +177,10 @@ namespace VamTimeline
             current.DirtyAll();
         }
 
-        private void AddAnimationFromCurrentFrame(bool copySettings)
+        private void AddAnimation()
         {
-            var clip = operations.AddAnimation().AddAnimationFromCurrentFrame(copySettings, clipNameJSON.val, GetPosition());
+            var result = operations.AddAnimation().AddAnimation(clipNameJSON.val, _createPosition.val, _copySettingsJSON.val, _copyKeyframesJSON.val, _createOnAllLayersJSON.val);
+            var clip = result.Select(r => r.created).FirstOrDefault(c => c.animationLayerQualified == current.animationLayerQualified);
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
@@ -189,7 +190,8 @@ namespace VamTimeline
 
         private void AddTransitionAnimation()
         {
-            var clip = operations.AddAnimation().AddTransitionAnimation();
+            var result = operations.AddAnimation().AddTransitionAnimation(_createOnAllLayersJSON.val);
+            var clip = result.FirstOrDefault(c => c.source == current)?.created;
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
@@ -239,8 +241,6 @@ namespace VamTimeline
                 currentLayer.All(c => c.animationName != clipNameJSON.val);
 
             _createNewUI.button.interactable = nameValid;
-            _createNewCarrySettingsUI.button.interactable = nameValid;
-            _createCopyUI.button.interactable = nameValid;
             _splitAtScrubberUI.button.interactable = nameValid;
         }
     }

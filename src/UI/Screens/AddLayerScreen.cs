@@ -28,6 +28,8 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Options", 2);
 
+            #warning TODO
+            //InitCreateAllAnimations();
             InitCreateInOtherAtomsUI();
 
             RefreshUI();
@@ -41,7 +43,7 @@ namespace VamTimeline
 
         private void InitSplitLayerUI()
         {
-            _splitLayerUI = prefabFactory.CreateButton("Split selection to new layer");
+            _splitLayerUI = prefabFactory.CreateButton("Split selected targets to new layer");
             _splitLayerUI.button.onClick.AddListener(SplitLayer);
         }
 

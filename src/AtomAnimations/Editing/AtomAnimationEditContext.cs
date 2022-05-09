@@ -130,7 +130,9 @@ namespace VamTimeline
             set
             {
                 if (current == null) return;
-                var clips = animation.index.GetSiblingsByLayer(current);
+                var clips = animation.focusOnLayer
+                    ? new[] { current }
+                    : animation.index.GetSiblingsByLayer(current);
                 var baseOffset = current.timeOffset;
                 for(var i = 0; i < clips.Count; i++)
                 {

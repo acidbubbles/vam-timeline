@@ -75,6 +75,7 @@ namespace VamTimeline
 
         public void PlaySegment(AtomAnimationClip source)
         {
+            #warning This is not respecting the current clip!
             var clipsToPlay = GetDefaultClipsPerLayer(source);
 
             if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment && source.animationSegment != playingAnimationSegment)
