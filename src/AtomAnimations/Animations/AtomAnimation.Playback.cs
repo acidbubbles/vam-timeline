@@ -100,7 +100,6 @@ namespace VamTimeline
 
             foreach (var clip in clipsToPlay)
             {
-                if (clip == null) continue;
                 PlayClipCore(null, clip, true, false, false);
             }
         }

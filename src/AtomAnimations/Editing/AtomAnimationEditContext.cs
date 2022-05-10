@@ -558,7 +558,6 @@ namespace VamTimeline
             SampleNow();
             if (_animation.liveParenting) return;
             var hasParenting = animation.GetDefaultClipsPerLayer(current)
-                .Where(c => c != null)
                 .SelectMany(c => c.targetControllers)
                 .Any(t => t.parentRigidbodyId != null);
             if (!hasParenting) return;
@@ -572,7 +571,6 @@ namespace VamTimeline
             for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
                 var clip = clips[clipIndex];
-                if (clip == null) continue;
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
                     var target = clip.targetTriggers[triggerIndex];
@@ -593,7 +591,7 @@ namespace VamTimeline
             {
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
-                    var target = current.targetTriggers[triggerIndex];
+                    var target = clip.targetTriggers[triggerIndex];
                     if (!target.animatableRef.live) continue;
                     target.Leave();
                 }
@@ -629,8 +627,7 @@ namespace VamTimeline
             for (var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
-                if (clip != null)
-                    clip.temporarilyEnabled = true;
+                clip.temporarilyEnabled = true;
             }
 
             try
@@ -642,8 +639,7 @@ namespace VamTimeline
                 for (var i = 0; i < clips.Count; i++)
                 {
                     var clip = clips[i];
-                    if (clip != null)
-                        clip.temporarilyEnabled = false;
+                    clip.temporarilyEnabled = false;
                 }
             }
         }
