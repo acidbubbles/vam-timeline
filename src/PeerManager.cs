@@ -185,12 +185,12 @@ namespace VamTimeline
             var isPlaying = (bool)e[2];
             var clipTime = (float)e[3];
             var sequencing = (bool)e[4];
-            if (isPlaying) animation.PlayClipBySet(animationName, animationSet, animationSegment, sequencing);
 
-            var clipsToSyncTime = animation.index.ByName(animationName);
-            for (var i = 0; i < clipsToSyncTime.Count; i++)
+            if (isPlaying) animation.PlayClipBySet(animationName, animationSet, animationSegment, sequencing);
+            var clipsByName = animation.index.ByName(animationName);
+            for (var i = 0; i < clipsByName.Count; i++)
             {
-                var clip = clipsToSyncTime[i];
+                var clip = clipsByName[i];
                 clip.clipTime = clipTime;
             }
         }
@@ -198,6 +198,7 @@ namespace VamTimeline
         public void SendPlaySegment(AtomAnimationClip clip)
         {
             if (syncing) return;
+            if (clip.animationSegment == AtomAnimationClip.NoneAnimationSegment) return;
             SendTimelineEvent(new object[]{
                  nameof(SendPlaySegment), // 0
                  clip.animationSegment, // 1

@@ -17,26 +17,42 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Create", 1);
+            if (animation.index.useSegment)
+            {
+                prefabFactory.CreateSpacer();
+                prefabFactory.CreateHeader("Segments", 1);
 
-            InitNewClipNameUI();
-            InitNewLayerNameUI();
-            InitNewSegmentNameUI();
-            InitCreateSegmentUI();
-            InitCopySegmentUI();
+                InitUseSegments();
+            }
+            else
+            {
+                prefabFactory.CreateSpacer();
+                prefabFactory.CreateHeader("Create", 1);
 
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Options", 2);
+                InitNewClipNameUI();
+                InitNewLayerNameUI();
+                InitNewSegmentNameUI();
+                InitCreateSegmentUI();
+                InitCopySegmentUI();
 
-            InitCreateInOtherAtomsUI();
+                prefabFactory.CreateSpacer();
+                prefabFactory.CreateHeader("Options", 2);
 
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("More", 2);
+                InitCreateInOtherAtomsUI();
 
-            CreateChangeScreenButton("<i>Create <b>shared segment</b>...</i>", AddSharedSegmentScreen.ScreenName);
+                prefabFactory.CreateSpacer();
+                prefabFactory.CreateHeader("More", 2);
 
-            RefreshUI();
+                CreateChangeScreenButton("<i>Create <b>shared segment</b>...</i>", AddSharedSegmentScreen.ScreenName);
+
+                RefreshUI();
+            }
+        }
+
+        public void InitUseSegments()
+        {
+            var useSegmentsUI = prefabFactory.CreateButton("Use segments");
+            useSegmentsUI.button.onClick.AddListener(UseSegments);
         }
 
         public void InitCreateSegmentUI()
@@ -54,6 +70,17 @@ namespace VamTimeline
         #endregion
 
         #region Callbacks
+
+        private void UseSegments()
+        {
+            var animationSegment = animation.GetUniqueSegmentName("Segment 1");
+            foreach (var clip in animation.index.segments[AtomAnimationClip.NoneAnimationSegment].layers.SelectMany(l => l))
+            {
+                clip.animationSegment = animationSegment;
+            }
+            animation.index.Rebuild();
+            ReloadScreen();
+        }
 
         private void AddSegment()
         {
@@ -73,7 +100,6 @@ namespace VamTimeline
                 r.created.animationSegment = segmentNameJSON.val;
                 if (createInOtherAtoms.val) plugin.peers.SendSyncAnimation(r.created);
             }
-            animation.index.Rebuild();
 
             animationEditContext.SelectAnimation(result[0].created);
             ChangeScreen(EditAnimationScreen.ScreenName);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,6 +32,7 @@ namespace VamTimeline
 
         public readonly IndexedSegment emptySegment = new IndexedSegment();
         public readonly Dictionary<string, IndexedSegment> segments = new Dictionary<string, IndexedSegment>();
+        public bool useSegment;
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayerNameQualified = new Dictionary<string, List<AtomAnimationClip>>();
@@ -59,6 +61,7 @@ namespace VamTimeline
 
         public void Rebuild()
         {
+            useSegment = false;
             segments.Clear();
             clipsGroupedByLayer.Clear();
             _clipsByLayerNameQualified.Clear();
@@ -140,6 +143,8 @@ namespace VamTimeline
                     byFloatParam.Add(target);
                 }
             }
+
+            useSegment = segmentNames.Count > 1 || segmentNames[0] != AtomAnimationClip.NoneAnimationSegment;
         }
 
         public IList<AtomAnimationClip> ByLayer(string layerNameQualified)
@@ -162,6 +167,23 @@ namespace VamTimeline
         {
             List<AtomAnimationClip> clips;
             return _clipsByName.TryGetValue(name, out clips) ? clips : _emptyClipList;
+        }
+
+        public IList<AtomAnimationClip> GetSiblingsByLayer(AtomAnimationClip clip)
+        {
+            List<AtomAnimationClip> clips;
+            var result = clip.animationSetQualified != null
+                ? _firstClipOfLayerBySetQualified.TryGetValue(clip.animationSetQualified, out clips)
+                    ? clips
+                    : _emptyClipList
+                : ByName(clip.animationName);
+            for (var i = 0; i < result.Count; i++)
+            {
+                if (result[i].animationLayerQualified != clip.animationLayerQualified) continue;
+                result[i] = clip;
+                break;
+            }
+            return result;
         }
     }
 }

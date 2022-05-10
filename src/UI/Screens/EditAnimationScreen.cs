@@ -38,10 +38,8 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            if (animation.index.segmentNames.Count > 1)
-                InitRenameSegment();
-            if (animation.index.clipsGroupedByLayer.Count > 1)
-                InitRenameLayer();
+            InitRenameSegment();
+            InitRenameLayer();
             InitRenameAnimation();
 
             prefabFactory.CreateHeader("Speed", 1);
@@ -77,7 +75,7 @@ namespace VamTimeline
             var globalSpeedUI = prefabFactory.CreateSlider(_globalSpeedJSON);
             globalSpeedUI.valueFormat = "F3";
 
-            _localSpeedJSON = new JSONStorableFloat("Speed (Local)", 1f, val => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
+            _localSpeedJSON = new JSONStorableFloat("Speed (This)", 1f, val => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
             {
                 valNoCallback = current.speed
             };
@@ -94,7 +92,7 @@ namespace VamTimeline
             var globalWeightUI = prefabFactory.CreateSlider(_globalWeightJSON);
             globalWeightUI.valueFormat = "F4";
 
-            _localWeightJSON = new JSONStorableFloat("Weight (Local)", 1f, val => current.weight = val, 0f, 1f)
+            _localWeightJSON = new JSONStorableFloat("Weight (This)", 1f, val => current.weight = val, 0f, 1f)
             {
                 valNoCallback = current.weight
             };
@@ -104,9 +102,16 @@ namespace VamTimeline
 
         private void InitRenameSegment()
         {
-            _segmentNameJSON = new JSONStorableString("Segment name (empty for shared layers)", "", UpdateSegmentName);
-            prefabFactory.CreateTextInput(_segmentNameJSON);
-            _segmentNameJSON.valNoCallback = current.animationSegment;
+            if (animation.index.useSegment)
+            {
+                _segmentNameJSON = new JSONStorableString("Segment name (empty for shared layers)", "", UpdateSegmentName);
+                prefabFactory.CreateTextInput(_segmentNameJSON);
+                _segmentNameJSON.valNoCallback = current.animationSegment;
+            }
+            else
+            {
+                prefabFactory.CreateNote("Segment name: Segment feature not used");
+            }
         }
 
         private void UpdateSegmentName(string to)
@@ -145,9 +150,16 @@ namespace VamTimeline
 
         private void InitRenameLayer()
         {
-            _layerNameJSON = new JSONStorableString("Layer name (specifies targets)", "", UpdateLayerName);
-            prefabFactory.CreateTextInput(_layerNameJSON);
-            _layerNameJSON.valNoCallback = current.animationLayer;
+            if (animation.index.clipsGroupedByLayer.Count > 1)
+            {
+                _layerNameJSON = new JSONStorableString("Layer name (specifies targets)", "", UpdateLayerName);
+                prefabFactory.CreateTextInput(_layerNameJSON);
+                _layerNameJSON.valNoCallback = current.animationLayer;
+            }
+            else
+            {
+                prefabFactory.CreateNote("Layer name: Layers feature not used");
+            }
         }
 
         private void UpdateLayerName(string to)

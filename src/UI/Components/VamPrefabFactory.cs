@@ -410,6 +410,20 @@ namespace VamTimeline
             return text;
         }
 
+        public Text CreateNote(string val)
+        {
+            var headerUI = CreateSpacer();
+            headerUI.height = 32f;
+
+            var text = headerUI.gameObject.AddComponent<Text>();
+            text.text = val;
+            text.font = _font;
+            text.fontSize = 24;
+            text.color = new Color(0.85f, 0.8f, 0.82f);
+
+            return text;
+        }
+
         public void ClearConfirm()
         {
             Destroy(_currentContainer);

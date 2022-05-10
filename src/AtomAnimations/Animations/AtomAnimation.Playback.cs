@@ -24,7 +24,7 @@ namespace VamTimeline
 
             var siblings = GetMainAndBestSiblingPerLayer(animationSegment, animationName, animationSet);
 
-            if (animationSegment != playingAnimationSegment && animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            if (animationSegment != playingAnimationSegment && animationSegment != AtomAnimationClip.SharedAnimationSegment && animationSegment != AtomAnimationClip.NoneAnimationSegment)
             {
                 PlaySegment(siblings[0].target);
                 for (var i = 0; i < siblings.Count; i++)

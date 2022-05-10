@@ -66,6 +66,7 @@ namespace VamTimeline
 
         public TimeChangedEventArgs timeArgs => new TimeChangedEventArgs { time = playTime, currentClipTime = current.clipTime };
         private AtomAnimationClip _current;
+        private IList<AtomAnimationClip> _currentAsList;
 
         public AtomAnimationClip current
         {
@@ -73,6 +74,7 @@ namespace VamTimeline
             private set
             {
                 _current = value;
+                _currentAsList = new[] { value };
                 _lastCurrentAnimationLength = value.animationLength;
                 ResetScrubberRange();
             }
@@ -130,9 +132,21 @@ namespace VamTimeline
             set
             {
                 if (current == null) return;
-                var clips = animation.focusOnLayer
-                    ? new[] { current }
-                    : animation.GetDefaultClipsPerLayer(current);
+
+                IList<AtomAnimationClip> clips;
+                if (animation.focusOnLayer)
+                {
+                    clips = _currentAsList;
+                }
+                else if (current.isOnLegacySegment || current.isOnSharedSegment)
+                {
+                    clips = animation.index.GetSiblingsByLayer(current);
+                }
+                else
+                {
+                    clips = animation.GetDefaultClipsPerLayer(current);
+                }
+
                 var baseOffset = current.timeOffset;
                 for(var i = 0; i < clips.Count; i++)
                 {
@@ -141,9 +155,11 @@ namespace VamTimeline
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer)
                         animation.PlayClip(clip, animation.sequencing);
                 }
+
                 SampleTriggers();
                 if (!animation.isPlaying || animation.paused)
                     Sample();
+
                 if (current.animationPattern != null)
                     current.animationPattern.SetFloatParamValue("currentTime", value);
 
