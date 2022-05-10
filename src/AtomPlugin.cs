@@ -607,6 +607,7 @@ namespace VamTimeline
             animation.onClipsListChanged.AddListener(OnClipsListChanged);
             animation.onAnimationSettingsChanged.AddListener(OnAnimationParametersChanged);
             animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
+            animation.onSegmentPlayed.AddListener(OnSegmentPlayed);
             animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
             animation.onPausedChanged.AddListener(OnPauseChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
@@ -728,13 +729,8 @@ namespace VamTimeline
             if (IsAction(playSegmentName)) return;
             var playSegmentJSON = new JSONStorableAction(playSegmentName, () =>
             {
-                AtomAnimationsClipsIndex.IndexedSegment segment;
-                if (!animation.index.segments.TryGetValue(segmentName, out segment))
-                    return;
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playSegmentName}'");
-                var segmentClip = segment.layers[0][0];
-                peers.SendPlaySegment(segmentClip);
-                animation.PlaySegment(segmentClip);
+                animation.PlaySegment(segmentName);
             });
             RegisterAction(playSegmentJSON);
         }
@@ -855,6 +851,13 @@ namespace VamTimeline
             _freeControllerHook.enabled = !animation.isPlaying;
             if (animation.isPlaying)
                 peers.SendPlaybackState(clip);
+        }
+
+        private void OnSegmentPlayed(AtomAnimationClip clip)
+        {
+            if (clip.isOnLegacySegment || clip.isOnSharedSegment)
+                return;
+            peers.SendPlaySegment(clip);
         }
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)

@@ -210,7 +210,7 @@ namespace VamTimeline
             if (!ValidateArgumentCount(e.Length, 1)) return;
             var animationSegment = (string)e[1];
             if(!animation.isPlaying || animation.playingAnimationSegment != animationSegment)
-                animation.PlaySegment(animation.index.segments[animationSegment].layers[0][0]);
+                animation.PlaySegment(animationSegment);
         }
 
         public void SendMasterClipState(AtomAnimationClip clip)

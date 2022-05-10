@@ -73,8 +73,19 @@ namespace VamTimeline
             );
         }
 
+        public void PlaySegment(string segmentName)
+        {
+            AtomAnimationsClipsIndex.IndexedSegment segment;
+            if (!index.segments.TryGetValue(segmentName, out segment))
+                return;
+            var segmentClip = segment.layers[0][0];
+            PlaySegment(segmentClip);
+        }
+
         public void PlaySegment(AtomAnimationClip source)
         {
+            onSegmentPlayed.Invoke(source);
+
             var clipsToPlay = GetDefaultClipsPerLayer(source);
 
             if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment && source.animationSegment != playingAnimationSegment)

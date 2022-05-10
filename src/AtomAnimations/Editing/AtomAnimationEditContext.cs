@@ -316,7 +316,6 @@ namespace VamTimeline
             logger.Begin();
             if (logger.general) logger.Log(logger.generalCategory,"Edit: Play All");
 
-            peers.SendPlaySegment(current);
             animation.PlaySegment(current);
         }
 

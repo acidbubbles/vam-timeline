@@ -17,7 +17,7 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            if (animation.index.useSegment)
+            if (!animation.index.useSegment)
             {
                 prefabFactory.CreateSpacer();
                 prefabFactory.CreateHeader("Segments", 1);
