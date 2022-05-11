@@ -1,11 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace VamTimeline
@@ -42,11 +37,12 @@ namespace VamTimeline
 
         public void Update()
         {
-            SyncTriggers();
+            SyncTriggers(true);
 
             if (!allowAnimationProcessing || paused) return;
 
             SampleFloatParams();
+            SyncTriggers(false);
             ProcessAnimationSequence(GetDeltaTime() * globalSpeed);
 
             if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)

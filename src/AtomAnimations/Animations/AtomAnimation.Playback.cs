@@ -487,7 +487,7 @@ namespace VamTimeline
             SampleControllers(true);
         }
 
-        private void SyncTriggers()
+        private void SyncTriggers(bool live)
         {
             for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
@@ -495,6 +495,7 @@ namespace VamTimeline
                 for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
                 {
                     var target = clip.targetTriggers[triggerIndex];
+                    if (target.animatableRef.live != live) continue;
                     if (clip.playbackEnabled)
                     {
                         target.Sync(clip.clipTime);
