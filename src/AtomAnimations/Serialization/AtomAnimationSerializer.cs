@@ -438,11 +438,12 @@ namespace VamTimeline
                     { "SyncTransitionTime", clip.preserveLoops ? "1" : "0" },
                     { "EnsureQuaternionContinuity", clip.ensureQuaternionContinuity ? "1" : "0" },
                     { "AnimationLayer", clip.animationLayer },
-                    { "AnimationSegment", clip.animationSegment },
                     { "Speed", clip.speed.ToString(CultureInfo.InvariantCulture) },
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
                     { "Uninterruptible", clip.uninterruptible ? "1" : "0" },
                 };
+            if (!clip.isOnLegacySegment)
+                clip.animationSegment = clip.animationSegment;
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
             if (clip.nextAnimationTime != 0)
