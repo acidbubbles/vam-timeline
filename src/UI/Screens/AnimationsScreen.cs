@@ -6,7 +6,7 @@ namespace VamTimeline
 {
     public class AnimationsScreen : ScreenBase
     {
-        public const string ScreenName = "Overview";
+        public const string ScreenName = "Animations";
 
         public override string screenId => ScreenName;
 
@@ -14,7 +14,7 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            if (animation.clips.Any(c => c.animationSegment == AtomAnimationClip.SharedAnimationSegment))
+            if (animation.clips.Any(c => c.isOnSharedSegment || c.isOnNoneSegment))
             {
                 prefabFactory.CreateHeader("Animations", 1);
                 InitClipsUI(AtomAnimationClip.SharedAnimationSegment);

@@ -14,7 +14,7 @@ namespace VamTimeline
         public const float DefaultBlendDuration = 1.0f;
         public const string SharedAnimationSegment = "[SHARED]";
         public const string NoneAnimationSegment = "[]";
-        public const string DefaultAnimationSegment = "Segment 1";
+        public const string DefaultAnimationSegment = NoneAnimationSegment;
         public const string DefaultAnimationLayer = "Main";
         public const string DefaultAnimationName = "Anim 1";
 
@@ -117,7 +117,7 @@ namespace VamTimeline
         public string animationLayerQualified { get; private set; }
         public string animationSetQualified { get; private set; }
         public bool isOnSharedSegment { get; private set; }
-        public bool isOnLegacySegment { get; private set; }
+        public bool isOnNoneSegment { get; private set; }
 
         private void UpdateAnimationNameQualified()
         {
@@ -152,7 +152,7 @@ namespace VamTimeline
                 if (_animationSegment == value) return;
                 _animationSegment = value;
                 UpdateAnimationNameQualified();
-                isOnLegacySegment = value == NoneAnimationSegment;
+                isOnNoneSegment = value == NoneAnimationSegment;
                 isOnSharedSegment = value == SharedAnimationSegment;
                 onAnimationSettingsChanged.Invoke(nameof(animationSegment));
             }

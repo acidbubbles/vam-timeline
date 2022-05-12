@@ -442,7 +442,7 @@ namespace VamTimeline
                     { "Weight", clip.weight.ToString(CultureInfo.InvariantCulture) },
                     { "Uninterruptible", clip.uninterruptible ? "1" : "0" },
                 };
-            if (!clip.isOnLegacySegment)
+            if (!clip.isOnNoneSegment)
                 clipJSON["AnimationSegment"] = clip.animationSegment;
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;

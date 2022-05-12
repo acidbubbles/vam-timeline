@@ -853,7 +853,7 @@ namespace VamTimeline
 
         private void OnSegmentPlayed(AtomAnimationClip clip)
         {
-            if (clip.isOnLegacySegment || clip.isOnSharedSegment)
+            if (clip.isOnNoneSegment || clip.isOnSharedSegment)
                 return;
             peers.SendPlaySegment(clip);
         }

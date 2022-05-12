@@ -138,7 +138,7 @@ namespace VamTimeline
                 {
                     clips = _currentAsList;
                 }
-                else if (current.isOnLegacySegment || current.isOnSharedSegment)
+                else if (current.isOnNoneSegment || current.isOnSharedSegment)
                 {
                     clips = animation.index.GetSiblingsByLayer(current);
                 }
