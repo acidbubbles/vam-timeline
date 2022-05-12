@@ -443,7 +443,7 @@ namespace VamTimeline
                     { "Uninterruptible", clip.uninterruptible ? "1" : "0" },
                 };
             if (!clip.isOnLegacySegment)
-                clip.animationSegment = clip.animationSegment;
+                clipJSON["AnimationSegment"] = clip.animationSegment;
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
             if (clip.nextAnimationTime != 0)
