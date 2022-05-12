@@ -104,7 +104,7 @@ namespace VamTimeline
         {
             if (animation.index.useSegment)
             {
-                _segmentNameJSON = new JSONStorableString("Segment name (empty for shared layers)", "", UpdateSegmentName);
+                _segmentNameJSON = new JSONStorableString("Segment name", "", UpdateSegmentName);
                 prefabFactory.CreateTextInput(_segmentNameJSON);
                 _segmentNameJSON.valNoCallback = current.animationSegment;
             }
@@ -138,6 +138,11 @@ namespace VamTimeline
             foreach (var clip in animationEditContext.currentSegment.layers.SelectMany(c => c))
             {
                 clip.animationSegment = to;
+            }
+
+            foreach (var clip in animation.clips.Where(c => c.nextAnimationName != null && c.nextAnimationName.StartsWith(AtomAnimation.NextAnimationSegmentPrefix)))
+            {
+                clip.nextAnimationName = $"{AtomAnimation.NextAnimationSegmentPrefix}{to}";
             }
 
             if (animation.playingAnimationSegment == from)
