@@ -652,6 +652,17 @@ namespace VamTimeline
             throw new NotSupportedException($"Cannot add unknown target type {target}");
         }
 
+        public IAtomAnimationTarget Add(AnimatableRefBase animatableRef)
+        {
+            if (animatableRef is FreeControllerV3Ref)
+                return Add((FreeControllerV3Ref)animatableRef);
+            if (animatableRef is JSONStorableFloatRef)
+                return Add((JSONStorableFloatRef)animatableRef);
+            if (animatableRef is TriggersTrackRef)
+                return Add((TriggersTrackRef)animatableRef);
+            throw new NotSupportedException($"Cannot add unknown animatableRef type {animatableRef}");
+        }
+
         public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef)
         {
             if (targetControllers.Any(c => c.animatableRef == controllerRef)) return null;
@@ -769,7 +780,7 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 controllers.Add(new FreeControllerV3ClipboardEntry
                 {
-                    controllerRef = target.animatableRef,
+                    animatableRef = target.animatableRef,
                     snapshot = snapshot
                 });
             }
@@ -780,18 +791,18 @@ namespace VamTimeline
                 if (snapshot == null) continue;
                 floatParams.Add(new FloatParamValClipboardEntry
                 {
-                    floatRef = target.animatableRef,
+                    animatableRef = target.animatableRef,
                     snapshot = snapshot
                 });
             }
             var triggers = new List<TriggersClipboardEntry>();
             foreach (var target in targets.OfType<TriggersTrackAnimationTarget>())
             {
-                var snapshot = target.GetCurveSnapshot(time);
+                var snapshot = target.GetTypedSnapshot(time);
                 if (snapshot == null) continue;
                 triggers.Add(new TriggersClipboardEntry
                 {
-                    name = target.name,
+                    animatableRef = target.animatableRef,
                     snapshot = snapshot
                 });
             }
@@ -813,20 +824,20 @@ namespace VamTimeline
 
             foreach (var entry in clipboard.controllers)
             {
-                var target = targetControllers.FirstOrDefault(c => c.animatableRef == entry.controllerRef);
+                var target = targetControllers.FirstOrDefault(c => c.animatableRef == entry.animatableRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste controller {entry.controllerRef.name} in animation '{animationNameQualified}' because the target was not added.");
+                    SuperController.LogError($"Cannot paste controller {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.floatRef);
+                var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.animatableRef);
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste storable {entry.floatRef.name} in animation '{animationNameQualified}' because the target was not added.");
+                    SuperController.LogError($"Cannot paste storable {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot, dirty);
@@ -834,10 +845,10 @@ namespace VamTimeline
             foreach (var entry in clipboard.triggers)
             {
                 if (!dirty) throw new InvalidOperationException("Cannot paste triggers without dirty");
-                var target = targetTriggers.FirstOrDefault(t => t.name == entry.name) ?? targetTriggers.FirstOrDefault();
+                var target = targetTriggers.FirstOrDefault(t => t.animatableRef == entry.animatableRef) ?? targetTriggers.FirstOrDefault();
                 if (target == null)
                 {
-                    SuperController.LogError($"Cannot paste triggers {entry.name} in animation '{animationNameQualified}' because the target was not added.");
+                    SuperController.LogError($"Cannot paste triggers {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");
                     continue;
                 }
                 target.SetCurveSnapshot(time, entry.snapshot);

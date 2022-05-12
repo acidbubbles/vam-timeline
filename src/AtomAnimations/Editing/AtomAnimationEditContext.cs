@@ -514,6 +514,9 @@ namespace VamTimeline
                 var timeOffset = clipboard.time;
                 foreach (var entry in clipboard.entries)
                 {
+                    AddTargetIfMissing<FreeControllerV3ClipboardEntry, FreeControllerV3Ref, TransformTargetSnapshot>(entry.controllers);
+                    AddTargetIfMissing<FloatParamValClipboardEntry, JSONStorableFloatRef, FloatParamTargetSnapshot>(entry.floatParams);
+                    AddTargetIfMissing<TriggersClipboardEntry, TriggersTrackRef, TriggerTargetSnapshot>(entry.triggers);
                     current.Paste(clipTime + entry.time - timeOffset, entry);
                 }
                 Sample();
@@ -521,6 +524,30 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"Timeline.{nameof(AtomAnimationEditContext)}.{nameof(Paste)}: {exc}");
+            }
+        }
+
+        private void AddTargetIfMissing<TEntry, TRef, TSnapshot>(List<TEntry> entries)
+            where TEntry : IClipboardEntry<TRef, TSnapshot>
+            where TRef : AnimatableRefBase
+            where TSnapshot : ISnapshot
+        {
+            foreach (var entry in entries)
+            {
+                var animatableRef = entry.animatableRef;
+                var alreadyHasTarget = current.targetControllers.Any(t => t.animatableRef == animatableRef);
+                if (alreadyHasTarget) continue;
+                var targetUsedElsewhere = animation.clips
+                    .Where(c => (c.animationSegment == current.animationSegment && c.animationLayerQualified != current.animationLayerQualified) || c.isOnSharedSegment)
+                    .Any(c => c.targetControllers.Any(t => t.animatableRef == animatableRef));
+                if (targetUsedElsewhere) continue;
+
+                foreach (var clip in currentLayer)
+                {
+                    var added = clip.Add(animatableRef);
+                    added.SetSnapshot(0f, entry.snapshot);
+                    added.SetSnapshot(clip.animationLength, entry.snapshot);
+                }
             }
         }
 

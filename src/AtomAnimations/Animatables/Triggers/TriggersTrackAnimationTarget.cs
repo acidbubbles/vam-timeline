@@ -173,14 +173,14 @@ namespace VamTimeline
 
         ISnapshot IAtomAnimationTarget.GetSnapshot(float time)
         {
-            return GetCurveSnapshot(time);
+            return GetTypedSnapshot(time);
         }
         void IAtomAnimationTarget.SetSnapshot(float time, ISnapshot snapshot)
         {
             SetCurveSnapshot(time, (TriggerTargetSnapshot)snapshot);
         }
 
-        public TriggerTargetSnapshot GetCurveSnapshot(float time)
+        public TriggerTargetSnapshot GetTypedSnapshot(float time)
         {
             CustomTrigger trigger;
             if (!triggersMap.TryGetValue(time.ToMilliseconds(), out trigger)) return null;

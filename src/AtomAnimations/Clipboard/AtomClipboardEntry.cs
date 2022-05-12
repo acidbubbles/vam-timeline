@@ -28,22 +28,33 @@ namespace VamTimeline
             triggers.Count == 0;
     }
 
-    public class FloatParamValClipboardEntry
+    public interface IClipboardEntry<out TRef, out TSnapshot>
+        where TRef : AnimatableRefBase
+        where TSnapshot : ISnapshot
     {
-        public JSONStorableFloatRef floatRef;
-        public FloatParamTargetSnapshot snapshot;
+        TRef animatableRef { get; }
+        TSnapshot snapshot { get; }
     }
 
-    public class FreeControllerV3ClipboardEntry
+    public class FloatParamValClipboardEntry : IClipboardEntry<JSONStorableFloatRef, FloatParamTargetSnapshot>
     {
-        public FreeControllerV3Ref controllerRef;
-        public TransformTargetSnapshot snapshot;
+        public JSONStorableFloatRef animatableRef { get; set; }
+
+        public FloatParamTargetSnapshot snapshot { get; set; }
     }
 
-    public class TriggersClipboardEntry : ISnapshot
+    public class FreeControllerV3ClipboardEntry : IClipboardEntry<FreeControllerV3Ref, TransformTargetSnapshot>
     {
-        public string name;
-        public TriggerTargetSnapshot snapshot;
+        public FreeControllerV3Ref animatableRef { get; set; }
+
+        public TransformTargetSnapshot snapshot { get; set; }
+    }
+
+    public class TriggersClipboardEntry : IClipboardEntry<TriggersTrackRef, TriggerTargetSnapshot>
+    {
+        public TriggersTrackRef animatableRef { get; set; }
+
+        public TriggerTargetSnapshot snapshot { get; set; }
     }
 
     public interface ISnapshot

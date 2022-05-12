@@ -38,13 +38,13 @@ namespace VamTimeline
             foreach (var snap in offsetSnapshot.clipboard.controllers)
             {
                 // SuperController.LogMessage($"{snap.controllerRef.name} parent {snap.controllerRef.controller.control.parent.parent}");
-                var target = _clip.targetControllers.First(t => t.animatableRef == snap.controllerRef);
+                var target = _clip.targetControllers.First(t => t.animatableRef == snap.animatableRef);
                 if (!target.EnsureParentAvailable(false)) continue;
                 var posLink = target.GetPositionParentRB();
                 var hasPosLink = !ReferenceEquals(posLink, null);
                 var rotLink = target.GetRotationParentRB();
                 var hasRotLink = !ReferenceEquals(rotLink, null);
-                var control = snap.controllerRef.controller.control;
+                var control = snap.animatableRef.controller.control;
                 var controlParent = control.parent;
 
                 if(!useRepositionMode)
@@ -52,8 +52,8 @@ namespace VamTimeline
                     var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
                     var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
 
-                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.controllerRef.controller.transform.position) : snap.controllerRef.controller.control.localPosition;
-                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.controllerRef.controller.transform.rotation : snap.controllerRef.controller.control.localRotation;
+                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.animatableRef.controller.transform.position) : snap.animatableRef.controller.control.localPosition;
+                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.animatableRef.controller.transform.rotation : snap.animatableRef.controller.control.localRotation;
 
                     pivot = positionBefore;
                     positionDelta = positionAfter - positionBefore;
@@ -129,7 +129,7 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Cannot offset, no keyframes were found at time {clipTime}.");
                 return null;
             }
-            if (clipboard.controllers.Select(c => _clip.targetControllers.First(t => t.animatableRef == c.controllerRef)).Any(t => !t.EnsureParentAvailable(false)))
+            if (clipboard.controllers.Select(c => _clip.targetControllers.First(t => t.animatableRef == c.animatableRef)).Any(t => !t.EnsureParentAvailable(false)))
             {
                 return null;
             }
