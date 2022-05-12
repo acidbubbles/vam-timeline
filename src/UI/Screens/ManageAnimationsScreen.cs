@@ -289,9 +289,19 @@ namespace VamTimeline
                     sb.Append("<color=grey>");
                 }
 
-                if (segment.Key == current.animationSegment) sb.Append("<b>");
-                sb.AppendLine($"{(segment.Key == AtomAnimationClip.SharedAnimationSegment ? "[Shared]" : segment.Key)}");
-                if (segment.Key == current.animationSegment) sb.Append("</b>");
+                if (animation.index.useSegment)
+                {
+                    if (segment.Key == current.animationSegment) sb.Append("<b>");
+                    string segmentLabel;
+                    if (segment.Key == AtomAnimationClip.SharedAnimationSegment)
+                        segmentLabel = "[Shared]";
+                    else if (segment.Key == AtomAnimationClip.NoneAnimationSegment)
+                        segmentLabel = "Animations";
+                    else
+                        segmentLabel = segment.Key;
+                    sb.AppendLine($"{segmentLabel}");
+                    if (segment.Key == current.animationSegment) sb.Append("</b>");
+                }
 
                 foreach (var layer in segment.Value.layers)
                 {
