@@ -101,10 +101,10 @@ namespace VamTimeline
                 }
                 else
                 {
-                    var blendOutTime = clipsToPlay.Min(c => c.blendInDuration);
+                    var blendOutDuration = clipsToPlay.FirstOrDefault(c => !c.isOnSharedSegment)?.blendInDuration ?? AtomAnimationClip.DefaultBlendDuration;
                     foreach (var clip in clips.Where(c => c.playbackMainInLayer && c.animationSegment != AtomAnimationClip.SharedAnimationSegment))
                     {
-                        SoftStopClip(clip, blendOutTime);
+                        SoftStopClip(clip, blendOutDuration);
                     }
                 }
             }
