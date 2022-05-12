@@ -350,8 +350,6 @@ namespace VamTimeline
                     animation.StopAll();
                 else
                     animation.ResetAll();
-
-                peers.SendStop();
             });
             RegisterAction(_stopJSON);
 
