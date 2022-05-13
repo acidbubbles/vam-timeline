@@ -40,5 +40,12 @@ namespace VamTimeline
             if (filter != null && !filter.IsMatch(message)) return;
             SuperController.LogMessage($"[{(Time.time - _startTime) % 100:00.000}|{_containingAtom.name}|{category}] {message}");
         }
+
+        public void EnableAll()
+        {
+            general = true;
+            triggers = true;
+            sequencing = true;
+        }
     }
 }

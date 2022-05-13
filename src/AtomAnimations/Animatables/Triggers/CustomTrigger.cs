@@ -20,7 +20,7 @@ namespace VamTimeline
             SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
         }
 
-        public void Sync(float clipTime)
+        public void Sync(float clipTime, bool live)
         {
             if (IsInsideTimeRange(clipTime))
             {
@@ -28,7 +28,8 @@ namespace VamTimeline
                 if (!active)
                 {
                     active = true;
-                    SyncAudio(clipTime);
+                    if (live)
+                        SyncAudio(clipTime);
                     if (_logger.triggers)
                         LogTriggers(discreteActionsStart, "start");
                 }

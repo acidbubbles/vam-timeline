@@ -498,7 +498,7 @@ namespace VamTimeline
                     if (target.animatableRef.live != live) continue;
                     if (clip.playbackEnabled)
                     {
-                        target.Sync(clip.clipTime);
+                        target.Sync(clip.clipTime, live);
                     }
                     target.Update();
                 }

@@ -156,7 +156,7 @@ namespace VamTimeline
                         animation.PlayClip(clip, animation.sequencing);
                 }
 
-                SampleTriggers();
+                SampleLiveTriggers();
                 if (!animation.isPlaying || animation.paused)
                     Sample();
 
@@ -591,7 +591,7 @@ namespace VamTimeline
             _lateSample = StartCoroutine(LateSample(0.1f));
         }
 
-        private void SampleTriggers()
+        private void SampleLiveTriggers()
         {
             var clips = animation.GetDefaultClipsPerLayer(current);
             for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
@@ -601,7 +601,7 @@ namespace VamTimeline
                 {
                     var target = clip.targetTriggers[triggerIndex];
                     if (!target.animatableRef.live) continue;
-                    target.Sync(current.clipTime);
+                    target.Sync(current.clipTime, true);
                     target.SyncAudio(current.clipTime);
                     CancelInvoke(nameof(LeaveSampledTriggers));
                     Invoke(nameof(LeaveSampledTriggers), 0.2f);

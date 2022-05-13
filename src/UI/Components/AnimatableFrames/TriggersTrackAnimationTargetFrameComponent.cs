@@ -161,12 +161,12 @@ namespace VamTimeline
 
         void TriggerHandler.RemoveTrigger(Trigger t)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(TriggerHandler.RemoveTrigger));
         }
 
         void TriggerHandler.DuplicateTrigger(Trigger t)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(TriggerHandler.DuplicateTrigger));
         }
 
         RectTransform TriggerHandler.CreateTriggerActionsUI()
