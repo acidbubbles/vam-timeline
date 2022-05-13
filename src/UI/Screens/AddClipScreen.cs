@@ -45,7 +45,7 @@ namespace VamTimeline
             prefabFactory.CreateHeader("More", 1);
 
             CreateChangeScreenButton("<i><b>Import</b> from file...</i>", ImportExportScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Manage/reorder</b> animations...</i>", ManageAnimationsScreen.ScreenName);
 
             RefreshUI();
         }

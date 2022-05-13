@@ -30,8 +30,8 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Operations", 1);
 
-            CreateChangeScreenButton("<i><b>Add</b> animations/layers...</i>", AddAnimationsScreen.ScreenName);
-            CreateChangeScreenButton("<i><b>Manage</b> animations list...</i>", ManageAnimationsScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Create</b> anims/layers/segments...</i>", AddAnimationsScreen.ScreenName);
+            CreateChangeScreenButton("<i><b>Manage/reorder</b> animations...</i>", ManageAnimationsScreen.ScreenName);
         }
 
         private void InitClipsUI(string segmentName)

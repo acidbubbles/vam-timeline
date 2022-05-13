@@ -39,6 +39,7 @@ namespace VamTimeline
             btn.name = name;
             btn.label = label ?? name;
             btn.buttonColor = color;
+            btn.buttonText.fontSize = 26;
 
             if (preferredWidth > 0)
             {
