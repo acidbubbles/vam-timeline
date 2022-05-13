@@ -652,6 +652,24 @@ namespace VamTimeline
             throw new NotSupportedException($"Cannot add unknown target type {target}");
         }
 
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef)
+        {
+            if (targetControllers.Any(c => c.animatableRef == controllerRef)) return null;
+            return Add(new FreeControllerV3AnimationTarget(controllerRef));
+        }
+
+        public JSONStorableFloatAnimationTarget Add(JSONStorableFloatRef floatRef)
+        {
+            if (targetFloatParams.Any(t => t.animatableRef == floatRef)) return null;
+            return Add(new JSONStorableFloatAnimationTarget(floatRef));
+        }
+
+        public TriggersTrackAnimationTarget Add(TriggersTrackRef triggersRef)
+        {
+            if (targetTriggers.Any(t => t.animatableRef == triggersRef)) return null;
+            return Add(new TriggersTrackAnimationTarget(triggersRef));
+        }
+
         public IAtomAnimationTarget Add(AnimatableRefBase animatableRef)
         {
             if (animatableRef is FreeControllerV3Ref)
@@ -663,23 +681,11 @@ namespace VamTimeline
             throw new NotSupportedException($"Cannot add unknown animatableRef type {animatableRef}");
         }
 
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef)
-        {
-            if (targetControllers.Any(c => c.animatableRef == controllerRef)) return null;
-            return Add(new FreeControllerV3AnimationTarget(controllerRef));
-        }
-
         public FreeControllerV3AnimationTarget Add(FreeControllerV3AnimationTarget target)
         {
             if (targetControllers.Any(t => t.animatableRef == target.animatableRef)) return null;
             foreach (var curve in target.curves) { curve.loop = _loop; }
             return Add(targetControllers, new FreeControllerV3AnimationTarget.Comparer(), target);
-        }
-
-        public JSONStorableFloatAnimationTarget Add(JSONStorableFloatRef floatRef)
-        {
-            if (targetFloatParams.Any(t => t.animatableRef == floatRef)) return null;
-            return Add(new JSONStorableFloatAnimationTarget(floatRef));
         }
 
         public JSONStorableFloatAnimationTarget Add(JSONStorableFloatAnimationTarget target)
@@ -693,7 +699,7 @@ namespace VamTimeline
             return Add(targetTriggers, new TriggersTrackAnimationTarget.Comparer(), target);
         }
 
-        private T Add<T>(AtomAnimationTargetsList<T> list, IComparer<T> comparer, T target) where T : IAtomAnimationTarget
+        private T Add<T>(List<T> list, IComparer<T> comparer, T target) where T : IAtomAnimationTarget
         {
             if (target == null) throw new NullReferenceException(nameof(target));
             if (target.clip != null) throw new InvalidOperationException($"Target {target.name} already assigned to clip {target.clip.animationNameQualified}");
