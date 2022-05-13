@@ -704,7 +704,7 @@ namespace VamTimeline
         private T Add<T>(List<T> list, IComparer<T> comparer, T target) where T : IAtomAnimationTarget
         {
             if (target == null) throw new NullReferenceException(nameof(target));
-            if (target.clip != null) throw new InvalidOperationException($"Target {target.name} already assigned to clip {target.clip.animationNameQualified}");
+            if (target.clip != null) throw new InvalidOperationException($"Target {target.name} cannot be assigned to {animationNameQualified} because it is already assigned to clip {target.clip.animationNameQualified}");
             target.clip = this;
             list.Add(target);
             list.Sort(comparer);

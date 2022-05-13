@@ -187,7 +187,6 @@ namespace VamTimeline
                     DeserializeCurve(target.rotZ, controllerJSON["RotZ"], ref dirty);
                     DeserializeCurve(target.rotW, controllerJSON["RotW"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
-                    clip.Add(target);
                     if (dirty) target.dirty = true;
                 }
             }
@@ -210,7 +209,6 @@ namespace VamTimeline
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
-                    clip.Add(target);
                     if (dirty) target.dirty = true;
                 }
             }
@@ -233,7 +231,6 @@ namespace VamTimeline
                         target.SetKeyframe(trigger.startTime, trigger);
                     }
                     target.AddEdgeFramesIfMissing(clip.animationLength);
-                    clip.Add(target);
                 }
             }
         }
