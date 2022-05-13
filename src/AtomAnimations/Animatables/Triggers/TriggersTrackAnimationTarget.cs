@@ -41,7 +41,7 @@ namespace VamTimeline
             for (var i = 0; i < _triggers.Count; i++)
             {
                 var trigger = _triggers[i];
-                trigger.Leave();
+                trigger.Leave(animatableRef.live);
             }
         }
 

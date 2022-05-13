@@ -36,7 +36,7 @@ namespace VamTimeline
             }
             else if (active)
             {
-                Leave();
+                Leave(live);
                 if (_logger.triggers)
                     LogTriggers(discreteActionsStart, "end");
             }
@@ -88,21 +88,24 @@ namespace VamTimeline
             base.Update();
         }
 
-        public void Leave()
+        public void Leave(bool live)
         {
             if (!active) return;
-            ForceStopAudioReceivers();
+            if (live)
+                ForceStopAudioReceivers();
             active = false;
         }
 
-        public void ForceStopAudioReceivers()
+        private void ForceStopAudioReceivers()
         {
-            foreach (var action in discreteActionsStart)
+            for (var i = 0; i < discreteActionsStart.Count; i++)
             {
+                var action = discreteActionsStart[i];
+                if (ReferenceEquals(action?.audioClip?.sourceClip, null)) continue;
                 var audioReceiver = action.receiver as AudioSourceControl;
-                if (audioReceiver == null) continue;
-                if (audioReceiver.audioSource == null) continue;
-                if (audioReceiver.audioSource.clip != action.audioClip?.clipToPlay) continue;
+                if (ReferenceEquals(audioReceiver, null)) continue;
+                if (ReferenceEquals(audioReceiver.audioSource, null)) continue;
+                if (audioReceiver.audioSource.clip != action.audioClip.clipToPlay) continue;
                 audioReceiver.audioSource.Stop();
             }
         }
