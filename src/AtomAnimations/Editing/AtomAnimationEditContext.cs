@@ -514,9 +514,9 @@ namespace VamTimeline
                 var timeOffset = clipboard.time;
                 foreach (var entry in clipboard.entries)
                 {
-                    AddTargetIfMissing<FreeControllerV3ClipboardEntry, FreeControllerV3Ref, TransformTargetSnapshot>(entry.controllers);
-                    AddTargetIfMissing<FloatParamValClipboardEntry, JSONStorableFloatRef, FloatParamTargetSnapshot>(entry.floatParams);
-                    AddTargetIfMissing<TriggersClipboardEntry, TriggersTrackRef, TriggerTargetSnapshot>(entry.triggers);
+                    AddTargetIfMissing<FreeControllerV3ClipboardEntry, FreeControllerV3Ref, TransformTargetSnapshot>(entry.controllers, (c, r) => c.targetControllers.Any(t => t.animatableRef == r));
+                    AddTargetIfMissing<FloatParamValClipboardEntry, JSONStorableFloatRef, FloatParamTargetSnapshot>(entry.floatParams, (c, r) => c.targetFloatParams.Any(t => t.animatableRef == r));
+                    AddTargetIfMissing<TriggersClipboardEntry, TriggersTrackRef, TriggerTargetSnapshot>(entry.triggers, (c, r) => c.targetTriggers.Any(t => t.animatableRef == r));
                     current.Paste(clipTime + entry.time - timeOffset, entry);
                 }
                 Sample();
@@ -527,19 +527,20 @@ namespace VamTimeline
             }
         }
 
-        private void AddTargetIfMissing<TEntry, TRef, TSnapshot>(List<TEntry> entries)
+        private void AddTargetIfMissing<TEntry, TRef, TSnapshot>(List<TEntry> entries, Func<AtomAnimationClip, TRef, bool> hasTarget)
             where TEntry : IClipboardEntry<TRef, TSnapshot>
             where TRef : AnimatableRefBase
             where TSnapshot : ISnapshot
         {
+            if (entries == null) return;
             foreach (var entry in entries)
             {
                 var animatableRef = entry.animatableRef;
-                var alreadyHasTarget = current.targetControllers.Any(t => t.animatableRef == animatableRef);
+                var alreadyHasTarget = hasTarget(current, animatableRef);
                 if (alreadyHasTarget) continue;
                 var targetUsedElsewhere = animation.clips
                     .Where(c => (c.animationSegment == current.animationSegment && c.animationLayerQualified != current.animationLayerQualified) || c.isOnSharedSegment)
-                    .Any(c => c.targetControllers.Any(t => t.animatableRef == animatableRef));
+                    .Any(c => hasTarget(c, animatableRef));
                 if (targetUsedElsewhere) continue;
 
                 foreach (var clip in currentLayer)
