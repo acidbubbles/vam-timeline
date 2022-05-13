@@ -140,8 +140,7 @@ namespace VamTimeline
             var ms = plugin.animationEditContext.clipTime.Snap().ToMilliseconds();
             if (!target.triggersMap.TryGetValue(ms, out trigger))
             {
-                trigger = new CustomTrigger();
-                target.SetKeyframe(ms, trigger);
+                target.CreateKeyframe(ms);
             }
             return trigger;
         }

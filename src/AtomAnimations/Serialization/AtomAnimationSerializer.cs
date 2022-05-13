@@ -50,7 +50,7 @@ namespace VamTimeline
                 if (clipsJSON == null || clipsJSON.Count == 0) throw new NullReferenceException("Saved state does not have clips");
                 foreach (JSONClass clipJSON in clipsJSON)
                 {
-                    var clip = DeserializeClip(clipJSON, animation.animatables);
+                    var clip = DeserializeClip(clipJSON, animation.animatables, animation.logger);
                     animation.AddClip(clip);
                 }
             }
@@ -75,7 +75,7 @@ namespace VamTimeline
             fadeManager.TryConnectNow();
         }
 
-        public AtomAnimationClip DeserializeClip(JSONClass clipJSON, AnimatablesRegistry targetsRegistry)
+        public AtomAnimationClip DeserializeClip(JSONClass clipJSON, AnimatablesRegistry targetsRegistry, Logger logger)
         {
             var animationName = clipJSON["AnimationName"].Value;
             var animationLayer = DeserializeString(clipJSON["AnimationLayer"], AtomAnimationClip.DefaultAnimationLayer);
@@ -86,7 +86,7 @@ namespace VamTimeline
                 legacyTransition = DeserializeBool(clipJSON["Transition"], false);
             }
 
-            var clip = new AtomAnimationClip(animationName, animationLayer, animationSegment)
+            var clip = new AtomAnimationClip(animationName, animationLayer, animationSegment, logger)
             {
                 blendInDuration = DeserializeFloat(clipJSON["BlendDuration"], AtomAnimationClip.DefaultBlendDuration),
                 loop = DeserializeBool(clipJSON["Loop"], true),
@@ -169,12 +169,10 @@ namespace VamTimeline
 
                     var controllerRef = targetsRegistry.GetOrCreateController(controller, atom == _atom);
                     if (controllerRef == null) continue;
-                    var target = new FreeControllerV3AnimationTarget(controllerRef)
-                    {
-                        controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true),
-                        controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true),
-                        weight = DeserializeFloat(controllerJSON["Weight"], 1f)
-                    };
+                    var target = clip.Add(controllerRef);
+                    target.controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true);
+                    target.controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true);
+                    target.weight = DeserializeFloat(controllerJSON["Weight"], 1f);
                     if (controllerJSON.HasKey("Parent"))
                     {
                         var parentJSON = controllerJSON["Parent"].AsObject;
@@ -208,7 +206,7 @@ namespace VamTimeline
                         paramJSON.HasKey("Min") ? (float?)paramJSON["Min"].AsFloat : null,
                         paramJSON.HasKey("Max") ? (float?)paramJSON["Max"].AsFloat : null
                     );
-                    var target = new JSONStorableFloatAnimationTarget(floatParamRef);
+                    var target = clip.Add(floatParamRef);
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -227,10 +225,10 @@ namespace VamTimeline
                     var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(triggerTrackName);
                     //NOTE: We are cheating here, the setting is on each track but the animatable will have the setting
                     triggerTrackRef.live = triggerLive;
-                    var target = new TriggersTrackAnimationTarget(triggerTrackRef);
+                    var target = clip.Add(triggerTrackRef);
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
-                        var trigger = new CustomTrigger();
+                        var trigger = target.CreateCustomTrigger();
                         trigger.RestoreFromJSON(entryJSON);
                         target.SetKeyframe(trigger.startTime, trigger);
                     }

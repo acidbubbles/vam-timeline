@@ -384,7 +384,7 @@ namespace VamTimeline
                     }
                     else
                     {
-                        animation.CreateClip(animationLayer, animationName, animationSegment, GetPosition(animationSegment, animationLayer, animationName, previousAnimationName));
+                        animation.CreateClip(animationName, animationLayer, animationSegment, GetPosition(animationName, animationLayer, animationSegment, previousAnimationName));
                     }
                 }
             }
@@ -416,7 +416,7 @@ namespace VamTimeline
             animation.index.Rebuild();
         }
 
-        private int GetPosition(string animationSegment, string animationLayer, string animationName, string previousAnimationName)
+        private int GetPosition(string animationName, string animationLayer, string animationSegment, string previousAnimationName)
         {
             var previousClipPosition = animation.clips.FindIndex(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == previousAnimationName);
             if (previousClipPosition > -1)

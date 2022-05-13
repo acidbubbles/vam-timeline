@@ -17,7 +17,7 @@ namespace VamTimeline
 
         public AtomAnimationClip Add(string clipName, string layerName)
         {
-            return _animation.CreateClip(layerName, clipName, _clip.animationSegment);
+            return _animation.CreateClip(clipName, layerName, _clip.animationSegment);
         }
 
         public List<AtomAnimationClip> AddAndCarry(string layerName)
@@ -25,7 +25,7 @@ namespace VamTimeline
             return _animation.index.ByLayer(_clip.animationLayerQualified)
                 .Select(c =>
                 {
-                    var r = _animation.CreateClip(layerName, c.animationName, c.animationSegment);
+                    var r = _animation.CreateClip(c.animationName, layerName, c.animationSegment);
                     c.CopySettingsTo(r);
                     return r;
                 })
@@ -38,7 +38,7 @@ namespace VamTimeline
                 layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.segments[_clip.animationSegment].layerNames);
             foreach (var sourceClip in _animation.index.ByLayer(_clip.animationLayerQualified).ToList())
             {
-                var newClip = _animation.CreateClip(layerName, sourceClip.animationName, _clip.animationSegment);
+                var newClip = _animation.CreateClip(sourceClip.animationName, layerName, _clip.animationSegment);
                 sourceClip.CopySettingsTo(newClip);
                 foreach (var t in sourceClip.GetAllTargets().Where(t => targets.Any(t.TargetsSameAs)).ToList())
                 {

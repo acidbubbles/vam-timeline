@@ -29,6 +29,9 @@ namespace VamTimeline
                 prefabFactory.CreateSpacer();
                 prefabFactory.CreateHeader("Create", 1);
 
+                #warning Add segment position
+                #warning Add transition segment (all targets in a single layer)
+
                 InitNewClipNameUI();
                 InitNewLayerNameUI();
                 InitNewSegmentNameUI();

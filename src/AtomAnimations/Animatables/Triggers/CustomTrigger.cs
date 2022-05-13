@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using SimpleJSON;
 using UnityEngine;
@@ -11,8 +12,11 @@ namespace VamTimeline
         public float startTime;
         public float endTime;
 
-        public CustomTrigger()
+        private readonly Logger _logger;
+
+        public CustomTrigger(Logger logger)
         {
+            _logger = logger;
             SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
         }
 
@@ -25,11 +29,25 @@ namespace VamTimeline
                 {
                     active = true;
                     SyncAudio(clipTime);
+                    if (_logger.triggers)
+                        LogTriggers(discreteActionsStart, "start");
                 }
             }
             else if (active)
             {
                 Leave();
+                if (_logger.triggers)
+                    LogTriggers(discreteActionsStart, "end");
+            }
+        }
+
+        private void LogTriggers(IList<TriggerActionDiscrete> actions, string label)
+        {
+            for (var i = 0; i < actions.Count; i++)
+            {
+                var action = actions[i];
+                if (action.receiver == null || action.receiverAtom == null) continue;
+                _logger.Log(_logger.triggersCategory, $"Invoking {label} trigger (time {startTime:0.000}) {action.receiverAtom.name}/{action.receiver.name}/{action.receiverTargetName}");
             }
         }
 

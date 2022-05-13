@@ -13,13 +13,13 @@
 
         public AtomAnimationClip Add(string clipName, string layerName, string segmentName)
         {
-            var clip = _animation.CreateClip(layerName, clipName, segmentName);
+            var clip = _animation.CreateClip(clipName, layerName, segmentName);
             return clip;
         }
 
         public AtomAnimationClip AddShared(string clipName)
         {
-            var clip = _animation.CreateClip(AtomAnimationClip.DefaultAnimationLayer, clipName, AtomAnimationClip.SharedAnimationSegment, 0);
+            var clip = _animation.CreateClip(clipName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.SharedAnimationSegment, 0);
             return clip;
         }
     }

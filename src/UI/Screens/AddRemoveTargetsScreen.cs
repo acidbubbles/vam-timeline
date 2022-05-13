@@ -154,7 +154,7 @@ namespace VamTimeline
         {
             foreach (var clip in currentLayer)
             {
-                var target = new TriggersTrackAnimationTarget(track);
+                var target = new TriggersTrackAnimationTarget(track, animation.logger);
                 target.AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(target);
             }

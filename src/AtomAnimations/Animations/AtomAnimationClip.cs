@@ -18,6 +18,7 @@ namespace VamTimeline
         public const string DefaultAnimationLayer = "Main";
         public const string DefaultAnimationName = "Anim 1";
 
+        private readonly Logger _logger;
         private bool _loop = true;
         private float _timeOffset;
         private string _nextAnimationName;
@@ -487,11 +488,12 @@ namespace VamTimeline
             }
         }
 
-        public AtomAnimationClip(string animationName, string animationLayer, string animationSegment)
+        public AtomAnimationClip(string animationName, string animationLayer, string animationSegment, Logger logger)
         {
             _animationName = animationName;
             _animationLayer = animationLayer;
             _animationSegment = animationSegment;
+            _logger = logger;
             UpdateAnimationNameGroup();
             UpdateAnimationNameQualified();
         }
@@ -667,7 +669,7 @@ namespace VamTimeline
         public TriggersTrackAnimationTarget Add(TriggersTrackRef triggersRef)
         {
             if (targetTriggers.Any(t => t.animatableRef == triggersRef)) return null;
-            return Add(new TriggersTrackAnimationTarget(triggersRef));
+            return Add(new TriggersTrackAnimationTarget(triggersRef, _logger));
         }
 
         public IAtomAnimationTarget Add(AnimatableRefBase animatableRef)

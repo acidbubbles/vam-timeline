@@ -77,14 +77,14 @@ namespace VamTimeline
             return clip;
         }
 
-        public AtomAnimationClip CreateClip([NotNull] string animationLayer, [NotNull] string animationName, string animationSegment, int position = -1)
+        public AtomAnimationClip CreateClip([NotNull] string animationName, [NotNull] string animationLayer, string animationSegment, int position = -1)
         {
             if (animationLayer == null) throw new ArgumentNullException(nameof(animationLayer));
             if (animationName == null) throw new ArgumentNullException(nameof(animationName));
 
             if (clips.Any(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == animationName))
                 throw new InvalidOperationException($"Animation '{animationSegment}::{animationLayer}::{animationName}' already exists");
-            var clip = new AtomAnimationClip(animationName, animationLayer, animationSegment);
+            var clip = new AtomAnimationClip(animationName, animationLayer, animationSegment, logger);
             if (position == -1)
                 AddClip(clip);
             else

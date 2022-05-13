@@ -48,7 +48,7 @@ namespace VamTimeline
 
         private CreatedAnimation AddAnimation(AtomAnimationClip source, string animationName, string position, bool copySettings, bool copyKeyframes)
         {
-            var clip = _animation.CreateClip(source.animationLayer, animationName, source.animationSegment, GetPosition(source, position));
+            var clip = _animation.CreateClip(animationName, source.animationLayer, source.animationSegment, GetPosition(source, position));
 
             if (copySettings)
             {
@@ -75,12 +75,11 @@ namespace VamTimeline
 
                 foreach (var origTarget in source.targetTriggers)
                 {
-                    var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef));
+                    var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger));
                     foreach (var origTrigger in origTarget.triggersMap)
                     {
-                        var trigger = new CustomTrigger();
+                        var trigger = newTarget.CreateKeyframe(origTrigger.Key);
                         trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
-                        newTarget.SetKeyframe(origTrigger.Key, trigger);
                     }
 
                     newTarget.dirty = true;
@@ -108,7 +107,7 @@ namespace VamTimeline
 
                 foreach (var origTarget in source.targetTriggers)
                 {
-                    var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
+                    var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger);
                     newTarget.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(newTarget);
                 }
@@ -144,7 +143,7 @@ namespace VamTimeline
                 return null;
             }
 
-            var clip = _animation.CreateClip(source.animationLayer, $"{source.animationName} > {next.animationName}", source.animationSegment, _animation.clips.IndexOf(source) + 1);
+            var clip = _animation.CreateClip($"{source.animationName} > {next.animationName}", source.animationLayer, source.animationSegment, _animation.clips.IndexOf(source) + 1);
             clip.loop = false;
             clip.autoTransitionPrevious = _animation.index.segments[source.animationSegment].layersMap[source.animationLayer].Any(c => c.nextAnimationName == source.animationName);
             clip.autoTransitionNext = source.nextAnimationName != null;
@@ -168,7 +167,7 @@ namespace VamTimeline
 
             foreach (var origTarget in source.targetTriggers)
             {
-                var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef);
+                var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger);
                 newTarget.AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(newTarget);
             }

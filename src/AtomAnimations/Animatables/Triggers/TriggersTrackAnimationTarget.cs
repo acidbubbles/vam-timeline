@@ -10,10 +10,12 @@ namespace VamTimeline
         public readonly SortedDictionary<int, CustomTrigger> triggersMap = new SortedDictionary<int, CustomTrigger>();
         private float[] keyframes { get; set; } = new float[0];
         private readonly List<CustomTrigger> _triggers = new List<CustomTrigger>();
+        private readonly Logger _logger;
 
-        public TriggersTrackAnimationTarget(TriggersTrackRef triggersTrackRef)
+        public TriggersTrackAnimationTarget(TriggersTrackRef triggersTrackRef, Logger logger)
             : base(triggersTrackRef)
         {
+            _logger = logger;
         }
 
         public void Sync(float time)
@@ -118,6 +120,14 @@ namespace VamTimeline
             dirty = true;
         }
 
+        public CustomTrigger CreateKeyframe(int ms)
+        {
+            var trigger = CreateCustomTrigger();
+            triggersMap[ms] = trigger;
+            dirty = true;
+            return trigger;
+        }
+
         public void DeleteFrame(float time)
         {
             DeleteFrameByMs(time.ToMilliseconds());
@@ -135,9 +145,14 @@ namespace VamTimeline
         public void AddEdgeFramesIfMissing(float animationLength)
         {
             if (!triggersMap.ContainsKey(0))
-                SetKeyframe(0, new CustomTrigger());
+                CreateKeyframe(0);
             if (!triggersMap.ContainsKey(animationLength.ToMilliseconds()))
-                SetKeyframe(animationLength.ToMilliseconds(), new CustomTrigger());
+                CreateKeyframe(animationLength.ToMilliseconds());
+        }
+
+        public CustomTrigger CreateCustomTrigger()
+        {
+            return new CustomTrigger(_logger);
         }
 
         public float[] GetAllKeyframesTime()
@@ -193,8 +208,7 @@ namespace VamTimeline
             var ms = time.ToMilliseconds();
             if (!triggersMap.TryGetValue(ms, out trigger))
             {
-                trigger = new CustomTrigger();
-                SetKeyframe(ms, trigger);
+                trigger = CreateKeyframe(ms);
             }
             trigger.RestoreFromJSON(snapshot.json);
             dirty = true;

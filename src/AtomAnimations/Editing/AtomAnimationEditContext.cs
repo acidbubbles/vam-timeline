@@ -195,7 +195,7 @@ namespace VamTimeline
         public void Initialize()
         {
             if (animation.clips.Count == 0)
-                animation.AddClip(new AtomAnimationClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment));
+                animation.AddClip(new AtomAnimationClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment, logger));
             current = animation.GetDefaultClip();
             if (animation.clips.Any(c => c.IsDirty()))
                 animation.RebuildAnimationNow();
