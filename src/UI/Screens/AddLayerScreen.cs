@@ -66,7 +66,7 @@ namespace VamTimeline
             if (_createAllAnimationsJSON.val)
             {
                 var clips = operations.Layers().AddAndCarry(layerNameJSON.val);
-                if (createInOtherAtoms.val)
+                if (createInOtherAtomsJSON.val)
                     foreach (var c in clips)
                         plugin.peers.SendSyncAnimation(c);
                 clip = clips[0];

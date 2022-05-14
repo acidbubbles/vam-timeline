@@ -6,7 +6,6 @@ namespace VamTimeline
     {
         public const string ScreenName = "Add animation";
 
-        private JSONStorableStringChooser _createPosition;
         private JSONStorableBool _copySettingsJSON;
         private JSONStorableBool _copyKeyframesJSON;
         private JSONStorableBool _createOnAllLayersJSON;
@@ -98,16 +97,6 @@ namespace VamTimeline
             mergeUI.button.onClick.AddListener(MergeWithNext);
         }
 
-        private void InitNewPositionUI()
-        {
-            _createPosition = new JSONStorableStringChooser(
-                "Add at position",
-                AddAnimationOperations.Positions.all,
-                AddAnimationOperations.Positions.PositionNext,
-                "Add at position");
-            prefabFactory.CreatePopup(_createPosition, false, true);
-        }
-
         #endregion
 
         #region Callbacks
@@ -121,7 +110,7 @@ namespace VamTimeline
                 return;
             }
 
-            foreach (var created in operations.AddAnimation().AddAnimation(clipNameJSON.val, _createPosition.val, true, false, _createOnAllLayersJSON.val))
+            foreach (var created in operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, true, false, _createOnAllLayersJSON.val))
             {
                 created.source.loop = false;
                 created.source.DirtyAll();
@@ -129,7 +118,7 @@ namespace VamTimeline
                 created.created.DirtyAll();
                 operations.Resize().CropOrExtendAt(created.created, created.created.animationLength - time, 0);
                 operations.Resize().CropOrExtendEnd(created.source, time);
-                if (createInOtherAtoms.val) plugin.peers.SendSyncAnimation(created.created);
+                if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(created.created);
             }
         }
 
@@ -179,12 +168,12 @@ namespace VamTimeline
 
         private void AddAnimation()
         {
-            var result = operations.AddAnimation().AddAnimation(clipNameJSON.val, _createPosition.val, _copySettingsJSON.val, _copyKeyframesJSON.val, _createOnAllLayersJSON.val);
+            var result = operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, _copySettingsJSON.val, _copyKeyframesJSON.val, _createOnAllLayersJSON.val);
             var clip = result.Select(r => r.created).FirstOrDefault(c => c.animationLayerQualified == current.animationLayerQualified);
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
+            if(createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
 
         }
 
@@ -195,7 +184,7 @@ namespace VamTimeline
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
             ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
+            if(createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
         }
 
         #endregion

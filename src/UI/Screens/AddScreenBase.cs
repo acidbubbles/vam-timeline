@@ -7,7 +7,8 @@
         protected JSONStorableString clipNameJSON;
         protected JSONStorableString layerNameJSON;
         protected JSONStorableString segmentNameJSON;
-        protected JSONStorableBool createInOtherAtoms;
+        protected JSONStorableBool createInOtherAtomsJSON;
+        protected JSONStorableStringChooser createPositionJSON;
 
         #region Init
 
@@ -40,8 +41,18 @@
 
         protected void InitCreateInOtherAtomsUI()
         {
-            createInOtherAtoms = new JSONStorableBool("Create in other atoms", _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
-            prefabFactory.CreateToggle(createInOtherAtoms);
+            createInOtherAtomsJSON = new JSONStorableBool("Create in other atoms", _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
+            prefabFactory.CreateToggle(createInOtherAtomsJSON);
+        }
+
+        protected void InitNewPositionUI()
+        {
+            createPositionJSON = new JSONStorableStringChooser(
+                "Add at position",
+                AddAnimationOperations.Positions.all,
+                AddAnimationOperations.Positions.PositionNext,
+                "Add at position");
+            prefabFactory.CreatePopup(createPositionJSON, false, true);
         }
 
         #endregion
