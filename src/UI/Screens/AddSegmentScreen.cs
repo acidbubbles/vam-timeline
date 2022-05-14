@@ -30,18 +30,18 @@ namespace VamTimeline
                 prefabFactory.CreateHeader("Create", 1);
 
                 #warning Add segment position
-                #warning Add transition segment (all targets in a single layer)
 
                 InitNewClipNameUI();
                 InitNewLayerNameUI();
                 InitNewSegmentNameUI();
+                InitCreateInOtherAtomsUI();
                 InitCreateSegmentUI();
-                InitCopySegmentUI();
 
                 prefabFactory.CreateSpacer();
-                prefabFactory.CreateHeader("Options", 2);
+                prefabFactory.CreateHeader("Advanced", 2);
 
-                InitCreateInOtherAtomsUI();
+                InitCopySegmentUI();
+                InitCreateTransitionSegmentUI();
 
                 prefabFactory.CreateSpacer();
                 prefabFactory.CreateHeader("More", 2);
@@ -66,8 +66,14 @@ namespace VamTimeline
 
         public void InitCopySegmentUI()
         {
-            _copySegmentUI = prefabFactory.CreateButton("Copy to new segment");
+            _copySegmentUI = prefabFactory.CreateButton("Create copy of segment");
             _copySegmentUI.button.onClick.AddListener(CopySegment);
+        }
+
+        public void InitCreateTransitionSegmentUI()
+        {
+            _copySegmentUI = prefabFactory.CreateButton("Create transition segment");
+            _copySegmentUI.button.onClick.AddListener(CreateTransitionSegment);
         }
 
         #endregion
@@ -106,6 +112,40 @@ namespace VamTimeline
 
             animationEditContext.SelectAnimation(result[0].created);
             ChangeScreen(EditAnimationScreen.ScreenName);
+        }
+
+        private void CreateTransitionSegment()
+        {
+            var clip = operations.Segments().Add(clipNameJSON.val, layerNameJSON.val, segmentNameJSON.val);
+            clip.loop = false;
+
+            foreach (var layer in currentSegment.layers.Select(l => l.Last()))
+            {
+                foreach (var target in layer.targetControllers)
+                {
+                    var added =clip.Add(target.animatableRef);
+                    if (added != null)
+                    {
+                        var snapshot = target.GetCurveSnapshot(layer.animationLength);
+                        added.SetCurveSnapshot(0f, snapshot);
+                        added.SetCurveSnapshot(clip.animationLength, snapshot);
+                    }
+                }
+                foreach (var target in layer.targetFloatParams)
+                {
+                    var added =clip.Add(target.animatableRef);
+                    if (added != null)
+                    {
+                        var snapshot = target.GetCurveSnapshot(layer.animationLength);
+                        added.SetCurveSnapshot(0f, snapshot);
+                        added.SetCurveSnapshot(clip.animationLength, snapshot);
+                    }
+                }
+            }
+
+            animationEditContext.SelectAnimation(clip);
+            ChangeScreen(EditAnimationScreen.ScreenName);
+            if(createInOtherAtoms.val) plugin.peers.SendSyncAnimation(clip);
         }
 
         #endregion
