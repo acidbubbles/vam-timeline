@@ -365,22 +365,40 @@ namespace VamTimeline
 
         public void GoToPreviousLayer()
         {
-            var sequence = currentSegment;
-            var layers = sequence.layers.Select(l => l[0].animationLayer).ToList();
+            var segment = currentSegment;
+            var layers = segment.layers.Select(l => l[0].animationLayer).ToList();
             var animIdx = layers.IndexOf(current.animationLayer);
             if (animIdx == 0) return;
             var prev = layers[animIdx - 1];
-            SelectAnimation(sequence.layersMap[prev][0]);
+            SelectAnimation(segment.layersMap[prev][0]);
         }
 
         public void GoToNextLayer()
         {
-            var sequence = currentSegment;
-            var layers = sequence.layers.Select(l => l[0].animationLayer).ToList();
+            var segment = currentSegment;
+            var layers = segment.layers.Select(l => l[0].animationLayer).ToList();
             var animIdx = layers.IndexOf(current.animationLayer);
             if (animIdx == layers.Count - 1) return;
             var next = layers[animIdx + 1];
-            SelectAnimation(sequence.layersMap[next][0]);
+            SelectAnimation(segment.layersMap[next][0]);
+        }
+
+        public void GoToPreviousSegment()
+        {
+            var segments = animation.index.segmentNames;
+            var idx = segments.IndexOf(current.animationSegment);
+            if (idx == 0) return;
+            var prev = segments[idx - 1];
+            SelectAnimation(animation.index.segments[prev].layers[0][0]);
+        }
+
+        public void GoToNextSegment()
+        {
+            var segments = animation.index.segmentNames;
+            var idx = segments.IndexOf(current.animationSegment);
+            if (idx == segments.Count - 1) return;
+            var next = segments[idx + 1];
+            SelectAnimation(animation.index.segments[next].layers[0][0]);
         }
 
         public void RewindSeconds(float seconds)
