@@ -76,10 +76,6 @@ namespace VamTimeline
                 }
 
                 audioReceiver.audioSource.time = Mathf.Clamp(clipTime - startTime, 0f, action.audioClip.sourceClip.length);
-                // TODO: Whenever stopping, stop ALL currently running audio clips
-                // TODO: Validate that it's indeed still the same clip
-                // TODO: If not playing, auto-stop audio in 0.5s
-                // TODO: When stopping the clip, stop all audio (or when exiting the trigger, see Leave and Sync)
             }
         }
 

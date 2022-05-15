@@ -134,7 +134,6 @@ namespace VamTimeline
 
         public int SetKeyframeToCurrent(float time, bool makeDirty = true)
         {
-            // TODO: Fix this while possessing
             if (!EnsureParentAvailable(false)) return -1;
             var posParent = GetPositionParentRB();
             var hasPosParent = !ReferenceEquals(posParent, null);

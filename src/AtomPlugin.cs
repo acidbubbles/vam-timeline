@@ -927,7 +927,6 @@ namespace VamTimeline
         public void VamTimelineConnectController(Dictionary<string, object> dict)
         {
             var proxy = SyncProxy.Wrap(dict);
-            // TODO: This or just use the storables dict already on storable??
             proxy.animation = _animationJSON;
             proxy.isPlaying = _isPlayingJSON;
             proxy.nextFrame = _nextFrameJSON;
@@ -1065,7 +1064,6 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Unlock", () => animationEditContext.locked = false));
             bindings.Add(new JSONStorableAction("ApplyPose", () => animationEditContext.current.pose?.Apply()));
             bindings.Add(new JSONStorableAction("SavePose", () => animationEditContext.current.pose = AtomPose.FromAtom(containingAtom, animationEditContext.current.pose)));
-            // TODO: Check if already recording
             bindings.Add(new JSONStorableAction("StartRecord", () =>
             {
                 var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
