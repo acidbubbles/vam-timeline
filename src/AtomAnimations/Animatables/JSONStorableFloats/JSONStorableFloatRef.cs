@@ -54,6 +54,13 @@ namespace VamTimeline
             return floatParamName;
         }
 
+        public override string GetFullName()
+        {
+            if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
+                return floatParam.altName;
+            return floatParamName;
+        }
+
         public float val
         {
             get

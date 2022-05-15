@@ -41,6 +41,18 @@
                 : controller.name;
         }
 
+        public override string GetFullName()
+        {
+            if (!owned)
+            {
+                if (controller == null)
+                    return "[Deleted]";
+                return $"{controller.containingAtom.name} {controller.name}";
+            }
+
+            return controller.name;
+        }
+
         public bool Targets(FreeControllerV3 otherController)
         {
             return controller == otherController;

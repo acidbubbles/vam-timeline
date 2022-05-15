@@ -21,5 +21,6 @@ namespace VamTimeline
 
         public abstract string name { get; }
         public abstract string GetShortName();
+        public abstract string GetFullName();
     }
 }

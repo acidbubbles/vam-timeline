@@ -20,6 +20,7 @@ namespace VamTimeline
 
         bool TargetsSameAs(IAtomAnimationTarget target);
         string GetShortName();
+        string GetFullName();
 
         float[] GetAllKeyframesTime();
         float GetTimeClosestTo(float time);

@@ -13,6 +13,7 @@
         }
 
         public override string GetShortName() => _name;
+        public override string GetFullName() => _name;
 
         public void SetName(string value) => _name = value;
 

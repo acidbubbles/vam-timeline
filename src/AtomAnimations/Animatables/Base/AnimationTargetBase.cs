@@ -54,6 +54,7 @@ namespace VamTimeline
 
         public string name => animatableRef.name;
         public string GetShortName() => animatableRef.GetShortName();
+        public string GetFullName() => animatableRef.GetFullName();
 
         protected AnimationTargetBase(TAnimatableRef animatableRef)
         {
