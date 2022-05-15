@@ -151,6 +151,7 @@ namespace VamTimeline
                 for(var i = 0; i < clips.Count; i++)
                 {
                     var clip = clips[i];
+                    #warning Account for local speed difference!
                     clip.clipTime = value + clip.timeOffset - baseOffset;
                     if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer)
                         animation.PlayClip(clip, animation.sequencing);

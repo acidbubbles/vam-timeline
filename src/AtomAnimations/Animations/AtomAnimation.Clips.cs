@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace VamTimeline
@@ -206,26 +207,27 @@ namespace VamTimeline
             }
 
             AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
-            if (animationSegment != AtomAnimationClip.SharedAnimationSegment || !index.segments.TryGetValue(animationSegment, out segmentLayers))
+            if (animationSegment == AtomAnimationClip.SharedAnimationSegment || !index.segments.TryGetValue(animationSegment, out segmentLayers))
             {
                 segmentLayers = index.emptySegment;
             }
 
+            #warning Called often; index and reuse
             var result = new TransitionTarget[sharedLayers.layers.Count + segmentLayers.layers.Count];
             for (var i = 0; i < sharedLayers.layers.Count; i++)
             {
                 var layer = sharedLayers.layers[i];
-                result[i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet);
+                result[i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, null);
             }
             for (var i = 0; i < segmentLayers.layers.Count; i++)
             {
                 var layer = segmentLayers.layers[i];
-                result[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet);
+                result[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, animationSegment);
             }
             return result;
         }
 
-        private static TransitionTarget GetMainAndBestSiblingInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet)
+        private static TransitionTarget GetMainAndBestSiblingInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet, string animationSegment)
         {
             var main = GetMainClipInLayer(layer);
             AtomAnimationClip bestSibling = null;
@@ -238,7 +240,8 @@ namespace VamTimeline
                     break;
                 }
 
-                if (animationSet != null && clip.animationSet == animationSet)
+                #warning Called often; expensive string comparison (instead make an animation segment ID)
+                if ((animationSet != null && clip.animationSet == animationSet) || (!clip.isOnNoneSegment && !clip.isOnSharedSegment && clip.animationSegment == animationSegment))
                 {
                     if (bestSibling == null || clip.playbackMainInLayer)
                         bestSibling = clip;
