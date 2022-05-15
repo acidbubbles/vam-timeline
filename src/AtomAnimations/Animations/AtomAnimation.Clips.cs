@@ -198,6 +198,7 @@ namespace VamTimeline
             return null;
         }
 
+        private TransitionTarget[] _mainAndBestSiblingPerLayerCache = null;
         private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
         {
             AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
@@ -212,19 +213,22 @@ namespace VamTimeline
                 segmentLayers = index.emptySegment;
             }
 
-            #warning Called often; index and reuse
-            var result = new TransitionTarget[sharedLayers.layers.Count + segmentLayers.layers.Count];
+            var length = sharedLayers.layers.Count + segmentLayers.layers.Count;
+            if (_mainAndBestSiblingPerLayerCache.Length != length) _mainAndBestSiblingPerLayerCache = new TransitionTarget[length];
+
             for (var i = 0; i < sharedLayers.layers.Count; i++)
             {
                 var layer = sharedLayers.layers[i];
-                result[i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, null);
+                _mainAndBestSiblingPerLayerCache[i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, null);
             }
+
             for (var i = 0; i < segmentLayers.layers.Count; i++)
             {
                 var layer = segmentLayers.layers[i];
-                result[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, animationSegment);
+                _mainAndBestSiblingPerLayerCache[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, animationSegment);
             }
-            return result;
+
+            return _mainAndBestSiblingPerLayerCache;
         }
 
         private static TransitionTarget GetMainAndBestSiblingInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet, string animationSegment)
