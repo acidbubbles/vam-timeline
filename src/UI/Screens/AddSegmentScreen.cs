@@ -81,11 +81,14 @@ namespace VamTimeline
 
         private void UseSegments()
         {
+            var previousAnimationSegment = current.animationSegment;
             var animationSegment = animation.GetUniqueSegmentName("Segment 1");
             foreach (var clip in animation.index.segments[AtomAnimationClip.NoneAnimationSegment].layers.SelectMany(l => l))
             {
                 clip.animationSegment = animationSegment;
             }
+            if (animation.playingAnimationSegment == previousAnimationSegment)
+                animation.playingAnimationSegment = animationSegment;
             animation.index.Rebuild();
             ReloadScreen();
         }

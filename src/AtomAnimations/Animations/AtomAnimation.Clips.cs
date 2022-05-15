@@ -206,10 +206,10 @@ namespace VamTimeline
             }
 
             AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
-            if (animationSegment != AtomAnimationClip.SharedAnimationSegment)
-                segmentLayers = index.segments[animationSegment];
-            else
+            if (animationSegment != AtomAnimationClip.SharedAnimationSegment || !index.segments.TryGetValue(animationSegment, out segmentLayers))
+            {
                 segmentLayers = index.emptySegment;
+            }
 
             var result = new TransitionTarget[sharedLayers.layers.Count + segmentLayers.layers.Count];
             for (var i = 0; i < sharedLayers.layers.Count; i++)
