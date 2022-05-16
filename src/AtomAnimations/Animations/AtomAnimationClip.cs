@@ -114,9 +114,54 @@ namespace VamTimeline
             return targetTriggers.Count + targetControllers.Count + targetFloatParams.Count;
         }
 
+        #region Calculated fields
+
         public string animationNameQualified { get; private set; }
         public string animationLayerQualified { get; private set; }
         public string animationSetQualified { get; private set; }
+
+        private int _animationNameId;
+        public int animationNameId
+        {
+            get { return _animationNameId; }
+            private set { _animationNameId = value; }
+        }
+
+        private int _animationNameQualifiedId;
+        public int animationNameQualifiedId
+        {
+            get { return _animationNameQualifiedId; }
+            private set { _animationNameQualifiedId = value; }
+        }
+
+        private int _animationLayerId;
+        public int animationLayerId
+        {
+            get { return _animationLayerId; }
+            private set { _animationLayerId = value; }
+        }
+
+        private int _animationLayerQualifiedId;
+        public int animationLayerQualifiedId
+        {
+            get { return _animationLayerQualifiedId; }
+            private set { _animationLayerQualifiedId = value; }
+        }
+
+        private int _animationSegmentId;
+        public int animationSegmentId
+        {
+            get { return _animationSegmentId; }
+            private set { _animationSegmentId = value; }
+        }
+
+        private int _animationSetId;
+        public int animationSetId
+        {
+            get { return _animationSetId; }
+            private set { _animationSetId = value; }
+        }
+
         public bool isOnSharedSegment { get; private set; }
         public bool isOnNoneSegment { get; private set; }
 
@@ -125,7 +170,48 @@ namespace VamTimeline
             animationNameQualified = $"{_animationSegment}::{_animationLayer}::{_animationName}";
             animationLayerQualified = $"{_animationSegment}::{_animationLayer}";
             animationSetQualified = $"{_animationSegment}::{_animationSet}";
+            AssignId(animationName, out _animationNameId);
+            AssignId(animationNameQualified, out _animationNameQualifiedId);
+            AssignId(animationLayer, out _animationLayerId);
+            AssignId(animationLayerQualified, out _animationLayerQualifiedId);
+            AssignId(animationSegment, out _animationSegmentId);
+            AssignId(animationSet, out _animationSegmentId);
         }
+
+        private int _nextId = 1;
+        private readonly Dictionary<string, int> _ids = new Dictionary<string, int>();
+        private void AssignId(string name, out int id)
+        {
+            if (name == null)
+            {
+                id = 0;
+                return;
+            }
+
+            if (_ids.TryGetValue(name, out id))
+                return;
+
+            id = _nextId;
+            _nextId++;
+            _ids.Add(name, id);
+        }
+
+        public string animationNameGroup { get; private set; }
+
+        private void UpdateAnimationNameGroup()
+        {
+            var idxOfGroupSeparator = _animationName.IndexOf('/');
+            if (idxOfGroupSeparator > -1)
+            {
+                animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
+            }
+            else
+            {
+                animationNameGroup = null;
+            }
+        }
+
+        #endregion
 
         public string animationLayer
         {
@@ -172,7 +258,7 @@ namespace VamTimeline
                 onAnimationSettingsChanged.Invoke(nameof(ensureQuaternionContinuity));
             }
         }
-        public string animationNameGroup { get; private set; }
+
         public string animationName
         {
             get
@@ -186,19 +272,6 @@ namespace VamTimeline
                 UpdateAnimationNameGroup();
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
-            }
-        }
-
-        private void UpdateAnimationNameGroup()
-        {
-            var idxOfGroupSeparator = _animationName.IndexOf('/');
-            if (idxOfGroupSeparator > -1)
-            {
-                animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
-            }
-            else
-            {
-                animationNameGroup = null;
             }
         }
 
