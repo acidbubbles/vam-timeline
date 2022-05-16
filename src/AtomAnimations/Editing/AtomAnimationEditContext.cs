@@ -148,13 +148,16 @@ namespace VamTimeline
                 }
 
                 var baseOffset = current.timeOffset;
-                for(var i = 0; i < clips.Count; i++)
+                var baseSpeed = current.speed;
+                if (baseSpeed != 0)
                 {
-                    var clip = clips[i];
-                    #warning Account for local speed difference!
-                    clip.clipTime = value + clip.timeOffset - baseOffset;
-                    if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer)
-                        animation.PlayClip(clip, animation.sequencing);
+                    for (var i = 0; i < clips.Count; i++)
+                    {
+                        var clip = clips[i];
+                        clip.clipTime = ((value + clip.timeOffset - baseOffset) / baseSpeed * clip.speed);
+                        if (animation.isPlaying && !clip.playbackEnabled && clip.playbackMainInLayer)
+                            animation.PlayClip(clip, animation.sequencing);
+                    }
                 }
 
                 SampleLiveTriggers();
