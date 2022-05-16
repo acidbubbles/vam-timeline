@@ -63,7 +63,7 @@ namespace VamTimeline
                     PlaySiblings(nextClip);
                 }
 
-                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayer == index.segmentsById[nextClip.animationSegmentId].layerNames[0])
+                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayerId == index.segmentsById[nextClip.animationSegmentId].layerIds[0])
                 {
                     _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
                 }
@@ -145,7 +145,7 @@ namespace VamTimeline
 
         private void AssignNextAnimation(AtomAnimationClip source)
         {
-            if (source.nextAnimationName == null) return;
+            if (source.nextAnimationNameId == -1) return;
             if (clips.Count == 1) return;
 
             if (source.nextAnimationTime <= 0)

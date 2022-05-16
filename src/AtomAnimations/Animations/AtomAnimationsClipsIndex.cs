@@ -10,6 +10,7 @@ namespace VamTimeline
             public readonly Dictionary<int, List<AtomAnimationClip>> layersMapById = new Dictionary<int, List<AtomAnimationClip>>();
             public readonly List<List<AtomAnimationClip>> layers = new List<List<AtomAnimationClip>>();
             public readonly List<string> layerNames = new List<string>();
+            public readonly List<int> layerIds = new List<int>();
 
             public void Add(AtomAnimationClip clip)
             {
@@ -20,6 +21,7 @@ namespace VamTimeline
                     layersMapById.Add(clip.animationLayerId, layer);
                     layers.Add(layer);
                     layerNames.Add(clip.animationLayer);
+                    layerIds.Add(clip.animationLayerId);
                 }
                 layer.Add(clip);
             }

@@ -328,16 +328,16 @@ namespace VamTimeline
 
             if (source.animationSet != null)
             {
-                var clip = layer.FirstOrDefault(c => c.animationSet == source.animationSet);
+                var clip = layer.FirstOrDefault(c => c.animationSetId == source.animationSetId);
                 // This is to prevent playing on the main layer, starting a set on another layer, which will then override the clip you just played on the main layer
-                if (clip?.animationSet != null && clip.animationSet != source.animationSet)
+                if (clip?.animationSet != null && clip.animationSetId != source.animationSetId)
                     clip = null;
                 if (clip != null)
                     return clip;
             }
 
             return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
-                   layer.FirstOrDefault(c => c.animationName == source.animationName) ??
+                   layer.FirstOrDefault(c => c.animationNameId == source.animationNameId) ??
                    layer.FirstOrDefault(c => c.autoPlay) ??
                    layer[0];
         }
