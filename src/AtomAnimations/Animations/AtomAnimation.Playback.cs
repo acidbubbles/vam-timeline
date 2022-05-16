@@ -22,9 +22,14 @@ namespace VamTimeline
             if (!index.segmentNames.Contains(animationSegment))
                 return;
 
-            var siblings = GetMainAndBestSiblingPerLayer(animationSegment, animationName, animationSet);
+            PlayClipBySet(animationName.ToId(), animationSet.ToId(), animationSegment.ToId(), seq);
+        }
 
-            if (animationSegment != playingAnimationSegment && animationSegment != AtomAnimationClip.SharedAnimationSegment && animationSegment != AtomAnimationClip.NoneAnimationSegment)
+        public void PlayClipBySet(int animationNameId, int animationSetId, int animationSegmentId, bool seq)
+        {
+            var siblings = GetMainAndBestSiblingPerLayer(animationSegmentId, animationNameId, animationSetId);
+
+            if (animationSegmentId != playingAnimationSegmentId && animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId && animationSegmentId != AtomAnimationClip.NoneAnimationSegmentId)
             {
                 PlaySegment(siblings[0].target);
                 for (var i = 0; i < siblings.Count; i++)
@@ -75,8 +80,13 @@ namespace VamTimeline
 
         public void PlaySegment(string segmentName)
         {
+            PlaySegment(segmentName.ToId());
+        }
+
+        public void PlaySegment(int segmentNameId)
+        {
             AtomAnimationsClipsIndex.IndexedSegment segment;
-            if (!index.segments.TryGetValue(segmentName, out segment))
+            if (!index.segmentsById.TryGetValue(segmentNameId, out segment))
                 return;
             var segmentClip = segment.layers[0][0];
             PlaySegment(segmentClip);
@@ -240,7 +250,7 @@ namespace VamTimeline
         private void PlaySiblingsBySet(AtomAnimationClip clip, IList<AtomAnimationClip> clipsByName, float clipTime)
         {
             if (clip.animationSet == null) return;
-            var layers = index.segments[clip.animationSegment].layers;
+            var layers = index.segmentsById[clip.animationSegmentId].layers;
             for (var i = 0; i < layers.Count; i++)
             {
                 var layer = layers[i];
@@ -568,7 +578,7 @@ namespace VamTimeline
             if (simulationFrozen) return;
             if (_globalScaledWeight <= 0) return;
             // TODO: Index keep track if there is any parenting
-            var layers = GetMainAndBestSiblingPerLayer(playingAnimationSegment, source.animationName, source.animationSet);
+            var layers = GetMainAndBestSiblingPerLayer(playingAnimationSegmentId, source.animationNameId, source.animationSetId);
             for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
                 var clip = layers[layerIndex];

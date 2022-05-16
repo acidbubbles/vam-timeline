@@ -232,16 +232,16 @@ namespace VamTimeline
 
         private void DeleteSegmentConfirm()
         {
-            var segmentToDelete = current.animationSegment;
-            if (segmentToDelete == AtomAnimationClip.SharedAnimationSegment)
+            var segmentToDeleteId = current.animationSegmentId;
+            if (segmentToDeleteId == AtomAnimationClip.SharedAnimationSegmentId)
             {
                 SuperController.LogError("Timeline: Cannot delete the shared segment.");
                 return;
             }
-            var fallbackClip = animation.clips.First(c => c.animationSegment != segmentToDelete);
-            if (animation.playingAnimationSegment == segmentToDelete) animation.playingAnimationSegment = fallbackClip.animationSegment;
+            var fallbackClip = animation.clips.First(c => c.animationSegmentId != segmentToDeleteId);
+            if (animation.playingAnimationSegmentId == segmentToDeleteId) animation.playingAnimationSegment = fallbackClip.animationSegment;
             animationEditContext.SelectAnimation(fallbackClip);
-            var clipsToDelete = animation.index.segments[segmentToDelete].layers.SelectMany(c => c).ToList();
+            var clipsToDelete = animation.index.segmentsById[segmentToDeleteId].layers.SelectMany(c => c).ToList();
             foreach (var clip in clipsToDelete)
                 animation.RemoveClip(clip);
         }
@@ -282,25 +282,25 @@ namespace VamTimeline
             var sb = new StringBuilder();
 
             var animationsInLayer = 0;
-            foreach (var segment in animation.index.segments)
+            foreach (var segment in animation.index.segmentsById)
             {
-                if (segment.Key != current.animationSegment)
+                if (segment.Key != current.animationSegmentId)
                 {
                     sb.Append("<color=grey>");
                 }
 
                 if (animation.index.useSegment)
                 {
-                    if (segment.Key == current.animationSegment) sb.Append("<b>");
+                    if (segment.Key == current.animationSegmentId) sb.Append("<b>");
                     string segmentLabel;
-                    if (segment.Key == AtomAnimationClip.SharedAnimationSegment)
+                    if (segment.Key == AtomAnimationClip.SharedAnimationSegmentId)
                         segmentLabel = "[Shared]";
-                    else if (segment.Key == AtomAnimationClip.NoneAnimationSegment)
+                    else if (segment.Key == AtomAnimationClip.NoneAnimationSegmentId)
                         segmentLabel = "Animations";
                     else
-                        segmentLabel = segment.Key;
+                        segmentLabel = segment.Value.layers[0][0].animationSegment;
                     sb.AppendLine($"{segmentLabel}");
-                    if (segment.Key == current.animationSegment) sb.Append("</b>");
+                    if (segment.Key == current.animationSegmentId) sb.Append("</b>");
                 }
 
                 foreach (var layer in segment.Value.layers)
@@ -322,7 +322,7 @@ namespace VamTimeline
                     }
                 }
 
-                if (segment.Key != current.animationSegment)
+                if (segment.Key != current.animationSegmentId)
                 {
                     sb.Append("</color>");
                 }

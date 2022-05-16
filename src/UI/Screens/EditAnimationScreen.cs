@@ -140,9 +140,9 @@ namespace VamTimeline
                 clip.animationSegment = to;
             }
 
-            foreach (var clip in animation.clips.Where(c => c.nextAnimationName != null && c.nextAnimationName.StartsWith(AtomAnimation.NextAnimationSegmentPrefix)))
+            foreach (var clip in animation.clips.Where(c => c.nextAnimationName != null && c.nextAnimationName.StartsWith(AtomAnimationClip.NextAnimationSegmentPrefix)))
             {
-                clip.nextAnimationName = $"{AtomAnimation.NextAnimationSegmentPrefix}{to}";
+                clip.nextAnimationName = $"{AtomAnimationClip.NextAnimationSegmentPrefix}{to}";
             }
 
             if (animation.playingAnimationSegment == from)

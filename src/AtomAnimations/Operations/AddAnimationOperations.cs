@@ -145,7 +145,7 @@ namespace VamTimeline
 
             var clip = _animation.CreateClip($"{source.animationName} > {next.animationName}", source.animationLayer, source.animationSegment, _animation.clips.IndexOf(source) + 1);
             clip.loop = false;
-            clip.autoTransitionPrevious = _animation.index.segments[source.animationSegment].layersMap[source.animationLayer].Any(c => c.nextAnimationName == source.animationName);
+            clip.autoTransitionPrevious = _animation.index.segmentsById[source.animationSegmentId].layersMapById[source.animationLayerId].Any(c => c.nextAnimationName == source.animationName);
             clip.autoTransitionNext = source.nextAnimationName != null;
             clip.nextAnimationName = source.nextAnimationName;
             clip.nextAnimationTime = clip.animationLength - clip.blendInDuration;
@@ -214,7 +214,7 @@ namespace VamTimeline
 
         private IEnumerable<AtomAnimationClip> GetSameNameAnimationsInSegment()
         {
-            return _animation.index.segments[_clip.animationSegment].layers
+            return _animation.index.segmentsById[_clip.animationSegmentId].layers
                 .Select(l => l.FirstOrDefault(c => c.animationName == _clip.animationName))
                 .Where(l => l != null);
         }

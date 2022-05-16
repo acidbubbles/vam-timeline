@@ -17,14 +17,14 @@ namespace VamTimeline
             if (animation.clips.Any(c => c.isOnSharedSegment || c.isOnNoneSegment))
             {
                 prefabFactory.CreateHeader("Animations", 1);
-                InitClipsUI(AtomAnimationClip.SharedAnimationSegment);
+                InitClipsUI(AtomAnimationClip.SharedAnimationSegmentId);
                 prefabFactory.CreateSpacer();
             }
 
-            if (current.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            if (current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
             {
                 prefabFactory.CreateHeader($"{current.animationSegment} animations", 1);
-                InitClipsUI(current.animationSegment);
+                InitClipsUI(current.animationSegmentId);
                 prefabFactory.CreateSpacer();
             }
 
@@ -34,9 +34,9 @@ namespace VamTimeline
             CreateChangeScreenButton("<i><b>Manage/reorder</b> animations...</i>", ManageAnimationsScreen.ScreenName);
         }
 
-        private void InitClipsUI(string segmentName)
+        private void InitClipsUI(int segmentNameId)
         {
-            var layers = animation.index.segments[segmentName].layers;
+            var layers = animation.index.segmentsById[segmentNameId].layers;
             var hasLayers = layers.Count > 1;
 
             foreach (var layer in layers)

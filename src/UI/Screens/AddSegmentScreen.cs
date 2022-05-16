@@ -83,7 +83,7 @@ namespace VamTimeline
         {
             var previousAnimationSegment = current.animationSegment;
             var animationSegment = animation.GetUniqueSegmentName("Segment 1");
-            foreach (var clip in animation.index.segments[AtomAnimationClip.NoneAnimationSegment].layers.SelectMany(l => l))
+            foreach (var clip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].layers.SelectMany(l => l))
             {
                 clip.animationSegment = animationSegment;
             }

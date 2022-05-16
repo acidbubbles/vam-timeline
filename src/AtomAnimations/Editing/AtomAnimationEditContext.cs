@@ -363,45 +363,45 @@ namespace VamTimeline
                 SelectAnimation(next);
         }
 
-        public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segments[current.animationSegment];
+        public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segmentsById[current.animationSegmentId];
         public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayer(current.animationLayerQualified);
 
         public void GoToPreviousLayer()
         {
             var segment = currentSegment;
-            var layers = segment.layers.Select(l => l[0].animationLayer).ToList();
-            var animIdx = layers.IndexOf(current.animationLayer);
+            var layers = segment.layers.Select(l => l[0].animationLayerId).ToList();
+            var animIdx = layers.IndexOf(current.animationLayerId);
             if (animIdx == 0) return;
             var prev = layers[animIdx - 1];
-            SelectAnimation(segment.layersMap[prev][0]);
+            SelectAnimation(segment.layersMapById[prev][0]);
         }
 
         public void GoToNextLayer()
         {
             var segment = currentSegment;
-            var layers = segment.layers.Select(l => l[0].animationLayer).ToList();
-            var animIdx = layers.IndexOf(current.animationLayer);
+            var layers = segment.layers.Select(l => l[0].animationLayerId).ToList();
+            var animIdx = layers.IndexOf(current.animationLayerId);
             if (animIdx == layers.Count - 1) return;
             var next = layers[animIdx + 1];
-            SelectAnimation(segment.layersMap[next][0]);
+            SelectAnimation(segment.layersMapById[next][0]);
         }
 
         public void GoToPreviousSegment()
         {
-            var segments = animation.index.segmentNames;
-            var idx = segments.IndexOf(current.animationSegment);
+            var segments = animation.index.segmentIds;
+            var idx = segments.IndexOf(current.animationSegmentId);
             if (idx == 0) return;
             var prev = segments[idx - 1];
-            SelectAnimation(animation.index.segments[prev].layers[0][0]);
+            SelectAnimation(animation.index.segmentsById[prev].layers[0][0]);
         }
 
         public void GoToNextSegment()
         {
-            var segments = animation.index.segmentNames;
-            var idx = segments.IndexOf(current.animationSegment);
+            var segments = animation.index.segmentIds;
+            var idx = segments.IndexOf(current.animationSegmentId);
             if (idx == segments.Count - 1) return;
             var next = segments[idx + 1];
-            SelectAnimation(animation.index.segments[next].layers[0][0]);
+            SelectAnimation(animation.index.segmentsById[next].layers[0][0]);
         }
 
         public void RewindSeconds(float seconds)

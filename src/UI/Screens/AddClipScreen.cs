@@ -222,8 +222,8 @@ namespace VamTimeline
         {
             var nameValid =
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
-                animation.index.segments
-                    .Where(s => s.Key != current.animationSegment)
+                animation.index.segmentsById
+                    .Where(s => s.Key != current.animationSegmentId)
                     .SelectMany(s => s.Value.layers)
                     .SelectMany(l => l)
                     .All(c => c.animationName != clipNameJSON.val) &&

@@ -86,7 +86,7 @@ namespace VamTimeline
 
                     if (target == null)
                     {
-                        if (_animation.index.segments[_clip.animationSegment].layers.Where(l => l[0].animationLayer != _clip.animationLayer).Select(l => l[0]).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(ctrl)))
+                        if (_animation.index.segmentsById[_clip.animationSegmentId].layers.Where(l => l[0].animationLayer != _clip.animationLayer).Select(l => l[0]).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(ctrl)))
                         {
                             SuperController.LogError($"Skipping controller {ctrl.name} because it was used in another layer.");
                             continue;

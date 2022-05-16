@@ -63,7 +63,7 @@ namespace VamTimeline
                     PlaySiblings(nextClip);
                 }
 
-                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayer == index.segments[nextClip.animationSegment].layerNames[0])
+                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayer == index.segmentsById[nextClip.animationSegmentId].layerNames[0])
                 {
                     _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
                 }
@@ -151,27 +151,25 @@ namespace VamTimeline
             if (source.nextAnimationTime <= 0)
                 return;
 
-            if (source.nextAnimationName == SlaveAnimationName)
+            if (source.nextAnimationNameId == AtomAnimationClip.SlaveAnimationNameId)
                 return;
 
             AtomAnimationClip next;
 
-            string group;
-            if (source.nextAnimationName.StartsWith(NextAnimationSegmentPrefix))
+            if (source.nextAnimationSegmentRefId != -1)
             {
-                var segmentName = source.nextAnimationName.Substring(NextAnimationSegmentPrefix.Length);
                 AtomAnimationsClipsIndex.IndexedSegment segment;
-                if (index.segments.TryGetValue(segmentName, out segment))
+                if (index.segmentsById.TryGetValue(source.nextAnimationSegmentRefId, out segment))
                 {
                     next = segment.layers[0][0];
                 }
                 else
                 {
                     next = null;
-                    SuperController.LogError($"Timeline: Animation '{source.animationNameQualified}' could not transition to segment '{segmentName}' because it did not exist");
+                    SuperController.LogError($"Timeline: Animation '{source.animationNameQualified}' could not transition to segment '{source.nextAnimationName}' because it did not exist");
                 }
             }
-            else if (source.nextAnimationName == RandomizeAnimationName)
+            else if (source.nextAnimationNameId == AtomAnimationClip.RandomizeAnimationNameId)
             {
                 var candidates = index
                     .ByLayer(source.animationLayerQualified)
@@ -180,12 +178,12 @@ namespace VamTimeline
                 if (candidates.Count == 0) return;
                 next = SelectRandomClip(candidates);
             }
-            else if (TryGetRandomizedGroup(source.nextAnimationName, out group))
+            else if (source.nextAnimationGroupId != -1)
             {
                 var candidates = index
                     .ByLayer(source.animationLayerQualified)
                     .Where(c => c.animationName != source.animationName)
-                    .Where(c => c.animationNameGroup == group)
+                    .Where(c => c.animationNameGroupId == source.nextAnimationGroupId)
                     .ToList();
                 if (candidates.Count == 0) return;
                 next = SelectRandomClip(candidates);
@@ -198,18 +196,6 @@ namespace VamTimeline
             if (next == null) return;
 
             ScheduleNextAnimation(source, next);
-        }
-
-        public static bool TryGetRandomizedGroup(string animationName, out string groupName)
-        {
-            if (!animationName.EndsWith(RandomizeGroupSuffix))
-            {
-                groupName = null;
-                return false;
-            }
-
-            groupName = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length);
-            return true;
         }
 
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next)
@@ -262,7 +248,7 @@ namespace VamTimeline
 
             if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Schedule transition '{source.animationNameQualified}' -> '{next.animationName}' in {nextTime:0.000}s");
 
-            if (next.fadeOnTransition && next.animationLayer == index.segments[next.animationSegment].layerNames[0] && fadeManager != null)
+            if (next.fadeOnTransition && next.animationLayer == index.segmentsById[next.animationSegmentId].layerNames[0] && fadeManager != null)
             {
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)

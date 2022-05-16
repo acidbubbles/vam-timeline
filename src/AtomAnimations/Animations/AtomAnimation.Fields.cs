@@ -11,11 +11,6 @@ namespace VamTimeline
 
         private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$");
 
-        public const string RandomizeAnimationName = "(Randomize)";
-        public const string SlaveAnimationName = "(Slave)";
-        public const string RandomizeGroupSuffix = "/*";
-        public const string NextAnimationSegmentPrefix = "Segment: ";
-
         public readonly UnityEvent onAnimationSettingsChanged = new UnityEvent();
         public readonly UnityEvent onSpeedChanged = new UnityEvent();
         public readonly UnityEvent onWeightChanged = new UnityEvent();
@@ -36,7 +31,18 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
-        public string playingAnimationSegment;
+        private string _playingAnimationSegment;
+        public int playingAnimationSegmentId { get; private set; }
+
+        public string playingAnimationSegment
+        {
+            get { return _playingAnimationSegment; }
+            set
+            {
+                _playingAnimationSegment = value;
+                playingAnimationSegmentId = value.ToId();
+            }
+        }
         public float autoStop;
         private bool _paused;
         public bool paused

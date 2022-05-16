@@ -316,10 +316,10 @@ namespace VamTimeline
                 .ToList();
             var segments = animation.index.segmentNames
                 .Where(s => s != AtomAnimationClip.SharedAnimationSegment && s != current.animationSegment)
-                .Select(s => $"{AtomAnimation.NextAnimationSegmentPrefix}{s}");
+                .Select(s => $"{AtomAnimationClip.NextAnimationSegmentPrefix}{s}");
             return new[] { _noNextAnimation }
                 .Concat(animations.SelectMany(EnumerateAnimations))
-                .Concat(animations.Count > 0 ? new[] { AtomAnimation.RandomizeAnimationName } : new string[0])
+                .Concat(animations.Count > 0 ? new[] { AtomAnimationClip.RandomizeAnimationName } : new string[0])
                 .Concat(segments)
                 .ToList();
         }
@@ -330,7 +330,7 @@ namespace VamTimeline
                 yield return groupName;
 
             if (group.Key != null)
-                yield return group.Key + AtomAnimation.RandomizeGroupSuffix;
+                yield return group.Key + AtomAnimationClip.RandomizeGroupSuffix;
         }
 
         #endregion
@@ -373,7 +373,7 @@ namespace VamTimeline
 
             var clips = animation.index.ByName(current.animationName);
 
-            if (nextName == AtomAnimation.SlaveAnimationName)
+            if (nextName == AtomAnimationClip.SlaveAnimationName)
             {
                 // Do nothing, but this shouldn't be "set"
             }
@@ -412,7 +412,7 @@ namespace VamTimeline
                     }
                     else
                     {
-                        clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimation.SlaveAnimationName;
+                        clip.nextAnimationName = clip == current ? _nextAnimationJSON.val : AtomAnimationClip.SlaveAnimationName;
                         clip.nextAnimationTime = nextTime;
                         clip.nextAnimationTimeRandomize = randomizeTime;
                     }
@@ -430,13 +430,13 @@ namespace VamTimeline
             if (nextName == null)
                 return false;
 
-            if (nextName.StartsWith(AtomAnimation.NextAnimationSegmentPrefix))
+            if (nextName.StartsWith(AtomAnimationClip.NextAnimationSegmentPrefix))
                 return true;
 
-            if (nextName == AtomAnimation.RandomizeAnimationName)
+            if (nextName == AtomAnimationClip.RandomizeAnimationName)
                 return true;
 
-            if (nextName.EndsWith(AtomAnimation.RandomizeGroupSuffix))
+            if (nextName.EndsWith(AtomAnimationClip.RandomizeGroupSuffix))
                 return true;
 
             return currentLayer.Any(c => c.animationName == nextName);

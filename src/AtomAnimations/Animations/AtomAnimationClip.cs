@@ -13,10 +13,19 @@ namespace VamTimeline
         public const float DefaultAnimationLength = 2f;
         public const float DefaultBlendDuration = 1.0f;
         public const string SharedAnimationSegment = "[SHARED]";
+        public static readonly int SharedAnimationSegmentId = SharedAnimationSegment.ToId();
         public const string NoneAnimationSegment = "[]";
+        public static readonly int NoneAnimationSegmentId = NoneAnimationSegment.ToId();
         public const string DefaultAnimationSegment = NoneAnimationSegment;
         public const string DefaultAnimationLayer = "Main";
         public const string DefaultAnimationName = "Anim 1";
+
+        public const string RandomizeAnimationName = "(Randomize)";
+        public static readonly int RandomizeAnimationNameId = RandomizeAnimationName.ToId();
+        public const string SlaveAnimationName = "(Slave)";
+        public static readonly int SlaveAnimationNameId = SlaveAnimationName.ToId();
+        public const string RandomizeGroupSuffix = "/*";
+        public const string NextAnimationSegmentPrefix = "Segment: ";
 
         private readonly Logger _logger;
         private bool _loop = true;
@@ -120,47 +129,17 @@ namespace VamTimeline
         public string animationLayerQualified { get; private set; }
         public string animationSetQualified { get; private set; }
 
-        private int _animationNameId;
-        public int animationNameId
-        {
-            get { return _animationNameId; }
-            private set { _animationNameId = value; }
-        }
+        public int animationNameId { get; private set; }
 
-        private int _animationNameQualifiedId;
-        public int animationNameQualifiedId
-        {
-            get { return _animationNameQualifiedId; }
-            private set { _animationNameQualifiedId = value; }
-        }
+        public int animationNameQualifiedId { get; private set; }
 
-        private int _animationLayerId;
-        public int animationLayerId
-        {
-            get { return _animationLayerId; }
-            private set { _animationLayerId = value; }
-        }
+        public int animationLayerId { get; private set; }
 
-        private int _animationLayerQualifiedId;
-        public int animationLayerQualifiedId
-        {
-            get { return _animationLayerQualifiedId; }
-            private set { _animationLayerQualifiedId = value; }
-        }
+        public int animationLayerQualifiedId { get; private set; }
 
-        private int _animationSegmentId;
-        public int animationSegmentId
-        {
-            get { return _animationSegmentId; }
-            private set { _animationSegmentId = value; }
-        }
+        public int animationSegmentId { get; private set; }
 
-        private int _animationSetId;
-        public int animationSetId
-        {
-            get { return _animationSetId; }
-            private set { _animationSetId = value; }
-        }
+        public int animationSetId { get; private set; }
 
         public bool isOnSharedSegment { get; private set; }
         public bool isOnNoneSegment { get; private set; }
@@ -170,33 +149,17 @@ namespace VamTimeline
             animationNameQualified = $"{_animationSegment}::{_animationLayer}::{_animationName}";
             animationLayerQualified = $"{_animationSegment}::{_animationLayer}";
             animationSetQualified = $"{_animationSegment}::{_animationSet}";
-            AssignId(animationName, out _animationNameId);
-            AssignId(animationNameQualified, out _animationNameQualifiedId);
-            AssignId(animationLayer, out _animationLayerId);
-            AssignId(animationLayerQualified, out _animationLayerQualifiedId);
-            AssignId(animationSegment, out _animationSegmentId);
-            AssignId(animationSet, out _animationSegmentId);
-        }
 
-        private int _nextId = 1;
-        private readonly Dictionary<string, int> _ids = new Dictionary<string, int>();
-        private void AssignId(string name, out int id)
-        {
-            if (name == null)
-            {
-                id = 0;
-                return;
-            }
-
-            if (_ids.TryGetValue(name, out id))
-                return;
-
-            id = _nextId;
-            _nextId++;
-            _ids.Add(name, id);
+            animationNameId = animationName.ToId();
+            animationNameQualifiedId = animationNameQualified.ToId();
+            animationLayerId = animationLayer.ToId();
+            animationLayerQualifiedId = animationLayerQualified.ToId();
+            animationSegmentId = animationSegment.ToId();
+            animationSetId = animationSet.ToId();
         }
 
         public string animationNameGroup { get; private set; }
+        public int animationNameGroupId { get; private set; }
 
         private void UpdateAnimationNameGroup()
         {
@@ -204,10 +167,12 @@ namespace VamTimeline
             if (idxOfGroupSeparator > -1)
             {
                 animationNameGroup = _animationName.Substring(0, idxOfGroupSeparator);
+                animationNameGroupId = animationNameGroup.ToId();
             }
             else
             {
                 animationNameGroup = null;
+                animationNameGroupId = -1;
             }
         }
 
@@ -431,11 +396,34 @@ namespace VamTimeline
             set
             {
                 if (_nextAnimationName == value) return;
-                _nextAnimationName = value == "" ? null : value;
+                nextAnimationNameId = -1;
+                nextAnimationSegmentRefId = -1;
+                nextAnimationGroupId = -1;
+                if (string.IsNullOrEmpty(value))
+                {
+                    _nextAnimationName = null;
+                }
+                else
+                {
+                    _nextAnimationName = value;
+                    nextAnimationNameId = value.ToId();
+
+                    if (_nextAnimationName != null && _nextAnimationName.StartsWith(NextAnimationSegmentPrefix))
+                        nextAnimationSegmentRefId = _nextAnimationName.Substring(NextAnimationSegmentPrefix.Length).ToId();
+
+                    if (_nextAnimationName != null && _nextAnimationName.EndsWith(RandomizeGroupSuffix))
+                        nextAnimationGroupId = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length).ToId();
+                }
+
                 UpdateForcedNextAnimationTime();
                 onAnimationSettingsChanged.Invoke(nameof(nextAnimationName));
             }
         }
+
+        public int nextAnimationNameId { get; private set; }
+        public int nextAnimationGroupId { get; private set; }
+        public int nextAnimationSegmentRefId { get; private set; }
+
         public float nextAnimationTime
         {
             get

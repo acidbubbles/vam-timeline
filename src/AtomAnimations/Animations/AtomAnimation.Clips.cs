@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace VamTimeline
@@ -136,7 +135,7 @@ namespace VamTimeline
 
         public string GetUniqueLayerName(AtomAnimationClip source, string baseName = null)
         {
-            return GetUniqueName(baseName ?? source.animationLayer, index.segments[source.animationSegment].layerNames);
+            return GetUniqueName(baseName ?? source.animationLayer, index.segmentsById[source.animationSegmentId].layerNames);
         }
 
         public string GetUniqueSegmentName(AtomAnimationClip source)
@@ -199,16 +198,16 @@ namespace VamTimeline
         }
 
         private TransitionTarget[] _mainAndBestSiblingPerLayerCache = new TransitionTarget[0];
-        private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
+        private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(int animationSegmentId, int animationNameId, int animationSetId)
         {
             AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
-            if (!index.segments.TryGetValue(AtomAnimationClip.SharedAnimationSegment, out sharedLayers))
+            if (!index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out sharedLayers))
             {
                 sharedLayers = index.emptySegment;
             }
 
             AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
-            if (animationSegment == AtomAnimationClip.SharedAnimationSegment || !index.segments.TryGetValue(animationSegment, out segmentLayers))
+            if (animationSegmentId == AtomAnimationClip.SharedAnimationSegmentId || !index.segmentsById.TryGetValue(animationSegmentId, out segmentLayers))
             {
                 segmentLayers = index.emptySegment;
             }
@@ -219,33 +218,32 @@ namespace VamTimeline
             for (var i = 0; i < sharedLayers.layers.Count; i++)
             {
                 var layer = sharedLayers.layers[i];
-                _mainAndBestSiblingPerLayerCache[i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, null);
+                _mainAndBestSiblingPerLayerCache[i] = GetMainAndBestSiblingInLayer(layer, animationNameId, animationSetId, -1);
             }
 
             for (var i = 0; i < segmentLayers.layers.Count; i++)
             {
                 var layer = segmentLayers.layers[i];
-                _mainAndBestSiblingPerLayerCache[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationName, animationSet, animationSegment);
+                _mainAndBestSiblingPerLayerCache[sharedLayers.layers.Count + i] = GetMainAndBestSiblingInLayer(layer, animationNameId, animationSetId, animationSegmentId);
             }
 
             return _mainAndBestSiblingPerLayerCache;
         }
 
-        private static TransitionTarget GetMainAndBestSiblingInLayer(IList<AtomAnimationClip> layer, string animationName, string animationSet, string animationSegment)
+        private static TransitionTarget GetMainAndBestSiblingInLayer(IList<AtomAnimationClip> layer, int animationNameId, int animationSetId, int animationSegmentId)
         {
             var main = GetMainClipInLayer(layer);
             AtomAnimationClip bestSibling = null;
             for (var j = 0; j < layer.Count; j++)
             {
                 var clip = layer[j];
-                if (clip.animationName == animationName)
+                if (clip.animationNameId == animationNameId)
                 {
                     bestSibling = clip;
                     break;
                 }
 
-                #warning Called often; expensive string comparison (instead make an animation segment ID)
-                if ((animationSet != null && clip.animationSet == animationSet) || (!clip.isOnNoneSegment && !clip.isOnSharedSegment && clip.animationSegment == animationSegment))
+                if ((animationSetId != -1 && clip.animationSetId == animationSetId) || (!clip.isOnNoneSegment && !clip.isOnSharedSegment && clip.animationSegmentId == animationSegmentId))
                 {
                     if (bestSibling == null || clip.playbackMainInLayer)
                         bestSibling = clip;
@@ -290,14 +288,14 @@ namespace VamTimeline
             if (!sequencing && focusOnLayer) return new[] { source };
 
             AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
-            if (!index.segments.TryGetValue(AtomAnimationClip.SharedAnimationSegment, out sharedLayers))
+            if (!index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out sharedLayers))
             {
                 sharedLayers = index.emptySegment;
             }
 
             AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
             if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment)
-                segmentLayers = index.segments[source.animationSegment];
+                segmentLayers = index.segmentsById[source.animationSegmentId];
             else
                 segmentLayers = index.emptySegment;
 

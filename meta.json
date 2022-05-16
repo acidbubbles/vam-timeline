@@ -73,6 +73,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Serialization\\AtomAnimationSerializer.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Utils\\FloatExtensions.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Utils\\QuaternionExtensions.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Utils\\StringMap.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Utils\\TimelinePrefabs.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Controller\\SimpleSignUI.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\Interop\\IRemoteAtomPlugin.cs",

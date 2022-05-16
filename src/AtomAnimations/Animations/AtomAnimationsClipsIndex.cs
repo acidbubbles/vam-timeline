@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,17 +7,17 @@ namespace VamTimeline
     {
         public class IndexedSegment
         {
-            public readonly Dictionary<string, List<AtomAnimationClip>> layersMap = new Dictionary<string, List<AtomAnimationClip>>();
+            public readonly Dictionary<int, List<AtomAnimationClip>> layersMapById = new Dictionary<int, List<AtomAnimationClip>>();
             public readonly List<List<AtomAnimationClip>> layers = new List<List<AtomAnimationClip>>();
             public readonly List<string> layerNames = new List<string>();
 
             public void Add(AtomAnimationClip clip)
             {
                 List<AtomAnimationClip> layer;
-                if (!layersMap.TryGetValue(clip.animationLayer, out layer))
+                if (!layersMapById.TryGetValue(clip.animationLayerId, out layer))
                 {
                     layer = new List<AtomAnimationClip>();
-                    layersMap.Add(clip.animationLayer, layer);
+                    layersMapById.Add(clip.animationLayerId, layer);
                     layers.Add(layer);
                     layerNames.Add(clip.animationLayer);
                 }
@@ -31,8 +30,9 @@ namespace VamTimeline
         private readonly List<AtomAnimationClip> _clips;
 
         public readonly IndexedSegment emptySegment = new IndexedSegment();
-        public readonly Dictionary<string, IndexedSegment> segments = new Dictionary<string, IndexedSegment>();
+        public readonly Dictionary<int, IndexedSegment> segmentsById = new Dictionary<int, IndexedSegment>();
         public bool useSegment;
+        public readonly List<int> segmentIds = new List<int>();
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayerNameQualified = new Dictionary<string, List<AtomAnimationClip>>();
@@ -62,7 +62,7 @@ namespace VamTimeline
         public void Rebuild()
         {
             useSegment = false;
-            segments.Clear();
+            segmentsById.Clear();
             clipsGroupedByLayer.Clear();
             _clipsByLayerNameQualified.Clear();
             _clipsByName.Clear();
@@ -70,6 +70,7 @@ namespace VamTimeline
             _clipsByController.Clear();
             _clipsByFloatParam.Clear();
             segmentNames.Clear();
+            segmentIds.Clear();
 
             if (_pendingBulkUpdate) return;
 
@@ -79,11 +80,12 @@ namespace VamTimeline
             {
                 {
                     IndexedSegment sequence;
-                    if (!segments.TryGetValue(clip.animationSegment, out sequence))
+                    if (!segmentsById.TryGetValue(clip.animationSegmentId, out sequence))
                     {
                         sequence = new IndexedSegment();
-                        segments.Add(clip.animationSegment, sequence);
+                        segmentsById.Add(clip.animationSegmentId, sequence);
                         segmentNames.Add(clip.animationSegment);
+                        segmentIds.Add(clip.animationSegmentId);
                     }
                     sequence.Add(clip);
                 }
