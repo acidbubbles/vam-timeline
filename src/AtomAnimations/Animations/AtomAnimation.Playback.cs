@@ -168,17 +168,27 @@ namespace VamTimeline
                 if (previous.uninterruptible)
                     return;
 
-                // Wait for the loop to sync
-                if (previous.loop && previous.preserveLoops && next.loop && next.preserveLoops && allowPreserveLoops)
+                // Wait for the loop to sync or the non-loop to end
+                if (allowPreserveLoops)
                 {
-                    ScheduleNextAnimation(
-                        previous,
-                        next,
-                        previous.loop && previous.preserveLoops && next.loop && next.preserveLoops
+                    SuperController.LogMessage("Previous, allow");
+                    if (previous.loop && previous.preserveLoops)
+                    {
+                        var nextTime = next.loop
                             ? previous.animationLength - next.blendInDuration / 2f - previous.clipTime
-                            : 0f);
+                            : previous.animationLength - next.blendInDuration - previous.clipTime;
+                        if (nextTime < 0) nextTime += previous.animationLength;
+                        ScheduleNextAnimation(previous, next, nextTime);
+                        return;
+                    }
 
-                    return;
+                    if (!previous.loop && previous.preserveLength)
+                    {
+                        var nextTime = Mathf.Max(previous.animationLength - next.blendInDuration - previous.clipTime, 0f);
+                        SuperController.LogMessage($"next: {nextTime}");
+                        ScheduleNextAnimation(previous, next, nextTime);
+                        return;
+                    }
                 }
 
                 previous.playbackMainInLayer = false;

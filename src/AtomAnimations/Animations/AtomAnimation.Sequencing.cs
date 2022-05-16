@@ -203,7 +203,7 @@ namespace VamTimeline
             var nextTime = source.nextAnimationTime;
             if (source.loop)
             {
-                if (source.preserveLoops && next.preserveLoops)
+                if (source.preserveLoops)
                 {
                     if (source.nextAnimationTimeRandomize > 0f)
                     {
@@ -228,6 +228,7 @@ namespace VamTimeline
             }
             else
             {
+                // NOTE: For compatibility reasons, regardless of preserveLength we wait for the end
                 nextTime = Mathf.Min(nextTime, source.animationLength - next.blendInDuration);
             }
 

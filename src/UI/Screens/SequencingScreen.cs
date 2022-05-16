@@ -26,8 +26,8 @@ namespace VamTimeline
         private JSONStorableString _animationSetJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
+        private JSONStorableBool _loopJSON;
         private JSONStorableBool _preserveLoopsJSON;
-        private UIDynamicToggle _preserveLoopsUI;
         private JSONStorableFloat _randomizeRangeJSON;
         private JSONStorableBool _fadeOnTransition;
 
@@ -42,6 +42,7 @@ namespace VamTimeline
             InitAutoPlayUI();
             InitBlendUI();
             InitTimeOffsetUI();
+            InitLoopUI();
             InitPreserveLoopsUI();
             InitUninterruptibleUI();
 
@@ -135,14 +136,27 @@ namespace VamTimeline
             timeOffsetUI.valueFormat = "F3";
         }
 
-        private void InitPreserveLoopsUI()
+        private void InitLoopUI()
         {
-            _preserveLoopsJSON = new JSONStorableBool("Preserve loops", true, val =>
+            _loopJSON = new JSONStorableBool("Loop", true, val =>
             {
-                current.preserveLoops = val;
+                current.loop = val;
                 RoundNextTimeToNearestLoop();
             });
-            _preserveLoopsUI = prefabFactory.CreateToggle(_preserveLoopsJSON);
+            prefabFactory.CreateToggle(_loopJSON);
+        }
+
+        private void InitPreserveLoopsUI()
+        {
+            _preserveLoopsJSON = new JSONStorableBool("Preserve loops / length", true, val =>
+            {
+                if (current.loop)
+                    current.preserveLoops = val;
+                else
+                    current.preserveLength = val;
+                RoundNextTimeToNearestLoop();
+            });
+            prefabFactory.CreateToggle(_preserveLoopsJSON);
         }
 
         private void RoundNextTimeToNearestLoop()
@@ -245,7 +259,6 @@ namespace VamTimeline
         {
             _transitionPreviousJSON.toggle.interactable = true;
             _transitionNextJSON.toggle.interactable = true;
-            _preserveLoopsUI.toggle.interactable = current.loop;
             _fadeOnTransition.valNoCallback = current.fadeOnTransition;
 
             if (!current.autoTransitionPrevious)
@@ -470,7 +483,8 @@ namespace VamTimeline
             _uninterruptible.valNoCallback = current.uninterruptible;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
-            _preserveLoopsJSON.valNoCallback = current.preserveLoops;
+            _loopJSON.valNoCallback = current.loop;
+            _preserveLoopsJSON.valNoCallback = current.loop ? current.preserveLoops : current.preserveLength;
             _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? _noNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;

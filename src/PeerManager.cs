@@ -358,12 +358,13 @@ namespace VamTimeline
                  clip.preserveLoops, // 14
                  previousAnimationName, // 15
                  clip.animationSegment, // 16
+                 clip.preserveLength, // 17
             });
         }
 
         private void ReceiveSyncAnimation(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 16)) return;
+            if (!ValidateArgumentCount(e.Length, 18)) return;
             var animationSegment = (string)e[16];
             var animationLayer = (string)e[2];
             var animationName = (string)e[1];
@@ -410,6 +411,7 @@ namespace VamTimeline
                 clip.weight = (float)e[12];
                 clip.uninterruptible = (bool)e[13];
                 clip.preserveLoops = (bool)e[14];
+                clip.preserveLength = (bool)e[17];
             }
 
             animation.index.Rebuild();

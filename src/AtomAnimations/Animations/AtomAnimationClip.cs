@@ -35,6 +35,7 @@ namespace VamTimeline
         private bool _autoTransitionPrevious;
         private bool _autoTransitionNext;
         private bool _preserveLoops = true;
+        private bool _preserveLength = false;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
         private float _nextAnimationRandomizeWeight = 1;
@@ -368,6 +369,20 @@ namespace VamTimeline
                 if (_preserveLoops == value) return;
                 _preserveLoops = value;
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(preserveLoops));
+            }
+        }
+
+        public bool preserveLength
+        {
+            get
+            {
+                return _preserveLength;
+            }
+            set
+            {
+                if (_preserveLength == value) return;
+                _preserveLength = value;
+                if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(preserveLength));
             }
         }
 
@@ -929,6 +944,7 @@ namespace VamTimeline
             target.ensureQuaternionContinuity = ensureQuaternionContinuity;
             target.speed = speed;
             target.preserveLoops = preserveLoops;
+            target.preserveLength = preserveLength;
             target.timeOffset = timeOffset;
             target.weight = weight;
             target.blendInDuration = blendInDuration;
