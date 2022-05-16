@@ -102,7 +102,7 @@ namespace VamTimeline
                 .Select(t => t.name)
                 .OrderBy(x => x);
             var otherList = animation.index
-                .ByLayer(current.animationLayerQualified)
+                .ByLayerQualified(current.animationLayerQualifiedId)
                 .Where(c => c != current)
                 .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)))
                 .Select(t => t.name)
@@ -450,14 +450,14 @@ namespace VamTimeline
             try
             {
                 var allControllers = animation.index
-                    .ByLayer(current.animationLayerQualified)
+                    .ByLayerQualified(current.animationLayerQualifiedId)
                     .SelectMany(c => c.targetControllers)
                     .Select(t => t.animatableRef)
                     .Distinct()
                     .ToList();
                 var h = new HashSet<JSONStorableFloat>();
                 var allFloatParams = animation.index
-                    .ByLayer(current.animationLayerQualified)
+                    .ByLayerQualified(current.animationLayerQualifiedId)
                     .SelectMany(c => c.targetFloatParams)
                     .Where(t => t.animatableRef.EnsureAvailable(false))
                     .Where(t => h.Add(t.animatableRef.floatParam))

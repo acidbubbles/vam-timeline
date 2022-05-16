@@ -6,12 +6,10 @@ namespace VamTimeline
     public class ImportOperations
     {
         private readonly AtomAnimation _animation;
-        private readonly bool _silent;
 
-        public ImportOperations(AtomAnimation animation, bool silent = false)
+        public ImportOperations(AtomAnimation animation)
         {
             _animation = animation;
-            _silent = silent;
         }
 
         public void ImportClips(IList<AtomAnimationClip> clips)
@@ -47,26 +45,13 @@ namespace VamTimeline
 
             foreach (var clip in clips)
             {
-                if (clip.autoPlay && _animation.index.ByLayer(clip.animationLayerQualified).Any(c => c.autoPlay))
+                if (clip.autoPlay && _animation.index.ByLayerQualified(clip.animationLayerQualifiedId).Any(c => c.autoPlay))
                 {
                     clip.autoPlay = false;
                 }
             }
 
             _animation.RebuildAnimationNow();
-        }
-
-        private string GenerateUniqueAnimationName(string animationLayerQualified, string animationName)
-        {
-            var i = 1;
-            var layerClips = _animation.index.ByLayer(animationLayerQualified);
-            while (true)
-            {
-                var newAnimationName = $"{animationName} ({i})";
-                if (layerClips.All(c => c.animationName != newAnimationName))
-                    return newAnimationName;
-                i++;
-            }
         }
     }
 }

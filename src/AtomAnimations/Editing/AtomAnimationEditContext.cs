@@ -333,10 +333,10 @@ namespace VamTimeline
             clipTime = GetNextFrame(clipTime);
         }
 
-        public void GoToPreviousAnimation(string layerNameQualified)
+        public void GoToPreviousAnimation(int layerNameQualifiedId)
         {
-            if (!animation.isPlaying && current.animationLayerQualified != layerNameQualified) return;
-            var layer = animation.index.ByLayer(layerNameQualified);
+            if (!animation.isPlaying && current.animationLayerQualifiedId != layerNameQualifiedId) return;
+            var layer = animation.index.ByLayerQualified(layerNameQualifiedId);
             var main = animation.isPlaying ? layer.FirstOrDefault(c => c.playbackMainInLayer) : current;
             if (main == null) return;
             var animIdx = layer.IndexOf(main);
@@ -348,10 +348,10 @@ namespace VamTimeline
                 SelectAnimation(prev);
         }
 
-        public void GoToNextAnimation(string layerNameQualified)
+        public void GoToNextAnimation(int layerNameQualifiedId)
         {
-            if (!animation.isPlaying && current.animationLayerQualified != layerNameQualified) return;
-            var layer = animation.index.ByLayer(layerNameQualified);
+            if (!animation.isPlaying && current.animationLayerQualifiedId != layerNameQualifiedId) return;
+            var layer = animation.index.ByLayerQualified(layerNameQualifiedId);
             var main = animation.isPlaying ? layer.FirstOrDefault(c => c.playbackMainInLayer) : current;
             if (main == null) return;
             var animIdx = layer.IndexOf(main);
@@ -364,7 +364,7 @@ namespace VamTimeline
         }
 
         public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segmentsById[current.animationSegmentId];
-        public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayer(current.animationLayerQualified);
+        public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayerQualified(current.animationLayerQualifiedId);
 
         public void GoToPreviousLayer()
         {

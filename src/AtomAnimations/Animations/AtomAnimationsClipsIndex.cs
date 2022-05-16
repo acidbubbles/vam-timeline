@@ -37,7 +37,7 @@ namespace VamTimeline
         public readonly List<int> segmentIds = new List<int>();
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
-        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByLayerNameQualified = new Dictionary<string, List<AtomAnimationClip>>();
+        private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByLayerNameQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<string, List<AtomAnimationClip>> _firstClipOfLayerBySetQualified = new Dictionary<string, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
@@ -66,7 +66,7 @@ namespace VamTimeline
             useSegment = false;
             segmentsById.Clear();
             clipsGroupedByLayer.Clear();
-            _clipsByLayerNameQualified.Clear();
+            _clipsByLayerNameQualifiedId.Clear();
             _clipsByName.Clear();
             _firstClipOfLayerBySetQualified.Clear();
             _clipsByController.Clear();
@@ -116,11 +116,11 @@ namespace VamTimeline
 
                 {
                     List<AtomAnimationClip> layerClips;
-                    if (!_clipsByLayerNameQualified.TryGetValue(clip.animationLayerQualified, out layerClips))
+                    if (!_clipsByLayerNameQualifiedId.TryGetValue(clip.animationLayerQualifiedId, out layerClips))
                     {
                         layerClips = new List<AtomAnimationClip>();
                         clipsGroupedByLayer.Add(layerClips);
-                        _clipsByLayerNameQualified.Add(clip.animationLayerQualified, layerClips);
+                        _clipsByLayerNameQualifiedId.Add(clip.animationLayerQualifiedId, layerClips);
                     }
                     layerClips.Add(clip);
                 }
@@ -151,10 +151,10 @@ namespace VamTimeline
             useSegment = segmentNames.Count > 1 || segmentNames[0] != AtomAnimationClip.NoneAnimationSegment;
         }
 
-        public IList<AtomAnimationClip> ByLayer(string layerNameQualified)
+        public IList<AtomAnimationClip> ByLayerQualified(int layerNameQualifiedId)
         {
             List<AtomAnimationClip> clips;
-            return _clipsByLayerNameQualified.TryGetValue(layerNameQualified, out clips) ? clips : _emptyClipList;
+            return _clipsByLayerNameQualifiedId.TryGetValue(layerNameQualifiedId, out clips) ? clips : _emptyClipList;
         }
 
         public IEnumerable<KeyValuePair<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>> ByController()

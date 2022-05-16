@@ -281,28 +281,28 @@ namespace VamTimeline
             _nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimation}'");
-                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualified);
+                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_nextAnimationJSON);
 
             _previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimation}'");
-                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualified);
+                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_previousAnimationJSON);
 
             _nextAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.NextAnimationInMainLayer, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimationInMainLayer}'");
-                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualified);
+                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_nextAnimationInMainLayerJSON);
 
             _previousAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.PreviousAnimationInMainLayer, () =>
             {
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimationInMainLayer}'");
-                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualified);
+                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_previousAnimationInMainLayerJSON);
 
@@ -1027,8 +1027,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Toggle_SelectAllTargets", () => animationEditContext.SelectAll(!animationEditContext.current.GetAllTargets().Any(t => t.selected))));
             bindings.Add(new JSONStorableAction("PreviousFrame", animationEditContext.PreviousFrame));
             bindings.Add(new JSONStorableAction("NextFrame", animationEditContext.NextFrame));
-            bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", () => animationEditContext.GoToPreviousAnimation(animationEditContext.current.animationLayerQualified)));
-            bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", () => animationEditContext.GoToNextAnimation(animationEditContext.current.animationLayerQualified)));
+            bindings.Add(new JSONStorableAction("PreviousAnimationInCurrentLayer", () => animationEditContext.GoToPreviousAnimation(animationEditContext.current.animationLayerQualifiedId)));
+            bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", () => animationEditContext.GoToNextAnimation(animationEditContext.current.animationLayerQualifiedId)));
             bindings.Add(new JSONStorableAction("PreviousAnimationInMainLayer", _previousAnimationInMainLayerJSON.actionCallback));
             bindings.Add(new JSONStorableAction("NextAnimationInMainLayer", _nextAnimationInMainLayerJSON.actionCallback));
             bindings.Add(new JSONStorableAction("PreviousLayer", () => animationEditContext.GoToPreviousLayer()));

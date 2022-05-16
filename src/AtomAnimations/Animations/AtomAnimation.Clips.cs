@@ -12,7 +12,7 @@ namespace VamTimeline
 
         public AtomAnimationClip GetDefaultClip()
         {
-            return index.ByLayer(clips[0].animationLayerQualified).FirstOrDefault(c => c.autoPlay) ?? clips[0];
+            return index.ByLayerQualified(clips[0].animationLayerQualifiedId).FirstOrDefault(c => c.autoPlay) ?? clips[0];
         }
 
         public bool IsEmpty()

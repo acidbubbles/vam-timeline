@@ -395,13 +395,13 @@ namespace VamTimeline
                 var clip = clips[i];
                 new ResizeAnimationOperations().CropOrExtendEnd(clip, (float)e[3]);
                 var nextAnimationName = (string)e[4];
-                if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayer(clip.animationLayerQualified).Any(c => c.animationName == nextAnimationName))
+                if (!string.IsNullOrEmpty(nextAnimationName) && animation.index.ByLayerQualified(clip.animationLayerQualifiedId).Any(c => c.animationName == nextAnimationName))
                 {
                     clip.nextAnimationName = nextAnimationName;
                     clip.nextAnimationTime = 0f; // Will be managed by the master setting
                     clip.autoTransitionNext = (bool)e[10];
                 }
-                if (animation.index.ByLayer(clip.animationLayerQualified).Any(c => c.nextAnimationName == clip.animationName))
+                if (animation.index.ByLayerQualified(clip.animationLayerQualifiedId).Any(c => c.nextAnimationName == clip.animationName))
                 {
                     clip.autoTransitionPrevious = (bool)e[9];
                 }

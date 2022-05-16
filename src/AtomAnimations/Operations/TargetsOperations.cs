@@ -20,7 +20,7 @@ namespace VamTimeline
             if (fc == null) return null;
             var target = _clip.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(fc));
             if (target != null) return target;
-            foreach (var clip in _animation.index.ByLayer(_clip.animationLayerQualified))
+            foreach (var clip in _animation.index.ByLayerQualified(_clip.animationLayerQualifiedId))
             {
                 var t = clip.Add(_animation.animatables.GetOrCreateController(fc, fc.containingAtom == _containingAtom));
                 if (t == null) continue;

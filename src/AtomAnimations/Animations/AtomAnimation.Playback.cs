@@ -69,7 +69,7 @@ namespace VamTimeline
 
             PlayClipCore(
                 isPlaying
-                    ? GetMainClipInLayer(index.ByLayer(clip.animationLayerQualified))
+                    ? GetMainClipInLayer(index.ByLayerQualified(clip.animationLayerQualifiedId))
                     : null,
                 clip,
                 seq,
@@ -171,7 +171,6 @@ namespace VamTimeline
                 // Wait for the loop to sync or the non-loop to end
                 if (allowPreserveLoops)
                 {
-                    SuperController.LogMessage("Previous, allow");
                     if (previous.loop && previous.preserveLoops)
                     {
                         var nextTime = next.loop
@@ -185,7 +184,6 @@ namespace VamTimeline
                     if (!previous.loop && previous.preserveLength)
                     {
                         var nextTime = Mathf.Max(previous.animationLength - next.blendInDuration - previous.clipTime, 0f);
-                        SuperController.LogMessage($"next: {nextTime}");
                         ScheduleNextAnimation(previous, next, nextTime);
                         return;
                     }
@@ -251,7 +249,7 @@ namespace VamTimeline
                 var clip = clipsByName[i];
                 if (clip.playbackMainInLayer) continue;
                 TransitionClips(
-                    GetMainClipInLayer(index.ByLayer(clip.animationLayerQualified)),
+                    GetMainClipInLayer(index.ByLayerQualified(clip.animationLayerQualifiedId)),
                     clip,
                     clipTime);
             }

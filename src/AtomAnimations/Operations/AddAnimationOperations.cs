@@ -37,7 +37,7 @@ namespace VamTimeline
                 return new List<CreatedAnimation> { AddAnimation(_clip, animationName, position, copySettings, copyKeyframes) };
 
             var result = GetSameNameAnimationsInSegment()
-                .Where(c => _animation.index.ByLayer(c.animationLayerQualified).All(c2 => c2.animationName != animationName))
+                .Where(c => _animation.index.ByLayerQualified(c.animationLayerQualifiedId).All(c2 => c2.animationName != animationName))
                 .Select(c => AddAnimation(c, animationName, position, copySettings, copyKeyframes))
                 .ToList();
 

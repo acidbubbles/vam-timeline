@@ -172,7 +172,7 @@ namespace VamTimeline
             else if (source.nextAnimationNameId == AtomAnimationClip.RandomizeAnimationNameId)
             {
                 var candidates = index
-                    .ByLayer(source.animationLayerQualified)
+                    .ByLayerQualified(source.animationLayerQualifiedId)
                     .Where(c => c.animationName != source.animationName)
                     .ToList();
                 if (candidates.Count == 0) return;
@@ -181,7 +181,7 @@ namespace VamTimeline
             else if (source.nextAnimationGroupId != -1)
             {
                 var candidates = index
-                    .ByLayer(source.animationLayerQualified)
+                    .ByLayerQualified(source.animationLayerQualifiedId)
                     .Where(c => c.animationName != source.animationName)
                     .Where(c => c.animationNameGroupId == source.nextAnimationGroupId)
                     .ToList();
@@ -190,7 +190,7 @@ namespace VamTimeline
             }
             else
             {
-                next = index.ByLayer(source.animationLayerQualified).FirstOrDefault(c => c.animationName == source.nextAnimationName);
+                next = index.ByLayerQualified(source.animationLayerQualifiedId).FirstOrDefault(c => c.animationName == source.nextAnimationName);
             }
 
             if (next == null) return;
