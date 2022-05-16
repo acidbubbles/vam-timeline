@@ -232,9 +232,21 @@ namespace VamTimeline
 
         public class Comparer : IComparer<FreeControllerV3AnimationTarget>
         {
-            public int Compare(FreeControllerV3AnimationTarget t1, FreeControllerV3AnimationTarget t2)
+            public int Compare(FreeControllerV3AnimationTarget x, FreeControllerV3AnimationTarget y)
             {
-                return string.Compare(t1.animatableRef.name, t2.animatableRef.name, StringComparison.Ordinal);
+                if (x?.animatableRef.controller == null || y?.animatableRef.controller == null)
+                    return 0;
+
+                if (x.animatableRef.controller.containingAtom != y.animatableRef.controller.containingAtom)
+                {
+                    if (x.animatableRef.owned)
+                        return -1;
+                    if (y.animatableRef.owned)
+                        return 1;
+                    return string.Compare(x.animatableRef.controller.containingAtom.name, y.animatableRef.controller.containingAtom.name, StringComparison.Ordinal);
+                }
+
+                return string.Compare(x.animatableRef.controller.name, y.animatableRef.controller.name, StringComparison.Ordinal);
             }
         }
     }
