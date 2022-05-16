@@ -198,7 +198,7 @@ namespace VamTimeline
             return null;
         }
 
-        private TransitionTarget[] _mainAndBestSiblingPerLayerCache = null;
+        private TransitionTarget[] _mainAndBestSiblingPerLayerCache = new TransitionTarget[0];
         private IList<TransitionTarget> GetMainAndBestSiblingPerLayer(string animationSegment, string animationName, string animationSet)
         {
             AtomAnimationsClipsIndex.IndexedSegment sharedLayers;

@@ -283,14 +283,13 @@ namespace VamTimeline
             animationEditContext.StopAndReset();
         }
 
+        private readonly object[] _sendTimeMessage = new object[3] { nameof(SendTime), null, null };
         public void SendTime(AtomAnimationClip clip)
         {
             if (syncing) return;
-            SendTimelineEvent(new object[]{
-                 nameof(SendTime), // 0
-                 clip.animationName, // 1
-                 clip.clipTime // 2
-            });
+            _sendTimeMessage[1] = clip.animationName;
+            _sendTimeMessage[2] = clip.clipTime;
+            SendTimelineEvent(_sendTimeMessage);
         }
 
         private void ReceiveTime(object[] e)
