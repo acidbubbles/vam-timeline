@@ -159,7 +159,7 @@ namespace VamTimeline
             {
                 if (stopped)
                 {
-                    valueText.text = "Storable is unavailable";
+                    valueText.text = "[Unavailable]";
                 }
                 return;
             }

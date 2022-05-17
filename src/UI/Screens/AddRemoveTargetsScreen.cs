@@ -301,7 +301,7 @@ namespace VamTimeline
             foreach (var storableId in atom.GetStorableIDs().OrderBy(s => s))
             {
                 if (storableId.StartsWith("hairTool")) continue;
-                var storable = plugin.containingAtom.GetStorableByID(storableId);
+                var storable = atom.GetStorableByID(storableId);
                 if (storable == null) continue;
                 if ((storable.GetFloatParamNames()?.Count ?? 0) > 0)
                     yield return storableId;
@@ -338,12 +338,12 @@ namespace VamTimeline
 
             var values = storable.GetFloatParamNames() ?? new List<string>();
             var reservedByOtherLayers = new HashSet<string>(animation.clips
-                .Where(c => current.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == current.animationSegment)
+                .Where(c => current.isOnSharedSegment || c.isOnSharedSegment || c.animationSegmentId == current.animationSegmentId)
                 .SelectMany(c => c.targetFloatParams)
-                .Where(t => t.animatableRef.storableId == storable.storeId)
-                .Select(t => t.animatableRef.floatParamName));
+                .Where(t => t.animatableRef.EnsureAvailable())
+                .Where(t => t.animatableRef.storable == storable)
+                .Select(t => t.animatableRef.floatParam.name));
             _addParamListJSON.choices = values
-                .Where(v => !current.targetFloatParams.Any(t => t.animatableRef.storableId == storable.storeId && t.animatableRef.floatParamName == v))
                 .Where(v => !reservedByOtherLayers.Contains(v))
                 .OrderBy(v => v)
                 .ToList();
@@ -483,7 +483,7 @@ namespace VamTimeline
                     foreach (var floatParamRef in allFloatParams)
                     {
                         if (clip.targetFloatParams.Any(t => t.animatableRef.floatParamName == floatParamRef.floatParam.name)) continue;
-                        var storableFloat = animation.animatables.GetOrCreateStorableFloat(floatParamRef.storable, floatParamRef.floatParam);
+                        var storableFloat = animation.animatables.GetOrCreateStorableFloat(floatParamRef.storable, floatParamRef.floatParam, floatParamRef.storable.containingAtom == plugin.containingAtom);
                         var target = clip.Add(storableFloat);
                         if (target == null) continue;
                         if (!target.animatableRef.EnsureAvailable(false)) continue;
@@ -614,7 +614,7 @@ namespace VamTimeline
 
             foreach (var clip in currentLayer)
             {
-                var storableFloat = animation.animatables.GetOrCreateStorableFloat(storable, jsf);
+                var storableFloat = animation.animatables.GetOrCreateStorableFloat(storable, jsf, storable.containingAtom == plugin.containingAtom);
                 var added = clip.Add(storableFloat);
                 if (added == null) continue;
 

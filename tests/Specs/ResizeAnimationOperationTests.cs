@@ -264,7 +264,7 @@ namespace VamTimeline
         private static JSONStorableFloatAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
         {
             var storable = context.gameObject.AddComponent<JSONStorable>();
-            var floatParam = new JSONStorableFloatRef(storable, new JSONStorableFloat("Test", 0, 0, 1));
+            var floatParam = new JSONStorableFloatRef(storable, new JSONStorableFloat("Test", 0, 0, 1), true);
             var target = clip.Add(floatParam);
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, 0f);

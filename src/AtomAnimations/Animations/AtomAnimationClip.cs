@@ -605,11 +605,20 @@ namespace VamTimeline
                     groupLabel = $"{group.Key.name} controls";
                 yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = groupLabel };
             }
-            foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storableId))
+            foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storable))
             {
-                var groupLabel = group.Key;
-                if (groupLabel.StartsWith("plugin#"))
-                    groupLabel = groupLabel.Substring(6);
+                var storable = group.Key;
+                string groupLabel;
+                if (storable == null)
+                {
+                    groupLabel = "[Deleted]";
+                }
+                else
+                {
+                    groupLabel = group.Key.name;
+                    if (groupLabel.StartsWith("plugin#"))
+                        groupLabel = groupLabel.Substring(6);
+                }
                 yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = groupLabel };
             }
         }

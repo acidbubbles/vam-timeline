@@ -230,6 +230,11 @@ namespace VamTimeline
                 if (controllerRef.controller == null)
                     throw new InvalidOperationException("Timeline: An external controller has been removed");
             }
+            foreach (var floatParamRef in animatables.storableFloats)
+            {
+                if(!floatParamRef.EnsureAvailable())
+                    throw new InvalidOperationException($"Timeline: The storable {floatParamRef.storableId} has been removed");
+            }
         }
 
         private void PlaySiblings(AtomAnimationClip clip)

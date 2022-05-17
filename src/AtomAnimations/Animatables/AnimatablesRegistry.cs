@@ -16,21 +16,21 @@ namespace VamTimeline
 
         public IList<JSONStorableFloatRef> storableFloats => _storableFloats;
 
-        public JSONStorableFloatRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
+        public JSONStorableFloatRef GetOrCreateStorableFloat(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
-            var t = _storableFloats.FirstOrDefault(x => x.Targets(storableId, floatParamName));
+            var t = _storableFloats.FirstOrDefault(x => x.Targets(atom, storableId, floatParamName));
             if (t != null) return t;
-            t = new JSONStorableFloatRef(atom, storableId, floatParamName, assignMinValueOnBound, assignMaxValueOnBound);
+            t = new JSONStorableFloatRef(atom, storableId, floatParamName, owned, assignMinValueOnBound, assignMaxValueOnBound);
             _storableFloats.Add(t);
             RegisterAnimatableRef(t);
             return t;
         }
 
-        public JSONStorableFloatRef GetOrCreateStorableFloat(JSONStorable storable, JSONStorableFloat floatParam)
+        public JSONStorableFloatRef GetOrCreateStorableFloat(JSONStorable storable, JSONStorableFloat floatParam, bool owned)
         {
             var t = _storableFloats.FirstOrDefault(x => x.Targets(storable, floatParam));
             if (t != null) return t;
-            t = new JSONStorableFloatRef(storable, floatParam);
+            t = new JSONStorableFloatRef(storable, floatParam, owned);
             _storableFloats.Add(t);
             RegisterAnimatableRef(t);
             return t;

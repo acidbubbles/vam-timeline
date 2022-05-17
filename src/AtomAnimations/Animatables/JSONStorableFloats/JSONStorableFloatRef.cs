@@ -11,6 +11,7 @@ namespace VamTimeline
         private bool _available;
         private readonly Atom _atom;
         private int _lastAvailableCheck;
+        public readonly bool owned;
         public float? assignMinValueOnBound {get; private set; }
         public float? assignMaxValueOnBound {get; private set; }
         public readonly string storableId;
@@ -18,9 +19,10 @@ namespace VamTimeline
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
 
-        public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
+        public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
             _atom = atom;
+            this.owned = owned;
             this.storableId = storableId;
             this.floatParamName = floatParamName;
             if (this.floatParamName.StartsWith("morph: "))
@@ -39,9 +41,10 @@ namespace VamTimeline
             }
         }
 
-        public JSONStorableFloatRef(JSONStorable storable, JSONStorableFloat floatParam)
-            : this(storable.containingAtom, storable.storeId, floatParam.name)
+        public JSONStorableFloatRef(JSONStorable storable, JSONStorableFloat floatParam, bool owned)
+            : this(storable.containingAtom, storable.storeId, floatParam.name, owned)
         {
+            _atom = storable.containingAtom;
             this.storable = storable;
             this.floatParam = floatParam;
             _available = true;
@@ -49,6 +52,9 @@ namespace VamTimeline
 
         public override string GetShortName()
         {
+            if (!owned && storable == null)
+                return "[Deleted]";
+
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
             return floatParamName;
@@ -56,9 +62,19 @@ namespace VamTimeline
 
         public override string GetFullName()
         {
+            if (!owned && storable == null)
+                return "[Deleted]";
+
+            if (!owned)
+            {
+                if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
+                    return $"{_atom.name} {floatParam.altName}";
+                return $"{_atom.name} {storableId} {floatParamName}";
+            }
+
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
-            return floatParamName;
+            return $"{storableId} {floatParamName}";
         }
 
         public float val
@@ -99,7 +115,7 @@ namespace VamTimeline
         private bool TryBind(bool silent)
         {
             if (SuperController.singleton.isLoading) return false;
-            var storable = _atom.GetStorableByID(storableId);
+            storable = _atom.GetStorableByID(storableId);
             if (storable == null)
             {
                 if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a storable '{storableId}'. It might be loading, try again later.");
@@ -119,15 +135,13 @@ namespace VamTimeline
                     morph.animatable = true;
             }
 #endif
-            var floatParam = storable.GetFloatJSONParam(floatParamName);
+            floatParam = storable.GetFloatJSONParam(floatParamName);
             if (floatParam == null)
             {
                 if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
                 return false;
             }
 
-            this.storable = storable;
-            this.floatParam = floatParam;
             floatParamName = IsMorph() ? floatParam.altName : floatParam.name;
             _available = true;
             return true;
@@ -176,8 +190,9 @@ namespace VamTimeline
             }
         }
 
-        public bool Targets(string storableId, string floatParamName)
+        public bool Targets(Atom atom, string storableId, string floatParamName)
         {
+            if (_atom != atom) return false;
             if (this.storableId != storableId) return false;
             if (this.floatParamName == floatParamName) return true;
             if (floatParamName.StartsWith("morph: ")) floatParamName = floatParamName.Substring("morph: ".Length);
@@ -187,7 +202,7 @@ namespace VamTimeline
 
         public bool Targets(JSONStorable storable, JSONStorableFloat floatParam)
         {
-            return Targets(storable.storeId, floatParam.name);
+            return Targets(storable.containingAtom, storable.storeId, floatParam.name);
         }
 
         public bool IsMorph()

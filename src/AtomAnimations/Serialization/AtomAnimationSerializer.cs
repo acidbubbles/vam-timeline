@@ -197,16 +197,37 @@ namespace VamTimeline
             {
                 foreach (JSONClass paramJSON in floatParamsJSON)
                 {
+                    var atomUid = paramJSON["Atom"].Value;
                     var storableId = paramJSON["Storable"].Value;
                     var floatParamName = paramJSON["Name"].Value;
+                    Atom atom;
+                    if (string.IsNullOrEmpty(atomUid))
+                    {
+                        atom = _atom;
+                    }
+                    else
+                    {
+                        atom = SuperController.singleton.GetAtomByUid(atomUid);
+                        if (atom == null)
+                        {
+                            SuperController.LogError($"Timeline: Cannot import storable float param '{storableId}' / '{floatParamName}' from atom '{atomUid}' because this atom doesn't exist.");
+                            continue;
+                        }
+                    }
                     var floatParamRef = targetsRegistry.GetOrCreateStorableFloat(
-                        _atom,
+                        atom,
                         storableId,
                         floatParamName,
+                        true,
                         paramJSON.HasKey("Min") ? (float?)paramJSON["Min"].AsFloat : null,
                         paramJSON.HasKey("Max") ? (float?)paramJSON["Max"].AsFloat : null
                     );
                     var target = clip.Add(floatParamRef);
+                    if (target == null)
+                    {
+                        SuperController.LogError($"Timeline: Float param {atom.name} / {storableId} / {floatParamName} was added more than once. Dropping second instance.");
+                        continue;
+                    }
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -489,7 +510,11 @@ namespace VamTimeline
                         { "RotW", SerializeCurve(controller.rotW) }
                     };
                 if (!controller.animatableRef.owned)
+                {
+                    if (controller.animatableRef.controller == null)
+                        continue;
                     controllerJSON["Atom"] = controller.animatableRef.controller.containingAtom.uid;
+                }
                 if (controller.parentRigidbodyId != null)
                 {
                     controllerJSON["Parent"] = new JSONClass{
@@ -515,6 +540,12 @@ namespace VamTimeline
                         { "Name", target.animatableRef.floatParamName },
                         { "Value", SerializeCurve(target.value) }
                     };
+                if (!target.animatableRef.owned)
+                {
+                    if (!target.animatableRef.EnsureAvailable())
+                        continue;
+                    paramJSON["Atom"] = target.animatableRef.storable.containingAtom.uid;
+                }
                 var min = target.animatableRef.floatParam?.min ?? target.animatableRef.assignMinValueOnBound;
                 if (min != null) paramJSON["Min"] = min.Value.ToString(CultureInfo.InvariantCulture);
                 var max = target.animatableRef.floatParam?.max ?? target.animatableRef.assignMaxValueOnBound;

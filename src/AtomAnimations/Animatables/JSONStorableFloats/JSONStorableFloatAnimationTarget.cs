@@ -167,9 +167,21 @@ namespace VamTimeline
 
         public class Comparer : IComparer<JSONStorableFloatAnimationTarget>
         {
-            public int Compare(JSONStorableFloatAnimationTarget t1, JSONStorableFloatAnimationTarget t2)
+            public int Compare(JSONStorableFloatAnimationTarget x, JSONStorableFloatAnimationTarget y)
             {
-                return string.Compare(t1.name, t2.name, StringComparison.Ordinal);
+                if (x?.animatableRef.storable == null || y?.animatableRef.storable == null)
+                    return 0;
+
+                if (x.animatableRef.storable.containingAtom != y.animatableRef.storable.containingAtom)
+                {
+                    if (x.animatableRef.owned)
+                        return -1;
+                    if (y.animatableRef.owned)
+                        return 1;
+                    return string.Compare(x.animatableRef.storable.containingAtom.name, y.animatableRef.storable.containingAtom.name, StringComparison.Ordinal);
+                }
+
+                return string.Compare(x.animatableRef.storable.name, y.animatableRef.storable.name, StringComparison.Ordinal);
             }
         }
     }
