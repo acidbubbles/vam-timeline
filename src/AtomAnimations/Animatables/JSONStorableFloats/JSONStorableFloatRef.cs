@@ -15,6 +15,7 @@ namespace VamTimeline
         public float? assignMinValueOnBound {get; private set; }
         public float? assignMaxValueOnBound {get; private set; }
         public readonly string storableId;
+        private readonly string _shortenedStorableId;
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
@@ -23,6 +24,7 @@ namespace VamTimeline
         {
             _atom = atom;
             this.owned = owned;
+            if (storableId == null) throw new ArgumentNullException(nameof(storableId));
             this.storableId = storableId;
             this.floatParamName = floatParamName;
             if (this.floatParamName.StartsWith("morph: "))
@@ -39,6 +41,11 @@ namespace VamTimeline
                 this.assignMinValueOnBound = assignMinValueOnBound;
                 this.assignMaxValueOnBound = assignMaxValueOnBound;
             }
+
+            if (storableId.StartsWith("plugin#"))
+                _shortenedStorableId = storableId.Substring(6);
+            else
+                _shortenedStorableId = storableId;
         }
 
         public JSONStorableFloatRef(JSONStorable storable, JSONStorableFloat floatParam, bool owned)
@@ -50,31 +57,48 @@ namespace VamTimeline
             _available = true;
         }
 
+        public override object groupKey => storable != null ? (object)storable : storableId;
+
+        public override string groupLabel
+        {
+            get
+            {
+                if (!owned)
+                {
+                    if (storable == null)
+                        return $"[Deleted: {_shortenedStorableId}]";
+                    return $"{storable.containingAtom.name} {_shortenedStorableId}";
+                }
+                return _shortenedStorableId;
+            }
+        }
+
         public override string GetShortName()
         {
             if (!owned && storable == null)
-                return "[Deleted]";
+                return $"[Deleted: {_shortenedStorableId} / {floatParamName}]";
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
+
             return floatParamName;
         }
 
         public override string GetFullName()
         {
             if (!owned && storable == null)
-                return "[Deleted]";
+                return $"[Deleted: {(_atom != null ? _atom.name : "?")} / {_shortenedStorableId} / {floatParamName}]";
 
             if (!owned)
             {
                 if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                     return $"{_atom.name} {floatParam.altName}";
-                return $"{_atom.name} {storableId} {floatParamName}";
+                return $"{_atom.name} {_shortenedStorableId} {floatParamName}";
             }
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
-            return $"{storableId} {floatParamName}";
+            return $"{_shortenedStorableId} {floatParamName}";
         }
 
         public float val
@@ -143,6 +167,7 @@ namespace VamTimeline
             }
 
             floatParamName = IsMorph() ? floatParam.altName : floatParam.name;
+
             _available = true;
             return true;
         }

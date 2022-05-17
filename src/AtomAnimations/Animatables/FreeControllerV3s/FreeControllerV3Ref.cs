@@ -31,6 +31,22 @@
             }
         }
 
+        public override object groupKey => controller != null ? (object)controller.containingAtom : 0;
+
+        public override string groupLabel
+        {
+            get
+            {
+                if (!owned)
+                {
+                    if (controller == null)
+                        return "[Deleted]";
+                    return $"{controller.containingAtom.name} controls";
+                }
+                return "Controls";
+            }
+        }
+
         public override string GetShortName()
         {
             if (!owned && controller == null)

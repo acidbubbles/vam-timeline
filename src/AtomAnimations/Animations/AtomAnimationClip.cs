@@ -593,33 +593,13 @@ namespace VamTimeline
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
         {
             yield return targetTriggers;
-            foreach (var group in targetControllers.GroupBy(t => t.animatableRef.controller != null ? t.animatableRef.controller.containingAtom : null))
+            foreach (var group in targetControllers.GroupBy(t => t.animatableRef.groupKey))
             {
-                var atom = group.Key;
-                string groupLabel;
-                if (atom == null)
-                    groupLabel = "[Deleted]";
-                else if (group.First().animatableRef.owned)
-                    groupLabel = "Controls";
-                else
-                    groupLabel = $"{group.Key.name} controls";
-                yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = groupLabel };
+                yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = group.First().animatableRef.groupLabel };
             }
-            foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.storable))
+            foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.groupKey))
             {
-                var storable = group.Key;
-                string groupLabel;
-                if (storable == null)
-                {
-                    groupLabel = "[Deleted]";
-                }
-                else
-                {
-                    groupLabel = group.Key.name;
-                    if (groupLabel.StartsWith("plugin#"))
-                        groupLabel = groupLabel.Substring(6);
-                }
-                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = groupLabel };
+                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = group.First().animatableRef.groupLabel };
             }
         }
 

@@ -3,6 +3,8 @@
     public class TriggersTrackRef : AnimatableRefBase
     {
         public override string name => _name;
+        public override object groupKey => null;
+        public override string groupLabel => "Triggers";
 
         public bool live;
         private string _name;

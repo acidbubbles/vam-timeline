@@ -20,6 +20,8 @@ namespace VamTimeline
         public bool collapsed { get; set; }
 
         public abstract string name { get; }
+        public abstract object groupKey { get; }
+        public abstract string groupLabel { get; }
         public abstract string GetShortName();
         public abstract string GetFullName();
     }
