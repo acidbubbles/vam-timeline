@@ -218,7 +218,7 @@ namespace VamTimeline
                         atom,
                         storableId,
                         floatParamName,
-                        true,
+                        atom == _atom,
                         paramJSON.HasKey("Min") ? (float?)paramJSON["Min"].AsFloat : null,
                         paramJSON.HasKey("Max") ? (float?)paramJSON["Max"].AsFloat : null
                     );
@@ -494,37 +494,41 @@ namespace VamTimeline
         private static void SerializeClipTargets(AtomAnimationClip clip, JSONClass clipJSON)
         {
             var controllersJSON = new JSONArray();
-            foreach (var controller in clip.targetControllers)
+            foreach (var target in clip.targetControllers)
             {
                 var controllerJSON = new JSONClass
                     {
-                        { "Controller", controller.animatableRef.name },
-                        { "ControlPosition", controller.controlPosition ? "1" : "0" },
-                        { "ControlRotation", controller.controlRotation ? "1" : "0" },
-                        { "X", SerializeCurve(controller.x) },
-                        { "Y", SerializeCurve(controller.y) },
-                        { "Z", SerializeCurve(controller.z) },
-                        { "RotX", SerializeCurve(controller.rotX) },
-                        { "RotY", SerializeCurve(controller.rotY) },
-                        { "RotZ", SerializeCurve(controller.rotZ) },
-                        { "RotW", SerializeCurve(controller.rotW) }
+                        { "Controller", target.animatableRef.name },
+                        { "ControlPosition", target.controlPosition ? "1" : "0" },
+                        { "ControlRotation", target.controlRotation ? "1" : "0" },
+                        { "X", SerializeCurve(target.x) },
+                        { "Y", SerializeCurve(target.y) },
+                        { "Z", SerializeCurve(target.z) },
+                        { "RotX", SerializeCurve(target.rotX) },
+                        { "RotY", SerializeCurve(target.rotY) },
+                        { "RotZ", SerializeCurve(target.rotZ) },
+                        { "RotW", SerializeCurve(target.rotW) }
                     };
-                if (!controller.animatableRef.owned)
+                if (!target.animatableRef.owned)
                 {
-                    if (controller.animatableRef.controller == null)
+                    if (target.animatableRef.controller == null)
+                    {
+                        SuperController.LogError($"Timeline: A target controller does not exist and will not be saved");
                         continue;
-                    controllerJSON["Atom"] = controller.animatableRef.controller.containingAtom.uid;
+                    }
+
+                    controllerJSON["Atom"] = target.animatableRef.controller.containingAtom.uid;
                 }
-                if (controller.parentRigidbodyId != null)
+                if (target.parentRigidbodyId != null)
                 {
                     controllerJSON["Parent"] = new JSONClass{
-                        {"Atom", controller.parentAtomId },
-                        {"Rigidbody", controller.parentRigidbodyId}
+                        {"Atom", target.parentAtomId },
+                        {"Rigidbody", target.parentRigidbodyId}
                     };
                 }
-                if (controller.weight != 1f)
+                if (target.weight != 1f)
                 {
-                    controllerJSON["Weight"] = controller.weight.ToString(CultureInfo.InvariantCulture);
+                    controllerJSON["Weight"] = target.weight.ToString(CultureInfo.InvariantCulture);
                 }
                 controllersJSON.Add(controllerJSON);
             }
@@ -543,7 +547,10 @@ namespace VamTimeline
                 if (!target.animatableRef.owned)
                 {
                     if (!target.animatableRef.EnsureAvailable())
+                    {
+                        SuperController.LogError($"Timeline: Target {target.animatableRef.storableId} / {target.animatableRef.floatParamName} does not exist and will not be saved");
                         continue;
+                    }
                     paramJSON["Atom"] = target.animatableRef.storable.containingAtom.uid;
                 }
                 var min = target.animatableRef.floatParam?.min ?? target.animatableRef.assignMinValueOnBound;
