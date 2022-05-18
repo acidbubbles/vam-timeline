@@ -14,14 +14,19 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            if (animation.clips.Any(c => c.isOnSharedSegment || c.isOnNoneSegment))
+            if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
             {
                 prefabFactory.CreateHeader("Animations", 1);
                 InitClipsUI(AtomAnimationClip.SharedAnimationSegmentId);
                 prefabFactory.CreateSpacer();
             }
 
-            if (current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
+            if (current.animationSegmentId == AtomAnimationClip.NoneAnimationSegmentId)
+            {
+                prefabFactory.CreateHeader($"Animations", 1);
+                InitClipsUI(current.animationSegmentId);
+                prefabFactory.CreateSpacer();
+            } else if (current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
             {
                 prefabFactory.CreateHeader($"{current.animationSegment} animations", 1);
                 InitClipsUI(current.animationSegmentId);
