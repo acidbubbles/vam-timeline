@@ -564,12 +564,10 @@ namespace VamTimeline
 
         public AtomAnimationClip(string animationName, string animationLayer, string animationSegment, Logger logger)
         {
-            _animationName = animationName;
-            _animationLayer = animationLayer;
-            _animationSegment = animationSegment;
             _logger = logger;
-            UpdateAnimationNameGroup();
-            UpdateAnimationNameQualified();
+            this.animationName = animationName;
+            this.animationLayer = animationLayer;
+            this.animationSegment = animationSegment;
         }
 
         public bool IsEmpty()

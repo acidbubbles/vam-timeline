@@ -23,7 +23,7 @@ namespace VamTimeline
 
             // Right side
 
-            prefabFactory.CreateHeader("Create", 1);
+            prefabFactory.CreateHeader("Create animation", 1);
 
             InitNewClipNameUI();
             InitNewPositionUI();

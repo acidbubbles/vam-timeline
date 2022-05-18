@@ -19,7 +19,7 @@ namespace VamTimeline
             base.Init(plugin, arg);
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Create", 1);
+            prefabFactory.CreateHeader("Create layer", 1);
 
             InitNewClipNameUI();
             InitNewLayerNameUI();

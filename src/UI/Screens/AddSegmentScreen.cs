@@ -22,12 +22,13 @@ namespace VamTimeline
                 prefabFactory.CreateSpacer();
                 prefabFactory.CreateHeader("Segments", 1);
 
+                InitNewSegmentNameUI();
                 InitUseSegments();
             }
             else
             {
                 prefabFactory.CreateSpacer();
-                prefabFactory.CreateHeader("Create", 1);
+                prefabFactory.CreateHeader("Create segment", 1);
 
                 InitNewClipNameUI();
                 InitNewLayerNameUI();
@@ -46,9 +47,9 @@ namespace VamTimeline
                 prefabFactory.CreateHeader("More", 2);
 
                 CreateChangeScreenButton("<i>Create <b>shared segment</b>...</i>", AddSharedSegmentScreen.ScreenName);
-
-                RefreshUI();
             }
+
+            RefreshUI();
         }
 
         public void InitUseSegments()
@@ -82,7 +83,7 @@ namespace VamTimeline
         private void UseSegments()
         {
             var previousAnimationSegment = current.animationSegment;
-            var animationSegment = animation.GetUniqueSegmentName("Segment 1");
+            var animationSegment = !string.IsNullOrEmpty(segmentNameJSON.val) ? segmentNameJSON.val : animation.GetUniqueSegmentName("Segment 1");
             foreach (var clip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].layers.SelectMany(l => l))
             {
                 clip.animationSegment = animationSegment;
@@ -156,13 +157,15 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            clipNameJSON.val = animation.GetUniqueAnimationName(current);
-            layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
-            segmentNameJSON.val = animation.GetUniqueSegmentName(current);
+            if (clipNameJSON != null) clipNameJSON.val = animation.GetUniqueAnimationName(current);
+            if (layerNameJSON != null) layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
+            if (segmentNameJSON != null) segmentNameJSON.val = current.isOnNoneSegment ? "Segment 1" : animation.GetUniqueSegmentName(current);
         }
 
         protected override void OptionsUpdated()
         {
+            if (clipNameJSON == null) return;
+
             var isValid =
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
                 animation.clips.All(c => c.animationName != clipNameJSON.val) &&
