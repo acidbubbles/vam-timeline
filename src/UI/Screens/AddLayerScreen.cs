@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEngine.UI;
 
 namespace VamTimeline
 {
@@ -11,6 +12,7 @@ namespace VamTimeline
         private JSONStorableBool _createAllAnimationsJSON;
         private UIDynamicButton _createLayerUI;
         private UIDynamicButton _splitLayerUI;
+        private UIDynamicToggle _createAllAnimationsUI;
 
         #region Init
 
@@ -26,22 +28,20 @@ namespace VamTimeline
             InitCreateAllAnimationsUI();
             InitCreateInOtherAtomsUI();
             InitCreateLayerUI();
-
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Advanced", 2);
-
             InitSplitLayerUI();
 
             RefreshUI();
+
+            animation.animatables.onTargetsSelectionChanged.AddListener(RefreshUI);
         }
 
         private void InitCreateAllAnimationsUI()
         {
-            _createAllAnimationsJSON = new JSONStorableBool("Create all layer animations", false, val =>
+            _createAllAnimationsJSON = new JSONStorableBool("Create same animations as current", false, val =>
             {
                 if (val) clipNameJSON.val = current.animationName;
             });
-            prefabFactory.CreateToggle(_createAllAnimationsJSON);
+            _createAllAnimationsUI = prefabFactory.CreateToggle(_createAllAnimationsJSON);
         }
 
         private void InitCreateLayerUI()
@@ -52,7 +52,7 @@ namespace VamTimeline
 
         private void InitSplitLayerUI()
         {
-            _splitLayerUI = prefabFactory.CreateButton("Split selected targets to new layer");
+            _splitLayerUI = prefabFactory.CreateButton("Split targets to new layer");
             _splitLayerUI.button.onClick.AddListener(SplitLayer);
         }
 
@@ -102,9 +102,25 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            #warning Easy add layer from selected (reuse same button? suggest anim name?)
-            clipNameJSON.val = current.animationName;
-            layerNameJSON.val = animation.GetUniqueLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
+            var selected = animationEditContext.GetSelectedTargets().ToList();
+            if (selected.Count == 0)
+            {
+                _splitLayerUI.label = "Split targets to new layer";
+                clipNameJSON.val = current.animationName;
+                clipNameUI.GetComponent<InputField>().interactable = true;
+                layerNameJSON.val = animation.GetUniqueLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
+                _createAllAnimationsJSON.val = false;
+                _createAllAnimationsUI.toggle.interactable = true;
+            }
+            else
+            {
+                _splitLayerUI.label = $"Split {selected.Count} targets to new layer";
+                clipNameJSON.val = "[AUTO]";
+                clipNameUI.GetComponent<InputField>().interactable = false;
+                layerNameJSON.val = animation.GetUniqueLayerName(current, selected[0].name);
+                _createAllAnimationsJSON.val = true;
+                _createAllAnimationsUI.toggle.interactable = false;
+            }
         }
 
         protected override void OptionsUpdated()
@@ -120,8 +136,23 @@ namespace VamTimeline
                 !string.IsNullOrEmpty(layerNameJSON.val) &&
                 !currentSegment.layerNames.Contains(layerNameJSON.val);
 
-            _createLayerUI.button.interactable = nameValid;
-            _splitLayerUI.button.interactable = nameValid;
+            var selected = animationEditContext.GetSelectedTargets().ToList();
+            if (selected.Count == 0)
+            {
+                _createLayerUI.button.interactable = nameValid;
+                _splitLayerUI.button.interactable = false;
+            }
+            else
+            {
+                _createLayerUI.button.interactable = false;
+                _splitLayerUI.button.interactable = nameValid;
+            }
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            animation.animatables.onTargetsSelectionChanged.RemoveListener(RefreshUI);
         }
     }
 }

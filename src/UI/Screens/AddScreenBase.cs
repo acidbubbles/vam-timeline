@@ -9,6 +9,7 @@
         protected JSONStorableString segmentNameJSON;
         protected JSONStorableBool createInOtherAtomsJSON;
         protected JSONStorableStringChooser createPositionJSON;
+        protected UIDynamicTextField clipNameUI;
 
         #region Init
 
@@ -24,7 +25,7 @@
         protected void InitNewClipNameUI()
         {
             clipNameJSON = new JSONStorableString("New animation name", "", (string _) => OptionsUpdated());
-            prefabFactory.CreateTextInput(clipNameJSON);
+            clipNameUI = prefabFactory.CreateTextInput(clipNameJSON);
         }
 
         protected void InitNewLayerNameUI(string label = "New layer name")
