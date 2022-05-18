@@ -8,6 +8,7 @@ namespace VamTimeline
         public class IndexedSegment
         {
             public readonly Dictionary<int, List<AtomAnimationClip>> layersMapById = new Dictionary<int, List<AtomAnimationClip>>();
+            public readonly Dictionary<int, List<AtomAnimationClip>> clipMapByNameId = new Dictionary<int, List<AtomAnimationClip>>();
             public readonly List<List<AtomAnimationClip>> layers = new List<List<AtomAnimationClip>>();
             public readonly List<string> layerNames = new List<string>();
             public readonly List<int> layerIds = new List<int>();
@@ -24,10 +25,18 @@ namespace VamTimeline
                     layerIds.Add(clip.animationLayerId);
                 }
                 layer.Add(clip);
+
+                List<AtomAnimationClip> clips;
+                if (!clipMapByNameId.TryGetValue(clip.animationNameId, out clips))
+                {
+                    clips = new List<AtomAnimationClip>();
+                    clipMapByNameId.Add(clip.animationNameId, clips);
+                }
+                clips.Add(clip);
             }
         }
 
-        public IEnumerable<string> clipNames => _clipsByName.Keys;
+        public IEnumerable<string> clipNames => _clipsByName.Select(kvp => kvp.Value[0].animationName);
 
         private readonly List<AtomAnimationClip> _clips;
 
@@ -38,7 +47,7 @@ namespace VamTimeline
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByLayerNameQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
-        private readonly Dictionary<string, List<AtomAnimationClip>> _clipsByName = new Dictionary<string, List<AtomAnimationClip>>();
+        private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByName = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _firstClipOfLayerBySetQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
@@ -94,10 +103,10 @@ namespace VamTimeline
 
                 {
                     List<AtomAnimationClip> nameClips;
-                    if (!_clipsByName.TryGetValue(clip.animationName, out nameClips))
+                    if (!_clipsByName.TryGetValue(clip.animationNameId, out nameClips))
                     {
                         nameClips = new List<AtomAnimationClip>();
-                        _clipsByName.Add(clip.animationName, nameClips);
+                        _clipsByName.Add(clip.animationNameId, nameClips);
                     }
                     nameClips.Add(clip);
                 }
@@ -169,8 +178,34 @@ namespace VamTimeline
 
         public IList<AtomAnimationClip> ByName(string name)
         {
+            return ByName(name.ToId());
+        }
+
+        public IList<AtomAnimationClip> ByName(string animationSegment, string animationName)
+        {
+            return ByName(animationSegment.ToId(), animationName.ToId());
+        }
+
+        public IList<AtomAnimationClip> ByName(int animationSegmentId, int animationNameId)
+        {
+            IndexedSegment segment;
+            if (!segmentsById.TryGetValue(animationSegmentId, out segment))
+            {
+                if (animationSegmentId == AtomAnimationClip.SharedAnimationSegmentId)
+                    return _emptyClipList;
+                if (!segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out segment))
+                    return _emptyClipList;
+            }
             List<AtomAnimationClip> clips;
-            return _clipsByName.TryGetValue(name, out clips) ? clips : _emptyClipList;
+            if (!segment.clipMapByNameId.TryGetValue(animationNameId, out clips))
+                return _emptyClipList;
+            return clips;
+        }
+
+        public IList<AtomAnimationClip> ByName(int id)
+        {
+            List<AtomAnimationClip> clips;
+            return _clipsByName.TryGetValue(id, out clips) ? clips : _emptyClipList;
         }
 
         public IList<AtomAnimationClip> GetSiblingsByLayer(AtomAnimationClip clip)
@@ -180,7 +215,7 @@ namespace VamTimeline
                 ? _firstClipOfLayerBySetQualifiedId.TryGetValue(clip.animationSetQualifiedId, out clips)
                     ? clips
                     : _emptyClipList
-                : ByName(clip.animationName);
+                : ByName(clip.animationNameId);
             for (var i = 0; i < result.Count; i++)
             {
                 if (result[i].animationLayerQualified != clip.animationLayerQualified) continue;

@@ -116,7 +116,7 @@ namespace VamTimeline
         {
             _uninterruptible = new JSONStorableBool("Prevent trigger interruptions", current.uninterruptible, val =>
             {
-                foreach (var clip in animation.GetClips(current.animationName))
+                foreach (var clip in animation.index.ByName(current.animationSegment, current.animationName))
                     clip.uninterruptible = val;
             });
             prefabFactory.CreateToggle(_uninterruptible);
@@ -263,7 +263,7 @@ namespace VamTimeline
 
             if (!current.autoTransitionPrevious)
             {
-                var clipsPointingToHere = animation.clips.Where(c => c != current && c.nextAnimationName == current.animationName).ToList();
+                var clipsPointingToHere = currentLayer.Where(c => c != current && c.nextAnimationNameId == current.animationNameId).ToList();
                 if (clipsPointingToHere.Count == 0 || clipsPointingToHere.Any(c => c.autoTransitionNext))
                 {
                     _transitionPreviousJSON.toggle.interactable = false;
@@ -278,7 +278,7 @@ namespace VamTimeline
                 }
                 else
                 {
-                    var targetClip = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.nextAnimationName);
+                    var targetClip = currentLayer.FirstOrDefault(c => c != current && c.animationNameId == current.nextAnimationNameId);
                     if (targetClip == null || targetClip.autoTransitionNext)
                     {
                         _transitionNextJSON.toggle.interactable = false;
@@ -319,7 +319,7 @@ namespace VamTimeline
         private List<string> GetEligibleNextAnimations()
         {
             var animations = currentLayer
-                .Where(c => c.animationName != current.animationName)
+                .Where(c => c != current)
                 .Select(c => c.animationName)
                 .GroupBy(x =>
                 {
@@ -384,7 +384,7 @@ namespace VamTimeline
             var nextName = _nextAnimationJSON.val;
             var randomizeTime = current.preserveLoops ? _randomizeRangeJSON.val.RoundToNearest(current.animationLength) : _randomizeRangeJSON.val.Snap(animationEditContext.snap);
 
-            var clips = animation.index.ByName(current.animationName);
+            var clips = animation.index.ByName(current.animationSegmentId, current.animationNameId);
 
             if (nextName == AtomAnimationClip.SlaveAnimationName)
             {
@@ -492,7 +492,7 @@ namespace VamTimeline
             _nextAnimationRandomizeWeightJSON.valNoCallback = current.nextAnimationRandomizeWeight;
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
-            _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationName).Count > 1 ? _animationSetAuto : "");
+            _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationSegmentId, current.animationNameId).Count > 1 ? _animationSetAuto : "");
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }

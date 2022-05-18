@@ -168,7 +168,7 @@ namespace VamTimeline
 
             var isValid =
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
-                animation.clips.All(c => c.animationName != clipNameJSON.val) &&
+                animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, clipNameJSON.val).Count == 0 &&
                 !string.IsNullOrEmpty(layerNameJSON.val) &&
                 !string.IsNullOrEmpty(segmentNameJSON.val) &&
                 !animation.index.segmentNames.Contains(segmentNameJSON.val);

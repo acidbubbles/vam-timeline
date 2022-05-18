@@ -264,7 +264,7 @@ namespace VamTimeline
                 if (string.IsNullOrEmpty(val)) return;
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
                 _legacyAnimationNext = val;
-                var clip = animation.clips.FirstOrDefault(c => c.animationName == val);
+                var clip = animation.index.ByName(animation.playingAnimationSegment, val).FirstOrDefault() ?? animation.index.ByName(val).FirstOrDefault();
                 if (clip == null) return;
                 if (animationEditContext.current != clip)
                     animationEditContext.SelectAnimation(clip);
@@ -428,7 +428,7 @@ namespace VamTimeline
             }
             else
             {
-                selected = animation.GetClips(_legacyAnimationNext).FirstOrDefault();
+                selected = animation.index.ByName(_legacyAnimationNext).FirstOrDefault();
                 if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using 'Animation' = '{_legacyAnimationNext}')");
                 if (selected == null)
                 {
@@ -774,11 +774,11 @@ namespace VamTimeline
 
             var speedClipJSON = new JSONStorableFloat($"Speed {animationName}", 1f, val =>
             {
-                foreach (var clip in animation.GetClips(animationName))
+                foreach (var clip in animation.index.ByName(animationName))
                     clip.speed = val;
             }, -1f, 5f, false)
             {
-                valNoCallback = animation.GetClips(animationName).First().speed,
+                valNoCallback = animation.index.ByName(animationName).First().speed,
                 isStorable = false,
                 isRestorable = false
             };
@@ -786,11 +786,11 @@ namespace VamTimeline
 
             var weightJSON = new JSONStorableFloat($"Weight {animationName}", 1f, val =>
             {
-                foreach (var clip in animation.GetClips(animationName))
+                foreach (var clip in animation.index.ByName(animationName))
                     clip.weight = val;
             }, 0f, 1f)
             {
-                valNoCallback = animation.GetClips(animationName).First().weight,
+                valNoCallback = animation.index.ByName(animationName).First().weight,
                 isStorable = false,
                 isRestorable = false
             };
@@ -894,7 +894,7 @@ namespace VamTimeline
 
             try
             {
-                var clip = animation.clips.FirstOrDefault(c => c.animationName == animationName);
+                var clip = animation.index.ByName(animation.playingAnimationSegment, animationName).FirstOrDefault() ?? animation.index.ByName(animationName).FirstOrDefault();
                 if (clip == null) return;
                 if (animationEditContext.current != clip)
                     animationEditContext.SelectAnimation(clip);

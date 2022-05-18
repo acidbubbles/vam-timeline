@@ -78,7 +78,7 @@ namespace VamTimeline
         {
             if (clip.autoTransitionPrevious)
             {
-                var previous = clips.FirstOrDefault(c => c.nextAnimationName == clip.animationName);
+                var previous = index.ByName(clip.animationSegmentId, clip.nextAnimationNameId).FirstOrDefault();
                 if (previous != null && (previous.IsDirty() || clip.IsDirty()))
                 {
                     CopySourceFrameToClip(previous, previous.animationLength, clip, 0f);

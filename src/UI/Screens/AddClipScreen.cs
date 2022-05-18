@@ -222,12 +222,13 @@ namespace VamTimeline
         {
             var nameValid =
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
-                animation.index.segmentsById
-                    .Where(s => s.Key != current.animationSegmentId)
-                    .SelectMany(s => s.Value.layers)
-                    .SelectMany(l => l)
-                    .All(c => c.animationName != clipNameJSON.val) &&
-                currentLayer.All(c => c.animationName != clipNameJSON.val);
+                currentLayer.All(c => c.animationName != clipNameJSON.val) &&
+                current.isOnSharedSegment
+                    ? animation.index.segmentsById.Where(kvp => kvp.Key != AtomAnimationClip.SharedAnimationSegmentId)
+                        .SelectMany(l => l.Value.layers)
+                        .SelectMany(l => l)
+                        .All(c => c.animationName != clipNameJSON.val)
+                    : animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, clipNameJSON.val).Count == 0;
 
             _createNewUI.button.interactable = nameValid;
             _splitAtScrubberUI.button.interactable = nameValid;

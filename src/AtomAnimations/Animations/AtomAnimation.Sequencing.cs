@@ -173,24 +173,22 @@ namespace VamTimeline
             {
                 var candidates = index
                     .ByLayerQualified(source.animationLayerQualifiedId)
-                    .Where(c => c.animationName != source.animationName)
+                    .Where(c => c != source)
                     .ToList();
-                if (candidates.Count == 0) return;
                 next = SelectRandomClip(candidates);
             }
             else if (source.nextAnimationGroupId != -1)
             {
                 var candidates = index
                     .ByLayerQualified(source.animationLayerQualifiedId)
-                    .Where(c => c.animationName != source.animationName)
+                    .Where(c => c != source)
                     .Where(c => c.animationNameGroupId == source.nextAnimationGroupId)
                     .ToList();
-                if (candidates.Count == 0) return;
                 next = SelectRandomClip(candidates);
             }
             else
             {
-                next = index.ByLayerQualified(source.animationLayerQualifiedId).FirstOrDefault(c => c.animationName == source.nextAnimationName);
+                next = index.ByLayerQualified(source.animationLayerQualifiedId).FirstOrDefault(c => c.animationNameId == source.nextAnimationNameId);
             }
 
             if (next == null) return;

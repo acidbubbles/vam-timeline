@@ -14,7 +14,7 @@ namespace VamTimeline
 
         private static bool _offsetting;
         private static string _lastOffsetMode;
-        private static string _lastAnim;
+        private static AtomAnimationClip _lastAnim;
         private static float _lastLength = -1f;
         private static float _lastStart = -1f;
         private static float _lastEnd = -1f;
@@ -47,7 +47,7 @@ namespace VamTimeline
 
             _startJSON.valNoCallback = _lastStart == -1f ? 0f : Mathf.Min(_lastStart, current.animationLength);
             _endJSON.valNoCallback = _lastEnd == -1f ? current.animationLength : Mathf.Min(_lastEnd, current.animationLength);
-            if (_endJSON.val <= _startJSON.val || _lastAnim != current.animationName || _lastLength != current.animationLength)
+            if (_endJSON.val <= _startJSON.val || _lastAnim != current || _lastLength != current.animationLength)
             {
                 _startJSON.valNoCallback = 0f;
                 _endJSON.valNoCallback = current.animationLength;
@@ -150,7 +150,7 @@ namespace VamTimeline
             _selectionJSON.val = sb.ToString();
             _lastStart = _startJSON.val;
             _lastEnd = _endJSON.val;
-            _lastAnim = current.animationName;
+            _lastAnim = current;
             _lastLength = current.animationLength;
         }
 

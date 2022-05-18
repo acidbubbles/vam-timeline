@@ -699,7 +699,7 @@ namespace VamTimeline
 
         public void SelectAnimation(string animationNameQualified)
         {
-            var clip = animation.GetClipQualified(animationNameQualified);
+            var clip = animation.clips.FirstOrDefault(c => c.animationNameQualified == animationNameQualified);
             if (clip == null) throw new NullReferenceException($"Could not find animation '{animationNameQualified}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationNameQualified).ToArray())}'.");
             SelectAnimation(clip);
         }

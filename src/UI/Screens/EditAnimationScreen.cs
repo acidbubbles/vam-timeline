@@ -75,7 +75,7 @@ namespace VamTimeline
             var globalSpeedUI = prefabFactory.CreateSlider(_globalSpeedJSON);
             globalSpeedUI.valueFormat = "F3";
 
-            _localSpeedJSON = new JSONStorableFloat("Speed (This)", 1f, val => { foreach (var clip in animation.GetClips(current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
+            _localSpeedJSON = new JSONStorableFloat("Speed (This)", 1f, val => { foreach (var clip in animation.index.ByName(current.animationSegment, current.animationName)) { clip.speed = val; } }, -1f, 5f, false)
             {
                 valNoCallback = current.speed
             };
@@ -205,29 +205,30 @@ namespace VamTimeline
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
+
+            val = val.Trim();
+
+            if (!(current.isOnSharedSegment
+                    ? animation.index.segmentsById.Where(kvp => kvp.Key != AtomAnimationClip.SharedAnimationSegmentId)
+                        .SelectMany(l => l.Value.layers)
+                        .SelectMany(l => l)
+                        .All(c => c.animationName != val)
+                    : animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, val).Count == 0))
+            {
+                _animationNameJSON.valNoCallback = current.animationName;
+                return;
+            }
+
             if (animationEditContext.currentLayer.Any(c => c.animationName == val))
             {
                 _animationNameJSON.valNoCallback = current.animationName;
                 return;
             }
+
             current.animationName = val;
-            var existing = animation.clips.FirstOrDefault(c => c != current && c.animationName == current.animationName);
-            if (existing?.nextAnimationName != null)
+            foreach (var other in currentLayer.Where(c => c.nextAnimationName == previousAnimationName))
             {
-                var next = currentLayer.FirstOrDefault(c => c.animationName == existing.nextAnimationName);
-                if (next != null)
-                {
-                    current.nextAnimationName = next.nextAnimationName;
-                    current.nextAnimationTime = next.nextAnimationTime;
-                }
-            }
-            foreach (var other in animation.clips)
-            {
-                if (other == current) continue;
-                if (other.nextAnimationName == previousAnimationName && other.animationLayerQualified == current.animationLayerQualified)
-                {
-                    other.nextAnimationName = val;
-                }
+                other.nextAnimationName = val;
             }
             animation.index.Rebuild();
         }

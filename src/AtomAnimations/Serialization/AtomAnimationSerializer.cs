@@ -418,7 +418,7 @@ namespace VamTimeline
             return animationEditContextJSON;
         }
 
-        public JSONClass SerializeAnimation(AtomAnimation animation, string animationNameFilter = null)
+        public JSONClass SerializeAnimation(AtomAnimation animation)
         {
             var animationJSON = new JSONClass
             {
@@ -434,7 +434,7 @@ namespace VamTimeline
             if (animation.fadeManager != null)
                 animationJSON["FadeManager"] = animation.fadeManager.GetJSON();
             var clipsJSON = new JSONArray();
-            foreach (var clip in animation.clips.Where(c => animationNameFilter == null || c.animationName == animationNameFilter))
+            foreach (var clip in animation.clips)
             {
                 clipsJSON.Add(SerializeClip(clip));
             }

@@ -187,10 +187,11 @@ namespace VamTimeline
             var sequencing = (bool)e[4];
 
             if (isPlaying) animation.PlayClipBySet(animationName, animationSet, animationSegment, sequencing);
-            var clipsByName = animation.index.ByName(animationName);
-            for (var i = 0; i < clipsByName.Count; i++)
+            var clips = animation.index.ByName(animationSegment, animationName);
+            if (clips.Count == 0) return;
+            for (var i = 0; i < clips.Count; i++)
             {
-                var clip = clipsByName[i];
+                var clip = clips[i];
                 clip.clipTime = clipTime;
             }
         }
@@ -219,19 +220,20 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendMasterClipState), // 0
                  clip.animationName, // 1
-                 clip.clipTime //2
+                 clip.clipTime, //2
+                 clip.animationSegment, // 3
             });
         }
 
         private void ReceiveMasterClipState(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 3)) return;
+            if (!ValidateArgumentCount(e.Length, 4)) return;
             if (animation.master)
             {
                 SuperController.LogError($"Atom {_containingAtom.name} received a master clip state from another atom. Please make sure only one of your atoms is a sequence master during playback.");
                 return;
             }
-            var clips = GetClips(e);
+            var clips = animation.index.ByName((string)e[3], (string)e[1]);
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
@@ -283,19 +285,20 @@ namespace VamTimeline
             animationEditContext.StopAndReset();
         }
 
-        private readonly object[] _sendTimeMessage = new object[3] { nameof(SendTime), null, null };
+        private readonly object[] _sendTimeMessage = new object[4] { nameof(SendTime), null, null, null };
         public void SendTime(AtomAnimationClip clip)
         {
             if (syncing) return;
             _sendTimeMessage[1] = clip.animationName;
             _sendTimeMessage[2] = clip.clipTime;
+            _sendTimeMessage[3] = clip.animationSegment;
             SendTimelineEvent(_sendTimeMessage);
         }
 
         private void ReceiveTime(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 3)) return;
-            var clips = GetClips(e);
+            if (!ValidateArgumentCount(e.Length, 4)) return;
+            var clips = animation.index.ByName((string)e[3], (string)e[1]);
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
@@ -309,14 +312,15 @@ namespace VamTimeline
             if (syncing) return;
             SendTimelineEvent(new object[]{
                  nameof(SendCurrentAnimation), // 0
-                 clip.animationName // 1
+                 clip.animationName, // 1
+                 clip.animationSegment // 2
             });
         }
 
         private void ReceiveCurrentAnimation(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 2)) return;
-            var clips = GetClips(e);
+            if (!ValidateArgumentCount(e.Length, 3)) return;
+            var clips = animation.index.ByName((string)e[2], (string)e[1]);
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
@@ -369,27 +373,22 @@ namespace VamTimeline
             var animationLayer = (string)e[2];
             var animationName = (string)e[1];
 
-            var existing = animation.GetClip(animationSegment, animationLayer, animationName);
-            if (existing == null)
+            if (animation.index.ByName(animationSegment, animationName) == null)
             {
-                existing = animation.clips.FirstOrDefault(c => c.animationName == animationName);
-                if (existing == null)
+                var previousAnimationName = e.Length >= 16 ? (string)e[15] : null;
+                var clipOnLayer = animation.clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
+                if (clipOnLayer != null)
                 {
-                    var previousAnimationName = e.Length >= 16 ? (string)e[15] : null;
-                    var clipOnLayer = animation.clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
-                    if (clipOnLayer != null)
-                    {
-                        new AddAnimationOperations(animation, clipOnLayer)
-                            .AddAnimation(animationName, AddAnimationOperations.Positions.PositionLast, false, false, false);
-                    }
-                    else
-                    {
-                        animation.CreateClip(animationName, animationLayer, animationSegment, GetPosition(animationName, animationLayer, animationSegment, previousAnimationName));
-                    }
+                    new AddAnimationOperations(animation, clipOnLayer)
+                        .AddAnimation(animationName, AddAnimationOperations.Positions.PositionLast, false, false, false);
+                }
+                else
+                {
+                    animation.CreateClip(animationName, animationLayer, animationSegment, GetPosition(animationName, animationLayer, animationSegment, previousAnimationName));
                 }
             }
 
-            var clips = animation.GetClips(animationName);
+            var clips = animation.index.ByName(animationSegment, animationName);
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
@@ -518,11 +517,6 @@ namespace VamTimeline
             {
                 Complete();
             }
-        }
-
-        private IList<AtomAnimationClip> GetClips(object[] e)
-        {
-            return animation.GetClips((string)e[1]);
         }
 
         private void Begin()

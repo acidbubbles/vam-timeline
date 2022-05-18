@@ -13,8 +13,9 @@ namespace VamTimeline
         public void PlayClipByName(string animationName, bool seq)
         {
             var clipsByName = index.ByName(animationName);
-            if (clipsByName.Count == 0) return;
-            PlayClip(clipsByName[0], seq);
+            var clip = clipsByName.FirstOrDefault(c => c.animationSegment == playingAnimationSegment) ?? clipsByName.FirstOrDefault();
+            if (clip == null) return;
+            PlayClip(clip, seq);
         }
 
         public void PlayClipBySet(string animationName, string animationSet, string animationSegment, bool seq)
@@ -239,7 +240,7 @@ namespace VamTimeline
 
         private void PlaySiblings(AtomAnimationClip clip)
         {
-            var clipsByName = index.ByName(clip.animationName);
+            var clipsByName = index.segmentsById[clip.animationSegmentId].clipMapByNameId[clip.animationNameId];
 
             var clipTime = clip.clipTime - clip.timeOffset;
             PlaySiblingsByName(clipsByName, clipTime);

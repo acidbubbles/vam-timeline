@@ -165,13 +165,13 @@ namespace VamTimeline
                     clips = animationEditContext.currentLayer.ToList();
                     break;
                 case _exportCurrentAnimationAllLayers:
-                    clips = animation.index.ByName(current.animationName).ToList();
+                    clips = animation.index.ByName(current.animationSegmentId, current.animationNameId).ToList();
                     break;
                 case _exportCurrentSegment:
                     clips = animationEditContext.currentSegment.layers.SelectMany(l => l).ToList();
                     break;
                 case _exportAllSegments:
-                    clips = animation.clips.Where(c => c.animationSegment != AtomAnimationClip.SharedAnimationSegment).ToList();
+                    clips = animation.clips.Where(c => !c.isOnSharedSegment && !c.isOnNoneSegment).ToList();
                     break;
                 case _exportEverything:
                     clips = animation.clips;

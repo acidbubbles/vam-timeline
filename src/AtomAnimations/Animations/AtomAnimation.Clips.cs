@@ -23,17 +23,7 @@ namespace VamTimeline
 
         public AtomAnimationClip GetClip(string animationSegment, string animationLayer, string animationName)
         {
-            return clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == animationName);
-        }
-
-        public IList<AtomAnimationClip> GetClips(string animationName)
-        {
-            return index.ByName(animationName);
-        }
-
-        public AtomAnimationClip GetClipQualified(string animationNameQualified)
-        {
-            return clips.FirstOrDefault(c => c.animationNameQualified == animationNameQualified);
+            return index.ByName(animationSegment, animationName).FirstOrDefault(c => c.animationLayer == animationLayer);
         }
 
         #endregion
@@ -120,7 +110,7 @@ namespace VamTimeline
 
         public string GetUniqueAnimationName(AtomAnimationClip source)
         {
-            return GetUniqueAnimationName(source.animationName);
+            return GetUniqueAnimationName(source.animationSegmentId, source.animationName);
         }
 
         public string GetUniqueAnimationNameInLayer(AtomAnimationClip source)
@@ -128,9 +118,9 @@ namespace VamTimeline
             return GetUniqueName(source.animationName, clips.Where(c => c.animationSegment != source.animationSegment || c.animationLayerQualified == source.animationLayerQualified).Select(c => c.animationName).ToList());
         }
 
-        public string GetUniqueAnimationName(string sourceName)
+        public string GetUniqueAnimationName(int segmentId, string sourceName)
         {
-            return GetUniqueName(sourceName, clips.Select(c => c.animationName).ToList());
+            return GetUniqueName(sourceName, clips.Where(c => c.animationSegmentId == segmentId || c.isOnSharedSegment).Select(c => c.animationName).ToList());
         }
 
         public string GetUniqueLayerName(AtomAnimationClip source, string baseName = null)
@@ -140,12 +130,12 @@ namespace VamTimeline
 
         public string GetUniqueSegmentName(AtomAnimationClip source)
         {
-            return GetUniqueSegmentName(source.animationSegment);
+            return GetUniqueSegmentName(!source.isOnNoneSegment && !source.isOnSharedSegment ? source.animationSegment : "Segment 1");
         }
 
         public string GetUniqueSegmentName(string sourceSegmentName)
         {
-            return GetUniqueName(sourceSegmentName, index.segmentNames.Where(s => s != AtomAnimationClip.SharedAnimationSegment).ToList());
+            return GetUniqueName(sourceSegmentName, index.segmentNames);
         }
 
         public string GetUniqueName(string sourceName, IList<string> existingNames)
@@ -338,12 +328,14 @@ namespace VamTimeline
 
             return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
                    layer.FirstOrDefault(c => c.animationNameId == source.animationNameId) ??
+                   #warning Review auto play logic with segments
                    layer.FirstOrDefault(c => c.autoPlay) ??
                    layer[0];
         }
 
         private static AtomAnimationClip SelectRandomClip(IList<AtomAnimationClip> candidates)
         {
+            if (candidates.Count == 0) return null;
             if (candidates.Count == 1) return candidates[0];
             var weightSum = candidates.Sum(c => c.nextAnimationRandomizeWeight);
             var val = Random.Range(0f, weightSum);

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -123,14 +124,10 @@ namespace VamTimeline
                 if (current.pose == null)
                 {
                     _savePoseUI.label = "Save pose";
-                    var poseClips = currentSegment.layers
-                        .SelectMany(l => l)
-                        .Where(c => c != current && c.animationName == current.animationName && c.pose != null)
-                        .ToList();
-                    if(poseClips.Any())
-                        _poseStateJSON.val = $"<color=black><b>Pose exists in {poseClips.First().animationLayer}</b></color>";
-                    else
-                        _poseStateJSON.val = "<color=grey>No pose</color>";
+                    var poseClip = animation.index.ByName(current.animationSegmentId, current.animationNameId).FirstOrDefault(c => c.pose != null);
+                    _poseStateJSON.val = poseClip != null
+                        ? $"<color=black><b>Pose exists in {animation.index.ByName(current.animationSegmentId, current.animationNameId).First().animationLayer}</b></color>"
+                        : "<color=grey>No pose</color>";
                 }
                 else
                 {

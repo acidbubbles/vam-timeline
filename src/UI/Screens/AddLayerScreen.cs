@@ -100,6 +100,7 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
+            #warning Easy add layer from selected (reuse same button? suggest anim name?)
             clipNameJSON.val = current.animationName;
             layerNameJSON.val = animation.GetUniqueLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
         }
@@ -108,11 +109,12 @@ namespace VamTimeline
         {
             var nameValid =
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
-                animation.index.segmentsById
-                    .Where(s => s.Key != current.animationSegmentId)
-                    .SelectMany(s => s.Value.layers)
-                    .SelectMany(l => l)
-                    .All(c => c.animationName != clipNameJSON.val) &&
+                current.isOnSharedSegment
+                    ? animation.index.segmentsById.Where(kvp => kvp.Key != AtomAnimationClip.SharedAnimationSegmentId)
+                        .SelectMany(l => l.Value.layers)
+                        .SelectMany(l => l)
+                        .All(c => c.animationName != clipNameJSON.val)
+                    : animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, clipNameJSON.val).Count == 0 &&
                 !string.IsNullOrEmpty(layerNameJSON.val) &&
                 !currentSegment.layerNames.Contains(layerNameJSON.val);
 
