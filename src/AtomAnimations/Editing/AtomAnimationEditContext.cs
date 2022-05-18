@@ -144,7 +144,7 @@ namespace VamTimeline
                 }
                 else
                 {
-                    clips = animation.GetDefaultClipsPerLayer(current);
+                    clips = animation.GetDefaultClipsPerLayer(current, false);
                 }
 
                 var baseOffset = current.timeOffset;

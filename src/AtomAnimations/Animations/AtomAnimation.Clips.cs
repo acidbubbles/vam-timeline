@@ -273,18 +273,18 @@ namespace VamTimeline
             return sibling;
         }
 
-        public IList<AtomAnimationClip> GetDefaultClipsPerLayer(AtomAnimationClip source)
+        public IList<AtomAnimationClip> GetDefaultClipsPerLayer(AtomAnimationClip source, bool includeShared = true)
         {
             if (!sequencing && focusOnLayer) return new[] { source };
 
             AtomAnimationsClipsIndex.IndexedSegment sharedLayers;
-            if (!index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out sharedLayers))
-            {
+            if (!includeShared)
                 sharedLayers = index.emptySegment;
-            }
+            else if (!index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out sharedLayers))
+                sharedLayers = index.emptySegment;
 
             AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
-            if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+            if (!source.isOnSharedSegment)
                 segmentLayers = index.segmentsById[source.animationSegmentId];
             else
                 segmentLayers = index.emptySegment;
