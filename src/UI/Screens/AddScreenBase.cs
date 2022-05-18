@@ -27,21 +27,21 @@
             prefabFactory.CreateTextInput(clipNameJSON);
         }
 
-        protected void InitNewLayerNameUI()
+        protected void InitNewLayerNameUI(string label = "New layer name")
         {
-            layerNameJSON = new JSONStorableString("New layer name", "", (string _) => OptionsUpdated());
+            layerNameJSON = new JSONStorableString(label, "", (string _) => OptionsUpdated());
             prefabFactory.CreateTextInput(layerNameJSON);
         }
 
-        protected void InitNewSegmentNameUI()
+        protected void InitNewSegmentNameUI(string label = "New segment name")
         {
-            segmentNameJSON = new JSONStorableString("New segment name", "", (string _) => OptionsUpdated());
+            segmentNameJSON = new JSONStorableString(label, "", (string _) => OptionsUpdated());
             prefabFactory.CreateTextInput(segmentNameJSON);
         }
 
-        protected void InitCreateInOtherAtomsUI()
+        protected void InitCreateInOtherAtomsUI(string label = "Create in other atoms")
         {
-            createInOtherAtomsJSON = new JSONStorableBool("Create in other atoms", _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
+            createInOtherAtomsJSON = new JSONStorableBool(label, _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
             prefabFactory.CreateToggle(createInOtherAtomsJSON);
         }
 

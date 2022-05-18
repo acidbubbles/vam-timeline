@@ -22,7 +22,7 @@ namespace VamTimeline
                 prefabFactory.CreateSpacer();
                 prefabFactory.CreateHeader("Segments", 1);
 
-                InitNewSegmentNameUI();
+                InitNewSegmentNameUI("Assign name to current segment");
                 InitUseSegments();
             }
             else
@@ -91,7 +91,7 @@ namespace VamTimeline
             if (animation.playingAnimationSegment == previousAnimationSegment)
                 animation.playingAnimationSegment = animationSegment;
             animation.index.Rebuild();
-            ReloadScreen();
+            ChangeScreen(AddAnimationsScreen.ScreenName);
         }
 
         private void AddSegment()
@@ -157,7 +157,7 @@ namespace VamTimeline
         {
             base.RefreshUI();
 
-            if (clipNameJSON != null) clipNameJSON.val = animation.GetUniqueAnimationName(current);
+            if (clipNameJSON != null) clipNameJSON.val = animation.GetUniqueAnimationName(-1, current.animationName);
             if (layerNameJSON != null) layerNameJSON.val = AtomAnimationClip.DefaultAnimationLayer;
             if (segmentNameJSON != null) segmentNameJSON.val = current.isOnNoneSegment ? "Segment 1" : animation.GetUniqueSegmentName(current);
         }
