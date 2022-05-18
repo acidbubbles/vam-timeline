@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Leap.Unity;
 using UnityEngine.UI;
 
 namespace VamTimeline
@@ -79,7 +81,7 @@ namespace VamTimeline
             if (clip == null) return;
 
             animationEditContext.SelectAnimation(clip);
-            ChangeScreen(EditAnimationScreen.ScreenName);
+            ChangeScreen(TargetsScreen.ScreenName);
         }
 
         private void SplitLayer()
@@ -93,7 +95,10 @@ namespace VamTimeline
 
             var clips = operations.Layers().SplitLayer(targets, layerNameJSON.val);
             if (clips.Count > 0)
+            {
                 animationEditContext.SelectAnimation(clips.FirstOrDefault(c => c.animationName == current.animationName) ?? clips[0]);
+                ChangeScreen(TargetsScreen.ScreenName);
+            }
         }
 
         #endregion
@@ -106,8 +111,8 @@ namespace VamTimeline
             if (selected.Count == 0)
             {
                 _splitLayerUI.label = "Split targets to new layer";
-                clipNameJSON.val = current.animationName;
                 clipNameUI.GetComponent<InputField>().interactable = true;
+                clipNameJSON.val = current.animationName;
                 layerNameJSON.val = animation.GetUniqueLayerName(current, current.animationLayer == "Main" ? "Layer 1" : null);
                 _createAllAnimationsJSON.val = false;
                 _createAllAnimationsUI.toggle.interactable = true;
@@ -117,10 +122,37 @@ namespace VamTimeline
                 _splitLayerUI.label = $"Split {selected.Count} targets to new layer";
                 clipNameJSON.val = "[AUTO]";
                 clipNameUI.GetComponent<InputField>().interactable = false;
-                layerNameJSON.val = animation.GetUniqueLayerName(current, selected[0].name);
+                layerNameJSON.val = animation.GetUniqueLayerName(current, SuggestName(selected));
                 _createAllAnimationsJSON.val = true;
                 _createAllAnimationsUI.toggle.interactable = false;
             }
+        }
+
+        private string SuggestName(List<IAtomAnimationTarget> selected)
+        {
+            if (selected.OfType<JSONStorableFloatAnimationTarget>().Count(t => t.animatableRef.IsMorph()) == selected.Count)
+                return "Morphs";
+            var controllers = selected.OfType<FreeControllerV3AnimationTarget>().ToList();
+            if (controllers.Count > 0 && controllers.All(t => t.animatableRef.controller.name.EndsWith("Control")))
+            {
+                var firstControllerName = controllers[0].animatableRef.controller.name;
+                firstControllerName = firstControllerName.Substring(0, firstControllerName.Length - 7);
+                // e.g. Head
+                if (controllers.Count == 1)
+                    return firstControllerName.Capitalize();
+                // e.g. Hands
+                if (controllers.Count == 2 && controllers[0].animatableRef.controller.name.Substring(1) == controllers[1].animatableRef.controller.name.Substring(1))
+                {
+                    var result = firstControllerName.Substring(1) + "s";
+                    if (result == "Foots") result = "Feet";
+                    return result;
+                }
+                if (controllers.All(c => c.name.StartsWith("penis") || c.name == "testesControl"))
+                    return "Penis";
+                return "Controls";
+            }
+            var s = selected[0];
+            return selected[0].name.Capitalize();
         }
 
         protected override void OptionsUpdated()
