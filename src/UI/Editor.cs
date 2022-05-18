@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -80,6 +81,7 @@ namespace VamTimeline
         public Transform popupParent;
         private AnimationControlPanel _controlPanel;
         private IAtomPlugin _plugin;
+        private bool _bound;
         private VamPrefabFactory _leftPanelPrefabFactory;
         private CurveTypePopup _curveType;
         private bool _expanded = true;
@@ -90,13 +92,7 @@ namespace VamTimeline
             _plugin = plugin;
 
             _leftPanelPrefabFactory = leftPanel.AddComponent<VamPrefabFactory>();
-            _leftPanelPrefabFactory.plugin = plugin;
-
-            _controlPanel = CreateControlPanel(leftPanel);
-            _controlPanel.Bind(plugin);
-
-            InitClipboardUI();
-            InitChangeCurveTypeUI();
+            _leftPanelPrefabFactory.plugin = _plugin;
 
             tabs.Add(AnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f));
             tabs.Add(AddAnimationsScreen.ScreenName, new Color(0.780f, 0.780f, 0.899f), "+", 60f);
@@ -117,6 +113,30 @@ namespace VamTimeline
             screensManager = InitScreensManager(rightPanel);
             screensManager.onScreenChanged.AddListener(args => tabs.Select(args.screenName));
             screensManager.Bind(plugin, defaultScreen);
+        }
+
+        public void Bind(AtomAnimationEditContext ctx)
+        {
+            animationEditContext = ctx;
+
+            if (gameObject.activeInHierarchy)
+                OnEnable();
+        }
+
+        private void OnEnable()
+        {
+            if (_bound || animationEditContext == null || _plugin == null) return;
+            _bound = true;
+
+            _controlPanel = CreateControlPanel(leftPanel);
+
+            _controlPanel.Bind(_plugin);
+            _controlPanel.Bind(animationEditContext);
+
+            InitClipboardUI();
+
+            InitChangeCurveTypeUI();
+            _curveType.Bind(animationEditContext);
         }
 
         private static AnimationControlPanel CreateControlPanel(GameObject panel)
@@ -210,14 +230,6 @@ namespace VamTimeline
             var sm = ScreensManager.Configure(go);
             sm.popupParent = popupParent;
             return sm;
-        }
-
-        public void Bind(AtomAnimationEditContext ctx)
-        {
-            animationEditContext = ctx;
-
-            _controlPanel.Bind(ctx);
-            _curveType.Bind(ctx);
         }
 
         public void ToggleExpandCollapse()

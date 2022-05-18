@@ -593,6 +593,10 @@ namespace VamTimeline
             {
                 yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = group.First().animatableRef.groupLabel };
             }
+            foreach (var target in targetFloatParams)
+            {
+                target.animatableRef.EnsureAvailable();
+            }
             foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.groupKey))
             {
                 yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = group.First().animatableRef.groupLabel };

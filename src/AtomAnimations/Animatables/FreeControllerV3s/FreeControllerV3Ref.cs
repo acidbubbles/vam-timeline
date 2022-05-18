@@ -25,7 +25,7 @@
             get
             {
                 if (!owned && controller == null)
-                    return "[Deleted]";
+                    return "[Missing]";
 
                 return controller.name;
             }
@@ -40,7 +40,7 @@
                 if (!owned)
                 {
                     if (controller == null)
-                        return "[Deleted]";
+                        return "[Missing]";
                     return $"{controller.containingAtom.name} controls";
                 }
                 return "Controls";
@@ -50,7 +50,7 @@
         public override string GetShortName()
         {
             if (!owned && controller == null)
-                return "[Deleted]";
+                return "[Missing]";
 
             return controller.name.EndsWith("Control")
                 ? controller.name.Substring(0, controller.name.Length - "Control".Length)
@@ -62,7 +62,7 @@
             if (!owned)
             {
                 if (controller == null)
-                    return "[Deleted]";
+                    return "[Missing]";
                 return $"{controller.containingAtom.name} {controller.name}";
             }
 

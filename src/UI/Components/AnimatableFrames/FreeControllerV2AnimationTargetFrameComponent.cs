@@ -210,7 +210,7 @@ namespace VamTimeline
             {
                 if (!target.animatableRef.owned && target.animatableRef.controller == null)
                 {
-                    valueText.text = "[Deleted]";
+                    valueText.text = "[Missing]";
                 }
                 else
                 {

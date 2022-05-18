@@ -66,7 +66,7 @@ namespace VamTimeline
                 if (!owned)
                 {
                     if (storable == null)
-                        return $"[Deleted: {_shortenedStorableId}]";
+                        return $"[Missing: {_shortenedStorableId}]";
                     return $"{storable.containingAtom.name} {_shortenedStorableId}";
                 }
                 return _shortenedStorableId;
@@ -76,7 +76,7 @@ namespace VamTimeline
         public override string GetShortName()
         {
             if (!owned && storable == null)
-                return $"[Deleted: {_shortenedStorableId} / {floatParamName}]";
+                return $"[Missing: {_shortenedStorableId} / {floatParamName}]";
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
@@ -87,7 +87,7 @@ namespace VamTimeline
         public override string GetFullName()
         {
             if (!owned && storable == null)
-                return $"[Deleted: {(_atom != null ? _atom.name : "?")} / {_shortenedStorableId} / {floatParamName}]";
+                return $"[Missing: {(_atom != null ? _atom.name : "?")} / {_shortenedStorableId} / {floatParamName}]";
 
             if (!owned)
             {
@@ -126,7 +126,10 @@ namespace VamTimeline
                 storable = null;
                 floatParam = null;
             }
-            if (Time.frameCount == _lastAvailableCheck) return false;
+            if (silent && Time.frameCount == _lastAvailableCheck)
+            {
+                return false;
+            }
             if (TryBind(silent))
             {
                 TryAssignMinMax();

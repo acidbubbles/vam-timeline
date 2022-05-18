@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -34,7 +33,7 @@ namespace VamTimeline
             _plugin = plugin;
             _currentScreen = defaultScreen;
             _currentScreenArg = null;
-            if (enabled && plugin.animation != null)
+            if (isActiveAndEnabled && plugin.animation != null)
                 ChangeScreen(GetDefaultScreen(), null);
         }
 
