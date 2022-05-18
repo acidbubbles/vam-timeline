@@ -16,7 +16,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _addStorableListJSON;
         private JSONStorableStringChooser _addParamListJSON;
         private UIDynamicPopup _addFromAtomUI;
-        private UIDynamicPopup _addControllerUI;
         private UIDynamicPopup _addStorableListUI;
         private UIDynamicButton _toggleControllerUI;
         private UIDynamicButton _toggleFloatParamUI;
@@ -31,39 +30,35 @@ namespace VamTimeline
 
             CreateChangeScreenButton($"<b><</b> <i>Back to {TargetsScreen.ScreenName}</i>", TargetsScreen.ScreenName);
 
-            prefabFactory.CreateHeader("Add/remove targets", 1);
-
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Triggers", 2);
+            prefabFactory.CreateHeader("Add triggers target", 1);
 
             InitTriggersUI();
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Atom", 2);
+            prefabFactory.CreateHeader("Add atom target", 1);
 
             InitAtomsUI();
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Controls", 2);
+            prefabFactory.CreateHeader("Add controls", 2);
 
             InitControllersUI();
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Storable floats", 2);
+            prefabFactory.CreateHeader("Add storable float params", 2);
 
             InitFloatParamsUI();
 
             prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Manage", 2);
+            prefabFactory.CreateHeader("Remove targets", 2);
 
-            InitFixMissingUI();
             InitRemoveUI();
-
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Presets", 2);
 
             if (plugin.containingAtom.type == "Person")
             {
+                prefabFactory.CreateSpacer();
+                prefabFactory.CreateHeader("Presets", 2);
+
                 InitFingersPresetUI();
             }
 
@@ -82,43 +77,6 @@ namespace VamTimeline
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
 
             UpdateSelectDependentUI();
-        }
-
-        private void InitFixMissingUI()
-        {
-            var layerClips = currentLayer;
-            if (layerClips.Count <= 1) return;
-
-            foreach (var clip in layerClips)
-            {
-                foreach (var target in clip.targetFloatParams)
-                {
-                    target.animatableRef.EnsureAvailable(false);
-                }
-            }
-
-            var clipList = current.GetAllTargets()
-                .Where(t => !(t is TriggersTrackAnimationTarget))
-                .Select(t => t.name)
-                .OrderBy(x => x);
-            var otherList = animation.index
-                .ByLayerQualified(current.animationLayerQualifiedId)
-                .Where(c => c != current)
-                .SelectMany(c => c.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)))
-                .Select(t => t.name)
-                .Distinct()
-                .OrderBy(x => x);
-            var ok = clipList.SequenceEqual(otherList);
-            if (ok) return;
-
-            prefabFactory.CreateSpacer();
-            var enableAllTargetsUI = prefabFactory.CreateButton("Add all other animations' targets");
-            enableAllTargetsUI.button.onClick.AddListener(() =>
-            {
-                AddMissingTargets();
-                Destroy(enableAllTargetsUI);
-            });
-            enableAllTargetsUI.buttonColor = Color.yellow;
         }
 
         private void InitTriggersUI()
@@ -171,7 +129,7 @@ namespace VamTimeline
         private void InitControllersUI()
         {
             _addControllerListJSON = new JSONStorableStringChooser("Control", new List<string>(), "", "Control");
-            _addControllerUI = prefabFactory.CreatePopup(_addControllerListJSON, true, true, 700f);
+            prefabFactory.CreatePopup(_addControllerListJSON, true, true, 600f);
 
             _toggleControllerUI = prefabFactory.CreateButton("Add");
             _toggleControllerUI.button.onClick.AddListener(AddAnimatedController);
@@ -251,12 +209,12 @@ namespace VamTimeline
                 RefreshStorableFloatsList();
                 _addParamListJSON.valNoCallback = _addParamListJSON.choices.FirstOrDefault() ?? "";
             });
-            _addStorableListUI = prefabFactory.CreatePopup(_addStorableListJSON, true, true);
+            _addStorableListUI = prefabFactory.CreatePopup(_addStorableListJSON, true, true, 500f, true);
             _addStorableListUI.popupPanelHeight = 450f;
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
             _addParamListJSON = new JSONStorableStringChooser("Params", new List<string>(), "", "Param");
-            _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true, 360f);
+            _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true, 500f, true);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
 
             _toggleFloatParamUI = prefabFactory.CreateButton("Add");
@@ -438,66 +396,6 @@ namespace VamTimeline
         #endregion
 
         #region Callbacks
-
-        private class FloatParamRef
-        {
-            public JSONStorable storable { get; set; }
-            public JSONStorableFloat floatParam { get; set; }
-        }
-
-        private void AddMissingTargets()
-        {
-            try
-            {
-                var allControllers = animation.index
-                    .ByLayerQualified(current.animationLayerQualifiedId)
-                    .SelectMany(c => c.targetControllers)
-                    .Select(t => t.animatableRef)
-                    .Distinct()
-                    .ToList();
-                var h = new HashSet<JSONStorableFloat>();
-                var allFloatParams = animation.index
-                    .ByLayerQualified(current.animationLayerQualifiedId)
-                    .SelectMany(c => c.targetFloatParams)
-                    .Where(t => t.animatableRef.EnsureAvailable(false))
-                    .Where(t => h.Add(t.animatableRef.floatParam))
-                    .Select(t => new FloatParamRef { storable = t.animatableRef.storable, floatParam = t.animatableRef.floatParam })
-                    .ToList();
-
-                foreach (var clip in animation.clips)
-                {
-                    foreach (var controller in allControllers)
-                    {
-                        if (clip.targetControllers.All(t => t.animatableRef != controller))
-                        {
-                            var target = clip.Add(controller);
-                            if (target != null)
-                            {
-                                target.SetKeyframeToCurrent(0f);
-                                target.SetKeyframeToCurrent(clip.animationLength);
-                            }
-                        }
-                    }
-                    clip.targetControllers.Sort(new FreeControllerV3AnimationTarget.Comparer());
-
-                    foreach (var floatParamRef in allFloatParams)
-                    {
-                        if (clip.targetFloatParams.Any(t => t.animatableRef.floatParamName == floatParamRef.floatParam.name)) continue;
-                        var storableFloat = animation.animatables.GetOrCreateStorableFloat(floatParamRef.storable, floatParamRef.floatParam, floatParamRef.storable.containingAtom == plugin.containingAtom);
-                        var target = clip.Add(storableFloat);
-                        if (target == null) continue;
-                        if (!target.animatableRef.EnsureAvailable(false)) continue;
-                        target.SetKeyframeToCurrent(0f);
-                        target.SetKeyframeToCurrent(clip.animationLength);
-                    }
-                    clip.targetFloatParams.Sort(new JSONStorableFloatAnimationTarget.Comparer());
-                }
-            }
-            catch (Exception exc)
-            {
-                SuperController.LogError($"Timeline.{nameof(AddRemoveTargetsScreen)}.{nameof(AddMissingTargets)}: {exc}");
-            }
-        }
 
         private void AddAnimatedController()
         {
