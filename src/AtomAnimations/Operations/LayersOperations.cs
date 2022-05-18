@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Leap.Unity;
 
 namespace VamTimeline
 {
@@ -32,8 +33,9 @@ namespace VamTimeline
                 .ToList();
         }
 
-        public void SplitLayer(List<IAtomAnimationTarget> targets, string layerName = null)
+        public List<AtomAnimationClip> SplitLayer(List<IAtomAnimationTarget> targets, string layerName = null)
         {
+            var created = new List<AtomAnimationClip>();
             if (layerName == null)
                 layerName = GetSplitLayerName(_clip.animationLayer, _animation.index.segmentsById[_clip.animationSegmentId].layerNames);
             foreach (var sourceClip in _animation.index.ByLayerQualified(_clip.animationLayerQualifiedId).ToList())
@@ -45,7 +47,9 @@ namespace VamTimeline
                     sourceClip.Remove(t);
                     newClip.Add(t);
                 }
+                created.Add(newClip);
             }
+            return created;
         }
 
         private static string GetSplitLayerName(string sourceLayerName, IList<string> list)

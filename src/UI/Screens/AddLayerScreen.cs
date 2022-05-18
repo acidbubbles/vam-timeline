@@ -91,7 +91,9 @@ namespace VamTimeline
                 return;
             }
 
-            operations.Layers().SplitLayer(targets, layerNameJSON.val);
+            var clips = operations.Layers().SplitLayer(targets, layerNameJSON.val);
+            if (clips.Count > 0)
+                animationEditContext.SelectAnimation(clips.FirstOrDefault(c => c.animationName == current.animationName) ?? clips[0]);
         }
 
         #endregion
