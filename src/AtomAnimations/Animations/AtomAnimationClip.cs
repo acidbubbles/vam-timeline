@@ -126,21 +126,17 @@ namespace VamTimeline
 
         #region Calculated fields
 
-        public string animationNameQualified { get; private set; }
-        public string animationLayerQualified { get; private set; }
-        public string animationSetQualified { get; private set; }
-
         public int animationNameId { get; private set; }
-
-        public int animationNameQualifiedId { get; private set; }
-
         public int animationLayerId { get; private set; }
-
-        public int animationLayerQualifiedId { get; private set; }
-
         public int animationSegmentId { get; private set; }
-
         public int animationSetId { get; private set; }
+        public string animationNameQualified { get; private set; }
+        public int animationNameQualifiedId { get; private set; }
+        public string animationLayerQualified { get; private set; }
+        public int animationLayerQualifiedId { get; private set; }
+        public string animationSetQualified { get; private set; }
+        public int animationSetQualifiedId { get; private set; }
+
 
         public bool isOnSharedSegment { get; private set; }
         public bool isOnNoneSegment { get; private set; }
@@ -148,15 +144,13 @@ namespace VamTimeline
         private void UpdateAnimationNameQualified()
         {
             animationNameQualified = $"{_animationSegment}::{_animationLayer}::{_animationName}";
-            animationLayerQualified = $"{_animationSegment}::{_animationLayer}";
-            animationSetQualified = $"{_animationSegment}::{_animationSet}";
-
-            animationNameId = animationName.ToId();
             animationNameQualifiedId = animationNameQualified.ToId();
-            animationLayerId = animationLayer.ToId();
+
+            animationLayerQualified = $"{_animationSegment}::{_animationLayer}";
             animationLayerQualifiedId = animationLayerQualified.ToId();
-            animationSegmentId = animationSegment.ToId();
-            animationSetId = animationSet.ToId();
+
+            animationSetQualified = $"{_animationSegment}::{_animationSet}";
+            animationSetQualifiedId = animationSetQualified.ToId();
         }
 
         public string animationNameGroup { get; private set; }
@@ -189,6 +183,7 @@ namespace VamTimeline
             {
                 if (_animationLayer == value) return;
                 _animationLayer = value;
+                animationLayerId = animationLayer.ToId();
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationLayer));
             }
@@ -204,9 +199,10 @@ namespace VamTimeline
             {
                 if (_animationSegment == value) return;
                 _animationSegment = value;
-                UpdateAnimationNameQualified();
+                animationSegmentId = animationSegment.ToId();
                 isOnNoneSegment = value == NoneAnimationSegment;
                 isOnSharedSegment = value == SharedAnimationSegment;
+                UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationSegment));
             }
         }
@@ -235,6 +231,7 @@ namespace VamTimeline
             {
                 if (_animationName == value) return;
                 _animationName = value;
+                animationNameId = animationName.ToId();
                 UpdateAnimationNameGroup();
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationName));
@@ -253,6 +250,7 @@ namespace VamTimeline
             {
                 if (_animationSet == value) return;
                 _animationSet = value == string.Empty ? null : value;
+                animationSetId = animationSet.ToId();
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationSet));
             }
