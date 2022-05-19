@@ -296,13 +296,13 @@ namespace VamTimeline
             else
                 animation.ResetAll();
 
-            _lastStop = Time.realtimeSinceStartup;
-
             onTimeChanged.Invoke(timeArgs);
 
             // Apply pose on stop fast double-click
             if (!wasCurrentMainInLayer || _lastStop > Time.realtimeSinceStartup - 0.2f)
                 SampleOrPose();
+
+            _lastStop = Time.realtimeSinceStartup;
 
             peers.SendStop();
         }
