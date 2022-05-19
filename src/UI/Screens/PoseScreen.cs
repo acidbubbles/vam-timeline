@@ -125,9 +125,18 @@ namespace VamTimeline
                 {
                     _savePoseUI.label = "Save pose";
                     var poseClip = animation.index.ByName(current.animationSegmentId, current.animationNameId).FirstOrDefault(c => c.pose != null);
-                    _poseStateJSON.val = poseClip != null
-                        ? $"<color=black><b>Pose exists in {animation.index.ByName(current.animationSegmentId, current.animationNameId).First().animationLayer}</b></color>"
-                        : "<color=grey>No pose</color>";
+                    if (poseClip != null)
+                    {
+                        _poseStateJSON.val = $"<color=black><b>Pose in layer '{poseClip.animationLayer}'</b></color>";
+                    }
+                    else
+                    {
+                        poseClip = animation.index.useSegment ? animation.GetDefaultClipsPerLayer(current, false).FirstOrDefault(c => c.pose != null) : null;
+                        if (poseClip != null)
+                            _poseStateJSON.val = $"<color=black><b>Pose in '{poseClip.animationName}'</b></color>";
+                        else
+                            _poseStateJSON.val = "<color=grey>No pose</color>";
+                    }
                 }
                 else
                 {
