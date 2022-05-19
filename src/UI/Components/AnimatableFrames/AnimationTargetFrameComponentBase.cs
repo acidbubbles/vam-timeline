@@ -29,7 +29,7 @@ namespace VamTimeline
             this.target = target;
 
             CreateToggle(plugin);
-            toggle.label = enableLabel ? target.GetFullName() : "";
+            toggle.label = enableLabel ? Crop(target.GetFullName()) : "";
 
             CreateCustom();
 
@@ -48,6 +48,13 @@ namespace VamTimeline
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
 
             OnAnimationKeyframesRebuilt();
+        }
+
+        private string Crop(string value)
+        {
+            if (value.Length > 30)
+                return value.Substring(0, 10) + "..." + value.Substring(value.Length - 20);
+            return value;
         }
 
         public void ToggleExpanded()
