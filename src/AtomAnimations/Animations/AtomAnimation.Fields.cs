@@ -25,6 +25,7 @@ namespace VamTimeline
 
         public bool recording;
         public bool focusOnLayer;
+        public AtomPose lastAppliedPose;
 
         public IFadeManager fadeManager;
         private float _scheduleFadeIn = float.MaxValue;

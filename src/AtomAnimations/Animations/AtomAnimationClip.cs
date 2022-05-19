@@ -149,7 +149,7 @@ namespace VamTimeline
             animationLayerQualified = $"{_animationSegment}::{_animationLayer}";
             animationLayerQualifiedId = animationLayerQualified.ToId();
 
-            animationSetQualified = $"{_animationSegment}::{_animationSet}";
+            animationSetQualified = _animationSet != null ? $"{_animationSegment}::{_animationSet}" : null;
             animationSetQualifiedId = animationSetQualified.ToId();
         }
 

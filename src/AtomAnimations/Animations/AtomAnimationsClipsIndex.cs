@@ -178,7 +178,8 @@ namespace VamTimeline
 
         public IList<AtomAnimationClip> ByName(string name)
         {
-            return ByName(name.ToId());
+            List<AtomAnimationClip> clips;
+            return _clipsByName.TryGetValue(name.ToId(), out clips) ? clips : _emptyClipList;
         }
 
         public IList<AtomAnimationClip> ByName(string animationSegment, string animationName)
@@ -202,20 +203,14 @@ namespace VamTimeline
             return clips;
         }
 
-        public IList<AtomAnimationClip> ByName(int id)
-        {
-            List<AtomAnimationClip> clips;
-            return _clipsByName.TryGetValue(id, out clips) ? clips : _emptyClipList;
-        }
-
         public IList<AtomAnimationClip> GetSiblingsByLayer(AtomAnimationClip clip)
         {
             List<AtomAnimationClip> clips;
-            var result = clip.animationSetQualified != null
+            var result = clip.animationSetQualifiedId != -1
                 ? _firstClipOfLayerBySetQualifiedId.TryGetValue(clip.animationSetQualifiedId, out clips)
                     ? clips
                     : _emptyClipList
-                : ByName(clip.animationNameId);
+                : ByName(clip.animationSegmentId, clip.animationNameId);
             for (var i = 0; i < result.Count; i++)
             {
                 if (result[i].animationLayerQualified != clip.animationLayerQualified) continue;

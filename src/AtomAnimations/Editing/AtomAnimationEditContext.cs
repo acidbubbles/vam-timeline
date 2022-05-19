@@ -289,7 +289,7 @@ namespace VamTimeline
         {
             if (logger.general) logger.Log(logger.generalCategory, "Edit: Stop");
 
-            var wasCurrentMainInLayer = current.playbackMainInLayer;
+            var wasPlaying = current.playbackMainInLayer;
 
             if (animation.isPlaying)
                 animation.StopAll();
@@ -299,8 +299,7 @@ namespace VamTimeline
             onTimeChanged.Invoke(timeArgs);
 
             // Apply pose on stop fast double-click
-            if (!wasCurrentMainInLayer || _lastStop > Time.realtimeSinceStartup - 0.2f)
-                SampleOrPose();
+            SampleOrPose(!wasPlaying, _lastStop > Time.realtimeSinceStartup - 0.2f);
 
             _lastStop = Time.realtimeSinceStartup;
 
@@ -596,9 +595,14 @@ namespace VamTimeline
             animation.StopAndReset();
             var defaultClip = animation.GetDefaultClip();
             if (defaultClip != current)
+            {
                 SelectAnimation(defaultClip);
+            }
             else if(!wasCurrentMainInLayer)
-                SampleOrPose();
+            {
+                SampleOrPose(true, true);
+            }
+
             onTimeChanged.Invoke(timeArgs);
         }
 
@@ -720,16 +724,25 @@ namespace VamTimeline
 
             if (animation.isPlaying)
             {
-                animation.PlayClip(current, animation.sequencing);
+                var to = current;
+                if (to.pose == null)
+                {
+                    var toWithPose = animation.index.GetSiblingsByLayer(current).FirstOrDefault(c => c.pose != null);
+                    if (toWithPose != null)
+                        to = toWithPose;
+                }
+                animation.PlayClip(to, animation.sequencing);
             }
             else
             {
                 animation.playingAnimationSegment = clip.animationSegment;
-                if (previous.animationSegmentId != current.animationSegmentId || previous.animationNameId != current.animationNameId)
+                var differentAnimation = previous.animationSegmentId != current.animationSegmentId || previous.animationNameId != current.animationNameId;
+                if (differentAnimation)
                     previous.clipTime = 0f;
+
                 try
                 {
-                    SampleOrPose();
+                    SampleOrPose(true, differentAnimation);
                 }
                 catch (Exception exc)
                 {
@@ -744,13 +757,21 @@ namespace VamTimeline
             });
         }
 
-        private void SampleOrPose()
+        private void SampleOrPose(bool pose, bool force)
         {
-            var clips = animation.GetDefaultClipsPerLayer(current);
-            var poseClip = clips.FirstOrDefault(c => c?.pose != null);
-            if (poseClip != null)
-                poseClip.pose.Apply();
-            else if (!SuperController.singleton.freezeAnimation)
+            if (pose)
+            {
+                var clips = animation.GetDefaultClipsPerLayer(current);
+                var poseClip = clips.FirstOrDefault(c => c?.pose != null)?.pose;
+                if (poseClip != null && (poseClip != animation.lastAppliedPose || force))
+                {
+                    poseClip.Apply();
+                    animation.lastAppliedPose = poseClip;
+                    return;
+                }
+            }
+
+            if (!SuperController.singleton.freezeAnimation)
                 Sample();
         }
 

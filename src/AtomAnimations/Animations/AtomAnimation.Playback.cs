@@ -164,13 +164,15 @@ namespace VamTimeline
 
             float blendInDuration;
 
+            var nextHasPose = next.applyPoseOnTransition && next.pose != null;
+
             if (previous != null)
             {
                 if (previous.uninterruptible)
                     return;
 
                 // Wait for the loop to sync or the non-loop to end
-                if (allowPreserveLoops)
+                if (allowPreserveLoops && !nextHasPose)
                 {
                     if (previous.loop && previous.preserveLoops)
                     {
@@ -195,7 +197,7 @@ namespace VamTimeline
                 previous.playbackScheduledNextTimeLeft = float.NaN;
 
                 // Blend immediately, but unlike TransitionClips, recording will ignore blending
-                blendInDuration = next.recording ? 0f : next.blendInDuration;
+                blendInDuration = next.recording || nextHasPose ? 0f : next.blendInDuration;
                 BlendOut(previous, blendInDuration);
             }
             else
@@ -218,6 +220,17 @@ namespace VamTimeline
 
             if (sequencing)
                 AssignNextAnimation(next);
+
+            if (allowSibling && nextHasPose)
+            {
+                foreach (var c in index.GetSiblingsByLayer(previous))
+                {
+                    c.playbackMainInLayer = false;
+                    c.playbackScheduledNextAnimation = null;
+                    c.playbackScheduledNextTimeLeft = float.NaN;
+                    BlendOut(c, 0);
+                }
+            }
 
             if (allowSibling && (sequencing || !focusOnLayer))
                 PlaySiblings(next);
@@ -447,11 +460,12 @@ namespace VamTimeline
         {
             if (clip.applyPoseOnTransition)
             {
-                if (!clip.recording)
+                if (!clip.recording && clip.pose != null)
                 {
                     if (logger.sequencing)
                         logger.Log(logger.sequencingCategory, $"Applying pose '{clip.animationNameQualified}'");
-                    clip.pose?.Apply();
+                    clip.pose.Apply();
+                    lastAppliedPose = clip.pose;
                 }
                 clip.playbackBlendWeight = 1f;
                 clip.playbackBlendRate = 0f;
