@@ -299,12 +299,8 @@ namespace VamTimeline
         {
             if (!ValidateArgumentCount(e.Length, 4)) return;
             var clips = animation.index.ByName((string)e[3], (string)e[1]);
-            for(var i = 0; i < clips.Count; i++)
-            {
-                var clip = clips[i];
-                if (clip != animationEditContext.current) continue;
+            if(clips.Contains(animationEditContext.current))
                 animationEditContext.clipTime = (float)e[2];
-            }
         }
 
         public void SendCurrentAnimation(AtomAnimationClip clip)
@@ -313,19 +309,21 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendCurrentAnimation), // 0
                  clip.animationName, // 1
-                 clip.animationSegment // 2
+                 clip.animationSegment, // 2
+                 clip.clipTime, // 3
             });
         }
 
         private void ReceiveCurrentAnimation(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 3)) return;
+            if (!ValidateArgumentCount(e.Length, 4)) return;
             var clips = animation.index.ByName((string)e[2], (string)e[1]);
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
                 if (clip == null) continue;
                 animationEditContext.SelectAnimation(clip);
+                animationEditContext.clipTime = (float)e[3];
             }
         }
 

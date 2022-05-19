@@ -725,7 +725,8 @@ namespace VamTimeline
             else
             {
                 animation.playingAnimationSegment = clip.animationSegment;
-                previous.clipTime = 0f;
+                if (previous.animationSegmentId != current.animationSegmentId || previous.animationNameId != current.animationNameId)
+                    previous.clipTime = 0f;
                 try
                 {
                     SampleOrPose();
