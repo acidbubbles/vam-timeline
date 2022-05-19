@@ -19,7 +19,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Create", 1);
 
-            CreateChangeScreenButton("<i>Create <b>clip</b>...</i>", AddClipScreen.ScreenName);
+            CreateChangeScreenButton("<i>Create <b>animation</b>...</i>", AddClipScreen.ScreenName);
             CreateChangeScreenButton("<i>Create <b>layer</b>...</i>", AddLayerScreen.ScreenName);
             if (animation.index.useSegment)
                 CreateChangeScreenButton("<i>Create <b>segment</b>...</i>", AddSegmentScreen.ScreenName);
