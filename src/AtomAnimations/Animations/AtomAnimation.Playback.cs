@@ -99,7 +99,7 @@ namespace VamTimeline
 
             var clipsToPlay = GetDefaultClipsPerLayer(source);
 
-            if (source.animationSegment != AtomAnimationClip.SharedAnimationSegment && source.animationSegment != playingAnimationSegment)
+            if (!source.isOnSharedSegment && source.animationSegmentId != playingAnimationSegmentId)
             {
                 playingAnimationSegment = source.animationSegment;
                 var hasPose = clipsToPlay.Any(c => c.applyPoseOnTransition);
