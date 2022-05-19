@@ -358,14 +358,6 @@ namespace VamTimeline
             }
 
             animation.CleanupAnimatables();
-
-            // Ensures shows on top
-            _addControllerListJSON.popup.visible = true;
-            _addControllerListJSON.popup.visible = false;
-            _addStorableListJSON.popup.visible = true;
-            _addStorableListJSON.popup.visible = false;
-            _addParamListJSON.popup.visible = true;
-            _addParamListJSON.popup.visible = false;
         }
 
         private void InitFingersPresetUI()
