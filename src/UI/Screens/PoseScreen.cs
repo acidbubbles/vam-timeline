@@ -22,6 +22,7 @@ namespace VamTimeline
         private JSONStorableBool _savePoseUseMergeLoad;
         private UIDynamicButton _copyPoseUI;
         private UIDynamicButton _pastePoseUI;
+        private UIDynamicTextField _poseStateUI;
 
         public override string screenId => ScreenName;
 
@@ -30,6 +31,10 @@ namespace VamTimeline
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
+
+            InitHelp();
+
+            prefabFactory.CreateSpacer();
 
             InitPoseStateUI();
 
@@ -42,13 +47,25 @@ namespace VamTimeline
             OnAnimationSettingsChanged();
         }
 
+        private void InitHelp()
+        {
+            var helpJSON = new JSONStorableString("Help", @"Poses will save the state of <b>all</b> controls (on/off, physics settings, position).
+
+The will automatically apply when selecting the animation or pressing Stop twice.
+
+The pose will be applied instantly, avoiding 'physics explosions'. Whenever a pose is present, blending will automatically be set to 0 seconds. Keep in mind that poses are per animation, not per keyframe.
+
+You can also use poses for animations by using 'Apply pose on transition'. This will apply the pose when switching to this animation using triggers or sequencing.");
+            prefabFactory.CreateTextField(helpJSON);
+        }
+
         private void InitPoseStateUI()
         {
             _poseStateJSON = new JSONStorableString("Pose State", "");
-            var poseStateUI = prefabFactory.CreateTextField(_poseStateJSON);
-            poseStateUI.GetComponent<LayoutElement>().minHeight = 40f;
-            poseStateUI.UItext.alignment = TextAnchor.MiddleCenter;
-            poseStateUI.height = 40f;
+            _poseStateUI = prefabFactory.CreateTextField(_poseStateJSON);
+            _poseStateUI.GetComponent<LayoutElement>().minHeight = 38f;
+            _poseStateUI.UItext.alignment = TextAnchor.MiddleCenter;
+            _poseStateUI.height = 40f;
         }
 
         private void InitPoseUI()
@@ -57,7 +74,6 @@ namespace VamTimeline
             _savePoseUI.button.onClick.AddListener(() =>
             {
                 current.pose = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val);
-                _savePoseUI.buttonColor = new Color(0.4f, 0.6f, 0.4f);
             });
 
             prefabFactory.CreateSpacer();
@@ -123,25 +139,35 @@ namespace VamTimeline
             {
                 if (current.pose == null)
                 {
-                    _savePoseUI.label = "Save pose";
+                    _savePoseUI.label = "Use current pose";
+                    _savePoseUI.buttonColor = _copyPoseUI.buttonColor;
                     var poseClip = animation.index.ByName(current.animationSegmentId, current.animationNameId).FirstOrDefault(c => c.pose != null);
                     if (poseClip != null)
                     {
-                        _poseStateJSON.val = $"<color=black><b>Pose in layer '{poseClip.animationLayer}'</b></color>";
+                        _poseStateJSON.val = $"Pose in layer '{poseClip.animationLayer}'";
+                        _poseStateUI.backgroundColor = new Color(0.8f, 1f, 0.8f);
                     }
                     else
                     {
                         poseClip = animation.index.useSegment ? animation.GetDefaultClipsPerLayer(current, false).FirstOrDefault(c => c.pose != null) : null;
                         if (poseClip != null)
-                            _poseStateJSON.val = $"<color=black><b>Pose in '{poseClip.animationName}'</b></color>";
+                        {
+                            _poseStateJSON.val = $"Pose in '{poseClip.animationName}'";
+                            _poseStateUI.backgroundColor = new Color(0.8f, 0.8f, 1f);
+                        }
                         else
-                            _poseStateJSON.val = "<color=grey>No pose</color>";
+                        {
+                            _poseStateJSON.val = "No pose saved";
+                            _poseStateUI.backgroundColor = Color.grey;
+                        }
                     }
                 }
                 else
                 {
                     _savePoseUI.label = "Overwrite pose";
-                    _poseStateJSON.val = "<color=red><b>Pose saved</b></color>";
+                    _savePoseUI.buttonColor = new Color(0.8f, 0.8f, 0.5f);
+                    _poseStateJSON.val = "<b>Pose saved</b>";
+                    _poseStateUI.backgroundColor = Color.green;
                 }
 
                 _applyPoseUI.button.interactable = current.pose != null;
