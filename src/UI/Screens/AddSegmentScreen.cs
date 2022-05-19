@@ -105,15 +105,20 @@ namespace VamTimeline
 
         private void CopySegment()
         {
+            var result = currentSegment.layers
+                .SelectMany(l => l)
+                .Select(c => operations.AddAnimation().AddAnimation(c, c.animationName, c.animationLayer, segmentNameJSON.val, AddAnimationOperations.Positions.NotSpecified, true, true))
+                .Select(r => r.created)
+                .ToList();
 
-            var result = operations.AddAnimation().AddAnimation(animation.GetUniqueAnimationName(current), AddAnimationOperations.Positions.NotSpecified, true, true, true);
+            animation.index.Rebuild();
+
             foreach (var r in result)
             {
-                r.created.animationSegment = segmentNameJSON.val;
-                if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(r.created);
+                if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(r);
             }
 
-            animationEditContext.SelectAnimation(result[0].created);
+            animationEditContext.SelectAnimation(result.First(c => c.animationLayerId == current.animationLayerId && c.animationNameId == current.animationNameId));
             ChangeScreen(EditAnimationScreen.ScreenName);
         }
 

@@ -34,11 +34,11 @@ namespace VamTimeline
         public List<CreatedAnimation> AddAnimation(string animationName, string position, bool copySettings, bool copyKeyframes, bool allLayers)
         {
             if (!allLayers)
-                return new List<CreatedAnimation> { AddAnimation(_clip, animationName, position, copySettings, copyKeyframes) };
+                return new List<CreatedAnimation> { AddAnimation(_clip, animationName, _clip.animationLayer, _clip.animationSegment, position, copySettings, copyKeyframes) };
 
             var result = GetSameNameAnimationsInSegment()
                 .Where(c => _animation.index.ByLayerQualified(c.animationLayerQualifiedId).All(c2 => c2.animationName != animationName))
-                .Select(c => AddAnimation(c, animationName, position, copySettings, copyKeyframes))
+                .Select(c => AddAnimation(c, animationName, c.animationLayer, c.animationSegment, position, copySettings, copyKeyframes))
                 .ToList();
 
             _animation.index.Rebuild();
@@ -46,9 +46,9 @@ namespace VamTimeline
             return result;
         }
 
-        private CreatedAnimation AddAnimation(AtomAnimationClip source, string animationName, string position, bool copySettings, bool copyKeyframes)
+        public CreatedAnimation AddAnimation(AtomAnimationClip source, string animationName, string animationLayer, string animationSegment, string position, bool copySettings, bool copyKeyframes)
         {
-            var clip = _animation.CreateClip(animationName, source.animationLayer, source.animationSegment, GetPosition(source, position));
+            var clip = _animation.CreateClip(animationName, animationLayer, animationSegment, GetPosition(source, position));
 
             if (copySettings)
             {
