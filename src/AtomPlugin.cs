@@ -84,6 +84,10 @@ namespace VamTimeline
                 _freeControllerHook.containingAtom = base.containingAtom;
                 InitStorables();
                 SuperController.singleton.StartCoroutine(DeferredInit());
+
+
+                SuperController.singleton.onAtomUIDRenameHandlers += OnAtomUIDRename;
+                SuperController.singleton.onAtomRemovedHandlers += OnAtomRemoved;
             }
             catch (Exception exc)
             {
@@ -240,6 +244,9 @@ namespace VamTimeline
         {
             try
             {
+                SuperController.singleton.onAtomUIDRenameHandlers -= OnAtomUIDRename;
+                SuperController.singleton.onAtomRemovedHandlers -= OnAtomRemoved;
+
                 try { Destroy(animation); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [animations]: {exc}"); }
                 try { Destroy(_ui); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [ui]: {exc}"); }
                 try { DestroyControllerPanel(); } catch (Exception exc) { SuperController.LogError($"Timeline.{nameof(OnDestroy)} [panel]: {exc}"); }
@@ -868,6 +875,79 @@ namespace VamTimeline
         {
             _pausedJSON.valNoCallback = animation.paused;
             peers.SendPaused();
+        }
+
+
+        private void OnAtomRemoved(Atom atom)
+        {
+            if (animation == null) return;
+
+            // Remove deleted controllers
+            foreach (var controllerRef in animation.animatables.controllers.Where(r => !r.owned))
+            {
+                if (controllerRef.controller.containingAtom == atom)
+                {
+                    foreach (var clip in animation.clips)
+                    {
+                        var target = clip.targetControllers.FirstOrDefault(t => t.animatableRef == controllerRef);
+                        if (target != null)
+                        {
+                            clip.Remove(target);
+                        }
+                    }
+                    SuperController.LogError($"Timeline: Atom {atom.name} was removed from the scene, references to its controller {controllerRef.GetFullName()} were removed from atom {containingAtom.name}.");
+                }
+            }
+
+            // Remove deleted float params
+            foreach (var floatRef in animation.animatables.storableFloats.Where(r => !r.owned))
+            {
+                if (!floatRef.EnsureAvailable()) continue;
+                if (floatRef.storable.containingAtom == atom)
+                {
+                    foreach (var clip in animation.clips)
+                    {
+                        var target = clip.targetFloatParams.FirstOrDefault(t => t.animatableRef == floatRef);
+                        if (target != null)
+                        {
+                            clip.Remove(target);
+                        }
+                    }
+                    SuperController.LogError($"Timeline: Atom {atom.name} was removed from the scene, references to its float param {floatRef.GetFullName()} were removed from atom {containingAtom.name}.");
+                }
+            }
+
+            animation.CleanupAnimatables();
+
+            // Update parenting
+            foreach (var clip in animation.clips)
+            {
+                foreach (var target in clip.targetControllers)
+                {
+                    if (target.parentAtomId == atom.uid)
+                    {
+                        SuperController.LogError($"Timeline: Atom {atom.name} was removed from the scene, it was used as the parent of {target.animatableRef.controller.containingAtom.name} {target.animatableRef.controller.name} in animation {clip.animationNameQualified}. Animation will be broken.");
+                        target.SetParent(null, null);
+                    }
+                }
+            }
+        }
+
+        private void OnAtomUIDRename(string oldname, string newname)
+        {
+            if (animation == null) return;
+
+            // Update parenting
+            foreach (var clip in animation.clips)
+            {
+                foreach (var target in clip.targetControllers)
+                {
+                    if (target.parentAtomId == oldname)
+                    {
+                        target.SetParent(newname, target.parentRigidbodyId);
+                    }
+                }
+            }
         }
 
         private void BroadcastToControllers(string methodName)

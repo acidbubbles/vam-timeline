@@ -195,6 +195,7 @@ namespace VamTimeline
             animationEditContext.SelectAnimation(animation.clips.First(c => c.animationSegment == current.animationSegment && c.animationLayer != current.animationLayer));
             foreach (var clip in clips)
                 animation.RemoveClip(clip);
+            animation.CleanupAnimatables();
         }
 
         private void ReorderSegmentMoveUp()
@@ -244,6 +245,7 @@ namespace VamTimeline
             var clipsToDelete = animation.index.segmentsById[segmentToDeleteId].layers.SelectMany(c => c).ToList();
             foreach (var clip in clipsToDelete)
                 animation.RemoveClip(clip);
+            animation.CleanupAnimatables();
         }
 
         private void ReorderMove(int start, int end, int to, int min = 0, int max = int.MaxValue)

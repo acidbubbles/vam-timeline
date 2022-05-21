@@ -93,6 +93,11 @@ namespace VamTimeline
                 return;
             }
             var atom = SuperController.singleton.GetAtomByUid(_atomJSON.val);
+            if(atom == null)
+            {
+                _rigidbodyJSON.choices = new List<string> { "None" };
+                return;
+            }
             var selfRigidbodyControl = _target.animatableRef.controller.GetComponent<Rigidbody>().name;
             var selfRigidbodyTarget = selfRigidbodyControl.EndsWith("Control") ? selfRigidbodyControl.Substring(0, selfRigidbodyControl.Length - "Control".Length) : null;
             var choices = atom.linkableRigidbodies

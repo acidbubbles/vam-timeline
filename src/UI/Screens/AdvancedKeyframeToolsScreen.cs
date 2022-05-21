@@ -222,6 +222,8 @@ namespace VamTimeline
 
         private void ClearAllConfirm()
         {
+            if(animation.isPlaying)
+                animation.StopAll();
             while (animation.clips.Count > 0)
                 animation.RemoveClip(animation.clips[0]);
             animation.CreateClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment);
@@ -236,9 +238,13 @@ namespace VamTimeline
             animation.fadeManager = null;
             animation.liveParenting = true;
             animation.master = false;
-            animation.timeMode = 0;
+            animation.timeMode = TimeModes.RealTime;
             animation.syncSubsceneOnly = false;
             animation.syncWithPeers = true;
+            animation.paused = false;
+            animation.focusOnLayer = false;
+            animation.forceBlendTime = false;
+            animation.CleanupAnimatables();
         }
     }
 }
