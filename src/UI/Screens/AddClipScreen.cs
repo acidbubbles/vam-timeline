@@ -103,6 +103,7 @@ namespace VamTimeline
 
         private void SplitAnimationAtScrubber()
         {
+            #warning VALIDATE
             var time = current.clipTime.Snap();
             if (time < 0.001 || time > current.animationLength - 0.001)
             {
@@ -225,8 +226,7 @@ namespace VamTimeline
                 currentLayer.All(c => c.animationName != clipNameJSON.val) &&
                 current.isOnSharedSegment
                     ? animation.index.segmentsById.Where(kvp => kvp.Key != AtomAnimationClip.SharedAnimationSegmentId)
-                        .SelectMany(l => l.Value.layers)
-                        .SelectMany(l => l)
+                        .SelectMany(l => l.Value.allClips)
                         .All(c => c.animationName != clipNameJSON.val)
                     : animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, clipNameJSON.val).Count == 0;
 

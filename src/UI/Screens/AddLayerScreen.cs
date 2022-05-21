@@ -39,7 +39,7 @@ namespace VamTimeline
 
         private void InitCreateAllAnimationsUI()
         {
-            _createAllAnimationsJSON = new JSONStorableBool("Create same animations as current", false, val =>
+            _createAllAnimationsJSON = new JSONStorableBool("Same layer animations", false, val =>
             {
                 if (val) clipNameJSON.val = current.animationName;
             });
@@ -161,8 +161,7 @@ namespace VamTimeline
                 !string.IsNullOrEmpty(clipNameJSON.val) &&
                 current.isOnSharedSegment
                     ? animation.index.segmentsById.Where(kvp => kvp.Key != AtomAnimationClip.SharedAnimationSegmentId)
-                        .SelectMany(l => l.Value.layers)
-                        .SelectMany(l => l)
+                        .SelectMany(l => l.Value.allClips)
                         .All(c => c.animationName != clipNameJSON.val)
                     : animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, clipNameJSON.val).Count == 0 &&
                 !string.IsNullOrEmpty(layerNameJSON.val) &&

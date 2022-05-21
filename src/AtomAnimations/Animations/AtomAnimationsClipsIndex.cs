@@ -12,6 +12,9 @@ namespace VamTimeline
             public readonly List<List<AtomAnimationClip>> layers = new List<List<AtomAnimationClip>>();
             public readonly List<string> layerNames = new List<string>();
             public readonly List<int> layerIds = new List<int>();
+            public AtomAnimationClip mainClip => layers[0][0];
+            public IEnumerable<AtomAnimationClip> allClips => layers.SelectMany(l => l);
+
 
             public void Add(AtomAnimationClip clip)
             {

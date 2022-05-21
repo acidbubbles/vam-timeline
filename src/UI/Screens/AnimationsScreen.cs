@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VamTimeline
@@ -14,6 +14,10 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
+            var playingAnimationSegmentId = animation.playingAnimationSegmentId;
+            if (playingAnimationSegmentId == AtomAnimationClip.NoneAnimationSegmentId && animation.index.useSegment)
+                playingAnimationSegmentId = current.animationSegmentId;
+
             if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
             {
                 prefabFactory.CreateHeader("Animations", 1);
@@ -21,15 +25,23 @@ namespace VamTimeline
                 prefabFactory.CreateSpacer();
             }
 
-            if (current.animationSegmentId == AtomAnimationClip.NoneAnimationSegmentId)
+            if (animation.index.useSegment)
+            {
+                prefabFactory.CreateHeader("Segments", 1);
+                InitSegmentsUI();
+                prefabFactory.CreateSpacer();
+            }
+
+            if (playingAnimationSegmentId == AtomAnimationClip.NoneAnimationSegmentId)
             {
                 prefabFactory.CreateHeader($"Animations", 1);
-                InitClipsUI(current.animationSegmentId);
+                InitClipsUI(AtomAnimationClip.NoneAnimationSegmentId);
                 prefabFactory.CreateSpacer();
-            } else if (current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
+            }
+            else if (playingAnimationSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
             {
-                prefabFactory.CreateHeader($"{current.animationSegment} animations", 1);
-                InitClipsUI(current.animationSegmentId);
+                prefabFactory.CreateHeader($"{animation.playingAnimationSegment} animations", 1);
+                InitClipsUI(playingAnimationSegmentId);
                 prefabFactory.CreateSpacer();
             }
 
@@ -37,7 +49,11 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<i><b>Create</b> anims/layers/segments...</i>", AddAnimationsScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage/reorder</b> animations...</i>", ManageAnimationsScreen.ScreenName);
+
+            animation.onSegmentChanged.AddListener(ReloadScreen);
         }
+
+        #region Clips
 
         private void InitClipsUI(int segmentNameId)
         {
@@ -109,14 +125,48 @@ namespace VamTimeline
             }
         }
 
-        protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
-        {
-            base.OnCurrentAnimationChanged(args);
+        #endregion
 
-            if (args.before.animationSegment != args.after.animationSegment)
+        #region Segments
+
+        private void InitSegmentsUI()
+        {
+            foreach (var segment in animation.index.segmentNames)
             {
-                ReloadScreen();
+                InitSegmentButton(segment);
             }
+        }
+
+        private void InitSegmentButton(string segment)
+        {
+            var segmentId = segment.ToId();
+            var btn = prefabFactory.CreateButton("");
+            btn.buttonText.alignment = TextAnchor.MiddleLeft;
+            btn.button.onClick.AddListener(() =>
+            {
+                if (animation.playingAnimationSegmentId != segmentId)
+                {
+                    animation.PlaySegment(animation.index.segmentsById[segmentId].mainClip);
+                }
+            });
+            if (segmentId == animation.playingAnimationSegmentId)
+            {
+                btn.label = $"<b>      {segment}</b>";
+                btn.button.interactable = false;
+            }
+            else
+            {
+                btn.label = $" \u25B6 {segment}";
+                btn.button.interactable = true;
+            }
+        }
+
+        #endregion
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            animation.onSegmentChanged.RemoveListener(ReloadScreen);
         }
     }
 }

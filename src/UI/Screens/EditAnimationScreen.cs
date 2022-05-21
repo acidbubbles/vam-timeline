@@ -210,8 +210,7 @@ namespace VamTimeline
 
             if (!(current.isOnSharedSegment
                     ? animation.index.segmentsById.Where(kvp => kvp.Key != AtomAnimationClip.SharedAnimationSegmentId)
-                        .SelectMany(l => l.Value.layers)
-                        .SelectMany(l => l)
+                        .SelectMany(l => l.Value.allClips)
                         .All(c => c.animationName != val)
                     : animation.index.ByName(AtomAnimationClip.SharedAnimationSegment, val).Count == 0))
             {

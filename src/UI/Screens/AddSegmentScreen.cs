@@ -84,7 +84,7 @@ namespace VamTimeline
         {
             var previousAnimationSegment = current.animationSegment;
             var animationSegment = !string.IsNullOrEmpty(segmentNameJSON.val) ? segmentNameJSON.val : animation.GetUniqueSegmentName("Segment 1");
-            foreach (var clip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].layers.SelectMany(l => l))
+            foreach (var clip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].allClips)
             {
                 clip.animationSegment = animationSegment;
             }
@@ -105,8 +105,7 @@ namespace VamTimeline
 
         private void CopySegment()
         {
-            var result = currentSegment.layers
-                .SelectMany(l => l)
+            var result = currentSegment.allClips
                 .Select(c => operations.AddAnimation().AddAnimation(c, c.animationName, c.animationLayer, segmentNameJSON.val, AddAnimationOperations.Positions.NotSpecified, true, true))
                 .Select(r => r.created)
                 .ToList();

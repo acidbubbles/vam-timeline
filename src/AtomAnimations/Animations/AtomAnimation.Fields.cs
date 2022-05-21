@@ -19,6 +19,7 @@ namespace VamTimeline
         public readonly UnityEvent onPausedChanged = new UnityEvent();
         public readonly AtomAnimationClipEvent onIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationClipEvent onClipIsPlayingChanged = new AtomAnimationClipEvent();
+        public readonly UnityEvent onSegmentChanged = new UnityEvent();
         public readonly AtomAnimationClipEvent onSegmentPlayed = new AtomAnimationClipEvent();
 
         public Logger logger;
@@ -42,6 +43,7 @@ namespace VamTimeline
             {
                 _playingAnimationSegment = value;
                 playingAnimationSegmentId = value.ToId();
+                onSegmentChanged.Invoke();
             }
         }
         public float autoStop;

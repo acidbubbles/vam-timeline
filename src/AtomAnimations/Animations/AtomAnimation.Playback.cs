@@ -89,8 +89,7 @@ namespace VamTimeline
             AtomAnimationsClipsIndex.IndexedSegment segment;
             if (!index.segmentsById.TryGetValue(segmentNameId, out segment))
                 return;
-            var segmentClip = segment.layers[0][0];
-            PlaySegment(segmentClip);
+            PlaySegment(segment.mainClip);
         }
 
         public void PlaySegment(AtomAnimationClip source)
@@ -149,11 +148,11 @@ namespace VamTimeline
                 Validate();
                 sequencing = sequencing || seq;
                 fadeManager?.SyncFadeTime();
-                if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment)
-                    playingAnimationSegment = next.animationSegment;
+                if (next.isOnSegment)
+                    PlaySegment(next);
             }
 
-            if (next.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != next.animationSegment)
+            if (next.isOnSegment && playingAnimationSegment != next.animationSegment)
             {
                 PlaySegment(next);
                 return;

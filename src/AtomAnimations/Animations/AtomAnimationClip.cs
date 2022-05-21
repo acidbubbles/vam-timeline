@@ -138,6 +138,7 @@ namespace VamTimeline
         public int animationSetQualifiedId { get; private set; }
 
 
+        public bool isOnSegment { get; private set; }
         public bool isOnSharedSegment { get; private set; }
         public bool isOnNoneSegment { get; private set; }
 
@@ -202,6 +203,7 @@ namespace VamTimeline
                 animationSegmentId = animationSegment.ToId();
                 isOnNoneSegment = value == NoneAnimationSegment;
                 isOnSharedSegment = value == SharedAnimationSegment;
+                isOnSegment = !isOnNoneSegment && !isOnSharedSegment;
                 UpdateAnimationNameQualified();
                 onAnimationSettingsChanged.Invoke(nameof(animationSegment));
             }

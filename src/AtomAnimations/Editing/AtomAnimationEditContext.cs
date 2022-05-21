@@ -391,7 +391,7 @@ namespace VamTimeline
             var idx = segments.IndexOf(current.animationSegmentId);
             if (idx == 0) return;
             var prev = segments[idx - 1];
-            SelectAnimation(animation.index.segmentsById[prev].layers[0][0]);
+            SelectAnimation(animation.index.segmentsById[prev].mainClip);
         }
 
         public void GoToNextSegment()
@@ -400,7 +400,7 @@ namespace VamTimeline
             var idx = segments.IndexOf(current.animationSegmentId);
             if (idx == segments.Count - 1) return;
             var next = segments[idx + 1];
-            SelectAnimation(animation.index.segmentsById[next].layers[0][0]);
+            SelectAnimation(animation.index.segmentsById[next].mainClip);
         }
 
         public void RewindSeconds(float seconds)

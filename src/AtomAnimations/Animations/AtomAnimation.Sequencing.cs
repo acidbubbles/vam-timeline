@@ -161,7 +161,7 @@ namespace VamTimeline
                 AtomAnimationsClipsIndex.IndexedSegment segment;
                 if (index.segmentsById.TryGetValue(source.nextAnimationSegmentRefId, out segment))
                 {
-                    next = segment.layers[0][0];
+                    next = segment.mainClip;
                 }
                 else
                 {

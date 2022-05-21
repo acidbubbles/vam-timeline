@@ -300,7 +300,7 @@ namespace VamTimeline
                     else if (segment.Key == AtomAnimationClip.NoneAnimationSegmentId)
                         segmentLabel = "Animations";
                     else
-                        segmentLabel = segment.Value.layers[0][0].animationSegment;
+                        segmentLabel = segment.Value.mainClip.animationSegment;
                     sb.AppendLine($"{segmentLabel}");
                     if (segment.Key == current.animationSegmentId) sb.Append("</b>");
                 }
