@@ -41,8 +41,10 @@ namespace VamTimeline
             get { return _playingAnimationSegment; }
             set
             {
+                var id = value.ToId();
+                if (playingAnimationSegmentId == id) return;
                 _playingAnimationSegment = value;
-                playingAnimationSegmentId = value.ToId();
+                playingAnimationSegmentId = id;
                 onSegmentChanged.Invoke();
             }
         }
