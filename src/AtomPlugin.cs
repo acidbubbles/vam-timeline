@@ -445,7 +445,6 @@ namespace VamTimeline
                 }
             }
 
-            peers.SendPlaySegment(selected);
             animation.PlaySegment(selected);
         }
 

@@ -169,7 +169,7 @@ namespace VamTimeline
                  nameof(SendPlaybackState), // 0
                  clip.animationName, // 1
                  clip.playbackEnabled, // 2
-                 clip.clipTime, // 3
+                 clip.clipTime - clip.timeOffset, // 3
                  animation.sequencing, // 4
                  clip.animationSet, // 5
                  clip.animationSegment, // 6
@@ -192,7 +192,7 @@ namespace VamTimeline
             for (var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
-                clip.clipTime = clipTime;
+                clip.clipTime = clipTime + clip.timeOffset;
             }
         }
 
@@ -203,15 +203,23 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendPlaySegment), // 0
                  clip.animationSegment, // 1
+                 clip.animationName // 2
             });
         }
 
         private void ReceivePlaySegment(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 1)) return;
+            if (!ValidateArgumentCount(e.Length, 3)) return;
             var animationSegment = (string)e[1];
-            if(!animation.isPlaying || animation.playingAnimationSegment != animationSegment)
-                animation.PlaySegment(animationSegment);
+            var animationName = (string)e[2];
+            if (!animation.isPlaying || animation.playingAnimationSegment != animationSegment)
+            {
+                var byName = animation.index.ByName(animationSegment, animationName);
+                if(byName.Count > 0)
+                    animation.PlaySegment(byName[0]);
+                else
+                    animation.PlaySegment(animationSegment);
+            }
         }
 
         public void SendMasterClipState(AtomAnimationClip clip)
@@ -290,7 +298,7 @@ namespace VamTimeline
         {
             if (syncing) return;
             _sendTimeMessage[1] = clip.animationName;
-            _sendTimeMessage[2] = clip.clipTime;
+            _sendTimeMessage[2] = clip.clipTime - clip.timeOffset;
             _sendTimeMessage[3] = clip.animationSegment;
             SendTimelineEvent(_sendTimeMessage);
         }
@@ -300,7 +308,7 @@ namespace VamTimeline
             if (!ValidateArgumentCount(e.Length, 4)) return;
             var clips = animation.index.ByName((string)e[3], (string)e[1]);
             if(clips.Contains(animationEditContext.current))
-                animationEditContext.clipTime = (float)e[2];
+                animationEditContext.clipTime = (float)e[2] + animationEditContext.current.timeOffset;
         }
 
         public void SendCurrentAnimation(AtomAnimationClip clip)
@@ -310,7 +318,7 @@ namespace VamTimeline
                  nameof(SendCurrentAnimation), // 0
                  clip.animationName, // 1
                  clip.animationSegment, // 2
-                 clip.clipTime, // 3
+                 clip.clipTime - clip.timeOffset, // 3
             });
         }
 
@@ -323,7 +331,7 @@ namespace VamTimeline
                 var clip = clips[i];
                 if (clip == null) continue;
                 animationEditContext.SelectAnimation(clip);
-                animationEditContext.clipTime = (float)e[3];
+                animationEditContext.clipTime = (float)e[3] + animationEditContext.current.timeOffset;
             }
         }
 
