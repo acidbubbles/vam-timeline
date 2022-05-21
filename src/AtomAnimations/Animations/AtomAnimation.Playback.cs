@@ -79,20 +79,15 @@ namespace VamTimeline
             );
         }
 
-        public void PlaySegment(string segmentName)
-        {
-            PlaySegment(segmentName.ToId());
-        }
-
-        public void PlaySegment(int segmentNameId)
+        public void PlaySegment(string segmentName, bool seq = true)
         {
             AtomAnimationsClipsIndex.IndexedSegment segment;
-            if (!index.segmentsById.TryGetValue(segmentNameId, out segment))
+            if (!index.segmentsById.TryGetValue(segmentName.ToId(), out segment))
                 return;
-            PlaySegment(segment.mainClip);
+            PlaySegment(segment.mainClip, seq);
         }
 
-        public void PlaySegment(AtomAnimationClip source)
+        public void PlaySegment(AtomAnimationClip source, bool seq = true)
         {
             onSegmentPlayed.Invoke(source);
 
@@ -121,7 +116,7 @@ namespace VamTimeline
 
             foreach (var clip in clipsToPlay)
             {
-                PlayClipCore(null, clip, true, false, false);
+                PlayClipCore(null, clip, seq, false, false);
             }
         }
 
@@ -149,12 +144,13 @@ namespace VamTimeline
                 sequencing = sequencing || seq;
                 fadeManager?.SyncFadeTime();
                 if (next.isOnSegment)
-                    PlaySegment(next);
+                    PlaySegment(next, sequencing);
             }
+
 
             if (next.isOnSegment && playingAnimationSegment != next.animationSegment)
             {
-                PlaySegment(next);
+                PlaySegment(next, sequencing);
                 return;
             }
 

@@ -203,22 +203,24 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendPlaySegment), // 0
                  clip.animationSegment, // 1
-                 clip.animationName // 2
+                 clip.animationName, // 2
+                 animation.sequencing // 3
             });
         }
 
         private void ReceivePlaySegment(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 3)) return;
+            if (!ValidateArgumentCount(e.Length, 4)) return;
             var animationSegment = (string)e[1];
             var animationName = (string)e[2];
+            var sequencing = (bool)e[3];
             if (!animation.isPlaying || animation.playingAnimationSegment != animationSegment)
             {
                 var byName = animation.index.ByName(animationSegment, animationName);
                 if(byName.Count > 0)
-                    animation.PlaySegment(byName[0]);
+                    animation.PlaySegment(byName[0], sequencing);
                 else
-                    animation.PlaySegment(animationSegment);
+                    animation.PlaySegment(animationSegment, sequencing);
             }
         }
 
