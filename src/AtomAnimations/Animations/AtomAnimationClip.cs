@@ -88,6 +88,10 @@ namespace VamTimeline
             }
             set
             {
+                if (!_loop && value < 0)
+                {
+                    value = 0;
+                }
                 if (playbackEnabled)
                 {
                     clipTime += (value - _timeOffset);
@@ -312,6 +316,9 @@ namespace VamTimeline
                 {
                     _skipNextAnimationSettingsModified = false;
                 }
+
+                if (!_loop && timeOffset < 0)
+                    timeOffset = 0;
 
                 UpdateForcedNextAnimationTime();
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(loop));
