@@ -304,6 +304,9 @@ namespace VamTimeline
             _lastStop = Time.realtimeSinceStartup;
 
             peers.SendStop();
+
+            // Adjust time offsets
+            clipTime = 0f;
         }
 
         public void PlayCurrentClip()
@@ -602,6 +605,9 @@ namespace VamTimeline
             {
                 SampleOrPose(true, true);
             }
+
+            // Adjust time offsets
+            clipTime = 0f;
 
             onTimeChanged.Invoke(timeArgs);
         }
