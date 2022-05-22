@@ -103,7 +103,6 @@ namespace VamTimeline
 
         private void SplitAnimationAtScrubber()
         {
-            #warning VALIDATE
             var time = current.clipTime.Snap();
             if (time < 0.001 || time > current.animationLength - 0.001)
             {
@@ -111,7 +110,7 @@ namespace VamTimeline
                 return;
             }
 
-            foreach (var created in operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, true, false, _createOnAllLayersJSON.val))
+            foreach (var created in operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, true, true, _createOnAllLayersJSON.val))
             {
                 created.source.loop = false;
                 created.source.DirtyAll();
