@@ -603,11 +603,10 @@ namespace VamTimeline
             }
             else if(!wasCurrentMainInLayer)
             {
+                // Adjust time offsets
+                clipTime = 0f;
                 SampleOrPose(true, true);
             }
-
-            // Adjust time offsets
-            clipTime = 0f;
 
             onTimeChanged.Invoke(timeArgs);
         }
@@ -745,6 +744,9 @@ namespace VamTimeline
                 var differentAnimation = previous.animationSegmentId != current.animationSegmentId || previous.animationNameId != current.animationNameId;
                 if (differentAnimation)
                     previous.clipTime = 0f;
+
+                // Adjust time offsets
+                clipTime = 0f;
 
                 try
                 {

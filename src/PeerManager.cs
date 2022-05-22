@@ -230,7 +230,7 @@ namespace VamTimeline
             SendTimelineEvent(new object[]{
                  nameof(SendMasterClipState), // 0
                  clip.animationName, // 1
-                 clip.clipTime, //2
+                 clip.clipTime - clip.timeOffset, //2
                  clip.animationSegment, // 3
             });
         }
@@ -247,9 +247,9 @@ namespace VamTimeline
             for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
-                if (clip == null || clip.playbackEnabled) continue;
-                animation.PlayClip(clip, true, false);
-                clip.clipTime = (float) e[2];
+                if (!clip.playbackMainInLayer)
+                    animation.PlayClip(clip, true, false);
+                clip.clipTime = (float) e[2] + clip.timeOffset;
             }
         }
 
