@@ -50,7 +50,7 @@ namespace VamTimeline
             OnAnimationKeyframesRebuilt();
         }
 
-        private string Crop(string value)
+        private static string Crop(string value)
         {
             if (value.Length > 30)
                 return value.Substring(0, 10) + "..." + value.Substring(value.Length - 20);

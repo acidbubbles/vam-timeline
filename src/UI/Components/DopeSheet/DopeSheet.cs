@@ -384,11 +384,13 @@ namespace VamTimeline
                 rect.offsetMax = new Vector2(-_style.LabelHorizontalPadding, 0);
 
                 var text = child.AddComponent<Text>();
-                text.text = $"<b>{group.label}</b> [{group.Count}]";
+                text.text = $"<b>{Crop(group.label, 16, 18)}</b> [{group.Count}]";
                 text.font = _style.Font;
                 text.fontSize = 24;
                 text.color = _style.FontColor;
                 text.alignment = TextAnchor.MiddleLeft;
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
+                text.resizeTextForBestFit = false; // Better but ugly if true
                 text.raycastTarget = true;
 
                 var click = child.AddComponent<Clickable>();
@@ -492,12 +494,12 @@ namespace VamTimeline
                 rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _style.LabelWidth - padding * 2);
 
                 var text = child.AddComponent<Text>();
-                text.text = target.GetShortName();
+                text.text = Crop(target.GetShortName(), 6, 8);
                 text.font = _style.Font;
                 text.fontSize = 20;
                 text.color = _style.FontColor;
                 text.alignment = TextAnchor.MiddleLeft;
-                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
                 text.resizeTextForBestFit = false; // Better but ugly if true
                 text.raycastTarget = false;
             }
@@ -509,6 +511,13 @@ namespace VamTimeline
                 target = target,
                 gameObject = go
             };
+        }
+
+        private static string Crop(string value, int first, int second)
+        {
+            if (value.Length > first + second)
+                return value.Substring(0, first) + "..." + value.Substring(value.Length - second);
+            return value;
         }
 
         private void UpdateSelected(IAtomAnimationTarget target, DopeSheetKeyframes keyframes, GradientImage image)

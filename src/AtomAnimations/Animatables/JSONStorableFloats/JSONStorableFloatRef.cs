@@ -57,8 +57,19 @@ namespace VamTimeline
             _available = true;
         }
 
-        #warning Include atom
-        public override object groupKey => storable != null ? (object)storable : storableId;
+        public override object groupKey
+        {
+            get
+            {
+                if (storable == null)
+                    return storableId;
+
+                if (!owned)
+                    return $"{_atom.uid} {storable.storeId}";
+
+                return storable != null ? (object)storable : storableId;
+            }
+        }
 
         public override string groupLabel
         {
