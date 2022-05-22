@@ -510,9 +510,26 @@ namespace VamTimeline
 
         private void StartAutoPlay()
         {
-            foreach (var autoPlayClip in animation.clips.Where(c => c.autoPlay))
+            if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
             {
-                animation.PlayClip(autoPlayClip, true);
+                foreach (var autoPlayClip in animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].allClips.Where(c => c.autoPlay))
+                {
+                    animation.PlayClip(autoPlayClip, true);
+                }
+            }
+            if (animation.index.segmentIds.Contains(AtomAnimationClip.NoneAnimationSegmentId))
+            {
+                foreach (var autoPlayClip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].allClips.Where(c => c.autoPlay))
+                {
+                    animation.PlayClip(autoPlayClip, true);
+                }
+            }
+            if (animation.index.useSegment && animation.index.segmentIds.Count > 1)
+            {
+                foreach (var autoPlayClip in animation.index.segmentsById[animation.index.segmentIds.First(s => s != AtomAnimationClip.SharedAnimationSegmentId)].allClips.Where(c => c.autoPlay))
+                {
+                    animation.PlayClip(autoPlayClip, true);
+                }
             }
         }
 

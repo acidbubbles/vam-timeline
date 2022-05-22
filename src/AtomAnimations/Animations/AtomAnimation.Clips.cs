@@ -328,7 +328,6 @@ namespace VamTimeline
 
             return layer.FirstOrDefault(c => c.playbackMainInLayer) ??
                    layer.FirstOrDefault(c => c.animationNameId == source.animationNameId) ??
-                   #warning Review auto play logic with segments
                    layer.FirstOrDefault(c => c.autoPlay) ??
                    layer[0];
         }
