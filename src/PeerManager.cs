@@ -321,20 +321,18 @@ namespace VamTimeline
                  clip.animationName, // 1
                  clip.animationSegment, // 2
                  clip.clipTime - clip.timeOffset, // 3
+                 clip.animationLayer, // 4
             });
         }
 
         private void ReceiveCurrentAnimation(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 4)) return;
+            if (!ValidateArgumentCount(e.Length, 5)) return;
             var clips = animation.index.ByName((string)e[2], (string)e[1]);
-            for(var i = 0; i < clips.Count; i++)
-            {
-                var clip = clips[i];
-                if (clip == null) continue;
-                animationEditContext.SelectAnimation(clip);
-                animationEditContext.clipTime = (float)e[3] + animationEditContext.current.timeOffset;
-            }
+            var clip = clips.FirstOrDefault(c => c.animationLayer == (string)e[4]) ?? clips.FirstOrDefault();
+            if (clip == null) return;
+            animationEditContext.SelectAnimation(clip);
+            animationEditContext.clipTime = (float)e[3] + animationEditContext.current.timeOffset;
         }
 
         public void SendSyncAnimation(AtomAnimationClip clip)
