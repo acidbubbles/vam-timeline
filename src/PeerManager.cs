@@ -332,7 +332,8 @@ namespace VamTimeline
             var clip = clips.FirstOrDefault(c => c.animationLayer == (string)e[4]) ?? clips.FirstOrDefault();
             if (clip == null) return;
             animationEditContext.SelectAnimation(clip);
-            animationEditContext.clipTime = (float)e[3] + animationEditContext.current.timeOffset;
+            if (!animation.isPlaying)
+                animationEditContext.clipTime = (float)e[3] + animationEditContext.current.timeOffset;
         }
 
         public void SendSyncAnimation(AtomAnimationClip clip)
