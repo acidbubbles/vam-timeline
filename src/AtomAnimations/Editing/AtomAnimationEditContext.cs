@@ -706,13 +706,6 @@ namespace VamTimeline
 
         #region Selection
 
-        public void SelectAnimation(string animationNameQualified)
-        {
-            var clip = animation.clips.FirstOrDefault(c => c.animationNameQualified == animationNameQualified);
-            if (clip == null) throw new NullReferenceException($"Could not find animation '{animationNameQualified}'. Found animations: '{string.Join("', '", animation.clips.Select(c => c.animationNameQualified).ToArray())}'.");
-            SelectAnimation(clip);
-        }
-
         public void SelectAnimation(string animationSegment, string animationLayer, string animationName)
         {
             var clip = animation.GetClip(animationSegment, animationLayer, animationName);

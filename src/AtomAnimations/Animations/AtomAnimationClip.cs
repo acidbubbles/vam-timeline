@@ -35,7 +35,7 @@ namespace VamTimeline
         private bool _autoTransitionPrevious;
         private bool _autoTransitionNext;
         private bool _preserveLoops = true;
-        private bool _preserveLength = false;
+        private bool _preserveLength;
         private float _blendDuration = DefaultBlendDuration;
         private float _nextAnimationTime;
         private float _nextAnimationRandomizeWeight = 1;
@@ -88,14 +88,10 @@ namespace VamTimeline
             }
             set
             {
-                if (!_loop && value < 0)
-                {
-                    value = 0;
-                }
+                if (!_loop)
+                    return;
                 if (playbackEnabled)
-                {
                     clipTime += (value - _timeOffset);
-                }
                 _timeOffset = value;
                 onAnimationSettingsChanged.Invoke(nameof(timeOffset));
             }
@@ -317,7 +313,7 @@ namespace VamTimeline
                     _skipNextAnimationSettingsModified = false;
                 }
 
-                if (!_loop && timeOffset < 0)
+                if (!_loop && timeOffset != 0)
                     timeOffset = 0;
 
                 UpdateForcedNextAnimationTime();
