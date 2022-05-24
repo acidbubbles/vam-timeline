@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -28,7 +27,6 @@ namespace VamTimeline
         private JSONStorableStringChooser _segmentsJSON;
         private JSONStorableStringChooser _layersJSON;
         private JSONStorableStringChooser _animationsJSON;
-        private bool _ignoreAnimationChange;
         private UIDynamicButton _playAll;
         private UIDynamicButton _playClip;
         private UIDynamicPopup _segmentsUI;
@@ -61,7 +59,6 @@ namespace VamTimeline
         {
             _segmentsJSON = new JSONStorableStringChooser("Segment", new List<string>(), "", "Segment", val =>
             {
-                if (_ignoreAnimationChange) return;
                 var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == val).ToList();
                 var clip = clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val && c.animationName == _animationsJSON.val)
                     ?? clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val || c.animationName == _animationsJSON.val)
@@ -71,7 +68,6 @@ namespace VamTimeline
             });
             _layersJSON = new JSONStorableStringChooser("Layer", new List<string>(), "", "Layer", (string val) =>
             {
-                if (_ignoreAnimationChange) return;
                 var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == _segmentsJSON.val && c.animationLayer == val).ToList();
                 var clip = clips.FirstOrDefault(c => c.animationName == _animationsJSON.val) ?? clips.FirstOrDefault();
                 _animationEditContext.SelectAnimation(clip);
@@ -79,7 +75,6 @@ namespace VamTimeline
             });
             _animationsJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string _) =>
             {
-                if (_ignoreAnimationChange) return;
                 _animationEditContext.SelectAnimation(_segmentsJSON.val, _layersJSON.val, _animationsJSON.val);
             });
 
@@ -203,43 +198,25 @@ namespace VamTimeline
 
         private void OnClipsListChanged()
         {
-            if (_ignoreAnimationChange) return;
-            if (isActiveAndEnabled)
-                StartCoroutine(SyncAnimationsList());
-            else
-                SyncAnimationsListNow();
-        }
-
-        private IEnumerator SyncAnimationsList()
-        {
-            yield return 0;
             SyncAnimationsListNow();
         }
 
         private void SyncAnimationsListNow()
         {
-            _ignoreAnimationChange = true;
-            try
-            {
-                _segmentsJSON.choices = _animationEditContext.animation.index.segmentNames;
-                _segmentsJSON.displayChoices = _animationEditContext.animation.index.segmentNames.Select(x => x == AtomAnimationClip.SharedAnimationSegment ? _sharedSequenceLabel : x).ToList();
-                _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment).Select(c => c.animationLayer).Distinct().ToList();
-                _animationsJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment && c.animationLayer == _animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
+            _segmentsJSON.choices = _animationEditContext.animation.index.segmentNames;
+            _segmentsJSON.displayChoices = _animationEditContext.animation.index.segmentNames.Select(x => x == AtomAnimationClip.SharedAnimationSegment ? _sharedSequenceLabel : x).ToList();
+            _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment).Select(c => c.animationLayer).Distinct().ToList();
+            _animationsJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment && c.animationLayer == _animationEditContext.current.animationLayer).Select(c => c.animationName).ToList();
 
-                _segmentsJSON.valNoCallback = null;
-                _segmentsJSON.valNoCallback = _animationEditContext.current.animationSegment;
-                _layersJSON.valNoCallback = null;
-                _layersJSON.valNoCallback = _animationEditContext.current.animationLayer;
-                _animationsJSON.valNoCallback = null;
-                _animationsJSON.valNoCallback = _animationEditContext.current.animationName;
+            _segmentsJSON.valNoCallback = null;
+            _segmentsJSON.valNoCallback = _animationEditContext.current.animationSegment;
+            _layersJSON.valNoCallback = null;
+            _layersJSON.valNoCallback = _animationEditContext.current.animationLayer;
+            _animationsJSON.valNoCallback = null;
+            _animationsJSON.valNoCallback = _animationEditContext.current.animationName;
 
-                _segmentsUI.gameObject.SetActive(_animationEditContext.animation.index.segmentsById.Count > 1);
-                _layersUI.gameObject.SetActive(_animationEditContext.animation.index.segmentsById.Any(s => s.Value.layerNames.Count > 1));
-            }
-            finally
-            {
-                _ignoreAnimationChange = false;
-            }
+            _segmentsUI.gameObject.SetActive(_animationEditContext.animation.index.segmentsById.Count > 1);
+            _layersUI.gameObject.SetActive(_animationEditContext.animation.index.segmentsById.Any(s => s.Value.layerNames.Count > 1));
         }
 
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
@@ -251,6 +228,7 @@ namespace VamTimeline
             args.after?.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             OnAnimationSettingsChanged(nameof(AtomAnimationClip.animationName));
             OnTimeChanged(_animationEditContext.timeArgs);
+            SyncAnimationsListNow();
         }
 
         private void OnAnimationSettingsChanged(string prop)
