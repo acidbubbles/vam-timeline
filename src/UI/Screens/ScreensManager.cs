@@ -39,6 +39,7 @@ namespace VamTimeline
 
         public void ReloadScreen()
         {
+            if (_current == null) return;
             var screen = _currentScreen;
             DestroyImmediate(_current.gameObject);
             _current = null;
