@@ -292,11 +292,16 @@ namespace VamTimeline
             var wasPlaying = current.playbackMainInLayer;
 
             if (animation.isPlaying)
+            {
                 animation.StopAll();
+                onTimeChanged.Invoke(timeArgs);
+            }
             else
+            {
                 animation.ResetAll();
-
-            onTimeChanged.Invoke(timeArgs);
+                // Adjust time offsets
+                clipTime = 0f;
+            }
 
             // Apply pose on stop fast double-click
             SampleOrPose(!wasPlaying, _lastStop > Time.realtimeSinceStartup - 0.2f);
@@ -304,9 +309,6 @@ namespace VamTimeline
             _lastStop = Time.realtimeSinceStartup;
 
             peers.SendStop();
-
-            // Adjust time offsets
-            clipTime = 0f;
         }
 
         public void PlayCurrentClip()
