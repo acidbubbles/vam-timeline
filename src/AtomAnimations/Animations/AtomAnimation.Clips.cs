@@ -204,6 +204,7 @@ namespace VamTimeline
 
             var length = sharedLayers.layers.Count + segmentLayers.layers.Count;
             if (_mainAndBestSiblingPerLayerCache.Length != length) _mainAndBestSiblingPerLayerCache = new TransitionTarget[length];
+            if (length == 0) return _mainAndBestSiblingPerLayerCache;
 
             for (var i = 0; i < sharedLayers.layers.Count; i++)
             {
