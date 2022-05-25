@@ -9,7 +9,8 @@ namespace VamTimeline
 
         public bool general { get; set; }
         public readonly string generalCategory = "gen";
-        public bool triggers { get; set; }
+        public bool triggersReceived { get; set; }
+        public bool triggersInvoked { get; set; }
         public readonly string triggersCategory = "trig";
         public bool sequencing { get; set; }
         public readonly string sequencingCategory = "seq";
@@ -41,11 +42,12 @@ namespace VamTimeline
             SuperController.LogMessage($"[{(Time.time - _startTime) % 100:00.000}|{_containingAtom.name}|{category}] {message}");
         }
 
-        public void EnableAll()
+        public void EnableDefault()
         {
             general = true;
-            triggers = true;
+            triggersReceived = true;
             sequencing = true;
+            peersSync = true;
         }
     }
 }

@@ -30,14 +30,14 @@ namespace VamTimeline
                     active = true;
                     if (live)
                         SyncAudio(clipTime);
-                    if (_logger.triggers)
+                    if (_logger.triggersInvoked)
                         LogTriggers(discreteActionsStart, "start");
                 }
             }
             else if (active)
             {
                 Leave(live);
-                if (_logger.triggers)
+                if (_logger.triggersInvoked)
                     LogTriggers(discreteActionsStart, "end");
             }
         }

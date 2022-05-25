@@ -485,21 +485,23 @@ namespace VamTimeline
                  _logger.filter, // 1
                  _logger.clearOnPlay, // 2
                  _logger.general, // 3
-                 _logger.triggers, // 4
+                 _logger.triggersReceived, // 4
                  _logger.sequencing, // 5
                  _logger.peersSync, // 6
+                 _logger.triggersInvoked, // 7<
             });
         }
 
         private void ReceiveLoggingSettings(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 7)) return;
+            if (!ValidateArgumentCount(e.Length, 8)) return;
             _logger.filter = (Regex)e[1];
             _logger.clearOnPlay = (bool)e[2];
             _logger.general = (bool)e[3];
-            _logger.triggers = (bool)e[4];
+            _logger.triggersReceived = (bool)e[4];
             _logger.sequencing = (bool)e[5];
             _logger.peersSync = (bool)e[6];
+            _logger.triggersInvoked = (bool)e[7];
         }
 
         private void SendTimelineEvent(object[] e)

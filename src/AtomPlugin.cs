@@ -269,7 +269,7 @@ namespace VamTimeline
             _animationJSON = new JSONStorableStringChooser(StorableNames.Animation, new List<string>(), "", "Animation", val =>
             {
                 if (string.IsNullOrEmpty(val)) return;
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
                 _legacyAnimationNext = val;
                 var clip = animation.index.ByName(animation.playingAnimationSegment, val).FirstOrDefault() ?? animation.index.ByName(val).FirstOrDefault();
                 if (clip == null) return;
@@ -287,28 +287,28 @@ namespace VamTimeline
 
             _nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimation}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimation}'");
                 animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_nextAnimationJSON);
 
             _previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimation}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimation}'");
                 animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_previousAnimationJSON);
 
             _nextAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.NextAnimationInMainLayer, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimationInMainLayer}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimationInMainLayer}'");
                 animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_nextAnimationInMainLayerJSON);
 
             _previousAnimationInMainLayerJSON = new JSONStorableAction(StorableNames.PreviousAnimationInMainLayer, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimationInMainLayer}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimationInMainLayer}'");
                 animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_previousAnimationInMainLayerJSON);
@@ -352,7 +352,7 @@ namespace VamTimeline
 
             _stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Stop}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Stop}'");
                 if (animation.isPlaying)
                     animation.StopAll();
                 else
@@ -363,14 +363,14 @@ namespace VamTimeline
             _stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
                 if (!animation.isPlaying) return;
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopIfPlaying}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopIfPlaying}'");
                 animation.StopAll();
             });
             RegisterAction(_stopIfPlayingJSON);
 
             _stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopAndReset}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopAndReset}'");
                 animationEditContext.StopAndReset();
                 peers.SendStopAndReset();
             });
@@ -423,7 +423,7 @@ namespace VamTimeline
             if (animation.paused)
             {
                 animation.paused = false;
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (unpause)");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (unpause)");
                 return;
             }
 
@@ -431,12 +431,12 @@ namespace VamTimeline
             if (string.IsNullOrEmpty(_legacyAnimationNext))
             {
                 selected = animation.GetDefaultClip();
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using default clip)");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using default clip)");
             }
             else
             {
                 selected = animation.index.ByName(_legacyAnimationNext).FirstOrDefault();
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using 'Animation' = '{_legacyAnimationNext}')");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{storableName}' (Using 'Animation' = '{_legacyAnimationNext}')");
                 if (selected == null)
                 {
                     SuperController.LogError($"Timeline: Atom '{containingAtom.uid}' failed to play animation '{_legacyAnimationNext}' specified in Animations storable: no animation found with that name.");
@@ -750,7 +750,7 @@ namespace VamTimeline
             if (IsAction(playSegmentName)) return;
             var playSegmentJSON = new JSONStorableAction(playSegmentName, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playSegmentName}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playSegmentName}'");
                 animation.PlaySegment(segmentName);
             });
             RegisterAction(playSegmentJSON);
@@ -761,7 +761,7 @@ namespace VamTimeline
             var playRandomizedGroupName = $"Play {groupKey}{AtomAnimationClip.RandomizeGroupSuffix}";
             RegisterAction(new JSONStorableAction(playRandomizedGroupName, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playRandomizedGroupName}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playRandomizedGroupName}'");
                 animation.PlayRandom(groupKey);
             }));
 
@@ -790,7 +790,7 @@ namespace VamTimeline
             var playName = $"Play {animationName}";
             var playClipJSON = new JSONStorableAction(playName, () =>
             {
-                if (logger.triggers) logger.Log(logger.triggersCategory, $"Triggered '{playName}'");
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playName}'");
                 animation.PlayClipByName(animationName, true);
             });
             RegisterAction(playClipJSON);
@@ -1191,16 +1191,12 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Logging_EnableDefaultThis", () =>
             {
                 logger.clearOnPlay = true;
-                logger.general = true;
-                logger.triggers = true;
-                logger.sequencing = true;
+                logger.EnableDefault();
             }));
             bindings.Add(new JSONStorableAction("Logging_EnableDefaultAll", () =>
             {
                 logger.clearOnPlay = true;
-                logger.general = true;
-                logger.triggers = true;
-                logger.sequencing = true;
+                logger.EnableDefault();
                 peers.SendLoggingSettings();
             }));
             bindings.Add(new JSONStorableAction("ToggleFocusOnLayer", () => animation.focusOnLayer = !animation.focusOnLayer));

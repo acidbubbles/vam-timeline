@@ -23,7 +23,7 @@ namespace VamTimeline
 
             var toggleAllJSON = new JSONStorableBool("Toggle all", false)
             {
-                valNoCallback = plugin.logger.clearOnPlay || plugin.logger.general || plugin.logger.triggers || plugin.logger.sequencing || plugin.logger.peersSync
+                valNoCallback = plugin.logger.clearOnPlay || plugin.logger.general || plugin.logger.triggersReceived || plugin.logger.sequencing || plugin.logger.peersSync || plugin.logger.triggersInvoked
             };
             prefabFactory.CreateToggle(toggleAllJSON);
 
@@ -32,8 +32,11 @@ namespace VamTimeline
             var generalJSON = new JSONStorableBool("General", false, val => plugin.logger.general = val) { valNoCallback = plugin.logger.general };
             prefabFactory.CreateToggle(generalJSON);
 
-            var triggersJSON = new JSONStorableBool("Triggers", false, val => plugin.logger.triggers = val) { valNoCallback = plugin.logger.triggers };
-            prefabFactory.CreateToggle(triggersJSON);
+            var triggersReceivedJSON = new JSONStorableBool("Triggers (Received)", false, val => plugin.logger.triggersReceived = val) { valNoCallback = plugin.logger.triggersReceived };
+            prefabFactory.CreateToggle(triggersReceivedJSON);
+
+            var triggersInvokedJSON = new JSONStorableBool("Triggers (Invoked)", false, val => plugin.logger.triggersInvoked = val) { valNoCallback = plugin.logger.triggersInvoked };
+            prefabFactory.CreateToggle(triggersInvokedJSON);
 
             var sequencingJSON = new JSONStorableBool("Sequencing", false, val => plugin.logger.sequencing= val) { valNoCallback = plugin.logger.sequencing};
             prefabFactory.CreateToggle(sequencingJSON);
@@ -69,7 +72,8 @@ namespace VamTimeline
             {
                 clearOnPlayJSON.val = val;
                 generalJSON.val = val;
-                triggersJSON.val = val;
+                triggersInvokedJSON.val = val;
+                triggersReceivedJSON.val = val;
                 sequencingJSON.val = val;
                 peerSyncJSON.val = val;
             };
