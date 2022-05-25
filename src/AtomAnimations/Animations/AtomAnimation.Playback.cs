@@ -216,7 +216,7 @@ namespace VamTimeline
             if (sequencing)
                 AssignNextAnimation(next);
 
-            if (allowSibling && nextHasPose)
+            if (allowSibling && nextHasPose && previous != null)
             {
                 foreach (var c in index.GetSiblingsByLayer(previous))
                 {
