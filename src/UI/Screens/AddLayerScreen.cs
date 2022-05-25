@@ -29,6 +29,7 @@ namespace VamTimeline
             InitNewLayerNameUI();
             InitCreateAllAnimationsUI();
             InitCreateInOtherAtomsUI();
+            InitAddAnotherUI();
             InitCreateLayerUI();
             InitSplitLayerUI();
 
@@ -48,13 +49,13 @@ namespace VamTimeline
 
         private void InitCreateLayerUI()
         {
-            _createLayerUI = prefabFactory.CreateButton("Create new layer");
+            _createLayerUI = prefabFactory.CreateButton("<b>Create new layer</b>");
             _createLayerUI.button.onClick.AddListener(AddLayer);
         }
 
         private void InitSplitLayerUI()
         {
-            _splitLayerUI = prefabFactory.CreateButton("Split targets to new layer");
+            _splitLayerUI = prefabFactory.CreateButton("<b>Split targets to new layer</b>");
             _splitLayerUI.button.onClick.AddListener(SplitLayer);
         }
 
@@ -81,7 +82,7 @@ namespace VamTimeline
             if (clip == null) return;
 
             animationEditContext.SelectAnimation(clip);
-            ChangeScreen(TargetsScreen.ScreenName);
+            if (!addAnotherJSON.val) ChangeScreen(TargetsScreen.ScreenName);
         }
 
         private void SplitLayer()
@@ -97,7 +98,7 @@ namespace VamTimeline
             if (clips.Count > 0)
             {
                 animationEditContext.SelectAnimation(clips.FirstOrDefault(c => c.animationName == current.animationName) ?? clips[0]);
-                ChangeScreen(TargetsScreen.ScreenName);
+                if (!addAnotherJSON.val) ChangeScreen(TargetsScreen.ScreenName);
             }
         }
 

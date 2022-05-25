@@ -31,6 +31,7 @@ namespace VamTimeline
             InitCopyKeyframes();
             InitCreateOnAllLayers();
             InitCreateInOtherAtomsUI();
+            InitAddAnotherUI();
             InitCreateAnimationUI();
 
             prefabFactory.CreateSpacer();
@@ -51,7 +52,7 @@ namespace VamTimeline
 
         private void InitCreateAnimationUI()
         {
-            _createNewUI = prefabFactory.CreateButton("Create animation");
+            _createNewUI = prefabFactory.CreateButton("<b>Create animation</b>");
             _createNewUI.button.onClick.AddListener(AddAnimation);
         }
 
@@ -172,9 +173,8 @@ namespace VamTimeline
             var clip = result.Select(r => r.created).FirstOrDefault(c => c.animationLayerQualified == current.animationLayerQualified);
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
-            ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
-
+            if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void AddTransitionAnimation()
@@ -183,8 +183,8 @@ namespace VamTimeline
             var clip = result.FirstOrDefault(c => c.source == current)?.created;
             if(clip == null) return;
             animationEditContext.SelectAnimation(clip);
-            ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         #endregion

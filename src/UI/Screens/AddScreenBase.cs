@@ -3,11 +3,13 @@
     public abstract class AddScreenBase : ScreenBase
     {
         private static bool _previousCreateInOtherAtoms;
+        private static bool _previousAddAnother;
 
         protected JSONStorableString clipNameJSON;
         protected JSONStorableString layerNameJSON;
         protected JSONStorableString segmentNameJSON;
         protected JSONStorableBool createInOtherAtomsJSON;
+        protected JSONStorableBool addAnotherJSON;
         protected JSONStorableStringChooser createPositionJSON;
         protected UIDynamicTextField clipNameUI;
 
@@ -44,6 +46,12 @@
         {
             createInOtherAtomsJSON = new JSONStorableBool(label, _previousCreateInOtherAtoms, val => _previousCreateInOtherAtoms = val);
             prefabFactory.CreateToggle(createInOtherAtomsJSON);
+        }
+
+        protected void InitAddAnotherUI()
+        {
+            addAnotherJSON = new JSONStorableBool("Stay in this screen", _previousAddAnother, val => _previousAddAnother = val);
+            prefabFactory.CreateToggle(addAnotherJSON);
         }
 
         protected void InitNewPositionUI()

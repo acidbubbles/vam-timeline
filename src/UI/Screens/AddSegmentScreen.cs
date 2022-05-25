@@ -35,6 +35,7 @@ namespace VamTimeline
                 InitNewSegmentNameUI();
                 InitNewPositionUI();
                 InitCreateInOtherAtomsUI();
+                InitAddAnotherUI();
                 InitCreateSegmentUI();
 
                 prefabFactory.CreateSpacer();
@@ -60,7 +61,7 @@ namespace VamTimeline
 
         public void InitCreateSegmentUI()
         {
-            _createSegmentUI = prefabFactory.CreateButton("Create new segment");
+            _createSegmentUI = prefabFactory.CreateButton("<b>Create new segment</b>");
             _createSegmentUI.button.onClick.AddListener(AddSegment);
         }
 
@@ -91,7 +92,7 @@ namespace VamTimeline
             if (animation.playingAnimationSegment == previousAnimationSegment)
                 animation.playingAnimationSegment = animationSegment;
             animation.index.Rebuild();
-            ChangeScreen(AddAnimationsScreen.ScreenName);
+            if (!addAnotherJSON.val) ChangeScreen(AddAnimationsScreen.ScreenName);
         }
 
         private void AddSegment()
@@ -99,8 +100,8 @@ namespace VamTimeline
             var clip = operations.Segments().Add(clipNameJSON.val, layerNameJSON.val, segmentNameJSON.val, createPositionJSON.val);
 
             animationEditContext.SelectAnimation(clip);
-            ChangeScreen(EditAnimationScreen.ScreenName);
             if(createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void CopySegment()
@@ -118,7 +119,7 @@ namespace VamTimeline
             }
 
             animationEditContext.SelectAnimation(result.First(c => c.animationLayerId == current.animationLayerId && c.animationNameId == current.animationNameId));
-            ChangeScreen(EditAnimationScreen.ScreenName);
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         private void CreateTransitionSegment()
@@ -151,8 +152,8 @@ namespace VamTimeline
             }
 
             animationEditContext.SelectAnimation(clip);
-            ChangeScreen(EditAnimationScreen.ScreenName);
-            if(createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
         #endregion
