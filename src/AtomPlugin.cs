@@ -480,6 +480,7 @@ namespace VamTimeline
             {
                 yield return 0;
                 if (this == null) yield break;
+                animationEditContext.clipTime = 0f;
                 animationEditContext.Sample();
                 yield break;
             }
@@ -492,7 +493,10 @@ namespace VamTimeline
             if (this == null) yield break;
 
             if (enabled)
+            {
+                animationEditContext.clipTime = 0f;
                 animationEditContext.Sample();
+            }
         }
 
         private void AddAnimationComponents()
@@ -524,7 +528,7 @@ namespace VamTimeline
                     animation.PlayClip(autoPlayClip, true);
                 }
             }
-            if (animation.index.useSegment && animation.index.segmentIds.Count > 1)
+            else if (animation.index.useSegment && animation.index.segmentIds.Count > 1)
             {
                 foreach (var autoPlayClip in animation.index.segmentsById[animation.index.segmentIds.First(s => s != AtomAnimationClip.SharedAnimationSegmentId)].allClips.Where(c => c.autoPlay))
                 {

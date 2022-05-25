@@ -738,10 +738,11 @@ namespace VamTimeline
                 animation.playingAnimationSegment = clip.animationSegment;
                 var differentAnimation = previous.animationSegmentId != current.animationSegmentId || previous.animationNameId != current.animationNameId;
                 if (differentAnimation)
+                {
                     previous.clipTime = 0f;
-
-                // Adjust time offsets
-                clipTime = 0f;
+                    // Adjust time offsets
+                    clipTime = 0f;
+                }
 
                 try
                 {
