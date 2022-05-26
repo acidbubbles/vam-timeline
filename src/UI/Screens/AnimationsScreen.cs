@@ -1,5 +1,5 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VamTimeline
@@ -25,7 +25,7 @@ namespace VamTimeline
                 prefabFactory.CreateSpacer();
             }
 
-            if (animation.index.useSegment)
+            if (animation.index.useSegment && !(animation.index.segmentIds.Count == 1 && animation.index.segmentIds[0] == AtomAnimationClip.SharedAnimationSegmentId))
             {
                 prefabFactory.CreateHeader("Segments", 1);
                 InitSegmentsUI();
@@ -38,7 +38,7 @@ namespace VamTimeline
                 InitClipsUI(AtomAnimationClip.NoneAnimationSegmentId);
                 prefabFactory.CreateSpacer();
             }
-            else if (playingAnimationSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
+            else if (playingAnimationSegmentId != -1)
             {
                 prefabFactory.CreateHeader($"{animation.playingAnimationSegment} animations", 1);
                 InitClipsUI(playingAnimationSegmentId);
@@ -135,6 +135,7 @@ namespace VamTimeline
         {
             foreach (var segment in animation.index.segmentNames)
             {
+                if (segment == AtomAnimationClip.SharedAnimationSegment) continue;
                 InitSegmentButton(segment);
             }
         }

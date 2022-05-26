@@ -240,7 +240,8 @@ namespace VamTimeline
                 return;
             }
             var fallbackClip = animation.clips.First(c => c.animationSegmentId != segmentToDeleteId);
-            if (animation.playingAnimationSegmentId == segmentToDeleteId) animation.playingAnimationSegment = fallbackClip.animationSegment;
+            if (animation.playingAnimationSegmentId == segmentToDeleteId)
+                animation.playingAnimationSegment = fallbackClip.isOnSharedSegment ? null : fallbackClip.animationSegment;
             animationEditContext.SelectAnimation(fallbackClip);
             var clipsToDelete = animation.index.segmentsById[segmentToDeleteId].layers.SelectMany(c => c).ToList();
             foreach (var clip in clipsToDelete)
