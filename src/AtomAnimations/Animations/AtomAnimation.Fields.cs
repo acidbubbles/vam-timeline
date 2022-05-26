@@ -36,13 +36,26 @@ namespace VamTimeline
         private string _playingAnimationSegment = AtomAnimationClip.NoneAnimationSegment;
         public int playingAnimationSegmentId { get; private set; } = AtomAnimationClip.NoneAnimationSegmentId;
 
+        public bool IsPlayingAnimationSegment(string animationSegment)
+        {
+            return IsPlayingAnimationSegment(animationSegment.ToId());
+        }
+
+        public bool IsPlayingAnimationSegment(int animationSegmentId)
+        {
+            if (animationSegmentId == playingAnimationSegmentId) return true;
+            if (animationSegmentId == AtomAnimationClip.SharedAnimationSegmentId) return true;
+            return false;
+        }
+
         public string playingAnimationSegment
         {
             get { return _playingAnimationSegment; }
             set
             {
                 var id = value.ToId();
-                if (playingAnimationSegmentId == id) return;
+                if (id == playingAnimationSegmentId) return;
+                if (id == AtomAnimationClip.SharedAnimationSegmentId) return;
                 _playingAnimationSegment = value;
                 playingAnimationSegmentId = id;
                 onSegmentChanged.Invoke();
@@ -119,6 +132,7 @@ namespace VamTimeline
 
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
+        private bool _allowPlayingTermination;
 
         public AtomAnimationsClipsIndex index { get; }
         public AnimatablesRegistry animatables { get; }

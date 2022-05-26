@@ -93,13 +93,13 @@ namespace VamTimeline
 
         private void UseSegments()
         {
-            var previousAnimationSegment = current.animationSegment;
+            var previousAnimationSegmentId = current.animationSegmentId;
             var animationSegment = !string.IsNullOrEmpty(segmentNameJSON.val) ? segmentNameJSON.val : animation.GetUniqueSegmentName("Segment 1");
             foreach (var clip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].allClips)
             {
                 clip.animationSegment = animationSegment;
             }
-            if (animation.playingAnimationSegment == previousAnimationSegment)
+            if (animation.IsPlayingAnimationSegment(previousAnimationSegmentId))
                 animation.playingAnimationSegment = animationSegment;
             animation.index.Rebuild();
             ChangeScreen(AddAnimationsScreen.ScreenName);

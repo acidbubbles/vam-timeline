@@ -93,13 +93,14 @@ namespace VamTimeline
 
             var clipsToPlay = GetDefaultClipsPerLayer(source);
 
+            _allowPlayingTermination = false;
             if (!source.isOnSharedSegment && source.animationSegmentId != playingAnimationSegmentId)
             {
                 playingAnimationSegment = source.animationSegment;
                 var hasPose = clipsToPlay.Any(c => c.applyPoseOnTransition);
                 if (hasPose)
                 {
-                    foreach (var clip in clips.Where(c => c.playbackEnabled && c.animationSegment != AtomAnimationClip.SharedAnimationSegment))
+                    foreach (var clip in clips.Where(c => c.playbackEnabled && !c.isOnSharedSegment))
                     {
                         StopClip(clip);
                     }
@@ -113,6 +114,7 @@ namespace VamTimeline
                     }
                 }
             }
+            _allowPlayingTermination = true;
 
             foreach (var clip in clipsToPlay)
             {
@@ -148,7 +150,7 @@ namespace VamTimeline
             }
 
 
-            if (next.isOnSegment && playingAnimationSegment != next.animationSegment)
+            if (next.isOnSegment && !IsPlayingAnimationSegment(next.animationSegmentId))
             {
                 PlaySegment(next, sequencing);
                 return;
@@ -318,7 +320,7 @@ namespace VamTimeline
                 clip.playbackMainInLayer = false;
             }
 
-            if (isPlaying)
+            if (_allowPlayingTermination && isPlaying)
             {
                 if (!clips.Any(c => c.playbackMainInLayer))
                 {
@@ -333,6 +335,7 @@ namespace VamTimeline
 
         public void StopAll()
         {
+            _allowPlayingTermination = true;
             autoStop = 0f;
 
             foreach (var clip in clips)

@@ -219,7 +219,7 @@ namespace VamTimeline
             var animationSegment = (string)e[1];
             var animationName = (string)e[2];
             var sequencing = (bool)e[3];
-            if (!animation.isPlaying || animation.playingAnimationSegment != animationSegment)
+            if (!animation.isPlaying || !animation.IsPlayingAnimationSegment(animationSegment))
             {
                 var byName = animation.index.ByName(animationSegment, animationName);
                 if(byName.Count > 0)
