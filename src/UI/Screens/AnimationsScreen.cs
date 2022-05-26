@@ -104,13 +104,15 @@ namespace VamTimeline
                 if (clip.playbackMainInLayer && clip.playbackBlendRate == 0)
                 {
                     if (clip.playbackScheduledNextAnimation != null)
-                        btn.label = $" \u25B6 [{clip.clipTime:00.00} seq>{clip.playbackScheduledNextTimeLeft:0.00}s] {clip.animationName}";
+                        btn.label = $" \u25B6 [{clip.clipTime:00.00} seq>{clip.playbackScheduledNextTimeLeft:0.00}s] <b>{clip.animationName}</b>";
                     else
-                        btn.label = $" \u25A0  [{clip.clipTime:00.00}] {clip.animationName}";
+                        btn.label = $" \u25A0  [{clip.clipTime:00.00}] <b>{clip.animationName}</b>";
                 }
                 else if (clip.playbackEnabled)
                 {
-                    if(clip.playbackBlendRate > 0)
+                    if(clip.playbackMainInLayer)
+                        btn.label = $" \u25A0  [{clip.clipTime:00.00} in>{clip.playbackBlendWeight * 100:00}%] <b>{clip.animationName}</b>";
+                    else if(clip.playbackBlendRate > 0)
                         btn.label = $" \u25A0  [{clip.clipTime:00.00} in>{clip.playbackBlendWeight * 100:00}%] {clip.animationName}";
                     else
                         btn.label = $" \u25B6 [{clip.clipTime:00.00} out>{clip.playbackBlendWeight * 100:00}%] {clip.animationName}";
