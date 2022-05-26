@@ -946,6 +946,7 @@ namespace VamTimeline
             target.nextAnimationTime = nextAnimationTime;
             target.nextAnimationTimeRandomize = nextAnimationTimeRandomize;
             target.nextAnimationRandomizeWeight = nextAnimationRandomizeWeight;
+            target.fadeOnTransition = fadeOnTransition;
         }
 
         #endregion
