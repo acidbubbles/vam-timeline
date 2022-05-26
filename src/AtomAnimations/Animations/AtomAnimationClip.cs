@@ -430,7 +430,10 @@ namespace VamTimeline
                         nextAnimationSegmentRefId = _nextAnimationName.Substring(NextAnimationSegmentPrefix.Length).ToId();
 
                     if (_nextAnimationName != null && _nextAnimationName.EndsWith(RandomizeGroupSuffix))
-                        nextAnimationGroupId = animationName.Substring(0, animationName.Length - RandomizeGroupSuffix.Length).ToId();
+                    {
+                        var groupName = animationName.Substring(0, _nextAnimationName.Length - RandomizeGroupSuffix.Length);
+                        nextAnimationGroupId = groupName.ToId();
+                    }
                 }
 
                 UpdateForcedNextAnimationTime();
