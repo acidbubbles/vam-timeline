@@ -127,21 +127,33 @@ namespace VamTimeline
             var currentSegmentId = current.animationSegmentId;
             var currentLayerId = current.animationLayerId;
             var segmentName = animation.index.segmentNames.Contains(current.animationName) ? segmentNameJSON.val : current.animationName;
-            var clips = animation.index.ByName(current.animationSegmentId, current.animationNameId);
-            var result = CreateSegmentFromClips(clips, segmentName);
+            var clipsToMove = animation.index.ByName(current.animationSegmentId, current.animationNameId);
+            var result = CreateSegmentFromClips(clipsToMove, segmentName);
             AtomAnimationClip newSelection;
             if (addAnotherJSON.val)
             {
-                newSelection = animation.clips.FirstOrDefault(c => c.animationSegmentId == currentSegmentId && c.animationLayerId == currentLayerId && !clips.Contains(c))
-                               ?? (animation.clips.FirstOrDefault(c => c.animationSegmentId == currentSegmentId && !clips.Contains(c))
+                newSelection = animation.clips.FirstOrDefault(c => c.animationSegmentId == currentSegmentId && c.animationLayerId == currentLayerId && !clipsToMove.Contains(c))
+                               ?? (animation.clips.FirstOrDefault(c => c.animationSegmentId == currentSegmentId && !clipsToMove.Contains(c))
                                ?? result[0]);
             }
             else
             {
                 newSelection = result[0];
             }
-            foreach (var clip in clips)
-                operations.AddAnimation().DeleteAnimation(clip);
+
+            foreach (var clipToDelete in clipsToMove)
+            {
+                operations.AddAnimation().DeleteAnimation(clipToDelete);
+                List<AtomAnimationClip> layer;
+                if (!animation.index.segmentIds.Contains(currentSegmentId) || !currentSegment.layersMapById.TryGetValue(clipToDelete.animationLayerId, out layer)) continue;
+                foreach (var c in layer)
+                {
+                    if (clipsToMove.Contains(c)) continue;
+                    if (c.nextAnimationNameId != clipToDelete.animationNameId) continue;
+                    c.nextAnimationName = $"{AtomAnimationClip.NextAnimationSegmentPrefix}{segmentName}";
+                }
+            }
+
             animationEditContext.SelectAnimation(newSelection);
             if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
@@ -221,7 +233,7 @@ namespace VamTimeline
 
             _createSegmentUI.button.interactable = isValid;
             _copySegmentUI.button.interactable = isValid;
-            _createFromAnimUI.button.interactable = isValid && current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId;
+            _createFromAnimUI.button.interactable = isValid && current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId && currentSegment.allClips.GroupBy(c => c.animationNameId).Count() > 1;
             _createTransitionUI.button.interactable = isValid;
         }
     }
