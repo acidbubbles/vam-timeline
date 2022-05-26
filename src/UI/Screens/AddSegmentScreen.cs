@@ -92,7 +92,6 @@ namespace VamTimeline
             if (animation.playingAnimationSegment == previousAnimationSegment)
                 animation.playingAnimationSegment = animationSegment;
             animation.index.Rebuild();
-            if (!addAnotherJSON.val) ChangeScreen(AddAnimationsScreen.ScreenName);
         }
 
         private void AddSegment()
