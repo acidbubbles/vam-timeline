@@ -108,6 +108,10 @@ namespace VamTimeline
             nameJSON.setCallbackFunction = val =>
             {
                 target.animatableRef.SetName(val);
+                foreach (var c in plugin.animation.clips)
+                {
+                    c.targetTriggers.Sort(new TriggersTrackAnimationTarget.Comparer());
+                }
                 _noTriggerLabel = $"{target.animatableRef.name} (N/A)";
                 _lastCount = -1;
                 SyncEditButton(clip.clipTime);

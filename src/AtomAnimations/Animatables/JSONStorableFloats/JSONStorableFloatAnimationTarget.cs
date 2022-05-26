@@ -172,16 +172,20 @@ namespace VamTimeline
                 if (x?.animatableRef.storable == null || y?.animatableRef.storable == null)
                     return 0;
 
-                if (x.animatableRef.storable.containingAtom != y.animatableRef.storable.containingAtom)
+                var xAtom = x.animatableRef.storable.containingAtom;
+                var yAtom = y.animatableRef.storable.containingAtom;
+                if (xAtom != yAtom)
                 {
                     if (x.animatableRef.owned)
                         return -1;
                     if (y.animatableRef.owned)
                         return 1;
-                    return string.Compare(x.animatableRef.storable.containingAtom.name, y.animatableRef.storable.containingAtom.name, StringComparison.Ordinal);
+                    return string.Compare(xAtom.name, yAtom.name, StringComparison.Ordinal);
                 }
 
-                return string.Compare(x.animatableRef.storable.name, y.animatableRef.storable.name, StringComparison.Ordinal);
+                var result = string.Compare(x.animatableRef.storable.name, y.animatableRef.storable.name, StringComparison.Ordinal);
+                if (result != 0) return result;
+                return string.Compare(x.animatableRef.floatParamName, y.animatableRef.floatParamName, StringComparison.Ordinal);
             }
         }
     }
