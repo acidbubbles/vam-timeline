@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace VamTimeline
 {
@@ -10,6 +11,8 @@ namespace VamTimeline
 
         private UIDynamicButton _createSegmentUI;
         private UIDynamicButton _copySegmentUI;
+        private UIDynamicButton _createFromAnimUI;
+        private UIDynamicButton _createTransitionUI;
 
         #region Init
 
@@ -42,6 +45,7 @@ namespace VamTimeline
                 prefabFactory.CreateHeader("Advanced", 2);
 
                 InitCopySegmentUI();
+                InitCreateFromAnimUI();
                 InitCreateTransitionSegmentUI();
 
                 prefabFactory.CreateSpacer();
@@ -71,10 +75,16 @@ namespace VamTimeline
             _copySegmentUI.button.onClick.AddListener(CopySegment);
         }
 
+        public void InitCreateFromAnimUI()
+        {
+            _createFromAnimUI = prefabFactory.CreateButton("Convert anim to segment");
+            _createFromAnimUI.button.onClick.AddListener(CreateFromAnim);
+        }
+
         public void InitCreateTransitionSegmentUI()
         {
-            _copySegmentUI = prefabFactory.CreateButton("Create transition segment");
-            _copySegmentUI.button.onClick.AddListener(CreateTransitionSegment);
+            _createTransitionUI = prefabFactory.CreateButton("Create transition segment");
+            _createTransitionUI.button.onClick.AddListener(CreateTransitionSegment);
         }
 
         #endregion
@@ -92,6 +102,7 @@ namespace VamTimeline
             if (animation.playingAnimationSegment == previousAnimationSegment)
                 animation.playingAnimationSegment = animationSegment;
             animation.index.Rebuild();
+            ChangeScreen(AddAnimationsScreen.ScreenName);
         }
 
         private void AddSegment()
@@ -105,8 +116,40 @@ namespace VamTimeline
 
         private void CopySegment()
         {
-            var result = currentSegment.allClips
-                .Select(c => operations.AddAnimation().AddAnimation(c, c.animationName, c.animationLayer, segmentNameJSON.val, AddAnimationOperations.Positions.NotSpecified, true, true))
+            var clips = currentSegment.allClips;
+            var result = CreateSegmentFromClips(clips, segmentNameJSON.val);
+            animationEditContext.SelectAnimation(result.First(c => c.animationLayerId == current.animationLayerId && c.animationNameId == current.animationNameId));
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName, segmentNameJSON.val);
+        }
+
+        public void CreateFromAnim()
+        {
+            var currentSegmentId = current.animationSegmentId;
+            var currentLayerId = current.animationLayerId;
+            var segmentName = animation.index.segmentNames.Contains(current.animationName) ? segmentNameJSON.val : current.animationName;
+            var clips = animation.index.ByName(current.animationSegmentId, current.animationNameId);
+            var result = CreateSegmentFromClips(clips, segmentName);
+            AtomAnimationClip newSelection;
+            if (addAnotherJSON.val)
+            {
+                newSelection = animation.clips.FirstOrDefault(c => c.animationSegmentId == currentSegmentId && c.animationLayerId == currentLayerId && !clips.Contains(c))
+                               ?? (animation.clips.FirstOrDefault(c => c.animationSegmentId == currentSegmentId && !clips.Contains(c))
+                               ?? result[0]);
+            }
+            else
+            {
+                newSelection = result[0];
+            }
+            foreach (var clip in clips)
+                operations.AddAnimation().DeleteAnimation(clip);
+            animationEditContext.SelectAnimation(newSelection);
+            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
+        }
+
+        private List<AtomAnimationClip> CreateSegmentFromClips(IEnumerable<AtomAnimationClip> clips, string segmentName)
+        {
+            var result = clips
+                .Select(c => operations.AddAnimation().AddAnimation(c, c.animationName, c.animationLayer, segmentName, AddAnimationOperations.Positions.NotSpecified, true, true))
                 .Select(r => r.created)
                 .ToList();
 
@@ -117,8 +160,7 @@ namespace VamTimeline
                 if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(r);
             }
 
-            animationEditContext.SelectAnimation(result.First(c => c.animationLayerId == current.animationLayerId && c.animationNameId == current.animationNameId));
-            if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
+            return result;
         }
 
         private void CreateTransitionSegment()
@@ -179,6 +221,8 @@ namespace VamTimeline
 
             _createSegmentUI.button.interactable = isValid;
             _copySegmentUI.button.interactable = isValid;
+            _createFromAnimUI.button.interactable = isValid && current.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId;
+            _createTransitionUI.button.interactable = isValid;
         }
     }
 }
