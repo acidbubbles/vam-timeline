@@ -31,6 +31,7 @@ namespace VamTimeline
         private UIDynamicButton _playClip;
         private UIDynamicPopup _segmentsUI;
         private UIDynamicPopup _layersUI;
+        private UIDynamicPopup _clipsUI;
 
         public void Bind(IAtomPlugin plugin)
         {
@@ -79,8 +80,42 @@ namespace VamTimeline
             });
 
             _segmentsUI = _prefabFactory.CreateMicroPopup(_segmentsJSON, 900f);
+            _segmentsUI.popup.onOpenPopupHandlers += OnSegmentsUIOpened;
             _layersUI = _prefabFactory.CreateMicroPopup(_layersJSON, 850f);
-            _prefabFactory.CreateMicroPopup(_animationsJSON, 800f);
+            _clipsUI = _prefabFactory.CreateMicroPopup(_animationsJSON, 800f);
+            _clipsUI.popup.onOpenPopupHandlers += OnClipsUIOpened;
+        }
+
+        private void OnSegmentsUIOpened()
+        {
+            var playingSegment = _animationEditContext.animation.playingAnimationSegment;
+
+            var buttonParent = _clipsUI.popup.buttonParent;
+            for (var i = 0; i < buttonParent.childCount; i++)
+            {
+                var child = buttonParent.GetChild(i);
+                var button = child.GetComponent<Button>();
+                var buttonText = button.GetComponentInChildren<Text>(true);
+                buttonText.fontStyle = buttonText.text == playingSegment ? FontStyle.Bold : FontStyle.Normal;
+            }
+        }
+
+        private void OnClipsUIOpened()
+        {
+            var playingAnimation =
+                _animationEditContext.animation.index.segmentsById[_animationEditContext.current.animationSegmentId]
+                .layersMapById[_animationEditContext.current.animationLayerId]
+                .FirstOrDefault(c => c.playbackMainInLayer)
+                ?.animationName;
+
+            var buttonParent = _clipsUI.popup.buttonParent;
+            for (var i = 0; i < buttonParent.childCount; i++)
+            {
+                var child = buttonParent.GetChild(i);
+                var button = child.GetComponent<Button>();
+                var buttonText = button.GetComponentInChildren<Text>(true);
+                buttonText.fontStyle = buttonText.text == playingAnimation ? FontStyle.Bold : FontStyle.Normal;
+            }
         }
 
         private void InitPlaybackButtons(Transform buttonPrefab)
