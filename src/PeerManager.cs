@@ -19,6 +19,7 @@ namespace VamTimeline
         private readonly Logger _logger;
         private bool _receiving;
         private int _sending;
+        private bool _reportedMissingEventOnce;
         private bool _reportedLengthErrorOnce;
 
         public PeerManager(Atom containingAtom, IAtomPlugin plugin, Logger logger)
@@ -114,7 +115,11 @@ namespace VamTimeline
                         ReceiveLoggingSettings(e);
                         break;
                     default:
-                        SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
+                        if (!_reportedMissingEventOnce)
+                        {
+                            SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
+                            _reportedMissingEventOnce = true;
+                        }
                         break;
                 }
             }
