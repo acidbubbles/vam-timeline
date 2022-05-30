@@ -385,7 +385,12 @@ namespace VamTimeline
             var animationLayer = (string)e[2];
             var animationName = (string)e[1];
 
-            if (animation.index.ByName(animationSegment, animationName) == null)
+            if ((animationSegment != AtomAnimationClip.NoneAnimationSegment) != animation.index.useSegment)
+            {
+                return;
+            }
+
+            if (animation.index.ByName(animationSegment, animationName).Count == 0)
             {
                 var previousAnimationName = e.Length >= 16 ? (string)e[15] : null;
                 var clipOnLayer = animation.clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
