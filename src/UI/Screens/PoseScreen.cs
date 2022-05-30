@@ -96,7 +96,12 @@ You can also use poses for animations by using 'Apply pose on transition'. This 
             _copyPoseUI = prefabFactory.CreateButton("Copy current pose");
             _copyPoseUI.button.onClick.AddListener(() => { _poseClipboard = AtomPose.FromAtom(plugin.containingAtom, _savePoseIncludeRoot.val, _savePoseIncludePose.val, _savePoseIncludeMorphs.val, _savePoseUseMergeLoad.val); _pastePoseUI.button.interactable = true; });
             _pastePoseUI = prefabFactory.CreateButton("Paste current pose");
-            _pastePoseUI.button.onClick.AddListener(() => current.pose = _poseClipboard.Clone());
+            _pastePoseUI.button.onClick.AddListener(() =>
+            {
+                if (_poseClipboard == null) return;
+                current.pose = _poseClipboard.Clone();
+                current.pose.Apply();
+            });
             _pastePoseUI.button.interactable = _poseClipboard != null;
 
             prefabFactory.CreateSpacer();
