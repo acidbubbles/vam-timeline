@@ -261,6 +261,13 @@ namespace VamTimeline
             if (to > start) to -= count;
             animation.clips.InsertRange(to, clips);
             animation.index.Rebuild();
+            // Realign quaternions
+            var layers = clips.Select(c => c.animationLayerQualifiedId).Distinct();
+            foreach (var clip in layers.Select(l => animation.index.ByLayerQualified(l)).SelectMany(l => l))
+            {
+                foreach (var t in clip.targetControllers)
+                    t.dirty = true;
+            }
             animation.onClipsListChanged.Invoke();
         }
 
