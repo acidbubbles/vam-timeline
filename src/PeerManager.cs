@@ -183,7 +183,7 @@ namespace VamTimeline
 
         private void ReceivePlaybackState(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 6)) return;
+            if (!ValidateArgumentCount(e.Length, 7)) return;
             var animationName = (string)e[1];
             var animationSet = (string)e[5];
             var animationSegment = (string)e[6];
