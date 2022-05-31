@@ -167,26 +167,25 @@ namespace VamTimeline
 
         #region Messages
 
+        private readonly object[] _sendPlaybackStateMessage = new object[7] { nameof(SendPlaybackState), null, null, null, null, null, null };
         public void SendPlaybackState(AtomAnimationClip clip)
         {
             if (syncing) return;
-            SendTimelineEvent(new object[]{
-                 nameof(SendPlaybackState), // 0
-                 clip.animationName, // 1
-                 clip.playbackEnabled, // 2
-                 clip.clipTime - clip.timeOffset, // 3
-                 animation.sequencing, // 4
-                 clip.animationSet, // 5
-                 clip.animationSegment, // 6
-            });
+            _sendPlaybackStateMessage[1] = clip.animationName;
+            _sendPlaybackStateMessage[2] = clip.playbackEnabled;
+            _sendPlaybackStateMessage[3] = clip.clipTime - clip.timeOffset;
+            _sendPlaybackStateMessage[4] = animation.sequencing;
+            _sendPlaybackStateMessage[5] = clip.animationSet;
+            _sendPlaybackStateMessage[6] = clip.animationSegment;
+            SendTimelineEvent(_sendPlaybackStateMessage);
         }
 
         private void ReceivePlaybackState(object[] e)
         {
-            if (!ValidateArgumentCount(e.Length, 7)) return;
+            if (!ValidateArgumentCount(e.Length, 6)) return;
             var animationName = (string)e[1];
             var animationSet = (string)e[5];
-            var animationSegment = (string)e[6];
+            var animationSegment = e.Length >= 7 ? (string)e[6] : AtomAnimationClip.NoneAnimationSegment;
             var isPlaying = (bool)e[2];
             var clipTime = (float)e[3];
             var sequencing = (bool)e[4];
