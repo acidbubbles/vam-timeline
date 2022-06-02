@@ -595,7 +595,7 @@ namespace VamTimeline
             if (_globalScaledWeight <= 0) return;
             foreach (var x in index.ByController())
             {
-                SampleController(x.Key.controller, x.Value, force, x.Key.scaledWeight);
+                SampleController(x.Key.controller, x.Value, force, force ? 1f : x.Key.scaledWeight);
             }
         }
 
@@ -741,7 +741,9 @@ namespace VamTimeline
                 }
 
                 var controlWeight = animatedCount == 1 ? totalRotationControlWeights : totalRotationControlWeights / totalRotationBlendWeights;
-                var rotation = Quaternion.Slerp(control.rotation, targetRotation, controlWeight * _globalScaledWeight * animatableWeight);
+                var finalWeight = controlWeight * _globalScaledWeight * animatableWeight;
+
+                var rotation = Quaternion.Slerp(control.rotation, targetRotation, finalWeight);
                 control.rotation = rotation;
             }
 
@@ -749,8 +751,9 @@ namespace VamTimeline
             {
                 var targetPosition = weightedPositionSum / totalPositionBlendWeights;
                 var controlWeight = animatedCount == 1 ? totalPositionControlWeights : (totalPositionControlWeights / totalPositionBlendWeights);
+                var finalWeight = controlWeight * _globalScaledWeight * animatableWeight;
 
-                var position = Vector3.Lerp(control.position, targetPosition, controlWeight * _globalScaledWeight * animatableWeight);
+                var position = Vector3.Lerp(control.position, targetPosition, finalWeight);
                 control.position = position;
             }
 
