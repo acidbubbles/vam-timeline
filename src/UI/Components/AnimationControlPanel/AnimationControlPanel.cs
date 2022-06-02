@@ -252,7 +252,7 @@ namespace VamTimeline
             _animationsJSON.valNoCallback = null;
             _animationsJSON.valNoCallback = _animationEditContext.current.animationName;
 
-            _segmentsUI.gameObject.SetActive(_animationEditContext.animation.index.useSegment);
+            _segmentsUI.gameObject.SetActive(_animationEditContext.animation.index.segmentNames.Count > 1);
             _layersUI.gameObject.SetActive(_animationEditContext.animation.index.segmentsById.Any(s => s.Value.layerNames.Count > 1));
         }
 

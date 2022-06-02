@@ -16,7 +16,7 @@ namespace VamTimeline
         public static readonly int SharedAnimationSegmentId = SharedAnimationSegment.ToId();
         public const string NoneAnimationSegment = "[]";
         public static readonly int NoneAnimationSegmentId = NoneAnimationSegment.ToId();
-        public const string DefaultAnimationSegment = NoneAnimationSegment;
+        public const string DefaultAnimationSegment = "Segment 1";
         public const string DefaultAnimationLayer = "Main";
         public const string DefaultAnimationName = "Anim 1";
 
