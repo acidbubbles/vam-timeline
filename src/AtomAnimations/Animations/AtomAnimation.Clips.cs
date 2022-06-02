@@ -115,7 +115,7 @@ namespace VamTimeline
 
         public string GetUniqueAnimationNameInLayer(AtomAnimationClip source)
         {
-            return GetUniqueName(source.animationName, clips.Where(c => c.animationSegment != source.animationSegment || c.animationLayerQualified == source.animationLayerQualified).Select(c => c.animationName).ToList());
+            return GetUniqueName(source.animationName, clips.Where(c => c.isOnSharedSegment != source.isOnSharedSegment || c.animationLayerQualified == source.animationLayerQualified).Select(c => c.animationName).ToList());
         }
 
         public string GetUniqueAnimationName(int segmentId, string sourceName)
