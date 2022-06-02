@@ -737,16 +737,22 @@ namespace VamTimeline
             {
                 animation.playingAnimationSegment = clip.animationSegment;
                 var differentAnimation = previous.animationSegmentId != current.animationSegmentId || previous.animationNameId != current.animationNameId;
+                var differentPose = false;
                 if (differentAnimation)
                 {
                     previous.clipTime = 0f;
                     // Adjust time offsets
                     clipTime = 0f;
+
+                    var previousDefault = animation.GetDefaultClipsPerLayer(previous, true);
+                    var currentDefault = animation.GetDefaultClipsPerLayer(current, true);
+                    if (previousDefault.FirstOrDefault(c => c.pose != null)?.pose != currentDefault.FirstOrDefault(c => c.pose != null)?.pose)
+                        differentPose = true;
                 }
 
                 try
                 {
-                    SampleOrPose(true, differentAnimation);
+                    SampleOrPose(true, differentPose);
                 }
                 catch (Exception exc)
                 {
