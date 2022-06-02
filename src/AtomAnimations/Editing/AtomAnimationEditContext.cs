@@ -777,6 +777,8 @@ namespace VamTimeline
                 {
                     poseClip.Apply();
                     animation.lastAppliedPose = poseClip;
+                    if (_lateSample != null) StopCoroutine(_lateSample);
+                    _lateSample = StartCoroutine(LateSample(0.1f));
                     return;
                 }
             }
