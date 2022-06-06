@@ -27,7 +27,14 @@ namespace VamTimeline
                 transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
                 if (!active)
                 {
-                    active = true;
+                    try
+                    {
+                        active = true;
+                    }
+                    catch (Exception exc)
+                    {
+                        SuperController.LogError($"Timeline: External activate trigger crashed, some triggers might not have been called: {exc}");
+                    }
                     if (live)
                         SyncAudio(clipTime);
                     if (_logger.triggersInvoked)
@@ -65,7 +72,7 @@ namespace VamTimeline
             for (var i = 0; i < discreteActionsStart.Count; i++)
             {
                 var action = discreteActionsStart[i];
-                if (ReferenceEquals(action?.audioClip?.sourceClip, null)) continue;
+                if (action?.audioClip?.sourceClip == null) continue;
                 var audioReceiver = action.receiver as AudioSourceControl;
                 if (ReferenceEquals(audioReceiver, null)) continue;
                 if (ReferenceEquals(audioReceiver.audioSource, null)) continue;
@@ -89,7 +96,14 @@ namespace VamTimeline
             if (!active) return;
             if (live)
                 ForceStopAudioReceivers();
-            active = false;
+            try
+            {
+                active = false;
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline: External deactivate trigger crashed, some triggers might not have been called: {exc}");
+            }
         }
 
         private void ForceStopAudioReceivers()
