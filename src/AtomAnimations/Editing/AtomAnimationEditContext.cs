@@ -367,7 +367,17 @@ namespace VamTimeline
                 SelectAnimation(next);
         }
 
-        public AtomAnimationsClipsIndex.IndexedSegment currentSegment => _animation.index.segmentsById[current.animationSegmentId];
+        public AtomAnimationsClipsIndex.IndexedSegment currentSegment
+        {
+            get
+            {
+                AtomAnimationsClipsIndex.IndexedSegment segment;
+                if (_animation.index.segmentsById.TryGetValue(current.animationSegmentId, out segment))
+                    return segment;
+                return _animation.index.emptySegment;
+            }
+        }
+
         public IList<AtomAnimationClip> currentLayer => _animation.index.ByLayerQualified(current.animationLayerQualifiedId);
 
         public void GoToPreviousLayer()

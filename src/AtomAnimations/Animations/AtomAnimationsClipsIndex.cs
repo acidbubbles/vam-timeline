@@ -93,15 +93,15 @@ namespace VamTimeline
             foreach (var clip in _clips)
             {
                 {
-                    IndexedSegment sequence;
-                    if (!segmentsById.TryGetValue(clip.animationSegmentId, out sequence))
+                    IndexedSegment segment;
+                    if (!segmentsById.TryGetValue(clip.animationSegmentId, out segment))
                     {
-                        sequence = new IndexedSegment();
-                        segmentsById.Add(clip.animationSegmentId, sequence);
+                        segment = new IndexedSegment();
+                        segmentsById.Add(clip.animationSegmentId, segment);
                         segmentNames.Add(clip.animationSegment);
                         segmentIds.Add(clip.animationSegmentId);
                     }
-                    sequence.Add(clip);
+                    segment.Add(clip);
                 }
 
                 {

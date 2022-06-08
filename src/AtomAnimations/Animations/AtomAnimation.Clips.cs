@@ -285,7 +285,7 @@ namespace VamTimeline
                 sharedLayers = index.emptySegment;
 
             AtomAnimationsClipsIndex.IndexedSegment segmentLayers;
-            if (!source.isOnSharedSegment)
+            if (!source.isOnSharedSegment && index.segmentsById.TryGetValue(source.animationSegmentId, out segmentLayers))
                 segmentLayers = index.segmentsById[source.animationSegmentId];
             else
                 segmentLayers = index.emptySegment;
