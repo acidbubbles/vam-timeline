@@ -14,31 +14,35 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
+            var hasSegments = animation.index.useSegment && animation.index.segmentIds.Count > 1;
+
             var playingAnimationSegmentId = animation.playingAnimationSegmentId;
             if (playingAnimationSegmentId == AtomAnimationClip.NoneAnimationSegmentId && animation.index.useSegment)
                 playingAnimationSegmentId = current.animationSegmentId;
 
-            if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
+            if (hasSegments)
             {
-                prefabFactory.CreateHeader("Animations", 1);
-                InitClipsUI(AtomAnimationClip.SharedAnimationSegmentId);
-                prefabFactory.CreateSpacer();
-            }
+                if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
+                {
+                    prefabFactory.CreateHeader("Animations", 1);
+                    InitClipsUI(AtomAnimationClip.SharedAnimationSegmentId);
+                    prefabFactory.CreateSpacer();
+                }
 
-            if (animation.index.useSegment && !(animation.index.segmentIds.Count == 1 && animation.index.segmentIds[0] == AtomAnimationClip.SharedAnimationSegmentId))
-            {
-                prefabFactory.CreateHeader("Segments", 1);
-                InitSegmentsUI();
-                prefabFactory.CreateSpacer();
-            }
+                {
+                    prefabFactory.CreateHeader("Segments", 1);
+                    InitSegmentsUI();
+                    prefabFactory.CreateSpacer();
+                }
 
-            if (playingAnimationSegmentId == AtomAnimationClip.NoneAnimationSegmentId)
-            {
-                prefabFactory.CreateHeader($"Animations", 1);
-                InitClipsUI(AtomAnimationClip.NoneAnimationSegmentId);
-                prefabFactory.CreateSpacer();
+                if (playingAnimationSegmentId != -1)
+                {
+                    prefabFactory.CreateHeader($"{animation.playingAnimationSegment} animations", 1);
+                    InitClipsUI(playingAnimationSegmentId);
+                    prefabFactory.CreateSpacer();
+                }
             }
-            else if (playingAnimationSegmentId != -1)
+            else
             {
                 prefabFactory.CreateHeader($"{animation.playingAnimationSegment} animations", 1);
                 InitClipsUI(playingAnimationSegmentId);
