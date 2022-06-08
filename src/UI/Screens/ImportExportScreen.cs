@@ -223,6 +223,8 @@ namespace VamTimeline
                     return;
                 }
 
+                animation.index.Rebuild();
+
                 animationEditContext.SelectAnimation(imported[0]);
             }
             catch (Exception exc)

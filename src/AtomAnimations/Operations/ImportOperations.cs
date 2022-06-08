@@ -20,21 +20,22 @@ namespace VamTimeline
                 return;
             }
 
-            // Unique segments
-            var segments = clips.GroupBy(c => c.animationSegment).ToList();
-
             // Force use segments
-            if (!_animation.index.useSegment)
+            if (_animation.index.segmentIds.Count > 0 && _animation.index.segmentIds[0] == AtomAnimationClip.NoneAnimationSegmentId)
             {
                 SuperController.LogError("Timeline: Segments are required for import. Go to Add Animations, Use Segments.");
                 return;
             }
 
             // Convert to segments
-            foreach (var clip in clips.Where(c => c.isOnNoneSegment))
+            var nonSegmentAssignation = _animation.GetUniqueSegmentName(AtomAnimationClip.DefaultAnimationSegment);
+            foreach (var clip in clips.Where(c => string.IsNullOrEmpty(c.animationSegment) || c.isOnNoneSegment))
             {
-                clip.animationSegment = _animation.GetUniqueSegmentName(AtomAnimationClip.DefaultAnimationSegment);
+                clip.animationSegment = nonSegmentAssignation;
             }
+
+            // Unique segments
+            var segments = clips.GroupBy(c => c.animationSegment).ToList();
 
             List<ICurveAnimationTarget> sharedTargets;
             List<string> sharedLayers;
@@ -53,6 +54,7 @@ namespace VamTimeline
                 sharedLayers = new List<string>();
             }
 
+            var existingSegments = _animation.index.segmentNames.ToList();
             _animation.index.StartBulkUpdates();
             try
             {
@@ -82,9 +84,10 @@ namespace VamTimeline
                             }
                         }
                     }
-                    else if (_animation.index.segmentNames.Contains(segment.Key))
+                    else if (existingSegments.Contains(segment.Key))
                     {
                         segmentName = _animation.GetUniqueSegmentName(segment.Key);
+                        SuperController.LogError($"Timeline: Imported segment '{segment.Key}' already exists and will instead be imported as segment '{segmentName}'");
                     }
                     else
                     {
