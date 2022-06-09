@@ -28,11 +28,11 @@ namespace VamTimeline
 
             if (useRepositionMode)
             {
-                pivot = offsetSnapshot.previousMainPosition;
-                positionDelta = offsetSnapshot.mainController.control.position - offsetSnapshot.previousMainPosition;
-                rotationDelta = Quaternion.Inverse(offsetSnapshot.previousMainRotation) * offsetSnapshot.mainController.control.rotation;
+                pivot = offsetSnapshot.previousReferencePosition;
+                positionDelta = offsetSnapshot.referenceController.control.position - offsetSnapshot.previousReferencePosition;
+                rotationDelta = Quaternion.Inverse(offsetSnapshot.previousReferenceRotation) * offsetSnapshot.referenceController.control.rotation;
 
-                offsetSnapshot.mainController.control.SetPositionAndRotation(offsetSnapshot.previousMainPosition, offsetSnapshot.previousMainRotation);
+                offsetSnapshot.referenceController.control.SetPositionAndRotation(offsetSnapshot.previousReferencePosition, offsetSnapshot.previousReferenceRotation);
             }
 
             foreach (var snap in offsetSnapshot.clipboard.controllers)
@@ -112,15 +112,15 @@ namespace VamTimeline
             }
         }
 
-        public Snapshot Start(float clipTime, IEnumerable<FreeControllerV3AnimationTarget> targets, FreeControllerV3 mainController, string offsetMode)
+        public Snapshot Start(float clipTime, IEnumerable<FreeControllerV3AnimationTarget> targets, FreeControllerV3 referenceController, string offsetMode)
         {
             if (offsetMode == RepositionMode)
             {
-                if (ReferenceEquals(mainController, null)) throw new NullReferenceException($"{nameof(mainController)} cannot be null with {nameof(offsetMode)} {nameof(RepositionMode)}");
-                mainController.canGrabPosition = true;
-                mainController.canGrabRotation = true;
-                mainController.currentPositionState = FreeControllerV3.PositionState.On;
-                mainController.currentRotationState = FreeControllerV3.RotationState.On;
+                if (ReferenceEquals(referenceController, null)) throw new NullReferenceException($"{nameof(referenceController)} cannot be null with {nameof(offsetMode)} {nameof(RepositionMode)}");
+                referenceController.canGrabPosition = true;
+                referenceController.canGrabRotation = true;
+                referenceController.currentPositionState = FreeControllerV3.PositionState.On;
+                referenceController.currentRotationState = FreeControllerV3.RotationState.On;
             }
 
             var clipboard = AtomAnimationClip.Copy(clipTime, targets.Cast<IAtomAnimationTarget>().ToList());
@@ -134,14 +134,14 @@ namespace VamTimeline
                 return null;
             }
 
-            if (ReferenceEquals(mainController, null))
+            if (ReferenceEquals(referenceController, null))
                 return new Snapshot { clipboard = clipboard };
 
             return new Snapshot
             {
-                mainController = mainController,
-                previousMainPosition = mainController.control.position,
-                previousMainRotation = mainController.control.rotation,
+                referenceController = referenceController,
+                previousReferencePosition = referenceController.control.position,
+                previousReferenceRotation = referenceController.control.rotation,
                 clipboard = clipboard
             };
 ;
@@ -149,9 +149,9 @@ namespace VamTimeline
 
         public class Snapshot
         {
-            public FreeControllerV3 mainController;
-            public Vector3 previousMainPosition;
-            public Quaternion previousMainRotation;
+            public FreeControllerV3 referenceController;
+            public Vector3 previousReferencePosition;
+            public Quaternion previousReferenceRotation;
             public AtomClipboardEntry clipboard;
         }
     }

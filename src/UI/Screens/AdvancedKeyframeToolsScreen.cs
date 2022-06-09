@@ -51,6 +51,11 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
+            var switchDetachRoot = prefabFactory.CreateButton("Attach/detach root");
+            switchDetachRoot.button.onClick.AddListener(AttachDetachRoot);
+
+            prefabFactory.CreateSpacer();
+
             var removeAllKeyframesUI = prefabFactory.CreateButton("Remove all keyframes");
             removeAllKeyframesUI.buttonColor = Color.yellow;
             removeAllKeyframesUI.button.onClick.AddListener(RemoveAllKeyframes);
@@ -122,6 +127,20 @@ namespace VamTimeline
                     target.dirty = true;
                 }
             }
+        }
+
+        private void AttachDetachRoot()
+        {
+            var referenceController = current.targetControllers.FirstOrDefault();
+            if (referenceController == null)
+            {
+                SuperController.LogError("Timeline: At least one control must be animated");
+                return;
+            }
+            var snapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>(), plugin.containingAtom.mainController, OffsetOperations.RepositionMode);
+            var detached = plugin.containingAtom.mainController.GetBoolParamValue("detachControl");
+            plugin.containingAtom.mainController.SetBoolParamValue("detachControl", !detached);
+            operations.Offset().Apply(snapshot, 0f, current.animationLength, OffsetOperations.RepositionMode);
         }
 
         private void KeyframeCurrentPose(bool all)

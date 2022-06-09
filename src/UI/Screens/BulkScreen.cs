@@ -231,7 +231,7 @@ namespace VamTimeline
                 return;
             }
 
-            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>(), plugin.containingAtom.mainController, _offsetModeJSON.val);
+            _offsetSnapshot = operations.Offset().Start(current.clipTime, animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>(), plugin.containingAtom.mainController, OffsetOperations.RepositionMode);
 
             if (_offsetSnapshot == null) return;
 
