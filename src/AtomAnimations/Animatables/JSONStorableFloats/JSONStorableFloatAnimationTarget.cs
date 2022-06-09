@@ -169,22 +169,29 @@ namespace VamTimeline
         {
             public int Compare(JSONStorableFloatAnimationTarget x, JSONStorableFloatAnimationTarget y)
             {
-                if (x?.animatableRef.storable == null || y?.animatableRef.storable == null)
+                if (x == null | y == null)
                     return 0;
 
-                var xAtom = x.animatableRef.storable.containingAtom;
-                var yAtom = y.animatableRef.storable.containingAtom;
-                if (xAtom != yAtom)
+                var result = string.Compare(x.animatableRef.storableId, y.animatableRef.storableId, StringComparison.Ordinal);
+                if (result != 0) return result;
+
+                if (!x.animatableRef.owned || !y.animatableRef.owned)
                 {
-                    if (x.animatableRef.owned)
-                        return -1;
-                    if (y.animatableRef.owned)
-                        return 1;
-                    return string.Compare(xAtom.name, yAtom.name, StringComparison.Ordinal);
+                    if (x.animatableRef.storable == null || y.animatableRef.storable == null)
+                        return 0;
+
+                    var xAtom = x.animatableRef.storable.containingAtom;
+                    var yAtom = y.animatableRef.storable.containingAtom;
+                    if (xAtom != yAtom)
+                    {
+                        if (x.animatableRef.owned)
+                            return -1;
+                        if (y.animatableRef.owned)
+                            return 1;
+                        return string.Compare(xAtom.name, yAtom.name, StringComparison.Ordinal);
+                    }
                 }
 
-                var result = string.Compare(x.animatableRef.storable.name, y.animatableRef.storable.name, StringComparison.Ordinal);
-                if (result != 0) return result;
                 return string.Compare(x.animatableRef.floatParamName, y.animatableRef.floatParamName, StringComparison.Ordinal);
             }
         }
