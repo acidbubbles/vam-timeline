@@ -16,6 +16,7 @@ namespace VamTimeline
         public float? assignMaxValueOnBound {get; private set; }
         public readonly string storableId;
         private readonly string _shortenedStorableId;
+        public string lastKnownAtomUid { get; private set; }
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
@@ -23,6 +24,7 @@ namespace VamTimeline
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
             _atom = atom;
+            lastKnownAtomUid = atom.uid;
             this.owned = owned;
             if (storableId == null) throw new ArgumentNullException(nameof(storableId));
             this.storableId = storableId;
@@ -52,6 +54,7 @@ namespace VamTimeline
             : this(storable.containingAtom, storable.storeId, floatParam.name, owned)
         {
             _atom = storable.containingAtom;
+            lastKnownAtomUid = _atom.uid;
             this.storable = storable;
             this.floatParam = floatParam;
             _available = true;
@@ -98,11 +101,10 @@ namespace VamTimeline
 
         public override string GetFullName()
         {
-            if (!owned && storable == null)
-                return $"[Missing: {(_atom != null ? _atom.name : "?")} / {_shortenedStorableId} / {floatParamName}]";
-
             if (!owned)
             {
+                if (storable == null)
+                    return $"[Missing: {(_atom != null ? _atom.name : lastKnownAtomUid)} / {_shortenedStorableId} / {floatParamName}]";
                 if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                     return $"{_atom.name} {floatParam.altName}";
                 return $"{_atom.name} {_shortenedStorableId} {floatParamName}";

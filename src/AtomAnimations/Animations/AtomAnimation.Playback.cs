@@ -239,12 +239,12 @@ namespace VamTimeline
             {
                 if (controllerRef.owned) continue;
                 if (controllerRef.controller == null)
-                    throw new InvalidOperationException("Timeline: An external controller has been removed");
+                    throw new InvalidOperationException("Timeline: An external controller has been removed. Remove it from Timeline to restore playback.");
             }
             foreach (var floatParamRef in animatables.storableFloats)
             {
-                if(!floatParamRef.EnsureAvailable())
-                    throw new InvalidOperationException($"Timeline: The storable {floatParamRef.storableId} has been removed");
+                if (!floatParamRef.EnsureAvailable())
+                    SuperController.LogError($"Timeline: The storable float '{floatParamRef.GetFullName()}' has been removed. Remove it from Timeline to silence this error.");
             }
         }
 

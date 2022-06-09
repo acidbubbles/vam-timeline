@@ -3,6 +3,8 @@
     public class FreeControllerV3Ref : AnimatableRefBase
     {
         public readonly bool owned;
+        public readonly string lastKnownAtomUid;
+        public readonly string lastKnownControllerName;
         public readonly FreeControllerV3 controller;
         public readonly JSONStorableFloat weightJSON;
         public float scaledWeight = 1f;
@@ -10,6 +12,8 @@
         public FreeControllerV3Ref(FreeControllerV3 controller, bool owned)
         {
             this.controller = controller;
+            lastKnownAtomUid = controller.containingAtom.uid;
+            lastKnownControllerName = controller.name;
             this.owned = owned;
             var weightJSONName = owned
                 ? $"Controller Weight {controller.name}"
@@ -33,24 +37,14 @@
 
         public override object groupKey => controller != null ? (object)controller.containingAtom : 0;
 
-        public override string groupLabel
-        {
-            get
-            {
-                if (!owned)
-                {
-                    if (controller == null)
-                        return "[Missing]";
-                    return $"{controller.containingAtom.name} controls";
-                }
-                return "Controls";
-            }
-        }
+        public override string groupLabel => owned
+            ? "Controls"
+            : $"{(controller != null ? controller.containingAtom.name : lastKnownAtomUid)} controls";
 
         public override string GetShortName()
         {
             if (!owned && controller == null)
-                return "[Missing]";
+                return $"[Missing: {lastKnownControllerName}]";
 
             return controller.name.EndsWith("Control")
                 ? controller.name.Substring(0, controller.name.Length - "Control".Length)
@@ -62,7 +56,7 @@
             if (!owned)
             {
                 if (controller == null)
-                    return "[Missing]";
+                    return $"[Missing: {lastKnownAtomUid} {lastKnownControllerName}]";
                 return $"{controller.containingAtom.name} {controller.name}";
             }
 
