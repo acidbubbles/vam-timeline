@@ -617,9 +617,9 @@ namespace VamTimeline
             {
                 // Adjust time offsets
                 clipTime = 0f;
-                SampleOrPose(true, true);
             }
 
+            SampleOrPose(true, true);
             onTimeChanged.Invoke(timeArgs);
         }
 
