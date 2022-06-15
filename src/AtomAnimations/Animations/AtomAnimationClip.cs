@@ -152,6 +152,11 @@ namespace VamTimeline
 
             animationSetQualified = _animationSet != null ? $"{_animationSegment}::{_animationSet}" : null;
             animationSetQualifiedId = animationSetQualified.ToId();
+
+            foreach (var target in targetTriggers)
+            {
+                target.animatableRef.animationLayerQualifiedId = animationLayerQualifiedId;
+            }
         }
 
         public string animationNameGroup { get; private set; }
@@ -740,6 +745,7 @@ namespace VamTimeline
         public TriggersTrackAnimationTarget Add(TriggersTrackRef triggersRef)
         {
             if (targetTriggers.Any(t => t.animatableRef == triggersRef)) return null;
+            if (triggersRef.animationLayerQualifiedId != animationLayerQualifiedId) throw new InvalidOperationException("Triggers track is not owned by the current layer");
             return Add(new TriggersTrackAnimationTarget(triggersRef, _logger));
         }
 
@@ -903,7 +909,7 @@ namespace VamTimeline
 
             foreach (var entry in clipboard.controllers)
             {
-                var target = targetControllers.FirstOrDefault(c => c.animatableRef == entry.animatableRef);
+                var target = targetControllers.FirstOrDefault(t => t.TargetsSameAs(entry.animatableRef));
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste controller {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");
@@ -913,7 +919,7 @@ namespace VamTimeline
             }
             foreach (var entry in clipboard.floatParams)
             {
-                var target = targetFloatParams.FirstOrDefault(c => c.animatableRef == entry.animatableRef);
+                var target = targetFloatParams.FirstOrDefault(t => t.TargetsSameAs(entry.animatableRef));
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste storable {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");
@@ -924,7 +930,7 @@ namespace VamTimeline
             foreach (var entry in clipboard.triggers)
             {
                 if (!dirty) throw new InvalidOperationException("Cannot paste triggers without dirty");
-                var target = targetTriggers.FirstOrDefault(t => t.animatableRef == entry.animatableRef) ?? targetTriggers.FirstOrDefault();
+                var target = targetTriggers.FirstOrDefault(t => t.animatableRef.name == entry.animatableRef.name);
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste triggers {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");

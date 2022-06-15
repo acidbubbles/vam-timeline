@@ -169,7 +169,11 @@ namespace VamTimeline
                     }
 
                     var controllerRef = targetsRegistry.GetOrCreateController(controller, atom == _atom);
-                    if (controllerRef == null) continue;
+                    if (controllerRef == null)
+                    {
+                        SuperController.LogError($"The controller {atom.uid} / {controller.name} exists more than once in clip {clip.animationNameQualified}. Only the first will be kept.");
+                        continue;
+                    }
                     var target = clip.Add(controllerRef);
                     target.controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true);
                     target.controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true);
@@ -225,7 +229,7 @@ namespace VamTimeline
                     var target = clip.Add(floatParamRef);
                     if (target == null)
                     {
-                        SuperController.LogError($"Timeline: Float param {atom.name} / {storableId} / {floatParamName} was added more than once. Dropping second instance.");
+                        SuperController.LogError($"Timeline: Float param {atom.name} / {storableId} / {floatParamName} was added more than once in clip {clip.animationNameQualified}. Dropping second instance.");
                         continue;
                     }
                     var dirty = false;
@@ -242,10 +246,15 @@ namespace VamTimeline
                 {
                     var triggerTrackName = DeserializeString(triggerJSON["Name"], "Triggers");
                     var triggerLive = DeserializeBool(triggerJSON["Live"], false);
-                    var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(triggerTrackName);
-                    //NOTE: We are cheating here, the setting is on each track but the animatable will have the setting
+                    var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(clip.animationLayerQualifiedId, triggerTrackName);
+                    //NOTE: We are cheating here, the saved setting is on each track but the animatable itself will have the setting
                     triggerTrackRef.live = triggerLive;
                     var target = clip.Add(triggerTrackRef);
+                    if (target == null)
+                    {
+                        SuperController.LogError($"The triggers track {triggerTrackName} exists more than once in clip {clip.animationNameQualified}. Only the first will be kept.");
+                        continue;
+                    }
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
                         var trigger = target.CreateCustomTrigger();

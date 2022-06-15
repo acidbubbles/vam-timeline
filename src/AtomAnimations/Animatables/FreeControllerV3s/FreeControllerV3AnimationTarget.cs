@@ -222,7 +222,12 @@ namespace VamTimeline
         {
             var t = target as FreeControllerV3AnimationTarget;
             if (t == null) return false;
-            return t.animatableRef == animatableRef;
+            return TargetsSameAs(t.animatableRef);
+        }
+
+        public bool TargetsSameAs(AnimatableRefBase other)
+        {
+            return other == animatableRef;
         }
 
         public override string ToString()

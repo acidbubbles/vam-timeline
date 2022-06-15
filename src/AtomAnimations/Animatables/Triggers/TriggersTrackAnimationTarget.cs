@@ -181,7 +181,14 @@ namespace VamTimeline
 
         public bool TargetsSameAs(IAtomAnimationTarget target)
         {
-            return target.name == name;
+            var t = target as TriggersTrackAnimationTarget;
+            if (t == null) return false;
+            return TargetsSameAs(t.animatableRef);
+        }
+
+        public bool TargetsSameAs(AnimatableRefBase other)
+        {
+            return other == animatableRef;
         }
 
         #region Snapshots

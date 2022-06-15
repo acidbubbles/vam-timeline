@@ -84,14 +84,14 @@ namespace VamTimeline
             prefabFactory.CreateButton("Add triggers track")
                 .button.onClick.AddListener(() =>
                 {
-                    var track = animation.animatables.GetOrCreateTriggerTrack(GetUniqueTrackName("Triggers"));
+                    var track = animation.animatables.GetOrCreateTriggerTrack(current.animationLayerQualifiedId, GetUniqueTrackName("Triggers"));
                     AddTrack(track);
                 });
 
             prefabFactory.CreateButton("Add audio track")
                 .button.onClick.AddListener(() =>
                 {
-                    var track = animation.animatables.GetOrCreateTriggerTrack(GetUniqueTrackName("Audio"));
+                    var track = animation.animatables.GetOrCreateTriggerTrack(current.animationLayerQualifiedId, GetUniqueTrackName("Audio"));
                     track.live = true;
                     AddTrack(track);
                 });
@@ -324,20 +324,11 @@ namespace VamTimeline
             var selected = animationEditContext.GetSelectedTargets().ToList();
             foreach (var s in selected)
             {
-                // We remove every selected target on every clip on the current layer, except triggers
                 foreach (var clip in currentLayer)
                 {
-                    var target = clip.GetAllTargets().Where(t => !(t is TriggersTrackAnimationTarget)).FirstOrDefault(t => t.TargetsSameAs(s));
+                    var target = clip.GetAllTargets().FirstOrDefault(t => t.TargetsSameAs(s));
                     if (target == null) continue;
                     clip.Remove(target);
-                }
-
-                // We remove the selected  trigger targets
-                if (s is TriggersTrackAnimationTarget)
-                {
-                    // So other clips won't keep the deleted selection
-                    s.selected = false;
-                    current.Remove(s);
                 }
 
                 {

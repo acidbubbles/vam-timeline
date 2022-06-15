@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -107,6 +108,11 @@ namespace VamTimeline
             var nameJSON = new JSONStorableString("Name", target.animatableRef.name);
             nameJSON.setCallbackFunction = val =>
             {
+                if (string.IsNullOrEmpty(val) || clip.targetTriggers.Any(t => t.name == val))
+                {
+                    nameJSON.valNoCallback = target.animatableRef.name;
+                    return;
+                }
                 target.animatableRef.SetName(val);
                 foreach (var c in plugin.animation.clips)
                 {

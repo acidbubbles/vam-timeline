@@ -64,11 +64,11 @@ namespace VamTimeline
 
         public IList<TriggersTrackRef> triggers => _triggers;
 
-        public TriggersTrackRef GetOrCreateTriggerTrack(string triggerTrackName)
+        public TriggersTrackRef GetOrCreateTriggerTrack(int animationLayerQualifiedId, string triggerTrackName)
         {
-            var t = _triggers.FirstOrDefault(x => x.Targets(triggerTrackName));
+            var t = _triggers.FirstOrDefault(x => x.Targets(animationLayerQualifiedId, triggerTrackName));
             if (t != null) return t;
-            t = new TriggersTrackRef(triggerTrackName);
+            t = new TriggersTrackRef(animationLayerQualifiedId, triggerTrackName);
             _triggers.Add(t);
             RegisterAnimatableRef(t);
             return t;
