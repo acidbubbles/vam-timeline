@@ -112,6 +112,7 @@ namespace VamTimeline
         {
             foreach (var clip in currentLayer)
             {
+                if (clip.targetTriggers.Any(t => t.TargetsSameAs(track))) continue;
                 var target = new TriggersTrackAnimationTarget(track, animation.logger);
                 target.AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(target);

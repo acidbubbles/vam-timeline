@@ -252,8 +252,16 @@ namespace VamTimeline
                     var target = clip.Add(triggerTrackRef);
                     if (target == null)
                     {
-                        SuperController.LogError($"The triggers track {triggerTrackName} exists more than once in clip {clip.animationNameQualified}. Only the first will be kept.");
-                        continue;
+                        target = clip.targetTriggers.FirstOrDefault(t => t.name == triggerTrackName);
+                        if (target == null)
+                        {
+                            SuperController.LogError($"The triggers track {triggerTrackName} exists more than once in clip {clip.animationNameQualified}, but couldn't be linked in the clip. Only the first track will be kept.");
+                            continue;
+                        }
+                        else
+                        {
+                            SuperController.LogError($"The triggers track {triggerTrackName} exists more than once in clip {clip.animationNameQualified}. Trigger keyframes may be overwritten.");
+                        }
                     }
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
