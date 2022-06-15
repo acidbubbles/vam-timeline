@@ -44,7 +44,7 @@ namespace VamTimeline
             }
             else
             {
-                prefabFactory.CreateHeader($"{animation.playingAnimationSegment} animations", 1);
+                prefabFactory.CreateHeader($"Animations", 1);
                 InitClipsUI(playingAnimationSegmentId);
                 prefabFactory.CreateSpacer();
             }

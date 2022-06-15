@@ -227,6 +227,7 @@ namespace VamTimeline
             while (animation.clips.Count > 0)
                 animation.RemoveClip(animation.clips[0]);
             animation.CreateClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment);
+            animation.playingAnimationSegment = AtomAnimationClip.DefaultAnimationSegment;
             animationEditContext.SelectAnimation(animation.clips[0]);
             animationEditContext.clipboard.Clear();
             animationEditContext.locked = false;

@@ -33,7 +33,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
-        private string _playingAnimationSegment = AtomAnimationClip.NoneAnimationSegment;
+        private string _playingAnimationSegment = null;
         public int playingAnimationSegmentId { get; private set; } = AtomAnimationClip.NoneAnimationSegmentId;
 
         public bool IsPlayingAnimationSegment(string animationSegment)

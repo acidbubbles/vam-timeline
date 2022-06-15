@@ -32,6 +32,7 @@ namespace VamTimeline
 
         public AtomAnimationClip AddClip(AtomAnimationClip clip)
         {
+            if (_playingAnimationSegment == null) playingAnimationSegment = clip.animationSegment;
             var lastIndexOfSequence = clips.FindLastIndex(c => c.animationSegment == clip.animationSegment);
             var lastIndexOfLayer = clips.FindLastIndex(c => c.animationLayerQualified == clip.animationLayerQualified);
             int addIndex;
