@@ -53,7 +53,7 @@ namespace VamTimeline
                 clip.playbackScheduledNextAnimation = null;
                 clip.playbackScheduledNextTimeLeft = float.NaN;
 
-                if (nextClip.animationSegment != AtomAnimationClip.SharedAnimationSegment && playingAnimationSegment != nextClip.animationSegment)
+                if (nextClip.isOnSegment && playingAnimationSegmentId != nextClip.animationSegmentId)
                 {
                     PlaySegment(nextClip);
                 }

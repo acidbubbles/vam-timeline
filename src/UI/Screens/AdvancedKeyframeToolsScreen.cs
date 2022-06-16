@@ -224,12 +224,12 @@ namespace VamTimeline
         {
             if(animation.isPlaying)
                 animation.StopAll();
+            animationEditContext.clipboard.Clear();
             while (animation.clips.Count > 0)
                 animation.RemoveClip(animation.clips[0]);
-            animation.CreateClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment);
-            animation.playingAnimationSegment = AtomAnimationClip.DefaultAnimationSegment;
-            animationEditContext.SelectAnimation(animation.clips[0]);
-            animationEditContext.clipboard.Clear();
+            var clip = animation.CreateClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment);
+            animation.playingAnimationSegment = clip.animationSegment;
+            animationEditContext.SelectAnimation(clip);
             animationEditContext.locked = false;
             animationEditContext.snap = AtomAnimationEditContext.DefaultSnap;
             animationEditContext.showPaths = true;
