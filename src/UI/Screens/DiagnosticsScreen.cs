@@ -139,6 +139,7 @@ namespace VamTimeline
             var regex = new Regex(@"^[^.]+\.[^.]+\.([0-9]+):/");
             var match = regex.Match(path);
             var syncWithPeers = timelineJSON["SyncWithPeers"].Value != "0";
+            var autoPlaySegments = new HashSet<string>();
 
             var instanceInfo = new InstanceSettings
             {
@@ -176,7 +177,17 @@ namespace VamTimeline
 
                 if (syncWithPeers)
                     _clips.Add(animationInfo);
+
+                if (clipJSON["AutoPlay"].Value == "1")
+                {
+                    var segment = clipJSON["Segment"].Value;
+                    if (segment != AtomAnimationClip.SharedAnimationSegment && !string.IsNullOrEmpty(segment))
+                        autoPlaySegments.Add(segment);
+                }
             }
+
+            if (autoPlaySegments.Count > 1)
+                _resultBuffer.AppendLine($"- <color=yellow>Auto play has been enabled on multiple segments, only the last one will auto play</color>");
 
             _resultBuffer.AppendLine();
         }
