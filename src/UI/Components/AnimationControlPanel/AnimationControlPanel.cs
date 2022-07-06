@@ -60,20 +60,12 @@ namespace VamTimeline
         {
             _segmentsJSON = new JSONStorableStringChooser("Segment", new List<string>(), "", "Segment", val =>
             {
-                var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == val).ToList();
-                var clip = clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val && c.animationName == _animationsJSON.val)
-                    ?? clips.FirstOrDefault(c => c.animationLayer == _layersJSON.val || c.animationName == _animationsJSON.val)
-                    ?? clips.FirstOrDefault();
-                _animationEditContext.SelectAnimation(clip);
+                _animationEditContext.SelectSegment(val);
                 SyncAnimationsListNow();
             });
             _layersJSON = new JSONStorableStringChooser("Layer", new List<string>(), "", "Layer", (string val) =>
             {
-                var clips = _animationEditContext.animation.clips.Where(c => c.animationSegment == _segmentsJSON.val && c.animationLayer == val).ToList();
-                var clip = clips.FirstOrDefault(c => c.animationName == _animationsJSON.val)
-                           ?? clips.FirstOrDefault(c => c.animationSetId == _animationEditContext.current.animationSetId)
-                           ?? clips.FirstOrDefault();
-                _animationEditContext.SelectAnimation(clip);
+                _animationEditContext.SelectLayer(val);
                 SyncAnimationsListNow();
             });
             _animationsJSON = new JSONStorableStringChooser("Animation", new List<string>(), "", "Animation", (string _) =>

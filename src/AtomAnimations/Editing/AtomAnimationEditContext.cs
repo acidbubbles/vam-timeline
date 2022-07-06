@@ -761,7 +761,7 @@ namespace VamTimeline
 
         public void SelectAnimation(AtomAnimationClip clip)
         {
-            if (clip == null) throw new NullReferenceException("Clip cannot be null");
+            if (clip == null) return;
             if (current == clip) return;
             var previous = current;
             current = clip;
@@ -940,6 +940,26 @@ namespace VamTimeline
             {
                 target.selected = selected;
             }
+        }
+
+        public void SelectSegment(string val)
+        {
+            if (val == null) return;
+            var clips = animation.clips.Where(c => c.animationSegment == val).ToList();
+            var clip = clips.FirstOrDefault(c => c.animationLayerId == current.animationLayerId && c.animationNameId == current.animationNameId)
+                       ?? clips.FirstOrDefault(c => c.animationLayerId == current.animationLayerId || c.animationNameId == current.animationNameId)
+                       ?? clips.FirstOrDefault();
+            SelectAnimation(clip);
+        }
+
+        public void SelectLayer(string val)
+        {
+            if (val == null) return;
+            var clips = animation.clips.Where(c => c.animationSegmentId == current.animationSegmentId && c.animationLayer == val).ToList();
+            var clip = clips.FirstOrDefault(c => c.animationNameId == current.animationNameId)
+                       ?? clips.FirstOrDefault(c => c.animationSetId == current.animationSetId)
+                       ?? clips.FirstOrDefault();
+            SelectAnimation(clip);
         }
     }
 }
