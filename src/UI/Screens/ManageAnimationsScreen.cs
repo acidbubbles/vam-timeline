@@ -234,11 +234,6 @@ namespace VamTimeline
         private void DeleteSegmentConfirm()
         {
             var segmentToDeleteId = current.animationSegmentId;
-            if (segmentToDeleteId == AtomAnimationClip.SharedAnimationSegmentId)
-            {
-                SuperController.LogError("Timeline: Cannot delete the shared segment.");
-                return;
-            }
             var fallbackClip = animation.clips.First(c => c.animationSegmentId != segmentToDeleteId);
             if (animation.playingAnimationSegmentId == segmentToDeleteId)
                 animation.playingAnimationSegment = fallbackClip.isOnSharedSegment ? null : fallbackClip.animationSegment;
