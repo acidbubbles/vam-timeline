@@ -514,26 +514,10 @@ namespace VamTimeline
 
         private void StartAutoPlay()
         {
-            if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
+            // NOTE: When using segments, it's valid to play a non-default animation on each layer, but if multiple segments are selected, then it can be a problem.
+            foreach (var autoPlayClip in animation.clips.Where(c => c.autoPlay))
             {
-                foreach (var autoPlayClip in animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].allClips.Where(c => c.autoPlay))
-                {
-                    animation.PlayClip(autoPlayClip, true);
-                }
-            }
-            if (animation.index.segmentIds.Contains(AtomAnimationClip.NoneAnimationSegmentId))
-            {
-                foreach (var autoPlayClip in animation.index.segmentsById[AtomAnimationClip.NoneAnimationSegmentId].allClips.Where(c => c.autoPlay))
-                {
-                    animation.PlayClip(autoPlayClip, true);
-                }
-            }
-            else if (animation.index.useSegment && animation.index.segmentIds.Count > 1)
-            {
-                foreach (var autoPlayClip in animation.index.segmentsById[animation.index.segmentIds.First(s => s != AtomAnimationClip.SharedAnimationSegmentId)].allClips.Where(c => c.autoPlay))
-                {
-                    animation.PlayClip(autoPlayClip, true);
-                }
+                animation.PlayClip(autoPlayClip, true);
             }
         }
 
