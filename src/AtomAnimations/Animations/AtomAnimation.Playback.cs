@@ -149,7 +149,6 @@ namespace VamTimeline
                     PlaySegment(next, sequencing);
             }
 
-
             if (next.isOnSegment && !IsPlayingAnimationSegment(next.animationSegmentId))
             {
                 PlaySegment(next, sequencing);
@@ -166,7 +165,11 @@ namespace VamTimeline
             if (previous != null)
             {
                 if (previous.uninterruptible)
+                {
+                    if (logger.triggersReceived)
+                        logger.Log(logger.triggersCategory, $"Prevented '{next.animationNameQualified}' from playing because '{previous.animationNameQualified}' has prevent trigger interruptions enabled.");
                     return;
+                }
 
                 // Wait for the loop to sync or the non-loop to end
                 if (allowPreserveLoops && !nextHasPose)
