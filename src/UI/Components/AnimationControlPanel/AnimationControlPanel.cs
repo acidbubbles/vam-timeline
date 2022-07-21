@@ -232,6 +232,19 @@ namespace VamTimeline
 
         private void SyncAnimationsListNow()
         {
+            if(_animationEditContext.animation.index.segmentIds.Count == 0)
+            {
+                var emptyList = new List<string>();
+                _segmentsJSON.choices = emptyList;
+                _segmentsJSON.displayChoices = emptyList;
+                _layersJSON.choices = emptyList;
+                _animationsJSON.choices = emptyList;
+                _segmentsUI.gameObject.SetActive(false);
+                _layersUI.gameObject.SetActive(false);
+
+                return;
+            }
+
             _segmentsJSON.choices = _animationEditContext.animation.index.segmentNames;
             _segmentsJSON.displayChoices = _animationEditContext.animation.index.segmentNames.Select(x => x == AtomAnimationClip.SharedAnimationSegment ? _sharedSequenceLabel : x).ToList();
             _layersJSON.choices = _animationEditContext.animation.clips.Where(c => c.animationSegment == _animationEditContext.current.animationSegment).Select(c => c.animationLayer).Distinct().ToList();
