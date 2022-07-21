@@ -467,6 +467,7 @@ namespace VamTimeline
                     { "AnimationLength", clip.animationLength.ToString(CultureInfo.InvariantCulture) },
                     { "BlendDuration", clip.blendInDuration.ToString(CultureInfo.InvariantCulture) },
                     { "Loop", clip.loop ? "1" : "0" },
+                    { "NextAnimationRandomizeWeight", clip.nextAnimationRandomizeWeight.ToString(CultureInfo.InvariantCulture) },
                     { "AutoTransitionPrevious", clip.autoTransitionPrevious ? "1" : "0" },
                     { "AutoTransitionNext", clip.autoTransitionNext ? "1" : "0" },
                     { "SyncTransitionTime", clip.preserveLoops ? "1" : "0" },
@@ -483,8 +484,6 @@ namespace VamTimeline
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
             if (clip.nextAnimationTime != 0)
                 clipJSON["NextAnimationTime"] = clip.nextAnimationTime.ToString(CultureInfo.InvariantCulture);
-            if (clip.nextAnimationRandomizeWeight != 0)
-                clipJSON["NextAnimationRandomizeWeight"] = clip.nextAnimationRandomizeWeight.ToString(CultureInfo.InvariantCulture);
             if (clip.nextAnimationTimeRandomize != 0)
                 clipJSON["NextAnimationTimeRandomize"] = clip.nextAnimationTimeRandomize .ToString(CultureInfo.InvariantCulture);
             if (clip.autoPlay)
