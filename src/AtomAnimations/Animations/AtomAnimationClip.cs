@@ -432,7 +432,18 @@ namespace VamTimeline
                     nextAnimationNameId = value.ToId();
 
                     if (_nextAnimationName != null && _nextAnimationName.StartsWith(NextAnimationSegmentPrefix))
-                        nextAnimationSegmentRefId = _nextAnimationName.Substring(NextAnimationSegmentPrefix.Length).ToId();
+                    {
+                        if (_nextAnimationName.Length == NextAnimationSegmentPrefix.Length)
+                        {
+                            _nextAnimationName = null;
+                            nextAnimationNameId = ((string)null).ToId();
+                            SuperController.LogError($"Timeline: Invalid animation next segment (empty segment) in animation {animationNameQualified}. Removing this sequence.");
+                        }
+                        else
+                        {
+                            nextAnimationSegmentRefId = _nextAnimationName.Substring(NextAnimationSegmentPrefix.Length).ToId();
+                        }
+                    }
 
                     if (_nextAnimationName != null && _nextAnimationName.EndsWith(RandomizeGroupSuffix))
                     {
