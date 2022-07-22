@@ -11,6 +11,7 @@ namespace VamTimeline
         private const string _saveExt = "json";
         private const string _saveFolder = "Saves\\PluginData\\animations";
         private const string _exportCurrentAnimation = "Current animation";
+        private const string _exportAllAnimations = "All animations";
         private const string _exportCurrentAnimationAllLayers = "Current animation (all layers)";
         private const string _exportCurrentLayer = "Current layer";
         private const string _exportCurrentSegment = "Current segment";
@@ -78,6 +79,8 @@ namespace VamTimeline
                 choices.AddRange(new[] { defaultChoice = _exportCurrentLayer, _exportCurrentAnimationAllLayers });
             if (animation.index.segmentNames.Count > 1)
                 choices.AddRange(new[] { defaultChoice = _exportCurrentSegment, _exportAllSegments });
+            else if(animationEditContext.currentSegment.allClips.Count() > 1)
+                choices.AddRange(new[] { defaultChoice = _exportAllAnimations });
             if (animation.index.segmentNames.Any(s => s == AtomAnimationClip.SharedAnimationSegment))
                 choices.Add(_exportEverything);
             _exportIncludeJSON.choices = choices;
@@ -168,6 +171,7 @@ namespace VamTimeline
                     clips = animation.index.ByName(current.animationSegmentId, current.animationNameId).ToList();
                     break;
                 case _exportCurrentSegment:
+                case _exportAllAnimations:
                     clips = animationEditContext.currentSegment.allClips.ToList();
                     break;
                 case _exportAllSegments:
