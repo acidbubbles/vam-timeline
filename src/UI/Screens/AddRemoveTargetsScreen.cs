@@ -215,7 +215,7 @@ namespace VamTimeline
             _addStorableListUI.popup.onOpenPopupHandlers += RefreshStorablesList;
 
             _addParamListJSON = new JSONStorableStringChooser("Params", new List<string>(), "", "Param");
-            _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true, 500f, true);
+            _addParamListUI = prefabFactory.CreatePopup(_addParamListJSON, true, true, 500f, true, 110);
             _addParamListUI.popup.onOpenPopupHandlers += RefreshStorableFloatsList;
 
             _toggleFloatParamUI = prefabFactory.CreateButton("Add");

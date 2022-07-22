@@ -234,7 +234,7 @@ namespace VamTimeline
             return ui;
         }
 
-        public UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool filterable, bool navButtons, float popupPanelHeight = 350f, bool upwards = false)
+        public UIDynamicPopup CreatePopup(JSONStorableStringChooser jsc, bool filterable, bool navButtons, float popupPanelHeight = 350f, bool upwards = false, float upwardsOffsetY = 60)
         {
             RegisterStorable(jsc);
             // ReSharper disable once JoinDeclarationAndInitializer
@@ -316,8 +316,8 @@ namespace VamTimeline
 
             if (upwards)
             {
-                ui.popup.popupPanel.offsetMin += new Vector2(0, ui.popupPanelHeight + 60);
-                ui.popup.popupPanel.offsetMax += new Vector2(0, ui.popupPanelHeight + 60);
+                ui.popup.popupPanel.offsetMin += new Vector2(0, ui.popupPanelHeight + upwardsOffsetY);
+                ui.popup.popupPanel.offsetMax += new Vector2(0, ui.popupPanelHeight + upwardsOffsetY);
             }
 
             return ui;

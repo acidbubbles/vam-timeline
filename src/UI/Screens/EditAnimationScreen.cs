@@ -283,7 +283,7 @@ namespace VamTimeline
             {
                 isStorable = false
             };
-            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAudioSourceJSON, true, true, 240f, true);
+            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAudioSourceJSON, true, true, 240f, true, 110f);
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => GetEligibleAudioSourceAtoms();
         }
 
@@ -294,11 +294,11 @@ namespace VamTimeline
 
         private void InitAnimationPatternLinkUI()
         {
-            _linkedAnimationPatternJSON = new JSONStorableStringChooser("AnimPat Lnk", GetEligibleAnimationPatternAtoms(), "", "AnimPat Lnk", LinkAnimationPattern)
+            _linkedAnimationPatternJSON = new JSONStorableStringChooser("AnimPat Lnk", GetEligibleAnimationPatternAtoms(), "", "AnimPatLnk", LinkAnimationPattern)
             {
                 isStorable = false
             };
-            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true, true, 240f, true);
+            var linkedAnimationPatternUI = prefabFactory.CreatePopup(_linkedAnimationPatternJSON, true, true, 240f, true, 112f);
             linkedAnimationPatternUI.popup.onOpenPopupHandlers += () => _linkedAnimationPatternJSON.choices = GetEligibleAnimationPatternAtoms();
         }
 
