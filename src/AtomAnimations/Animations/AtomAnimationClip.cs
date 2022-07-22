@@ -366,7 +366,7 @@ namespace VamTimeline
             }
         }
 
-        public bool preserveLoopsOrLength => _preserveLoops || _preserveLength;
+        public bool preserveLoopsOrLength => _loop ? _preserveLoops : _preserveLength;
 
         public bool preserveLoops
         {
