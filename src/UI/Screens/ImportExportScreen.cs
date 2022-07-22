@@ -55,7 +55,7 @@ namespace VamTimeline
             _exportIncludeJSON = new JSONStorableStringChooser(
                 "Include",
                 new List<string>(),
-                _exportCurrentAnimation,
+                "",
                 "Include", (string _) => SyncExportPose()
             )
             {
@@ -161,6 +161,8 @@ namespace VamTimeline
             List<AtomAnimationClip> clips;
             switch (_exportIncludeJSON.val)
             {
+                case "":
+                    return new List<AtomAnimationClip>();
                 case _exportCurrentAnimation:
                     clips = new List<AtomAnimationClip>(new[] { animationEditContext.current });
                     break;
@@ -289,6 +291,8 @@ namespace VamTimeline
 
         private void SyncExportPose()
         {
+            if (_exportPoseJSON == null) return;
+            if (_exportIncludeJSON.val == "") return;
             _exportPoseJSON.toggle.interactable = GetExportClips().GroupBy(c => c.animationLayer).Select(l => l.First()).All(c => c.pose == null);
             if (!_exportPoseJSON.toggle.interactable) _exportPoseJSON.valNoCallback = true;
         }
