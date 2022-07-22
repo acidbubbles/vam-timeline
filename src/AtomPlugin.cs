@@ -472,11 +472,11 @@ namespace VamTimeline
                 yield break;
             }
             base.containingAtom.RestoreFromLast(this);
-            serializer.RestoreMissingTriggers(animation);
             if (animation != null)
             {
                 yield return 0;
                 if (this == null) yield break;
+                serializer.RestoreMissingTriggers(animation);
                 animationEditContext.clipTime = 0f;
                 animationEditContext.Sample();
                 yield break;
