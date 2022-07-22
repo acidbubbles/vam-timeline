@@ -267,6 +267,7 @@ namespace VamTimeline
                     {
                         var trigger = target.CreateCustomTrigger();
                         trigger.RestoreFromJSON(entryJSON);
+                        trigger.pendingJSON = entryJSON;
                         target.SetKeyframe(trigger.startTime, trigger);
                     }
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -668,5 +669,14 @@ namespace VamTimeline
         }
 
         #endregion
+
+        public void RestoreMissingTriggers(AtomAnimation animation)
+        {
+            foreach (var t in animation.clips.SelectMany(c => c.targetTriggers))
+            {
+                // Allows accessing the self target
+                t.RestoreMissing();
+            }
+        }
     }
 }

@@ -467,15 +467,12 @@ namespace VamTimeline
                     if (this == null) yield break;
                 }
 
-                foreach (var t in animation.clips.SelectMany(c => c.targetTriggers))
-                {
-                    // Allows accessing the self target
-                    t.Refresh();
-                }
+                serializer.RestoreMissingTriggers(animation);
                 StartAutoPlay();
                 yield break;
             }
             base.containingAtom.RestoreFromLast(this);
+            serializer.RestoreMissingTriggers(animation);
             if (animation != null)
             {
                 yield return 0;

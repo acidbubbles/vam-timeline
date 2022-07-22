@@ -12,6 +12,8 @@ namespace VamTimeline
         public float startTime;
         public float endTime;
 
+        public JSONClass pendingJSON;
+
         private readonly Logger _logger;
 
         public CustomTrigger(Logger logger)
@@ -145,6 +147,7 @@ namespace VamTimeline
         {
             base.RestoreFromJSON(jc);
         #endif
+
             if (jc["startTime"] != null)
                 startTime = jc["startTime"].AsFloat;
             if (jc["endTime"] != null)

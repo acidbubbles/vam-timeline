@@ -258,6 +258,8 @@ namespace VamTimeline
 
             operations.Import().ImportClips(imported);
 
+            plugin.serializer.RestoreMissingTriggers(animation);
+
             return imported;
         }
 

@@ -54,12 +54,14 @@ namespace VamTimeline
             }
         }
 
-        public void Refresh()
+        public void RestoreMissing()
         {
             foreach (var trigger in triggersMap.Select(kvp => kvp.Value))
             {
+                if (trigger.pendingJSON == null) continue;
                 // Only way to refresh a missing atom (self)
-                trigger.RestoreFromJSON(trigger.GetJSON());
+                trigger.RestoreFromJSON(trigger.pendingJSON);
+                trigger.pendingJSON = null;
             }
         }
 
