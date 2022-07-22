@@ -174,12 +174,18 @@ namespace VamTimeline
                 // Wait for the loop to sync or the non-loop to end
                 if (allowPreserveLoops && !nextHasPose)
                 {
-                    if (previous.loop && previous.preserveLoops && next.loop && next.preserveLoops)
+                    if (previous.loop && previous.preserveLoops && next.preserveLoopsOrLength)
                     {
                         var nextTime = next.loop
                             ? previous.animationLength - next.blendInDuration / 2f - previous.clipTime
                             : previous.animationLength - next.blendInDuration - previous.clipTime;
-                        if (nextTime < 0) nextTime += previous.animationLength;
+                        if (nextTime < 0)
+                        {
+                            if (next.loop)
+                                nextTime += previous.animationLength;
+                            else
+                                nextTime = float.Epsilon;
+                        }
                         ScheduleNextAnimation(previous, next, nextTime);
                         return;
                     }
