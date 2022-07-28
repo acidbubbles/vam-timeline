@@ -182,7 +182,7 @@ namespace VamTimeline
             newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
             newTarget.weight = origTarget.weight;
             newTarget.controlPosition = origTarget.controlPosition;
-            newTarget.controlRotation = origTarget.controlPosition;
+            newTarget.controlRotation = origTarget.controlRotation;
             return newTarget;
         }
 
