@@ -449,7 +449,7 @@ namespace VamTimeline
 
                     if (_nextAnimationName != null && _nextAnimationName.EndsWith(RandomizeGroupSuffix))
                     {
-                        var groupName = animationName.Substring(0, _nextAnimationName.Length - RandomizeGroupSuffix.Length);
+                        var groupName = _nextAnimationName.Substring(0, _nextAnimationName.Length - RandomizeGroupSuffix.Length);
                         nextAnimationGroupId = groupName.ToId();
                     }
                 }
