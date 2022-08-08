@@ -766,8 +766,10 @@ namespace VamTimeline
                 control.position = position;
             }
 
-            if (force && controller.currentPositionState == FreeControllerV3.PositionState.Comply || controller.currentRotationState == FreeControllerV3.RotationState.Comply)
+            if (force && (controller.currentPositionState == FreeControllerV3.PositionState.Comply ||
+                controller.currentRotationState == FreeControllerV3.RotationState.Comply)) {
                 controller.PauseComply();
+            }
         }
 
         #endregion
