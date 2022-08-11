@@ -13,6 +13,7 @@ namespace VamTimeline
 
         public readonly UnityEvent onTargetsSelectionChanged = new UnityEvent();
         public readonly UnityEvent onControllersListChanged = new UnityEvent();
+        public bool locked;
 
         public IList<JSONStorableFloatRef> storableFloats => _storableFloats;
 

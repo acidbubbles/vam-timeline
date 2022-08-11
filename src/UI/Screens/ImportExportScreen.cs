@@ -222,45 +222,30 @@ namespace VamTimeline
 
                 var jc = json.AsObject;
                 ImportControllerStatesLegacy(jc);
-                var imported = ImportClips(jc);
-                if (imported.Count == 0)
+
+                var clipsJSON = jc["Clips"].AsArray;
+                if (clipsJSON == null || clipsJSON.Count == 0)
                 {
-                    SuperController.LogError("Timeline: No animations were imported. Are you trying to load a scene rather than a Timeline exported animation?");
+                    SuperController.LogError($"Timeline: No animations were found in {path}");
                     return;
                 }
 
-                animation.index.Rebuild();
+                if (animation.clips.Count == 1 && animation.clips[0].IsEmpty())
+                    animation.RemoveClip(animation.clips[0]);
 
-                animationEditContext.SelectAnimation(imported[0]);
+                animation.animatables.locked = true;
+                var imported = new List<AtomAnimationClip>();
+                foreach (JSONClass clipJSON in clipsJSON)
+                {
+                    imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables, animation.logger));
+                }
+
+                ChangeScreen(ImportAssignScreen.ScreenName, imported);
             }
             catch (Exception exc)
             {
                 SuperController.LogError($"Timeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(ImportFileSelected)}: Failed to import animation: {exc}");
             }
-        }
-
-        private IList<AtomAnimationClip> ImportClips(JSONClass jc)
-        {
-            var clipsJSON = jc["Clips"].AsArray;
-            if (clipsJSON == null || clipsJSON.Count == 0)
-            {
-                return new List<AtomAnimationClip>();
-            }
-
-            if (animation.clips.Count == 1 && animation.clips[0].IsEmpty())
-                animation.RemoveClip(animation.clips[0]);
-
-            var imported = new List<AtomAnimationClip>();
-            foreach (JSONClass clipJSON in clipsJSON)
-            {
-                imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables, animation.logger));
-            }
-
-            operations.Import().ImportClips(imported);
-
-            plugin.serializer.RestoreMissingTriggers(animation);
-
-            return imported;
         }
 
         private void ImportControllerStatesLegacy(JSONClass jc)
@@ -281,6 +266,7 @@ namespace VamTimeline
                 fc.currentRotationState = (FreeControllerV3.RotationState)state["currentRotationState"].AsInt;
                 fc.transform.localRotation = AtomAnimationSerializer.DeserializeQuaternion(state["localRotation"].AsObject);
             }
+            SuperController.LogMessage("Timeline: The imported animation contains legacy controllers state, your pose has been modified.");
         }
 
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)

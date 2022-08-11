@@ -38,7 +38,6 @@ namespace VamTimeline
             var segments = clips.GroupBy(c => c.animationSegment).ToList();
 
             List<ICurveAnimationTarget> sharedTargets;
-            List<string> sharedLayers;
             if (_animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
             {
                 sharedTargets = _animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layers
@@ -46,15 +45,12 @@ namespace VamTimeline
                     .SelectMany(c => c.GetAllCurveTargets())
                     .Distinct()
                     .ToList();
-                sharedLayers = _animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layerNames;
             }
             else
             {
                 sharedTargets = new List<ICurveAnimationTarget>();
-                sharedLayers = new List<string>();
             }
 
-            var existingSegments = _animation.index.segmentNames.ToList();
             _animation.index.StartBulkUpdates();
             try
             {
@@ -70,34 +66,9 @@ namespace VamTimeline
                         continue;
                     }
 
-                    string segmentName;
-                    if (segment.Key == AtomAnimationClip.SharedAnimationSegment)
-                    {
-                        segmentName = AtomAnimationClip.SharedAnimationSegment;
-                        foreach (var layer in segment.GroupBy(s => s.animationLayer))
-                        {
-                            if (!sharedLayers.Contains(layer.First().animationLayer)) continue;
-                            var newLayerName = _animation.GetUniqueLayerName(layer.First());
-                            foreach (var clip in layer)
-                            {
-                                clip.animationLayer = newLayerName;
-                            }
-                        }
-                    }
-                    else if (existingSegments.Contains(segment.Key))
-                    {
-                        segmentName = _animation.GetUniqueSegmentName(segment.Key);
-                        SuperController.LogError($"Timeline: Imported segment '{segment.Key}' already exists and will instead be imported as segment '{segmentName}'");
-                    }
-                    else
-                    {
-                        segmentName = segment.Key;
-                    }
-
                     foreach (var clip in segment)
                     {
                         clip.Validate();
-                        clip.animationSegment = segmentName;
                         _animation.AddClip(clip);
                     }
                 }

@@ -116,6 +116,8 @@ namespace VamTimeline
 
         public void CleanupAnimatables()
         {
+            if (animatables.locked) return;
+
             for (var i = animatables.storableFloats.Count - 1; i >= 0; i--)
             {
                 var a = animatables.storableFloats[i];

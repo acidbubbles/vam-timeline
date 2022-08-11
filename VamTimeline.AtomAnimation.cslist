@@ -117,6 +117,7 @@ src\UI\Screens\ControllerTargetSettingsScreen.cs
 src\UI\Screens\DiagnosticsScreen.cs
 src\UI\Screens\EditAnimationScreen.cs
 src\UI\Screens\HelpScreen.cs
+src\UI\Screens\ImportAssignScreen.cs
 src\UI\Screens\ImportExportScreen.cs
 src\UI\Screens\LockedScreen.cs
 src\UI\Screens\LoggingScreen.cs

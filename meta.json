@@ -129,6 +129,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\DiagnosticsScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\EditAnimationScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\HelpScreen.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ImportAssignScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\ImportExportScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\LockedScreen.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\UI\\Screens\\LoggingScreen.cs",

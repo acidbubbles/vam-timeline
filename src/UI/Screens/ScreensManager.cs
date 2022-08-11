@@ -168,6 +168,9 @@ namespace VamTimeline
                 case ImportExportScreen.ScreenName:
                     _current = screenContainer.AddComponent<ImportExportScreen>();
                     break;
+                case ImportAssignScreen.ScreenName:
+                    _current = screenContainer.AddComponent<ImportAssignScreen>();
+                    break;
                 case EditAnimationScreen.ScreenName:
                     _current = screenContainer.AddComponent<EditAnimationScreen>();
                     break;
