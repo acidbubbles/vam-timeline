@@ -245,13 +245,8 @@ namespace VamTimeline
 
         private static FreeControllerV3AnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
-            var controller = new GameObject("Test Controller");
-            controller.SetActive(false);
-            controller.transform.SetParent(context.gameObject.transform, false);
-            var fc = controller.AddComponent<FreeControllerV3>();
-            fc.UITransforms = new Transform[0];
-            fc.UITransformsPlayMode = new Transform[0];
-            var target = clip.Add(new FreeControllerV3Ref(fc, true));
+            var helper = new TargetsHelper(context);
+            var target = clip.Add(helper.GivenFreeController());
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframeByTime(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframeByTime(1f, Vector3.one, Quaternion.identity);
@@ -263,9 +258,8 @@ namespace VamTimeline
 
         private static JSONStorableFloatAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
         {
-            var storable = context.gameObject.AddComponent<JSONStorable>();
-            var floatParam = new JSONStorableFloatRef(storable, new JSONStorableFloat("Test", 0, 0, 1), true);
-            var target = clip.Add(floatParam);
+            var helper = new TargetsHelper(context);
+            var target = clip.Add(helper.GivenFloatParam());
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, 0f);
             target.SetKeyframe(1f, 1f);
@@ -277,7 +271,8 @@ namespace VamTimeline
 
         private static TriggersTrackAnimationTarget GivenThreeKeyframesTrigger(TestContext context, AtomAnimationClip clip)
         {
-            var target = clip.Add(new TriggersTrackAnimationTarget(new TriggersTrackRef(0, "Triggers 1"), context.animation.logger));
+            var helper = new TargetsHelper(context);
+            var target = clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId));
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.CreateKeyframe(0f.ToMilliseconds());
             target.CreateKeyframe(1f.ToMilliseconds());

@@ -76,13 +76,8 @@ namespace VamTimeline
 
         private static FreeControllerV3AnimationTarget GivenAFreeController(TestContext context)
         {
-            var controller = new GameObject("Test Controller");
-            controller.SetActive(false);
-            controller.transform.SetParent(context.gameObject.transform, false);
-            var fc = controller.AddComponent<FreeControllerV3>();
-            fc.UITransforms = new Transform[0];
-            fc.UITransformsPlayMode = new Transform[0];
-            var target = new FreeControllerV3AnimationTarget(new FreeControllerV3Ref(fc, true));
+            var animatable = new TargetsHelper(context).GivenFreeController();
+            var target = new FreeControllerV3AnimationTarget(animatable);
             return target;
         }
     }

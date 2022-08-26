@@ -24,7 +24,8 @@ namespace VamTimeline
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
             _atom = atom;
-            lastKnownAtomUid = atom.uid;
+            if (!owned)
+                lastKnownAtomUid = atom.uid;
             this.owned = owned;
             if (storableId == null) throw new ArgumentNullException(nameof(storableId));
             this.storableId = storableId;
@@ -54,7 +55,8 @@ namespace VamTimeline
             : this(storable.containingAtom, storable.storeId, floatParam.name, owned)
         {
             _atom = storable.containingAtom;
-            lastKnownAtomUid = _atom.uid;
+            if (!owned)
+                lastKnownAtomUid = _atom.uid;
             this.storable = storable;
             this.floatParam = floatParam;
             _available = true;

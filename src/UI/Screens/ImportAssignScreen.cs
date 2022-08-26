@@ -7,12 +7,10 @@ namespace VamTimeline
     public class ImportAssignScreen : ScreenBase
     {
         public const string ScreenName = "Import (Assign)";
-        private const string _newSegmentValue = "[NEW SEGMENT]";
 
         public override string screenId => ScreenName;
 
         private List<ImportedAnimationPanel> _imported = new List<ImportedAnimationPanel>();
-        private List<ICurveAnimationTarget> _sharedTargets;
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -28,8 +26,6 @@ namespace VamTimeline
             }
 
             clips = (List<AtomAnimationClip>)arg;
-
-            InitSharedTargets();
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Animations", 1);
@@ -55,26 +51,6 @@ namespace VamTimeline
 
             InitImportUI();
         }
-
-        private void InitSharedTargets()
-        {
-            List<string> sharedLayers;
-            if (animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
-            {
-                _sharedTargets = animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layers
-                    .Select(l => l[0])
-                    .SelectMany(c => c.GetAllCurveTargets())
-                    .Distinct()
-                    .ToList();
-                sharedLayers = animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layerNames;
-            }
-            else
-            {
-                _sharedTargets = new List<ICurveAnimationTarget>();
-                sharedLayers = new List<string>();
-            }
-        }
-
 
         public void InitOverviewUI(List<AtomAnimationClip> clips)
         {
@@ -129,54 +105,9 @@ namespace VamTimeline
 
         private void PopulateValidChoices(AtomAnimationClip clip, JSONStorableString statusJSON, JSONStorableString nameJSON, JSONStorableStringChooser layerJSON, JSONStorableStringChooser segmentJSON, JSONStorableBool okJSON)
         {
+            operations.Import().PopulateValidChoices(clip, statusJSON, nameJSON, layerJSON, segmentJSON, okJSON);
+
             var sb = new StringBuilder();
-
-            var layers = clip.GetAllCurveTargets().ToList();
-
-            if (layers.Any(l => _sharedTargets.Any(c => c.TargetsSameAs(l))))
-            {
-                okJSON.val = false;
-                sb.AppendLine("Targets reserved by shared segment");
-                return;
-            }
-
-            var validExistingLayers = animation.index.clipsGroupedByLayer
-                .Select(l => l[0])
-                .Where(c =>
-                {
-                    var importedTargets = c.GetAllCurveTargets().ToList();
-                    if (importedTargets.Count != layers.Count) return false;
-                    return importedTargets.All(t => layers.Any(l => l.TargetsSameAs(t)));
-                })
-                .ToList();
-
-            nameJSON.valNoCallback = clip.animationName;
-
-            var targetSegments = validExistingLayers.Select(l => l.animationSegment).Distinct().ToList();
-            if (!animation.index.segmentNames.Contains(clip.animationSegment))
-                targetSegments.Add(clip.animationSegment);
-            else
-                targetSegments.Add(_newSegmentValue);
-            segmentJSON.choices = targetSegments;
-            if (!targetSegments.Contains(segmentJSON.val)) segmentJSON.valNoCallback = targetSegments.FirstOrDefault() ?? "";
-            AtomAnimationsClipsIndex.IndexedSegment selectedSegment;
-            var existingSegment = animation.index.segmentsById.TryGetValue(segmentJSON.val.ToId(), out selectedSegment);
-
-            if (existingSegment)
-            {
-                var validExistingSegmentLayers = validExistingLayers.Where(l => l.animationSegment == segmentJSON.val).ToList();
-                var targetLayers = validExistingSegmentLayers.Select(l => l.animationLayer).ToList();
-                layerJSON.choices = targetLayers;
-                if (!targetLayers.Contains(layerJSON.val)) layerJSON.valNoCallback = targetLayers.FirstOrDefault() ?? "";
-            }
-            else
-            {
-                layerJSON.choices = new List<string>(new[] { clip.animationLayer });
-                layerJSON.valNoCallback = clip.animationLayer;
-            }
-
-            okJSON.val = segmentJSON.val == _newSegmentValue || layerJSON.val != "";
-
             foreach (var target in clip.GetAllTargets())
             {
                 if(target is FreeControllerV3AnimationTarget)
@@ -193,8 +124,7 @@ namespace VamTimeline
                 sb.AppendLine(target.GetFullName());
             }
 
-            statusJSON.valNoCallback = sb.ToString();
-            sb.Length = 0;
+            statusJSON.valNoCallback += sb.ToString();
         }
 
         public void InitImportUI()

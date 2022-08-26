@@ -226,7 +226,9 @@
     <Compile Include="tests\Plugin\TestPlugin.cs" />
     <Compile Include="tests\Plugin\TestsIndex.cs" />
     <Compile Include="tests\Specs\AnimationTests.cs" />
+    <Compile Include="tests\Specs\ImportOperationTests.cs" />
     <Compile Include="tests\Specs\ResizeAnimationOperationTests.cs" />
+    <Compile Include="tests\Specs\TargetsHelper.cs" />
     <Compile Include="tests\Unit\AtomAnimations\Targets\FreeControllerAnimationTargetTests.cs" />
     <Compile Include="tests\Unit\AtomAnimations\BezierAnimationCurveTests.cs" />
     <!-- /TestFiles -->

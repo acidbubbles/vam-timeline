@@ -12,7 +12,8 @@
         public FreeControllerV3Ref(FreeControllerV3 controller, bool owned)
         {
             this.controller = controller;
-            lastKnownAtomUid = controller.containingAtom.uid;
+            if (!owned)
+                lastKnownAtomUid = controller.containingAtom.uid;
             lastKnownControllerName = controller.name;
             this.owned = owned;
             var weightJSONName = owned

@@ -142,6 +142,8 @@ Framework\TestsEnumerator.cs
 Plugin\TestPlugin.cs
 Plugin\TestsIndex.cs
 Specs\AnimationTests.cs
+Specs\ImportOperationTests.cs
 Specs\ResizeAnimationOperationTests.cs
+Specs\TargetsHelper.cs
 Unit\AtomAnimations\Targets\FreeControllerAnimationTargetTests.cs
 Unit\AtomAnimations\BezierAnimationCurveTests.cs

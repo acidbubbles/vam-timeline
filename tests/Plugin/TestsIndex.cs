@@ -8,7 +8,8 @@ namespace VamTimeline
                 new BezierAnimationCurveTests(),
                 new FreeControllerAnimationTargetTests(),
                 new AnimationTests(),
-                new ResizeAnimationOperationTests()
+                new ResizeAnimationOperationTests(),
+                new ImportOperationTests()
             });
         }
     }

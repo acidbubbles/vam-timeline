@@ -11,13 +11,16 @@ namespace VamTimeline
 
         public readonly GameObject gameObject;
         public readonly AtomAnimation animation;
+        public readonly Logger logger;
 
         private readonly StringBuilder _output;
 
         public TestContext(GameObject gameObject, StringBuilder output, AtomAnimation animation)
         {
             this.gameObject = gameObject;
+            logger = new Logger(null);
             this.animation = animation;
+            this.animation.logger = logger;
             _output = output;
         }
 
