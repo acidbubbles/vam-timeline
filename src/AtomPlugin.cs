@@ -1242,9 +1242,21 @@ namespace VamTimeline
                 if(selector == null) continue;
                 selector.SetActiveTab("Plugins");
                 if (UITransform == null) continue;
-                UITransform.gameObject.SetActive(true);
-                yield break;
             }
+
+            if (UITransform.gameObject.activeSelf) yield break;
+
+            // Close any currently open plugin UI before opening this plugin's UI (thanks everlaster)
+            foreach (Transform scriptController in manager.pluginContainer)
+            {
+                var script = scriptController.gameObject.GetComponent<MVRScript>();
+                if (script != null && script != this)
+                {
+                    script.UITransform.gameObject.SetActive(false);
+                }
+            }
+
+            UITransform.gameObject.SetActive(true);
         }
 
         #endregion
