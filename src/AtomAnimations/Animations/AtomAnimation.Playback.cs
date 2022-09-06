@@ -89,6 +89,8 @@ namespace VamTimeline
 
         public void PlaySegment(AtomAnimationClip source, bool seq = true)
         {
+            // Note: This needs to happen for other atoms to receive the peer message. Moving the invoke later (cleaner) will break existing scenes.
+            sequencing = sequencing || seq;
             onSegmentPlayed.Invoke(source);
 
             var clipsToPlay = GetDefaultClipsPerLayer(source);
