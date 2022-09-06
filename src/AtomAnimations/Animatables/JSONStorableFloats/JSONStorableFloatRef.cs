@@ -20,6 +20,7 @@ namespace VamTimeline
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
+        public string floatParamDisplayName;
 
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
@@ -30,10 +31,12 @@ namespace VamTimeline
             if (storableId == null) throw new ArgumentNullException(nameof(storableId));
             this.storableId = storableId;
             this.floatParamName = floatParamName;
-            if (this.floatParamName.StartsWith("morph: "))
-                this.floatParamName = this.floatParamName.Substring("morph: ".Length);
-            if (this.floatParamName.StartsWith("morphOtherGender: "))
-                this.floatParamName = this.floatParamName.Substring("morphOtherGender: ".Length);
+            if (floatParamName.StartsWith("morph: "))
+                floatParamDisplayName = floatParamName.Substring("morph: ".Length);
+            else if (floatParamName.StartsWith("morphOtherGender: "))
+                floatParamDisplayName = floatParamName.Substring("morphOtherGender: ".Length);
+            else
+                floatParamDisplayName = floatParamName;
             if (assignMinValueOnBound == 0 && assignMaxValueOnBound == 0)
             {
                 this.assignMinValueOnBound = null;
@@ -93,12 +96,12 @@ namespace VamTimeline
         public override string GetShortName()
         {
             if (!owned && storable == null)
-                return $"[Missing: {_shortenedStorableId} / {floatParamName}]";
+                return $"[Missing: {_shortenedStorableId} / {floatParamDisplayName}]";
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
 
-            return floatParamName;
+            return floatParamDisplayName;
         }
 
         public override string GetFullName()
@@ -106,15 +109,15 @@ namespace VamTimeline
             if (!owned)
             {
                 if (storable == null)
-                    return $"[Missing: {(_atom != null ? _atom.name : lastKnownAtomUid)} / {_shortenedStorableId} / {floatParamName}]";
+                    return $"[Missing: {(_atom != null ? _atom.name : lastKnownAtomUid)} / {_shortenedStorableId} / {floatParamDisplayName}]";
                 if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                     return $"{_atom.name} {floatParam.altName}";
-                return $"{_atom.name} {_shortenedStorableId} {floatParamName}";
+                return $"{_atom.name} {_shortenedStorableId} {floatParamDisplayName}";
             }
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
-            return $"{_shortenedStorableId} {floatParamName}";
+            return $"{_shortenedStorableId} {floatParamDisplayName}";
         }
 
         public float val
@@ -181,8 +184,13 @@ namespace VamTimeline
             floatParam = storable.GetFloatJSONParam(floatParamName);
             if (floatParam == null)
             {
-                if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
-                return false;
+                // This should theoretically never happen, but this was the old behavior so it's safer to keep it (Timeline )
+                floatParam = storable.GetFloatJSONParam(floatParamDisplayName);
+                if (floatParam == null)
+                {
+                    if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
+                    return false;
+                }
             }
 
             floatParamName = IsMorph() ? floatParam.altName : floatParam.name;
