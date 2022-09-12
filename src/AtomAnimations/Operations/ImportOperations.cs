@@ -29,13 +29,6 @@ namespace VamTimeline
                 return;
             }
 
-            // Convert to segments
-            var nonSegmentAssignation = _animation.GetUniqueSegmentName(AtomAnimationClip.DefaultAnimationSegment);
-            foreach (var clip in clips.Where(c => string.IsNullOrEmpty(c.animationSegment) || c.isOnNoneSegment))
-            {
-                clip.animationSegment = nonSegmentAssignation;
-            }
-
             // Unique segments
             var segments = clips.GroupBy(c => c.animationSegment).ToList();
 
@@ -45,7 +38,6 @@ namespace VamTimeline
                 sharedTargets = _animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layers
                     .Select(l => l[0])
                     .SelectMany(c => c.GetAllCurveTargets())
-                    .Distinct()
                     .ToList();
             }
             else
@@ -60,7 +52,6 @@ namespace VamTimeline
                 {
                     var importedTargets = segment
                         .SelectMany(c => c.GetAllCurveTargets())
-                        .Distinct()
                         .ToList();
                     if (importedTargets.Any(t => sharedTargets.Any(t.TargetsSameAs)))
                     {
@@ -153,6 +144,14 @@ namespace VamTimeline
 
             okJSON.val = segmentJSON.val == NewSegmentValue || layerJSON.val != "";
             statusJSON.valNoCallback = "";
+        }
+
+        public static void ProcessImportedClip(AtomAnimationClip clip, JSONStorableString statusJSON, JSONStorableString nameJSON, JSONStorableStringChooser layerJSON, JSONStorableStringChooser segmentJSON, JSONStorableBool okJSON, JSONStorableBool allowJSON)
+        {
+            clip.allowImport = okJSON.val && allowJSON.val;
+            clip.animationSegment = segmentJSON.val;
+            clip.animationLayer = layerJSON.val;
+            clip.animationName = nameJSON.val;
         }
     }
 }

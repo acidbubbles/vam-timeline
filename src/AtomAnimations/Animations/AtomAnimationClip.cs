@@ -101,6 +101,8 @@ namespace VamTimeline
         public readonly AtomAnimationTargetsList<FreeControllerV3AnimationTarget> targetControllers = new AtomAnimationTargetsList<FreeControllerV3AnimationTarget> { label = "Controls" };
         public readonly AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> targetFloatParams = new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget> { label = "Float Params" };
 
+        public bool allowImport = true;
+
         public IEnumerable<ICurveAnimationTarget> GetAllCurveTargets()
         {
             foreach (var t in targetControllers)
