@@ -59,7 +59,10 @@ namespace VamTimeline
                 var output = new StringBuilder();
                 var sw = Stopwatch.StartNew();
                 foreach (var x in test.Run(this, output))
+                {
                     yield return x;
+                }
+
                 counter++;
                 if (output.Length == 0)
                 {

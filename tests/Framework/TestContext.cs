@@ -30,6 +30,14 @@ namespace VamTimeline
             return truthy;
         }
 
+        public bool Assert<T>(T? actual, T expected, string message = _assertionFailedMessage) where T : struct
+        {
+            if (actual.Equals(expected)) return true;
+            _output.AppendLine(message);
+            _output.AppendLine($"Expected '{expected}', received '{actual}'");
+            return false;
+        }
+
         public bool Assert<T>(T actual, T expected, string message = _assertionFailedMessage) where T : struct
         {
             if (actual.Equals(expected)) return true;
@@ -48,6 +56,12 @@ namespace VamTimeline
 
         public bool Assert<T>(IEnumerable<T> actual, IEnumerable<T> expected, string message = _assertionFailedMessage)
         {
+            if (actual == null)
+            {
+                _output.AppendLine(message);
+                _output.AppendLine($"Expected '{expected}', received null");
+                return false;
+            }
             var actualStr = string.Join(", ", actual.Select(v => v.ToString()).ToArray());
             var expectedStr = string.Join(", ", expected.Select(v => v.ToString()).ToArray());
             return Assert(actualStr, expectedStr, message);
