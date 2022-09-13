@@ -38,9 +38,9 @@ namespace VamTimeline
             _prefabFactory = gameObject.AddComponent<VamPrefabFactory>();
             _prefabFactory.plugin = plugin;
             InitAnimationSelectorUI();
-            InitFrameNav(plugin.manager.configurableButtonPrefab);
             InitPlaybackButtons(plugin.manager.configurableButtonPrefab);
             _dopeSheet = InitDopeSheet();
+            InitFrameNav(plugin.manager.configurableButtonPrefab);
         }
 
         public void Bind(AtomAnimationEditContext animationEditContext)
