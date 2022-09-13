@@ -722,7 +722,7 @@ namespace VamTimeline
                 return;
             }
 
-            if (animation.isPlaying)
+            if (animation.isPlaying && !animation.paused)
                 return;
 
             animation.playingAnimationSegment = current.animationSegment;
