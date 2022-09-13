@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace VamTimeline
 {
     public class ImportOperations
     {
-        public const string NewSegmentValue = "[NEW SEGMENT]";
-
         private readonly AtomAnimation _animation;
 
         public ImportOperations(AtomAnimation animation)
@@ -14,75 +13,37 @@ namespace VamTimeline
             _animation = animation;
         }
 
-        public void ImportClips(IList<AtomAnimationClip> clips)
+        public ImportOperationClip PrepareClip(AtomAnimationClip clip)
         {
-            if (clips.Count == 0)
-            {
-                SuperController.LogError("Timeline: There was no clips to import.");
-                return;
-            }
+            return new ImportOperationClip(_animation, clip);
+        }
+    }
 
-            // Force use segments
-            if (_animation.index.segmentIds.Count > 0 && _animation.index.segmentIds[0] == AtomAnimationClip.NoneAnimationSegmentId)
-            {
-                SuperController.LogError("Timeline: Segments are required for import. Go to Add Animations, Use Segments.");
-                return;
-            }
+    public class ImportOperationClip
+    {
+        private readonly AtomAnimation _animation;
+        public readonly AtomAnimationClip clip;
+        public readonly JSONStorableBool okJSON;
+        public readonly JSONStorableStringChooser segmentJSON;
+        public readonly JSONStorableStringChooser layerJSON;
+        public readonly JSONStorableString nameJSON;
+        public readonly JSONStorableString statusJSON;
+        public readonly JSONStorableBool includeJSON;
 
-            // Unique segments
-            var segments = clips.GroupBy(c => c.animationSegment).ToList();
-
-            List<ICurveAnimationTarget> sharedTargets;
-            if (_animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
-            {
-                sharedTargets = _animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layers
-                    .Select(l => l[0])
-                    .SelectMany(c => c.GetAllCurveTargets())
-                    .ToList();
-            }
-            else
-            {
-                sharedTargets = new List<ICurveAnimationTarget>();
-            }
-
-            _animation.index.StartBulkUpdates();
-            try
-            {
-                foreach (var segment in segments)
-                {
-                    var importedTargets = segment
-                        .SelectMany(c => c.GetAllCurveTargets())
-                        .ToList();
-                    if (importedTargets.Any(t => sharedTargets.Any(t.TargetsSameAs)))
-                    {
-                        SuperController.LogError("Timeline: Imported animations contain shared segments that conflicts with existing animations. Skipping.");
-                        continue;
-                    }
-
-                    foreach (var clip in segment)
-                    {
-                        clip.Validate();
-                        _animation.AddClip(clip);
-                    }
-                }
-            }
-            finally
-            {
-                _animation.index.EndBulkUpdates();
-            }
-
-            foreach (var clip in clips)
-            {
-                if (clip.autoPlay && _animation.index.ByLayerQualified(clip.animationLayerQualifiedId).Any(c => c.autoPlay))
-                {
-                    clip.autoPlay = false;
-                }
-            }
-
-            _animation.RebuildAnimationNow();
+        public ImportOperationClip(AtomAnimation animation, AtomAnimationClip clip)
+        {
+            _animation = animation;
+            this.clip = clip;
+            statusJSON = new JSONStorableString("Status", "");
+            nameJSON = new JSONStorableString("Name", clip.animationName, (string _) => PopulateValidChoices());
+            layerJSON = new JSONStorableStringChooser("Layer", new List<string>(), clip.animationLayer, "Layer", (string _) => PopulateValidChoices());
+            segmentJSON = new JSONStorableStringChooser("Segment", new List<string>(), clip.animationSegment, "Segment", (string _) => PopulateValidChoices());
+            okJSON = new JSONStorableBool("Valid for import", false);
+            includeJSON = new JSONStorableBool("Selected for import", true);
+            PopulateValidChoices();
         }
 
-        public void PopulateValidChoices(AtomAnimationClip clip, JSONStorableString statusJSON, JSONStorableString nameJSON, JSONStorableStringChooser layerJSON, JSONStorableStringChooser segmentJSON, JSONStorableBool okJSON)
+        public void PopulateValidChoices()
         {
             List<ICurveAnimationTarget> sharedTargets;
             if (_animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
@@ -104,6 +65,7 @@ namespace VamTimeline
             {
                 okJSON.val = false;
                 statusJSON.valNoCallback = "Targets reserved by shared segment";
+                PopulateTargetsInStatus();
                 return;
             }
 
@@ -121,9 +83,15 @@ namespace VamTimeline
 
             var targetSegments = validExistingLayers.Select(l => l.animationSegment).Distinct().ToList();
             if (!_animation.index.segmentNames.Contains(clip.animationSegment))
+            {
                 targetSegments.Add(clip.animationSegment);
+            }
             else
-                targetSegments.Add(NewSegmentValue);
+            {
+                var newSegmentName = _animation.GetUniqueSegmentName(clip.animationSegment);
+                targetSegments.Add(newSegmentName);
+            }
+
             segmentJSON.choices = targetSegments;
             if (!targetSegments.Contains(segmentJSON.val)) segmentJSON.valNoCallback = targetSegments.FirstOrDefault() ?? "";
             AtomAnimationsClipsIndex.IndexedSegment selectedSegment;
@@ -142,16 +110,43 @@ namespace VamTimeline
                 layerJSON.valNoCallback = clip.animationLayer;
             }
 
-            okJSON.val = segmentJSON.val == NewSegmentValue || layerJSON.val != "";
+            okJSON.val = layerJSON.val != "";
             statusJSON.valNoCallback = "";
         }
 
-        public static void ProcessImportedClip(AtomAnimationClip clip, JSONStorableString statusJSON, JSONStorableString nameJSON, JSONStorableStringChooser layerJSON, JSONStorableStringChooser segmentJSON, JSONStorableBool okJSON, JSONStorableBool allowJSON)
+        private void PopulateTargetsInStatus()
         {
-            clip.allowImport = okJSON.val && allowJSON.val;
+            var sb = new StringBuilder();
+            foreach (var target in clip.GetAllTargets())
+            {
+                if(target is FreeControllerV3AnimationTarget)
+                    sb.Append("Control: ");
+                else if ((target as JSONStorableFloatAnimationTarget)?.animatableRef.IsMorph() ?? false)
+                    sb.Append("Morph: ");
+                else if (target is JSONStorableFloatAnimationTarget)
+                    sb.Append("Float Param: ");
+                else if (target is TriggersTrackAnimationTarget)
+                    sb.Append("Triggers: ");
+                else
+                    sb.Append("Unknown: ");
+
+                sb.AppendLine(target.GetFullName());
+            }
+            statusJSON.valNoCallback += sb.ToString();
+        }
+
+        public void ImportClip()
+        {
+            if (!okJSON.val || !includeJSON.val) return;
             clip.animationSegment = segmentJSON.val;
             clip.animationLayer = layerJSON.val;
             clip.animationName = nameJSON.val;
+            if (clip.autoPlay && _animation.index.ByLayerQualified(clip.animationLayerQualifiedId).Any(c => c.autoPlay))
+            {
+                clip.autoPlay = false;
+            }
+            clip.Validate();
+            _animation.AddClip(clip);
         }
     }
 }

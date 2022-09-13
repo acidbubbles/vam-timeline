@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace VamTimeline
 {
@@ -10,7 +10,7 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        private List<ImportedAnimationPanel> _imported = new List<ImportedAnimationPanel>();
+        private List<ImportOperationClip> _imported = new List<ImportOperationClip>();
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -60,71 +60,20 @@ namespace VamTimeline
             }
         }
 
-        private ImportedAnimationPanel InitClipUI(AtomAnimationClip clip)
+        private ImportOperationClip InitClipUI(AtomAnimationClip clip)
         {
-            var statusJSON = new JSONStorableString("Status", "Status: OK");
-            var nameJSON = new JSONStorableString("Animation name", clip.animationName);
-            var layerJSON = new JSONStorableStringChooser("Layer", new List<string>(), clip.animationLayer, "Layer");
-            var segmentJSON = new JSONStorableStringChooser("Segment", new List<string>(), clip.animationSegment, "Segment");
-            var includeJSON = new JSONStorableBool("Selected for import", true);
-            var okJSON = new JSONStorableBool("Valid", false);
-
-            nameJSON.setCallbackFunction = val =>
-            {
-                clip.animationName = val;
-                PopulateValidChoices(clip, statusJSON, nameJSON, layerJSON, segmentJSON, okJSON);
-            };
-            layerJSON.setCallbackFunction = val =>
-            {
-                clip.animationLayer = val;
-                PopulateValidChoices(clip, statusJSON, nameJSON, layerJSON, segmentJSON, okJSON);
-            };
-            segmentJSON.setCallbackFunction = val =>
-            {
-                clip.animationSegment = val;
-                PopulateValidChoices(clip, statusJSON, nameJSON, layerJSON, segmentJSON, okJSON);
-            };
-            PopulateValidChoices(clip, statusJSON, nameJSON, layerJSON, segmentJSON, okJSON);
+            var imported = operations.Import().PrepareClip(clip);
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader(clip.animationNameQualified, 1);
-            prefabFactory.CreateToggle(includeJSON);
-            prefabFactory.CreateTextField(statusJSON).height = 150;
-            prefabFactory.CreateTextInput(nameJSON);
-            prefabFactory.CreatePopup(segmentJSON, false, true);
-            prefabFactory.CreatePopup(layerJSON, false, true);
-            prefabFactory.CreateToggle(okJSON).toggle.interactable = false;
+            prefabFactory.CreateToggle(imported.includeJSON);
+            prefabFactory.CreateTextField(imported.statusJSON).height = 150;
+            prefabFactory.CreateTextInput(imported.nameJSON);
+            prefabFactory.CreatePopup(imported.segmentJSON, false, true);
+            prefabFactory.CreatePopup(imported.layerJSON, false, true);
+            prefabFactory.CreateToggle(imported.okJSON).toggle.interactable = false;
 
-            return new ImportedAnimationPanel
-            {
-                okJSON = okJSON,
-                includeJSON = includeJSON,
-                clip = clip
-            };
-        }
-
-        private void PopulateValidChoices(AtomAnimationClip clip, JSONStorableString statusJSON, JSONStorableString nameJSON, JSONStorableStringChooser layerJSON, JSONStorableStringChooser segmentJSON, JSONStorableBool okJSON)
-        {
-            operations.Import().PopulateValidChoices(clip, statusJSON, nameJSON, layerJSON, segmentJSON, okJSON);
-
-            var sb = new StringBuilder();
-            foreach (var target in clip.GetAllTargets())
-            {
-                if(target is FreeControllerV3AnimationTarget)
-                    sb.Append("Control: ");
-                else if ((target as JSONStorableFloatAnimationTarget)?.animatableRef.IsMorph() ?? false)
-                    sb.Append("Morph: ");
-                else if (target is JSONStorableFloatAnimationTarget)
-                    sb.Append("Float Param: ");
-                else if (target is TriggersTrackAnimationTarget)
-                    sb.Append("Triggers: ");
-                else
-                    sb.Append("Unknown: ");
-
-                sb.AppendLine(target.GetFullName());
-            }
-
-            statusJSON.valNoCallback += sb.ToString();
+            return imported;
         }
 
         public void InitImportUI()
@@ -135,12 +84,27 @@ namespace VamTimeline
 
         public void Import()
         {
-            var clips = _imported.Where(i => i.okJSON.val && i.includeJSON.val).Select(i => i.clip).ToList();
+            var clips = _imported.Where(i => i.okJSON.val && i.includeJSON.val).ToList();
             if (clips.Count == 0) return;
-            operations.Import().ImportClips(clips);
+            animation.index.StartBulkUpdates();
+            try
+            {
+                foreach (var imported in _imported)
+                {
+                    imported.ImportClip();
+                }
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError($"Timeline: Something went wrong during the import: {exc}");
+            }
+            finally
+            {
+                animation.index.EndBulkUpdates();
+            }
             plugin.serializer.RestoreMissingTriggers(animation);
             animation.index.Rebuild();
-            animationEditContext.SelectAnimation(clips[0]);
+            animationEditContext.SelectAnimation(clips[0].clip);
             ChangeScreen(TargetsScreen.ScreenName);
         }
 
@@ -148,13 +112,6 @@ namespace VamTimeline
         {
             animation.animatables.locked = false;
             base.OnDestroy();
-        }
-
-        private class ImportedAnimationPanel
-        {
-            public JSONStorableBool okJSON;
-            public JSONStorableBool includeJSON;
-            public AtomAnimationClip clip;
         }
     }
 }
