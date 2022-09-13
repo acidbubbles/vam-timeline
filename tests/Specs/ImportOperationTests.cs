@@ -15,6 +15,7 @@ namespace VamTimeline
             yield return new Test(nameof(CanAddTarget_Conflict_LayerName), CanAddTarget_Conflict_LayerName);
             yield return new Test(nameof(CanAddTarget_Conflict_AnimName), CanAddTarget_Conflict_AnimName);
             yield return new Test(nameof(CanAddTarget_Source_SharedSegment), CanAddTarget_Source_SharedSegment);
+            yield return new Test(nameof(CanAddTarget_Source_NewSharedSegment), CanAddTarget_Source_NewSharedSegment);
         }
 
         // TODO: Non-segment import
@@ -283,6 +284,51 @@ namespace VamTimeline
             context.Assert(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer 1".ToId(), out layerClips), true, "Layer imported exists");
             context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
+
+            yield break;
+        }
+
+        private IEnumerable CanAddTarget_Source_NewSharedSegment(TestContext context)
+        {
+            var helper = new TargetsHelper(context);
+            context.animation.RemoveClip(context.animation.clips[0]);
+            {
+                var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                context.animation.AddClip(clip);
+            }
+            ImportOperationClip ctx;
+            {
+                var clip = GivenImportedClip(context);
+                clip.animationSegment = AtomAnimationClip.SharedAnimationSegment;
+                clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
+            }
+
+            context.Assert(ctx.okJSON.val, true, "OK");
+            context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
+            context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
+            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.Assert(ctx.segmentJSON.val, AtomAnimationClip.SharedAnimationSegment, "Segment");
+            context.Assert(ctx.segmentJSON.choices, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segment choices");
+            context.Assert(ctx.statusJSON.val, @"", "Status");
+
+            ctx.ImportClip();
+
+            context.Assert(ctx.clip.animationSegment, AtomAnimationClip.SharedAnimationSegment, "Processed segment name");
+            context.Assert(ctx.clip.animationLayer, "Layer IMPORTED", "Processed layer name");
+            context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
+            AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
+            List<AtomAnimationClip> layerClips = null;
+            context.Assert(context.animation.index.segmentNames, new[] { AtomAnimationClip.SharedAnimationSegment, "Segment 1" }, "Segments once imported");
+            context.Assert(context.animation.index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out segmentIndex), true, "Segment imported exists");
+            context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
+            context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
+            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }

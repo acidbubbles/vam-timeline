@@ -40,6 +40,8 @@ namespace VamTimeline
                 addIndex = lastIndexOfLayer + 1;
             else if (lastIndexOfSequence > -1)
                 addIndex = lastIndexOfSequence + 1;
+            else if (clip.isOnSharedSegment && !index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
+                addIndex = 0;
             else
                 addIndex = clips.Count;
             AddClipAt(clip, addIndex);
