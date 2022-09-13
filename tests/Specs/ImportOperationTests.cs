@@ -16,6 +16,7 @@ namespace VamTimeline
             yield return new Test(nameof(CanAddTarget_Conflict_AnimName), CanAddTarget_Conflict_AnimName);
             yield return new Test(nameof(CanAddTarget_Source_SharedSegment), CanAddTarget_Source_SharedSegment);
             yield return new Test(nameof(CanAddTarget_Source_NewSharedSegment), CanAddTarget_Source_NewSharedSegment);
+            yield return new Test(nameof(CanAddTarget_Conflict_SharedSegment), CanAddTarget_Conflict_SharedSegment);
         }
 
         // TODO: Non-segment import
@@ -329,6 +330,32 @@ namespace VamTimeline
             context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
             context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
+
+            yield break;
+        }
+
+        private IEnumerable CanAddTarget_Conflict_SharedSegment(TestContext context)
+        {
+            var helper = new TargetsHelper(context);
+            context.animation.RemoveClip(context.animation.clips[0]);
+            {
+                var clip = new AtomAnimationClip("Anim 1", "Layer 1", AtomAnimationClip.SharedAnimationSegment, context.logger);
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                context.animation.AddClip(clip);
+            }
+            ImportOperationClip ctx;
+            {
+                var clip = GivenImportedClip(context);
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
+            }
+
+            context.Assert(ctx.okJSON.val, false, "Ok");
+            context.Assert(ctx.statusJSON.val, "Targets reserved by shared segment.\r\nTriggers: T1\r\nControl: C1\r\nFloat Param: F1 Test\r\n", "Status");
 
             yield break;
         }

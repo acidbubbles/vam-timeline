@@ -64,7 +64,7 @@ namespace VamTimeline
             if (layers.Any(l => sharedTargets.Any(c => c.TargetsSameAs(l))))
             {
                 okJSON.val = false;
-                statusJSON.valNoCallback = "Targets reserved by shared segment";
+                statusJSON.valNoCallback = "Targets reserved by shared segment.";
                 PopulateTargetsInStatus();
                 return;
             }
@@ -125,6 +125,7 @@ namespace VamTimeline
             {
                 okJSON.val = false;
                 statusJSON.val = "No compatible layer available on this segment.";
+                PopulateTargetsInStatus();
                 return;
             }
 
@@ -135,6 +136,7 @@ namespace VamTimeline
         private void PopulateTargetsInStatus()
         {
             var sb = new StringBuilder();
+            sb.AppendLine();
             foreach (var target in clip.GetAllTargets())
             {
                 if(target is FreeControllerV3AnimationTarget)
