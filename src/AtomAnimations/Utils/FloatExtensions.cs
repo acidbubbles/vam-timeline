@@ -17,19 +17,16 @@ namespace VamTimeline
         {
             value = (float)(Math.Round(value * 1000f) / 1000f);
 
-            if (value < 0f)
-                value = 0f;
+            if (value < 0f) return 0f;
 
-            if (range > 0f)
-            {
-                var snapDelta = Mathf.Repeat(value, range);
-                if (snapDelta != 0f)
-                {
-                    value -= snapDelta;
-                    if (snapDelta > range / 2f)
-                        value += range;
-                }
-            }
+            if (range == 0f) return value;
+
+            var snapDelta = Mathf.Repeat(value, range);
+            if (snapDelta == 0f) return value;
+
+            value -= snapDelta;
+            if (snapDelta > range / 2f)
+                value += range;
 
             return value;
         }

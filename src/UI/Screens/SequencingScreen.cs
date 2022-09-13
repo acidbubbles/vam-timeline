@@ -161,11 +161,17 @@ namespace VamTimeline
 
         private void RoundNextTimeToNearestLoop()
         {
-            if (current.loop && current.preserveLoops)
-            {
-                _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.RoundToNearest(current.animationLength);
-            }
             _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.Snap();
+            if (_nextAnimationTimeJSON.val == 0) return;
+            if (current.loop && current.preserveLoops && _nextAnimationTimeJSON.val > 0.0001f)
+            {
+                var isLower = _nextAnimationTimeJSON.val - current.nextAnimationTime == -1f;
+                _nextAnimationTimeJSON.valNoCallback = _nextAnimationTimeJSON.val.RoundToNearest(current.animationLength);
+                if (isLower && _nextAnimationTimeJSON.valNoCallback == current.nextAnimationTime)
+                {
+                    _nextAnimationTimeJSON.valNoCallback = Mathf.Max(0, _nextAnimationTimeJSON.val - current.animationLength);
+                }
+            }
         }
 
         private void InitRandomizeLengthUI()
