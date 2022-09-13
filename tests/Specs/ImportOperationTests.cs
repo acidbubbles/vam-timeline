@@ -13,6 +13,7 @@ namespace VamTimeline
             yield return new Test(nameof(CanAddTarget_Mismatch_NewSegment), CanAddTarget_Mismatch_NewSegment);
             yield return new Test(nameof(CanAddTarget_Conflict_SegmentName), CanAddTarget_Conflict_SegmentName);
             yield return new Test(nameof(CanAddTarget_Conflict_LayerName), CanAddTarget_Conflict_LayerName);
+            yield return new Test(nameof(CanAddTarget_Conflict_AnimName), CanAddTarget_Conflict_AnimName);
         }
 
         // TODO: Non-segment import
@@ -210,6 +211,35 @@ namespace VamTimeline
             ctx.op.segmentJSON.val = "Segment 1";
 
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED", "Segment");
+
+            yield break;
+        }
+
+        private IEnumerable CanAddTarget_Conflict_AnimName(TestContext context)
+        {
+            var helper = new TargetsHelper(context);
+            context.animation.RemoveClip(context.animation.clips[0]);
+            {
+                var clip = new AtomAnimationClip("Anim IMPORTED", "Layer 1", "Segment 1", context.logger);
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                context.animation.AddClip(clip);
+            }
+            var ctx = new ImportTestContext(context);
+            {
+                var clip = ctx.imported;
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+            }
+
+            ctx.op.PopulateValidChoices();
+            ctx.op.segmentJSON.val = "Segment 1";
+
+            context.Assert(ctx.segmentJSON.val, "Segment 1", "Segment");
+            context.Assert(ctx.okJSON.val, false, "Ok");
+            context.Assert(ctx.statusJSON.val, "Animation name not available on layer.", "Status");
 
             yield break;
         }

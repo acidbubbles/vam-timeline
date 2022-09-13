@@ -96,6 +96,7 @@ namespace VamTimeline
             if (!targetSegments.Contains(segmentJSON.val)) segmentJSON.valNoCallback = targetSegments.FirstOrDefault() ?? "";
             AtomAnimationsClipsIndex.IndexedSegment selectedSegment;
             var existingSegment = _animation.index.segmentsById.TryGetValue(segmentJSON.val.ToId(), out selectedSegment);
+            List<string> animationsOnLayer;
 
             if (existingSegment)
             {
@@ -103,14 +104,31 @@ namespace VamTimeline
                 var targetLayers = validExistingSegmentLayers.Select(l => l.animationLayer).ToList();
                 layerJSON.choices = targetLayers;
                 if (!targetLayers.Contains(layerJSON.val)) layerJSON.valNoCallback = targetLayers.FirstOrDefault() ?? "";
+                animationsOnLayer = selectedSegment.layersMapById[layerJSON.val.ToId()].Select(c => c.animationName).ToList();
             }
             else
             {
                 layerJSON.choices = new List<string>(new[] { clip.animationLayer });
                 layerJSON.valNoCallback = clip.animationLayer;
+                animationsOnLayer = new List<string>();
             }
 
-            okJSON.val = layerJSON.val != "";
+            var animNameAvailable = !animationsOnLayer.Contains(nameJSON.val);
+            if (!animNameAvailable)
+            {
+                okJSON.val = false;
+                statusJSON.val = "Animation name not available on layer.";
+                return;
+            }
+
+            if (layerJSON.val == "")
+            {
+                okJSON.val = false;
+                statusJSON.val = "No compatible layer available on this segment.";
+                return;
+            }
+
+            okJSON.val = true;
             statusJSON.valNoCallback = "";
         }
 
