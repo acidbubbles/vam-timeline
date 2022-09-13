@@ -46,7 +46,7 @@ namespace VamTimeline
         public void PopulateValidChoices()
         {
             List<ICurveAnimationTarget> sharedTargets;
-            if (_animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
+            if (!clip.isOnSharedSegment && _animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
             {
                 sharedTargets = _animation.index.segmentsById[AtomAnimationClip.SharedAnimationSegmentId].layers
                     .Select(l => l[0])
@@ -86,7 +86,7 @@ namespace VamTimeline
             {
                 targetSegments.Add(clip.animationSegment);
             }
-            else
+            else if(!clip.isOnSharedSegment)
             {
                 var newSegmentName = _animation.GetUniqueSegmentName(clip.animationSegment);
                 targetSegments.Add(newSegmentName);

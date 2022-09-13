@@ -14,6 +14,7 @@ namespace VamTimeline
             yield return new Test(nameof(CanAddTarget_Conflict_SegmentName), CanAddTarget_Conflict_SegmentName);
             yield return new Test(nameof(CanAddTarget_Conflict_LayerName), CanAddTarget_Conflict_LayerName);
             yield return new Test(nameof(CanAddTarget_Conflict_AnimName), CanAddTarget_Conflict_AnimName);
+            yield return new Test(nameof(CanAddTarget_Source_SharedSegment), CanAddTarget_Source_SharedSegment);
         }
 
         // TODO: Non-segment import
@@ -31,15 +32,15 @@ namespace VamTimeline
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
-            var ctx = new ImportTestContext(context);
+            ImportOperationClip ctx;
             {
-                var clip = ctx.imported;
+                var clip = GivenImportedClip(context);
                 clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
             }
 
-            ctx.op.PopulateValidChoices();
             ctx.segmentJSON.val = "Segment 1";
 
             context.Assert(ctx.okJSON.val, true, "OK");
@@ -50,18 +51,18 @@ namespace VamTimeline
             context.Assert(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment IMPORTED" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"", "Status");
 
-            ctx.op.ImportClip();
+            ctx.ImportClip();
 
-            context.Assert(ctx.imported.animationSegment, "Segment 1", "Processed segment name");
-            context.Assert(ctx.imported.animationLayer, "Layer 1", "Processed layer name");
-            context.Assert(ctx.imported.animationName, "Anim IMPORTED", "Processed animation name");
+            context.Assert(ctx.clip.animationSegment, "Segment 1", "Processed segment name");
+            context.Assert(ctx.clip.animationLayer, "Layer 1", "Processed layer name");
+            context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
             context.Assert(context.animation.index.segmentNames, new[] { "Segment 1" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment 1".ToId(), out segmentIndex), true, "Segment imported exists");
             context.Assert(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer 1".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Layers once imported");
+            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -77,15 +78,14 @@ namespace VamTimeline
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
-            var ctx = new ImportTestContext(context);
+            ImportOperationClip ctx;
             {
-                var clip = ctx.imported;
+                var clip = GivenImportedClip(context);
                 clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
             }
-
-            ctx.op.PopulateValidChoices();
 
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
@@ -95,18 +95,18 @@ namespace VamTimeline
             context.Assert(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment IMPORTED" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"", "Status");
 
-            ctx.op.ImportClip();
+            ctx.ImportClip();
 
-            context.Assert(ctx.imported.animationSegment, "Segment IMPORTED", "Processed segment name");
-            context.Assert(ctx.imported.animationLayer, "Layer IMPORTED", "Processed layer name");
-            context.Assert(ctx.imported.animationName, "Anim IMPORTED", "Processed animation name");
+            context.Assert(ctx.clip.animationSegment, "Segment IMPORTED", "Processed segment name");
+            context.Assert(ctx.clip.animationLayer, "Layer IMPORTED", "Processed layer name");
+            context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
             context.Assert(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment IMPORTED".ToId(), out segmentIndex), true, "Segment imported exists");
             context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Layers once imported");
+            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -122,15 +122,14 @@ namespace VamTimeline
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
-            var ctx = new ImportTestContext(context);
+            ImportOperationClip ctx;
             {
-                var clip = ctx.imported;
+                var clip = GivenImportedClip(context);
                 clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
             }
-
-            ctx.op.PopulateValidChoices();
 
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
@@ -140,18 +139,18 @@ namespace VamTimeline
             context.Assert(ctx.segmentJSON.choices, new[] { "Segment IMPORTED" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"", "Status");
 
-            ctx.op.ImportClip();
+            ctx.ImportClip();
 
-            context.Assert(ctx.imported.animationSegment, "Segment IMPORTED", "Processed segment name");
-            context.Assert(ctx.imported.animationLayer, "Layer IMPORTED", "Processed layer name");
-            context.Assert(ctx.imported.animationName, "Anim IMPORTED", "Processed animation name");
+            context.Assert(ctx.clip.animationSegment, "Segment IMPORTED", "Processed segment name");
+            context.Assert(ctx.clip.animationLayer, "Layer IMPORTED", "Processed layer name");
+            context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
             context.Assert(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment IMPORTED".ToId(), out segmentIndex), true, "Segment imported exists");
             context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Layers once imported");
+            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -167,15 +166,14 @@ namespace VamTimeline
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
-            var ctx = new ImportTestContext(context);
+            ImportOperationClip ctx;
             {
-                var clip = ctx.imported;
+                var clip = GivenImportedClip(context);
                 clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
             }
-
-            ctx.op.PopulateValidChoices();
 
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
@@ -199,16 +197,16 @@ namespace VamTimeline
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
-            var ctx = new ImportTestContext(context);
+            ImportOperationClip ctx;
             {
-                var clip = ctx.imported;
+                var clip = GivenImportedClip(context);
                 clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
             }
 
-            ctx.op.PopulateValidChoices();
-            ctx.op.segmentJSON.val = "Segment 1";
+            ctx.segmentJSON.val = "Segment 1";
 
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED", "Segment");
 
@@ -226,16 +224,16 @@ namespace VamTimeline
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
-            var ctx = new ImportTestContext(context);
+            ImportOperationClip ctx;
             {
-                var clip = ctx.imported;
+                var clip = GivenImportedClip(context);
                 clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
                 clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
             }
 
-            ctx.op.PopulateValidChoices();
-            ctx.op.segmentJSON.val = "Segment 1";
+            ctx.segmentJSON.val = "Segment 1";
 
             context.Assert(ctx.segmentJSON.val, "Segment 1", "Segment");
             context.Assert(ctx.okJSON.val, false, "Ok");
@@ -244,21 +242,55 @@ namespace VamTimeline
             yield break;
         }
 
-        private class ImportTestContext
+        private IEnumerable CanAddTarget_Source_SharedSegment(TestContext context)
         {
-            public AtomAnimationClip imported => op.clip;
-            public JSONStorableBool okJSON => op.okJSON;
-            public JSONStorableStringChooser segmentJSON => op.segmentJSON;
-            public JSONStorableStringChooser layerJSON => op.layerJSON;
-            public JSONStorableString nameJSON => op.nameJSON;
-            public JSONStorableString statusJSON => op.statusJSON;
-            public readonly ImportOperationClip op;
-
-            public ImportTestContext(TestContext context)
+            var helper = new TargetsHelper(context);
+            context.animation.RemoveClip(context.animation.clips[0]);
             {
-                var clip = new AtomAnimationClip("Anim IMPORTED", "Layer IMPORTED", "Segment IMPORTED", context.logger);
-                op = new ImportOperationClip(context.animation, clip);
+                var clip = new AtomAnimationClip("Anim 1", "Layer 1", AtomAnimationClip.SharedAnimationSegment, context.logger);
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                context.animation.AddClip(clip);
             }
+            ImportOperationClip ctx;
+            {
+                var clip = GivenImportedClip(context);
+                clip.animationSegment = AtomAnimationClip.SharedAnimationSegment;
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
+            }
+
+            context.Assert(ctx.okJSON.val, true, "OK");
+            context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
+            context.Assert(ctx.layerJSON.val, "Layer 1", "Layer");
+            context.Assert(ctx.layerJSON.choices, new[] { "Layer 1" }, "Layer choices");
+            context.Assert(ctx.segmentJSON.val, AtomAnimationClip.SharedAnimationSegment, "Segment");
+            context.Assert(ctx.segmentJSON.choices, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segment choices");
+            context.Assert(ctx.statusJSON.val, @"", "Status");
+
+            ctx.ImportClip();
+
+            context.Assert(ctx.clip.animationSegment, AtomAnimationClip.SharedAnimationSegment, "Processed segment name");
+            context.Assert(ctx.clip.animationLayer, "Layer 1", "Processed layer name");
+            context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
+            AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
+            List<AtomAnimationClip> layerClips = null;
+            context.Assert(context.animation.index.segmentNames, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segments once imported");
+            context.Assert(context.animation.index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out segmentIndex), true, "Segment imported exists");
+            context.Assert(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
+            context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer 1".ToId(), out layerClips), true, "Layer imported exists");
+            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
+
+            yield break;
+        }
+
+        private AtomAnimationClip GivenImportedClip(TestContext context)
+        {
+            var clip = new AtomAnimationClip("Anim IMPORTED", "Layer IMPORTED", "Segment IMPORTED", context.logger);
+            return clip;
         }
     }
 }
