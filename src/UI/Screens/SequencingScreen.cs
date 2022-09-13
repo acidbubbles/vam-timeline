@@ -108,7 +108,7 @@ namespace VamTimeline
 
         private void RandomizeWeightUI()
         {
-            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, val => current.nextAnimationRandomizeWeight = val, 0f, 1f, false);
+            _nextAnimationRandomizeWeightJSON = new JSONStorableFloat("Random group weight", 1f, val => current.nextAnimationRandomizeWeight = Mathf.Max(0, val), 0f, 1f, false);
             prefabFactory.CreateSlider(_nextAnimationRandomizeWeightJSON);
         }
 
@@ -170,7 +170,11 @@ namespace VamTimeline
 
         private void InitRandomizeLengthUI()
         {
-            _randomizeRangeJSON = new JSONStorableFloat("Add random time range", 0f, (float _) => SyncPlayNext(), 0f, 60f, false)
+            _randomizeRangeJSON = new JSONStorableFloat("Add random time range", 0f, (float _) =>
+            {
+                if (_randomizeRangeJSON.val < 0) _randomizeRangeJSON.valNoCallback = 0f;
+                SyncPlayNext();
+            }, 0f, 60f, false)
             {
                 valNoCallback = current.nextAnimationTimeRandomize
             };
