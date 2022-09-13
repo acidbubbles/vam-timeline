@@ -142,6 +142,8 @@ namespace VamTimeline
 
             if (!isPlaying)
             {
+                if (logger.peersSync && !syncWithPeers)
+                    logger.Log(logger.peersSyncCategory, "Peer sync has been disabled on this atom");
                 isPlayingChanged = true;
                 isPlaying = true;
                 Validate();
