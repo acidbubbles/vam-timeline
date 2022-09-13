@@ -82,14 +82,17 @@ namespace VamTimeline
             nameJSON.valNoCallback = clip.animationName;
 
             var targetSegments = validExistingLayers.Select(l => l.animationSegment).Distinct().ToList();
-            if (!_animation.index.segmentNames.Contains(clip.animationSegment))
+            if (clip.isOnNoneSegment)
+            {
+                targetSegments.Add(_animation.GetUniqueSegmentName(clip));
+            }
+            else if (!_animation.index.segmentNames.Contains(clip.animationSegment))
             {
                 targetSegments.Add(clip.animationSegment);
             }
             else if(!clip.isOnSharedSegment)
             {
-                var newSegmentName = _animation.GetUniqueSegmentName(clip.animationSegment);
-                targetSegments.Add(newSegmentName);
+                targetSegments.Add(_animation.GetUniqueSegmentName(clip));
             }
 
             segmentJSON.choices = targetSegments;

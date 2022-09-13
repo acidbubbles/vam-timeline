@@ -8,22 +8,19 @@ namespace VamTimeline
     {
         public IEnumerable<Test> GetTests()
         {
-            yield return new Test(nameof(CanAddTarget_PerfectMatch_ExistingSegment), CanAddTarget_PerfectMatch_ExistingSegment);
-            yield return new Test(nameof(CanAddTarget_PerfectMatch_NewSegment), CanAddTarget_PerfectMatch_NewSegment);
-            yield return new Test(nameof(CanAddTarget_Mismatch_NewSegment), CanAddTarget_Mismatch_NewSegment);
-            yield return new Test(nameof(CanAddTarget_Conflict_SegmentName), CanAddTarget_Conflict_SegmentName);
-            yield return new Test(nameof(CanAddTarget_Conflict_LayerName), CanAddTarget_Conflict_LayerName);
-            yield return new Test(nameof(CanAddTarget_Conflict_AnimName), CanAddTarget_Conflict_AnimName);
-            yield return new Test(nameof(CanAddTarget_Source_SharedSegment), CanAddTarget_Source_SharedSegment);
-            yield return new Test(nameof(CanAddTarget_Source_NewSharedSegment), CanAddTarget_Source_NewSharedSegment);
-            yield return new Test(nameof(CanAddTarget_Conflict_SharedSegment), CanAddTarget_Conflict_SharedSegment);
+            yield return new Test(nameof(CanImport_PerfectMatch_ExistingSegment), CanImport_PerfectMatch_ExistingSegment);
+            yield return new Test(nameof(CanImport_PerfectMatch_NewSegment), CanImport_PerfectMatch_NewSegment);
+            yield return new Test(nameof(CanImport_Mismatch_NewSegment), CanImport_Mismatch_NewSegment);
+            yield return new Test(nameof(CanImport_Conflict_SegmentName), CanImport_Conflict_SegmentName);
+            yield return new Test(nameof(CanImport_Conflict_LayerName), CanImport_Conflict_LayerName);
+            yield return new Test(nameof(CanImport_Conflict_AnimName), CanImport_Conflict_AnimName);
+            yield return new Test(nameof(CanImport_Source_SharedSegment), CanImport_Source_SharedSegment);
+            yield return new Test(nameof(CanImport_Source_NewSharedSegment), CanImport_Source_NewSharedSegment);
+            yield return new Test(nameof(CanImport_Conflict_SharedSegment), CanImport_Conflict_SharedSegment);
+            yield return new Test(nameof(CanImport_LegacyClip), CanImport_LegacyClip);
         }
 
-        // TODO: Non-segment import
-        // TODO: Import from shared
-        // TODO: Import into shared
-
-        private IEnumerable CanAddTarget_PerfectMatch_ExistingSegment(TestContext context)
+        private IEnumerable CanImport_PerfectMatch_ExistingSegment(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -69,7 +66,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_PerfectMatch_NewSegment(TestContext context)
+        private IEnumerable CanImport_PerfectMatch_NewSegment(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -113,7 +110,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Mismatch_NewSegment(TestContext context)
+        private IEnumerable CanImport_Mismatch_NewSegment(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -157,7 +154,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Conflict_SegmentName(TestContext context)
+        private IEnumerable CanImport_Conflict_SegmentName(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -188,7 +185,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Conflict_LayerName(TestContext context)
+        private IEnumerable CanImport_Conflict_LayerName(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -215,7 +212,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Conflict_AnimName(TestContext context)
+        private IEnumerable CanImport_Conflict_AnimName(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -244,7 +241,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Source_SharedSegment(TestContext context)
+        private IEnumerable CanImport_Source_SharedSegment(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -289,7 +286,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Source_NewSharedSegment(TestContext context)
+        private IEnumerable CanImport_Source_NewSharedSegment(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -334,7 +331,7 @@ namespace VamTimeline
             yield break;
         }
 
-        private IEnumerable CanAddTarget_Conflict_SharedSegment(TestContext context)
+        private IEnumerable CanImport_Conflict_SharedSegment(TestContext context)
         {
             var helper = new TargetsHelper(context);
             context.animation.RemoveClip(context.animation.clips[0]);
@@ -356,6 +353,39 @@ namespace VamTimeline
 
             context.Assert(ctx.okJSON.val, false, "Ok");
             context.Assert(ctx.statusJSON.val, "Targets reserved by shared segment.\r\nTriggers: T1\r\nControl: C1\r\nFloat Param: F1 Test\r\n", "Status");
+
+            yield break;
+        }
+
+        private IEnumerable CanImport_LegacyClip(TestContext context)
+        {
+            var helper = new TargetsHelper(context);
+            context.animation.RemoveClip(context.animation.clips[0]);
+            {
+                var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                context.animation.AddClip(clip);
+            }
+            ImportOperationClip ctx;
+            {
+                var clip = GivenImportedClip(context);
+                clip.animationSegment = AtomAnimationClip.NoneAnimationSegment;
+                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                ctx = new ImportOperationClip(context.animation, clip);
+            }
+
+            ctx.segmentJSON.val = "Segment 2";
+
+            context.Assert(ctx.segmentJSON.val, "Segment 2", "Segment");
+            context.Assert(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment 2" }, "Segment choices");
+
+            ctx.ImportClip();
+
+            context.Assert(ctx.clip.animationSegment, "Segment 2", "Processed segment name");
 
             yield break;
         }
