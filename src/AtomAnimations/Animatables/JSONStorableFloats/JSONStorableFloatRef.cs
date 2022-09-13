@@ -21,6 +21,7 @@ namespace VamTimeline
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
         public string floatParamDisplayName;
+        private float _nextCheck;
 
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
@@ -161,6 +162,8 @@ namespace VamTimeline
         private bool TryBind(bool silent)
         {
             if (SuperController.singleton.isLoading) return false;
+            if (_nextCheck > Time.unscaledTime) return false;
+            _nextCheck = Time.unscaledTime + 1f;
             storable = _atom.GetStorableByID(storableId);
             if (storable == null)
             {
