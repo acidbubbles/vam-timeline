@@ -288,14 +288,14 @@ namespace VamTimeline
             _nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimation}'");
-                animationEditContext.GoToNextAnimation(animation.clips[0].animationLayerQualifiedId);
+                animationEditContext.GoToNextAnimation(animationEditContext.currentSegment.layers[0][0].animationLayerQualifiedId);
             });
             RegisterAction(_nextAnimationJSON);
 
             _previousAnimationJSON = new JSONStorableAction(StorableNames.PreviousAnimation, () =>
             {
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousAnimation}'");
-                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualifiedId);
+                animationEditContext.GoToPreviousAnimation(animationEditContext.currentSegment.layers[0][0].animationLayerQualifiedId);
             });
             RegisterAction(_previousAnimationJSON);
 
