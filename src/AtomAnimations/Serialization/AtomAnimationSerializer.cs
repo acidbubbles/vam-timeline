@@ -132,7 +132,7 @@ namespace VamTimeline
             if (!string.IsNullOrEmpty(audioSourceControlUid))
             {
                 var audioSourceControlAtom = SuperController.singleton.GetAtomByUid(audioSourceControlUid);
-                var audioSourceControl = (audioSourceControlAtom.GetStorableByID("AudioSource") ?? audioSourceControlAtom.GetStorableByID("HeadAudioSource")) as AudioSourceControl;
+                var audioSourceControl = audioSourceControlAtom.GetStorableIDs().Select(audioSourceControlAtom.GetStorableByID).OfType<AudioSourceControl>().FirstOrDefault();
                 if (audioSourceControl == null)
                     SuperController.LogError($"AudioSource '{audioSourceControlUid}' linked to animation '{clip.animationName}' of atom '{_atom.uid}' was not found in scene");
                 else

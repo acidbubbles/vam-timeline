@@ -289,7 +289,11 @@ namespace VamTimeline
 
         private static List<string> GetEligibleAudioSourceAtoms()
         {
-            return new[] { "" }.Concat(SuperController.singleton.GetAtoms().Where(a => a.GetStorableByID("AudioSource") != null || a.GetStorableByID("HeadAudioSource") != null).Select(a => a.uid)).ToList();
+            return new[] { "" }.Concat(SuperController.singleton
+                    .GetAtoms()
+                    .Where(a => a.GetStorableIDs().Select(a.GetStorableByID).OfType<AudioSourceControl>().Any())
+                    .Select(a => a.uid))
+                .ToList();
         }
 
         private void InitAnimationPatternLinkUI()
@@ -382,7 +386,7 @@ namespace VamTimeline
                 return;
             }
 
-            current.audioSourceControl = (AudioSourceControl)(atom.GetStorableByID("AudioSource") ?? atom.GetStorableByID("HeadAudioSource"));
+            current.audioSourceControl = atom.GetStorableIDs().Select(atom.GetStorableByID).OfType<AudioSourceControl>().FirstOrDefault();
         }
 
         private void LinkAnimationPattern(string uid)
