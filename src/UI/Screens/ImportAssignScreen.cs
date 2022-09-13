@@ -10,7 +10,8 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
-        private List<ImportOperationClip> _imported = new List<ImportOperationClip>();
+        private readonly List<ImportOperationClip> _imported = new List<ImportOperationClip>();
+        private readonly List<UIDynamicButton> _importBtns = new List<UIDynamicButton>();
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -29,27 +30,46 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Animations", 1);
-            prefabFactory.CreateButton("Deselect All").button.onClick.AddListener(() =>
+            prefabFactory.CreateButton("Deselect all").button.onClick.AddListener(() =>
             {
                 foreach (var imported in _imported)
                 {
                     imported.includeJSON.val = false;
                 }
             });
-            prefabFactory.CreateButton("Select All").button.onClick.AddListener(() =>
+            prefabFactory.CreateButton("Select all").button.onClick.AddListener(() =>
             {
                 foreach (var imported in _imported)
                 {
-                    imported.includeJSON.val = false;
+                    imported.includeJSON.val = true;
                 }
             });
+            prefabFactory.CreateButton("Prefer existing segment").button.onClick.AddListener(() =>
+            {
+                foreach (var imported in _imported)
+                {
+                    var match = imported.segmentJSON.choices.FirstOrDefault(c => animation.index.segmentNames.Contains(c));
+                    if(match != null) imported.segmentJSON.val = match;
+                }
+            });
+            prefabFactory.CreateButton("Prefer new segment").button.onClick.AddListener(() =>
+            {
+                foreach (var imported in _imported)
+                {
+                    var match = imported.segmentJSON.choices.FirstOrDefault(c => !animation.index.segmentNames.Contains(c));
+                    if(match != null) imported.segmentJSON.val = match;
+                }
+            });
+            _importBtns.Add(InitImportUI());
 
             InitOverviewUI(clips);
 
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Import", 1);
 
-            InitImportUI();
+            _importBtns.Add(InitImportUI());
+
+            OnUpdated();
         }
 
         public void InitOverviewUI(List<AtomAnimationClip> clips)
@@ -64,7 +84,7 @@ namespace VamTimeline
         {
             var imported = operations.Import().PrepareClip(clip);
 
-            prefabFactory.CreateSpacer();
+            prefabFactory.CreateSpacer().height = 40f;
             prefabFactory.CreateHeader(clip.animationNameQualified, 1);
             prefabFactory.CreateToggle(imported.includeJSON);
             prefabFactory.CreateTextField(imported.statusJSON).height = 150;
@@ -72,14 +92,25 @@ namespace VamTimeline
             prefabFactory.CreatePopup(imported.segmentJSON, false, true);
             prefabFactory.CreatePopup(imported.layerJSON, false, true);
             prefabFactory.CreateToggle(imported.okJSON).toggle.interactable = false;
+            imported.updated.AddListener(OnUpdated);
 
             return imported;
         }
 
-        public void InitImportUI()
+        private void OnUpdated()
+        {
+            var btnName = $"Import ({_imported.Count(i => i.okJSON.val && i.includeJSON.val)})";
+            foreach (var importBtn in _importBtns)
+            {
+                importBtn.label = btnName;
+            }
+        }
+
+        public UIDynamicButton InitImportUI()
         {
             var btn = prefabFactory.CreateButton("Import");
             btn.button.onClick.AddListener(Import);
+            return btn;
         }
 
         public void Import()
@@ -111,6 +142,10 @@ namespace VamTimeline
         public override void OnDestroy()
         {
             animation.animatables.locked = false;
+            foreach (var imported in _imported)
+            {
+                imported.updated.RemoveAllListeners();
+            }
             base.OnDestroy();
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine.Events;
 
 namespace VamTimeline
 {
@@ -29,6 +30,7 @@ namespace VamTimeline
         public readonly JSONStorableString nameJSON;
         public readonly JSONStorableString statusJSON;
         public readonly JSONStorableBool includeJSON;
+        public UnityEvent updated = new UnityEvent();
 
         public ImportOperationClip(AtomAnimation animation, AtomAnimationClip clip)
         {
@@ -39,11 +41,17 @@ namespace VamTimeline
             layerJSON = new JSONStorableStringChooser("Layer", new List<string>(), clip.animationLayer, "Layer", (string _) => PopulateValidChoices());
             segmentJSON = new JSONStorableStringChooser("Segment", new List<string>(), clip.animationSegment, "Segment", (string _) => PopulateValidChoices());
             okJSON = new JSONStorableBool("Valid for import", false);
-            includeJSON = new JSONStorableBool("Selected for import", true);
+            includeJSON = new JSONStorableBool("Selected for import", true, (bool _) => updated.Invoke());
             PopulateValidChoices();
         }
 
         public void PopulateValidChoices()
+        {
+            PopulateValidChoices2();
+            updated.Invoke();
+        }
+
+        private void PopulateValidChoices2()
         {
             List<ICurveAnimationTarget> sharedTargets;
             if (!clip.isOnSharedSegment && _animation.index.segmentIds.Contains(AtomAnimationClip.SharedAnimationSegmentId))
