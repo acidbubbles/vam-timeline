@@ -617,6 +617,7 @@ namespace VamTimeline
             if (simulationFrozen) return;
             if (_globalScaledWeight <= 0) return;
             // TODO: Index keep track if there is any parenting
+            if (source == null) return;
             var layers = GetMainAndBestSiblingPerLayer(playingAnimationSegmentId, source.animationNameId, source.animationSetId);
             for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
@@ -637,7 +638,6 @@ namespace VamTimeline
                         if (controller.currentPositionState != FreeControllerV3.PositionState.Off)
                             controller.control.position = Vector3.Lerp(controller.control.position, targetPosition, _globalWeight);
                     }
-
                     var rotationParentRB = ctrl.GetRotationParentRB();
                     if (!ReferenceEquals(rotationParentRB, null))
                     {

@@ -615,17 +615,19 @@ namespace VamTimeline
         public IEnumerable<IAtomAnimationTargetsList> GetTargetGroups()
         {
             yield return targetTriggers;
-            foreach (var group in targetControllers.GroupBy(t => t.animatableRef.groupKey))
+            foreach (var group in targetControllers.GroupBy(t => t.group ?? t.animatableRef.groupKey))
             {
-                yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = group.First().animatableRef.groupLabel };
+                var first = group.First();
+                yield return new AtomAnimationTargetsList<FreeControllerV3AnimationTarget>(group) { label = first.group ?? first.animatableRef.groupLabel };
             }
             foreach (var target in targetFloatParams)
             {
                 target.animatableRef.EnsureAvailable();
             }
-            foreach (var group in targetFloatParams.GroupBy(t => t.animatableRef.groupKey))
+            foreach (var group in targetFloatParams.GroupBy(t => t.group ?? t.animatableRef.groupKey))
             {
-                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = group.First().animatableRef.groupLabel };
+                var first = group.First();
+                yield return new AtomAnimationTargetsList<JSONStorableFloatAnimationTarget>(group) { label = first.group ?? first.animatableRef.groupLabel };
             }
         }
 

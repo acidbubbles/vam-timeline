@@ -11,6 +11,7 @@ namespace VamTimeline
         string name { get; }
         bool selected { get; set; }
         bool collapsed { get; set; }
+        string group { get; set; }
         IAtomAnimationClip clip { get; set; }
 
         void Validate(float animationLength);

@@ -213,6 +213,10 @@ namespace VamTimeline
                 case LoggingScreen.ScreenName:
                     _current = screenContainer.AddComponent<LoggingScreen>();
                     break;
+                case GroupingScreen.ScreenName:
+                    _current = screenContainer.AddComponent<GroupingScreen>();
+                    break;
+
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");
             }

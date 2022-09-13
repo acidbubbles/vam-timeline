@@ -178,6 +178,7 @@ namespace VamTimeline
                     target.controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true);
                     target.controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true);
                     target.weight = DeserializeFloat(controllerJSON["Weight"], 1f);
+                    target.group = DeserializeString(controllerJSON["Group"], null);
                     if (controllerJSON.HasKey("Parent"))
                     {
                         var parentJSON = controllerJSON["Parent"].AsObject;
@@ -232,6 +233,7 @@ namespace VamTimeline
                         SuperController.LogError($"Timeline: Float param {atom.name} / {storableId} / {floatParamName} was added more than once in clip {clip.animationNameQualified}. Dropping second instance.");
                         continue;
                     }
+                    target.group = DeserializeString(paramJSON["Group"], null);
                     var dirty = false;
                     DeserializeCurve(target.value, paramJSON["Value"], ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
@@ -263,6 +265,7 @@ namespace VamTimeline
                             SuperController.LogError($"The triggers track {triggerTrackName} exists more than once in clip {clip.animationNameQualified}. Trigger keyframes may be overwritten.");
                         }
                     }
+                    target.group = DeserializeString(triggerJSON["Group"], null);
                     foreach (JSONClass entryJSON in triggerJSON["Triggers"].AsArray)
                     {
                         var trigger = target.CreateCustomTrigger();
@@ -547,6 +550,10 @@ namespace VamTimeline
                 {
                     controllerJSON["Weight"] = target.weight.ToString(CultureInfo.InvariantCulture);
                 }
+                if (target.group != null)
+                {
+                    controllerJSON["Group"] = target.group;
+                }
                 controllersJSON.Add(controllerJSON);
             }
             if(controllersJSON.Count > 0)
@@ -570,10 +577,15 @@ namespace VamTimeline
                     }
                     paramJSON["Atom"] = target.animatableRef.storable.containingAtom.uid;
                 }
+                if (target.group != null)
+                {
+                    paramJSON["Group"] = target.group;
+                }
                 var min = target.animatableRef.floatParam?.min ?? target.animatableRef.assignMinValueOnBound;
                 if (min != null) paramJSON["Min"] = min.Value.ToString(CultureInfo.InvariantCulture);
                 var max = target.animatableRef.floatParam?.max ?? target.animatableRef.assignMaxValueOnBound;
                 if (max != null) paramJSON["Max"] = max.Value.ToString(CultureInfo.InvariantCulture);
+
                 floatParamsJSON.Add(paramJSON);
             }
             if(floatParamsJSON.Count > 0)
@@ -587,6 +599,10 @@ namespace VamTimeline
                     {"Name", target.name},
                     {"Live", target.animatableRef.live ? "1" : "0"},
                 };
+                if (target.group != null)
+                {
+                    triggerJSON["Group"] = target.group;
+                }
                 var entriesJSON = new JSONArray();
                 foreach (var x in target.triggersMap.OrderBy(kvp => kvp.Key))
                 {

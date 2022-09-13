@@ -116,6 +116,7 @@
 ..\src\UI\Screens\ControllerTargetSettingsScreen.cs
 ..\src\UI\Screens\DiagnosticsScreen.cs
 ..\src\UI\Screens\EditAnimationScreen.cs
+..\src\UI\Screens\GroupingScreen.cs
 ..\src\UI\Screens\HelpScreen.cs
 ..\src\UI\Screens\ImportAssignScreen.cs
 ..\src\UI\Screens\ImportExportScreen.cs

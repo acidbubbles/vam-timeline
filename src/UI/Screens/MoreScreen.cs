@@ -26,6 +26,7 @@ namespace VamTimeline
 
             CreateChangeScreenButton("<b>Bulk</b> changes...", BulkScreen.ScreenName);
             CreateChangeScreenButton("<b>Advanced</b> keyframe tools...", AdvancedKeyframeToolsScreen.ScreenName);
+            CreateChangeScreenButton("<b>Grouping</b>...", GroupingScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 

@@ -69,6 +69,7 @@ namespace VamTimeline
                 {
                     if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
                     var newTarget = clip.Add(new JSONStorableFloatAnimationTarget(origTarget));
+                    newTarget.group = origTarget.group;
                     newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                     newTarget.dirty = true;
                 }
@@ -76,12 +77,12 @@ namespace VamTimeline
                 foreach (var origTarget in source.targetTriggers)
                 {
                     var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger));
+                    newTarget.group = origTarget.group;
                     foreach (var origTrigger in origTarget.triggersMap)
                     {
                         var trigger = newTarget.CreateKeyframe(origTrigger.Key);
                         trigger.RestoreFromJSON(origTrigger.Value.GetJSON());
                     }
-
                     newTarget.dirty = true;
                 }
 
@@ -101,6 +102,7 @@ namespace VamTimeline
                 {
                     if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
                     var newTarget = clip.Add(origTarget.animatableRef);
+                    newTarget.group = origTarget.group;
                     newTarget.SetKeyframeToCurrent(0f);
                     newTarget.SetKeyframeToCurrent(clip.animationLength);
                 }
@@ -108,6 +110,7 @@ namespace VamTimeline
                 foreach (var origTarget in source.targetTriggers)
                 {
                     var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger);
+                    newTarget.group = origTarget.group;
                     newTarget.AddEdgeFramesIfMissing(clip.animationLength);
                     clip.Add(newTarget);
                 }
@@ -183,6 +186,7 @@ namespace VamTimeline
             newTarget.weight = origTarget.weight;
             newTarget.controlPosition = origTarget.controlPosition;
             newTarget.controlRotation = origTarget.controlRotation;
+            newTarget.group = origTarget.group;
             return newTarget;
         }
 

@@ -52,6 +52,8 @@ namespace VamTimeline
             }
         }
 
+        public string group { get; set; }
+
         public string name => animatableRef.name;
         public string GetShortName() => animatableRef.GetShortName();
         public string GetFullName() => animatableRef.GetFullName();
