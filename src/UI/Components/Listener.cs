@@ -31,7 +31,7 @@ namespace VamTimeline
         {
             _fn = fn;
             _handler = handler;
-            OnEnable();
+            if(isActiveAndEnabled) OnEnable();
         }
     }
 }
