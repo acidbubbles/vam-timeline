@@ -96,11 +96,18 @@ namespace VamTimeline
 
         private void OnClipsUIOpened()
         {
-            var playingAnimation =
-                _animationEditContext.animation.index.segmentsById[_animationEditContext.current.animationSegmentId]
-                .layersMapById[_animationEditContext.current.animationLayerId]
-                .FirstOrDefault(c => c.playbackMainInLayer)
-                ?.animationName;
+            string playingAnimation = null;
+            AtomAnimationsClipsIndex.IndexedSegment segment;
+            if (_animationEditContext.animation.index.segmentsById.TryGetValue(_animationEditContext.current.animationSegmentId, out segment))
+            {
+                List<AtomAnimationClip> layer;
+                if (segment.layersMapById.TryGetValue(_animationEditContext.current.animationLayerId, out layer))
+                {
+                    playingAnimation = layer
+                        .FirstOrDefault(c => c.playbackMainInLayer)
+                        ?.animationName;
+                }
+            }
 
             var buttonParent = _clipsUI.popup.buttonParent;
             for (var i = 0; i < buttonParent.childCount; i++)
