@@ -5,6 +5,7 @@ namespace VamTimeline
 {
     public abstract class AnimationTargetBase<TAnimatableRef> : IDisposable where TAnimatableRef : AnimatableRefBase
     {
+        public AnimatableRefBase animatableRefBase => animatableRef;
         public TAnimatableRef animatableRef { get; }
         public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();
