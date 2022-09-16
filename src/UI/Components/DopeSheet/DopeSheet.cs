@@ -149,7 +149,7 @@ namespace VamTimeline
         public void OnEnable()
         {
             if (!_bound && _clip != null)
-                BindClip(_clip);
+                BindClip();
         }
 
         public void OnDestroy()
@@ -227,7 +227,8 @@ namespace VamTimeline
             _animationEditContext.onCurrentAnimationChanged.AddListener(OnCurrentAnimationChanged);
             _animationEditContext.animation.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
 
-            BindClip(_animationEditContext.current);
+            _clip = _animationEditContext.current;
+            BindClip();
             SetScrubberPosition(_animationEditContext.clipTime, true);
             _curves.Bind(_animationEditContext);
             _zoom.Bind(_animationEditContext);
@@ -270,19 +271,20 @@ namespace VamTimeline
         private void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             UnbindClip();
-            BindClip(args.after);
+            _clip = args.after;
+            BindClip();
             SetScrubberPosition(_animationEditContext.clipTime, true);
         }
 
         private void OnAnimationSettingsChanged()
         {
             UnbindClip();
-            BindClip(_animationEditContext.current);
+            BindClip();
         }
 
-        private void BindClip(IAtomAnimationClip clip)
+        private void BindClip()
         {
-            _clip = clip;
+            if (_bound) return;
             _bound = true;
             var any = false;
             foreach (var group in _clip.GetTargetGroups())
@@ -302,9 +304,8 @@ namespace VamTimeline
 
         private void OnTargetsListChanged()
         {
-            var clip = _clip;
             UnbindClip();
-            BindClip(clip);
+            BindClip();
         }
 
         private void UnbindClip()
@@ -313,11 +314,10 @@ namespace VamTimeline
             _keyframesRows.Clear();
             _bound = false;
             if (_content == null) return;
-            while (_content.childCount > 0)
+            var children = _content.Cast<Transform>().ToList();
+            foreach (Transform child in children)
             {
-                var child = _content.GetChild(0);
-                child.transform.SetParent(null, false);
-                Destroy(child.gameObject);
+                DestroyImmediate(child.gameObject);
             }
         }
 
@@ -434,11 +434,12 @@ namespace VamTimeline
                 keyframes.raycastTarget = true;
 
                 var listener = go.AddComponent<Listener>();
+                var clip = _clip;
                 listener.Bind(
                     target.onAnimationKeyframesRebuilt,
                     () =>
                     {
-                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
+                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), clip.loop);
                         keyframes.SetTime(_ms);
                         keyframes.SetVerticesDirty();
                     }
@@ -466,7 +467,6 @@ namespace VamTimeline
                 // TODO: Change this for a dictionary and listen once instead of once per row!
                 listener.Bind(
                     _animationEditContext.animation.animatables.onTargetsSelectionChanged,
-                    // ReSharper disable once AccessToModifiedClosure
                     () => UpdateSelected(target, keyframes, labelBackgroundImage)
                 );
 

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -29,6 +30,7 @@ namespace VamTimeline
 
         public void Bind(UnityEvent handler, UnityAction fn)
         {
+            if (_handler != null) throw new InvalidOperationException("Listener already bound");
             _fn = fn;
             _handler = handler;
             if(isActiveAndEnabled) OnEnable();
