@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -28,8 +29,6 @@ namespace VamTimeline
 
             clips = (List<AtomAnimationClip>)arg;
 
-            prefabFactory.CreateSpacer();
-            prefabFactory.CreateHeader("Animations", 1);
             prefabFactory.CreateButton("Deselect all").button.onClick.AddListener(() =>
             {
                 foreach (var imported in _imported)
@@ -62,6 +61,9 @@ namespace VamTimeline
             });
             _importBtns.Add(InitImportUI());
 
+            prefabFactory.CreateSpacer();
+            prefabFactory.CreateHeader("Animations", 1);
+
             InitOverviewUI(clips);
 
             prefabFactory.CreateSpacer();
@@ -85,13 +87,13 @@ namespace VamTimeline
             var imported = operations.Import().PrepareClip(clip);
 
             prefabFactory.CreateSpacer().height = 40f;
-            prefabFactory.CreateHeader(clip.animationNameQualified, 1);
+            prefabFactory.CreateHeader(clip.animationNameQualified, 2);
+            prefabFactory.CreateToggle(imported.okJSON).toggle.interactable = false;
             prefabFactory.CreateToggle(imported.includeJSON);
-            prefabFactory.CreateTextField(imported.statusJSON).height = 150;
-            prefabFactory.CreateTextInput(imported.nameJSON);
             prefabFactory.CreatePopup(imported.segmentJSON, false, true);
             prefabFactory.CreatePopup(imported.layerJSON, false, true);
-            prefabFactory.CreateToggle(imported.okJSON).toggle.interactable = false;
+            prefabFactory.CreateTextInput(imported.nameJSON);
+            prefabFactory.CreateTextField(imported.statusJSON).height = 150;
             imported.updated.AddListener(OnUpdated);
 
             return imported;
@@ -109,6 +111,8 @@ namespace VamTimeline
         public UIDynamicButton InitImportUI()
         {
             var btn = prefabFactory.CreateButton("Import");
+            btn.buttonColor = Color.green;
+            btn.buttonText.fontStyle = FontStyle.Bold;
             btn.button.onClick.AddListener(Import);
             return btn;
         }

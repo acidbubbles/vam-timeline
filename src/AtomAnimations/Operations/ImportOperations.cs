@@ -141,7 +141,7 @@ namespace VamTimeline
             }
 
             okJSON.val = true;
-            statusJSON.valNoCallback = "";
+            statusJSON.valNoCallback = "Ready to import.";
         }
 
         private void PopulateTargetsInStatus()
