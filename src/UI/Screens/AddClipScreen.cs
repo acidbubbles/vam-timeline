@@ -172,8 +172,8 @@ namespace VamTimeline
             var result = operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, _copySettingsJSON.val, _copyKeyframesJSON.val, _createOnAllLayersJSON.val);
             var clip = result.Select(r => r.created).FirstOrDefault(c => c.animationLayerQualified == current.animationLayerQualified);
             if(clip == null) return;
-            animationEditContext.SelectAnimation(clip);
             if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            animationEditContext.SelectAnimation(clip);
             if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
@@ -182,8 +182,8 @@ namespace VamTimeline
             var result = operations.AddAnimation().AddTransitionAnimation(_createOnAllLayersJSON.val);
             var clip = result.FirstOrDefault(c => c.source == current)?.created;
             if(clip == null) return;
-            animationEditContext.SelectAnimation(clip);
             if (createInOtherAtomsJSON.val) plugin.peers.SendSyncAnimation(clip);
+            animationEditContext.SelectAnimation(clip);
             if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
         }
 
