@@ -149,8 +149,9 @@ namespace VamTimeline
 
         private void DeleteAnimationConfirm()
         {
+            var fallbackAnimation = currentLayer.TakeWhile(c => c != current).LastOrDefault() ?? currentLayer.FirstOrDefault(c => c != current);
             operations.AddAnimation().DeleteAnimation(current);
-            animationEditContext.SelectAnimation(currentLayer.FirstOrDefault());
+            animationEditContext.SelectAnimation(fallbackAnimation);
         }
 
         private void ReorderLayerMoveUp()
