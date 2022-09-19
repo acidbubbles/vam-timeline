@@ -93,6 +93,9 @@ namespace VamTimeline
                     case nameof(SendSyncAnimation):
                         ReceiveSyncAnimation(e);
                         break;
+                    case nameof(SendAddAnimation):
+                        ReceiveAddAnimation(e);
+                        break;
                     case nameof(SendStopAndReset):
                         ReceiveStopAndReset(e);
                         break;
@@ -348,13 +351,14 @@ namespace VamTimeline
             if (idx > 0)
             {
                 var previousClip = animation.clips[idx - 1];
-                if (previousClip.animationLayerQualified == clip.animationLayerQualified)
+                if (previousClip.animationLayerQualifiedId == clip.animationLayerQualifiedId)
                     previousAnimationName = previousClip.animationName;
             }
             else
             {
                 previousAnimationName = "";
             }
+            SuperController.LogMessage("Previous was: " + previousAnimationName);
             SendTimelineEvent(new object[]{
                  nameof(SendSyncAnimation), // 0
                  clip.animationName, // 1
@@ -400,7 +404,8 @@ namespace VamTimeline
                 }
                 else
                 {
-                    animation.CreateClip(animationName, animationLayer, animationSegment, GetPosition(animationName, animationLayer, animationSegment, previousAnimationName));
+                    var position = GetPosition(animationName, animationLayer, animationSegment, previousAnimationName);
+                    animation.CreateClip(animationName, animationLayer, animationSegment, position);
                 }
             }
 
@@ -432,9 +437,44 @@ namespace VamTimeline
             animation.index.Rebuild();
         }
 
+
+
+        public void SendAddAnimation(AtomAnimationClip clip, string createPosition, bool copySettings, bool copyKeyframes, bool createOnAllLayers)
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                 nameof(SendAddAnimation), // 0
+                 clip.animationName, // 1
+                 clip.animationLayer, // 2
+                 clip.animationSegment, // 3
+                 createPosition, //4
+                 copySettings, // 5
+                 copyKeyframes, // 6
+                 createOnAllLayers, // 7
+            });
+        }
+
+        private void ReceiveAddAnimation(object[] e)
+        {
+            if (!ValidateArgumentCount(e.Length, 8)) return;
+            var animationSegment = (string)e[3];
+            var animationLayer = (string)e[2];
+            var animationName = (string)e[1];
+            var createPosition = (string)e[4];
+            var copySettings = (bool)e[5];
+            var copyKeyframes = (bool)e[6];
+            var createOnAllLayers = (bool)e[7];
+
+            var clipOnLayer = animation.clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
+
+            new AddAnimationOperations(animation, clipOnLayer)
+                .AddAnimation(animationName, createPosition, copySettings, copyKeyframes, createOnAllLayers);
+        }
+
         private int GetPosition(string animationName, string animationLayer, string animationSegment, string previousAnimationName)
         {
             var previousClipPosition = animation.clips.FindIndex(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == previousAnimationName);
+            SuperController.LogMessage($"Previous clip was found at {previousClipPosition}");
             if (previousClipPosition > -1)
                 return previousClipPosition + 1;
 
