@@ -22,6 +22,8 @@ namespace VamTimeline
         public JSONStorableFloat floatParam { get; private set; }
         public string floatParamDisplayName;
         private float _nextCheck;
+        private bool? _isMorph;
+        private DAZMorph _asMorph;
 
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {
@@ -250,8 +252,8 @@ namespace VamTimeline
             if (_atom != atom) return false;
             if (this.storableId != storableId) return false;
             if (this.floatParamName == floatParamName) return true;
-            if (floatParamName.StartsWith("morph: ")) floatParamName = floatParamName.Substring("morph: ".Length);
-            if (floatParamName.StartsWith("morphOtherGender: ")) floatParamName = floatParamName.Substring("morphOtherGender: ".Length);
+            if (IsMorph() && floatParamName.StartsWith("morph: ")) floatParamName = floatParamName.Substring("morph: ".Length);
+            if (IsMorph() && floatParamName.StartsWith("morphOtherGender: ")) floatParamName = floatParamName.Substring("morphOtherGender: ".Length);
             return this.floatParamName == floatParamName;
         }
 
@@ -262,35 +264,100 @@ namespace VamTimeline
 
         public bool IsMorph()
         {
-            return storableId == "geometry";
+            if (_isMorph.HasValue) return _isMorph.Value;
+            _isMorph = storableId == "geometry";
+            return _isMorph.Value;
         }
 
         public DAZMorph AsMorph()
         {
+            if (_isMorph == false) return null;
+            if (_asMorph != null) return _asMorph;
             if (storable == null) throw new NullReferenceException("Storable was not set");
             var selector = storable as DAZCharacterSelector;
             if (selector == null) throw new InvalidOperationException($"Storable '{storable.name}' expected to be {nameof(DAZCharacterSelector)} but was {storable}");
             DAZMorph morph;
-            if (selector.morphsControlUI != null)
+            var otherGender = floatParamName.StartsWith("morphOtherGender:");
+            if (!otherGender && selector.morphsControlUI != null)
             {
-                morph = selector.morphsControlUI.GetMorphByUid(floatParamName);
-                if (morph != null) return morph;
+                morph = selector.morphsControlUI.GetMorphByDisplayName(floatParamDisplayName);
+                if (morph != null)
+                {
+                    _isMorph = true;
+                    return _asMorph = morph;
+                }
             }
-            if (selector.morphBank1 != null)
+            else if (otherGender && selector.morphsControlUIOtherGender != null)
             {
-                morph = selector.morphBank1.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
-                if (morph != null) return morph;
+                morph = selector.morphsControlUI.GetMorphByDisplayName(floatParamDisplayName);
+                if (morph != null)
+                {
+                    _isMorph = true;
+                    return _asMorph = morph;
+                }
             }
-            if (selector.morphBank2 != null)
+
+            if (selector.gender == DAZCharacterSelector.Gender.Female && !otherGender || selector.gender == DAZCharacterSelector.Gender.Male && otherGender)
             {
-                morph = selector.morphBank2.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
-                if (morph != null) return morph;
+                if (selector.femaleMorphBank1 != null)
+                {
+                    morph = selector.femaleMorphBank1.GetMorphByDisplayName(floatParamDisplayName);
+                    if (morph != null)
+                    {
+                        _isMorph = true;
+                        return _asMorph = morph;
+                    }
+                }
+                if (selector.femaleMorphBank2 != null)
+                {
+                    morph = selector.femaleMorphBank2.GetMorphByDisplayName(floatParamDisplayName);
+                    if (morph != null)
+                    {
+                        _isMorph = true;
+                        return _asMorph = morph;
+                    }
+                }
+                if (selector.femaleMorphBank3 != null)
+                {
+                    morph = selector.femaleMorphBank3.GetMorphByDisplayName(floatParamDisplayName);
+                    if (morph != null)
+                    {
+                        _isMorph = true;
+                        return _asMorph = morph;
+                    }
+                }
             }
-            if (selector.morphBank3 != null)
+            else
             {
-                morph = selector.morphBank3.morphs.FirstOrDefault(m => m.resolvedDisplayName == floatParamName);
-                if (morph != null) return morph;
+                if (selector.maleMorphBank1 != null)
+                {
+                    morph = selector.maleMorphBank1.GetMorphByDisplayName(floatParamDisplayName);
+                    if (morph != null)
+                    {
+                        _isMorph = true;
+                        return _asMorph = morph;
+                    }
+                }
+                if (selector.maleMorphBank2 != null)
+                {
+                    morph = selector.maleMorphBank2.GetMorphByDisplayName(floatParamDisplayName);
+                    if (morph != null)
+                    {
+                        _isMorph = true;
+                        return _asMorph = morph;
+                    }
+                }
+                if (selector.maleMorphBank3 != null)
+                {
+                    morph = selector.maleMorphBank3.GetMorphByDisplayName(floatParamDisplayName);
+                    if (morph != null)
+                    {
+                        _isMorph = true;
+                        return _asMorph = morph;
+                    }
+                }
             }
+
             return null;
         }
     }
