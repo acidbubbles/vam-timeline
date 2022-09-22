@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -109,8 +108,6 @@ namespace VamTimeline
 
                 CreateExpandButton(group.transform, "+ Range", () =>
                 {
-                    if (morph == null) throw new NullReferenceException("morph");
-                    if (plugin?.animationEditContext == null) throw new NullReferenceException("morph");
                     morph.IncreaseRange();
                     SetTime(plugin.animationEditContext.clipTime, true);
                 });
