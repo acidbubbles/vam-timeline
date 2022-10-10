@@ -147,6 +147,11 @@ namespace VamTimeline
                     #else
                     SuperController.singleton.SelectController(plugin.containingAtom.mainController, false);
                     #endif
+                    if (IsControllerEligible(targetCtrl, GetControllersReservedByOtherLayers()))
+                    {
+                        SuperController.LogError($"Timeline: Controller {targetCtrl.name} of atom {targetCtrl.containingAtom.name} is not eligible.");
+                        return;
+                    }
                     operations.Targets().Add(targetCtrl);
                 });
             });
@@ -169,19 +174,33 @@ namespace VamTimeline
         private IEnumerable<string> GetEligibleFreeControllers()
         {
             yield return "";
-            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
-                .Where(c => current.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == current.animationSegment)
-                .SelectMany(c => c.targetControllers)
-                .Select(t => t.animatableRef.controller));
+            var reservedByOtherLayers = GetControllersReservedByOtherLayers();
             var atom = SuperController.singleton.GetAtomByUid(_addFromAtomJSON.val);
             if (atom == null) yield break;
             foreach (var fc in atom.freeControllers)
             {
-                if (!fc.name.EndsWith("Control") && fc.name != "control") continue;
-                if (current.targetControllers.Any(c => c.animatableRef.Targets(fc))) continue;
-                if (reservedByOtherLayers.Contains(fc)) continue;
+                if (IsControllerEligible(fc, reservedByOtherLayers)) continue;
                 yield return fc.name;
             }
+        }
+
+        private HashSet<FreeControllerV3> GetControllersReservedByOtherLayers()
+        {
+            var reservedByOtherLayers = new HashSet<FreeControllerV3>(animation.clips
+                .Where(c => current.animationSegment == AtomAnimationClip.SharedAnimationSegment || c.animationSegment == AtomAnimationClip.SharedAnimationSegment ||
+                            c.animationSegment == current.animationSegment)
+                .SelectMany(c => c.targetControllers)
+                .Select(t => t.animatableRef.controller));
+            return reservedByOtherLayers;
+        }
+
+        private bool IsControllerEligible(FreeControllerV3 fc, ICollection<FreeControllerV3> reservedByOtherLayers)
+        {
+            if (fc.control == null) return true;
+            if (!fc.name.EndsWith("Control") && fc.name != "control") return true;
+            if (current.targetControllers.Any(c => c.animatableRef.Targets(fc))) return true;
+            if (reservedByOtherLayers.Contains(fc)) return true;
+            return false;
         }
 
         private void RefreshControllersList()
