@@ -471,7 +471,7 @@ namespace VamTimeline
         {
             if (clip.applyPoseOnTransition)
             {
-                if (!clip.recording && clip.pose != null)
+                if (!clip.recording && clip.pose != null && (sequencing || lastAppliedPose != clip.pose))
                 {
                     if (logger.sequencing)
                         logger.Log(logger.sequencingCategory, $"Applying pose '{clip.animationNameQualified}'");
