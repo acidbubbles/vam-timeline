@@ -132,6 +132,7 @@ src\UI\Screens\ReduceScreen.cs
 src\UI\Screens\ScreenBase.cs
 src\UI\Screens\ScreensManager.cs
 src\UI\Screens\SequencingScreen.cs
+src\UI\Screens\SmoothScreen.cs
 src\UI\Screens\TargetsScreen.cs
 src\UI\Editor.cs
 src\AtomPlugin.cs
