@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -291,5 +292,51 @@ namespace VamTimeline
         }
 
         #endregion
+
+        #region Conversion
+
+        public TransformStruct[] ToTransformArray()
+        {
+            var keyframes = new TransformStruct[x.length];
+            for (var i = 0; i < x.length; i++)
+            {
+                keyframes[i] = new TransformStruct
+                {
+                    time = x.keys[i].time,
+                    position = GetKeyframePosition(i),
+                    rotation = GetKeyframeRotation(i),
+                    curveType = x.keys[i].curveType
+                };
+            }
+            return keyframes;
+        }
+
+        public void SetTransformArray(TransformStruct[] transforms)
+        {
+            if (transforms.Length != x.keys.Count) throw new NotSupportedException("SetTransformArray only supports same-size transforms");
+            StartBulkUpdates();
+            try
+            {
+                for (var i = 0; i < x.length; i++)
+                {
+                    #warning We ignore the new time and curve type, let's fix later
+                    SetKeyframeByKey(i, transforms[i].position, transforms[i].rotation);
+                }
+            }
+            finally
+            {
+                EndBulkUpdates();
+            }
+        }
+
+        #endregion
+    }
+
+    public struct TransformStruct
+    {
+        public float time;
+        public Vector3 position;
+        public Quaternion rotation;
+        public int curveType;
     }
 }

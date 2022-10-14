@@ -843,6 +843,11 @@ namespace VamTimeline
             return current.GetAllTargets().Where(t => t.selected);
         }
 
+        public IEnumerable<ICurveAnimationTarget> GetSelectedCurveTargets()
+        {
+            return current.GetAllCurveTargets().Where(t => t.selected);
+        }
+
         #endregion
 
         #region Frame Nav
