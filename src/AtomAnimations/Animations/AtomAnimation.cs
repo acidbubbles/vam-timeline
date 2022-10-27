@@ -35,15 +35,21 @@ namespace VamTimeline
 
         #region Unity Lifecycle
 
+        private float _lastUpdateTime = Time.unscaledTime;
+        private float _lastFixedUpdateTime = Time.unscaledTime;
+
         public void Update()
         {
+            var deltaTime = timeMode == TimeModes.RealTime ? (Time.unscaledTime - _lastUpdateTime) : Time.unscaledDeltaTime;
+            _lastUpdateTime = Time.unscaledTime;
+
             SyncTriggers(true);
 
             if (!allowAnimationProcessing || paused) return;
 
             SampleFloatParams();
             SyncTriggers(false);
-            ProcessAnimationSequence(GetDeltaTime() * globalSpeed);
+            ProcessAnimationSequence(deltaTime * globalSpeed);
 
             if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)
             {
@@ -52,25 +58,15 @@ namespace VamTimeline
             }
         }
 
-        [MethodImpl(256)]
-        private float GetDeltaTime()
-        {
-            switch (timeMode)
-            {
-                case TimeModes.UnityTime:
-                    return Time.deltaTime;
-                case TimeModes.RealTime:
-                    return Time.unscaledDeltaTime * Time.timeScale;
-                default:
-                    return Time.deltaTime;
-            }
-        }
-
         public void FixedUpdate()
         {
+            var deltaTime = timeMode == TimeModes.RealTime ? (Time.unscaledTime - _lastFixedUpdateTime) : Time.unscaledDeltaTime;
+            _lastFixedUpdateTime = Time.unscaledTime;
+
+
             if (!allowAnimationProcessing || paused) return;
 
-            var delta = GetDeltaTime() * _globalSpeed;
+            var delta = deltaTime * _globalSpeed;
             playTime += delta;
 
             if (autoStop > 0f && playTime >= autoStop)
