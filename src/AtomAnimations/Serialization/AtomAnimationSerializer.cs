@@ -171,10 +171,15 @@ namespace VamTimeline
                     var controllerRef = targetsRegistry.GetOrCreateController(controller, atom == _atom);
                     if (controllerRef == null)
                     {
-                        SuperController.LogError($"The controller {atom.uid} / {controller.name} exists more than once in clip {clip.animationNameQualified}. Only the first will be kept.");
+                        SuperController.LogError($"The controller {atom.uid} / {controller.name} could not be added in the registry from clip {clip.animationNameQualified}.");
                         continue;
                     }
                     var target = clip.Add(controllerRef);
+                    if (target == null)
+                    {
+                        SuperController.LogError($"The controller {atom.uid} / {controller.name} exists more than once in clip {clip.animationNameQualified}. Only the first will be kept.");
+                        continue;
+                    }
                     target.controlPosition = DeserializeBool(controllerJSON["ControlPosition"], true);
                     target.controlRotation = DeserializeBool(controllerJSON["ControlRotation"], true);
                     target.weight = DeserializeFloat(controllerJSON["Weight"], 1f);
