@@ -1175,6 +1175,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Unlock", () => animationEditContext.locked = false));
             bindings.Add(new JSONStorableAction("ApplyPose", () => animationEditContext.current.pose?.Apply()));
             bindings.Add(new JSONStorableAction("SavePose", () => animationEditContext.current.pose = AtomPose.FromAtom(containingAtom, animationEditContext.current.pose)));
+            bindings.Add(new JSONStorableAction("TakeBackup", () => AtomAnimationBackup.singleton.TakeBackup(animationEditContext.current)));
+            bindings.Add(new JSONStorableAction("RestoreBackup", () => AtomAnimationBackup.singleton.RestoreBackup(animationEditContext.current)));
             bindings.Add(new JSONStorableAction("StartRecord", () =>
             {
                 var targets = animationEditContext.GetSelectedTargets().OfType<ICurveAnimationTarget>().ToList();
