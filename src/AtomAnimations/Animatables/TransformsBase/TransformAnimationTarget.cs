@@ -313,14 +313,21 @@ namespace VamTimeline
 
         public void SetTransformArray(TransformStruct[] transforms)
         {
-            if (transforms.Length != x.keys.Count) throw new NotSupportedException("SetTransformArray only supports same-size transforms");
             StartBulkUpdates();
+            x.keys.Clear();
+            y.keys.Clear();
+            z.keys.Clear();
+            rotX.keys.Clear();
+            rotY.keys.Clear();
+            rotZ.keys.Clear();
+            rotW.keys.Clear();
+            dirty = true;
             try
             {
-                for (var i = 0; i < x.length; i++)
+                for (var i = 0; i < transforms.Length; i++)
                 {
-                    #warning We ignore the new time and curve type, let's fix later
-                    SetKeyframeByKey(i, transforms[i].position, transforms[i].rotation);
+                    var transform = transforms[i];
+                    SetKeyframeByTime(transform.time, transform.position, transform.rotation, transform.curveType);
                 }
             }
             finally

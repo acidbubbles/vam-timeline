@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,25 +20,7 @@ namespace VamTimeline
         private UIDynamicButton _goButton;
         private JSONStorableString _statusLabel;
 
-        private float _clipEndTime;
-        private float _endTimeClamp;
-
-        private float _timeSpanClamp;
-
-        private int _macIndex = -1;
-        private int _stepIndex = -1;
-        private int _fwdIndex = -1;
-
-        private FreeControllerV3AnimationTarget _currentTarget;
-        TransformStruct[] _currentKeyframes;
-
-        private Queue<TransformStruct> _rawQueue;
-
-        private RunSettings _runSettings;
-        private bool _running;
-        private Stopwatch _stopWatch;
-
-        private const long _maxWorkMS = 8;
+        private Coroutine _co;
 
         public override void Init(IAtomPlugin plugin, object arg)
         {
@@ -82,235 +65,144 @@ namespace VamTimeline
             prefabFactory.CreateTextField(_statusLabel);
         }
 
-        private class RunSettings
-        {
-            // package up settings for the current run
-            public float timeSpan;
-            public float baseTimeSpan;
-            public float startTime;
-            public float endTime;
-            public List<FreeControllerV3AnimationTarget> targets;
-        }
-
-        private void PrepareRunSettings()
-        {
-            _runSettings = new RunSettings
-            {
-                timeSpan = _timeSpanFs.val,
-                baseTimeSpan = _timeSpanFs.val,
-                startTime = _startTimeFs.val,
-                endTime = _endTimeFs.val,
-                targets = animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().ToList()
-            };
-        }
-
-        private void TweakTimeSpan()
-        {
-            // If time span is close to a multiple of the average timestep delta, we may tend to
-            // have an unbalanced number of samples before and after current time and alternate
-            // between, say, 7 before 8 after, 8 before 7 after -- which will tend to introduce
-            // a small oscillation in the output timestep delta.  Tweak the timespan to improve
-            // to the nearest half multiple of the average framerate to improve chances of
-            // spanning the same number of steps left and right.
-
-            var keyframes = animationEditContext.GetSelectedCurveTargets().First().GetAllKeyframesTime();
-
-            var meandt = (_clipEndTime - keyframes[0]) / (keyframes.Length - 1f);
-
-            var meanstepcount = _runSettings.baseTimeSpan / meandt;
-
-            meanstepcount = Math.Max(1f, (float)Math.Floor(meanstepcount)) + 0.5f;
-            // This also establishes a minimum average smoothing span of +- 1 step.  If you
-            // click the button, you're going to get at least a little smoothing no matter how
-            // low you set the time span.
-
-            _runSettings.timeSpan = meanstepcount * meandt;
-        }
-
         private void StartSmoothing()
         {
-
-            if (_running)
+            if (_co != null)
             {
+                StopCoroutine(_co);
+                _co = null;
                 // The button said Cancel when they clicked it
-                _stopWatch.Reset();
-                _stopWatch = null;
                 _goButton.label = "Apply Smoothing";
-                _statusLabel.val = "Smoothing cancelled while in progress.  Reloading from save is recommended.";
-                _running = false;
-                return;
+                _statusLabel.val = "Smoothing cancelled while in progress. Reloading from save is recommended.";
             }
-
-            _running = true;
-            _goButton.label = "Cancel";
-
-            PrepareRunSettings();
-
-            _macIndex = -1;
-            _stepIndex = -1;
-            _fwdIndex = -1;
-
-            _stopWatch = Stopwatch.StartNew();
+            else
+            {
+                _goButton.label = "Cancel";
+                _co = StartCoroutine(DoSmoothingCo());
+            }
         }
 
-        private void ContinueSmoothing()
+        private IEnumerator DoSmoothingCo()
         {
-            // Get in as much smoothing as possible in the configured time frame
+            yield return 0;
 
-            _stopWatch.Reset();
-            _stopWatch.Start();
-
-            var starttime = _runSettings.startTime;
-
-            while (_stopWatch.ElapsedMilliseconds < _maxWorkMS)
+            var stopWatch = Stopwatch.StartNew();
+            var rawQueue = new Queue<TransformStruct>();
+            var targets = animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().ToList();
+            foreach (var currentTarget in targets)
             {
+                rawQueue.Clear();
 
-                float timenow; // (shut the mindless compiler up)
+                var currentKeyframes = currentTarget.ToTransformArray();
 
-                // Update target clip if needed
-                //
-                if (_currentKeyframes == null)
+                var startTime = _startTimeFs.val;
+                var clipEndTime = currentKeyframes[currentKeyframes.Length - 1].time;
+                var endTimeClamp = Math.Min(_endTimeFs.val, clipEndTime);
+
+                // If time span is close to a multiple of the average timestep delta, we may tend to
+                // have an unbalanced number of samples before and after current time and alternate
+                // between, say, 7 before 8 after, 8 before 7 after -- which will tend to introduce
+                // a small oscillation in the output timestep delta.  Tweak the timespan to improve
+                // to the nearest half multiple of the average framerate to improve chances of
+                // spanning the same number of steps left and right.
+
+                var meanDelta = (clipEndTime - currentKeyframes[0].time) / (currentKeyframes.Length - 1f);
+
+                var meanStepCount = _timeSpanFs.val / meanDelta;
+
+                meanStepCount = Math.Max(1f, (float)Math.Floor(meanStepCount)) + 0.5f;
+                // This also establishes a minimum average smoothing span of +- 1 step.  If you
+                // click the button, you're going to get at least a little smoothing no matter how
+                // low you set the time span.
+
+                var timeSpan = meanStepCount * meanDelta;
+
+                // Fast forward until we reach the smoothing span of the configured start time.
+                var stepIndex = 1;
+                var fwdIndex = 0;
+                var timeNow = currentKeyframes[stepIndex].time;
+                while (timeNow <= startTime && timeNow < endTimeClamp && stepIndex < currentKeyframes.Length - 2)
                 {
+                    stepIndex++;
+                    fwdIndex++;
+                    timeNow = currentKeyframes[stepIndex].time;
+                }
 
-                    while (_currentKeyframes == null && ++_macIndex < _runSettings.targets.Count)
+                for (; stepIndex < currentKeyframes.Length; stepIndex++)
+                {
+                    timeNow = currentKeyframes[stepIndex].time;
+
+                    if (timeNow >= endTimeClamp)
+                        continue;
+
+                    // At each step, we smooth the clip step at position stepIndex while maintaining the
+                    // step range stored in rawQueue.
+
+                    // Provide progress information
+                    if (stopWatch.Elapsed.TotalSeconds > 1f / 30)
                     {
-                        _currentTarget = _runSettings.targets[_macIndex];
-                        if (_currentTarget != null) _currentKeyframes = _currentTarget.ToTransformArray();
+                        _statusLabel.val = $"{currentTarget.GetFullName()}: {((int)Math.Round(100 * (timeNow - startTime) / (endTimeClamp - startTime)))}%";
+                        yield return 0;
                     }
 
-                    if (_macIndex >= _runSettings.targets.Count)
+                    var timeSpanClamp = Math.Min(Math.Min(timeNow - startTime, timeSpan), endTimeClamp - timeNow);
+
+                    while (rawQueue.Count > 0 && rawQueue.Peek().time < timeNow - timeSpanClamp)
                     {
-                        // We're completely done
-                        _running = false;
-                        break;
+                        // Remove steps stored in rawQueue whose time position is earlier than
+                        // the smoothee's time minus timeSpanClamp
+                        rawQueue.Dequeue();
                     }
 
-                    // we've changed clips; initialize
-                    //
-                    _rawQueue = new Queue<TransformStruct>();
-                    _clipEndTime = _currentKeyframes[_currentKeyframes.Length - 1].time;
-                    _endTimeClamp = Math.Min(_runSettings.endTime, _clipEndTime);
-
-                    TweakTimeSpan();
-
-                    _stepIndex = 1;
-                    _fwdIndex = 0;
-
-                    timenow = _currentKeyframes[_stepIndex].time;
-
-                    // Fast forward until we reach the smoothing span of the configured start time.
-                    //
-                    while (timenow <= starttime && timenow < _endTimeClamp && _stepIndex < _currentKeyframes.Length - 2)
+                    while (fwdIndex < currentKeyframes.Length && (currentKeyframes[fwdIndex].time < timeNow + timeSpanClamp))
                     {
-                        _stepIndex++;
-                        _fwdIndex++;
-                        timenow = _currentKeyframes[_stepIndex].time;
+                        // Add steps ahead of the current one whose time positions are within the timeSpanFS
+                        // -- while making sure the current step, at least, always makes it into the queue
+                        // (even when timeSpanFS is very small and/or time between steps is large).
+                        rawQueue.Enqueue(currentKeyframes[fwdIndex]);
+                        fwdIndex++;
                     }
 
-                }
-                else
-                {
-
-                    timenow = _currentKeyframes[_stepIndex].time;
-
-                } // if updating clip
-
-                if (timenow >= _endTimeClamp || _stepIndex >= _currentKeyframes.Length - 1)
-                {
-                    // We're done with the current clip
-                    _currentKeyframes = null;
-                    _currentTarget = null;
-                    if (_rawQueue != null) _rawQueue.Clear();
-                    continue;
-                }
-
-                // At each step, we smooth the clip step at position stepIndex while maintaining the
-                // step range stored in rawQueue.
-
-                _statusLabel.val = _currentTarget.GetFullName() + ": "
-                                                       + ((int)Math.Round(100 * (timenow - starttime) / (_endTimeClamp - starttime))).ToString() + "%";
-                // Provide progress information
-
-                _timeSpanClamp = Math.Min(Math.Min(timenow - starttime, _runSettings.timeSpan), _endTimeClamp - timenow);
-
-                while (_rawQueue.Count > 0 && _rawQueue.Peek().time < timenow - _timeSpanClamp)
-                {
-                    // Remove steps stored in rawQueue whose time position is earlier than
-                    // the smoothee's time minus timeSpanClamp
-                    _rawQueue.Dequeue();
-                }
-
-                while (_fwdIndex < _currentKeyframes.Length && (_currentKeyframes[_fwdIndex].time < timenow + _timeSpanClamp))
-                {
-                    // Add steps ahead of the current one whose time positions are within the timeSpanFS
-                    // -- while making sure the current step, at least, always makes it into the queue
-                    // (even when timeSpanFS is very small and/or time between steps is large).
-                    _rawQueue.Enqueue(_currentKeyframes[_fwdIndex]);
-                    _fwdIndex++;
-                }
-
-                TransformStruct mrsmooth;
-
-                if (_rawQueue.Count > 2)
-                {
-                    // The smoothing function is undefined for fewer than 3 timesteps, so we may
-                    // have to wait an extra timestep past the configured start time and/or cut out
-                    // early at the end.
-
-                    mrsmooth = SmoothQueue(timenow);
-
-                    if (float.IsNaN(mrsmooth.position.x)
-                        || float.IsNaN(mrsmooth.position.y)
-                        || float.IsNaN(mrsmooth.position.z))
+                    if (rawQueue.Count > 2)
                     {
-                        _currentKeyframes[_stepIndex] = mrsmooth;
-                        if (_centerWeightFs.val >= 0) mrsmooth.time = _currentKeyframes[_stepIndex].time;
+                        // The smoothing function is undefined for fewer than 3 timesteps, so we may
+                        // have to wait an extra timestep past the configured start time and/or cut out
+                        // early at the end.
+
+                        var mrsmooth = SmoothQueue(rawQueue, timeNow, timeSpanClamp);
+
+                        if (!float.IsNaN(mrsmooth.position.x) && !float.IsNaN(mrsmooth.position.y) && !float.IsNaN(mrsmooth.position.z))
+                        {
+                            if (_centerWeightFs.val >= 0) mrsmooth.time = currentKeyframes[stepIndex].time;
+                            currentKeyframes[stepIndex] = mrsmooth;
+                        }
                     }
                 }
 
-                _stepIndex++;
-                if (_stepIndex >= _currentKeyframes.Length - 1)
-                {
-                    // All done with this entire clip
-                    _currentTarget.SetTransformArray(_currentKeyframes);
-                    _currentKeyframes = null;
-                    _currentTarget = null;
-                    _rawQueue.Clear();
-                }
-
-            } // while stopWatch
-
-            // Time's up! Return control to main thread & pick up where we left off on next call.
-            // But hey: did we finish?
-            //
-            if (!_running)
-            {
-                // tidy up
-                _rawQueue = null;
-                _stopWatch.Reset();
-                _stopWatch = null;
-                _goButton.label = "Apply Smoothing";
-                _statusLabel.val = "Smoothing complete.  You can remove this plugin when finished.";
-                _runSettings = null;
+                currentTarget.SetTransformArray(currentKeyframes);
+                rawQueue.Clear();
             }
 
-        } // ContinueSmoothing()
+            _goButton.label = "Apply Smoothing";
+            _statusLabel.val = "Smoothing complete.  You can remove this plugin when finished.";
+            _co = null;
+        }
 
-        private TransformStruct SmoothQueue(float centertime)
+        private TransformStruct SmoothQueue(Queue<TransformStruct> rawQueue, float centertime, float timeSpanClamp)
         {
             // Returns a new MotionAnimationStep resulting from smoothing of all
             // steps in rawQueue based on the given centertime
 
             float totalweight = 0;
-            var weight = new float[_rawQueue.Count];
-            var adjweight = new float[_rawQueue.Count];
+            var weight = new float[rawQueue.Count];
+            var adjweight = new float[rawQueue.Count];
 
             // Normalize the step weights (such that they add up to 1.0)
             //
             var i = 0;
-            foreach (var step in _rawQueue)
+            foreach (var step in rawQueue)
             {
-                var wt = StepWeight(step.time, centertime);
+                var wt = StepWeight(step.time, centertime, timeSpanClamp);
                 // if (float.IsNaN(wt)) SuperController.LogError("** GOT NaN : timeSpanClamp=" + timeSpanClamp.ToString()
                 // + "  step.time=" + step.time.ToString()
                 // + "  centertime=" + centertime.ToString()
@@ -322,7 +214,7 @@ namespace VamTimeline
                 i++;
             }
 
-            for (i = 0; i < _rawQueue.Count; i++)
+            for (i = 0; i < rawQueue.Count; i++)
             {
                 weight[i] /= totalweight;
                 adjweight[i] = weight[i];
@@ -331,9 +223,9 @@ namespace VamTimeline
             // Now compute adjusted weighting factors to apply to each Quaternion.Slerp
             // so that the final contribution of each rotation is equal to its intended StepWeight
             //
-            for (i = _rawQueue.Count - 2; i > 0; i--)
+            for (i = rawQueue.Count - 2; i > 0; i--)
             {
-                for (var j = _rawQueue.Count - 1; j > i; j--)
+                for (var j = rawQueue.Count - 1; j > i; j--)
                 {
 
                     // Since sum(adjweight)=1, it can be shown that each of these adjusted values is
@@ -355,7 +247,7 @@ namespace VamTimeline
             var curveType = CurveTypeValues.SmoothLocal;
 
             i = 0;
-            foreach (var step in _rawQueue)
+            foreach (var step in rawQueue)
             {
                 curveType = step.curveType;
                 if (i < 1)
@@ -379,18 +271,17 @@ namespace VamTimeline
                 position = smoothpos,
                 rotation = smoothrot,
                 time = smoothtime,
-#warning This is just the last curve type, maybe this doesn't make sense
                 curveType = curveType
             };
             return smoothstep;
         }
 
-        private float StepWeight(float steptime, float centertime)
+        private float StepWeight(float steptime, float centertime, float timeSpanClamp)
         {
             // Returns the weighting factor for the given step time based on the given center time
             // and the configured timeSpanFS.
 
-            var pct = Mathf.Abs((_timeSpanClamp - Math.Abs(centertime - steptime))) / _timeSpanClamp;
+            var pct = Mathf.Abs((timeSpanClamp - Math.Abs(centertime - steptime))) / timeSpanClamp;
             // This function will only ever be evaluated for steptime values no further than
             // timeSpanFS from centertime; so this value must be between 0 and 1.  On the other
             // hand, unexpected conditions like out-of-order animation steps could violate
@@ -398,20 +289,6 @@ namespace VamTimeline
             // number with fractional or negative center weights if pct < 0.
 
             return Mathf.Pow(pct, _centerWeightFs.val);
-        }
-
-        // Update is called with each rendered frame by Unity
-        public void Update()
-        {
-            try
-            {
-                if (_running) ContinueSmoothing();
-            }
-            catch (Exception e)
-            {
-                _running = false;
-                SuperController.LogError("Timeline: Error during SmoothMoves: " + e);
-            }
         }
     }
 }
