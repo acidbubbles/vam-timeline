@@ -437,8 +437,6 @@ namespace VamTimeline
             animation.index.Rebuild();
         }
 
-
-
         public void SendAddAnimation(AtomAnimationClip clip, string createPosition, bool copySettings, bool copyKeyframes, bool createOnAllLayers)
         {
             if (syncing) return;
@@ -465,9 +463,12 @@ namespace VamTimeline
             var copyKeyframes = (bool)e[6];
             var createOnAllLayers = (bool)e[7];
 
-            var clipOnLayer = animation.clips.FirstOrDefault(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer);
+            if (animationEditContext.current.animationSegment != animationSegment) return;
+            if (animationEditContext.current.animationName != animationName && animationEditContext.current.animationLayer != animationLayer) return;
 
-            new AddAnimationOperations(animation, clipOnLayer)
+            var clip = animationEditContext.current;
+
+            new AddAnimationOperations(animation, clip)
                 .AddAnimation(animationName, createPosition, copySettings, copyKeyframes, createOnAllLayers);
         }
 

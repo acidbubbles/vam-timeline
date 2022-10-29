@@ -53,6 +53,7 @@ namespace VamTimeline
 
             if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)
             {
+                if(logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade in {playTime - _scheduleFadeIn:0.000}s after transition.");
                 _scheduleFadeIn = float.MaxValue;
                 fadeManager.FadeIn();
             }

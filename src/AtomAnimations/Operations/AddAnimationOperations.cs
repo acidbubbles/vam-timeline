@@ -48,6 +48,7 @@ namespace VamTimeline
 
         public CreatedAnimation AddAnimation(AtomAnimationClip source, string animationName, string animationLayer, string animationSegment, string position, bool copySettings, bool copyKeyframes)
         {
+            SuperController.LogError($"Adding after {source.animationName} ({_animation.clips.IndexOf(source)}) at position {position} ({GetPosition(source, position)})");
             var clip = _animation.CreateClip(animationName, animationLayer, animationSegment, GetPosition(source, position));
 
             if (copySettings)

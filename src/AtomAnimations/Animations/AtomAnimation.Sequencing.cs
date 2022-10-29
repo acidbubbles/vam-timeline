@@ -43,7 +43,10 @@ namespace VamTimeline
                     _scheduleFadeIn = float.MaxValue;
                     clip.playbackScheduledFadeOutAtRemaining = float.NaN;
                     if (fadeManager?.black == false)
+                    {
+                        if(logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade out {clip.playbackScheduledNextTimeLeft:0.000}s before transition.");
                         fadeManager.FadeOut();
+                    }
                 }
 
                 if (clip.playbackScheduledNextTimeLeft > 0)
@@ -252,6 +255,7 @@ namespace VamTimeline
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
                 {
+                    if(logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade out instantly {source.playbackScheduledNextTimeLeft:0.000}s before transition.");
                     fadeManager.FadeOutInstant();
                     source.playbackScheduledFadeOutAtRemaining = float.NaN;
                 }
