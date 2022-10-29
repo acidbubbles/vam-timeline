@@ -76,6 +76,7 @@
 ..\src\UI\Components\AnimatableFrames\JSONStorableFloatAnimationTargetFrameComponent.cs
 ..\src\UI\Components\AnimatableFrames\TriggersTrackAnimationTargetFrameComponent.cs
 ..\src\UI\Components\AnimationControlPanel\AnimationControlPanel.cs
+..\src\UI\Components\Curves\ControllerLineDrawer3D.cs
 ..\src\UI\Components\Curves\Curves.cs
 ..\src\UI\Components\Curves\CurvesLines.cs
 ..\src\UI\Components\Curves\CurvesStyle.cs
@@ -95,7 +96,7 @@
 ..\src\UI\Components\Clickable.cs
 ..\src\UI\Components\CurveTypePopup.cs
 ..\src\UI\Components\GradientImage.cs
-..\src\UI\Components\LineDrawer.cs
+..\src\UI\Components\LineDrawer3D.cs
 ..\src\UI\Components\Listener.cs
 ..\src\UI\Components\MiniButton.cs
 ..\src\UI\Components\ScreenTabs.cs

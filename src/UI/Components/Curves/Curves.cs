@@ -17,6 +17,7 @@ namespace VamTimeline
         private readonly GameObject _linesContainer;
         private readonly IList<ICurveAnimationTarget> _targets = new List<ICurveAnimationTarget>();
         private readonly IList<CurvesLines> _lines = new List<CurvesLines>();
+        private readonly List<ControllerLineDrawer3D> _lines3D = new List<ControllerLineDrawer3D>();
         private AtomAnimationEditContext _animationEditContext;
         private float _lastClipTime;
 
@@ -181,13 +182,17 @@ namespace VamTimeline
 
         private void Bind(IList<ICurveAnimationTarget> targets)
         {
-            Unbind();
+            UnbindAll();
 
             if ((targets?.Count ?? 0) > 0)
             {
                 foreach (var target in targets)
                 {
-                    BindCurves(target);
+                    _targets.Add(target);
+                    if (isActiveAndEnabled)
+                    {
+                        CreateDeps(target);
+                    }
                 }
                 _noCurves.SetActive(false);
                 _scrubberLineRect.transform.parent.gameObject.SetActive(true);
@@ -200,18 +205,41 @@ namespace VamTimeline
             }
         }
 
-        private void BindCurves(ICurveAnimationTarget target)
+        private void OnEnable()
         {
-            _targets.Add(target);
+            foreach (var target in _targets)
+            {
+                CreateDeps(target);
+            }
+        }
+
+        private void OnDisable()
+        {
+            DestroyDeps();
+        }
+
+        private void CreateDeps(ICurveAnimationTarget target)
+        {
             target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
             var freeControllerV3AnimationTarget = target as FreeControllerV3AnimationTarget;
             if (freeControllerV3AnimationTarget != null)
             {
+                #region Lines 3D
+
+                if (freeControllerV3AnimationTarget.animatableRef.controller != null)
+                {
+                    var line3D = ControllerLineDrawer3D.CreateLine(freeControllerV3AnimationTarget);
+                    line3D.UpdateLine();
+                    _lines3D.Add(line3D);
+                }
+
+                #endregion
+
                 if (_lines.Count > _maxCurves - 3) return;
 #if(!HIDE_CURVES_POS)
-                BindCurve(freeControllerV3AnimationTarget.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
-                BindCurve(freeControllerV3AnimationTarget.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
-                BindCurve(freeControllerV3AnimationTarget.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
+                CreateSingleCurve(freeControllerV3AnimationTarget.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
+                CreateSingleCurve(freeControllerV3AnimationTarget.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
+                CreateSingleCurve(freeControllerV3AnimationTarget.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
 #endif
 #if(SHOW_CURVES_ROT)
                 // To display rotation as euler angles, we have to build custom curves. But it's not that useful.
@@ -224,6 +252,7 @@ namespace VamTimeline
                 BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
                 target.onAnimationKeyframesRebuilt.AddListener(() => ConvertQuaternionCurvesToEuleur(rotVXCurve, rotVYCurve, rotVZCurve, freeControllerV3AnimationTarget));
 #endif
+
                 target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
                 return;
             }
@@ -232,7 +261,7 @@ namespace VamTimeline
             if (floatAnimationTarget != null)
             {
                 if (_lines.Count > _maxCurves - 1) return;
-                BindCurve(floatAnimationTarget.value, _style.CurveLineColorFloat, target.GetShortName());
+                CreateSingleCurve(floatAnimationTarget.value, _style.CurveLineColorFloat, target.GetShortName());
                 // ReSharper disable once RedundantJumpStatement
                 return;
             }
@@ -264,7 +293,7 @@ namespace VamTimeline
         }
 #endif
 
-        private void BindCurve(BezierAnimationCurve lead, Color color, string label)
+        private void CreateSingleCurve(BezierAnimationCurve lead, Color color, string label)
         {
             var lines = CreateCurvesLines(_linesContainer, color, label);
             _lines.Add(lines);
@@ -274,14 +303,22 @@ namespace VamTimeline
             lines.SetVerticesDirty();
         }
 
-        private void Unbind()
+        private void UnbindAll()
         {
+            DestroyDeps();
             foreach (var t in _targets)
                 t.onAnimationKeyframesRebuilt.RemoveListener(OnAnimationKeyframesRebuilt);
             _targets.Clear();
+        }
+
+        private void DestroyDeps()
+        {
             foreach (var l in _lines)
                 Destroy(l.gameObject.transform.parent.gameObject);
             _lines.Clear();
+            foreach (var l in _lines3D)
+                Destroy(l.gameObject);
+            _lines3D.Clear();
         }
 
         private void OnAnimationKeyframesRebuilt()
@@ -303,6 +340,10 @@ namespace VamTimeline
             {
                 l.SetVerticesDirty();
             }
+            foreach (var l in _lines3D)
+            {
+                l.UpdateLine();
+            }
         }
 
         public void Update()
@@ -321,6 +362,9 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
+            foreach (var l in _lines3D)
+                Destroy(l);
+
             if (_animationEditContext != null)
             {
                 _animationEditContext.animation.animatables.onTargetsSelectionChanged.RemoveListener(OnTargetsSelectionChanged);

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace VamTimeline
 {
-    public class LineDrawer : MonoBehaviour
+    public class LineDrawer3D : MonoBehaviour
     {
         private bool _dirty;
         private Material _material;
@@ -21,7 +21,7 @@ namespace VamTimeline
 
         private readonly Mesh _mesh;
 
-        public LineDrawer()
+        public LineDrawer3D()
         {
             _mesh = new Mesh();
         }

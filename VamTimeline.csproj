@@ -151,6 +151,7 @@
     <Compile Include="src\UI\Components\AnimatableFrames\JSONStorableFloatAnimationTargetFrameComponent.cs" />
     <Compile Include="src\UI\Components\AnimatableFrames\TriggersTrackAnimationTargetFrameComponent.cs" />
     <Compile Include="src\UI\Components\AnimationControlPanel\AnimationControlPanel.cs" />
+    <Compile Include="src\UI\Components\Curves\ControllerLineDrawer3D.cs" />
     <Compile Include="src\UI\Components\Curves\Curves.cs" />
     <Compile Include="src\UI\Components\Curves\CurvesLines.cs" />
     <Compile Include="src\UI\Components\Curves\CurvesStyle.cs" />
@@ -170,7 +171,7 @@
     <Compile Include="src\UI\Components\Clickable.cs" />
     <Compile Include="src\UI\Components\CurveTypePopup.cs" />
     <Compile Include="src\UI\Components\GradientImage.cs" />
-    <Compile Include="src\UI\Components\LineDrawer.cs" />
+    <Compile Include="src\UI\Components\LineDrawer3D.cs" />
     <Compile Include="src\UI\Components\Listener.cs" />
     <Compile Include="src\UI\Components\MiniButton.cs" />
     <Compile Include="src\UI\Components\ScreenTabs.cs" />
