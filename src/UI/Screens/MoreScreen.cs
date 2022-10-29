@@ -18,7 +18,7 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("<b>Scene animation</b> import...", MocapScreen.ScreenName);
+            CreateChangeScreenButton("<b>Convert</b> VaM native scene anim...", MocapScreen.ScreenName);
             CreateChangeScreenButton("<b>Record</b> animation...", RecordScreen.ScreenName);
             CreateChangeScreenButton("<b>Reduce</b> keyframes...", ReduceScreen.ScreenName);
             CreateChangeScreenButton("<b>Smooth</b> keyframes...", SmoothScreen.ScreenName);

@@ -67,9 +67,9 @@ namespace VamTimeline
                 sharedTargets = new List<ICurveAnimationTarget>();
             }
 
-            var layers = clip.GetAllCurveTargets().ToList();
+            var clipLayerTargets = clip.GetAllCurveTargets().ToList();
 
-            if (layers.Any(l => sharedTargets.Any(c => c.TargetsSameAs(l))))
+            if (clipLayerTargets.Any(l => sharedTargets.Any(c => c.TargetsSameAs(l))))
             {
                 okJSON.val = false;
                 statusJSON.valNoCallback = "Targets reserved by shared segment.";
@@ -81,10 +81,23 @@ namespace VamTimeline
                 .Select(l => l[0])
                 .Where(c =>
                 {
-                    var importedTargets = c.GetAllCurveTargets().ToList();
-                    if (importedTargets.Count != layers.Count) return false;
-                    return importedTargets.All(t => layers.Any(l => l.TargetsSameAs(t)));
+                    var allTargets = c.GetAllCurveTargets().ToList();
+                    if (allTargets.Count != clipLayerTargets.Count) return false;
+                    return allTargets.All(t => clipLayerTargets.Any(l => l.TargetsSameAs(t)));
                 })
+                .ToList();
+
+            var segmentsWithPotentialNewLayers = _animation.index.segmentIds
+                .Select(s => _animation.index.segmentsById[s])
+                .Where(s =>
+                {
+                    var firstClipPerLayer = s.layers.Select(l => l[0]).ToList();
+                    if (firstClipPerLayer.Any(l => clip.animationLayerId == l.animationLayerId)) return false;
+                    var allTargets = firstClipPerLayer.SelectMany(x => x.GetAllCurveTargets()).ToList();
+                    return clipLayerTargets.All(l => !allTargets.Any(l.TargetsSameAs));
+                })
+                .Select(s => s.mainClip.animationSegment)
+                .Distinct()
                 .ToList();
 
             nameJSON.valNoCallback = clip.animationName;
@@ -102,6 +115,7 @@ namespace VamTimeline
             {
                 targetSegments.Add(_animation.GetUniqueSegmentName(clip));
             }
+            targetSegments.AddRange(segmentsWithPotentialNewLayers.Where(s => !targetSegments.Contains(s)));
 
             segmentJSON.choices = targetSegments;
             if (!targetSegments.Contains(segmentJSON.val)) segmentJSON.valNoCallback = targetSegments.FirstOrDefault() ?? "";
@@ -113,15 +127,31 @@ namespace VamTimeline
             {
                 var validExistingSegmentLayers = validExistingLayers.Where(l => l.animationSegment == segmentJSON.val).ToList();
                 var targetLayers = validExistingSegmentLayers.Select(l => l.animationLayer).ToList();
-                layerJSON.choices = targetLayers;
                 if (!targetLayers.Contains(layerJSON.val)) layerJSON.valNoCallback = targetLayers.FirstOrDefault() ?? "";
-                animationsOnLayer = selectedSegment.layersMapById[layerJSON.val.ToId()].Select(c => c.animationName).ToList();
+                if (selectedSegment.layersMapById.ContainsKey(layerJSON.val.ToId()))
+                {
+                    animationsOnLayer = selectedSegment.layersMapById[layerJSON.val.ToId()].Select(c => c.animationName).ToList();
+                }
+                else if(segmentsWithPotentialNewLayers.Contains(segmentJSON.val) && !selectedSegment.layerNames.Contains(clip.animationLayer))
+                {
+                    targetLayers.Add(clip.animationLayer);
+                    animationsOnLayer = new List<string>();
+                }
+                else
+                {
+                    animationsOnLayer = new List<string>();
+                }
+                layerJSON.choices = targetLayers;
             }
             else
             {
                 layerJSON.choices = new List<string>(new[] { clip.animationLayer });
-                layerJSON.valNoCallback = clip.animationLayer;
                 animationsOnLayer = new List<string>();
+            }
+
+            if (!layerJSON.choices.Contains(layerJSON.val) && layerJSON.choices.Count > 0)
+            {
+                layerJSON.valNoCallback = layerJSON.choices[0];
             }
 
             var animNameAvailable = !animationsOnLayer.Contains(nameJSON.val);
@@ -142,6 +172,7 @@ namespace VamTimeline
 
             okJSON.val = true;
             statusJSON.valNoCallback = "Ready to import.";
+            // PopulateTargetsInStatus();
         }
 
         private void PopulateTargetsInStatus()

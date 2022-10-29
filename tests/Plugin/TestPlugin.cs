@@ -15,7 +15,7 @@ namespace VamTimeline
         {
             base.Init();
 
-            _testFilterJSON = new JSONStorableString("Test Filter", "");
+            _testFilterJSON = new JSONStorableString("Test Filter", "CanImport_FullMismatch_ExistingSegment");
             _resultJSON = new JSONStorableString("Test Results", "Running...");
 
             _runUI = CreateButton("Run");
