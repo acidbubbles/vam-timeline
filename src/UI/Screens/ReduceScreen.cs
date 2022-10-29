@@ -34,6 +34,8 @@ namespace VamTimeline
             _restoreUI = prefabFactory.CreateButton("Restore");
             _restoreUI.button.onClick.AddListener(RestoreBackup);
 
+            _restoreUI.button.interactable = HasBackup(); if (HasBackup()) _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
+
             prefabFactory.CreateSpacer();
 
             CreateReduceSettingsUI();
@@ -43,9 +45,6 @@ namespace VamTimeline
             _reduceUI.buttonColor = Color.green;
 
             CreateChangeScreenButton("<i>Go to <b>record</b> screen...</i>", RecordScreen.ScreenName);
-
-            _restoreUI.button.interactable = HasBackup();
-            if (HasBackup()) _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
 
             animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             OnTargetsSelectionChanged();

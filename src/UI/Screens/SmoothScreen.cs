@@ -13,6 +13,8 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
+        private UIDynamicButton _backupUI;
+        private UIDynamicButton _restoreUI;
         private JSONStorableFloat _timeSpanFs;
         private JSONStorableFloat _centerWeightFs;
         private JSONStorableFloat _startTimeFs;
@@ -27,6 +29,15 @@ namespace VamTimeline
             base.Init(plugin, arg);
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", MoreScreen.ScreenName);
+
+            _backupUI = prefabFactory.CreateButton("Backup");
+            _backupUI.button.onClick.AddListener(TakeBackup);
+            _restoreUI = prefabFactory.CreateButton("Restore");
+            _restoreUI.button.onClick.AddListener(RestoreBackup);
+            _restoreUI.button.interactable = HasBackup();
+            if (HasBackup()) _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
+
+            prefabFactory.CreateSpacer();
 
             var jss = new JSONStorableString("Title", "SmoothMoves by GargChow, adapted to process Timeline keyframes by AcidBubbles");
             prefabFactory.CreateTextField(jss);
@@ -289,6 +300,23 @@ namespace VamTimeline
             // number with fractional or negative center weights if pct < 0.
 
             return Mathf.Pow(pct, _centerWeightFs.val);
+        }
+
+        private bool HasBackup()
+        {
+            return AtomAnimationBackup.singleton.HasBackup(current);
+        }
+
+        private void TakeBackup()
+        {
+            AtomAnimationBackup.singleton.TakeBackup(current);
+            _restoreUI.label = $"Restore [{AtomAnimationBackup.singleton.backupTime}]";
+            _restoreUI.button.interactable = true;
+        }
+
+        private void RestoreBackup()
+        {
+            AtomAnimationBackup.singleton.RestoreBackup(current);
         }
     }
 }
