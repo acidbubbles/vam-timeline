@@ -20,6 +20,7 @@ namespace VamTimeline
         private readonly List<ControllerLineDrawer3D> _lines3D = new List<ControllerLineDrawer3D>();
         private AtomAnimationEditContext _animationEditContext;
         private float _lastClipTime;
+        private Coroutine _drawCurvesCo;
 
         public Curves()
         {
@@ -216,6 +217,11 @@ namespace VamTimeline
         private void OnDisable()
         {
             DestroyDeps();
+            if (_drawCurvesCo != null)
+            {
+                StopCoroutine(_drawCurvesCo);
+                _drawCurvesCo = null;
+            }
         }
 
         private void CreateDeps(ICurveAnimationTarget target)
@@ -323,7 +329,13 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesRebuilt()
         {
-            StartCoroutine(DrawCurveLinesDeferred());
+            if (!isActiveAndEnabled) return;
+            if (_drawCurvesCo != null)
+            {
+                StopCoroutine(_drawCurvesCo);
+                _drawCurvesCo = null;
+            }
+            _drawCurvesCo =  StartCoroutine(DrawCurveLinesDeferred());
         }
 
         private IEnumerator DrawCurveLinesDeferred()
@@ -332,6 +344,7 @@ namespace VamTimeline
             yield return 0;
             yield return 0;
             DrawCurveLinesImmediate();
+            _drawCurvesCo = null;
         }
 
         private void DrawCurveLinesImmediate()
