@@ -616,6 +616,11 @@ namespace VamTimeline
         {
             return GetAllTargets()
                 .GroupBy(t => t.group ?? t.animatableRefBase.groupKey)
+                .OrderBy(group =>
+                {
+                    var first = group.First();
+                    return first.group ?? first.animatableRefBase.groupLabel;
+                })
                 .Select(group =>
                 {
                     var first = group.First();
