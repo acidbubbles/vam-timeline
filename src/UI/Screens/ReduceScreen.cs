@@ -1,8 +1,44 @@
 using System.Linq;
+using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
 {
+    public class ReduceScreenSettings : TimelineSettings
+    {
+        public static readonly ReduceScreenSettings singleton = new ReduceScreenSettings();
+
+        public readonly TimelineSetting<bool> removeFlatSections = new TimelineSetting<bool>("RemoveFlatSections", true);
+        public readonly TimelineSetting<bool> simplifyKeyframes = new TimelineSetting<bool>("SimplifyKeyframes", true);
+        public readonly TimelineSetting<float> minDistance = new TimelineSetting<float>("MinDistance", 0.008f);
+        public readonly TimelineSetting<float> minRotation = new TimelineSetting<float>("MinRotation", 0.001f);
+        public readonly TimelineSetting<float> minFloatRange = new TimelineSetting<float>("MinFloatRange", 0.01f);
+        public readonly TimelineSetting<int> maxFPS = new TimelineSetting<int>("maxFPS", 10);
+        public readonly TimelineSetting<bool> roundKeyTimeToFPS = new TimelineSetting<bool>("RoundKeyTimeToFPS", false);
+
+        public override void Load(JSONClass json)
+        {
+            removeFlatSections.Load(json);
+            simplifyKeyframes.Load(json);
+            minDistance.Load(json);
+            minRotation.Load(json);
+            minFloatRange.Load(json);
+            maxFPS.Load(json);
+            roundKeyTimeToFPS.Load(json);
+        }
+
+        public override void Save(JSONClass json)
+        {
+            removeFlatSections.Save(json);
+            simplifyKeyframes.Save(json);
+            minDistance.Save(json);
+            minRotation.Save(json);
+            minFloatRange.Save(json);
+            maxFPS.Save(json);
+            roundKeyTimeToFPS.Save(json);
+        }
+    }
+
     public class ReduceScreen : ScreenBase
     {
         public const string ScreenName = "Reduce";
@@ -52,14 +88,48 @@ namespace VamTimeline
 
         private void CreateReduceSettingsUI()
         {
-            _roundJSON = new JSONStorableBool("Round key time to fps", false);
-            _maxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", 10f, 1f, 50f);
-            _maxFramesPerSecondJSON.setCallbackFunction = val => _maxFramesPerSecondJSON.valNoCallback = Mathf.Round(val);
-            _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", true);
-            _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", true);
-            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", 0.008f, 0f, 1f, false);
-            _minRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", 0.001f, 0f, 1f);
-            _minFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", 0.01f, 0f, 1f);
+            _roundJSON = new JSONStorableBool("Round key time to fps", ReduceScreenSettings.singleton.roundKeyTimeToFPS.defaultValue)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.roundKeyTimeToFPS.value,
+                setCallbackFunction = val => ReduceScreenSettings.singleton.roundKeyTimeToFPS.value = val
+            };
+
+            _maxFramesPerSecondJSON = new JSONStorableFloat("Max frames per second", ReduceScreenSettings.singleton.maxFPS.defaultValue, 1f, 50f)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.maxFPS.value,
+                setCallbackFunction = val => _maxFramesPerSecondJSON.valNoCallback = ReduceScreenSettings.singleton.maxFPS.value = (int)Mathf.Round(val)
+            };
+
+            _removeFlatSectionsKeyframes = new JSONStorableBool("Remove flat sections", ReduceScreenSettings.singleton.removeFlatSections.defaultValue)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.removeFlatSections.value,
+                setCallbackFunction = val => ReduceScreenSettings.singleton.removeFlatSections.value = val
+            };
+
+            _simplifyKeyframes = new JSONStorableBool("Simplify keyframes", ReduceScreenSettings.singleton.removeFlatSections.defaultValue)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.simplifyKeyframes.value,
+                setCallbackFunction = val => ReduceScreenSettings.singleton.simplifyKeyframes.value = val
+            };
+
+            _minDistanceJSON = new JSONStorableFloat("Minimum meaningful distance", ReduceScreenSettings.singleton.minDistance.defaultValue, 0f, 1f, false)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.minDistance.value,
+                setCallbackFunction = val => ReduceScreenSettings.singleton.minDistance.value = val
+            };
+
+            _minRotationJSON = new JSONStorableFloat("Minimum meaningful rotation (dot)", ReduceScreenSettings.singleton.minRotation.defaultValue, 0f, 1f)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.minRotation.value,
+                setCallbackFunction = val => ReduceScreenSettings.singleton.minRotation.value = val
+            };
+
+            _minFloatParamRangeRatioJSON = new JSONStorableFloat("Minimum meaningful float range ratio", ReduceScreenSettings.singleton.minFloatRange.defaultValue, 0f, 1f)
+            {
+                valNoCallback = ReduceScreenSettings.singleton.minFloatRange.value,
+                setCallbackFunction = val => ReduceScreenSettings.singleton.minFloatRange.value = val
+            };
+
             prefabFactory.CreateToggle(_removeFlatSectionsKeyframes);
             prefabFactory.CreateSpacer();
             prefabFactory.CreateToggle(_simplifyKeyframes);

@@ -30,6 +30,7 @@ namespace VamTimeline
             json["Screens"] = screens;
 
             screens[RecordScreen.ScreenName] = GetJSON(RecordScreenSettings.singleton);
+            screens[ReduceScreen.ScreenName] = GetJSON(ReduceScreenSettings.singleton);
 
             return json;
         }
@@ -51,6 +52,7 @@ namespace VamTimeline
             {
                 var screens = json["Screens"];
                 Load(RecordScreenSettings.singleton, screens[RecordScreen.ScreenName]);
+                Load(ReduceScreenSettings.singleton, screens[ReduceScreen.ScreenName]);
             }
         }
 
@@ -83,6 +85,7 @@ namespace VamTimeline
         {
             this.key = key;
             this.defaultValue = defaultValue;
+            value = defaultValue;
         }
 
         public void Load(JSONClass json)
