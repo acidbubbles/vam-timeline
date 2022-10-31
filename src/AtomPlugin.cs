@@ -1191,7 +1191,7 @@ namespace VamTimeline
                     this,
                     TimeModes.RealTime,
                     animationEditContext.current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2),
-                    RecordScreenSettings.singleton.delayTimer,
+                    RecordScreenSettings.singleton.delayTimer.value,
                     targets,
                     null,
                     false,

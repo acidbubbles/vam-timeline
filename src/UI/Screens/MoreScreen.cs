@@ -44,9 +44,6 @@ namespace VamTimeline
 
             var hubButton = prefabFactory.CreateButton("[Browser] Virt-A-Mate Hub");
             hubButton.button.onClick.AddListener(() => Application.OpenURL("https://hub.virtamate.com/resources/timeline.94/"));
-
-            prefabFactory.CreateSpacer();
-
             var patreonBtn = prefabFactory.CreateButton("[Browser] Support me on Patreon!");
             patreonBtn.textColor = new Color(0.97647f, 0.40784f, 0.32941f);
             patreonBtn.buttonColor = Color.white;

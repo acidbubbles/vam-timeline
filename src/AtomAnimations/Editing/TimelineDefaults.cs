@@ -1,4 +1,5 @@
-﻿using MVR.FileManagementSecure;
+﻿using System;
+using MVR.FileManagementSecure;
 using SimpleJSON;
 using UnityEngine.Events;
 
@@ -70,5 +71,44 @@ namespace VamTimeline
     {
         public abstract void Load(JSONClass json);
         public abstract void Save(JSONClass json);
+    }
+
+    public class TimelineSetting<T> where T : struct
+    {
+        public string key { get; }
+        public T defaultValue { get; }
+        public T value { get; set; }
+
+        public TimelineSetting(string key, T defaultValue)
+        {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        public void Load(JSONClass json)
+        {
+            if (!json.HasKey(key)) return;
+            var entry = json[key];
+            if (typeof(T) == typeof(int))
+                value = (T)(object)entry.AsInt;
+            else if (typeof(T) == typeof(bool))
+                value = (T)(object)entry.AsBool;
+            else if (typeof(T) == typeof(float))
+                value = (T)(object)entry.AsFloat;
+            else
+                throw new NotSupportedException($"Type {value.GetType()} is not supported");
+        }
+
+        public void Save(JSONClass json)
+        {
+            if (typeof(T) == typeof(int))
+                json[key].AsInt = (int)(object)value;
+            else if (typeof(T) == typeof(bool))
+                json[key].AsBool = (bool)(object)value;
+            else if (typeof(T) == typeof(float))
+                json[key].AsFloat = (float)(object)value;
+            else
+                throw new NotSupportedException($"Type {value.GetType()} is not supported");
+        }
     }
 }

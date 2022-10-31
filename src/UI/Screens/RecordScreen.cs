@@ -10,17 +10,22 @@ namespace VamTimeline
     {
         public static readonly RecordScreenSettings singleton = new RecordScreenSettings();
 
-        public const int DefaultDelayTimer = 5;
-        public int delayTimer = DefaultDelayTimer;
+        public TimelineSetting<int> delayTimer = new TimelineSetting<int>("DelayTimer", 5);
+        public TimelineSetting<bool> hideMenu = new TimelineSetting<bool>("HideMenu", true);
+        public TimelineSetting<bool> showStartMarkers = new TimelineSetting<bool>("ShowStartMarkers", true);
 
         public override void Load(JSONClass json)
         {
-            if (json.HasKey("DelayTimer")) delayTimer = json["DelayTimer"].AsInt;
+            delayTimer.Load(json);
+            hideMenu.Load(json);
+            showStartMarkers.Load(json);
         }
 
         public override void Save(JSONClass json)
         {
-            json["DelayTimer"].AsInt = delayTimer;
+            delayTimer.Save(json);
+            hideMenu.Save(json);
+            showStartMarkers.Save(json);
         }
     }
 
@@ -30,8 +35,6 @@ namespace VamTimeline
 
         private static UIDynamicButton _recordButton;
         private static string _previousUseCameraRaycast;
-        private static bool _previousHideMenuDuringRecording;
-        private static bool _previousShowStartMarkers = true;
 
         private JSONStorableStringChooser _useCameraRaycast;
         private JSONStorableBool _recordExtendsLength;
@@ -62,29 +65,29 @@ namespace VamTimeline
             };
             prefabFactory.CreatePopup(recordTimeModeJSON, false, false);
 
-            var recordInJSON = new JSONStorableFloat("Record delay timer", RecordScreenSettings.DefaultDelayTimer, 0f, 30f, false)
+            var recordInJSON = new JSONStorableFloat("Record delay timer", RecordScreenSettings.singleton.delayTimer.defaultValue, 0f, 30f, false)
             {
-                valNoCallback = RecordScreenSettings.singleton.delayTimer
+                valNoCallback = RecordScreenSettings.singleton.delayTimer.value
             };
             recordInJSON.setCallbackFunction = val =>
             {
-                RecordScreenSettings.singleton.delayTimer = (int) Mathf.Round(val);
-                recordInJSON.valNoCallback = RecordScreenSettings.singleton.delayTimer;
+                RecordScreenSettings.singleton.delayTimer.value = (int) Mathf.Round(val);
+                recordInJSON.valNoCallback = RecordScreenSettings.singleton.delayTimer.value;
                 _recordButton.label = $"Start recording in {RecordScreenSettings.singleton.delayTimer}...";
             };
             prefabFactory.CreateSlider(recordInJSON);
 
-            var hideMenuDuringRecording = new JSONStorableBool("Hide menu during recording", false)
+            var hideMenuDuringRecording = new JSONStorableBool("Hide menu during recording", RecordScreenSettings.singleton.hideMenu.defaultValue)
             {
-                valNoCallback = _previousHideMenuDuringRecording,
-                setCallbackFunction = val => _previousHideMenuDuringRecording = val
+                valNoCallback = RecordScreenSettings.singleton.hideMenu.value,
+                setCallbackFunction = val => RecordScreenSettings.singleton.hideMenu.value = val
             };
             prefabFactory.CreateToggle(hideMenuDuringRecording);
 
-            var showStartMarkers = new JSONStorableBool("Show start markers", true)
+            var showStartMarkers = new JSONStorableBool("Show start markers", RecordScreenSettings.singleton.showStartMarkers.defaultValue)
             {
-                valNoCallback = _previousShowStartMarkers,
-                setCallbackFunction = val => _previousShowStartMarkers = val
+                valNoCallback = RecordScreenSettings.singleton.showStartMarkers.value,
+                setCallbackFunction = val => RecordScreenSettings.singleton.showStartMarkers.value = val
             };
             prefabFactory.CreateToggle(showStartMarkers);
 
@@ -184,7 +187,7 @@ namespace VamTimeline
                 plugin,
                 timeMode,
                 recordExtendsLength,
-                RecordScreenSettings.singleton.delayTimer,
+                RecordScreenSettings.singleton.delayTimer.value,
                 targets.ToList(),
                 raycastTarget,
                 hideMenuDuringRecording,
