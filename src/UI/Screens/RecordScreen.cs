@@ -1,10 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using SimpleJSON;
 using UnityEngine;
 
 namespace VamTimeline
 {
+    public class RecordScreenSettings : TimelineSettings
+    {
+        public static readonly RecordScreenSettings singleton = new RecordScreenSettings();
+
+        public const int DefaultDelayTimer = 5;
+        public int delayTimer = DefaultDelayTimer;
+
+        public override void Load(JSONClass json)
+        {
+            if (json.HasKey("DelayTimer")) delayTimer = json["DelayTimer"].AsInt;
+        }
+
+        public override void Save(JSONClass json)
+        {
+            json["DelayTimer"].AsInt = delayTimer;
+        }
+    }
+
     public class RecordScreen : ScreenBase
     {
         public const string ScreenName = "Record";
@@ -43,15 +62,15 @@ namespace VamTimeline
             };
             prefabFactory.CreatePopup(recordTimeModeJSON, false, false);
 
-            var recordInJSON = new JSONStorableFloat("Record delay timer", 5f, 0f, 30f, false)
+            var recordInJSON = new JSONStorableFloat("Record delay timer", RecordScreenSettings.DefaultDelayTimer, 0f, 30f, false)
             {
-                valNoCallback = animationEditContext.startRecordIn
+                valNoCallback = RecordScreenSettings.singleton.delayTimer
             };
             recordInJSON.setCallbackFunction = val =>
             {
-                animationEditContext.startRecordIn = (int) Mathf.Round(val);
-                recordInJSON.valNoCallback = animationEditContext.startRecordIn;
-                _recordButton.label = $"Start recording in {animationEditContext.startRecordIn}...";
+                RecordScreenSettings.singleton.delayTimer = (int) Mathf.Round(val);
+                recordInJSON.valNoCallback = RecordScreenSettings.singleton.delayTimer;
+                _recordButton.label = $"Start recording in {RecordScreenSettings.singleton.delayTimer}...";
             };
             prefabFactory.CreateSlider(recordInJSON);
 
@@ -96,7 +115,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
-            _recordButton = prefabFactory.CreateButton($"Start recording in {animationEditContext.startRecordIn}...");
+            _recordButton = prefabFactory.CreateButton($"Start recording in {RecordScreenSettings.singleton.delayTimer}...");
             _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(
                 int.Parse(recordTimeModeJSON.val),
                 _recordExtendsLength.val,
@@ -165,7 +184,7 @@ namespace VamTimeline
                 plugin,
                 timeMode,
                 recordExtendsLength,
-                animationEditContext.startRecordIn,
+                RecordScreenSettings.singleton.delayTimer,
                 targets.ToList(),
                 raycastTarget,
                 hideMenuDuringRecording,

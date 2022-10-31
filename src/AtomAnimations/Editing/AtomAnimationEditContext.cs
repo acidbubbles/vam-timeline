@@ -37,8 +37,6 @@ namespace VamTimeline
         private bool _sampleAfterRebuild;
         private float _lastCurrentAnimationLength;
 
-        public int startRecordIn = 5;
-
         private float _snap = DefaultSnap;
         public float snap
         {

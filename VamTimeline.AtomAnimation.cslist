@@ -39,6 +39,7 @@ src\AtomAnimations\Clipboard\AtomClipboardEntry.cs
 src\AtomAnimations\Editing\AtomAnimationBackup.cs
 src\AtomAnimations\Editing\AtomAnimationEditContext.cs
 src\AtomAnimations\Editing\FreeControllerV3Hook.cs
+src\AtomAnimations\Editing\TimelineDefaults.cs
 src\AtomAnimations\Logging\Logger.cs
 src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs
 src\AtomAnimations\Operations\Reduction\FloatParamTargetReduceProcessor.cs
@@ -115,6 +116,7 @@ src\UI\Screens\AdvancedKeyframeToolsScreen.cs
 src\UI\Screens\AnimationsScreen.cs
 src\UI\Screens\BulkScreen.cs
 src\UI\Screens\ControllerTargetSettingsScreen.cs
+src\UI\Screens\DefaultsScreen.cs
 src\UI\Screens\DiagnosticsScreen.cs
 src\UI\Screens\EditAnimationScreen.cs
 src\UI\Screens\GroupingScreen.cs

@@ -82,6 +82,7 @@ namespace VamTimeline
                 _freeControllerHook = gameObject.AddComponent<FreeControllerV3Hook>();
                 _freeControllerHook.enabled = false;
                 _freeControllerHook.containingAtom = base.containingAtom;
+                TimelineDefaults.singleton.Load();
                 InitStorables();
                 SuperController.singleton.StartCoroutine(DeferredInit());
 
@@ -1190,7 +1191,7 @@ namespace VamTimeline
                     this,
                     TimeModes.RealTime,
                     animationEditContext.current.GetAllCurveTargets().All(t => t.GetLeadCurve().length == 2),
-                    animationEditContext.startRecordIn,
+                    RecordScreenSettings.singleton.delayTimer,
                     targets,
                     null,
                     false,

@@ -34,13 +34,11 @@ namespace VamTimeline
             CreateChangeScreenButton("<b>Diagnostics</b> and scene analysis...", DiagnosticsScreen.ScreenName);
             CreateChangeScreenButton("<b>Options</b>...", OptionsScreen.ScreenName);
             CreateChangeScreenButton("<b>Logging</b>...", LoggingScreen.ScreenName);
+            CreateChangeScreenButton("<b>Defaults</b>...", DefaultsScreen.ScreenName);
 
             prefabFactory.CreateSpacer();
 
-            CreateChangeScreenButton("Help", HelpScreen.ScreenName);
-
-            prefabFactory.CreateSpacer();
-
+            CreateChangeScreenButton("Built-in Help", HelpScreen.ScreenName);
             var helpButton = prefabFactory.CreateButton("[Browser] Online help");
             helpButton.button.onClick.AddListener(() => Application.OpenURL("https://github.com/acidbubbles/vam-timeline/wiki"));
 

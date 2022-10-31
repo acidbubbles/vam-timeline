@@ -114,6 +114,7 @@
     <Compile Include="src\AtomAnimations\Editing\AtomAnimationBackup.cs" />
     <Compile Include="src\AtomAnimations\Editing\AtomAnimationEditContext.cs" />
     <Compile Include="src\AtomAnimations\Editing\FreeControllerV3Hook.cs" />
+    <Compile Include="src\AtomAnimations\Editing\TimelineDefaults.cs" />
     <Compile Include="src\AtomAnimations\Logging\Logger.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\ControllerTargetReduceProcessor.cs" />
     <Compile Include="src\AtomAnimations\Operations\Reduction\FloatParamTargetReduceProcessor.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="src\UI\Screens\AnimationsScreen.cs" />
     <Compile Include="src\UI\Screens\BulkScreen.cs" />
     <Compile Include="src\UI\Screens\ControllerTargetSettingsScreen.cs" />
+    <Compile Include="src\UI\Screens\DefaultsScreen.cs" />
     <Compile Include="src\UI\Screens\DiagnosticsScreen.cs" />
     <Compile Include="src\UI\Screens\EditAnimationScreen.cs" />
     <Compile Include="src\UI\Screens\GroupingScreen.cs" />
