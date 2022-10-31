@@ -1166,6 +1166,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("Keyframe_SetCurveType_Flat", () => animationEditContext.ChangeCurveType(CurveTypeValues.Flat)));
             bindings.Add(new JSONStorableAction("Keyframe_Add_CurrentController", () => operations.Keyframes().AddSelectedController()));
             bindings.Add(new JSONStorableAction("Keyframe_Add_AllControllerTargets", () => operations.Keyframes().AddAllControllers()));
+            bindings.Add(new JSONStorableAction("Keyframe_Add_AllSelected", () => animationEditContext.KeyframeSelected()));
             bindings.Add(new JSONStorableAction("ZoomIn", () => animationEditContext.ZoomScrubberRangeIn()));
             bindings.Add(new JSONStorableAction("ZoomOut", () => animationEditContext.ZoomScrubberRangeOut()));
             bindings.Add(new JSONStorableAction("ZoomMoveBackward", () => animationEditContext.MoveScrubberRangeBackward()));

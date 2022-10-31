@@ -966,5 +966,13 @@ namespace VamTimeline
                        ?? clips.FirstOrDefault();
             SelectAnimation(clip);
         }
+
+        public void KeyframeSelected()
+        {
+            foreach (var target in GetSelectedCurveTargets())
+            {
+                target.SetKeyframeToCurrent(current.clipTime);
+            }
+        }
     }
 }
