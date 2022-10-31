@@ -40,8 +40,8 @@ namespace VamTimeline
 
         public void Update()
         {
-            var deltaTime = timeMode == TimeModes.RealTime ? (Time.unscaledTime - _lastUpdateTime) : Time.unscaledDeltaTime;
-            _lastUpdateTime = Time.unscaledTime;
+            var deltaTime = timeMode == TimeModes.RealTime ? (Time.time - _lastUpdateTime) : Time.deltaTime;
+            _lastUpdateTime = Time.time;
 
             SyncTriggers(true);
 
@@ -61,8 +61,8 @@ namespace VamTimeline
 
         public void FixedUpdate()
         {
-            var deltaTime = timeMode == TimeModes.RealTime ? (Time.unscaledTime - _lastFixedUpdateTime) : Time.unscaledDeltaTime;
-            _lastFixedUpdateTime = Time.unscaledTime;
+            var deltaTime = timeMode == TimeModes.RealTime ? (Time.time - _lastFixedUpdateTime) : Time.deltaTime;
+            _lastFixedUpdateTime = Time.time;
 
 
             if (!allowAnimationProcessing || paused) return;
