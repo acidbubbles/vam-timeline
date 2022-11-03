@@ -70,7 +70,7 @@ namespace VamTimeline
             prefabFactory.CreateSlider(_endTimeFs);
 
             _goButton = prefabFactory.CreateButton("Apply Smoothing");
-            _goButton.button.onClick.AddListener(() => { StartSmoothing(); });
+            _goButton.button.onClick.AddListener(StartSmoothing);
 
             _statusLabel = new JSONStorableString("Status Label", "Select at least one control and press Apply.");
             prefabFactory.CreateTextField(_statusLabel);
@@ -84,7 +84,11 @@ namespace VamTimeline
                 _co = null;
                 // The button said Cancel when they clicked it
                 _goButton.label = "Apply Smoothing";
-                _statusLabel.val = "Smoothing cancelled while in progress. Reloading from save is recommended.";
+                _statusLabel.val = "Smoothing cancelled.";
+            }
+            else if (!animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().Any())
+            {
+                _statusLabel.val = "You must select at least one control in the dope sheet.";
             }
             else
             {
@@ -195,7 +199,7 @@ namespace VamTimeline
             }
 
             _goButton.label = "Apply Smoothing";
-            _statusLabel.val = "Smoothing complete.  You can remove this plugin when finished.";
+            _statusLabel.val = "Smoothing complete.";
             _co = null;
         }
 

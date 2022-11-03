@@ -358,7 +358,6 @@ namespace VamTimeline
             {
                 previousAnimationName = "";
             }
-            SuperController.LogMessage("Previous was: " + previousAnimationName);
             SendTimelineEvent(new object[]{
                  nameof(SendSyncAnimation), // 0
                  clip.animationName, // 1
@@ -475,7 +474,6 @@ namespace VamTimeline
         private int GetPosition(string animationName, string animationLayer, string animationSegment, string previousAnimationName)
         {
             var previousClipPosition = animation.clips.FindIndex(c => c.animationSegment == animationSegment && c.animationLayer == animationLayer && c.animationName == previousAnimationName);
-            SuperController.LogMessage($"Previous clip was found at {previousClipPosition}");
             if (previousClipPosition > -1)
                 return previousClipPosition + 1;
 

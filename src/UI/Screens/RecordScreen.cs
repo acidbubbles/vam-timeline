@@ -11,7 +11,7 @@ namespace VamTimeline
         public static readonly RecordScreenSettings singleton = new RecordScreenSettings();
 
         public readonly TimelineSetting<int> delayTimer = new TimelineSetting<int>("DelayTimer", 5);
-        public readonly TimelineSetting<bool> hideMenu = new TimelineSetting<bool>("HideMenu", true);
+        public readonly TimelineSetting<bool> hideMenu = new TimelineSetting<bool>("HideMenu", false);
         public readonly TimelineSetting<bool> showStartMarkers = new TimelineSetting<bool>("ShowStartMarkers", true);
 
         public override void Load(JSONClass json)
