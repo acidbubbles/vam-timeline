@@ -8,6 +8,7 @@ namespace VamTimeline
 
         private JSONStorableBool _copySettingsJSON;
         private JSONStorableBool _copyKeyframesJSON;
+        private JSONStorableBool _sequenceToJSON;
         private JSONStorableBool _createOnAllLayersJSON;
         private UIDynamicButton _addAnimationTransitionUI;
         private UIDynamicButton _createNewUI;
@@ -30,6 +31,7 @@ namespace VamTimeline
             InitCopySettings();
             InitCopyKeyframes();
             InitCreateOnAllLayers();
+            InitSequenceTo();
             InitCreateInOtherAtomsUI();
             InitAddAnotherUI();
             InitCreateAnimationUI();
@@ -84,6 +86,12 @@ namespace VamTimeline
                 if (val) _copySettingsJSON.valNoCallback = true;
             });
             prefabFactory.CreateToggle(_copyKeyframesJSON);
+        }
+
+        private void InitSequenceTo()
+        {
+            _sequenceToJSON = new JSONStorableBool("Sequence current to new", false);
+            prefabFactory.CreateToggle(_sequenceToJSON);
         }
 
         private void InitCreateOnAllLayers()
@@ -172,6 +180,7 @@ namespace VamTimeline
             var result = operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, _copySettingsJSON.val, _copyKeyframesJSON.val, _createOnAllLayersJSON.val);
             var clip = result.Select(r => r.created).FirstOrDefault(c => c.animationLayerQualified == current.animationLayerQualified);
             if(clip == null) return;
+            if (_sequenceToJSON.val) current.nextAnimationName = clip.animationName;
             if (createInOtherAtomsJSON.val) plugin.peers.SendAddAnimation(clip, createPositionJSON.val, _copySettingsJSON.val, _copyKeyframesJSON.val, _createOnAllLayersJSON.val);
             animationEditContext.SelectAnimation(clip);
             if (!addAnotherJSON.val) ChangeScreen(EditAnimationScreen.ScreenName);
