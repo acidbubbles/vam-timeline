@@ -584,6 +584,11 @@ namespace VamTimeline
                 BindAnimation();
                 animation.enabled = enabled;
                 GC.Collect();
+                if (animationEditContext.current.animationSegmentId == AtomAnimationClip.SharedAnimationSegmentId)
+                {
+                    var firstAnim = animation.clips.FirstOrDefault(c => c.animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId);
+                    if (firstAnim != null) animationEditContext.SelectAnimation(firstAnim);
+                }
             }
             catch (Exception exc)
             {
