@@ -666,6 +666,7 @@ namespace VamTimeline
         public float playbackScheduledFadeOutAtRemaining = float.NaN;
         public bool recording;
         public bool infinite;
+        public bool playbackPassedZero;
 
         public float clipTime
         {
@@ -682,6 +683,8 @@ namespace VamTimeline
                 }
                 else if (loop && !recording)
                 {
+                    var previousValue = _clipTime;
+
                     if (value >= 0)
                     {
                         _clipTime = value % animationLength;
@@ -689,6 +692,11 @@ namespace VamTimeline
                     else
                     {
                         _clipTime = animationLength + value;
+                    }
+
+                    if (!playbackPassedZero && previousValue > _clipTime)
+                    {
+                        playbackPassedZero = true;
                     }
                 }
                 else
@@ -701,6 +709,7 @@ namespace VamTimeline
         public void Reset(bool resetTime)
         {
             playbackEnabled = false;
+            playbackPassedZero = false;
             playbackBlendWeight = 0f;
             playbackBlendRate = 0f;
             playbackMainInLayer = false;

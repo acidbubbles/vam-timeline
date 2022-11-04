@@ -18,12 +18,23 @@ namespace VamTimeline
             _logger = logger;
         }
 
-        public void Sync(float time, bool live)
+        public void Sync(float time, bool live, bool loop)
         {
-            for (var i = 0; i < _triggers.Count; i++)
+            var triggersCount = _triggers.Count - (loop ? 1 : 0);
+            for (var i = 0; i < triggersCount; i++)
             {
                 var trigger = _triggers[i];
-                trigger.Sync(time, live);
+                trigger.SyncActive(time);
+            }
+            for (var i = 0; i < triggersCount; i++)
+            {
+                var trigger = _triggers[i];
+                trigger.SyncLeave(live);
+            }
+            for (var i = 0; i < triggersCount; i++)
+            {
+                var trigger = _triggers[i];
+                trigger.SyncTime(time, live);
             }
         }
 

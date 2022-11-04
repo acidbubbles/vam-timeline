@@ -677,7 +677,7 @@ namespace VamTimeline
                 {
                     var target = clip.targetTriggers[triggerIndex];
                     if (!target.animatableRef.live) continue;
-                    target.Sync(current.clipTime, true);
+                    target.Sync(current.clipTime, true, current.loop);
                     target.SyncAudio(current.clipTime);
                     CancelInvoke(nameof(LeaveSampledTriggers));
                     Invoke(nameof(LeaveSampledTriggers), 0.2f);

@@ -12,6 +12,8 @@ namespace VamTimeline
         public float startTime;
         public float endTime;
 
+        public bool shouldBeActive;
+
         public JSONClass pendingJSON;
 
         private readonly Logger _logger;
@@ -22,33 +24,36 @@ namespace VamTimeline
             SuperController.singleton.onAtomUIDRenameHandlers += OnAtomRename;
         }
 
-        public void Sync(float clipTime, bool live)
+        public void SyncActive(float clipTime)
         {
-            if (IsInsideTimeRange(clipTime))
+            shouldBeActive = IsInsideTimeRange(clipTime);
+        }
+
+        public void SyncLeave(bool live)
+        {
+            if (shouldBeActive || !active) return;
+            Leave(live);
+            if (_logger.triggersInvoked)
+                LogTriggers(discreteActionsStart, "end");
+        }
+
+        public void SyncTime(float clipTime, bool live)
+        {
+            if (!shouldBeActive) return;
+            transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
+            if (active) return;
+            try
             {
-                transitionInterpValue = (clipTime - startTime) / (endTime - startTime);
-                if (!active)
-                {
-                    try
-                    {
-                        active = true;
-                    }
-                    catch (Exception exc)
-                    {
-                        SuperController.LogError($"Timeline: External activate trigger crashed, some triggers might not have been called: {exc}");
-                    }
-                    if (live)
-                        SyncAudio(clipTime);
-                    if (_logger.triggersInvoked)
-                        LogTriggers(discreteActionsStart, "start");
-                }
+                active = true;
             }
-            else if (active)
+            catch (Exception exc)
             {
-                Leave(live);
-                if (_logger.triggersInvoked)
-                    LogTriggers(discreteActionsStart, "end");
+                SuperController.LogError($"Timeline: External activate trigger crashed, some triggers might not have been called: {exc}");
             }
+            if (live)
+                SyncAudio(clipTime);
+            if (_logger.triggersInvoked)
+                LogTriggers(discreteActionsStart, "start");
         }
 
         private void LogTriggers(IList<TriggerActionDiscrete> actions, string label)

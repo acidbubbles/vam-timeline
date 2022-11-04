@@ -497,6 +497,7 @@ namespace VamTimeline
             if (clip.playbackEnabled) return;
 
             clip.playbackEnabled = true;
+            clip.playbackPassedZero = clip.clipTime == 0f;
             if (logger.general) logger.Log(logger.generalCategory, $"Enter '{clip.animationNameQualified}'");
             onClipIsPlayingChanged.Invoke(clip);
         }
@@ -541,13 +542,15 @@ namespace VamTimeline
             for (var clipIndex = 0; clipIndex < clips.Count; clipIndex++)
             {
                 var clip = clips[clipIndex];
-                for (var triggerIndex = 0; triggerIndex < clip.targetTriggers.Count; triggerIndex++)
+                var triggersCount = clip.targetTriggers.Count;
+                for (var triggerIndex = 0; triggerIndex < triggersCount; triggerIndex++)
                 {
                     var target = clip.targetTriggers[triggerIndex];
                     if (target.animatableRef.live != live) continue;
+                    //if (target.animatableRef.activateThroughStartOnly && !clip.playbackPassedZero) continue;
                     if (clip.playbackEnabled)
                     {
-                        target.Sync(clip.clipTime, live);
+                        target.Sync(clip.clipTime, live, clip.loop);
                     }
                     target.Update();
                 }
