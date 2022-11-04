@@ -58,6 +58,8 @@ namespace VamTimeline
                 yield break;
             }
 
+            if(showStartMarkers && !_clip.loop) ShowStartMarkers(targets);
+
             for (var i = recordInSeconds; i > 0; i--)
             {
                 ShowText($"Start recording in {i}...");
@@ -68,6 +70,7 @@ namespace VamTimeline
                     if (!owner.isActiveAndEnabled || Input.GetKeyDown(KeyCode.Escape))
                     {
                         ShowText(null);
+                        HideStartMarkers(targets);
                         yield break;
                     }
                 }
@@ -78,7 +81,7 @@ namespace VamTimeline
             AtomAnimationBackup.singleton.ClearBackup();
             RecordFirstKeyframe(targets);
             StartRecording(timeMode, recordExtendsLength, targets);
-            if(showStartMarkers) ShowStartMarkers(targets);
+            if(showStartMarkers && _clip.loop) ShowStartMarkers(targets);
 
             var lastRecordedTime = 0f;
             var recordLengthStr = _clip.infinite ? "∞" : _clip.animationLength.ToString("0.0");
@@ -112,10 +115,27 @@ namespace VamTimeline
 
         private void ShowStartMarkers(List<ICurveAnimationTarget> targets)
         {
+            var nextAnimation = !_clip.loop && _clip.nextAnimationNameId != 0 ? _animation.index.ByLayerQualified(_clip.animationLayerQualifiedId).FirstOrDefault(c => c.animationNameId == _clip.nextAnimationNameId) : null;
             foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
             {
+                var nextTarget = nextAnimation?.targetControllers.FirstOrDefault(t => t.TargetsSameAs(target));
+                var snapNext = nextTarget != null && !nextTarget.hasParentBound;
+                var control = target.animatableRef.controller.control;
+                var previousPosition = control.position;
+                var previousRotation = control.rotation;
+                if (snapNext)
+                {
+                    var controlParent = control.parent;
+                    var position = controlParent.TransformPoint(nextTarget.EvaluatePosition(0f));
+                    var rotation = controlParent.rotation * nextTarget.EvaluateRotation(0f);
+                    control.SetPositionAndRotation(position, rotation);
+                }
                 target.animatableRef.controller.TakeSnapshot();
                 target.animatableRef.controller.drawSnapshot = true;
+                if (snapNext)
+                {
+                    control.SetPositionAndRotation(previousPosition, previousRotation);
+                }
             }
         }
 

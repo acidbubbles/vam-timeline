@@ -242,7 +242,6 @@ namespace VamTimeline
             {
                 for (var j = rawQueue.Count - 1; j > i; j--)
                 {
-
                     // Since sum(adjweight)=1, it can be shown that each of these adjusted values is
                     // between 0 and 1 (hence a valid slerp factor).  It can also be shown that when
                     // the first step's rotation is used as the starting point, its intended StepWeight

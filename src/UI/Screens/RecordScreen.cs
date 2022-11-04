@@ -84,7 +84,7 @@ namespace VamTimeline
             };
             prefabFactory.CreateToggle(hideMenuDuringRecording);
 
-            var showStartMarkers = new JSONStorableBool("Show start markers", RecordScreenSettings.singleton.showStartMarkers.defaultValue)
+            var showStartMarkers = new JSONStorableBool("Show start/next markers", RecordScreenSettings.singleton.showStartMarkers.defaultValue)
             {
                 valNoCallback = RecordScreenSettings.singleton.showStartMarkers.value,
                 setCallbackFunction = val => RecordScreenSettings.singleton.showStartMarkers.value = val
