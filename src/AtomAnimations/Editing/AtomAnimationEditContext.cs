@@ -503,6 +503,7 @@ namespace VamTimeline
 					{
 						target.DeleteFrame(time);
 					}
+                    Sample();
 				}
             }
             catch (Exception exc)

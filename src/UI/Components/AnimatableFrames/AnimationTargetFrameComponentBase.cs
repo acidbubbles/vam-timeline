@@ -95,6 +95,11 @@ namespace VamTimeline
 
         private void OnAnimationKeyframesRebuilt()
         {
+            Invoke(nameof(OnAnimationKeyframesRebuiltLate), 0);
+        }
+
+        private void OnAnimationKeyframesRebuiltLate()
+        {
             SetTime(plugin.animationEditContext.clipTime, !plugin.animation.isPlaying);
         }
 
