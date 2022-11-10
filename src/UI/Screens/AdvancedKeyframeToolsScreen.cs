@@ -25,11 +25,11 @@ namespace VamTimeline
 
             prefabFactory.CreateSpacer();
 
-            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Keyframe pose (all on controllers)");
-            keyframeCurrentPoseUI.button.onClick.AddListener(() => KeyframeCurrentPose(true));
+            var keyframeCurrentPoseUI = prefabFactory.CreateButton("Add all on controllers");
+            keyframeCurrentPoseUI.button.onClick.AddListener(AddAllOnTargets);
 
             var keyframeCurrentPoseTrackedUI = prefabFactory.CreateButton("Keyframe pose (animated targets only)");
-            keyframeCurrentPoseTrackedUI.button.onClick.AddListener(() => KeyframeCurrentPose(false));
+            keyframeCurrentPoseTrackedUI.button.onClick.AddListener(KeyframeCurrentPose);
 
             var keyframFloatsUI = prefabFactory.CreateButton("Keyframe float params");
             keyframFloatsUI.button.onClick.AddListener(() => KeyframeFloats());
@@ -124,38 +124,39 @@ namespace VamTimeline
             }
         }
 
-        private void KeyframeCurrentPose(bool all)
+        private void AddAllOnTargets()
         {
-            try
+            foreach (var fc in plugin.containingAtom.freeControllers)
             {
-                var time = animationEditContext.clipTime.Snap();
-                foreach (var fc in plugin.containingAtom.freeControllers)
+                if (fc.containingAtom.type == "Person")
                 {
-                    if (fc.containingAtom.type == "Person")
-                    {
-                        if (fc.name == "control") continue;
-                        if (!fc.name.EndsWith("Control")) continue;
-                    }
+                    if (fc.name == "control") continue;
+                    if (!fc.name.EndsWith("Control")) continue;
+                }
 
-                    if (fc.currentPositionState == FreeControllerV3.PositionState.Off && fc.currentRotationState == FreeControllerV3.RotationState.Off) continue;
+                if (fc.currentPositionState == FreeControllerV3.PositionState.Off && fc.currentRotationState == FreeControllerV3.RotationState.Off) continue;
 
-                    var target = current.targetControllers.FirstOrDefault(tc => tc.animatableRef.Targets(fc));
-                    if (target == null)
+                var target = current.targetControllers.FirstOrDefault(tc => tc.animatableRef.Targets(fc));
+                if (target == null)
+                {
+                    if (currentSegment.layers.Where(l => l[0].animationLayer != current.animationLayer).SelectMany(l => l).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
                     {
-                        if (!all) continue;
-                        if (currentSegment.layers.Where(l => l[0].animationLayer != current.animationLayer).SelectMany(l => l).SelectMany(c => c.targetControllers).Any(t2 => t2.animatableRef.Targets(fc)))
-                        {
-                            SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
-                            continue;
-                        }
-                        target = operations.Targets().Add(fc);
+                        SuperController.LogError($"Cannot keyframe controller {fc.name} because it was used in another layer.");
+                        continue;
                     }
-                    animationEditContext.SetKeyframeToCurrentTransform(target, time);
+                    target = operations.Targets().Add(fc);
                 }
             }
-            catch (Exception exc)
+
+            KeyframeCurrentPose();
+        }
+
+        private void KeyframeCurrentPose()
+        {
+            var time = current.clipTime.Snap(animationEditContext.snap);
+            foreach (var target in animationEditContext.GetAllOrSelectedTargets().OfType<FreeControllerV3AnimationTarget>())
             {
-                SuperController.LogError($"Timeline.{nameof(AdvancedKeyframeToolsScreen)}.{nameof(KeyframeCurrentPose)}: {exc}");
+                target.SetKeyframeToCurrent(time);
             }
         }
 

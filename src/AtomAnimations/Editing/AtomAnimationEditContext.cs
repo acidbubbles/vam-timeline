@@ -968,9 +968,10 @@ namespace VamTimeline
 
         public void KeyframeSelected()
         {
+            var time = current.clipTime.Snap(snap);
             foreach (var target in GetSelectedCurveTargets())
             {
-                target.SetKeyframeToCurrent(current.clipTime);
+                target.SetKeyframeToCurrent(time);
             }
         }
     }
