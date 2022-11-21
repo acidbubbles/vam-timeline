@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 // ReSharper disable UnusedParameter.Local
+// ReSharper disable RedundantExplicitArraySize
+// ReSharper disable SuggestBaseTypeForParameter
 
 namespace VamTimeline
 {
@@ -53,7 +55,7 @@ namespace VamTimeline
             _peers.Remove(storable);
         }
 
-        private bool IsExcludedFromLogging(string eventName)
+        private static bool IsExcludedFromLogging(string eventName)
         {
             return eventName == nameof(SendScreen) || eventName == nameof(SendLoggingSettings);
         }
