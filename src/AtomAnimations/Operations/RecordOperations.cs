@@ -179,8 +179,6 @@ namespace VamTimeline
             {
                 target.IncreaseCapacity(90 * (int)(recordExtendsLength ? 60 : target.GetLeadCurve().duration.Snap(1)));
             }
-
-            GC.Collect();
         }
 
         private void StartRecording(int timeMode, bool recordExtendsLength, List<ICurveAnimationTarget> targets)
@@ -227,7 +225,6 @@ namespace VamTimeline
                 target.EndBulkUpdates();
             }
 
-            GC.Collect();
             _clip.clipTime = Mathf.Min(_clip.animationLength, _clip.clipTime).Snap();
         }
 
