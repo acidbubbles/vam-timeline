@@ -62,6 +62,9 @@ namespace VamTimeline
             var clearOnPlayJSON = new JSONStorableBool("Clear on play", false, val => plugin.logger.clearOnPlay = val) { valNoCallback = plugin.logger.clearOnPlay };
             prefabFactory.CreateToggle(clearOnPlayJSON);
 
+            var showCurrentAnimationJSON = new JSONStorableBool("Show what's playing in help text", false, val => plugin.logger.showPlayInfoInHelpText = val) { valNoCallback = plugin.logger.showPlayInfoInHelpText };
+            prefabFactory.CreateToggle(showCurrentAnimationJSON);
+
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Sync to other atoms", 1);
 

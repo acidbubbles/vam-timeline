@@ -500,6 +500,15 @@ namespace VamTimeline
             clip.playbackPassedZero = clip.clipTime == 0f;
             if (logger.general) logger.Log(logger.generalCategory, $"Enter '{clip.animationNameQualified}'");
             onClipIsPlayingChanged.Invoke(clip);
+            if (logger.showPlayInfoInHelpText)
+            {
+                if(index.segmentIds.Count > 1)
+                    logger.ShowTemporaryMessage($"Timeline: Play {clip.animationNameQualified}");
+                else if (index.ByName(clip.animationSegmentId, clip.animationNameId).Count == 1)
+                    logger.ShowTemporaryMessage($"Timeline: Play {clip.animationName}");
+                else
+                    logger.ShowTemporaryMessage($"Timeline: Play {clip.animationLayer} / {clip.animationName}");
+            }
         }
 
         private void BlendOut(AtomAnimationClip clip, float blendDuration)

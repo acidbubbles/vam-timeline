@@ -20,6 +20,8 @@ namespace VamTimeline
         public bool debug;
         public readonly string debugCategory = "dbg";
 
+        public bool showPlayInfoInHelpText;
+
         public Regex filter { get; set; }
 
         private readonly Atom _containingAtom;
@@ -48,6 +50,13 @@ namespace VamTimeline
             triggersReceived = true;
             sequencing = true;
             peersSync = true;
+        }
+
+        public void ShowTemporaryMessage(string message)
+        {
+            SuperController.singleton.CancelInvoke(nameof(SuperController.HideTempHelp));
+            SuperController.singleton.ShowTempHelp(message);
+            SuperController.singleton.Invoke(nameof(SuperController.HideTempHelp), 5);
         }
     }
 }

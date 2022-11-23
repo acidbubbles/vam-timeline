@@ -295,6 +295,7 @@ namespace VamTimeline
             {
                 animation.StopAll();
                 onTimeChanged.Invoke(timeArgs);
+                if (logger.showPlayInfoInHelpText) logger.ShowTemporaryMessage("Timeline: Stop");
             }
             else
             {

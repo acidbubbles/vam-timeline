@@ -1220,6 +1220,11 @@ namespace VamTimeline
                 logger.EnableDefault();
                 peers.SendLoggingSettings();
             }));
+            bindings.Add(new JSONStorableAction("Logging_ToggleShowPlayingInHelpText", () =>
+            {
+                logger.showPlayInfoInHelpText = !logger.showPlayInfoInHelpText;
+                if (logger.showPlayInfoInHelpText) logger.ShowTemporaryMessage("Timeline: Enabled show playing info");
+            }));
             bindings.Add(new JSONStorableAction("ToggleFocusOnLayer", () => animation.focusOnLayer = !animation.focusOnLayer));
 
             bindings.Add(_scrubberAnalogControlJSON);
