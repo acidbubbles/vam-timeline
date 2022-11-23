@@ -194,8 +194,12 @@ namespace VamTimeline
                 showStartMarkers
             );
 
+            var changedScreen = false;
             if (!targets.OfType<FreeControllerV3AnimationTarget>().Any() && targets.OfType<JSONStorableFloatAnimationTarget>().Any())
+            {
                 ChangeScreen(TargetsScreen.ScreenName);
+                changedScreen = true;
+            }
 
             while (enumerator.MoveNext())
                 yield return enumerator.Current;
@@ -210,6 +214,12 @@ namespace VamTimeline
             animationEditContext.ResetScrubberRange();
             if (hideMenuDuringRecording)
                 SuperController.singleton.ShowMainHUDAuto();
+            if (changedScreen)
+            {
+                yield return 0;
+                // Note: The listener has been disposed, we have to ask the plugin
+                plugin.ChangeScreen(ScreenName, null);
+            }
         }
     }
 }
