@@ -24,7 +24,6 @@ namespace VamTimeline
             _simpleSlider.onChange.AddListener(val =>
             {
                 if (plugin.animationEditContext.locked) return;
-                if (plugin.animationEditContext.locked) return;
                 if (!target.animatableRef.EnsureAvailable()) return;
                 SetValue(floatParam.min + val * (floatParam.max - floatParam.min));
             });
@@ -135,13 +134,8 @@ namespace VamTimeline
             if (plugin.animationEditContext.locked) return;
             if (!target.animatableRef.EnsureAvailable(false)) return;
             var time = plugin.animationEditContext.clipTime.Snap();
-            if (plugin.animation.isPlaying)
-            {
-                time = time.Snap(0.01f);
-                if (Mathf.Abs(target.value.Evaluate(time) - val) < 0.05)
-                    return;
-            }
-            target.SetKeyframe(time, val);
+            if (!target.recording)
+                target.SetKeyframe(time, val);
             floatParamRef.val = val;
             if (!plugin.animation.isPlaying)
             {
