@@ -73,7 +73,7 @@ namespace VamTimeline
             {
                 RecordScreenSettings.singleton.delayTimer.value = (int) Mathf.Round(val);
                 recordInJSON.valNoCallback = RecordScreenSettings.singleton.delayTimer.value;
-                _recordButton.label = $"Start recording in {RecordScreenSettings.singleton.delayTimer}...";
+                _recordButton.label = $"Start recording in {RecordScreenSettings.singleton.delayTimer.value}...";
             };
             prefabFactory.CreateSlider(recordInJSON);
 
@@ -118,7 +118,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
             prefabFactory.CreateHeader("Record", 1);
             prefabFactory.CreateHeader("Note: Select targets to record", 2);
-            _recordButton = prefabFactory.CreateButton($"Start recording in {RecordScreenSettings.singleton.delayTimer}...");
+            _recordButton = prefabFactory.CreateButton($"Start recording in {RecordScreenSettings.singleton.delayTimer.value}...");
             _recordButton.button.onClick.AddListener(() => SuperController.singleton.StartCoroutine(OnRecordCo(
                 int.Parse(recordTimeModeJSON.val),
                 _recordExtendsLength.val,
