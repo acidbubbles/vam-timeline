@@ -202,14 +202,12 @@ namespace VamTimeline
 
             if (_recordButton != null)
                 _recordButton.button.interactable = true;
-            animationEditContext.Stop();
 
             // This is a hack, not sure why it's necessary to update the keyframes
             yield return 0;
             current.DirtyAll();
             yield return 0;
             animationEditContext.ResetScrubberRange();
-            animationEditContext.clipTime = 0f;
             if (hideMenuDuringRecording)
                 SuperController.singleton.ShowMainHUDAuto();
         }

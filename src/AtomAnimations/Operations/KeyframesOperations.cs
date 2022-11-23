@@ -20,14 +20,15 @@ namespace VamTimeline
             }
         }
 
-        public void RemoveAll(IAtomAnimationTarget target, bool includeEdges = false)
+        public void RemoveAll(IAtomAnimationTarget target, bool includeEdges = false, float fromTime = 0f)
         {
             target.StartBulkUpdates();
             try
             {
                 foreach (var time in target.GetAllKeyframesTime())
                 {
-                    if (!includeEdges && (time == 0f || time == _clip.animationLength)) continue;
+                    if (time < fromTime) continue;
+                    if (!includeEdges && (time <= 0f || time >= _clip.animationLength)) continue;
                     target.DeleteFrame(time);
                 }
             }

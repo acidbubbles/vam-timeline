@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -35,8 +34,11 @@ namespace VamTimeline
                 yield break;
             }
 
-            _animation.StopAndReset();
-            _animation.Sample();
+            if (_animation.isPlaying)
+            {
+                SuperController.LogError("Timeline: Stop playback before recording");
+                yield break;
+            }
 
             ShowText("Preparing to record...");
 
@@ -165,7 +167,7 @@ namespace VamTimeline
 
             foreach (var target in targets)
             {
-                keyframesOps.RemoveAll(target);
+                keyframesOps.RemoveAll(target, fromTime: _clip.clipTime);
             }
 
             if (isEmpty)
@@ -210,13 +212,12 @@ namespace VamTimeline
             _animation.RestoreTemporaryTimeMode();
             _peerManager.SendStopRecording();
 
-            var resizeOp = new ResizeAnimationOperations();
-            _animation.StopAndReset();
             ShowText(null);
 
             if (_clip.infinite)
             {
                 _clip.infinite = false;
+                var resizeOp = new ResizeAnimationOperations();
                 resizeOp.CropOrExtendEnd(_clip, _clip.GetAllCurveTargets().Select(t => t.GetLeadCurve().duration).Max());
             }
 
@@ -227,6 +228,7 @@ namespace VamTimeline
             }
 
             GC.Collect();
+            _clip.clipTime = Mathf.Min(_clip.animationLength, _clip.clipTime).Snap();
         }
 
         private static void ClearAllGrabbedControllers(IEnumerable<ICurveAnimationTarget> targets)
