@@ -59,14 +59,23 @@ namespace VamTimeline
 
         private void InitUseRealTimeUI()
         {
-            var timeTypeJSON = new JSONStorableStringChooser("Time mode", new List<string> {TimeTypeValues.GameTime.ToString(), TimeTypeValues.RealTime.ToString()}, TimeTypeValues.GameTime.ToString(), "Time mode");
-            timeTypeJSON.displayChoices = new List<string>
+            var timeModes = new List<string> {TimeModes.UnityTime.ToString(), TimeModes.RealTime.ToString()};
+            var timeModeDisplay = new List<string>
             {
                 "Game time (slows with low fps)",
                 "Real time (better for audio sync)"
             };
-            timeTypeJSON.valNoCallback = animation.timeMode.ToString();
-            timeTypeJSON.setCallbackFunction = val => animation.timeMode = int.Parse(val);
+            if (animation.timeMode == TimeModes.RealTimeLegacy)
+            {
+              timeModes.Add(TimeModes.RealTimeLegacy.ToString());
+              timeModeDisplay.Add("Real time (legacy, only use for old scenes)");
+            }
+            var timeTypeJSON = new JSONStorableStringChooser("Time mode", timeModes, TimeModes.UnityTime.ToString(), "Time mode")
+            {
+                displayChoices = timeModeDisplay,
+                valNoCallback = animation.timeMode.ToString(),
+                setCallbackFunction = val => animation.timeMode = int.Parse(val)
+            };
             prefabFactory.CreatePopup(timeTypeJSON, true, true);
         }
 
