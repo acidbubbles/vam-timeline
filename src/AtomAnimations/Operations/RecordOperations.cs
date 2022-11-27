@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -28,6 +29,12 @@ namespace VamTimeline
             bool exitOnMenuOpen,
             bool showStartMarkers)
         {
+            if (!recordExtendsLength && _clip.clipTime >= _clip.animationLength - 0.001)
+            {
+                SuperController.LogError("Timeline: Animation is already at the end; either enable extends recording or rewind.");
+                yield break;
+            }
+
             if (_animation.recording)
             {
                 SuperController.LogError("Timeline: Already recording");
@@ -225,7 +232,7 @@ namespace VamTimeline
                 target.EndBulkUpdates();
             }
 
-            _clip.clipTime = Mathf.Min(_clip.animationLength, _clip.clipTime).Snap();
+            _animation.StopAll();
         }
 
         private static void ClearAllGrabbedControllers(IEnumerable<ICurveAnimationTarget> targets)

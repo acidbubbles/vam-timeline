@@ -355,6 +355,7 @@ namespace VamTimeline
             {
                 StopClip(clip);
             }
+            playTime = 0f;
             foreach (var clip in clips)
             {
                 clip.Reset(false);
