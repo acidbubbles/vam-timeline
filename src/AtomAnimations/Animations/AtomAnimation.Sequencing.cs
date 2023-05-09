@@ -85,7 +85,9 @@ namespace VamTimeline
         private void TransitionClips(AtomAnimationClip from, AtomAnimationClip to, float siblingClipTime = 0f)
         {
             if (to == null) throw new ArgumentNullException(nameof(to));
-
+            #region CheesyFX
+            index.currentlyPlayedClipByLayerQualified[to.animationLayerQualified].val = to.animationNameQualified;
+            #endregion
             if (from == null)
             {
                 to.clipTime = siblingClipTime + to.timeOffset;

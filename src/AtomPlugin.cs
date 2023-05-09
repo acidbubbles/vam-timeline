@@ -63,6 +63,10 @@ namespace VamTimeline
         }
         private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
 
+        #region CheesyFX
+        public JSONStorableAction _onClipsListChanged;
+        #endregion
+
         #region Init
 
         private void Start()
@@ -417,6 +421,12 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterBool(_pausedJSON);
+
+            #region CheesyFX
+            _onClipsListChanged = new JSONStorableAction("OnClipsChanged", delegate { });
+            RegisterAction(_onClipsListChanged);
+            #endregion
+            
         }
 
         private void StorablePlay(string storableName)
@@ -699,7 +709,17 @@ namespace VamTimeline
                 {
                     RegisterPlaySegmentTrigger(animation.index.segmentNames[i]);
                 }
-
+                
+                #region CheesyFX
+                animation.index.currentlyPlayedClipByLayerQualified.Values.ToList().ForEach(DeregisterString);
+                animation.index.currentlyPlayedClipByLayerQualified.Clear();
+                foreach (var clipsList in animation.index._clipsByLayerNameQualifiedId.Values.ToList())
+                {
+                    var layerNameQualified = clipsList[0].animationLayerQualified;
+                    CreateAndRegisterLayerStorables(layerNameQualified);
+                }
+                #endregion
+                
                 for (var i = 0; i < animationNames.Count; i++)
                 {
                     var animName = animationNames[i];
@@ -727,6 +747,7 @@ namespace VamTimeline
                 }
 
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
+                _onClipsListChanged.actionCallback.Invoke();
             }
             catch (Exception exc)
             {
@@ -817,6 +838,16 @@ namespace VamTimeline
                 weightJSON = weightJSON
             });
         }
+        
+        #region CheesyFX
+        private void CreateAndRegisterLayerStorables(string layerQualified)
+        {
+            JSONStorableString currentClip = new JSONStorableString($"GetCurrentClip {layerQualified}", null);
+            animation.index.currentlyPlayedClipByLayerQualified.Add(layerQualified, currentClip);
+            // currentClip.setCallbackFunction = val => SuperController.LogMessage(val);
+            RegisterString(currentClip);
+        }
+        #endregion
 
         private void OnAnimationParametersChanged()
         {

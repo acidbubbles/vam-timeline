@@ -244,6 +244,10 @@ namespace VamTimeline
 
             if (allowSibling && (sequencing || !focusOnLayer))
                 PlaySiblings(next);
+            
+            #region CheesyFX
+            index.currentlyPlayedClipByLayerQualified[next.animationLayerQualified].val = next.animationNameQualified;
+            #endregion
         }
 
         private void Validate()
