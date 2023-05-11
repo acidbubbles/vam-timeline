@@ -49,16 +49,14 @@ namespace VamTimeline
         public readonly List<int> segmentIds = new List<int>();
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
-        public readonly Dictionary<int, List<AtomAnimationClip>> _clipsByLayerNameQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
+        private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByLayerNameQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByName = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _firstClipOfLayerBySetQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>> _clipsByController = new Dictionary<FreeControllerV3Ref, List<FreeControllerV3AnimationTarget>>();
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
         private bool _pendingBulkUpdate;
-        #region CheesyFX
-        public Dictionary<string, JSONStorableString> currentlyPlayedClipByLayerQualified = new Dictionary<string, JSONStorableString>();
-        #endregion
+        public readonly Dictionary<string, JSONStorableString> currentlyPlayedClipByLayerQualified = new Dictionary<string, JSONStorableString>();
         public AtomAnimationsClipsIndex(List<AtomAnimationClip> clips)
         {
             _clips = clips;

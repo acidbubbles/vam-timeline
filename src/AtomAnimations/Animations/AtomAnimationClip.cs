@@ -50,6 +50,8 @@ namespace VamTimeline
         private AtomPose _pose;
         private bool _applyPoseOnTransition;
 
+        public string nextAnimationGroupSkip;
+
         public UnityEvent onTargetsListChanged { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesDirty { get; } = new UnityEvent();
         public UnityEvent onAnimationKeyframesRebuilt { get; } = new UnityEvent();

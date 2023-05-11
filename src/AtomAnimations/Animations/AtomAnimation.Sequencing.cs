@@ -85,9 +85,9 @@ namespace VamTimeline
         private void TransitionClips(AtomAnimationClip from, AtomAnimationClip to, float siblingClipTime = 0f)
         {
             if (to == null) throw new ArgumentNullException(nameof(to));
-            #region CheesyFX
-            index.currentlyPlayedClipByLayerQualified[to.animationLayerQualified].val = to.animationNameQualified;
-            #endregion
+
+            index.currentlyPlayedClipByLayerQualified[to.animationLayerQualified].val = to.animationName;
+
             if (from == null)
             {
                 to.clipTime = siblingClipTime + to.timeOffset;
@@ -158,6 +158,7 @@ namespace VamTimeline
 
             if (source.nextAnimationNameId == AtomAnimationClip.SlaveAnimationNameId)
                 return;
+            if (ignoreSequencing) return;
 
             AtomAnimationClip next;
 
@@ -184,12 +185,14 @@ namespace VamTimeline
             }
             else if (source.nextAnimationGroupId != -1)
             {
+                string[] groupSkip = source.nextAnimationGroupSkip.Split(new []{','}, StringSplitOptions.RemoveEmptyEntries);
                 var candidates = index
                     .ByLayerQualified(source.animationLayerQualifiedId)
                     .Where(c => c != source)
-                    .Where(c => c.animationNameGroupId == source.nextAnimationGroupId)
-                    .ToList();
-                next = SelectRandomClip(candidates);
+                    .Where(c => c.animationNameGroupId == source.nextAnimationGroupId);
+                if (groupSkip.Length > 0)
+                    candidates = candidates.Where(c => !groupSkip.Any(s => c.animationName.Contains(s)));
+                next = SelectRandomClip(candidates.ToList());
             }
             else
             {

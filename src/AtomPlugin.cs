@@ -22,6 +22,7 @@ namespace VamTimeline
         public PeerManager peers { get; private set; }
 
         private JSONStorableStringChooser _animationJSON;
+        private JSONStorableStringChooser _animationNamesQualifiedJSON;
         private JSONStorableAction _nextAnimationJSON;
         private JSONStorableAction _previousAnimationJSON;
         private JSONStorableAction _nextAnimationInMainLayerJSON;
@@ -40,6 +41,7 @@ namespace VamTimeline
         private JSONStorableFloat _weightJSON;
         private JSONStorableBool _lockedJSON;
         private JSONStorableBool _pausedJSON;
+        private JSONStorableBool _ignoreSequencingJSON;
         public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
@@ -63,9 +65,8 @@ namespace VamTimeline
         }
         private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
 
-        #region CheesyFX
         public JSONStorableAction _onClipsListChanged;
-        #endregion
+
 
         #region Init
 
@@ -290,6 +291,10 @@ namespace VamTimeline
             };
             RegisterStringChooser(_animationJSON);
 
+            _animationNamesQualifiedJSON = new JSONStorableStringChooser("AnimationNamesQualified", new List<string>(),
+                "", "AnimationNamesQualified");
+            RegisterStringChooser(_animationNamesQualifiedJSON);
+
             _nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextAnimation}'");
@@ -422,11 +427,15 @@ namespace VamTimeline
             };
             RegisterBool(_pausedJSON);
 
-            #region CheesyFX
+            _ignoreSequencingJSON = new JSONStorableBool("Ignore sequencing", false, v => animation.ignoreSequencing = v)
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterBool(_ignoreSequencingJSON);
+
             _onClipsListChanged = new JSONStorableAction("OnClipsChanged", delegate { });
             RegisterAction(_onClipsListChanged);
-            #endregion
-            
         }
 
         private void StorablePlay(string storableName)
@@ -709,17 +718,18 @@ namespace VamTimeline
                 {
                     RegisterPlaySegmentTrigger(animation.index.segmentNames[i]);
                 }
-                
-                #region CheesyFX
+
                 animation.index.currentlyPlayedClipByLayerQualified.Values.ToList().ForEach(DeregisterString);
                 animation.index.currentlyPlayedClipByLayerQualified.Clear();
-                foreach (var clipsList in animation.index._clipsByLayerNameQualifiedId.Values.ToList())
+                List<string> animNamesQualified = new List<string>();
+                foreach (var clipList in animation.index.clipsGroupedByLayer)
                 {
-                    var layerNameQualified = clipsList[0].animationLayerQualified;
+                    var layerNameQualified = clipList[0].animationLayerQualified;
                     CreateAndRegisterLayerStorables(layerNameQualified);
+                    animNamesQualified.AddRange(clipList.Select(x => x.animationNameQualified));
                 }
-                #endregion
-                
+                _animationNamesQualifiedJSON.choices = animNamesQualified;
+
                 for (var i = 0; i < animationNames.Count; i++)
                 {
                     var animName = animationNames[i];
@@ -838,8 +848,8 @@ namespace VamTimeline
                 weightJSON = weightJSON
             });
         }
-        
-        #region CheesyFX
+
+
         private void CreateAndRegisterLayerStorables(string layerQualified)
         {
             JSONStorableString currentClip = new JSONStorableString($"GetCurrentClip {layerQualified}", null);
@@ -847,7 +857,6 @@ namespace VamTimeline
             // currentClip.setCallbackFunction = val => SuperController.LogMessage(val);
             RegisterString(currentClip);
         }
-        #endregion
 
         private void OnAnimationParametersChanged()
         {
@@ -1186,6 +1195,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
             bindings.Add(new JSONStorableAction("StopAllSceneAnimations", () => { animationEditContext.Stop(); SuperController.singleton.motionAnimationMaster.StopPlayback(); }));
             bindings.Add(new JSONStorableAction("TogglePause", () => animation.paused = !animation.paused));
+            bindings.Add(new JSONStorableAction("ToggleSequencing", () => animation.ignoreSequencing = !animation.ignoreSequencing));
             bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
             bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapTo(1f)));

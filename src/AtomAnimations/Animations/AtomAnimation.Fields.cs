@@ -141,6 +141,12 @@ namespace VamTimeline
         public bool syncWithPeers { get; set; } = true;
         public bool forceBlendTime { get; set; }
 
+        public bool ignoreSequencing
+        {
+            get;
+            set;
+        }
+
         public AtomAnimation()
         {
             index = new AtomAnimationsClipsIndex(clips);

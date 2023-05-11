@@ -11,6 +11,7 @@ namespace VamTimeline
         private JSONStorableFloat _snapJSON;
         private JSONStorableBool _autoKeyframeAllControllersJSON;
         private JSONStorableBool _showPaths;
+        private JSONStorableBool _ignoreSequencingJSON;
 
         public override string screenId => ScreenName;
 
@@ -33,6 +34,7 @@ namespace VamTimeline
             InitForceBlendInTime();
 
             InitDisableSync();
+            InitIgnoreSequencing();
 #if (VAM_GT_1_20)
             if (!ReferenceEquals(plugin.containingAtom.containingSubScene, null))
                 InitSyncSubsceneOnly();
@@ -125,6 +127,12 @@ namespace VamTimeline
                 "Show selected controllers paths", animationEditContext.showPaths,
                 val => animationEditContext.showPaths = val);
             prefabFactory.CreateToggle(_showPaths);
+        }
+
+        private void InitIgnoreSequencing()
+        {
+            _ignoreSequencingJSON = new JSONStorableBool("Ignore sequencing", animation.ignoreSequencing, val => animation.ignoreSequencing = val);
+            prefabFactory.CreateToggle(_ignoreSequencingJSON);
         }
 
         #endregion
