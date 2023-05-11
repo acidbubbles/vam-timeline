@@ -20,6 +20,7 @@ namespace VamTimeline
         private JSONStorableFloat _blendDurationJSON;
         private JSONStorableFloat _timeOffsetJSON;
         private JSONStorableStringChooser _nextAnimationJSON;
+        private JSONStorableString _nextAnimationGroupSkipJSON;
         private JSONStorableFloat _nextAnimationTimeJSON;
         private JSONStorableFloat _nextAnimationRandomizeWeightJSON;
         private JSONStorableString _nextAnimationPreviewJSON;
@@ -93,15 +94,14 @@ namespace VamTimeline
             prefabFactory.CreateToggle(_autoPlayJSON);
         }
 
-        private JSONStorableString _groupSkipIdentifiersJSON;
         private void InitSequenceUI()
         {
             _nextAnimationJSON = new JSONStorableStringChooser("Play next", GetEligibleNextAnimations(), "", "Play next", (string val) => SyncPlayNext());
             prefabFactory.CreatePopup(_nextAnimationJSON, true, true, 360f);
 
-            _groupSkipIdentifiersJSON =
+            _nextAnimationGroupSkipJSON =
                 new JSONStorableString("Exclude substrings (separate with comma)", string.Empty, val => current.nextAnimationGroupSkip = val);
-            prefabFactory.CreateTextInput(_groupSkipIdentifiersJSON);
+            prefabFactory.CreateTextInput(_nextAnimationGroupSkipJSON);
 
             _nextAnimationTimeJSON = new JSONStorableFloat("Play next in (seconds)", 0f, (float val) => SyncPlayNext(), 0f, 60f, false)
             {
@@ -502,7 +502,7 @@ namespace VamTimeline
             _preserveLoopsJSON.valNoCallback = current.loop ? current.preserveLoops : current.preserveLength;
             _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? _noNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
-            _groupSkipIdentifiersJSON.val = current.nextAnimationGroupSkip;
+            _nextAnimationGroupSkipJSON.val = current.nextAnimationGroupSkip;
             _nextAnimationTimeJSON.valNoCallback = current.nextAnimationTime;
             _nextAnimationTimeJSON.slider.enabled = current.nextAnimationName != null;
             _nextAnimationRandomizeWeightJSON.valNoCallback = current.nextAnimationRandomizeWeight;
