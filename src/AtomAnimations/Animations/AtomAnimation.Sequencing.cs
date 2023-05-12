@@ -86,8 +86,6 @@ namespace VamTimeline
         {
             if (to == null) throw new ArgumentNullException(nameof(to));
 
-            index.currentlyPlayedClipByLayerQualified[to.animationLayerQualified].val = to.animationName;
-
             if (from == null)
             {
                 to.clipTime = siblingClipTime + to.timeOffset;

@@ -3,6 +3,7 @@ namespace VamTimeline
     public static class StorableNames
     {
         public const string Animation = "Animation";
+        public const string Segment = "Segment";
         public const string NextAnimation = "Next Animation";
         public const string PreviousAnimation = "Previous Animation";
         public const string NextAnimationInMainLayer = "Next Animation (Main Layer)";

@@ -244,10 +244,6 @@ namespace VamTimeline
 
             if (allowSibling && (sequencing || !focusOnLayer))
                 PlaySiblings(next);
-
-
-            index.currentlyPlayedClipByLayerQualified[next.animationLayerQualified].val = next.animationName;
-
         }
 
         private void Validate()

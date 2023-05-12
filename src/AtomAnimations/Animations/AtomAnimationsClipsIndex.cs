@@ -39,8 +39,6 @@ namespace VamTimeline
             }
         }
 
-        public IEnumerable<string> clipNames => _clipsByName.Select(kvp => kvp.Value[0].animationName);
-
         private readonly List<AtomAnimationClip> _clips;
 
         public readonly IndexedSegment emptySegment = new IndexedSegment();
@@ -49,6 +47,7 @@ namespace VamTimeline
         public readonly List<int> segmentIds = new List<int>();
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
+        public readonly List<string> clipNames = new List<string>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByLayerNameQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _clipsByName = new Dictionary<int, List<AtomAnimationClip>>();
         private readonly Dictionary<int, List<AtomAnimationClip>> _firstClipOfLayerBySetQualifiedId = new Dictionary<int, List<AtomAnimationClip>>();
@@ -56,7 +55,7 @@ namespace VamTimeline
         private readonly Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>> _clipsByFloatParam = new Dictionary<JSONStorableFloatRef, List<JSONStorableFloatAnimationTarget>>();
         private readonly List<AtomAnimationClip> _emptyClipList = new List<AtomAnimationClip>();
         private bool _pendingBulkUpdate;
-        public readonly Dictionary<string, JSONStorableString> currentlyPlayedClipByLayerQualified = new Dictionary<string, JSONStorableString>();
+
         public AtomAnimationsClipsIndex(List<AtomAnimationClip> clips)
         {
             _clips = clips;
@@ -78,6 +77,7 @@ namespace VamTimeline
             useSegment = false;
             segmentsById.Clear();
             clipsGroupedByLayer.Clear();
+            clipNames.Clear();
             _clipsByLayerNameQualifiedId.Clear();
             _clipsByName.Clear();
             _firstClipOfLayerBySetQualifiedId.Clear();
@@ -110,6 +110,7 @@ namespace VamTimeline
                     {
                         nameClips = new List<AtomAnimationClip>();
                         _clipsByName.Add(clip.animationNameId, nameClips);
+                        clipNames.Add(clip.animationName);
                     }
                     nameClips.Add(clip);
                 }

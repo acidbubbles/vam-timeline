@@ -22,7 +22,8 @@ namespace VamTimeline
         public PeerManager peers { get; private set; }
 
         private JSONStorableStringChooser _animationJSON;
-        private JSONStorableStringChooser _animationNamesQualifiedJSON;
+        private JSONStorableStringChooser _segmentJSON;
+        private Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         private JSONStorableAction _nextAnimationJSON;
         private JSONStorableAction _previousAnimationJSON;
         private JSONStorableAction _nextAnimationInMainLayerJSON;
@@ -65,7 +66,7 @@ namespace VamTimeline
         }
         private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
 
-        public JSONStorableAction _onClipsListChanged;
+        private JSONStorableAction _onClipsListChanged;
 
 
         #region Init
@@ -291,9 +292,9 @@ namespace VamTimeline
             };
             RegisterStringChooser(_animationJSON);
 
-            _animationNamesQualifiedJSON = new JSONStorableStringChooser("AnimationNamesQualified", new List<string>(),
-                "", "AnimationNamesQualified");
-            RegisterStringChooser(_animationNamesQualifiedJSON);
+            _segmentJSON = new JSONStorableStringChooser(StorableNames.Segment, new List<string>(),
+                "", StorableNames.Segment);
+            RegisterStringChooser(_segmentJSON);
 
             _nextAnimationJSON = new JSONStorableAction(StorableNames.NextAnimation, () =>
             {
@@ -704,57 +705,24 @@ namespace VamTimeline
         {
             peers.SendCurrentAnimation(animationEditContext.current);
             OnAnimationParametersChanged();
+            JSONStorableStringChooser layerStorable;
+            if (_animByLayer.TryGetValue(args.after.animationLayerQualifiedId, out layerStorable))
+                layerStorable.val = args.after.animationName;
         }
 
         private void OnClipsListChanged()
         {
             try
             {
-                var animationNames = animation.index.clipNames.ToList();
+                _animationJSON.choices = animation.index.clipNames.ToList();
 
-                _animationJSON.choices = animationNames;
+                UpdateSegmentStorables();
 
-                for (var i = 0; i < animation.index.segmentNames.Count; i++)
-                {
-                    RegisterPlaySegmentTrigger(animation.index.segmentNames[i]);
-                }
+                UpdateAnimationsByLayerStorables();
 
-                animation.index.currentlyPlayedClipByLayerQualified.Values.ToList().ForEach(DeregisterString);
-                animation.index.currentlyPlayedClipByLayerQualified.Clear();
-                List<string> animNamesQualified = new List<string>();
-                foreach (var clipList in animation.index.clipsGroupedByLayer)
-                {
-                    var layerNameQualified = clipList[0].animationLayerQualified;
-                    CreateAndRegisterLayerStorables(layerNameQualified);
-                    animNamesQualified.AddRange(clipList.Select(x => x.animationNameQualified));
-                }
-                _animationNamesQualifiedJSON.choices = animNamesQualified;
+                UpdateAnimationStorables();
 
-                for (var i = 0; i < animationNames.Count; i++)
-                {
-                    var animName = animationNames[i];
-                    if (_clipStorables.Any(a => a.animationName == animName)) continue;
-                    CreateAndRegisterClipStorables(animName);
-                }
-
-                foreach (var group in animation.clips.GroupBy(c => c.animationNameGroup).Where(g => g.Key != null && g.Count() > 1))
-                {
-                    CreateAndRegisterGroupStorables(group.Key);
-                }
-
-                if (_clipStorables.Count > animationNames.Count)
-                {
-                    for (var i = 0; i < _clipStorables.Count; i++)
-                    {
-                        var action = _clipStorables[i];
-                        if (!animationNames.Contains(action.animationName))
-                        {
-                            DeregisterAction(action);
-                            _clipStorables.RemoveAt(i);
-                            i--;
-                        }
-                    }
-                }
+                UpdateAnimationGroupsStorables();
 
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
                 _onClipsListChanged.actionCallback.Invoke();
@@ -765,45 +733,108 @@ namespace VamTimeline
             }
         }
 
-        private void RegisterPlaySegmentTrigger(string segmentName)
+        private void UpdateSegmentStorables()
         {
-            var playSegmentName = $"Play Segment {segmentName}";
-            if (IsAction(playSegmentName)) return;
-            var playSegmentJSON = new JSONStorableAction(playSegmentName, () =>
+            for (var i = 0; i < animation.index.segmentNames.Count; i++)
             {
-                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playSegmentName}'");
-                animation.PlaySegment(segmentName);
-            });
-            RegisterAction(playSegmentJSON);
+                string segmentName = animation.index.segmentNames[i];
+                var playSegmentName = $"Play Segment {segmentName}";
+                if (!IsAction(playSegmentName))
+                {
+                    var playSegmentJSON = new JSONStorableAction(playSegmentName, () =>
+                    {
+                        if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playSegmentName}'");
+                        animation.PlaySegment(segmentName);
+                    });
+                    RegisterAction(playSegmentJSON);
+                }
+            }
+
+            _segmentJSON.choices = animation.index.segmentNames.ToList();
         }
 
-        private void CreateAndRegisterGroupStorables(string groupKey)
+        private void UpdateAnimationsByLayerStorables()
         {
-            var playRandomizedGroupName = $"Play {groupKey}{AtomAnimationClip.RandomizeGroupSuffix}";
-            RegisterAction(new JSONStorableAction(playRandomizedGroupName, () =>
+            for (var i = 0; i < animation.index.clipsGroupedByLayer.Count; i++)
             {
-                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playRandomizedGroupName}'");
-                animation.PlayRandom(groupKey);
-            }));
+                var layer = animation.index.clipsGroupedByLayer[i];
+                var clip = layer[0];
+                var storableName = animation.index.useSegment ? $"Layer {clip.animationSegment} / {clip.animationLayer}" : clip.animationLayer;
+                var chooser = GetStringChooserJSONParam(storableName);
+                if (chooser == null)
+                {
+                    chooser = new JSONStorableStringChooser(storableName, new List<string>(), "", "");
+                    _animByLayer.Add(clip.animationLayerQualifiedId, chooser);
+                }
+                chooser.choices = layer.Select(l => l.animationName).ToList();
+                // How to deal with nothing is playing? e.g. another segment?
+            }
+            // TODO: Unregister
+        }
 
-            var setSpeedName = $"Set Speed {groupKey}{AtomAnimationClip.RandomizeGroupSuffix}";
-            var setSpeedJSON = new JSONStorableFloat(setSpeedName, 0f, -1f, 5f, false);
-            setSpeedJSON.setCallbackFunction = val =>
+        private void UpdateAnimationStorables()
+        {
+            for (var i = 0; i < animation.index.clipNames.Count; i++)
             {
-                foreach (var clip in animation.clips.Where(c => c.animationNameGroup == groupKey))
-                    clip.speed = val;
-                setSpeedJSON.valNoCallback = 0;
-            };
-            RegisterFloat(setSpeedJSON);
+                var animName = animation.index.clipNames[i];
+                if (_clipStorables.Any(a => a.animationName == animName)) continue;
+                CreateAndRegisterClipStorables(animName);
+            }
 
-            var setWeightJSON = new JSONStorableFloat($"Set Weight {groupKey}{AtomAnimationClip.RandomizeGroupSuffix}", 1f, 0f, 1f);
-            setWeightJSON.setCallbackFunction = val =>
+            if (_clipStorables.Count <= animation.index.clipNames.Count) return;
+
+            for (var i = 0; i < _clipStorables.Count; i++)
             {
-                foreach (var clip in animation.clips.Where(c => c.animationNameGroup == groupKey))
-                    clip.weight = val;
-                setWeightJSON.valNoCallback = 0;
-            };
-            RegisterFloat(setWeightJSON);
+                var action = _clipStorables[i];
+                if (!animation.index.clipNames.Contains(action.animationName))
+                {
+                    DeregisterAction(action);
+                    _clipStorables.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+
+        private void UpdateAnimationGroupsStorables()
+        {
+            foreach (var group in animation.clips.GroupBy(c => c.animationNameGroup).Where(g => g.Key != null && g.Count() > 1))
+            {
+                var playRandomizedGroupName = $"Play {group.Key}{AtomAnimationClip.RandomizeGroupSuffix}";
+                if (!actions.ContainsKey(playRandomizedGroupName))
+                {
+                    RegisterAction(new JSONStorableAction(playRandomizedGroupName, () =>
+                    {
+                        if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{playRandomizedGroupName}'");
+                        animation.PlayRandom(group.Key);
+                    }));
+                }
+
+                var setSpeedName = $"Set Speed {group.Key}{AtomAnimationClip.RandomizeGroupSuffix}";
+                if (!floatParams.ContainsKey(setSpeedName))
+                {
+                    var setSpeedJSON = new JSONStorableFloat(setSpeedName, 0f, -1f, 5f, false);
+                    setSpeedJSON.setCallbackFunction = val =>
+                    {
+                        foreach (var clip in animation.clips.Where(c => c.animationNameGroup == group.Key))
+                            clip.speed = val;
+                        setSpeedJSON.valNoCallback = 0;
+                    };
+                    RegisterFloat(setSpeedJSON);
+                }
+
+                var setWeightName = $"Set Weight {group.Key}{AtomAnimationClip.RandomizeGroupSuffix}";
+                if (!floatParams.ContainsKey(setWeightName))
+                {
+                    var setWeightJSON = new JSONStorableFloat(setWeightName, 1f, 0f, 1f);
+                    setWeightJSON.setCallbackFunction = val =>
+                    {
+                        foreach (var clip in animation.clips.Where(c => c.animationNameGroup == group.Key))
+                            clip.weight = val;
+                        setWeightJSON.valNoCallback = 0;
+                    };
+                    RegisterFloat(setWeightJSON);
+                }
+            }
         }
 
         private void CreateAndRegisterClipStorables(string animationName)
@@ -849,14 +880,6 @@ namespace VamTimeline
             });
         }
 
-
-        private void CreateAndRegisterLayerStorables(string layerQualified)
-        {
-            JSONStorableString currentClip = new JSONStorableString($"GetCurrentClip {layerQualified}", null);
-            animation.index.currentlyPlayedClipByLayerQualified.Add(layerQualified, currentClip);
-            // currentClip.setCallbackFunction = val => SuperController.LogMessage(val);
-            RegisterString(currentClip);
-        }
 
         private void OnAnimationParametersChanged()
         {
@@ -909,6 +932,7 @@ namespace VamTimeline
             if (clip.isOnNoneSegment || clip.isOnSharedSegment)
                 return;
             peers.SendPlaySegment(clip);
+            _segmentJSON.val = clip.animationSegment;
         }
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)
@@ -922,7 +946,6 @@ namespace VamTimeline
             _pausedJSON.valNoCallback = animation.paused;
             peers.SendPaused();
         }
-
 
         private void OnAtomRemoved(Atom atom)
         {
