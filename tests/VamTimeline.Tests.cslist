@@ -60,8 +60,12 @@
 ..\src\AtomAnimations\Operations\SegmentsOperations.cs
 ..\src\AtomAnimations\Operations\TargetsOperations.cs
 ..\src\AtomAnimations\Serialization\AtomAnimationSerializer.cs
+..\src\AtomAnimations\Utils\BinaryReader.cs
+..\src\AtomAnimations\Utils\BinaryWriter.cs
 ..\src\AtomAnimations\Utils\FloatExtensions.cs
+..\src\AtomAnimations\Utils\MemoryStream.cs
 ..\src\AtomAnimations\Utils\QuaternionExtensions.cs
+..\src\AtomAnimations\Utils\SimpleBSON.cs
 ..\src\AtomAnimations\Utils\StringMap.cs
 ..\src\AtomAnimations\Utils\TimelinePrefabs.cs
 ..\src\Interop\IRemoteAtomPlugin.cs

@@ -135,8 +135,12 @@
     <Compile Include="src\AtomAnimations\Operations\SegmentsOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />
     <Compile Include="src\AtomAnimations\Serialization\AtomAnimationSerializer.cs" />
+    <Compile Include="src\AtomAnimations\Utils\BinaryReader.cs" />
+    <Compile Include="src\AtomAnimations\Utils\BinaryWriter.cs" />
     <Compile Include="src\AtomAnimations\Utils\FloatExtensions.cs" />
+    <Compile Include="src\AtomAnimations\Utils\MemoryStream.cs" />
     <Compile Include="src\AtomAnimations\Utils\QuaternionExtensions.cs" />
+    <Compile Include="src\AtomAnimations\Utils\SimpleBSON.cs" />
     <Compile Include="src\AtomAnimations\Utils\StringMap.cs" />
     <Compile Include="src\AtomAnimations\Utils\TimelinePrefabs.cs" />
     <Compile Include="src\Interop\IRemoteAtomPlugin.cs" />
