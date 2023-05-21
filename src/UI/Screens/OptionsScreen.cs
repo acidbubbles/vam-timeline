@@ -131,7 +131,7 @@ namespace VamTimeline
 
         private void InitIgnoreSequencing()
         {
-            _ignoreSequencingJSON = new JSONStorableBool("Ignore sequencing", animation.ignoreSequencing, val => animation.ignoreSequencing = val);
+            _ignoreSequencingJSON = new JSONStorableBool("Disable sequencing", animation.ignoreSequencing, val => animation.ignoreSequencing = val);
             prefabFactory.CreateToggle(_ignoreSequencingJSON);
         }
 
