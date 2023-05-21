@@ -187,8 +187,7 @@ namespace VamTimeline
             {
                 var candidates = index
                     .ByLayerQualified(source.animationLayerQualifiedId)
-                    .Where(c => c != source)
-                    .Where(c => c.animationNameGroupId == source.nextAnimationGroupId)
+                    .Where(c => c != source && c.animationNameGroupId == source.nextAnimationGroupId && (!source.nextAnimationPreventGroupExit || c.animationNameGroupId == c.nextAnimationGroupId))
                     .ToList();
                 next = SelectRandomClip(candidates);
             }

@@ -118,6 +118,7 @@ namespace VamTimeline
                 applyPoseOnTransition = DeserializeBool(clipJSON["ApplyPoseOnTransition"], false),
                 fadeOnTransition = DeserializeBool(clipJSON["FadeOnTransition"], false),
                 animationSet = DeserializeString(clipJSON["AnimationSet"], null),
+                nextAnimationPreventGroupExit = DeserializeBool(clipJSON["NextAnimationPreventGroupExit"], false),
             };
             if (clip.nextAnimationName != null && clip.nextAnimationRandomizeWeight == 0)
                 clip.nextAnimationRandomizeWeight = 1f;
@@ -529,6 +530,8 @@ namespace VamTimeline
                 clipJSON.Add("AnimationPattern", clip.animationPattern.containingAtom.uid);
             if (clip.audioSourceControl != null)
                 clipJSON.Add("AudioSourceControl", clip.audioSourceControl.containingAtom.uid);
+            if (clip.animationNameGroupId > -1 && clip.nextAnimationPreventGroupExit)
+                clipJSON.Add("NextAnimationPreventGroupExit", "1");
 
             SerializeClipTargets(clip, clipJSON);
             return clipJSON;

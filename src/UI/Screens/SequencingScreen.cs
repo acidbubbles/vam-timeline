@@ -30,6 +30,7 @@ namespace VamTimeline
         private JSONStorableBool _preserveLoopsJSON;
         private JSONStorableFloat _randomizeRangeJSON;
         private JSONStorableBool _fadeOnTransition;
+        private JSONStorableBool _nextAnimationPreventGroupExitJSON;
 
         #region Init
 
@@ -48,6 +49,7 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Sequencing", 1);
             InitSequenceUI();
+            InitPreventEnterGroupExit();
             RandomizeWeightUI();
             InitRandomizeLengthUI();
             InitPreviewUI();
@@ -104,6 +106,18 @@ namespace VamTimeline
             };
             var nextAnimationTimeUI = prefabFactory.CreateSlider(_nextAnimationTimeJSON);
             nextAnimationTimeUI.valueFormat = "F3";
+        }
+
+        private void InitPreventEnterGroupExit()
+        {
+            _nextAnimationPreventGroupExitJSON = new JSONStorableBool("Prevent selecting exit anim", false, val =>
+            {
+                current.nextAnimationPreventGroupExit = val;
+            })
+            {
+                valNoCallback = current.nextAnimationPreventGroupExit
+            };
+            prefabFactory.CreateToggle(_nextAnimationPreventGroupExitJSON);
         }
 
         private void RandomizeWeightUI()
@@ -503,6 +517,8 @@ namespace VamTimeline
             _randomizeRangeJSON.valNoCallback = current.nextAnimationTimeRandomize;
             _randomizeRangeJSON.slider.enabled = current.nextAnimationName != null;
             _animationSetJSON.valNoCallback = current.animationSet ?? (animation.index.ByName(current.animationSegmentId, current.animationNameId).Count > 1 ? _animationSetAuto : "");
+            _nextAnimationPreventGroupExitJSON.valNoCallback = current.nextAnimationPreventGroupExit;
+            _nextAnimationPreventGroupExitJSON.toggle.gameObject.SetActive(current.nextAnimationGroupId > -1);
             RefreshTransitionUI();
             UpdateNextAnimationPreview();
         }

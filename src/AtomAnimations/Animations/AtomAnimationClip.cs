@@ -588,6 +588,21 @@ namespace VamTimeline
             }
         }
 
+        private bool _nextAnimationPreventGroupExit;
+        public bool nextAnimationPreventGroupExit
+        {
+            get
+            {
+                return _nextAnimationPreventGroupExit;
+            }
+            set
+            {
+                if (value == _nextAnimationPreventGroupExit) return;
+                _nextAnimationPreventGroupExit = value;
+                onAnimationSettingsChanged.Invoke(nameof(nextAnimationPreventGroupExit));
+            }
+        }
+
         public AtomAnimationClip(string animationName, string animationLayer, string animationSegment, Logger logger)
         {
             _logger = logger;
