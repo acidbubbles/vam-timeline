@@ -23,7 +23,6 @@ namespace VamTimeline
 
         private JSONStorableStringChooser _animationJSON;
         private JSONStorableStringChooser _segmentJSON;
-        private Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         private JSONStorableAction _nextAnimationJSON;
         private JSONStorableAction _previousAnimationJSON;
         private JSONStorableAction _nextAnimationInMainLayerJSON;
@@ -43,6 +42,7 @@ namespace VamTimeline
         private JSONStorableBool _lockedJSON;
         private JSONStorableBool _pausedJSON;
         private JSONStorableBool _pauseSequencingJSON;
+        private readonly Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
@@ -699,9 +699,6 @@ namespace VamTimeline
         {
             peers.SendCurrentAnimation(animationEditContext.current);
             OnAnimationParametersChanged();
-            JSONStorableStringChooser layerStorable;
-            if (_animByLayer.TryGetValue(args.after.animationLayerQualifiedId, out layerStorable))
-                layerStorable.val = args.after.animationName;
         }
 
         private void OnClipsListChanged()
@@ -933,14 +930,33 @@ namespace VamTimeline
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)
         {
-            if (animation.master && clip.playbackEnabled && animation.sequencing)
-                peers.SendMasterClipState(clip);
-            JSONStorableStringChooser chooser;
-            if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser) && chooser.val == clip.animationName)
+            SuperController.LogMessage("CHANGED " + clip.animationNameQualified + (clip.playbackEnabled ? "ENABLED" : "DISABLED"));
+            if (clip.playbackEnabled)
             {
-                chooser.val = "";
-            }
+                if (animation.master && animation.sequencing)
+                    peers.SendMasterClipState(clip);
 
+                SuperController.LogMessage("- main: " + clip.playbackMainInLayer);
+                if (clip.playbackMainInLayer)
+                {
+                    JSONStorableStringChooser chooser;
+                    SuperController.LogMessage("Trying to find " + clip.animationLayerQualifiedId + " in " + string.Join(", ", _animByLayer.Keys.Select(x => x.ToString()).ToArray()));
+                    if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser))
+                    {
+                        SuperController.LogMessage(chooser.name + " = " + clip.animationName);
+                        chooser.val = clip.animationName;
+                    }
+                }
+            }
+            else
+            {
+                JSONStorableStringChooser chooser;
+                if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser) && chooser.val == clip.animationName)
+                {
+                    SuperController.LogMessage(chooser.name + " CLEAR");
+                    chooser.val = "";
+                }
+            }
         }
 
         private void OnPauseChanged()

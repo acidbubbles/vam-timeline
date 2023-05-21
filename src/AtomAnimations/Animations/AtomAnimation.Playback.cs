@@ -216,8 +216,8 @@ namespace VamTimeline
                 blendInDuration = next.recording ? 0f : next.blendInDuration;
             }
 
-            BlendIn(next, blendInDuration);
             next.playbackMainInLayer = true;
+            BlendIn(next, blendInDuration);
 
             if (next.animationPattern)
             {

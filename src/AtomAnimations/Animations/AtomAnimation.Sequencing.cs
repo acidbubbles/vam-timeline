@@ -92,8 +92,8 @@ namespace VamTimeline
             if (from == null)
             {
                 to.clipTime = siblingClipTime + to.timeOffset;
-                BlendIn(to, to.blendInDuration);
                 to.playbackMainInLayer = true;
+                BlendIn(to, to.blendInDuration);
                 if (!ReferenceEquals(to.animationPattern, null))
                 {
                     to.animationPattern.SetBoolParamValue("loopOnce", false);
@@ -126,10 +126,10 @@ namespace VamTimeline
 
             // if(!from.loop && to.blendInDuration > from.animationLength - from.clipTime)
             //     SuperController.LogError($"Timeline: Transition from '{from.animationName}' to '{to.animationName}' will stop the former animation after it ends, because the blend-in time of the latter is too long for the sequenced time.");
-            BlendOut(from, to.blendInDuration);
             from.playbackMainInLayer = false;
-            BlendIn(to, to.blendInDuration);
+            BlendOut(from, to.blendInDuration);
             to.playbackMainInLayer = true;
+            BlendIn(to, to.blendInDuration);
 
             if (sequencing)
             {
