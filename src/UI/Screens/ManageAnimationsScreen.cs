@@ -265,6 +265,7 @@ namespace VamTimeline
                     t.dirty = true;
             }
             animation.onClipsListChanged.Invoke();
+            animation.clipListChangedTrigger.Trigger();
         }
 
         private void SyncInAllAtoms()

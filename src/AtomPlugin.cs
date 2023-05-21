@@ -930,20 +930,16 @@ namespace VamTimeline
 
         private void OnClipIsPlayingChanged(AtomAnimationClip clip)
         {
-            SuperController.LogMessage("CHANGED " + clip.animationNameQualified + (clip.playbackEnabled ? "ENABLED" : "DISABLED"));
             if (clip.playbackEnabled)
             {
                 if (animation.master && animation.sequencing)
                     peers.SendMasterClipState(clip);
 
-                SuperController.LogMessage("- main: " + clip.playbackMainInLayer);
                 if (clip.playbackMainInLayer)
                 {
                     JSONStorableStringChooser chooser;
-                    SuperController.LogMessage("Trying to find " + clip.animationLayerQualifiedId + " in " + string.Join(", ", _animByLayer.Keys.Select(x => x.ToString()).ToArray()));
                     if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser))
                     {
-                        SuperController.LogMessage(chooser.name + " = " + clip.animationName);
                         chooser.val = clip.animationName;
                     }
                 }
@@ -953,7 +949,6 @@ namespace VamTimeline
                 JSONStorableStringChooser chooser;
                 if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser) && chooser.val == clip.animationName)
                 {
-                    SuperController.LogMessage(chooser.name + " CLEAR");
                     chooser.val = "";
                 }
             }

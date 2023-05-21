@@ -99,6 +99,7 @@
     <Compile Include="src\AtomAnimations\Animations\AtomPose.cs" />
     <Compile Include="src\AtomAnimations\Animations\IAtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\Animations\IAtomAnimationTargetsList.cs" />
+    <Compile Include="src\AtomAnimations\Animations\SimpleTrigger.cs" />
     <Compile Include="src\AtomAnimations\Animations\TimeModes.cs" />
     <Compile Include="src\AtomAnimations\Animations\UnitySpecific.cs" />
     <Compile Include="src\AtomAnimations\Animations\VamOverlaysFadeManager.cs" />
@@ -193,6 +194,7 @@
     <Compile Include="src\UI\Screens\DefaultsScreen.cs" />
     <Compile Include="src\UI\Screens\DiagnosticsScreen.cs" />
     <Compile Include="src\UI\Screens\EditAnimationScreen.cs" />
+    <Compile Include="src\UI\Screens\GlobalTriggersScreen.cs" />
     <Compile Include="src\UI\Screens\GroupingScreen.cs" />
     <Compile Include="src\UI\Screens\HelpScreen.cs" />
     <Compile Include="src\UI\Screens\ImportAssignScreen.cs" />

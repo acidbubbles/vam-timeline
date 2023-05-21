@@ -43,6 +43,14 @@ namespace VamTimeline
             animation.pauseSequencing = DeserializeBool(animationJSON["PauseSequencing"], false);
             if (animationJSON.HasKey("FadeManager"))
                 animation.fadeManager = DeserializeFadeManager(animationJSON["FadeManager"].AsObject);
+            if (animationJSON.HasKey("GlobalTriggers"))
+            {
+                var globalTriggersJSON = animationJSON["GlobalTriggers"].AsObject;
+                if(globalTriggersJSON.HasKey("OnClipsChanged"))
+                    animation.clipListChangedTrigger.trigger.RestoreFromJSON(globalTriggersJSON["OnClipsChanged"].AsObject);
+                if(globalTriggersJSON.HasKey("IsPlayingChanged"))
+                    animation.isPlayingChangedTrigger.trigger.RestoreFromJSON(globalTriggersJSON["IsPlayingChanged"].AsObject);
+            }
 
             animation.index.StartBulkUpdates();
             try
@@ -458,9 +466,17 @@ namespace VamTimeline
                 { "LiveParenting", animation.liveParenting ? "1" : "0" },
                 { "ForceBlendTime", animation.forceBlendTime ? "1" : "0" },
                 { "PauseSequencing", animation.pauseSequencing ? "1" : "0" },
+                {
+                    "GlobalTriggers", new JSONClass
+                    {
+                        ["OnClipsChanged"] = animation.clipListChangedTrigger.trigger.GetJSON(),
+                        ["IsPlayingChanged"] = animation.isPlayingChangedTrigger.trigger.GetJSON()
+                    }
+                }
             };
             if (animation.fadeManager != null)
                 animationJSON["FadeManager"] = animation.fadeManager.GetJSON();
+
             var clipsJSON = new JSONArray();
             foreach (var clip in animation.clips)
             {

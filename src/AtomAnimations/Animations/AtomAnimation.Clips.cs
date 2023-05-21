@@ -50,6 +50,7 @@ namespace VamTimeline
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
             index.Rebuild();
             onClipsListChanged.Invoke();
+            clipListChangedTrigger.Trigger();
             if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
             return clip;
         }
@@ -66,6 +67,7 @@ namespace VamTimeline
             clip.onTargetsListChanged.AddListener(OnTargetsListChanged);
             index.Rebuild();
             onClipsListChanged.Invoke();
+            clipListChangedTrigger.Trigger();
             if (clip.IsDirty()) clip.onAnimationKeyframesDirty.Invoke();
             return clip;
         }
@@ -91,6 +93,7 @@ namespace VamTimeline
             clip.Dispose();
             index.Rebuild();
             onClipsListChanged.Invoke();
+            clipListChangedTrigger.Trigger();
             OnAnimationKeyframesDirty();
         }
 

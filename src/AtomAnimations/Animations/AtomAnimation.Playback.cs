@@ -226,7 +226,10 @@ namespace VamTimeline
             }
 
             if (isPlayingChanged)
+            {
                 onIsPlayingChanged.Invoke(next);
+                isPlayingChangedTrigger.SetActive(true);
+            }
 
             if (sequencing)
                 AssignNextAnimation(next);
@@ -342,6 +345,7 @@ namespace VamTimeline
                     sequencing = false;
                     paused = false;
                     onIsPlayingChanged.Invoke(clip);
+                    isPlayingChangedTrigger.SetActive(false);
                 }
             }
         }

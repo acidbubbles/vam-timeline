@@ -13,7 +13,10 @@ namespace VamTimeline
             index.Rebuild();
             onAnimationSettingsChanged.Invoke();
             if (param == nameof(AtomAnimationClip.animationName) || param == nameof(AtomAnimationClip.animationLayer) || param == nameof(AtomAnimationClip.animationSegment))
+            {
                 onClipsListChanged.Invoke();
+                clipListChangedTrigger.Trigger();
+            }
         }
 
         private void OnAnimationKeyframesDirty()
@@ -55,6 +58,9 @@ namespace VamTimeline
             _lastUpdateTime = Time.time;
 
             SyncTriggers(true);
+
+            clipListChangedTrigger.trigger.Update();
+            isPlayingChangedTrigger.trigger.Update();
 
             if (!allowAnimationProcessing || paused) return;
 
@@ -105,6 +111,9 @@ namespace VamTimeline
 
         public void OnDestroy()
         {
+            isPlayingChangedTrigger.Dispose();
+            clipListChangedTrigger.Dispose();
+
             onAnimationSettingsChanged.RemoveAllListeners();
             onIsPlayingChanged.RemoveAllListeners();
             onClipIsPlayingChanged.RemoveAllListeners();
@@ -113,6 +122,7 @@ namespace VamTimeline
             onClipsListChanged.RemoveAllListeners();
             onAnimationRebuilt.RemoveAllListeners();
             animatables.RemoveAllListeners();
+
             foreach (var clip in clips)
             {
                 clip.Dispose();

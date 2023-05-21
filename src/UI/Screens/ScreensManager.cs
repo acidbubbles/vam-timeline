@@ -222,6 +222,9 @@ namespace VamTimeline
                 case DefaultsScreen.ScreenName:
                     _current = screenContainer.AddComponent<DefaultsScreen>();
                     break;
+                case GlobalTriggersScreen.ScreenName:
+                    _current = screenContainer.AddComponent<GlobalTriggersScreen>();
+                    break;
 
                 default:
                     throw new InvalidOperationException($"Unknown screen {screen}");

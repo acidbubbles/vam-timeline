@@ -24,6 +24,7 @@ src\AtomAnimations\Animations\AtomAnimationTargetsList.cs
 src\AtomAnimations\Animations\AtomPose.cs
 src\AtomAnimations\Animations\IAtomAnimationClip.cs
 src\AtomAnimations\Animations\IAtomAnimationTargetsList.cs
+src\AtomAnimations\Animations\SimpleTrigger.cs
 src\AtomAnimations\Animations\TimeModes.cs
 src\AtomAnimations\Animations\UnitySpecific.cs
 src\AtomAnimations\Animations\VamOverlaysFadeManager.cs
@@ -118,6 +119,7 @@ src\UI\Screens\ControllerTargetSettingsScreen.cs
 src\UI\Screens\DefaultsScreen.cs
 src\UI\Screens\DiagnosticsScreen.cs
 src\UI\Screens\EditAnimationScreen.cs
+src\UI\Screens\GlobalTriggersScreen.cs
 src\UI\Screens\GroupingScreen.cs
 src\UI\Screens\HelpScreen.cs
 src\UI\Screens\ImportAssignScreen.cs

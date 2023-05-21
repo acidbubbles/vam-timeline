@@ -24,6 +24,9 @@ namespace VamTimeline
 
         public Logger logger;
 
+        public readonly SimpleTrigger isPlayingChangedTrigger = new SimpleTrigger("Start Playing", "Stop Playing");
+        public readonly SimpleTrigger clipListChangedTrigger = new SimpleTrigger("Clips List Changed", null);
+
         public bool recording;
         public bool focusOnLayer;
         public AtomPose lastAppliedPose;
