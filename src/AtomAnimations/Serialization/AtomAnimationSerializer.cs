@@ -493,8 +493,6 @@ namespace VamTimeline
                 clipJSON["AnimationSegment"] = clip.animationSegment;
             if (clip.nextAnimationName != null)
                 clipJSON["NextAnimationName"] = clip.nextAnimationName;
-            if (clip.nextAnimationGroupSkip != string.Empty)
-                clipJSON["NextAnimationGroupSkip"] = clip.nextAnimationGroupSkip;
             if (clip.nextAnimationTime != 0)
                 clipJSON["NextAnimationTime"] = clip.nextAnimationTime.ToString(CultureInfo.InvariantCulture);
             if (clip.nextAnimationTimeRandomize != 0)

@@ -185,14 +185,12 @@ namespace VamTimeline
             }
             else if (source.nextAnimationGroupId != -1)
             {
-                string[] groupSkip = source.nextAnimationGroupSkip.Split(new []{','}, StringSplitOptions.RemoveEmptyEntries);
                 var candidates = index
                     .ByLayerQualified(source.animationLayerQualifiedId)
                     .Where(c => c != source)
-                    .Where(c => c.animationNameGroupId == source.nextAnimationGroupId);
-                if (groupSkip.Length > 0)
-                    candidates = candidates.Where(c => !groupSkip.Any(s => c.animationName.Contains(s)));
-                next = SelectRandomClip(candidates.ToList());
+                    .Where(c => c.animationNameGroupId == source.nextAnimationGroupId)
+                    .ToList();
+                next = SelectRandomClip(candidates);
             }
             else
             {
