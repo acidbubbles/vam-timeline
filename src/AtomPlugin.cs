@@ -66,9 +66,6 @@ namespace VamTimeline
         }
         private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
 
-        private JSONStorableAction _onClipsListChanged;
-
-
         #region Init
 
         private void Start()
@@ -434,9 +431,6 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterBool(_ignoreSequencingJSON);
-
-            _onClipsListChanged = new JSONStorableAction("OnClipsChanged", delegate { });
-            RegisterAction(_onClipsListChanged);
         }
 
         private void StorablePlay(string storableName)
@@ -725,7 +719,6 @@ namespace VamTimeline
                 UpdateAnimationGroupsStorables();
 
                 BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationParametersChanged));
-                _onClipsListChanged.actionCallback.Invoke();
             }
             catch (Exception exc)
             {
@@ -755,17 +748,20 @@ namespace VamTimeline
 
         private void UpdateAnimationsByLayerStorables()
         {
+            if (!animation.index.useSegment && animation.index.clipsGroupedByLayer.Count <= 1) return;
             for (var i = 0; i < animation.index.clipsGroupedByLayer.Count; i++)
             {
                 var layer = animation.index.clipsGroupedByLayer[i];
                 var clip = layer[0];
-                var storableName = animation.index.useSegment ? $"Layer {clip.animationSegment} / {clip.animationLayer}" : clip.animationLayer;
+                var storableName = animation.index.useSegment ? $"Animations ({clip.animationSegment} / {clip.animationLayer})" : $"Animations ({clip.animationLayer})";
                 var chooser = GetStringChooserJSONParam(storableName);
                 if (chooser == null)
                 {
-                    chooser = new JSONStorableStringChooser(storableName, new List<string>(), "", "");
+                    chooser = new JSONStorableStringChooser(storableName, new List<string>(), "", storableName);
+                    RegisterStringChooser(chooser);
                     _animByLayer.Add(clip.animationLayerQualifiedId, chooser);
                 }
+
                 chooser.choices = layer.Select(l => l.animationName).ToList();
                 // How to deal with nothing is playing? e.g. another segment?
             }
@@ -939,6 +935,12 @@ namespace VamTimeline
         {
             if (animation.master && clip.playbackEnabled && animation.sequencing)
                 peers.SendMasterClipState(clip);
+            JSONStorableStringChooser chooser;
+            if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser) && chooser.val == clip.animationName)
+            {
+                chooser.val = "";
+            }
+
         }
 
         private void OnPauseChanged()
