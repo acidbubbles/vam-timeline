@@ -42,7 +42,7 @@ namespace VamTimeline
         private JSONStorableFloat _weightJSON;
         private JSONStorableBool _lockedJSON;
         private JSONStorableBool _pausedJSON;
-        private JSONStorableBool _ignoreSequencingJSON;
+        private JSONStorableBool _pauseSequencingJSON;
         public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
@@ -425,12 +425,12 @@ namespace VamTimeline
             };
             RegisterBool(_pausedJSON);
 
-            _ignoreSequencingJSON = new JSONStorableBool("Ignore sequencing", false, v => animation.ignoreSequencing = v)
+            _pauseSequencingJSON = new JSONStorableBool("Pause sequencing", false, v => animation.pauseSequencing = v)
             {
                 isStorable = false,
                 isRestorable = false
             };
-            RegisterBool(_ignoreSequencingJSON);
+            RegisterBool(_pauseSequencingJSON);
         }
 
         private void StorablePlay(string storableName)
@@ -1220,7 +1220,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("StopAndReset", animationEditContext.StopAndReset));
             bindings.Add(new JSONStorableAction("StopAllSceneAnimations", () => { animationEditContext.Stop(); SuperController.singleton.motionAnimationMaster.StopPlayback(); }));
             bindings.Add(new JSONStorableAction("TogglePause", () => animation.paused = !animation.paused));
-            bindings.Add(new JSONStorableAction("ToggleSequencing", () => animation.ignoreSequencing = !animation.ignoreSequencing));
+            bindings.Add(new JSONStorableAction("ToggleSequencing", () => animation.pauseSequencing = !animation.pauseSequencing));
             bindings.Add(new JSONStorableAction("RewindSecond", () => animationEditContext.RewindSeconds(1f)));
             bindings.Add(new JSONStorableAction("RewindTenthOfASecond", () => animationEditContext.RewindSeconds(0.1f)));
             bindings.Add(new JSONStorableAction("SnapToSecond", () => animationEditContext.SnapTo(1f)));

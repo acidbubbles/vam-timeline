@@ -40,6 +40,7 @@ namespace VamTimeline
             animation.timeMode = DeserializeInt(animationJSON["TimeMode"], TimeModes.UnityTime);
             animation.liveParenting = DeserializeBool(animationJSON["LiveParenting"], false);
             animation.forceBlendTime = DeserializeBool(animationJSON["ForceBlendTime"], false);
+            animation.pauseSequencing = DeserializeBool(animationJSON["PauseSequencing"], false);
             if (animationJSON.HasKey("FadeManager"))
                 animation.fadeManager = DeserializeFadeManager(animationJSON["FadeManager"].AsObject);
 
@@ -456,7 +457,7 @@ namespace VamTimeline
                 { "TimeMode", animation.timeMode.ToString(CultureInfo.InvariantCulture) },
                 { "LiveParenting", animation.liveParenting ? "1" : "0" },
                 { "ForceBlendTime", animation.forceBlendTime ? "1" : "0" },
-                { "IgnoreSequencing", animation.ignoreSequencing ? "1" : "0" },
+                { "PauseSequencing", animation.pauseSequencing ? "1" : "0" },
             };
             if (animation.fadeManager != null)
                 animationJSON["FadeManager"] = animation.fadeManager.GetJSON();

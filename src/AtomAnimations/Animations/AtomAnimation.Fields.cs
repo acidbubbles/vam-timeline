@@ -33,7 +33,7 @@ namespace VamTimeline
 
         public List<AtomAnimationClip> clips { get; } = new List<AtomAnimationClip>();
         public bool isPlaying { get; private set; }
-        private string _playingAnimationSegment = null;
+        private string _playingAnimationSegment;
         public int playingAnimationSegmentId { get; private set; } = AtomAnimationClip.NoneAnimationSegmentId;
 
         public bool IsPlayingAnimationSegment(string animationSegment)
@@ -133,7 +133,6 @@ namespace VamTimeline
         private bool _animationRebuildRequestPending;
         private bool _animationRebuildInProgress;
         private bool _allowPlayingTermination;
-        private bool _ignoreSequencing;
 
         public AtomAnimationsClipsIndex index { get; }
         public AnimatablesRegistry animatables { get; }
@@ -141,20 +140,7 @@ namespace VamTimeline
         public bool syncSubsceneOnly { get; set; }
         public bool syncWithPeers { get; set; } = true;
         public bool forceBlendTime { get; set; }
-
-        public bool ignoreSequencing
-        {
-            get { return _ignoreSequencing; }
-            set
-            {
-                _ignoreSequencing = value;
-                foreach (var clip in clips)
-                {
-                    clip.playbackScheduledNextAnimation = null;
-                    clip.playbackScheduledNextTimeLeft = float.NaN;
-                }
-            }
-        }
+        public bool pauseSequencing { get; set; }
 
         public AtomAnimation()
         {

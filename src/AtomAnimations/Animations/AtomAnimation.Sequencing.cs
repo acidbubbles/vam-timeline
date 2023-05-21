@@ -23,6 +23,9 @@ namespace VamTimeline
                 if (clip.playbackScheduledNextAnimation != null)
                     clipsQueued++;
 
+                if (pauseSequencing)
+                    continue;
+
                 if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && float.IsNaN(clip.playbackScheduledNextTimeLeft) && !clip.infinite)
                 {
                     if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (non-looping complete)");
@@ -156,7 +159,6 @@ namespace VamTimeline
 
             if (source.nextAnimationNameId == AtomAnimationClip.SlaveAnimationNameId)
                 return;
-            if (ignoreSequencing) return;
 
             AtomAnimationClip next;
 
