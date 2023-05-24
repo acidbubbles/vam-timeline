@@ -198,7 +198,7 @@ namespace VamTimeline
             int end = animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified);
             var count = end - start + 1;
             var clips = animation.clips.GetRange(start, count);
-            clips.Sort((x,y) => string.CompareOrdinal(x.animationName, y.animationName));
+            clips.Sort((x,y) => string.Compare(x.animationName, y.animationName));
             animation.clips.RemoveRange(start, count);
             animation.clips.InsertRange(start, clips);
             animation.index.Rebuild();
