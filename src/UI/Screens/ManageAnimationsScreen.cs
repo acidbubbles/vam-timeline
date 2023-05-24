@@ -33,6 +33,7 @@ namespace VamTimeline
             prefabFactory.CreateSpacer();
 
             InitReorderLayersUI();
+            InitSortLayerUI();
             InitDeleteLayerUI();
 
             prefabFactory.CreateSpacer();
@@ -83,6 +84,12 @@ namespace VamTimeline
 
             var moveAnimDownUI = prefabFactory.CreateButton("Reorder layer (move down)");
             moveAnimDownUI.button.onClick.AddListener(ReorderLayerMoveDown);
+        }
+
+        private void InitSortLayerUI()
+        {
+            var moveAnimUpUI = prefabFactory.CreateButton("Sort animations in layer.");
+            moveAnimUpUI.button.onClick.AddListener(SortLayer);
         }
 
         private void InitDeleteLayerUI()
@@ -178,6 +185,30 @@ namespace VamTimeline
                 animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified),
                 animation.clips.FindLastIndex(c => c.animationSegment == current.animationSegment && c.animationLayer == nextLayer) + 1
             );
+        }
+
+        private void SortLayer()
+        {
+            prefabFactory.CreateConfirm("Sort animations alphabetically?", SortLayerConfirm);
+        }
+
+        private void SortLayerConfirm()
+        {
+            int start = animation.clips.FindIndex(c => c.animationLayerQualified == current.animationLayerQualified);
+            int end = animation.clips.FindLastIndex(c => c.animationLayerQualified == current.animationLayerQualified);
+            var count = end - start + 1;
+            var clips = animation.clips.GetRange(start, count);
+            clips.Sort((x,y) => string.CompareOrdinal(x.animationName, y.animationName));
+            animation.clips.RemoveRange(start, count);
+            animation.clips.InsertRange(start, clips);
+            animation.index.Rebuild();
+            // Realign quaternions
+            foreach (var clip in clips)
+            {
+                foreach (var t in clip.targetControllers)
+                    t.dirty = true;
+            }
+            animation.onClipsListChanged.Invoke();
         }
 
         private void DeleteLayer()
