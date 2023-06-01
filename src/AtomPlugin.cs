@@ -42,6 +42,7 @@ namespace VamTimeline
         private JSONStorableBool _lockedJSON;
         private JSONStorableBool _pausedJSON;
         private JSONStorableBool _pauseSequencingJSON;
+        private JSONStorableAction _snapToPoseJSON;
         private readonly Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
@@ -431,6 +432,14 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterBool(_pauseSequencingJSON);
+
+            _snapToPoseJSON = new JSONStorableAction("Snap to pose", () =>
+            {
+                var clips = animation.index.ByName(animation.playingAnimationSegmentId, _lastAnimChooserSet.val.ToId());
+                var clip = clips.FirstOrDefault(c => c.pose != null);
+                clip?.pose.Apply();
+            });
+            RegisterAction(_snapToPoseJSON);
         }
 
         private void StorablePlay(string storableName)
