@@ -315,23 +315,29 @@ namespace VamTimeline
         {
             if (curveJSON.Count == 0) return;
 
-            var last = -1f;
+            var lastT = -1f;
+            var lastV = 0f;
+            var lastC = CurveTypeValues.SmoothLocal;
             foreach (JSONClass keyframeJSON in curveJSON)
             {
                 try
                 {
                     var time = float.Parse(keyframeJSON["t"], CultureInfo.InvariantCulture).Snap();
-                    if (time == last) continue;
-                    last = time;
-                    var value = DeserializeFloat(keyframeJSON["v"]);
+                    if (time == lastT) continue;
+                    lastT = time;
+                    var value = DeserializeFloat(keyframeJSON["v"], lastV);
+                    lastV = value;
                     var keyframe = new BezierKeyframe
                     {
                         time = time,
                         value = value,
-                        curveType = int.Parse(keyframeJSON["c"]),
+                        curveType = keyframeJSON.HasKey("c") ? int.Parse(keyframeJSON["c"]) : lastC,
                         controlPointIn = DeserializeFloat(keyframeJSON["i"]),
                         controlPointOut = DeserializeFloat(keyframeJSON["o"])
                     };
+                    lastC = keyframe.curveType;
+                    if (lastC != CurveTypeValues.LeaveAsIs)
+                        dirty = true;
                     // Backward compatibility, tangents are not supported since bezier conversion.
                     if (keyframeJSON.HasKey("ti"))
                     {
@@ -645,17 +651,31 @@ namespace VamTimeline
         {
             var curveJSON = new JSONArray();
 
+            var lastV = 0f;
+            var lastC = -1;
+
             for (var key = 0; key < curve.length; key++)
             {
                 var keyframe = curve.GetKeyframeByKey(key);
                 var curveEntry = new JSONClass
                 {
                     ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
-                    ["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture),
-                    ["c"] = keyframe.curveType.ToString(CultureInfo.InvariantCulture),
-                    ["i"] = keyframe.controlPointIn.ToString(CultureInfo.InvariantCulture),
-                    ["o"] = keyframe.controlPointOut.ToString(CultureInfo.InvariantCulture)
                 };
+                if (keyframe.value != lastV)
+                {
+                    curveEntry["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture);
+                    lastV = keyframe.value;
+                }
+                if (keyframe.curveType != lastC)
+                {
+                    curveEntry["c"] = keyframe.curveType.ToString(CultureInfo.InvariantCulture);
+                    lastC = keyframe.curveType;
+                }
+                if (keyframe.curveType == CurveTypeValues.LeaveAsIs)
+                {
+                    curveEntry["i"] = keyframe.controlPointIn.ToString(CultureInfo.InvariantCulture);
+                    curveEntry["o"] = keyframe.controlPointOut.ToString(CultureInfo.InvariantCulture);
+                }
                 curveJSON.Add(curveEntry);
             }
 
