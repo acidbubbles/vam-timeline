@@ -42,20 +42,6 @@ namespace VamTimeline
         {
             if (animation == null) throw new ArgumentNullException(nameof(animation));
 
-            /**** TEST */
-            var orig = new BezierKeyframe
-            {
-                time = -1.123f,
-                value = -2.123f,
-                curveType = 3
-            };
-            SuperController.LogMessage($"Orig: {orig}");
-            var encoded = EncodeKeyframe(orig, 2, 3);
-            SuperController.LogMessage($"Enco: {encoded}");
-            var decoded = DecodeKeyframe(encoded, 2, 3);
-            SuperController.LogMessage($"Deco: {decoded}");
-            /*** END TEST */
-
             var version = animationJSON.HasKey("SerializeVersion") ? animationJSON["SerializeVersion"].AsInt : 0;
             animation.serializeMode = animationJSON.HasKey("SerializeMode") ? animationJSON["SerializeMode"].AsInt : Modes.Readable;
             animation.globalSpeed = DeserializeFloat(animationJSON["Speed"], 1f);
