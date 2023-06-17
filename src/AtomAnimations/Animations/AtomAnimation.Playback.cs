@@ -142,6 +142,8 @@ namespace VamTimeline
 
             if (!isPlaying)
             {
+                _stopwatch.Reset();
+                _stopwatch.Start();
                 if (logger.peersSync && !syncWithPeers)
                     logger.Log(logger.peersSyncCategory, "Peer sync has been disabled on this atom");
                 isPlayingChanged = true;
@@ -240,7 +242,6 @@ namespace VamTimeline
             {
                 foreach (var c in index.GetSiblingsByLayer(previous))
                 {
-                    var wasMain = c.playbackMainInLayer;
                     c.playbackMainInLayer = false;
                     c.playbackScheduledNextAnimation = null;
                     c.playbackScheduledNextTimeLeft = float.NaN;
@@ -351,8 +352,11 @@ namespace VamTimeline
                     isPlaying = false;
                     sequencing = false;
                     paused = false;
+                    applyNextPose = false;
                     onIsPlayingChanged.Invoke(clip);
                     isPlayingChangedTrigger.SetActive(false);
+                    _stopwatch.Stop();
+                    _stopwatch.Reset();
                 }
             }
         }
@@ -381,7 +385,6 @@ namespace VamTimeline
 
         public void ResetAll()
         {
-            applyNextPose = false;
             playTime = 0f;
             foreach (var clip in clips)
                 clip.Reset(true);

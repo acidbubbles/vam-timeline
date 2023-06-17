@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -37,8 +38,9 @@ namespace VamTimeline
 
         #region Unity Lifecycle
 
-        private float _lastUpdateTime = Time.unscaledTime;
-        private float _lastFixedUpdateTime = Time.unscaledTime;
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+        private TimeSpan _lastUpdateTime;
+        private TimeSpan _lastFixedUpdateTime;
 
         public void Update()
         {
@@ -46,7 +48,9 @@ namespace VamTimeline
             switch (timeMode)
             {
                 case TimeModes.RealTime:
-                    deltaTime = Time.time - _lastUpdateTime;
+                    var currentUpdateTime = _stopwatch.Elapsed;
+                    deltaTime = (float)(currentUpdateTime - _lastUpdateTime).TotalSeconds;
+                    _lastUpdateTime = _stopwatch.Elapsed;
                     break;
                 case TimeModes.RealTimeLegacy:
                     deltaTime = Time.unscaledDeltaTime * Time.timeScale;
@@ -55,7 +59,6 @@ namespace VamTimeline
                     deltaTime = Time.deltaTime;
                     break;
             }
-            _lastUpdateTime = Time.time;
 
             SyncTriggers(true);
 
@@ -83,7 +86,9 @@ namespace VamTimeline
             switch (timeMode)
             {
                 case TimeModes.RealTime:
-                    deltaTime = Time.time - _lastFixedUpdateTime;
+                    var currentFixedUpdateTime = _stopwatch.Elapsed;
+                    deltaTime = (float)(currentFixedUpdateTime - _lastFixedUpdateTime).TotalSeconds;
+                    _lastFixedUpdateTime = _stopwatch.Elapsed;
                     break;
                 case TimeModes.RealTimeLegacy:
                     deltaTime = Time.unscaledDeltaTime * Time.timeScale;
@@ -92,8 +97,6 @@ namespace VamTimeline
                     deltaTime = Time.deltaTime;
                     break;
             }
-            _lastFixedUpdateTime = Time.time;
-
 
             if (!allowAnimationProcessing || paused) return;
 
