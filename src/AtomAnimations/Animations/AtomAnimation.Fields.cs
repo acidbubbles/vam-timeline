@@ -83,6 +83,7 @@ namespace VamTimeline
         private bool allowAnimationProcessing => isPlaying && !SuperController.singleton.freezeAnimation;
 
         public int timeMode { get; set; } = TimeModes.RealTime;
+        public int serializeMode { get; set; } = AtomAnimationSerializer.Modes.Optimized;
 
         public bool liveParenting { get; set; } = true;
 

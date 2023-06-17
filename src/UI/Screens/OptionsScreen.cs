@@ -12,6 +12,7 @@ namespace VamTimeline
         private JSONStorableBool _autoKeyframeAllControllersJSON;
         private JSONStorableBool _showPaths;
         private JSONStorableBool _ignoreSequencingJSON;
+        private JSONStorableStringChooser _serializationModeJSON;
 
         public override string screenId => ScreenName;
 
@@ -49,6 +50,10 @@ namespace VamTimeline
             prefabFactory.CreateHeader("UI Options", 1);
 
             InitShowPathsUI();
+
+            prefabFactory.CreateHeader("Serialization Options", 1);
+
+            InitSerializationModeUI();
 
             animationEditContext.onEditorSettingsChanged.AddListener(OnEditorSettingsChanged);
         }
@@ -133,6 +138,25 @@ namespace VamTimeline
         {
             _ignoreSequencingJSON = new JSONStorableBool("Disable sequencing", animation.pauseSequencing, val => animation.pauseSequencing = val);
             prefabFactory.CreateToggle(_ignoreSequencingJSON);
+        }
+
+        private void InitSerializationModeUI()
+        {
+            _serializationModeJSON = new JSONStorableStringChooser("SerializationMode",new List<string>
+            {
+                "0",
+                "1"
+            }, "Optimized", "Serialization Mode")
+            {
+                displayChoices = new List<string>
+                {
+                    "Readable (easier to edit)",
+                    "Optimized (smaller file)",
+                },
+                setCallbackFunction = val => animation.serializeMode = int.Parse(val),
+                valNoCallback = animation.serializeMode.ToString()
+            };
+            prefabFactory.CreatePopup(_serializationModeJSON, false, false, upwards: true, popupPanelHeight: 180f);
         }
 
         #endregion

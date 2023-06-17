@@ -606,6 +606,7 @@ namespace VamTimeline
             catch (Exception exc)
             {
                 SuperController.LogError($"Timeline.{nameof(AtomPlugin)}.{nameof(Load)}: {exc}");
+                enabled = false;
             }
             finally
             {

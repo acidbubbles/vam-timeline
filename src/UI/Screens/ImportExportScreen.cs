@@ -147,7 +147,7 @@ namespace VamTimeline
             var clipsJSON = new JSONArray();
             foreach (var clip in clips)
             {
-                clipsJSON.Add(plugin.serializer.SerializeClip(clip));
+                clipsJSON.Add(plugin.serializer.SerializeClip(clip, animation.serializeMode));
             }
 
             if (temporaryPose)
@@ -237,7 +237,7 @@ namespace VamTimeline
                 var imported = new List<AtomAnimationClip>();
                 foreach (JSONClass clipJSON in clipsJSON)
                 {
-                    imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables, animation.logger));
+                    imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables, animation.logger, animation.serializeMode));
                 }
 
                 ChangeScreen(ImportAssignScreen.ScreenName, imported);
