@@ -42,7 +42,7 @@ namespace VamTimeline
         private JSONStorableBool _lockedJSON;
         private JSONStorableBool _pausedJSON;
         private JSONStorableBool _pauseSequencingJSON;
-        private JSONStorableAction _snapToPoseJSON;
+        private JSONStorableAction _applyPoseJSON;
         private readonly Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
@@ -433,13 +433,15 @@ namespace VamTimeline
             };
             RegisterBool(_pauseSequencingJSON);
 
-            _snapToPoseJSON = new JSONStorableAction("Snap to pose", () =>
+            _applyPoseJSON = new JSONStorableAction("Apply pose", () =>
             {
-                var clips = animation.index.ByName(animation.playingAnimationSegmentId, _lastAnimChooserSet.val.ToId());
+                if (!animationEditContext.CanEdit()) return;
+                var current = animationEditContext.current;
+                var clips = animation.index.ByName(current.animationSegmentId, current.nextAnimationNameId);
                 var clip = clips.FirstOrDefault(c => c.pose != null);
                 clip?.pose.Apply();
             });
-            RegisterAction(_snapToPoseJSON);
+            RegisterAction(_applyPoseJSON);
         }
 
         private void StorablePlay(string storableName)
@@ -1284,7 +1286,7 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("ZoomReset", () => animationEditContext.ResetScrubberRange()));
             bindings.Add(new JSONStorableAction("Lock", () => animationEditContext.locked = true));
             bindings.Add(new JSONStorableAction("Unlock", () => animationEditContext.locked = false));
-            bindings.Add(new JSONStorableAction("ApplyPose", () => animationEditContext.current.pose?.Apply()));
+            bindings.Add(new JSONStorableAction("ApplyPose", () => _applyPoseJSON.actionCallback()));
             bindings.Add(new JSONStorableAction("SavePose", () => animationEditContext.current.pose = AtomPose.FromAtom(containingAtom, animationEditContext.current.pose)));
             bindings.Add(new JSONStorableAction("TakeBackup", () => AtomAnimationBackup.singleton.TakeBackup(animationEditContext.current)));
             bindings.Add(new JSONStorableAction("RestoreBackup", () => AtomAnimationBackup.singleton.RestoreBackup(animationEditContext.current)));
