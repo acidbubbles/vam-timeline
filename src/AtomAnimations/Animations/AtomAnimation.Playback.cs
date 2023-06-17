@@ -234,14 +234,19 @@ namespace VamTimeline
             if (sequencing)
                 AssignNextAnimation(next);
 
+            onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = previous, after = next });
+
             if (allowSibling && nextHasPose && previous != null)
             {
                 foreach (var c in index.GetSiblingsByLayer(previous))
                 {
+                    var wasMain = c.playbackMainInLayer;
                     c.playbackMainInLayer = false;
                     c.playbackScheduledNextAnimation = null;
                     c.playbackScheduledNextTimeLeft = float.NaN;
                     BlendOut(c, 0);
+                    if(c.playbackMainInLayer)
+                        onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = c, after = null });
                 }
             }
 
@@ -318,6 +323,7 @@ namespace VamTimeline
             clip.playbackScheduledNextAnimation = null;
             clip.playbackScheduledNextTimeLeft = float.NaN;
             BlendOut(clip, blendOutDuration);
+            onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = clip, after = null });
         }
 
         private void StopClip(AtomAnimationClip clip)
@@ -334,6 +340,7 @@ namespace VamTimeline
             else
             {
                 clip.playbackMainInLayer = false;
+                onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = clip, after = null });
             }
 
             if (_allowPlayingTermination && isPlaying)

@@ -8,6 +8,8 @@ namespace VamTimeline
     public partial class AtomAnimation
     {
         public class AtomAnimationClipEvent : UnityEvent<AtomAnimationClip> { }
+        public class AtomAnimationChangeClipEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
+        public class AtomAnimationChangeClipEvent : UnityEvent<AtomAnimationChangeClipEventArgs> { }
 
         private static readonly Regex _lastDigitsRegex = new Regex(@"[0-9]+$");
 
@@ -19,6 +21,7 @@ namespace VamTimeline
         public readonly UnityEvent onPausedChanged = new UnityEvent();
         public readonly AtomAnimationClipEvent onIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationClipEvent onClipIsPlayingChanged = new AtomAnimationClipEvent();
+        public readonly AtomAnimationChangeClipEvent onMainClipPerLayerChanged = new AtomAnimationChangeClipEvent();
         public readonly UnityEvent onSegmentChanged = new UnityEvent();
         public readonly AtomAnimationClipEvent onSegmentPlayed = new AtomAnimationClipEvent();
 

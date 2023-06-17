@@ -94,6 +94,7 @@ namespace VamTimeline
                 to.clipTime = siblingClipTime + to.timeOffset;
                 to.playbackMainInLayer = true;
                 BlendIn(to, to.blendInDuration);
+                onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = null, after = to });
                 if (!ReferenceEquals(to.animationPattern, null))
                 {
                     to.animationPattern.SetBoolParamValue("loopOnce", false);
@@ -130,6 +131,8 @@ namespace VamTimeline
             BlendOut(from, to.blendInDuration);
             to.playbackMainInLayer = true;
             BlendIn(to, to.blendInDuration);
+
+            onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = from, after = to });
 
             if (sequencing)
             {

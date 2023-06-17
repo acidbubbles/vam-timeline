@@ -635,6 +635,7 @@ namespace VamTimeline
             animation.onIsPlayingChanged.AddListener(OnIsPlayingChanged);
             animation.onSegmentPlayed.AddListener(OnSegmentPlayed);
             animation.onClipIsPlayingChanged.AddListener(OnClipIsPlayingChanged);
+            animation.onMainClipPerLayerChanged.AddListener(OnMainClipPerLayerChanged);
             animation.onPausedChanged.AddListener(OnPauseChanged);
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
             animation.onWeightChanged.AddListener(OnWeightChanged);
@@ -747,24 +748,45 @@ namespace VamTimeline
         private void UpdateAnimationsByLayerStorables()
         {
             if (!animation.index.useSegment && animation.index.clipsGroupedByLayer.Count <= 1) return;
+            var choosers = new List<JSONStorableStringChooser>();
             for (var i = 0; i < animation.index.clipsGroupedByLayer.Count; i++)
             {
                 var layer = animation.index.clipsGroupedByLayer[i];
                 var clip = layer[0];
                 var storableName = animation.index.useSegment ? $"Animations ({clip.animationSegment} / {clip.animationLayer})" : $"Animations ({clip.animationLayer})";
-                var chooser = GetStringChooserJSONParam(storableName);
-                if (chooser == null)
+                JSONStorableStringChooser chooser;
+                var choices = layer.Select(l => l.animationName).ToList();
+                if (!_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser))
                 {
-                    chooser = new JSONStorableStringChooser(storableName, new List<string>(), "", storableName);
-                    chooser.setCallbackFunction += val => animation.PlayClipByName(val, true);
+                    chooser = new JSONStorableStringChooser(storableName, choices, "", storableName)
+                    {
+                        isStorable = false,
+                        isRestorable = false,
+                        setCallbackFunction = val =>
+                        {
+                            var c = animation.index.ByName(clip.animationSegmentId, val.ToId());
+                            if (c.Count == 0) return;
+                            animation.PlayClip(c[0], true);
+                        }
+                    };
                     RegisterStringChooser(chooser);
                     _animByLayer.Add(clip.animationLayerQualifiedId, chooser);
                 }
-
-                chooser.choices = layer.Select(l => l.animationName).ToList();
+                else
+                {
+                    // If useSegment changed
+                    chooser.name = storableName;
+                    chooser.label = storableName;
+                    chooser.choices = choices;
+                }
+                choosers.Add(chooser);
                 // How to deal with nothing is playing? e.g. another segment?
             }
-            // TODO: Unregister
+            var removed = _animByLayer.Select(kvp => kvp.Value).Where(jss => !choosers.Contains(jss));
+            foreach(var toRemove in removed)
+            {
+                DeregisterStringChooser(toRemove);
+            }
         }
 
         private void UpdateAnimationStorables()
@@ -936,24 +958,19 @@ namespace VamTimeline
             {
                 if (animation.master && animation.sequencing)
                     peers.SendMasterClipState(clip);
+            }
+        }
 
-                if (clip.playbackMainInLayer)
-                {
-                    JSONStorableStringChooser chooser;
-                    if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser))
-                    {
-                        chooser.val = clip.animationName;
-                    }
-                }
-            }
+        private void OnMainClipPerLayerChanged(AtomAnimation.AtomAnimationChangeClipEventArgs args)
+        {
+            var any = args.before ?? args.after;
+            JSONStorableStringChooser chooser;
+            if (!_animByLayer.TryGetValue(any.animationLayerQualifiedId, out chooser))
+                return;
+            if (args.after == null)
+                chooser.val = "";
             else
-            {
-                JSONStorableStringChooser chooser;
-                if (_animByLayer.TryGetValue(clip.animationLayerQualifiedId, out chooser) && chooser.val == clip.animationName)
-                {
-                    chooser.val = "";
-                }
-            }
+                chooser.val = args.after.animationName;
         }
 
         private void OnPauseChanged()
