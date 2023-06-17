@@ -67,6 +67,7 @@ namespace VamTimeline
             SampleFloatParams();
             SyncTriggers(false);
             ProcessAnimationSequence(deltaTime * globalSpeed);
+            applyNextPose = false;
 
             if (fadeManager?.black == true && playTime > _scheduleFadeIn && !simulationFrozen)
             {

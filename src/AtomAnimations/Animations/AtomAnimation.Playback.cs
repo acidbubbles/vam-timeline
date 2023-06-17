@@ -99,7 +99,7 @@ namespace VamTimeline
             if (!source.isOnSharedSegment && source.animationSegmentId != playingAnimationSegmentId)
             {
                 playingAnimationSegment = source.animationSegment;
-                var hasPose = clipsToPlay.Any(c => c.applyPoseOnTransition);
+                var hasPose = applyNextPose || clipsToPlay.Any(c => c.applyPoseOnTransition);
                 if (hasPose)
                 {
                     foreach (var clip in clips.Where(c => c.playbackEnabled && !c.isOnSharedSegment))
@@ -164,7 +164,7 @@ namespace VamTimeline
 
             float blendInDuration;
 
-            var nextHasPose = next.applyPoseOnTransition && next.pose != null;
+            var nextHasPose = (applyNextPose || next.applyPoseOnTransition) && next.pose != null;
 
             if (previous != null)
             {
@@ -381,6 +381,7 @@ namespace VamTimeline
 
         public void ResetAll()
         {
+            applyNextPose = false;
             playTime = 0f;
             foreach (var clip in clips)
                 clip.Reset(true);
@@ -481,7 +482,7 @@ namespace VamTimeline
 
         private void BlendIn(AtomAnimationClip clip, float blendDuration)
         {
-            if (clip.applyPoseOnTransition)
+            if (applyNextPose || clip.applyPoseOnTransition)
             {
                 if (!clip.recording && clip.pose != null && (sequencing || lastAppliedPose != clip.pose))
                 {

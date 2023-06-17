@@ -32,6 +32,7 @@ namespace VamTimeline
 
         public bool recording;
         public bool focusOnLayer;
+        public bool applyNextPose;
         public AtomPose lastAppliedPose;
 
         public IFadeManager fadeManager;
