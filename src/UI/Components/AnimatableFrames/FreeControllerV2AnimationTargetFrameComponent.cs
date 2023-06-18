@@ -37,11 +37,16 @@ namespace VamTimeline
             row2.transform.SetParent(group.transform, false);
             row2.AddComponent<HorizontalLayoutGroup>();
 
-            var posJSON = new JSONStorableBool("Position", target.controlPosition, val => target.controlPosition = val);
-            CreateExpandToggle(row2.transform, posJSON);
-            var rotJSON = new JSONStorableBool("Rotation", target.controlRotation, val => target.controlRotation = val);
-            CreateExpandToggle(row2.transform, rotJSON);
-
+            if (target.targetsPosition)
+            {
+                var posJSON = new JSONStorableBool("Pos. enabled", target.controlPosition, val => target.controlPosition = val);
+                CreateExpandToggle(row2.transform, posJSON);
+            }
+            if (target.targetsRotation)
+            {
+                var rotJSON = new JSONStorableBool("Rot. enabled", target.controlRotation, val => target.controlRotation = val);
+                CreateExpandToggle(row2.transform, rotJSON);
+            }
         }
 
         public override void SetTime(float time, bool stopped)
@@ -93,7 +98,7 @@ namespace VamTimeline
         private void SetControllerKeyframe(float time, FreeControllerV3AnimationTarget target)
         {
             var key = plugin.animationEditContext.SetKeyframeToCurrentTransform(target, time);
-            var keyframe = target.x.keys[key];
+            var keyframe = target.GetLeadCurve().keys[key];
             if (keyframe.curveType == CurveTypeValues.CopyPrevious)
                 target.ChangeCurveByTime(time, CurveTypeValues.SmoothLocal);
         }

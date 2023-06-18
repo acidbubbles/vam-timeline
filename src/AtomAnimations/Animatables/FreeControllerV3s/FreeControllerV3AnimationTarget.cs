@@ -9,8 +9,10 @@ namespace VamTimeline
     {
         public bool recording { get; set; }
 
+        // If it is targeted, whether it is enabled
         public bool controlPosition = true;
         public bool controlRotation = true;
+
         public string parentAtomId;
         public string parentRigidbodyId;
 
@@ -110,8 +112,14 @@ namespace VamTimeline
              return null;
         }
 
-        public FreeControllerV3AnimationTarget(FreeControllerV3Ref animatableRef)
-            : base(animatableRef)
+        public FreeControllerV3AnimationTarget(FreeControllerV3Ref animatableRef, bool targetsPosition, bool targetsRotation)
+            : base(
+                animatableRef,
+                targetsPosition,
+                new Vector3AnimationTarget<FreeControllerV3Ref>(animatableRef),
+                targetsRotation,
+                new QuaternionAnimationTarget<FreeControllerV3Ref>(animatableRef)
+            )
         {
         }
 
@@ -135,9 +143,9 @@ namespace VamTimeline
         public int SetKeyframeToCurrent(float time, bool makeDirty = true)
         {
             if (!EnsureParentAvailable(false)) return -1;
-            var posParent = GetPositionParentRB();
+            var posParent = targetsPosition ? GetPositionParentRB() : null;
             var hasPosParent = !ReferenceEquals(posParent, null);
-            var rotParent = GetRotationParentRB();
+            var rotParent = targetsRotation ? GetRotationParentRB() : null;
             var hasRotParent = !ReferenceEquals(rotParent, null);
             var controllerTransform = animatableRef.controller.transform;
 
@@ -157,21 +165,27 @@ namespace VamTimeline
 
         public ICurveAnimationTarget Clone(bool copyKeyframes)
         {
-            var clone = new FreeControllerV3AnimationTarget(animatableRef);
+            var clone = new FreeControllerV3AnimationTarget(animatableRef, targetsPosition, targetsRotation);
             if (copyKeyframes)
             {
-                clone.x.keys.AddRange(x.keys);
-                clone.y.keys.AddRange(y.keys);
-                clone.z.keys.AddRange(z.keys);
-                clone.rotX.keys.AddRange(rotX.keys);
-                clone.rotY.keys.AddRange(rotY.keys);
-                clone.rotZ.keys.AddRange(rotZ.keys);
-                clone.rotW.keys.AddRange(rotW.keys);
+                if (targetsPosition)
+                {
+                    clone.position.x.keys.AddRange(position.x.keys);
+                    clone.position.y.keys.AddRange(position.y.keys);
+                    clone.position.z.keys.AddRange(position.z.keys);
+                }
+                if (targetsRotation)
+                {
+                    clone.rotation.rotX.keys.AddRange(rotation.rotX.keys);
+                    clone.rotation.rotY.keys.AddRange(rotation.rotY.keys);
+                    clone.rotation.rotZ.keys.AddRange(rotation.rotZ.keys);
+                    clone.rotation.rotW.keys.AddRange(rotation.rotW.keys);
+                }
             }
             else
             {
                 clone.SetKeyframeByTime(0f, GetKeyframePosition(0), GetKeyframeRotation(0), CurveTypeValues.SmoothLocal);
-                clone.SetKeyframeByTime(GetKeyframeTime(x.length - 1), GetKeyframePosition(x.length - 1), GetKeyframeRotation(x.length - 1), CurveTypeValues.SmoothLocal);
+                clone.SetKeyframeByTime(GetKeyframeTime(length - 1), GetKeyframePosition(length - 1), GetKeyframeRotation(length - 1), CurveTypeValues.SmoothLocal);
                 clone.ComputeCurves();
             }
             return clone;
@@ -181,21 +195,27 @@ namespace VamTimeline
         {
             var target = backup as FreeControllerV3AnimationTarget;
             if (target == null) return;
-            var maxTime = x.GetLastFrame().time;
-            x.keys.Clear();
-            x.keys.AddRange(target.x.keys.Where(k => k.time < maxTime + 0.0001f));
-            y.keys.Clear();
-            y.keys.AddRange(target.y.keys.Where(k => k.time < maxTime + 0.0001f));
-            z.keys.Clear();
-            z.keys.AddRange(target.z.keys.Where(k => k.time < maxTime + 0.0001f));
-            rotX.keys.Clear();
-            rotX.keys.AddRange(target.rotX.keys.Where(k => k.time < maxTime + 0.0001f));
-            rotY.keys.Clear();
-            rotY.keys.AddRange(target.rotY.keys.Where(k => k.time < maxTime + 0.0001f));
-            rotZ.keys.Clear();
-            rotZ.keys.AddRange(target.rotZ.keys.Where(k => k.time < maxTime + 0.0001f));
-            rotW.keys.Clear();
-            rotW.keys.AddRange(target.rotW.keys.Where(k => k.time < maxTime + 0.0001f));
+            var maxTime = GetLeadCurve().GetLastFrame().time;
+            if (targetsPosition)
+            {
+                position.x.keys.Clear();
+                position.x.keys.AddRange(target.position.x.keys.Where(k => k.time < maxTime + 0.0001f));
+                position.y.keys.Clear();
+                position.y.keys.AddRange(target.position.y.keys.Where(k => k.time < maxTime + 0.0001f));
+                position.z.keys.Clear();
+                position.z.keys.AddRange(target.position.z.keys.Where(k => k.time < maxTime + 0.0001f));
+            }
+            if (targetsRotation)
+            {
+                rotation.rotX.keys.Clear();
+                rotation.rotX.keys.AddRange(target.rotation.rotX.keys.Where(k => k.time < maxTime + 0.0001f));
+                rotation.rotY.keys.Clear();
+                rotation.rotY.keys.AddRange(target.rotation.rotY.keys.Where(k => k.time < maxTime + 0.0001f));
+                rotation.rotZ.keys.Clear();
+                rotation.rotZ.keys.AddRange(target.rotation.rotZ.keys.Where(k => k.time < maxTime + 0.0001f));
+                rotation.rotW.keys.Clear();
+                rotation.rotW.keys.AddRange(target.rotation.rotW.keys.Where(k => k.time < maxTime + 0.0001f));
+            }
             AddEdgeFramesIfMissing(maxTime);
             dirty = true;
         }
@@ -222,12 +242,12 @@ namespace VamTimeline
         {
             var t = target as FreeControllerV3AnimationTarget;
             if (t == null) return false;
-            return TargetsSameAs(t.animatableRef);
+            return TargetsSameAs(t.animatableRef, t.targetsPosition, t.targetsRotation);
         }
 
-        public bool TargetsSameAs(AnimatableRefBase other)
+        public bool TargetsSameAs(AnimatableRefBase other, bool otherTargetsPos, bool otherTargetsRot)
         {
-            return other == animatableRef;
+            return other == animatableRef && (otherTargetsPos == targetsPosition || otherTargetsRot == targetsRotation);
         }
 
         public override string ToString()

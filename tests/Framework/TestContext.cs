@@ -54,7 +54,7 @@ namespace VamTimeline
             return false;
         }
 
-        public bool Assert<T>(IEnumerable<T> actual, IEnumerable<T> expected, string message = _assertionFailedMessage)
+        public bool AssertList<T>(IEnumerable<T> actual, IEnumerable<T> expected, string message = _assertionFailedMessage)
         {
             if (actual == null)
             {

@@ -82,7 +82,9 @@
     <Compile Include="src\AtomAnimations\Animatables\FreeControllerV3s\FreeControllerV3Ref.cs" />
     <Compile Include="src\AtomAnimations\Animatables\JSONStorableFloats\JSONStorableFloatAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Animatables\JSONStorableFloats\JSONStorableFloatRef.cs" />
+    <Compile Include="src\AtomAnimations\Animatables\TransformsBase\QuaternionAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Animatables\TransformsBase\TransformAnimationTarget.cs" />
+    <Compile Include="src\AtomAnimations\Animatables\TransformsBase\Vector3AnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Animatables\Triggers\CustomTrigger.cs" />
     <Compile Include="src\AtomAnimations\Animatables\Triggers\TriggersTrackAnimationTarget.cs" />
     <Compile Include="src\AtomAnimations\Animatables\Triggers\TriggersTrackRef.cs" />

@@ -7,7 +7,9 @@ src\AtomAnimations\Animatables\FreeControllerV3s\FreeControllerV3AnimationTarget
 src\AtomAnimations\Animatables\FreeControllerV3s\FreeControllerV3Ref.cs
 src\AtomAnimations\Animatables\JSONStorableFloats\JSONStorableFloatAnimationTarget.cs
 src\AtomAnimations\Animatables\JSONStorableFloats\JSONStorableFloatRef.cs
+src\AtomAnimations\Animatables\TransformsBase\QuaternionAnimationTarget.cs
 src\AtomAnimations\Animatables\TransformsBase\TransformAnimationTarget.cs
+src\AtomAnimations\Animatables\TransformsBase\Vector3AnimationTarget.cs
 src\AtomAnimations\Animatables\Triggers\CustomTrigger.cs
 src\AtomAnimations\Animatables\Triggers\TriggersTrackAnimationTarget.cs
 src\AtomAnimations\Animatables\Triggers\TriggersTrackRef.cs

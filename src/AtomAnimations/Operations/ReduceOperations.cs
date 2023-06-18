@@ -32,7 +32,7 @@ namespace VamTimeline
             foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
             {
                 if (Input.GetKey(KeyCode.Escape)) continue;
-                var initialFrames = target.x.length;
+                var initialFrames = target.length;
                 var initialTime = Time.realtimeSinceStartup;
                 originalFrames += initialFrames;
                 target.StartBulkUpdates();
@@ -41,8 +41,8 @@ namespace VamTimeline
                     var enumerator = Process(new ControllerTargetReduceProcessor(target, _settings));
                     while (enumerator.MoveNext() && !Input.GetKey(KeyCode.Escape))
                         yield return enumerator.Current;
-                    SuperController.LogMessage($"Timeline: Reduced {target.animatableRef.name} from {initialFrames} frames to {target.x.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
-                    reducedFrames += target.x.length;
+                    SuperController.LogMessage($"Timeline: Reduced {target.animatableRef.name} from {initialFrames} frames to {target.length} frames in {Time.realtimeSinceStartup - initialTime:0.00}s");
+                    reducedFrames += target.length;
                 }
                 finally
                 {

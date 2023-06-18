@@ -21,7 +21,6 @@ namespace VamTimeline
         void EndBulkUpdates();
 
         bool TargetsSameAs(IAtomAnimationTarget target);
-        bool TargetsSameAs(AnimatableRefBase other);
         string GetShortName();
         string GetFullName();
 

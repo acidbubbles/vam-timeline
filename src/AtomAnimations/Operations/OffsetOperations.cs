@@ -49,8 +49,8 @@ namespace VamTimeline
 
                 if(!useRepositionMode)
                 {
-                    var positionBefore = new Vector3(snap.snapshot.x.value, snap.snapshot.y.value, snap.snapshot.z.value);
-                    var rotationBefore = new Quaternion(snap.snapshot.rotX.value, snap.snapshot.rotY.value, snap.snapshot.rotZ.value, snap.snapshot.rotW.value);
+                    var positionBefore = snap.snapshot.position.AsVector3();
+                    var rotationBefore = snap.snapshot.rotation.AsQuaternion();
 
                     var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.animatableRef.controller.transform.position) : snap.animatableRef.controller.control.localPosition;
                     var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.animatableRef.controller.transform.rotation : snap.animatableRef.controller.control.localRotation;
@@ -144,7 +144,6 @@ namespace VamTimeline
                 previousMainRotation = mainController.control.rotation,
                 clipboard = clipboard
             };
-;
         }
 
         public class Snapshot

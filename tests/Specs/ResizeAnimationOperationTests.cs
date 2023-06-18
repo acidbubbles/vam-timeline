@@ -40,7 +40,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().Stretch(clip, 4f);
 
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 2f, 4f }, "Keyframes after resize");
             yield break;
         }
 
@@ -51,7 +51,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().Stretch(clip, 1f);
 
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
             yield break;
         }
 
@@ -62,7 +62,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().Stretch(clip, 4f);
 
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 2f, 4f }, "Keyframes after resize");
             yield break;
         }
 
@@ -73,7 +73,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().Stretch(clip, 1f);
 
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 0.5f, 1f }, "Keyframes after resize");
             yield break;
         }
 
@@ -84,7 +84,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().Stretch(clip, 4f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Map after resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 2000, 4000 }, "Map after resize");
             yield break;
         }
 
@@ -95,7 +95,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().Stretch(clip, 1f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Map after resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 500, 1000 }, "Map after resize");
             yield break;
         }
 
@@ -110,7 +110,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendEnd(clip, 4f);
 
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
             yield break;
         }
 
@@ -121,7 +121,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendEnd(clip, 1f);
 
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 1f }, "Keyframes after resize");
             yield break;
         }
 
@@ -132,7 +132,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendEnd(clip, 4f);
 
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f, 4f }, "Keyframes after resize");
             yield break;
         }
 
@@ -143,7 +143,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendEnd(clip, 1f);
 
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
             yield break;
         }
 
@@ -154,7 +154,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendEnd(clip, 4f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000, 4000 }, "Map after resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000, 4000 }, "Map after resize");
             yield break;
         }
 
@@ -165,7 +165,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendEnd(clip, 1f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
             yield break;
         }
 
@@ -180,7 +180,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendAt(clip, 4f, 0f);
 
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 3f, 4f }, "Keyframes after resize");
             yield break;
         }
 
@@ -191,7 +191,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendAt(clip, 1f, 0f);
 
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 1f }, "Keyframes after resize");
             yield break;
         }
 
@@ -202,7 +202,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendAt(clip, 4f, 0f);
 
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 3f, 4f }, "Keyframes after resize");
             yield break;
         }
 
@@ -213,7 +213,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendAt(clip, 1f, 0f);
 
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 1f }, "Keyframes after resize");
             yield break;
         }
 
@@ -224,7 +224,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendAt(clip, 4f, 0f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 3000, 4000 }, "Map after resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 3000, 4000 }, "Map after resize");
             yield break;
         }
 
@@ -235,7 +235,7 @@ namespace VamTimeline
 
             new ResizeAnimationOperations().CropOrExtendAt(clip, 1f, 0f);
 
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000 }, "Map after resize");
             yield break;
         }
 
@@ -246,13 +246,13 @@ namespace VamTimeline
         private static FreeControllerV3AnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
             var helper = new TargetsHelper(context);
-            var target = clip.Add(helper.GivenFreeController());
+            var target = clip.Add(helper.GivenFreeController(), true, true);
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframeByTime(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframeByTime(1f, Vector3.one, Quaternion.identity);
             target.SetKeyframeByTime(2f, Vector3.zero, Quaternion.identity);
             context.animation.RebuildAnimationNow();
-            context.Assert(target.x.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
+            context.AssertList(target.GetAllKeyframesTime(), new[] { 0f, 1f, 2f }, "Keyframes before resize");
             return target;
         }
 
@@ -265,7 +265,7 @@ namespace VamTimeline
             target.SetKeyframe(1f, 1f);
             target.SetKeyframe(2f, 0f);
             context.animation.RebuildAnimationNow();
-            context.Assert(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
+            context.AssertList(target.value.keys.Select(k => k.time), new[] { 0f, 1f, 2f }, "Keyframes before resize");
             return target;
         }
 
@@ -278,7 +278,7 @@ namespace VamTimeline
             target.CreateKeyframe(1f.ToMilliseconds());
             target.CreateKeyframe(2f.ToMilliseconds());
             context.animation.RebuildAnimationNow();
-            context.Assert(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map before resize");
+            context.AssertList(target.triggersMap.Select(k => k.Key).OrderBy(k => k), new[] { 0, 1000, 2000 }, "Map before resize");
             return target;
         }
 

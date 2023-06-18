@@ -197,7 +197,7 @@ namespace VamTimeline
                         continue;
                     }
 
-                    var target = clip.Add(controllerRef);
+                    var target = clip.Add(controllerRef, DeserializeBool(controllerJSON["TargetsPosition"], true), DeserializeBool(controllerJSON["TargetsRotation"], true));
                     if (target == null)
                     {
                         SuperController.LogError(
@@ -216,13 +216,13 @@ namespace VamTimeline
                     }
 
                     var dirty = false;
-                    DeserializeCurve(target.x, controllerJSON["X"], version, ref dirty);
-                    DeserializeCurve(target.y, controllerJSON["Y"], version, ref dirty);
-                    DeserializeCurve(target.z, controllerJSON["Z"], version, ref dirty);
-                    DeserializeCurve(target.rotX, controllerJSON["RotX"], version, ref dirty);
-                    DeserializeCurve(target.rotY, controllerJSON["RotY"], version, ref dirty);
-                    DeserializeCurve(target.rotZ, controllerJSON["RotZ"], version, ref dirty);
-                    DeserializeCurve(target.rotW, controllerJSON["RotW"], version, ref dirty);
+                    DeserializeCurve(target.position.x, controllerJSON["X"], version, ref dirty);
+                    DeserializeCurve(target.position.y, controllerJSON["Y"], version, ref dirty);
+                    DeserializeCurve(target.position.z, controllerJSON["Z"], version, ref dirty);
+                    DeserializeCurve(target.rotation.rotX, controllerJSON["RotX"], version, ref dirty);
+                    DeserializeCurve(target.rotation.rotY, controllerJSON["RotY"], version, ref dirty);
+                    DeserializeCurve(target.rotation.rotZ, controllerJSON["RotZ"], version, ref dirty);
+                    DeserializeCurve(target.rotation.rotW, controllerJSON["RotW"], version, ref dirty);
                     target.AddEdgeFramesIfMissing(clip.animationLength);
                     if (dirty) target.dirty = true;
                 }
@@ -595,15 +595,17 @@ namespace VamTimeline
                 var controllerJSON = new JSONClass
                 {
                     { "Controller", target.animatableRef.name },
+                    { "TargetsPosition", target.targetsPosition ? "1" : "0" },
+                    { "TargetsRotation", target.targetsRotation ? "1" : "0" },
                     { "ControlPosition", target.controlPosition ? "1" : "0" },
                     { "ControlRotation", target.controlRotation ? "1" : "0" },
-                    { "X", SerializeCurve(target.x, serializeMode) },
-                    { "Y", SerializeCurve(target.y, serializeMode) },
-                    { "Z", SerializeCurve(target.z, serializeMode) },
-                    { "RotX", SerializeCurve(target.rotX, serializeMode) },
-                    { "RotY", SerializeCurve(target.rotY, serializeMode) },
-                    { "RotZ", SerializeCurve(target.rotZ, serializeMode) },
-                    { "RotW", SerializeCurve(target.rotW, serializeMode) }
+                    { "X", SerializeCurve(target.position.x, serializeMode) },
+                    { "Y", SerializeCurve(target.position.y, serializeMode) },
+                    { "Z", SerializeCurve(target.position.z, serializeMode) },
+                    { "RotX", SerializeCurve(target.rotation.rotX, serializeMode) },
+                    { "RotY", SerializeCurve(target.rotation.rotY, serializeMode) },
+                    { "RotZ", SerializeCurve(target.rotation.rotZ, serializeMode) },
+                    { "RotW", SerializeCurve(target.rotation.rotW, serializeMode) }
                 };
                 if (!target.animatableRef.owned)
                 {

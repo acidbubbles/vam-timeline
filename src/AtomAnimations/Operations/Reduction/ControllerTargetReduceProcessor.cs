@@ -11,12 +11,14 @@ namespace VamTimeline
         {
         }
 
+        #warning Reduce should still work for rotation or position only targets
+
         public void CopyToBranch(int key, int curveType = CurveTypeValues.Undefined, float time = -1)
         {
             if (time < -Mathf.Epsilon)
-                time = source.x.keys[key].time;
-            branch.SetSnapshot(time, source.GetSnapshot(source.x.keys[key].time));
-            var branchKey = branch.x.KeyframeBinarySearch(time);
+                time = source.position.x.keys[key].time;
+            branch.SetSnapshot(time, source.GetSnapshot(source.position.x.keys[key].time));
+            var branchKey = branch.position.x.KeyframeBinarySearch(time);
             if (branchKey == -1) return;
             if (curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurveByKey(branchKey, curveType, false);
@@ -28,10 +30,10 @@ namespace VamTimeline
             var position = Vector3.zero;
             var rotationSum = Vector4.zero;
             var firstRotation = source.GetKeyframeRotation(fromKey);
-            var duration = source.x.GetKeyframeByKey(toKey).time - source.x.GetKeyframeByKey(fromKey).time;
+            var duration = source.position.x.GetKeyframeByKey(toKey).time - source.position.x.GetKeyframeByKey(fromKey).time;
             for (var key = fromKey; key < toKey; key++)
             {
-                var frameDuration = source.x.GetKeyframeByKey(key + 1).time - source.x.GetKeyframeByKey(key).time;
+                var frameDuration = source.position.x.GetKeyframeByKey(key + 1).time - source.position.x.GetKeyframeByKey(key).time;
                 var weight = frameDuration / duration;
                 position += source.GetKeyframePosition(key) * weight;
                 QuaternionUtil.AverageQuaternion(ref rotationSum, source.GetKeyframeRotation(key), firstRotation, weight);
@@ -55,8 +57,8 @@ namespace VamTimeline
             avgPos /= div;
             var avgRot =  QuaternionUtil.FromVector(cumulativeRotation);
 
-            var branchStart = branch.SetKeyframeByTime(source.x.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
-            var branchEnd = branch.SetKeyframeByTime(source.x.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
+            var branchStart = branch.SetKeyframeByTime(source.position.x.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
+            var branchEnd = branch.SetKeyframeByTime(source.position.x.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
             branch.RecomputeKey(branchStart);
             branch.RecomputeKey(branchEnd);
         }
@@ -78,7 +80,7 @@ namespace VamTimeline
 
         public override float GetComparableNormalizedValue(int key)
         {
-            var time = source.x.keys[key].time;
+            var time = source.position.x.keys[key].time;
 
             var positionDiff = Vector3.Distance(
                 branch.EvaluatePosition(time),

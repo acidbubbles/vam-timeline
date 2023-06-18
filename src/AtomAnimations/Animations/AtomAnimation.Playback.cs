@@ -720,7 +720,7 @@ namespace VamTimeline
 
                 var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
 
-                if (target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
+                if (target.targetsRotation && target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
                 {
                     var rotLink = target.GetPositionParentRB();
                     var hasRotLink = !ReferenceEquals(rotLink, null);
@@ -742,7 +742,7 @@ namespace VamTimeline
                     rotationCount++;
                 }
 
-                if (target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off)
+                if (target.targetsPosition && target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off)
                 {
                     var posLink = target.GetPositionParentRB();
                     var hasPosLink = !ReferenceEquals(posLink, null);

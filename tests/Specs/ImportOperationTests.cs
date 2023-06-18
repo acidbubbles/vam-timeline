@@ -47,9 +47,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer 1", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer 1" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer 1" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, "Segment 1", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment IMPORTED" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment IMPORTED" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.ImportClip();
@@ -59,11 +59,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { "Segment 1" }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { "Segment 1" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment 1".ToId(), out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer 1".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -91,9 +91,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment IMPORTED" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment IMPORTED" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.ImportClip();
@@ -103,11 +103,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment IMPORTED".ToId(), out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -135,9 +135,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment IMPORTED" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment IMPORTED" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.ImportClip();
@@ -147,11 +147,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment IMPORTED".ToId(), out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -179,9 +179,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment IMPORTED", "Segment 1" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment IMPORTED", "Segment 1" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.segmentJSON.val = "Segment 1";
@@ -189,9 +189,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK 2");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name 2");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer 2");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices 2");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices 2");
             context.Assert(ctx.segmentJSON.val, "Segment 1", "Segment 2");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment IMPORTED", "Segment 1" }, "Segment choices 2");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment IMPORTED", "Segment 1" }, "Segment choices 2");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status 2");
 
             ctx.ImportClip();
@@ -201,11 +201,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { "Segment 1" }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { "Segment 1" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment 1".ToId(), out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer 1", "Layer IMPORTED" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer 1", "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -233,9 +233,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment IMPORTED", "Segment 1" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment IMPORTED", "Segment 1" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.ImportClip();
@@ -245,11 +245,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { "Segment 1", "Segment IMPORTED" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue("Segment IMPORTED".ToId(), out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -277,9 +277,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, "Segment IMPORTED 2", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment IMPORTED 2" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment IMPORTED 2" }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             yield break;
@@ -365,9 +365,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer 1", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer 1" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer 1" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, AtomAnimationClip.SharedAnimationSegment, "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.ImportClip();
@@ -377,11 +377,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer 1" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer 1".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim 1", "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -410,9 +410,9 @@ namespace VamTimeline
             context.Assert(ctx.okJSON.val, true, "OK");
             context.Assert(ctx.nameJSON.val, "Anim IMPORTED", "Name");
             context.Assert(ctx.layerJSON.val, "Layer IMPORTED", "Layer");
-            context.Assert(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
+            context.AssertList(ctx.layerJSON.choices, new[] { "Layer IMPORTED" }, "Layer choices");
             context.Assert(ctx.segmentJSON.val, AtomAnimationClip.SharedAnimationSegment, "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { AtomAnimationClip.SharedAnimationSegment }, "Segment choices");
             context.Assert(ctx.statusJSON.val, @"Ready to import.", "Status");
 
             ctx.ImportClip();
@@ -422,11 +422,11 @@ namespace VamTimeline
             context.Assert(ctx.clip.animationName, "Anim IMPORTED", "Processed animation name");
             AtomAnimationsClipsIndex.IndexedSegment segmentIndex;
             List<AtomAnimationClip> layerClips = null;
-            context.Assert(context.animation.index.segmentNames, new[] { AtomAnimationClip.SharedAnimationSegment, "Segment 1" }, "Segments once imported");
+            context.AssertList(context.animation.index.segmentNames, new[] { AtomAnimationClip.SharedAnimationSegment, "Segment 1" }, "Segments once imported");
             context.Assert(context.animation.index.segmentsById.TryGetValue(AtomAnimationClip.SharedAnimationSegmentId, out segmentIndex), true, "Segment imported exists");
-            context.Assert(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
+            context.AssertList(segmentIndex?.layerNames, new[] { "Layer IMPORTED" }, "Layers once imported");
             context.Assert(segmentIndex?.layersMapById.TryGetValue("Layer IMPORTED".ToId(), out layerClips), true, "Layer imported exists");
-            context.Assert(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
+            context.AssertList(layerClips?.Select(c => c.animationName), new[] { "Anim IMPORTED" }, "Animations once imported");
 
             yield break;
         }
@@ -481,7 +481,7 @@ namespace VamTimeline
             ctx.segmentJSON.val = "Segment 2";
 
             context.Assert(ctx.segmentJSON.val, "Segment 2", "Segment");
-            context.Assert(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment 2" }, "Segment choices");
+            context.AssertList(ctx.segmentJSON.choices, new[] { "Segment 1", "Segment 2" }, "Segment choices");
 
             ctx.ImportClip();
 

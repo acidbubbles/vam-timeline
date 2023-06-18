@@ -765,10 +765,10 @@ namespace VamTimeline
             throw new NotSupportedException($"Cannot add unknown target type {target}");
         }
 
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef)
+        public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef, bool targetsPosition, bool targetsRotation)
         {
-            if (targetControllers.Any(c => c.animatableRef == controllerRef)) return null;
-            return Add(new FreeControllerV3AnimationTarget(controllerRef));
+            if (targetControllers.Any(c => c.TargetsSameAs(controllerRef, targetsPosition, targetsRotation))) return null;
+            return Add(new FreeControllerV3AnimationTarget(controllerRef, targetsPosition, targetsRotation));
         }
 
         public JSONStorableFloatAnimationTarget Add(JSONStorableFloatRef floatRef)
@@ -798,7 +798,7 @@ namespace VamTimeline
 
         public FreeControllerV3AnimationTarget Add(FreeControllerV3AnimationTarget target)
         {
-            if (targetControllers.Any(t => t.animatableRef == target.animatableRef)) return null;
+            if (targetControllers.Any(target.TargetsSameAs)) return null;
             foreach (var curve in target.curves) { curve.loop = _loop; }
             return Add(targetControllers, new FreeControllerV3AnimationTarget.Comparer(), target);
         }
@@ -945,7 +945,7 @@ namespace VamTimeline
 
             foreach (var entry in clipboard.controllers)
             {
-                var target = targetControllers.FirstOrDefault(t => t.TargetsSameAs(entry.animatableRef));
+                var target = targetControllers.FirstOrDefault(t => t.TargetsSameAs(entry.animatableRef, entry.snapshot.position != null, entry.snapshot.rotation != null));
                 if (target == null)
                 {
                     SuperController.LogError($"Cannot paste controller {entry.animatableRef.name} in animation '{animationNameQualified}' because the target could not be added to the current layer.");
@@ -1010,15 +1010,15 @@ namespace VamTimeline
 
                 target.ComputeCurves();
 
-                if (ensureQuaternionContinuity)
+                if (ensureQuaternionContinuity && target.targetsRotation)
                 {
                     var lastMatching = previous?.targetControllers.FirstOrDefault(t => t.TargetsSameAs(target));
-                    var q = lastMatching?.GetRotationAtKeyframe(lastMatching.rotX.length - 1) ?? target.GetRotationAtKeyframe(target.rotX.length - 1);
+                    var q = lastMatching?.GetRotationAtKeyframe(lastMatching.rotation.rotX.length - 1) ?? target.GetRotationAtKeyframe(target.rotation.rotX.length - 1);
                     UnitySpecific.EnsureQuaternionContinuityAndRecalculateSlope(
-                        target.rotX,
-                        target.rotY,
-                        target.rotZ,
-                        target.rotW,
+                        target.rotation.rotX,
+                        target.rotation.rotY,
+                        target.rotation.rotZ,
+                        target.rotation.rotW,
                         q);
                 }
 

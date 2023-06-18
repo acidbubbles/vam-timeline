@@ -442,7 +442,7 @@ namespace VamTimeline
 
                 foreach (var clip in currentLayer)
                 {
-                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom));
+                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom), true, true);
                     if (added == null) continue;
 
                     var controllerPose = clip.pose?.GetControllerPose(controller.name);

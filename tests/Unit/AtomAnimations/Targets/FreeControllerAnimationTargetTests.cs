@@ -24,7 +24,7 @@ namespace VamTimeline
 
             target.AddEdgeFramesIfMissing(2f);
 
-            context.Assert(target.rotX.keys.Select(k => k.curveType),
+            context.AssertList(target.rotation.rotX.keys.Select(k => k.curveType),
                 new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear}
             );
             yield break;
@@ -38,7 +38,7 @@ namespace VamTimeline
 
             target.AddEdgeFramesIfMissing(2f);
 
-            context.Assert(target.rotX.keys.Select(k => k.curveType),
+            context.AssertList(target.rotation.rotX.keys.Select(k => k.curveType),
                 new[] {CurveTypeValues.Linear, CurveTypeValues.Linear}
             );
             yield break;
@@ -53,7 +53,7 @@ namespace VamTimeline
 
             target.AddEdgeFramesIfMissing(3f);
 
-            context.Assert(target.rotX.keys.Select(k => k.curveType),
+            context.AssertList(target.rotation.rotX.keys.Select(k => k.curveType),
                 new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.Linear}
             );
             yield break;
@@ -68,7 +68,7 @@ namespace VamTimeline
 
             target.AddEdgeFramesIfMissing(3f);
 
-            context.Assert(target.rotX.keys.Select(k => k.curveType),
+            context.AssertList(target.rotation.rotX.keys.Select(k => k.curveType),
                 new[] {CurveTypeValues.Linear, CurveTypeValues.Linear, CurveTypeValues.CopyPrevious}
             );
             yield break;
@@ -77,7 +77,7 @@ namespace VamTimeline
         private static FreeControllerV3AnimationTarget GivenAFreeController(TestContext context)
         {
             var animatable = new TargetsHelper(context).GivenFreeController();
-            var target = new FreeControllerV3AnimationTarget(animatable);
+            var target = new FreeControllerV3AnimationTarget(animatable, true, true);
             return target;
         }
     }

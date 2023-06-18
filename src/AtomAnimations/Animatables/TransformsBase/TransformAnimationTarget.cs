@@ -1,19 +1,18 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
 {
     public abstract class TransformAnimationTargetBase<TAnimatableRef> : CurveAnimationTargetBase<TAnimatableRef> where TAnimatableRef : AnimatableRefBase
     {
-        public readonly BezierAnimationCurve x = new BezierAnimationCurve();
-        public readonly BezierAnimationCurve y = new BezierAnimationCurve();
-        public readonly BezierAnimationCurve z = new BezierAnimationCurve();
-        public readonly BezierAnimationCurve rotX = new BezierAnimationCurve();
-        public readonly BezierAnimationCurve rotY = new BezierAnimationCurve();
-        public readonly BezierAnimationCurve rotZ = new BezierAnimationCurve();
-        public readonly BezierAnimationCurve rotW = new BezierAnimationCurve();
+        public bool targetsPosition;
+        public bool targetsRotation;
+
+        public Vector3AnimationTarget<TAnimatableRef> position { get; }
+        public QuaternionAnimationTarget<TAnimatableRef> rotation { get; }
         public readonly List<BezierAnimationCurve> curves;
+        public int length => targetsPosition ? position.length : rotation.length;
 
         private float _weight = 1f;
         public float scaledWeight { get; private set; } = 1f;
@@ -32,20 +31,23 @@ namespace VamTimeline
 
         public bool playbackEnabled { get; set; } = true;
 
-        protected TransformAnimationTargetBase(TAnimatableRef animatableRef)
+        protected TransformAnimationTargetBase(TAnimatableRef animatableRef, bool targetsPos, Vector3AnimationTarget<TAnimatableRef> pos, bool targetsRot, QuaternionAnimationTarget<TAnimatableRef> rot)
             : base(animatableRef)
         {
-            curves = new List<BezierAnimationCurve>
-            {
-                x, y, z, rotX, rotY, rotZ, rotW
-            };
+            targetsPosition = targetsPos;
+            targetsRotation = targetsRot;
+            position = pos;
+            rotation = rot;
+            curves = new List<BezierAnimationCurve>();
+            if (targetsPosition) curves.AddRange(pos.GetCurves());
+            if (targetsRotation) curves.AddRange(rot.GetCurves());
         }
 
         #region Control
 
         public override BezierAnimationCurve GetLeadCurve()
         {
-            return x;
+            return targetsPosition ? position.GetLeadCurve() : rotation.GetLeadCurve();
         }
 
         public override IEnumerable<BezierAnimationCurve> GetCurves()
@@ -55,42 +57,39 @@ namespace VamTimeline
 
         public void Validate(float animationLength)
         {
-            Validate(GetLeadCurve(), animationLength);
-            if (x.length != rotW.length)
+            if(targetsPosition) position.Validate(animationLength);
+            if (targetsRotation) rotation.Validate(animationLength);
+            if (targetsPosition && targetsRotation && position.length != rotation.length)
             {
-                SuperController.LogError($"Mismatched rotation and position data on controller {name}. {x.length} position keys and {rotW.length} rotation keys found. Missing data will be created.");
+                SuperController.LogError($"Mismatched rotation and position data on controller {name}. {position.length} position keys and {rotation.length} rotation keys found. Missing data will be created.");
                 RepairMismatchedCurves();
             }
         }
 
         private void RepairMismatchedCurves()
         {
-            if (x.length > rotW.length)
+            if (position.length != rotation.length)
             {
-                for (var i = 0; i < x.length; i++)
+                for (var i = 0; i < position.length; i++)
                 {
-                    var time = x.keys[i].time;
-                    SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), x.keys[i].curveType, false);
+                    var time = position.x.keys[i].time;
+                    SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), position.x.keys[i].curveType, false);
                 }
             }
-            if (x.length < rotW.length)
+            if (position.length != rotation.length)
             {
-                for (var i = 0; i < rotW.length; i++)
+                for (var i = 0; i < rotation.length; i++)
                 {
-                    var time = rotW.keys[i].time;
-                    SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), rotW.keys[i].curveType, false);
+                    var time = rotation.rotW.keys[i].time;
+                    SetKeyframeByTime(time, EvaluatePosition(time), EvaluateRotation(time), rotation.rotW.keys[i].curveType, false);
                 }
             }
         }
 
         public void ComputeCurves()
         {
-            if (x.length < 2) return;
-
-            foreach (var curve in curves)
-            {
-                curve.ComputeCurves();
-            }
+            if(targetsPosition) position.ComputeCurves();
+            if(targetsRotation) rotation.ComputeCurves();
         }
 
         #endregion
@@ -100,96 +99,59 @@ namespace VamTimeline
         public int SetKeyframeByTime(float time, Vector3 localPosition, Quaternion locationRotation, int curveType = CurveTypeValues.Undefined, bool makeDirty = true)
         {
             curveType = SelectCurveType(time, curveType);
-            var key = x.SetKeyframe(time, localPosition.x, curveType);
-            y.SetKeyframe(time, localPosition.y, curveType);
-            z.SetKeyframe(time, localPosition.z, curveType);
-            rotX.SetKeyframe(time, locationRotation.x, curveType);
-            rotY.SetKeyframe(time, locationRotation.y, curveType);
-            rotZ.SetKeyframe(time, locationRotation.z, curveType);
-            rotW.SetKeyframe(time, locationRotation.w, curveType);
+            var key = 0;
+            if(targetsPosition) key = position.SetKeyframeByTime(time, localPosition, curveType, makeDirty);
+            if(targetsRotation) key = rotation.SetKeyframeByTime(time, locationRotation, curveType, makeDirty);
             if (makeDirty) dirty = true;
             return key;
         }
 
         public int SetKeyframeByKey(int key, Vector3 localPosition, Quaternion locationRotation)
         {
-            var curveType = x.GetKeyframeByKey(key).curveType;
-            x.SetKeyframeByKey(key, localPosition.x, curveType);
-            y.SetKeyframeByKey(key, localPosition.y, curveType);
-            z.SetKeyframeByKey(key, localPosition.z, curveType);
-            rotX.SetKeyframeByKey(key, locationRotation.x, curveType);
-            rotY.SetKeyframeByKey(key, locationRotation.y, curveType);
-            rotZ.SetKeyframeByKey(key, locationRotation.z, curveType);
-            rotW.SetKeyframeByKey(key, locationRotation.w, curveType);
+            if(targetsPosition) position.SetKeyframeByKey(key, localPosition);
+            if(targetsRotation) rotation.SetKeyframeByKey(key, locationRotation);
             dirty = true;
             return key;
         }
 
         public void DeleteFrame(float time)
         {
-            var key = GetLeadCurve().KeyframeBinarySearch(time);
-            if (key == -1) return;
-            foreach (var curve in curves)
-            {
-                curve.RemoveKey(key);
-            }
+            if(targetsPosition) position.DeleteFrame(time);
+            if(targetsRotation) rotation.DeleteFrame(time);
             dirty = true;
         }
 
         public void AddEdgeFramesIfMissing(float animationLength)
         {
-            var lastCurveType = x.length > 0 ? x.GetLastFrame().curveType : CurveTypeValues.SmoothLocal;
-
-            dirty = x.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-            y.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-            z.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-            rotX.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-            rotY.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-            rotZ.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-            rotW.AddEdgeFramesIfMissing(animationLength, lastCurveType);
-
-            if (dirty && lastCurveType == CurveTypeValues.CopyPrevious && x.length > 2 && x.keys[x.length - 2].curveType == CurveTypeValues.CopyPrevious)
-                DeleteFrame(x.keys[x.length - 2].time);
+            if(targetsPosition) position.AddEdgeFramesIfMissing(animationLength);
+            if(targetsRotation) rotation.AddEdgeFramesIfMissing(animationLength);
         }
 
         public void RecomputeKey(int key)
         {
             if (key == -1) return;
-            x.RecomputeKey(key);
-            y.RecomputeKey(key);
-            z.RecomputeKey(key);
-            rotX.RecomputeKey(key);
-            rotY.RecomputeKey(key);
-            rotZ.RecomputeKey(key);
-            rotW.RecomputeKey(key);
+            if(targetsPosition) position.RecomputeKey(key);
+            if(targetsRotation) rotation.RecomputeKey(key);
         }
 
         public float[] GetAllKeyframesTime()
         {
-            var curve = x;
-            var keyframes = new float[curve.length];
-            for (var i = 0; i < curve.length; i++)
-                keyframes[i] = curve.GetKeyframeByKey(i).time;
-            return keyframes;
+            return targetsPosition ? position.GetAllKeyframesTime() : rotation.GetAllKeyframesTime();
         }
 
         public int[] GetAllKeyframesKeys()
         {
-            var curve = x;
-            var keyframes = new int[curve.length];
-            for (var i = 0; i < curve.length; i++)
-                keyframes[i] = i;
-            return keyframes;
+            return targetsPosition ? position.GetAllKeyframesKeys() : rotation.GetAllKeyframesKeys();
         }
 
         public float GetTimeClosestTo(float time)
         {
-            return x.GetKeyframeByKey(x.KeyframeBinarySearch(time, true)).time;
+            return targetsPosition ? position.GetTimeClosestTo(time) : rotation.GetTimeClosestTo(time);
         }
 
         public bool HasKeyframe(float time)
         {
-            return x.KeyframeBinarySearch(time) != -1;
+            return targetsPosition ? position.HasKeyframe(time) : rotation.HasKeyframe(time);
         }
 
         #endregion
@@ -198,55 +160,32 @@ namespace VamTimeline
 
         public Vector3 EvaluatePosition(float time)
         {
-            return new Vector3(
-                x.Evaluate(time),
-                y.Evaluate(time),
-                z.Evaluate(time)
-            );
+            return position.EvaluatePosition(time);
         }
 
         public Quaternion EvaluateRotation(float time)
         {
-            return new Quaternion(
-                rotX.Evaluate(time),
-                rotY.Evaluate(time),
-                rotZ.Evaluate(time),
-                rotW.Evaluate(time)
-            );
+            return rotation.EvaluateRotation(time);
         }
 
         public Quaternion GetRotationAtKeyframe(int key)
         {
-            return new Quaternion(
-                rotX.GetKeyframeByKey(key).value,
-                rotY.GetKeyframeByKey(key).value,
-                rotZ.GetKeyframeByKey(key).value,
-                rotW.GetKeyframeByKey(key).value
-            );
+            return rotation.EvaluateRotation(key);
         }
 
         public float GetKeyframeTime(int key)
         {
-            return x.GetKeyframeByKey(key).time;
+            return position.GetKeyframeTime(key);
         }
 
         public Vector3 GetKeyframePosition(int key)
         {
-            return new Vector3(
-                x.GetKeyframeByKey(key).value,
-                y.GetKeyframeByKey(key).value,
-                z.GetKeyframeByKey(key).value
-            );
+            return position.GetKeyframePosition(key);
         }
 
         public Quaternion GetKeyframeRotation(int key)
         {
-            return new Quaternion(
-                rotX.GetKeyframeByKey(key).value,
-                rotY.GetKeyframeByKey(key).value,
-                rotZ.GetKeyframeByKey(key).value,
-                rotW.GetKeyframeByKey(key).value
-            );
+            return rotation.GetKeyframeRotation(key);
         }
 
         #endregion
@@ -265,29 +204,19 @@ namespace VamTimeline
 
         public TransformTargetSnapshot GetCurveSnapshot(float time)
         {
-            var key = x.KeyframeBinarySearch(time);
-            if (key == -1) return null;
+            var positionSnapshot = targetsPosition ? position.GetCurveSnapshot(time) : null;
+            var rotationSnapshot = targetsRotation ? rotation.GetCurveSnapshot(time) : null;
+            if (positionSnapshot == null && rotationSnapshot == null) return null;
             return new TransformTargetSnapshot
             {
-                x = x.GetKeyframeByKey(key),
-                y = y.GetKeyframeByKey(key),
-                z = z.GetKeyframeByKey(key),
-                rotX = rotX.GetKeyframeByKey(key),
-                rotY = rotY.GetKeyframeByKey(key),
-                rotZ = rotZ.GetKeyframeByKey(key),
-                rotW = rotW.GetKeyframeByKey(key)
+                position = positionSnapshot, rotation = rotationSnapshot
             };
         }
 
         public void SetCurveSnapshot(float time, TransformTargetSnapshot snapshot, bool makeDirty = true)
         {
-            x.SetKeySnapshot(time, snapshot.x);
-            y.SetKeySnapshot(time, snapshot.y);
-            z.SetKeySnapshot(time, snapshot.z);
-            rotX.SetKeySnapshot(time, snapshot.rotX);
-            rotY.SetKeySnapshot(time, snapshot.rotY);
-            rotZ.SetKeySnapshot(time, snapshot.rotZ);
-            rotW.SetKeySnapshot(time, snapshot.rotW);
+            if(targetsPosition && snapshot.position != null) position.SetCurveSnapshot(time, snapshot.position, makeDirty);
+            if(targetsRotation && snapshot.rotation != null) rotation.SetCurveSnapshot(time, snapshot.rotation, makeDirty);
             if (makeDirty) dirty = true;
         }
 
@@ -297,15 +226,15 @@ namespace VamTimeline
 
         public TransformStruct[] ToTransformArray()
         {
-            var keyframes = new TransformStruct[x.length];
-            for (var i = 0; i < x.length; i++)
+            var keyframes = new TransformStruct[position.x.length];
+            for (var i = 0; i < position.x.length; i++)
             {
                 keyframes[i] = new TransformStruct
                 {
-                    time = x.keys[i].time,
+                    time = position.x.keys[i].time,
                     position = GetKeyframePosition(i),
                     rotation = GetKeyframeRotation(i),
-                    curveType = x.keys[i].curveType
+                    curveType = position.x.keys[i].curveType
                 };
             }
             return keyframes;
@@ -314,13 +243,13 @@ namespace VamTimeline
         public void SetTransformArray(TransformStruct[] transforms)
         {
             StartBulkUpdates();
-            x.keys.Clear();
-            y.keys.Clear();
-            z.keys.Clear();
-            rotX.keys.Clear();
-            rotY.keys.Clear();
-            rotZ.keys.Clear();
-            rotW.keys.Clear();
+            position.x.keys.Clear();
+            position.y.keys.Clear();
+            position.z.keys.Clear();
+            rotation.rotX.keys.Clear();
+            rotation.rotY.keys.Clear();
+            rotation.rotZ.keys.Clear();
+            rotation.rotW.keys.Clear();
             dirty = true;
             try
             {

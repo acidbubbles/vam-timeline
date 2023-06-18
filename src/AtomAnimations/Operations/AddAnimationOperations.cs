@@ -181,9 +181,11 @@ namespace VamTimeline
 
         private static FreeControllerV3AnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerV3AnimationTarget origTarget)
         {
-            var newTarget = clip.Add(origTarget.animatableRef);
+            var newTarget = clip.Add(origTarget.animatableRef, origTarget.targetsPosition, origTarget.targetsRotation);
             newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
             newTarget.weight = origTarget.weight;
+            newTarget.targetsPosition = origTarget.targetsPosition;
+            newTarget.targetsRotation = origTarget.targetsRotation;
             newTarget.controlPosition = origTarget.controlPosition;
             newTarget.controlRotation = origTarget.controlRotation;
             newTarget.group = origTarget.group;

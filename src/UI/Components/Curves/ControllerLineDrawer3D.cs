@@ -43,7 +43,8 @@ namespace VamTimeline
         private void UpdateLineAsync()
         {
             const float pointsPerSecond = 32f;
-            var pointsToDraw = Mathf.CeilToInt(_target.x.GetKeyframeByKey(_target.x.length - 1).time * pointsPerSecond) + 1;
+            var lead = _target.GetLeadCurve();
+            var pointsToDraw = Mathf.CeilToInt(lead.GetKeyframeByKey(lead.length - 1).time * pointsPerSecond) + 1;
             var points = new List<Vector3>(pointsToDraw + 1);
 
             var lastPoint = Vector3.positiveInfinity;
@@ -64,7 +65,7 @@ namespace VamTimeline
 
             _line.points = points.ToArray();
 
-            var handlesCount = _target.x.length - (loop ? 1 : 0);
+            var handlesCount = lead.length - (loop ? 1 : 0);
             if (_lastHandlesCount == handlesCount)
             {
                 // TODO: This is incorrect, if we move keyframes in a way that would make the handle visible, the handle won't show up
@@ -72,7 +73,7 @@ namespace VamTimeline
                 {
                     var handle = _handles[t];
                     handle.GetComponent<Renderer>().material.color = _line.colorGradient.Evaluate(t / animationLength);
-                    handle.transform.localPosition = _target.EvaluatePosition(_target.x.GetKeyframeByKey(t).time);
+                    handle.transform.localPosition = _target.EvaluatePosition(lead.GetKeyframeByKey(t).time);
                 }
             }
             else
@@ -97,7 +98,7 @@ namespace VamTimeline
                     var lastLocalPosition = Vector3.positiveInfinity;
                     for (var t = 0; t < handlesCount; t++)
                     {
-                        var localPosition = _target.EvaluatePosition(_target.x.GetKeyframeByKey(t).time);
+                        var localPosition = _target.EvaluatePosition(lead.GetKeyframeByKey(t).time);
                         if (t != lastHandle && Vector3.SqrMagnitude(lastLocalPosition - localPosition) < minHandleMagnitude)
                             continue;
                         var handle = Instantiate(TimelinePrefabs.cube, _line.transform, false);

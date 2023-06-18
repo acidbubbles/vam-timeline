@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SimpleJSON;
+using UnityEngine;
 
 namespace VamTimeline
 {
@@ -63,13 +64,27 @@ namespace VamTimeline
 
     public class TransformTargetSnapshot : ISnapshot
     {
+        public Vector3TargetSnapshot position;
+        public QuaternionTargetSnapshot rotation;
+    }
+
+    public class Vector3TargetSnapshot : ISnapshot
+    {
         public BezierKeyframe x;
         public BezierKeyframe y;
         public BezierKeyframe z;
+
+        public Vector3 AsVector3() => new Vector3(x.value, y.value, z.value);
+    }
+
+    public class QuaternionTargetSnapshot : ISnapshot
+    {
         public BezierKeyframe rotX;
         public BezierKeyframe rotY;
         public BezierKeyframe rotZ;
         public BezierKeyframe rotW;
+
+        public Quaternion AsQuaternion() => new Quaternion(rotX.value, rotY.value, rotZ.value, rotW.value);
     }
 
     public class FloatParamTargetSnapshot : ISnapshot

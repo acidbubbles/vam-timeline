@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -30,7 +31,7 @@ namespace VamTimeline
                 prefabFactory.CreateTextField(new JSONStorableString("", "Cannot show the selected target settings.\nPlease go back and re-enter this screen."));
                 return;
             }
-            prefabFactory.CreateHeader(_target.name, 2);
+            prefabFactory.CreateHeader("Control: " + _target.name, 2);
 
             prefabFactory.CreateHeader("Parenting", 1);
 
@@ -40,6 +41,10 @@ namespace VamTimeline
 
             InitControlUI();
             InitWeightUI();
+
+            prefabFactory.CreateHeader("Advanced", 1);
+
+            InitSplitPosRotUI();
         }
 
         private void InitParentUI()
@@ -67,11 +72,42 @@ namespace VamTimeline
 
         private void InitControlUI()
         {
-            var controlPosition = new JSONStorableBool("Control position", _target.controlPosition, val => _target.controlPosition = val);
-            prefabFactory.CreateToggle(controlPosition);
+            if (_target.targetsPosition)
+            {
+                var controlPosition = new JSONStorableBool("Position enabled", _target.controlPosition, val => _target.controlPosition = val);
+                prefabFactory.CreateToggle(controlPosition);
+            }
+            if (_target.targetsRotation)
+            {
+                var controlRotation = new JSONStorableBool("Rotation enabled", _target.controlRotation, val => _target.controlRotation = val);
+                prefabFactory.CreateToggle(controlRotation);
+            }
+        }
 
-            var controlRotation = new JSONStorableBool("Control rotation", _target.controlRotation, val => _target.controlRotation = val);
-            prefabFactory.CreateToggle(controlRotation);
+        private void InitSplitPosRotUI()
+        {
+            prefabFactory.CreateButton("Split Position & Rotation").button.onClick.AddListener(() =>
+            {
+                var pos = _target;
+                pos.targetsRotation = false;
+                var rot = current.Add(pos.animatableRef, false, true);
+                if (rot == null) throw new NullReferenceException("Could not add rotation controller");
+                rot.rotation.rotX.keys = new List<BezierKeyframe>(pos.rotation.rotX.keys);
+                rot.rotation.rotY.keys = new List<BezierKeyframe>(pos.rotation.rotY.keys);
+                rot.rotation.rotZ.keys = new List<BezierKeyframe>(pos.rotation.rotZ.keys);
+                rot.rotation.rotW.keys = new List<BezierKeyframe>(pos.rotation.rotW.keys);
+                if (pos.rotation.rotX.length > 2)
+                {
+                    pos.rotation.rotX.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                    pos.curves.Remove(pos.rotation.rotX);
+                    pos.rotation.rotY.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                    pos.curves.Remove(pos.rotation.rotY);
+                    pos.rotation.rotZ.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                    pos.curves.Remove(pos.rotation.rotZ);
+                    pos.rotation.rotW.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                    pos.curves.Remove(pos.rotation.rotW);
+                }
+            });
         }
 
         private void SyncAtom()

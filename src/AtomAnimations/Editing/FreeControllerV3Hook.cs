@@ -6,6 +6,7 @@ namespace VamTimeline
 {
     public class FreeControllerV3Hook : MonoBehaviour
     {
+        #warning Fix old vam
 #if (!VAM_GT_1_20_0_9)
         private static readonly HashSet<string> _grabbingControllers = new HashSet<string> { "RightHandAnchor", "LeftHandAnchor", "MouseGrab", "SelectionHandles" };
 #endif
@@ -15,8 +16,10 @@ namespace VamTimeline
 
 #if (VAM_GT_1_20_0_9)
 
-        private List<FreeControllerV3> _controllers = new List<FreeControllerV3>();
-        private List<FreeControllerV3> _watchedControllers = new List<FreeControllerV3>();
+        private readonly List<FreeControllerV3> _controllers = new List<FreeControllerV3>();
+        private readonly List<FreeControllerV3> _watchedControllers = new List<FreeControllerV3>();
+        private bool _lastPosition;
+        private bool _lastRotation;
 
         public void SetControllers(IEnumerable<FreeControllerV3> controllers)
         {
@@ -51,7 +54,7 @@ namespace VamTimeline
         {
             _watchedControllers.Add(fc);
             fc.onRotationChangeHandlers += OnFreeControllerPositionChanged;
-            fc.onPositionChangeHandlers += OnFreeControllerPositionChanged;
+            fc.onPositionChangeHandlers += OnFreeControllerRotationChanged;
             fc.onGrabEndHandlers += OnFreeControllerPositionChangedGrabEnd;
         }
 
@@ -67,22 +70,31 @@ namespace VamTimeline
         private void UnwatchController(FreeControllerV3 fc)
         {
             fc.onRotationChangeHandlers -= OnFreeControllerPositionChanged;
-            fc.onPositionChangeHandlers -= OnFreeControllerPositionChanged;
+            fc.onPositionChangeHandlers -= OnFreeControllerRotationChanged;
             fc.onGrabEndHandlers -= OnFreeControllerPositionChangedGrabEnd;
             _watchedControllers.Remove(fc);
         }
 
-        private void OnFreeControllerPositionChangedGrabEnd(FreeControllerV3 controller)
-        {
-            HandleControllerChanged(controller, true);
-        }
-
         private void OnFreeControllerPositionChanged(FreeControllerV3 controller)
         {
-            HandleControllerChanged(controller, false);
+            _lastPosition = true;
+            HandleControllerChanged(controller, false, true, false);
         }
 
-        private void HandleControllerChanged(FreeControllerV3 controller, bool grabEnd)
+        private void OnFreeControllerRotationChanged(FreeControllerV3 controller)
+        {
+            _lastRotation = true;
+            HandleControllerChanged(controller, false, false, true);
+        }
+
+        private void OnFreeControllerPositionChangedGrabEnd(FreeControllerV3 controller)
+        {
+            HandleControllerChanged(controller, true, _lastPosition, _lastRotation);
+            _lastPosition = false;
+            _lastRotation = false;
+        }
+
+        private void HandleControllerChanged(FreeControllerV3 controller, bool grabEnd, bool position, bool rotation)
         {
             // Only record moves in edit mode
             if (!animationEditContext.CanEdit()) return;
@@ -102,14 +114,31 @@ namespace VamTimeline
             // Ignore comply nodes unless the event is grab end, since they will dispatch during the animation
             if (!grabEnd && (controller.currentRotationState == FreeControllerV3.RotationState.Comply || controller.currentPositionState == FreeControllerV3.PositionState.Comply)) return;
 
-            // Only track animated targets
-            var target = animationEditContext.current.targetControllers.FirstOrDefault(t => t.animatableRef.Targets(controller));
-            if (target == null) return;
-
             // Ignore grab release at the end of a mocap recording
             if (animationEditContext.ignoreGrabEnd) return;
 
-            RecordFreeControllerPosition(target);
+            // Only track animated targets
+            FreeControllerV3AnimationTarget target1 = null;
+            FreeControllerV3AnimationTarget target2 = null;
+            for (var i = 0; i < animationEditContext.current.targetControllers.Count; i++)
+            {
+                var t = animationEditContext.current.targetControllers[i];
+                if (!t.animatableRef.Targets(controller)) continue;
+                if ((!position || !t.targetsPosition) && (!rotation || !t.targetsRotation)) continue;
+                if (target1 == null)
+                {
+                    target1 = t;
+                    if(!t.targetsPosition || !t.targetsRotation) continue;
+                    break;
+                }
+                target2 = t;
+                break;
+            }
+
+            if (target1 == null) return;
+            RecordFreeControllerPosition(target1);
+            if (target2 == null) return;
+            RecordFreeControllerPosition(target2);
         }
 
 #else

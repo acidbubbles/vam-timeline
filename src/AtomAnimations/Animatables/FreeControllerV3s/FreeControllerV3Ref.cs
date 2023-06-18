@@ -42,6 +42,7 @@
             ? "Controls"
             : $"{(controller != null ? controller.containingAtom.name : lastKnownAtomUid)} controls";
 
+        #warning Mark with or without rotation
         public override string GetShortName()
         {
             if (!owned && controller == null)

@@ -242,22 +242,23 @@ namespace VamTimeline
                 #endregion
 
                 if (_lines.Count > _maxCurves - 3) return;
-#if(!HIDE_CURVES_POS)
-                CreateSingleCurve(freeControllerV3AnimationTarget.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
-                CreateSingleCurve(freeControllerV3AnimationTarget.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
-                CreateSingleCurve(freeControllerV3AnimationTarget.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
-#endif
-#if(SHOW_CURVES_ROT)
-                // To display rotation as euler angles, we have to build custom curves. But it's not that useful.
-                var rotVXCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
-                var rotVYCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
-                var rotVZCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotX.length);
-                ConvertQuaternionCurvesToEuleur(rotVXCurve, rotVYCurve, rotVZCurve, freeControllerV3AnimationTarget);
-                BindCurve(rotVXCurve, new Color(1.0f, 0.8f, 0.8f), $"{target.GetShortName()} rot x");
-                BindCurve(rotVYCurve, new Color(0.8f, 1.0f, 0.8f), $"{target.GetShortName()} rot y");
-                BindCurve(rotVZCurve, new Color(0.8f, 0.8f, 1.0f), $"{target.GetShortName()} rot z");
-                target.onAnimationKeyframesRebuilt.AddListener(() => ConvertQuaternionCurvesToEuleur(rotVXCurve, rotVYCurve, rotVZCurve, freeControllerV3AnimationTarget));
-#endif
+                if (freeControllerV3AnimationTarget.targetsPosition)
+                {
+                    CreateSingleCurve(freeControllerV3AnimationTarget.position.x, _style.CurveLineColorX, $"{target.GetShortName()} x");
+                    CreateSingleCurve(freeControllerV3AnimationTarget.position.y, _style.CurveLineColorY, $"{target.GetShortName()} y");
+                    CreateSingleCurve(freeControllerV3AnimationTarget.position.z, _style.CurveLineColorZ, $"{target.GetShortName()} z");
+                }else if (freeControllerV3AnimationTarget.targetsRotation)
+                {
+                    // To display rotation as euler angles, we have to build custom curves. But it's not that useful.
+                    var rotVXCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotation.rotX.length);
+                    var rotVYCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotation.rotX.length);
+                    var rotVZCurve = new BezierAnimationCurve(freeControllerV3AnimationTarget.rotation.rotX.length);
+                    ConvertQuaternionCurvesToEuleur(rotVXCurve, rotVYCurve, rotVZCurve, freeControllerV3AnimationTarget);
+                    CreateSingleCurve(rotVXCurve, _style.CurveLineColorX, $"{target.GetShortName()} rot x");
+                    CreateSingleCurve(rotVYCurve, _style.CurveLineColorY, $"{target.GetShortName()} rot y");
+                    CreateSingleCurve(rotVZCurve, _style.CurveLineColorZ, $"{target.GetShortName()} rot z");
+                    target.onAnimationKeyframesRebuilt.AddListener(() => ConvertQuaternionCurvesToEuleur(rotVXCurve, rotVYCurve, rotVZCurve, freeControllerV3AnimationTarget));
+                }
 
                 target.onAnimationKeyframesRebuilt.AddListener(OnAnimationKeyframesRebuilt);
                 return;
@@ -273,18 +274,17 @@ namespace VamTimeline
             }
         }
 
-#if(SHOW_CURVES_ROT)
         private static void ConvertQuaternionCurvesToEuleur(BezierAnimationCurve rotVXCurve, BezierAnimationCurve rotVYCurve, BezierAnimationCurve rotVZCurve, FreeControllerV3AnimationTarget freeControllerV3AnimationTarget)
         {
             rotVXCurve.keys.Clear();
             rotVYCurve.keys.Clear();
             rotVZCurve.keys.Clear();
-            for (var time = 0; time < freeControllerV3AnimationTarget.rotW.length; time++)
+            for (var time = 0; time < freeControllerV3AnimationTarget.rotation.rotW.length; time++)
             {
-                var keyX = freeControllerV3AnimationTarget.rotX.keys[time];
-                var keyY = freeControllerV3AnimationTarget.rotY.keys[time];
-                var keyZ = freeControllerV3AnimationTarget.rotZ.keys[time];
-                var keyW = freeControllerV3AnimationTarget.rotW.keys[time];
+                var keyX = freeControllerV3AnimationTarget.rotation.rotX.keys[time];
+                var keyY = freeControllerV3AnimationTarget.rotation.rotY.keys[time];
+                var keyZ = freeControllerV3AnimationTarget.rotation.rotZ.keys[time];
+                var keyW = freeControllerV3AnimationTarget.rotation.rotW.keys[time];
                 var rot = new Quaternion(
                     keyX.value,
                     keyY.value,
@@ -297,7 +297,6 @@ namespace VamTimeline
                 rotVZCurve.keys.Add(new BezierKeyframe(keyW.time, eulerAngles.z, keyW.curveType));
             }
         }
-#endif
 
         private void CreateSingleCurve(BezierAnimationCurve lead, Color color, string label)
         {
