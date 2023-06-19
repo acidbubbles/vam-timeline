@@ -232,7 +232,7 @@ namespace VamTimeline
             {
                 #region Lines 3D
 
-                if (freeControllerV3AnimationTarget.animatableRef.controller != null)
+                if (freeControllerV3AnimationTarget.targetsPosition && freeControllerV3AnimationTarget.animatableRef.controller != null)
                 {
                     var line3D = ControllerLineDrawer3D.CreateLine(freeControllerV3AnimationTarget);
                     line3D.UpdateLine();

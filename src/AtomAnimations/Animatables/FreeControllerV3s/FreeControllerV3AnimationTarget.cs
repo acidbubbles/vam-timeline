@@ -273,6 +273,14 @@ namespace VamTimeline
                     return string.Compare(xAtom.name, yAtom.name, StringComparison.Ordinal);
                 }
 
+                if (x.animatableRef == y.animatableRef && x.targetsRotation != y.targetsRotation)
+                {
+                    if (x.targetsRotation)
+                        return 1;
+                    else
+                        return -1;
+                }
+
                 return string.Compare(x.animatableRef.controller.name, y.animatableRef.controller.name, StringComparison.Ordinal);
             }
         }

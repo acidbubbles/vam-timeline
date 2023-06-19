@@ -111,7 +111,7 @@ namespace VamTimeline
                     _useCameraRaycast.valNoCallback = "";
                     return;
                 }
-                raycastTarget.animatableRef.selected = true;
+                raycastTarget.selected = true;
             };
             prefabFactory.CreatePopup(_useCameraRaycast, true, false);
 

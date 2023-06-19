@@ -2,19 +2,16 @@
 
 namespace VamTimeline
 {
+    public interface IAnimatableRefWithTransform
+    {
+        bool selectedPosition { get; set; }
+        bool selectedRotation { get; set; }
+    }
+
     public abstract class AnimatableRefBase
     {
-        private bool _selected;
-        public bool selected
-        {
-            get { return _selected; }
-            set
-            {
-                if (_selected == value) return;
-                _selected = value;
-                onSelectedChanged.Invoke();
-            }
-        }
+        public bool selected { get; set; }
+
         public readonly UnityEvent onSelectedChanged = new UnityEvent();
 
         public bool collapsed { get; set; }

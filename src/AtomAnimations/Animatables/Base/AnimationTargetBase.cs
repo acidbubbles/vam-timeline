@@ -29,7 +29,7 @@ namespace VamTimeline
             }
         }
 
-        public bool selected
+        public virtual bool selected
         {
             get
             {
@@ -37,7 +37,9 @@ namespace VamTimeline
             }
             set
             {
+                if (animatableRef.selected == value) return;
                 animatableRef.selected = value;
+                animatableRef.onSelectedChanged.Invoke();
             }
         }
 
@@ -56,8 +58,8 @@ namespace VamTimeline
         public string group { get; set; }
 
         public string name => animatableRef.name;
-        public string GetShortName() => animatableRef.GetShortName();
-        public string GetFullName() => animatableRef.GetFullName();
+        public virtual string GetShortName() => animatableRef.GetShortName();
+        public virtual string GetFullName() => animatableRef.GetFullName();
 
         protected AnimationTargetBase(TAnimatableRef animatableRef)
         {

@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace VamTimeline
 {
-    public abstract class TransformAnimationTargetBase<TAnimatableRef> : CurveAnimationTargetBase<TAnimatableRef> where TAnimatableRef : AnimatableRefBase
+    public abstract class TransformAnimationTargetBase<TAnimatableRef> : CurveAnimationTargetBase<TAnimatableRef> where TAnimatableRef : AnimatableRefBase, IAnimatableRefWithTransform
     {
         public bool targetsPosition;
         public bool targetsRotation;
@@ -31,6 +30,36 @@ namespace VamTimeline
 
         public bool playbackEnabled { get; set; } = true;
 
+        public override bool selected
+        {
+            get
+            {
+                if(!animatableRef.selected) return false;
+                return (!targetsPosition || targetsPosition && animatableRef.selectedPosition) && (!targetsRotation || targetsRotation && animatableRef.selectedRotation);
+            }
+            set
+            {
+                var wasSelected = animatableRef.selected;
+                var wasSelectedPosition = animatableRef.selectedPosition;
+                var wasSelectedRotation = animatableRef.selectedRotation;
+                if (value)
+                {
+                    animatableRef.selected = true;
+                    if (targetsPosition) animatableRef.selectedPosition = true;
+                    if (targetsRotation) animatableRef.selectedRotation = true;
+                }
+                else
+                {
+                    if (targetsPosition) animatableRef.selectedPosition = false;
+                    if (targetsRotation) animatableRef.selectedRotation = false;
+                    if (!animatableRef.selectedPosition && !animatableRef.selectedRotation) animatableRef.selected = false;
+                }
+
+                if (wasSelected != animatableRef.selected || wasSelectedPosition != animatableRef.selectedPosition || wasSelectedRotation != animatableRef.selectedRotation)
+                    animatableRef.onSelectedChanged.Invoke();
+            }
+        }
+
         protected TransformAnimationTargetBase(TAnimatableRef animatableRef, bool targetsPos, Vector3AnimationTarget<TAnimatableRef> pos, bool targetsRot, QuaternionAnimationTarget<TAnimatableRef> rot)
             : base(animatableRef)
         {
@@ -42,6 +71,30 @@ namespace VamTimeline
             if (targetsPosition) curves.AddRange(pos.GetCurves());
             if (targetsRotation) curves.AddRange(rot.GetCurves());
         }
+
+        #region Display
+
+        public override string GetShortName()
+        {
+            if (!targetsPosition)
+                return animatableRef.GetShortName() + " (Pos)";
+            else if(!targetsRotation)
+                return animatableRef.GetShortName() + " (Rot)";
+            else
+                return animatableRef.GetShortName();
+        }
+
+        public override string GetFullName()
+        {
+            if (!targetsPosition)
+                return animatableRef.GetFullName() + " (Position)";
+            else if(!targetsRotation)
+                return animatableRef.GetFullName() + " (Rotation)";
+            else
+                return animatableRef.GetFullName();
+        }
+
+        #endregion
 
         #region Control
 

@@ -86,7 +86,7 @@ namespace VamTimeline
 
         private void InitSplitPosRotUI()
         {
-            prefabFactory.CreateButton("Split Position & Rotation").button.onClick.AddListener(() =>
+            prefabFactory.CreateButton("Split Position & Rotation (BETA)").button.onClick.AddListener(() =>
             {
                 var pos = _target;
                 pos.targetsRotation = false;

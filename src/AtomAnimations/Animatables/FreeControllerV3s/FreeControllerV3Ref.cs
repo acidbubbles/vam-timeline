@@ -1,6 +1,6 @@
 ﻿namespace VamTimeline
 {
-    public class FreeControllerV3Ref : AnimatableRefBase
+    public class FreeControllerV3Ref : AnimatableRefBase, IAnimatableRefWithTransform
     {
         public readonly bool owned;
         public readonly string lastKnownAtomUid;
@@ -24,6 +24,9 @@
                 isStorable = false
             };
         }
+
+        public bool selectedPosition { get; set; }
+        public bool selectedRotation { get; set; }
 
         public override string name
         {

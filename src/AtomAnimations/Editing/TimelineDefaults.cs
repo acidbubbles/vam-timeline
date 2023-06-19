@@ -1,13 +1,12 @@
 ﻿using System;
 using MVR.FileManagementSecure;
 using SimpleJSON;
-using UnityEngine.Events;
 
 namespace VamTimeline
 {
     public class TimelineDefaults
     {
-        private const string TimelineDirectory = "Saves\\PluginData\\Timeline";
+        private const string _timelineDirectory = "Saves\\PluginData\\Timeline";
         public const string DefaultsPath = "Saves\\PluginData\\Timeline\\settings.json";
 
         public static readonly TimelineDefaults singleton = new TimelineDefaults();
@@ -19,7 +18,7 @@ namespace VamTimeline
 
         public void Save()
         {
-            FileManagerSecure.CreateDirectory(TimelineDirectory);
+            FileManagerSecure.CreateDirectory(_timelineDirectory);
             SuperController.singleton.SaveJSON(GetJSON(), DefaultsPath);
         }
 
