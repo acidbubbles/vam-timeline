@@ -707,7 +707,7 @@ namespace VamTimeline
                 if(target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
-                    return;
+                    continue;
                 }
                 if (!clip.playbackEnabled && !clip.temporarilyEnabled) continue;
                 if (!target.playbackEnabled) continue;
