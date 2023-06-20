@@ -17,7 +17,7 @@ namespace VamTimeline
             public const int Optimized = 1;
         }
 
-        private const int SerializeVersion = 230;
+        public const int SerializeVersion = 230;
 
         private readonly Atom _atom;
 
@@ -354,7 +354,7 @@ namespace VamTimeline
                         var value = keyframeJSON.Value;
                         keyframe = DecodeKeyframe(value, lastV, lastC);
                     }
-                    else
+                    else if(keyframeJSON is JSONClass)
                     {
                         var keyframeObject = (JSONClass)keyframeJSON;
                         // Separate time and value
@@ -376,6 +376,10 @@ namespace VamTimeline
                                     keyframe.curveType = CurveTypeValues.SmoothLocal;
                             }
                         }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Invalid keyframe type {keyframeJSON.GetType()} with version {version}\n{keyframeJSON}");
                     }
 
                     if (Math.Abs(keyframe.time - lastT) <= float.Epsilon) continue;

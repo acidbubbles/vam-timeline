@@ -124,8 +124,9 @@ namespace VamTimeline
             {
                 var jc = new JSONClass
                 {
-                    ["Clips"] = GetExportClipsJson(),
+                    ["SerializeVersion"] = new JSONData(AtomAnimationSerializer.SerializeVersion),
                     ["AtomType"] = plugin.containingAtom.type,
+                    ["Clips"] = GetExportClipsJson(),
                 };
                 SuperController.singleton.SaveJSON(jc, path);
                 SuperController.singleton.DoSaveScreenshot(path);
@@ -221,7 +222,10 @@ namespace VamTimeline
                 }
 
                 var jc = json.AsObject;
-                ImportControllerStatesLegacy(jc);
+                var serializationVersion = jc.HasKey("SerializeVersion") ? jc["SerializeVersion"].AsInt : 0;
+
+                if (serializationVersion == 0)
+                    ImportControllerStatesLegacy(jc);
 
                 var clipsJSON = jc["Clips"].AsArray;
                 if (clipsJSON == null || clipsJSON.Count == 0)
@@ -237,7 +241,7 @@ namespace VamTimeline
                 var imported = new List<AtomAnimationClip>();
                 foreach (JSONClass clipJSON in clipsJSON)
                 {
-                    imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables, animation.logger, animation.serializeMode));
+                    imported.Add(plugin.serializer.DeserializeClip(clipJSON, animation.animatables, animation.logger, serializationVersion));
                 }
 
                 ChangeScreen(ImportAssignScreen.ScreenName, imported);
