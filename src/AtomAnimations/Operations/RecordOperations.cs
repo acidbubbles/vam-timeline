@@ -125,7 +125,7 @@ namespace VamTimeline
         private void ShowStartMarkers(List<ICurveAnimationTarget> targets)
         {
             var nextAnimation = !_clip.loop && _clip.nextAnimationNameId != 0 ? _animation.index.ByLayerQualified(_clip.animationLayerQualifiedId).FirstOrDefault(c => c.animationNameId == _clip.nextAnimationNameId) : null;
-            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>())
+            foreach (var target in targets.OfType<FreeControllerV3AnimationTarget>().Where(t => t.targetsPosition))
             {
                 var nextTarget = nextAnimation?.targetControllers.FirstOrDefault(t => t.TargetsSameAs(target));
                 var snapNext = nextTarget != null && !nextTarget.hasParentBound;

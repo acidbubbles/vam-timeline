@@ -85,25 +85,26 @@ namespace VamTimeline
                 // The button said Cancel when they clicked it
                 _goButton.label = "Apply Smoothing";
                 _statusLabel.val = "Smoothing cancelled.";
+                return;
             }
-            else if (!animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().Any())
+
+            var targets = animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().Where(t => t.targetsPosition && t.targetsRotation).ToList();
+            if (!targets.Any())
             {
-                _statusLabel.val = "You must select at least one control in the dope sheet.";
+                _statusLabel.val = "You must select at least one control in the dope sheet (only controls with both rotation and position are supported).";
+                return;
             }
-            else
-            {
-                _goButton.label = "Cancel";
-                _co = StartCoroutine(DoSmoothingCo());
-            }
+
+            _goButton.label = "Cancel";
+            _co = StartCoroutine(DoSmoothingCo(targets));
         }
 
-        private IEnumerator DoSmoothingCo()
+        private IEnumerator DoSmoothingCo(List<FreeControllerV3AnimationTarget> targets)
         {
             yield return 0;
 
             var stopWatch = Stopwatch.StartNew();
             var rawQueue = new Queue<TransformStruct>();
-            var targets = animationEditContext.GetSelectedTargets().OfType<FreeControllerV3AnimationTarget>().ToList();
             foreach (var currentTarget in targets)
             {
                 rawQueue.Clear();
