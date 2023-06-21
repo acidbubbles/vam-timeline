@@ -13,8 +13,9 @@ namespace VamTimeline
     {
         public static class Modes
         {
-            public const int Readable = 0;
-            public const int Optimized = 1;
+            public const int Full = 0;
+            public const int Readable = 1;
+            public const int Optimized = 2;
         }
 
         public const int SerializeVersion = 230;
@@ -43,7 +44,7 @@ namespace VamTimeline
             if (animation == null) throw new ArgumentNullException(nameof(animation));
 
             var version = animationJSON.HasKey("SerializeVersion") ? animationJSON["SerializeVersion"].AsInt : 0;
-            animation.serializeMode = animationJSON.HasKey("SerializeMode") ? animationJSON["SerializeMode"].AsInt : Modes.Readable;
+            animation.serializeMode = animationJSON.HasKey("SerializeMode") ? animationJSON["SerializeMode"].AsInt : Modes.Full;
             animation.globalSpeed = DeserializeFloat(animationJSON["Speed"], 1f);
             animation.globalWeight = DeserializeFloat(animationJSON["Weight"], 1f);
             animation.master = DeserializeBool(animationJSON["Master"], false);
@@ -735,12 +736,12 @@ namespace VamTimeline
                     {
                         ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
                     };
-                    if (keyframe.value != lastV)
+                    if (serializeMode == Modes.Full && keyframe.value != lastV)
                     {
                         curveEntry["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture);
                         lastV = keyframe.value;
                     }
-                    if (keyframe.curveType != lastC)
+                    if (serializeMode == Modes.Full && keyframe.curveType != lastC)
                     {
                         curveEntry["c"] = keyframe.curveType.ToString(CultureInfo.InvariantCulture);
                         lastC = keyframe.curveType;

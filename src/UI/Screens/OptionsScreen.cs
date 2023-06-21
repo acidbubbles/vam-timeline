@@ -145,11 +145,13 @@ namespace VamTimeline
             _serializationModeJSON = new JSONStorableStringChooser("SerializationMode",new List<string>
             {
                 "0",
-                "1"
+                "1",
+                "2"
             }, "Optimized", "Serialization Mode")
             {
                 displayChoices = new List<string>
                 {
+                    "Full (legacy <7.*)",
                     "Readable (easier to edit)",
                     "Optimized (smaller file)",
                 },

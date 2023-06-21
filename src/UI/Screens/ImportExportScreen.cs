@@ -211,6 +211,7 @@ namespace VamTimeline
         private void ImportFileSelected(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
+            path = FileManagerSecure.NormalizePath(path);
 
             try
             {
