@@ -736,12 +736,12 @@ namespace VamTimeline
                     {
                         ["t"] = keyframe.time.ToString(CultureInfo.InvariantCulture),
                     };
-                    if (serializeMode == Modes.Full && keyframe.value != lastV)
+                    if (serializeMode == Modes.Full || keyframe.value != lastV)
                     {
                         curveEntry["v"] = keyframe.value.ToString(CultureInfo.InvariantCulture);
                         lastV = keyframe.value;
                     }
-                    if (serializeMode == Modes.Full && keyframe.curveType != lastC)
+                    if (serializeMode == Modes.Full || keyframe.curveType != lastC)
                     {
                         curveEntry["c"] = keyframe.curveType.ToString(CultureInfo.InvariantCulture);
                         lastC = keyframe.curveType;
