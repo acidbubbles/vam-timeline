@@ -42,9 +42,12 @@ namespace VamTimeline
             InitControlUI();
             InitWeightUI();
 
-            prefabFactory.CreateHeader("Advanced", 1);
+            if (_target.targetsPosition && _target.targetsRotation)
+            {
+                prefabFactory.CreateHeader("Advanced", 1);
 
-            InitSplitPosRotUI();
+                InitSplitPosRotUI();
+            }
         }
 
         private void InitParentUI()
