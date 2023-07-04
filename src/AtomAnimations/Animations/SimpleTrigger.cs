@@ -113,5 +113,10 @@ namespace VamTimeline
                 SuperController.LogError($"Timeline: Error while activating global trigger: {exc}");
             }
         }
+
+        public void Update()
+        {
+            trigger.Update();
+        }
     }
 }

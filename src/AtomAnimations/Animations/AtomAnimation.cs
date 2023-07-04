@@ -60,6 +60,8 @@ namespace VamTimeline
                     break;
             }
 
+            clipListChangedTrigger.Update();
+            isPlayingChangedTrigger.Update();
             SyncTriggers(true);
 
             clipListChangedTrigger.trigger.Update();
