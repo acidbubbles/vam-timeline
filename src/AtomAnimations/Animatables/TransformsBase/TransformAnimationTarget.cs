@@ -77,9 +77,9 @@ namespace VamTimeline
         public override string GetShortName()
         {
             if (!targetsPosition)
-                return animatableRef.GetShortName() + " (Pos)";
-            else if(!targetsRotation)
                 return animatableRef.GetShortName() + " (Rot)";
+            else if(!targetsRotation)
+                return animatableRef.GetShortName() + " (Pos)";
             else
                 return animatableRef.GetShortName();
         }
@@ -87,9 +87,9 @@ namespace VamTimeline
         public override string GetFullName()
         {
             if (!targetsPosition)
-                return animatableRef.GetFullName() + " (Position)";
-            else if(!targetsRotation)
                 return animatableRef.GetFullName() + " (Rotation)";
+            else if(!targetsRotation)
+                return animatableRef.GetFullName() + " (Position)";
             else
                 return animatableRef.GetFullName();
         }
