@@ -423,7 +423,11 @@ namespace VamTimeline
                     return;
                 }
 
-                if (current.targetControllers.Any(c => c.animatableRef.Targets(controller)))
+                var existing = current.targetControllers.Where(c => c.animatableRef.Targets(controller)).ToList();
+                var targetsPosition = existing.FirstOrDefault(t => t.targetsPosition);
+                var targetsRotation = existing.FirstOrDefault(t => t.targetsRotation);
+
+                if (targetsPosition != null && targetsRotation != null)
                 {
                     SuperController.LogError($"Timeline: Controller {uid} in atom {atom.uid} was already added");
                     return;
@@ -442,7 +446,7 @@ namespace VamTimeline
 
                 foreach (var clip in currentLayer)
                 {
-                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom), true, true);
+                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom), targetsPosition == null, targetsRotation == null);
                     if (added == null) continue;
 
                     var controllerPose = clip.pose?.GetControllerPose(controller.name);
