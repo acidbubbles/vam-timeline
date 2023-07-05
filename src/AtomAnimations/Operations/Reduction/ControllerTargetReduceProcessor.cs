@@ -11,14 +11,14 @@ namespace VamTimeline
         {
         }
 
-        #warning Reduce should still work for rotation or position only targets
-
         public void CopyToBranch(int key, int curveType = CurveTypeValues.Undefined, float time = -1)
         {
+            var sourceLead = source.GetLeadCurve();
+            var branchLead = branch.GetLeadCurve();
             if (time < -Mathf.Epsilon)
-                time = source.position.x.keys[key].time;
-            branch.SetSnapshot(time, source.GetSnapshot(source.position.x.keys[key].time));
-            var branchKey = branch.position.x.KeyframeBinarySearch(time);
+                time = sourceLead.keys[key].time;
+            branch.SetSnapshot(time, source.GetSnapshot(sourceLead.keys[key].time));
+            var branchKey = branchLead.KeyframeBinarySearch(time);
             if (branchKey == -1) return;
             if (curveType != CurveTypeValues.Undefined)
                 branch.ChangeCurveByKey(branchKey, curveType, false);
@@ -29,17 +29,18 @@ namespace VamTimeline
         {
             var position = Vector3.zero;
             var rotationSum = Vector4.zero;
-            var firstRotation = source.GetKeyframeRotation(fromKey);
-            var duration = source.position.x.GetKeyframeByKey(toKey).time - source.position.x.GetKeyframeByKey(fromKey).time;
+            var targetsRotation = source.targetsRotation;
+            var firstRotation = targetsRotation ? source.GetKeyframeRotation(fromKey) : Quaternion.identity;
+            var sourceLead = source.GetLeadCurve();
+            var duration = sourceLead.GetKeyframeByKey(toKey).time - sourceLead.GetKeyframeByKey(fromKey).time;
             for (var key = fromKey; key < toKey; key++)
             {
-                var frameDuration = source.position.x.GetKeyframeByKey(key + 1).time - source.position.x.GetKeyframeByKey(key).time;
+                var frameDuration = sourceLead.GetKeyframeByKey(key + 1).time - sourceLead.GetKeyframeByKey(key).time;
                 var weight = frameDuration / duration;
                 position += source.GetKeyframePosition(key) * weight;
-                QuaternionUtil.AverageQuaternion(ref rotationSum, source.GetKeyframeRotation(key), firstRotation, weight);
+                if (targetsRotation) QuaternionUtil.AverageQuaternion(ref rotationSum, source.GetKeyframeRotation(key), firstRotation, weight);
             }
-            branch.SetKeyframeByTime(keyTime, position, source.GetKeyframeRotation(fromKey), CurveTypeValues.SmoothLocal);
-
+            branch.SetKeyframeByTime(keyTime, position, targetsRotation ? source.GetKeyframeRotation(fromKey) : Quaternion.identity, CurveTypeValues.SmoothLocal);
         }
 
         public void FlattenToBranch(int sectionStart, int sectionEnd)
@@ -57,8 +58,9 @@ namespace VamTimeline
             avgPos /= div;
             var avgRot =  QuaternionUtil.FromVector(cumulativeRotation);
 
-            var branchStart = branch.SetKeyframeByTime(source.position.x.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
-            var branchEnd = branch.SetKeyframeByTime(source.position.x.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
+            var sourceLead = source.GetLeadCurve();
+            var branchStart = branch.SetKeyframeByTime(sourceLead.GetKeyframeByKey(sectionStart).time, avgPos, avgRot, CurveTypeValues.FlatLinear);
+            var branchEnd = branch.SetKeyframeByTime(sourceLead.GetKeyframeByKey(sectionEnd).time, avgPos, avgRot, CurveTypeValues.LinearFlat);
             branch.RecomputeKey(branchStart);
             branch.RecomputeKey(branchEnd);
         }
@@ -80,16 +82,17 @@ namespace VamTimeline
 
         public override float GetComparableNormalizedValue(int key)
         {
-            var time = source.position.x.keys[key].time;
+            var sourceLead = source.GetLeadCurve();
+            var time = sourceLead.keys[key].time;
 
-            var positionDiff = Vector3.Distance(
+            var positionDiff = source.targetsPosition ? Vector3.Distance(
                 branch.EvaluatePosition(time),
                 source.EvaluatePosition(time)
-            );
-            var rotationDot = 1f - Mathf.Abs(Quaternion.Dot(
+            ) : 0f;
+            var rotationDot = source.targetsRotation ? 1f - Mathf.Abs(Quaternion.Dot(
                 branch.EvaluateRotation(time),
                 source.EvaluateRotation(time)
-            ));
+            )) : 0f;
             // This is an attempt to compare translations and rotations
             // TODO: Normalize the values, investigate how to do this with settings
             var normalizedPositionDistance = positionDiff / Mathf.Clamp(settings.minMeaningfulDistance, Mathf.Epsilon, Mathf.Infinity);
