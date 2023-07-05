@@ -38,7 +38,7 @@ namespace VamTimeline
             foreach (var snap in offsetSnapshot.clipboard.controllers)
             {
                 // SuperController.LogMessage($"{snap.controllerRef.name} parent {snap.controllerRef.controller.control.parent.parent}");
-                var target = _clip.targetControllers.First(t => t.animatableRef == snap.animatableRef);
+                var target = _clip.targetControllers.First(t => t.TargetsSameAs(snap.animatableRef, snap.snapshot.position != null, snap.snapshot.rotation != null));
                 if (!target.EnsureParentAvailable(false)) continue;
                 var posLink = target.GetPositionParentRB();
                 var hasPosLink = !ReferenceEquals(posLink, null);
@@ -49,11 +49,11 @@ namespace VamTimeline
 
                 if(!useRepositionMode)
                 {
-                    var positionBefore = snap.snapshot.position.AsVector3();
-                    var rotationBefore = snap.snapshot.rotation.AsQuaternion();
+                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.animatableRef.controller.transform.position) : control.localPosition;
+                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.animatableRef.controller.transform.rotation : control.localRotation;
 
-                    var positionAfter = hasPosLink ? posLink.transform.InverseTransformPoint(snap.animatableRef.controller.transform.position) : snap.animatableRef.controller.control.localPosition;
-                    var rotationAfter = hasRotLink ? Quaternion.Inverse(rotLink.rotation) * snap.animatableRef.controller.transform.rotation : snap.animatableRef.controller.control.localRotation;
+                    var positionBefore = snap.snapshot.position?.AsVector3() ?? positionAfter;
+                    var rotationBefore = snap.snapshot.rotation?.AsQuaternion() ?? rotationAfter;
 
                     pivot = positionBefore;
                     positionDelta = positionAfter - positionBefore;
@@ -73,8 +73,8 @@ namespace VamTimeline
                             if (Math.Abs(time - offsetSnapshot.clipboard.time) < 0.0001) continue;
                         }
 
-                        var positionBefore = target.GetKeyframePosition(key);
-                        var rotationBefore = target.GetKeyframeRotation(key);
+                        var positionBefore = target.targetsPosition ? target.GetKeyframePosition(key) : control.position;
+                        var rotationBefore = target.targetsRotation ? target.GetKeyframeRotation(key) : control.rotation;
 
                         switch (offsetMode)
                         {

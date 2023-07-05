@@ -33,16 +33,19 @@ namespace VamTimeline
             }
             prefabFactory.CreateHeader("Control: " + _target.name, 2);
 
-            prefabFactory.CreateHeader("Parenting", 1);
+            if (_target.targetsPosition && _target.targetsRotation)
+            {
+                prefabFactory.CreateHeader("Parenting", 1);
 
-            InitParentUI();
+                InitParentUI();
+            }
 
             prefabFactory.CreateHeader("Options", 1);
 
             InitControlUI();
             InitWeightUI();
 
-            if (_target.targetsPosition && _target.targetsRotation)
+            if (_target.targetsPosition && _target.targetsRotation && string.IsNullOrEmpty(_target.parentRigidbodyId))
             {
                 prefabFactory.CreateHeader("Advanced", 1);
 

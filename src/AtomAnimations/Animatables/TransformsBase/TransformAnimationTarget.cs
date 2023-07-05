@@ -228,16 +228,21 @@ namespace VamTimeline
 
         public float GetKeyframeTime(int key)
         {
-            return position.GetKeyframeTime(key);
+            if (targetsPosition)
+                return position.GetKeyframeTime(key);
+            else
+                return rotation.GetKeyframeTime(key);
         }
 
         public Vector3 GetKeyframePosition(int key)
         {
+            if (!targetsPosition) return Vector3.zero;
             return position.GetKeyframePosition(key);
         }
 
         public Quaternion GetKeyframeRotation(int key)
         {
+            if (!targetsRotation) return Quaternion.identity;
             return rotation.GetKeyframeRotation(key);
         }
 

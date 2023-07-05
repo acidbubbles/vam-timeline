@@ -84,32 +84,36 @@ namespace VamTimeline
 
         public Rigidbody GetPositionParentRB()
         {
-             if (!ReferenceEquals(_parentRigidbody, null)) return _parentRigidbody;
-             var currentPositionState = animatableRef.controller.currentPositionState;
-             var linkToRB = animatableRef.controller.linkToRB;
-             if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
-             {
-                 if (ReferenceEquals(linkToRB, null)) return _previousLinkedParentRB = null;
-                 if (_previousLinkedParentRB == linkToRB) return _previousLinkedParentRB;
-                 if (ReferenceEquals(linkToRB.GetComponent<FreeControllerV3>(), null)) return _previousLinkedParentRB;
-                 return _previousLinkedParentRB = linkToRB;
-             }
-             return null;
+            if (!targetsPosition) return null;
+            if (!ReferenceEquals(_parentRigidbody, null)) return _parentRigidbody;
+            var currentPositionState = animatableRef.controller.currentPositionState;
+            var linkToRB = animatableRef.controller.linkToRB;
+            if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
+            {
+                if (ReferenceEquals(linkToRB, null)) return _previousLinkedParentRB = null;
+                if (_previousLinkedParentRB == linkToRB) return _previousLinkedParentRB;
+                if (ReferenceEquals(linkToRB.GetComponent<FreeControllerV3>(), null)) return _previousLinkedParentRB;
+                return _previousLinkedParentRB = linkToRB;
+            }
+
+            return null;
         }
 
         public Rigidbody GetRotationParentRB()
         {
-             if (!ReferenceEquals(_parentRigidbody, null)) return _parentRigidbody;
-             var currentPositionState = animatableRef.controller.currentPositionState;
-             var linkToRB = animatableRef.controller.linkToRB;
-             if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
-             {
-                 if (ReferenceEquals(linkToRB, null)) return _previousLinkedParentRB = null;
-                 if (_previousLinkedParentRB == linkToRB) return _previousLinkedParentRB;
-                 if (ReferenceEquals(linkToRB.GetComponent<FreeControllerV3>(), null)) return _previousLinkedParentRB;
-                 return _previousLinkedParentRB = linkToRB;
-             }
-             return null;
+            if (!targetsRotation) return null;
+            if (!ReferenceEquals(_parentRigidbody, null)) return _parentRigidbody;
+            var currentPositionState = animatableRef.controller.currentPositionState;
+            var linkToRB = animatableRef.controller.linkToRB;
+            if (currentPositionState == FreeControllerV3.PositionState.ParentLink || currentPositionState == FreeControllerV3.PositionState.PhysicsLink)
+            {
+                if (ReferenceEquals(linkToRB, null)) return _previousLinkedParentRB = null;
+                if (_previousLinkedParentRB == linkToRB) return _previousLinkedParentRB;
+                if (ReferenceEquals(linkToRB.GetComponent<FreeControllerV3>(), null)) return _previousLinkedParentRB;
+                return _previousLinkedParentRB = linkToRB;
+            }
+
+            return null;
         }
 
         public FreeControllerV3AnimationTarget(FreeControllerV3Ref animatableRef, bool targetsPosition, bool targetsRotation)
