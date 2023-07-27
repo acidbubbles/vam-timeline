@@ -18,7 +18,7 @@ namespace VamTimeline
             public const int Optimized = 2;
         }
 
-        public const int SerializeVersion = 230;
+        public const int SerializeVersion = 283;
 
         private readonly Atom _atom;
 
@@ -44,6 +44,7 @@ namespace VamTimeline
             if (animation == null) throw new ArgumentNullException(nameof(animation));
 
             var version = animationJSON.HasKey("SerializeVersion") ? animationJSON["SerializeVersion"].AsInt : 0;
+            if (version > SerializeVersion) SuperController.LogError("This animation was saved with a newer version of Timeline. Some features may not work correctly.");
             animation.serializeMode = animationJSON.HasKey("SerializeMode") ? animationJSON["SerializeMode"].AsInt : Modes.Full;
             animation.globalSpeed = DeserializeFloat(animationJSON["Speed"], 1f);
             animation.globalWeight = DeserializeFloat(animationJSON["Weight"], 1f);
@@ -353,7 +354,7 @@ namespace VamTimeline
                     {
                         // Compressed time and value
                         var value = keyframeJSON.Value;
-                        keyframe = DecodeKeyframe(value, lastV, lastC);
+                        keyframe = DecodeKeyframe(value, lastV, lastC, version);
                     }
                     else if(keyframeJSON is JSONClass)
                     {
@@ -825,15 +826,14 @@ namespace VamTimeline
             _encodeSb.Length = 0;
 
             // Time and Value encoding
-            var timeBytes = 4;
-            var valueBytes = Math.Abs(lastV - keyframe.value) <= float.Epsilon ? 0 : 4;
-            var curveTypeBytes = lastC == keyframe.curveType ? 0 : 1;
+            var hasValue = Math.Abs(lastV - keyframe.value) > float.Epsilon;
+            var hasCurveType = lastC != keyframe.curveType;
 
             // Encoding sizes
-            _encodeSb.Append(EncodeSizes(timeBytes, valueBytes, curveTypeBytes));
+            _encodeSb.Append(EncodeSizes(hasValue, hasCurveType));
             WriteBytes(keyframe.time, _encodeSb);
-            if(valueBytes > 0) WriteBytes(keyframe.value, _encodeSb);
-            if(curveTypeBytes > 0) WriteBytes((byte)keyframe.curveType, _encodeSb);
+            if(hasValue) WriteBytes(keyframe.value, _encodeSb);
+            if(hasCurveType) WriteBytes((byte)keyframe.curveType, _encodeSb);
 
             return _encodeSb.ToString();
         }
@@ -856,33 +856,53 @@ namespace VamTimeline
         }
 
         [MethodImpl(256)]
-        private static char EncodeSizes(int tSize, int vSize, int cSize)
+        private static char EncodeSizes(bool hasValue, bool hasCurveType)
         {
-            var index = tSize * 25 + vSize * 5 + cSize;
-            if (index < 10) return (char)('0' + index);
-            if (index < 36) return (char)('a' + index - 10);
-            return (char)('A' + index - 36);
+            var encodedValue = 0;
+            if(hasValue) encodedValue |= (1 << 0);  // Assigns '01' in binary (1 in decimal)
+            if(hasCurveType) encodedValue |= (1 << 1);  // Assigns '10' in binary (2 in decimal)
+            return (char)('A' + encodedValue);
         }
 
         [MethodImpl(256)]
-        private static BezierKeyframe DecodeKeyframe(string encoded, float lastV, int lastC)
+        private static BezierKeyframe DecodeKeyframe(string encoded, float lastV, int lastC, int version)
         {
-            var sizeChar = encoded[0];
-            int index;
-            if (sizeChar >= '0' && sizeChar <= '9') index = sizeChar - '0';
-            else if (sizeChar >= 'a' && sizeChar <= 'z') index = sizeChar - 'a' + 10;
-            else index = sizeChar - 'A' + 36;
+            if (version <= 230)
+            {
+                // Legacy, broken unicode
+                var sizeChar = encoded[0];
+                int index;
+                if (sizeChar >= '0' && sizeChar <= '9') index = sizeChar - '0';
+                else if (sizeChar >= 'a' && sizeChar <= 'z') index = sizeChar - 'a' + 10;
+                else index = sizeChar - 'A' + 36;
 
-            var tBytes = index / 25;
-            index %= 25;
-            var vBytes = index / 5;
-            var hasC = (index % 5) != 0;
+                var tBytes = index / 25;
+                index %= 25;
+                var vBytes = index / 5;
+                var hasC = (index % 5) != 0;
 
-            var t = DecodeFloat(encoded.Substring(1, tBytes * 2));
-            var v = vBytes == 0 ? lastV : DecodeFloat(encoded.Substring(1 + tBytes * 2, vBytes * 2));
-            var c = !hasC ? lastC : Convert.ToInt32(encoded.Substring(1 + (tBytes + vBytes) * 2, 2), 16);
+                var t = DecodeFloat(encoded.Substring(1, tBytes * 2));
+                var v = vBytes == 0 ? lastV : DecodeFloat(encoded.Substring(1 + tBytes * 2, vBytes * 2));
+                var c = !hasC ? lastC : Convert.ToInt32(encoded.Substring(1 + (tBytes + vBytes) * 2, 2), 16);
 
-            return new BezierKeyframe { time = t, value = v, curveType = c };
+                return new BezierKeyframe { time = t, value = v, curveType = c };
+            }
+            else
+            {
+                var encodedValue = encoded[0] - 'A';
+                var hasValue = (encodedValue & (1 << 0)) != 0;
+                var hasCurveType = (encodedValue & (1 << 1)) != 0;
+
+                const int tBytes = 4;
+                var vBytes = hasValue ? 4 : 0;
+                var cBytes = hasCurveType ? 1 : 0;
+
+                var t = DecodeFloat(encoded.Substring(1, tBytes * 2));
+                var v = !hasValue ? lastV : DecodeFloat(encoded.Substring(1 + tBytes * 2, vBytes * 2));
+                var c = !hasCurveType ? lastC : Convert.ToInt32(encoded.Substring(1 + (tBytes + vBytes) * 2, cBytes * 2), 16);
+
+                return new BezierKeyframe { time = t, value = v, curveType = c };
+            }
         }
 
         private static readonly byte[] _floatBuffer = new byte[4];
