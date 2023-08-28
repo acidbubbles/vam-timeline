@@ -49,7 +49,7 @@ namespace VamTimeline
             {
                 case TimeModes.RealTime:
                     var currentUpdateTime = _stopwatch.Elapsed;
-                    deltaTime = (float)(currentUpdateTime - _lastUpdateTime).TotalSeconds;
+                    deltaTime = ((float)(currentUpdateTime - _lastUpdateTime).TotalSeconds) * Time.timeScale;
                     _lastUpdateTime = _stopwatch.Elapsed;
                     break;
                 case TimeModes.RealTimeLegacy:
@@ -89,7 +89,7 @@ namespace VamTimeline
             {
                 case TimeModes.RealTime:
                     var currentFixedUpdateTime = _stopwatch.Elapsed;
-                    deltaTime = (float)(currentFixedUpdateTime - _lastFixedUpdateTime).TotalSeconds;
+                    deltaTime = ((float)(currentFixedUpdateTime - _lastFixedUpdateTime).TotalSeconds) * Time.timeScale;
                     _lastFixedUpdateTime = _stopwatch.Elapsed;
                     break;
                 case TimeModes.RealTimeLegacy:
