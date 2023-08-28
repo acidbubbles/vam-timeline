@@ -28,17 +28,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -74,17 +74,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -118,17 +118,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -162,17 +162,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -216,17 +216,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -260,17 +260,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment IMPORTED", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -291,17 +291,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer IMPORTED", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -318,17 +318,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim IMPORTED", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -347,18 +347,18 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", AtomAnimationClip.SharedAnimationSegment, context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
                 clip.animationSegment = AtomAnimationClip.SharedAnimationSegment;
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -392,18 +392,18 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
                 clip.animationSegment = AtomAnimationClip.SharedAnimationSegment;
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F2")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T2")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -437,17 +437,17 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", AtomAnimationClip.SharedAnimationSegment, context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 
@@ -463,18 +463,18 @@ namespace VamTimeline
             context.animation.RemoveClip(context.animation.clips[0]);
             {
                 var clip = new AtomAnimationClip("Anim 1", "Layer 1", "Segment 1", context.logger);
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 context.animation.AddClip(clip);
             }
             ImportOperationClip ctx;
             {
                 var clip = GivenImportedClip(context);
                 clip.animationSegment = AtomAnimationClip.NoneAnimationSegment;
-                clip.Add(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddAny(helper.GivenFreeController("C1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddFloatParam(helper.GivenFloatParam("F1")).AddEdgeFramesIfMissing(clip.animationLength);
+                clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId, "T1")).AddEdgeFramesIfMissing(clip.animationLength);
                 ctx = new ImportOperationClip(context.animation, clip);
             }
 

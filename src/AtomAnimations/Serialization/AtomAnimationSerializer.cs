@@ -199,7 +199,7 @@ namespace VamTimeline
                         continue;
                     }
 
-                    var target = clip.Add(controllerRef, DeserializeBool(controllerJSON["TargetsPosition"], true), DeserializeBool(controllerJSON["TargetsRotation"], true));
+                    var target = clip.AddController(controllerRef, DeserializeBool(controllerJSON["TargetsPosition"], true), DeserializeBool(controllerJSON["TargetsRotation"], true));
                     if (target == null)
                     {
                         SuperController.LogError(
@@ -262,7 +262,7 @@ namespace VamTimeline
                         paramJSON.HasKey("Min") ? (float?)paramJSON["Min"].AsFloat : null,
                         paramJSON.HasKey("Max") ? (float?)paramJSON["Max"].AsFloat : null
                     );
-                    var target = clip.Add(floatParamRef);
+                    var target = clip.AddFloatParam(floatParamRef);
                     if (target == null)
                     {
                         SuperController.LogError(
@@ -288,7 +288,7 @@ namespace VamTimeline
                     var triggerTrackRef = targetsRegistry.GetOrCreateTriggerTrack(clip.animationLayerQualifiedId, triggerTrackName);
                     //NOTE: We are cheating here, the saved setting is on each track but the animatable itself will have the setting
                     triggerTrackRef.live = triggerLive;
-                    var target = clip.Add(triggerTrackRef);
+                    var target = clip.AddTriggers(triggerTrackRef);
                     if (target == null)
                     {
                         target = clip.targetTriggers.FirstOrDefault(t => t.name == triggerTrackName);

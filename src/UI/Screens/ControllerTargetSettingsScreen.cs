@@ -100,7 +100,7 @@ namespace VamTimeline
                     if (target == null) continue;
                     var pos = target;
                     pos.targetsRotation = false;
-                    var rot = clip.Add(pos.animatableRef, false, true);
+                    var rot = clip.AddController(pos.animatableRef, false, true);
                     if (rot == null) throw new NullReferenceException("Could not add rotation controller");
                     rot.rotation.rotX.keys = new List<BezierKeyframe>(pos.rotation.rotX.keys);
                     rot.rotation.rotY.keys = new List<BezierKeyframe>(pos.rotation.rotY.keys);

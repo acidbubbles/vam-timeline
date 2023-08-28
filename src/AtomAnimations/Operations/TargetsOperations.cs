@@ -22,7 +22,7 @@ namespace VamTimeline
             if (target != null) return target;
             foreach (var clip in _animation.index.ByLayerQualified(_clip.animationLayerQualifiedId))
             {
-                var t = clip.Add(_animation.animatables.GetOrCreateController(fc, fc.containingAtom == _containingAtom), true, true);
+                var t = clip.AddController(_animation.animatables.GetOrCreateController(fc, fc.containingAtom == _containingAtom), true, true);
                 if (t == null) continue;
                 t.SetKeyframeToCurrent(0f);
                 t.SetKeyframeToCurrent(clip.animationLength);

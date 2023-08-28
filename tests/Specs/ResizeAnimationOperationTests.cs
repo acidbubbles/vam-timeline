@@ -246,7 +246,7 @@ namespace VamTimeline
         private static FreeControllerV3AnimationTarget GivenThreeKeyframesFreeController(TestContext context, AtomAnimationClip clip)
         {
             var helper = new TargetsHelper(context);
-            var target = clip.Add(helper.GivenFreeController(), true, true);
+            var target = clip.AddController(helper.GivenFreeController(), true, true);
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframeByTime(0f, Vector3.zero, Quaternion.identity);
             target.SetKeyframeByTime(1f, Vector3.one, Quaternion.identity);
@@ -259,7 +259,7 @@ namespace VamTimeline
         private static JSONStorableFloatAnimationTarget GivenThreeKeyframesFloatParam(TestContext context, AtomAnimationClip clip)
         {
             var helper = new TargetsHelper(context);
-            var target = clip.Add(helper.GivenFloatParam());
+            var target = clip.AddFloatParam(helper.GivenFloatParam());
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.SetKeyframe(0f, 0f);
             target.SetKeyframe(1f, 1f);
@@ -272,7 +272,7 @@ namespace VamTimeline
         private static TriggersTrackAnimationTarget GivenThreeKeyframesTrigger(TestContext context, AtomAnimationClip clip)
         {
             var helper = new TargetsHelper(context);
-            var target = clip.Add(helper.GivenTriggers(clip.animationLayerQualifiedId));
+            var target = clip.AddTriggers(helper.GivenTriggers(clip.animationLayerQualifiedId));
             context.Assert(clip.animationLength, 2f, "Default animation length");
             target.CreateKeyframe(0f.ToMilliseconds());
             target.CreateKeyframe(1f.ToMilliseconds());

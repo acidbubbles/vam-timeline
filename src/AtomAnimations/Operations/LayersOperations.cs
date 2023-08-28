@@ -45,7 +45,7 @@ namespace VamTimeline
                 foreach (var t in sourceClip.GetAllTargets().Where(t => targets.Any(t.TargetsSameAs)).ToList())
                 {
                     sourceClip.Remove(t);
-                    newClip.Add(t);
+                    newClip.AddAny(t);
                 }
                 created.Add(newClip);
             }

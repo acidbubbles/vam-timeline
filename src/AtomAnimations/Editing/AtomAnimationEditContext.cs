@@ -610,7 +610,7 @@ namespace VamTimeline
                     {
                         continue;
                     }
-                    var added = clip.Add(animatableRefToAdd);
+                    var added = clip.AddAny(animatableRefToAdd);
                     if (added == null)
                     {
                         SuperController.LogError($"Timeline: Cannot paste {animatableRef.GetFullName()}, invalid add state.");

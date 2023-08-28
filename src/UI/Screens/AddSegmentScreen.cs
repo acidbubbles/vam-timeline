@@ -184,7 +184,7 @@ namespace VamTimeline
             {
                 foreach (var target in layer.targetControllers)
                 {
-                    var added = clip.Add(target.animatableRef, target.targetsPosition, target.targetsRotation);
+                    var added = clip.AddController(target.animatableRef, target.targetsPosition, target.targetsRotation);
                     if (added != null)
                     {
                         var snapshot = target.GetCurveSnapshot(layer.animationLength);
@@ -194,7 +194,7 @@ namespace VamTimeline
                 }
                 foreach (var target in layer.targetFloatParams)
                 {
-                    var added =clip.Add(target.animatableRef);
+                    var added =clip.AddFloatParam(target.animatableRef);
                     if (added != null)
                     {
                         var snapshot = target.GetCurveSnapshot(layer.animationLength);

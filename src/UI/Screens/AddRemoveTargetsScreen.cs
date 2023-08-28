@@ -115,7 +115,7 @@ namespace VamTimeline
                 if (clip.targetTriggers.Any(t => t.TargetsSameAs(track))) continue;
                 var target = new TriggersTrackAnimationTarget(track, animation.logger);
                 target.AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(target);
+                clip.AddTriggers(target);
             }
         }
 
@@ -446,7 +446,7 @@ namespace VamTimeline
 
                 foreach (var clip in currentLayer)
                 {
-                    var added = clip.Add(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom), targetsPosition == null, targetsRotation == null);
+                    var added = clip.AddController(animation.animatables.GetOrCreateController(controller, atom == plugin.containingAtom), targetsPosition == null, targetsRotation == null);
                     if (added == null) continue;
 
                     var controllerPose = clip.pose?.GetControllerPose(controller.name);
@@ -520,7 +520,7 @@ namespace VamTimeline
             foreach (var clip in currentLayer)
             {
                 var storableFloat = animation.animatables.GetOrCreateStorableFloat(storable, jsf, storable.containingAtom == plugin.containingAtom);
-                var added = clip.Add(storableFloat);
+                var added = clip.AddFloatParam(storableFloat);
                 if (added == null) continue;
 
                 added.SetKeyframe(0f, jsf.val);

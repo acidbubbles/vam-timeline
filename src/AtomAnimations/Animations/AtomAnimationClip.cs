@@ -754,62 +754,62 @@ namespace VamTimeline
 
         #region Add/Remove Targets
 
-        public IAtomAnimationTarget Add(IAtomAnimationTarget target)
+        public IAtomAnimationTarget AddAny(IAtomAnimationTarget target)
         {
             if (target is FreeControllerV3AnimationTarget)
-                return Add((FreeControllerV3AnimationTarget)target);
+                return AddController((FreeControllerV3AnimationTarget)target);
             if (target is JSONStorableFloatAnimationTarget)
-                return Add((JSONStorableFloatAnimationTarget)target);
+                return AddFloatParam((JSONStorableFloatAnimationTarget)target);
             if (target is TriggersTrackAnimationTarget)
-                return Add((TriggersTrackAnimationTarget)target);
+                return AddTriggers((TriggersTrackAnimationTarget)target);
             throw new NotSupportedException($"Cannot add unknown target type {target}");
         }
 
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3Ref controllerRef, bool targetsPosition, bool targetsRotation)
+        public FreeControllerV3AnimationTarget AddController(FreeControllerV3Ref controllerRef, bool targetsPosition, bool targetsRotation)
         {
             if (targetControllers.Any(c => c.TargetsSameAs(controllerRef, targetsPosition, targetsRotation))) return null;
-            return Add(new FreeControllerV3AnimationTarget(controllerRef, targetsPosition, targetsRotation));
+            return AddController(new FreeControllerV3AnimationTarget(controllerRef, targetsPosition, targetsRotation));
         }
 
-        public JSONStorableFloatAnimationTarget Add(JSONStorableFloatRef floatRef)
+        public JSONStorableFloatAnimationTarget AddFloatParam(JSONStorableFloatRef floatRef)
         {
             if (targetFloatParams.Any(t => t.animatableRef == floatRef)) return null;
             floatRef.EnsureAvailable();
-            return Add(new JSONStorableFloatAnimationTarget(floatRef));
+            return AddFloatParam(new JSONStorableFloatAnimationTarget(floatRef));
         }
 
-        public TriggersTrackAnimationTarget Add(TriggersTrackRef triggersRef)
+        public TriggersTrackAnimationTarget AddTriggers(TriggersTrackRef triggersRef)
         {
             if (targetTriggers.Any(t => t.animatableRef == triggersRef)) return null;
             if (triggersRef.animationLayerQualifiedId != animationLayerQualifiedId) throw new InvalidOperationException("Triggers track is not owned by the current layer");
-            return Add(new TriggersTrackAnimationTarget(triggersRef, _logger));
+            return AddTriggers(new TriggersTrackAnimationTarget(triggersRef, _logger));
         }
 
-        public IAtomAnimationTarget Add(AnimatableRefBase animatableRef)
+        public IAtomAnimationTarget AddAny(AnimatableRefBase animatableRef)
         {
             if (animatableRef is FreeControllerV3Ref)
-                return Add((FreeControllerV3Ref)animatableRef);
+                return AddController((FreeControllerV3Ref)animatableRef, true, true);
             if (animatableRef is JSONStorableFloatRef)
-                return Add((JSONStorableFloatRef)animatableRef);
+                return AddFloatParam((JSONStorableFloatRef)animatableRef);
             if (animatableRef is TriggersTrackRef)
-                return Add((TriggersTrackRef)animatableRef);
+                return AddTriggers((TriggersTrackRef)animatableRef);
             throw new NotSupportedException($"Cannot add unknown animatableRef type {animatableRef}");
         }
 
-        public FreeControllerV3AnimationTarget Add(FreeControllerV3AnimationTarget target)
+        public FreeControllerV3AnimationTarget AddController(FreeControllerV3AnimationTarget target)
         {
             if (targetControllers.Any(target.TargetsSameAs)) return null;
             foreach (var curve in target.curves) { curve.loop = _loop; }
             return Add(targetControllers, new FreeControllerV3AnimationTarget.Comparer(), target);
         }
 
-        public JSONStorableFloatAnimationTarget Add(JSONStorableFloatAnimationTarget target)
+        public JSONStorableFloatAnimationTarget AddFloatParam(JSONStorableFloatAnimationTarget target)
         {
             target.value.loop = _loop;
             return Add(targetFloatParams, new JSONStorableFloatAnimationTarget.Comparer(), target);
         }
 
-        public TriggersTrackAnimationTarget Add(TriggersTrackAnimationTarget target)
+        public TriggersTrackAnimationTarget AddTriggers(TriggersTrackAnimationTarget target)
         {
             return Add(targetTriggers, new TriggersTrackAnimationTarget.Comparer(), target);
         }

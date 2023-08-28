@@ -68,7 +68,7 @@ namespace VamTimeline
                 foreach (var origTarget in source.targetFloatParams)
                 {
                     if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
-                    var newTarget = clip.Add(new JSONStorableFloatAnimationTarget(origTarget));
+                    var newTarget = clip.AddFloatParam(new JSONStorableFloatAnimationTarget(origTarget));
                     newTarget.group = origTarget.group;
                     newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
                     newTarget.dirty = true;
@@ -76,7 +76,7 @@ namespace VamTimeline
 
                 foreach (var origTarget in source.targetTriggers)
                 {
-                    var newTarget = clip.Add(new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger));
+                    var newTarget = clip.AddTriggers(new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger));
                     newTarget.group = origTarget.group;
                     foreach (var origTrigger in origTarget.triggersMap)
                     {
@@ -101,7 +101,7 @@ namespace VamTimeline
                 foreach (var origTarget in source.targetFloatParams)
                 {
                     if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
-                    var newTarget = clip.Add(origTarget.animatableRef);
+                    var newTarget = clip.AddFloatParam(origTarget.animatableRef);
                     newTarget.group = origTarget.group;
                     newTarget.SetKeyframeToCurrent(0f);
                     newTarget.SetKeyframeToCurrent(clip.animationLength);
@@ -112,7 +112,7 @@ namespace VamTimeline
                     var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger);
                     newTarget.group = origTarget.group;
                     newTarget.AddEdgeFramesIfMissing(clip.animationLength);
-                    clip.Add(newTarget);
+                    clip.AddTriggers(newTarget);
                 }
             }
 
@@ -163,7 +163,7 @@ namespace VamTimeline
             foreach (var origTarget in source.targetFloatParams)
             {
                 if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
-                var newTarget = clip.Add(origTarget.animatableRef);
+                var newTarget = clip.AddFloatParam(origTarget.animatableRef);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(source.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));
             }
@@ -172,7 +172,7 @@ namespace VamTimeline
             {
                 var newTarget = new TriggersTrackAnimationTarget(origTarget.animatableRef, _animation.logger);
                 newTarget.AddEdgeFramesIfMissing(clip.animationLength);
-                clip.Add(newTarget);
+                clip.AddTriggers(newTarget);
             }
 
             source.nextAnimationName = clip.animationName;
@@ -181,7 +181,7 @@ namespace VamTimeline
 
         private static FreeControllerV3AnimationTarget CopyTarget(AtomAnimationClip clip, FreeControllerV3AnimationTarget origTarget)
         {
-            var newTarget = clip.Add(origTarget.animatableRef, origTarget.targetsPosition, origTarget.targetsRotation);
+            var newTarget = clip.AddController(origTarget.animatableRef, origTarget.targetsPosition, origTarget.targetsRotation);
             newTarget.SetParent(origTarget.parentAtomId, origTarget.parentRigidbodyId);
             newTarget.weight = origTarget.weight;
             newTarget.targetsPosition = origTarget.targetsPosition;
