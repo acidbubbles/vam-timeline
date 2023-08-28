@@ -144,9 +144,9 @@ namespace VamTimeline
         {
             _serializationModeJSON = new JSONStorableStringChooser("SerializationMode",new List<string>
             {
-                "0",
-                "1",
-                "2"
+                AtomAnimationSerializer.Modes.Full.ToString(),
+                AtomAnimationSerializer.Modes.Readable.ToString(),
+                AtomAnimationSerializer.Modes.Optimized.ToString(),
             }, "Optimized", "Serialization Mode")
             {
                 displayChoices = new List<string>
