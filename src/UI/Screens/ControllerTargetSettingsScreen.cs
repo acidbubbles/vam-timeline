@@ -94,24 +94,29 @@ namespace VamTimeline
         {
             prefabFactory.CreateButton("Split Position & Rotation (BETA)").button.onClick.AddListener(() =>
             {
-                var pos = _target;
-                pos.targetsRotation = false;
-                var rot = current.Add(pos.animatableRef, false, true);
-                if (rot == null) throw new NullReferenceException("Could not add rotation controller");
-                rot.rotation.rotX.keys = new List<BezierKeyframe>(pos.rotation.rotX.keys);
-                rot.rotation.rotY.keys = new List<BezierKeyframe>(pos.rotation.rotY.keys);
-                rot.rotation.rotZ.keys = new List<BezierKeyframe>(pos.rotation.rotZ.keys);
-                rot.rotation.rotW.keys = new List<BezierKeyframe>(pos.rotation.rotW.keys);
-                if (pos.rotation.rotX.length > 2)
+                foreach (var clip in currentLayer)
                 {
-                    pos.rotation.rotX.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
-                    pos.curves.Remove(pos.rotation.rotX);
-                    pos.rotation.rotY.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
-                    pos.curves.Remove(pos.rotation.rotY);
-                    pos.rotation.rotZ.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
-                    pos.curves.Remove(pos.rotation.rotZ);
-                    pos.rotation.rotW.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
-                    pos.curves.Remove(pos.rotation.rotW);
+                    var target = clip.targetControllers.FirstOrDefault(t => t.TargetsSameAs(_target));
+                    if (target == null) continue;
+                    var pos = target;
+                    pos.targetsRotation = false;
+                    var rot = clip.Add(pos.animatableRef, false, true);
+                    if (rot == null) throw new NullReferenceException("Could not add rotation controller");
+                    rot.rotation.rotX.keys = new List<BezierKeyframe>(pos.rotation.rotX.keys);
+                    rot.rotation.rotY.keys = new List<BezierKeyframe>(pos.rotation.rotY.keys);
+                    rot.rotation.rotZ.keys = new List<BezierKeyframe>(pos.rotation.rotZ.keys);
+                    rot.rotation.rotW.keys = new List<BezierKeyframe>(pos.rotation.rotW.keys);
+                    if (pos.rotation.rotX.length > 2)
+                    {
+                        pos.rotation.rotX.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                        pos.curves.Remove(pos.rotation.rotX);
+                        pos.rotation.rotY.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                        pos.curves.Remove(pos.rotation.rotY);
+                        pos.rotation.rotZ.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                        pos.curves.Remove(pos.rotation.rotZ);
+                        pos.rotation.rotW.keys.RemoveRange(1, pos.rotation.rotX.length - 2);
+                        pos.curves.Remove(pos.rotation.rotW);
+                    }
                 }
             });
         }
