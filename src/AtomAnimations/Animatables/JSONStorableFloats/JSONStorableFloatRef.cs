@@ -16,11 +16,11 @@ namespace VamTimeline
         public float? assignMaxValueOnBound {get; private set; }
         public readonly string storableId;
         private readonly string _shortenedStorableId;
-        public string lastKnownAtomUid { get; private set; }
+        private readonly string _lastKnownAtomUid;
         public JSONStorable storable { get; private set; }
         public string floatParamName;
         public JSONStorableFloat floatParam { get; private set; }
-        public string floatParamDisplayName;
+        private readonly string _floatParamDisplayName;
         private float _nextCheck;
         private bool? _isMorph;
         private DAZMorph _asMorph;
@@ -29,17 +29,17 @@ namespace VamTimeline
         {
             _atom = atom;
             if (!owned)
-                lastKnownAtomUid = atom.uid;
+                _lastKnownAtomUid = atom.uid;
             this.owned = owned;
             if (storableId == null) throw new ArgumentNullException(nameof(storableId));
             this.storableId = storableId;
             this.floatParamName = floatParamName;
             if (floatParamName.StartsWith("morph: "))
-                floatParamDisplayName = floatParamName.Substring("morph: ".Length);
+                _floatParamDisplayName = floatParamName.Substring("morph: ".Length);
             else if (floatParamName.StartsWith("morphOtherGender: "))
-                floatParamDisplayName = floatParamName.Substring("morphOtherGender: ".Length);
+                _floatParamDisplayName = floatParamName.Substring("morphOtherGender: ".Length);
             else
-                floatParamDisplayName = floatParamName;
+                _floatParamDisplayName = floatParamName;
             if (assignMinValueOnBound == 0 && assignMaxValueOnBound == 0)
             {
                 this.assignMinValueOnBound = null;
@@ -62,7 +62,7 @@ namespace VamTimeline
         {
             _atom = storable.containingAtom;
             if (!owned)
-                lastKnownAtomUid = _atom.uid;
+                _lastKnownAtomUid = _atom.uid;
             this.storable = storable;
             this.floatParam = floatParam;
             _available = true;
@@ -99,12 +99,12 @@ namespace VamTimeline
         public override string GetShortName()
         {
             if (!owned && storable == null)
-                return $"[Missing: {_shortenedStorableId} / {floatParamDisplayName}]";
+                return $"[Missing: {_shortenedStorableId} / {_floatParamDisplayName}]";
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
 
-            return floatParamDisplayName;
+            return _floatParamDisplayName;
         }
 
         public override string GetFullName()
@@ -112,15 +112,15 @@ namespace VamTimeline
             if (!owned)
             {
                 if (storable == null)
-                    return $"[Missing: {(_atom != null ? _atom.name : lastKnownAtomUid)} / {_shortenedStorableId} / {floatParamDisplayName}]";
+                    return $"[Missing: {(_atom != null ? _atom.name : _lastKnownAtomUid)} / {_shortenedStorableId} / {_floatParamDisplayName}]";
                 if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                     return $"{_atom.name} {floatParam.altName}";
-                return $"{_atom.name} {_shortenedStorableId} {floatParamDisplayName}";
+                return $"{_atom.name} {_shortenedStorableId} {_floatParamDisplayName}";
             }
 
             if (floatParam != null && !string.IsNullOrEmpty(floatParam.altName))
                 return floatParam.altName;
-            return $"{_shortenedStorableId} {floatParamDisplayName}";
+            return $"{_shortenedStorableId} {_floatParamDisplayName}";
         }
 
         public float val
@@ -190,15 +190,13 @@ namespace VamTimeline
             if (floatParam == null)
             {
                 // This should theoretically never happen, but this was the old behavior so it's safer to keep it (Timeline )
-                floatParam = storable.GetFloatJSONParam(floatParamDisplayName);
+                floatParam = storable.GetFloatJSONParam(_floatParamDisplayName);
                 if (floatParam == null)
                 {
                     if (!silent) SuperController.LogError($"Timeline: Atom '{_atom.uid}' does not have a param '{storableId}/{floatParamName}'");
                     return false;
                 }
             }
-
-            floatParamName = IsMorph() ? floatParam.altName : floatParam.name;
 
             _available = true;
             return true;
@@ -280,7 +278,7 @@ namespace VamTimeline
             var otherGender = floatParamName.StartsWith("morphOtherGender:");
             if (!otherGender && selector.morphsControlUI != null)
             {
-                morph = selector.morphsControlUI.GetMorphByDisplayName(floatParamDisplayName);
+                morph = selector.morphsControlUI.GetMorphByDisplayName(_floatParamDisplayName);
                 if (morph != null)
                 {
                     _isMorph = true;
@@ -289,7 +287,7 @@ namespace VamTimeline
             }
             else if (otherGender && selector.morphsControlUIOtherGender != null)
             {
-                morph = selector.morphsControlUI.GetMorphByDisplayName(floatParamDisplayName);
+                morph = selector.morphsControlUI.GetMorphByDisplayName(_floatParamDisplayName);
                 if (morph != null)
                 {
                     _isMorph = true;
@@ -301,7 +299,7 @@ namespace VamTimeline
             {
                 if (selector.femaleMorphBank1 != null)
                 {
-                    morph = selector.femaleMorphBank1.GetMorphByDisplayName(floatParamDisplayName);
+                    morph = selector.femaleMorphBank1.GetMorphByDisplayName(_floatParamDisplayName);
                     if (morph != null)
                     {
                         _isMorph = true;
@@ -310,7 +308,7 @@ namespace VamTimeline
                 }
                 if (selector.femaleMorphBank2 != null)
                 {
-                    morph = selector.femaleMorphBank2.GetMorphByDisplayName(floatParamDisplayName);
+                    morph = selector.femaleMorphBank2.GetMorphByDisplayName(_floatParamDisplayName);
                     if (morph != null)
                     {
                         _isMorph = true;
@@ -319,7 +317,7 @@ namespace VamTimeline
                 }
                 if (selector.femaleMorphBank3 != null)
                 {
-                    morph = selector.femaleMorphBank3.GetMorphByDisplayName(floatParamDisplayName);
+                    morph = selector.femaleMorphBank3.GetMorphByDisplayName(_floatParamDisplayName);
                     if (morph != null)
                     {
                         _isMorph = true;
@@ -331,7 +329,7 @@ namespace VamTimeline
             {
                 if (selector.maleMorphBank1 != null)
                 {
-                    morph = selector.maleMorphBank1.GetMorphByDisplayName(floatParamDisplayName);
+                    morph = selector.maleMorphBank1.GetMorphByDisplayName(_floatParamDisplayName);
                     if (morph != null)
                     {
                         _isMorph = true;
@@ -340,7 +338,7 @@ namespace VamTimeline
                 }
                 if (selector.maleMorphBank2 != null)
                 {
-                    morph = selector.maleMorphBank2.GetMorphByDisplayName(floatParamDisplayName);
+                    morph = selector.maleMorphBank2.GetMorphByDisplayName(_floatParamDisplayName);
                     if (morph != null)
                     {
                         _isMorph = true;
@@ -349,7 +347,7 @@ namespace VamTimeline
                 }
                 if (selector.maleMorphBank3 != null)
                 {
-                    morph = selector.maleMorphBank3.GetMorphByDisplayName(floatParamDisplayName);
+                    morph = selector.maleMorphBank3.GetMorphByDisplayName(_floatParamDisplayName);
                     if (morph != null)
                     {
                         _isMorph = true;
