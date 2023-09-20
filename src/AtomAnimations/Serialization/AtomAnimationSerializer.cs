@@ -345,6 +345,7 @@ namespace VamTimeline
             var lastT = -1f;
             var lastV = 0f;
             var lastC = CurveTypeValues.SmoothLocal;
+            var brokenKeyframes = 0;
             foreach (JSONNode keyframeJSON in curveJSON)
             {
                 try
@@ -355,6 +356,11 @@ namespace VamTimeline
                         // Compressed time and value
                         var value = keyframeJSON.Value;
                         keyframe = DecodeKeyframe(value, lastV, lastC, version);
+                        if (keyframe.time < 0)
+                        {
+                            brokenKeyframes++;
+                            continue;
+                        }
                     }
                     else if(keyframeJSON is JSONClass)
                     {
@@ -398,6 +404,11 @@ namespace VamTimeline
                 {
                     throw new InvalidOperationException($"Failed to read curve: {keyframeJSON}", exc);
                 }
+            }
+
+            if (brokenKeyframes > 0)
+            {
+                SuperController.LogError("Timeline: " + brokenKeyframes + " broken keyframes were removed from the curve.");
             }
         }
 
@@ -870,22 +881,29 @@ namespace VamTimeline
             if (version <= 230)
             {
                 // Legacy, broken unicode
-                var sizeChar = encoded[0];
-                int index;
-                if (sizeChar >= '0' && sizeChar <= '9') index = sizeChar - '0';
-                else if (sizeChar >= 'a' && sizeChar <= 'z') index = sizeChar - 'a' + 10;
-                else index = sizeChar - 'A' + 36;
+                try
+                {
+                    var sizeChar = encoded[0];
+                    int index;
+                    if (sizeChar >= '0' && sizeChar <= '9') index = sizeChar - '0';
+                    else if (sizeChar >= 'a' && sizeChar <= 'z') index = sizeChar - 'a' + 10;
+                    else index = sizeChar - 'A' + 36;
 
-                var tBytes = index / 25;
-                index %= 25;
-                var vBytes = index / 5;
-                var hasC = (index % 5) != 0;
+                    var tBytes = index / 25;
+                    index %= 25;
+                    var vBytes = index / 5;
+                    var hasC = (index % 5) != 0;
 
-                var t = DecodeFloat(encoded.Substring(1, tBytes * 2));
-                var v = vBytes == 0 ? lastV : DecodeFloat(encoded.Substring(1 + tBytes * 2, vBytes * 2));
-                var c = !hasC ? lastC : Convert.ToInt32(encoded.Substring(1 + (tBytes + vBytes) * 2, 2), 16);
+                    var t = DecodeFloat(encoded.Substring(1, tBytes * 2));
+                    var v = vBytes == 0 ? lastV : DecodeFloat(encoded.Substring(1 + tBytes * 2, vBytes * 2));
+                    var c = !hasC ? lastC : Convert.ToInt32(encoded.Substring(1 + (tBytes + vBytes) * 2, 2), 16);
 
-                return new BezierKeyframe { time = t, value = v, curveType = c };
+                    return new BezierKeyframe { time = t, value = v, curveType = c };
+                }
+                catch
+                {
+                    return new BezierKeyframe { time = -1, value = lastV, curveType = lastC };
+                }
             }
             else
             {
