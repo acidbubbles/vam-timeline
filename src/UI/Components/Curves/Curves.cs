@@ -159,6 +159,7 @@ namespace VamTimeline
             _animationEditContext = animationEditContext;
             _animationEditContext.animation.animatables.onTargetsSelectionChanged.AddListener(OnTargetsSelectionChanged);
             _animationEditContext.onScrubberRangeChanged.AddListener(OnScrubberRangeChanged);
+            _animationEditContext.onKeyframesReduced.AddListener(OnKeyframesReduced);
             OnTargetsSelectionChanged();
         }
 
@@ -170,6 +171,14 @@ namespace VamTimeline
                 l.rangeBegin = args.scrubberRange.rangeBegin;
                 l.rangeDuration = args.scrubberRange.rangeDuration;
                 l.SetVerticesDirty();
+            }
+        }
+        private void OnKeyframesReduced()
+        {
+            if (this.gameObject.activeSelf)
+            {
+                this.gameObject.SetActive(false);
+                this.gameObject.SetActive(true);
             }
         }
 

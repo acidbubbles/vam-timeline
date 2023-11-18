@@ -24,11 +24,13 @@ namespace VamTimeline
         public class CurrentAnimationChangedEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class CurrentAnimationChangedEvent : UnityEvent<CurrentAnimationChangedEventArgs> { }
         public class AnimationSettingsChanged : UnityEvent<string> { }
+        public class KeyframesReduced : UnityEvent { }
 
         public readonly AnimationSettingsChanged onEditorSettingsChanged = new AnimationSettingsChanged();
         public readonly TimeChangedEvent onTimeChanged = new TimeChangedEvent();
         public readonly ScrubberRangeChangedEvent onScrubberRangeChanged = new ScrubberRangeChangedEvent();
         public readonly CurrentAnimationChangedEvent onCurrentAnimationChanged = new CurrentAnimationChangedEvent();
+        public readonly KeyframesReduced onKeyframesReduced = new KeyframesReduced();
 
         public PeerManager peers;
 

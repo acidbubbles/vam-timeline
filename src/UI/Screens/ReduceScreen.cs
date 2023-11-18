@@ -177,6 +177,8 @@ namespace VamTimeline
                 {
                     _reduceUI.button.interactable = true;
                     _reduceUI.label = "Reduce";
+
+                    animationEditContext.onKeyframesReduced.Invoke();
                 }));
         }
 
