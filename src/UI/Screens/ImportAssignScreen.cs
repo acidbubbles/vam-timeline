@@ -139,6 +139,7 @@ namespace VamTimeline
             }
             plugin.serializer.RestoreMissingTriggers(animation);
             animation.index.Rebuild();
+            animation.onClipsListChanged.Invoke();
             animationEditContext.SelectAnimation(clips[0].clip);
             ChangeScreen(TargetsScreen.ScreenName);
         }
