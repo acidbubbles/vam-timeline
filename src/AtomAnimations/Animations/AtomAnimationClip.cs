@@ -774,7 +774,7 @@ namespace VamTimeline
         public JSONStorableFloatAnimationTarget AddFloatParam(JSONStorableFloatRef floatRef)
         {
             if (targetFloatParams.Any(t => t.animatableRef == floatRef)) return null;
-            floatRef.EnsureAvailable();
+            floatRef.EnsureAvailable(forceCheck: true);
             return AddFloatParam(new JSONStorableFloatAnimationTarget(floatRef));
         }
 

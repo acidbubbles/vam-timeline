@@ -67,7 +67,7 @@ namespace VamTimeline
 
                 foreach (var origTarget in source.targetFloatParams)
                 {
-                    if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                    if (!origTarget.animatableRef.EnsureAvailable(false, forceCheck: true)) continue;
                     var newTarget = clip.AddFloatParam(new JSONStorableFloatAnimationTarget(origTarget));
                     newTarget.group = origTarget.group;
                     newTarget.value.keys = new List<BezierKeyframe>(origTarget.value.keys);
@@ -100,7 +100,7 @@ namespace VamTimeline
 
                 foreach (var origTarget in source.targetFloatParams)
                 {
-                    if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                    if (!origTarget.animatableRef.EnsureAvailable(false, forceCheck: true)) continue;
                     var newTarget = clip.AddFloatParam(origTarget.animatableRef);
                     newTarget.group = origTarget.group;
                     newTarget.SetKeyframeToCurrent(0f);
@@ -162,7 +162,7 @@ namespace VamTimeline
 
             foreach (var origTarget in source.targetFloatParams)
             {
-                if (!origTarget.animatableRef.EnsureAvailable(false)) continue;
+                if (!origTarget.animatableRef.EnsureAvailable(false, forceCheck: true)) continue;
                 var newTarget = clip.AddFloatParam(origTarget.animatableRef);
                 newTarget.SetCurveSnapshot(0f, origTarget.GetCurveSnapshot(source.animationLength));
                 newTarget.SetCurveSnapshot(clip.animationLength, next.targetFloatParams.First(t => t.TargetsSameAs(origTarget)).GetCurveSnapshot(0f));

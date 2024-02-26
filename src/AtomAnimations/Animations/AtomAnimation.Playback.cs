@@ -265,7 +265,7 @@ namespace VamTimeline
             }
             foreach (var floatParamRef in animatables.storableFloats)
             {
-                if (!floatParamRef.EnsureAvailable())
+                if (!floatParamRef.EnsureAvailable(silent: false, forceCheck: true))
                     SuperController.LogError($"Timeline: The storable float '{floatParamRef.GetFullName()}' has been removed. Remove it from Timeline to silence this error.");
             }
         }

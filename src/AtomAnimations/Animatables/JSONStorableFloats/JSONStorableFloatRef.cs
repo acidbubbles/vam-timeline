@@ -135,7 +135,7 @@ namespace VamTimeline
             }
         }
 
-        public bool EnsureAvailable(bool silent = true)
+        public bool EnsureAvailable(bool silent = true, bool forceCheck = false)
         {
             if (_available)
             {
@@ -148,11 +148,11 @@ namespace VamTimeline
                 storable = null;
                 floatParam = null;
             }
-            if (silent && Time.frameCount == _lastAvailableCheck)
+            if (silent && Time.frameCount == _lastAvailableCheck && !forceCheck)
             {
                 return false;
             }
-            if (TryBind(silent))
+            if (TryBind(silent, forceCheck))
             {
                 TryAssignMinMax();
                 return true;
@@ -161,10 +161,14 @@ namespace VamTimeline
             return false;
         }
 
-        private bool TryBind(bool silent)
+        private bool TryBind(bool silent, bool forceCheck)
         {
-            if (SuperController.singleton.isLoading) return false;
-            if (_nextCheck > Time.unscaledTime) return false;
+            if (!forceCheck)
+            {
+                if (SuperController.singleton.isLoading) return false;
+                if (_nextCheck > Time.unscaledTime) return false;
+            }
+
             _nextCheck = Time.unscaledTime + 1f;
             storable = _atom.GetStorableByID(storableId);
             if (storable == null)

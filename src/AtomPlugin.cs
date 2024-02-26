@@ -1010,7 +1010,7 @@ namespace VamTimeline
             // Remove deleted float params
             foreach (var floatRef in animation.animatables.storableFloats.Where(r => !r.owned))
             {
-                if (!floatRef.EnsureAvailable()) continue;
+                if (!floatRef.EnsureAvailable(forceCheck: true)) continue;
                 if (floatRef.storable.containingAtom == atom)
                 {
                     foreach (var clip in animation.clips)

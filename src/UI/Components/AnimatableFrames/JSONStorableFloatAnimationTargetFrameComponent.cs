@@ -132,7 +132,7 @@ namespace VamTimeline
         private void SetValue(float val)
         {
             if (plugin.animationEditContext.locked) return;
-            if (!target.animatableRef.EnsureAvailable(false)) return;
+            if (!target.animatableRef.EnsureAvailable(false, forceCheck: true)) return;
             var time = plugin.animationEditContext.clipTime.Snap();
             if (!target.recording)
                 target.SetKeyframe(time, val);
@@ -174,7 +174,7 @@ namespace VamTimeline
 
         protected override void ToggleKeyframeImpl(float time, bool on, bool mustBeOn)
         {
-            if (!target.animatableRef.EnsureAvailable(false))
+            if (!target.animatableRef.EnsureAvailable(false, forceCheck: true))
             {
                 if (!mustBeOn) SetToggle(!enabled);
                 return;

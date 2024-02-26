@@ -671,10 +671,9 @@ namespace VamTimeline
                 };
                 if (!target.animatableRef.owned)
                 {
-                    if (!target.animatableRef.EnsureAvailable())
+                    if (!target.animatableRef.EnsureAvailable(forceCheck: true))
                     {
-                        SuperController.LogError(
-                            $"Timeline: Target {target.animatableRef.storableId} / {target.animatableRef.floatParamName} does not exist and will not be saved");
+                        SuperController.LogError($"Timeline: Target {target.animatableRef.storableId} / {target.animatableRef.floatParamName} does not exist and will not be saved");
                         continue;
                     }
 
