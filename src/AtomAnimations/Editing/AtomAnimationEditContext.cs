@@ -556,18 +556,21 @@ namespace VamTimeline
                         entry.controllers,
                         (c, r) => c.targetControllers.Any(t => t.animatableRef == r),
                         false,
+                        true,
                         r => r
                     );
                     AddTargetIfMissing<FloatParamValClipboardEntry, JSONStorableFloatRef, FloatParamTargetSnapshot>(
                         entry.floatParams,
                         (c, r) => c.targetFloatParams.Any(t => t.animatableRef == r),
                         false,
+                        true,
                         r => r
                     );
                     AddTargetIfMissing<TriggersClipboardEntry, TriggersTrackRef, TriggerTargetSnapshot>(
                         entry.triggers,
                         (c, r) => c.targetTriggers.Any(t => t.animatableRef.name == r.name),
                         true,
+                        false,
                         r => _animation.animatables.GetOrCreateTriggerTrack(current.animationLayerQualifiedId, r.name)
                     );
                     current.Paste(clipTime + entry.time - timeOffset, entry);
@@ -580,7 +583,7 @@ namespace VamTimeline
             }
         }
 
-        private void AddTargetIfMissing<TEntry, TRef, TSnapshot>(List<TEntry> entries, Func<AtomAnimationClip, TRef, bool> hasTarget, bool allowManyLayers, Func<TRef, TRef> getOrCreateRef)
+        private void AddTargetIfMissing<TEntry, TRef, TSnapshot>(List<TEntry> entries, Func<AtomAnimationClip, TRef, bool> hasTarget, bool allowManyLayers, bool createWithSnapshot, Func<TRef, TRef> getOrCreateRef)
             where TEntry : IClipboardEntry<TRef, TSnapshot>
             where TRef : AnimatableRefBase
             where TSnapshot : ISnapshot
@@ -616,8 +619,15 @@ namespace VamTimeline
                         SuperController.LogError($"Timeline: Cannot paste {animatableRef.GetFullName()}, invalid add state.");
                         continue;
                     }
-                    added.SetSnapshot(0f, entry.snapshot);
-                    added.SetSnapshot(clip.animationLength, entry.snapshot);
+                    if (createWithSnapshot)
+                    {
+                        added.SetSnapshot(0f, entry.snapshot);
+                        added.SetSnapshot(clip.animationLength, entry.snapshot);
+                    }
+                    else
+                    {
+                        added.AddEdgeFramesIfMissing(clip.animationLength);
+                    }
                 }
             }
         }
