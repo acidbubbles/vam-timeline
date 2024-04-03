@@ -29,6 +29,7 @@ namespace VamTimeline
 
         public readonly SimpleTrigger isPlayingChangedTrigger = new SimpleTrigger("Start Playing", "Stop Playing");
         public readonly SimpleTrigger clipListChangedTrigger = new SimpleTrigger("Clips List Changed", null);
+        public readonly SimpleTrigger currentAnimationChangedTrigger = new SimpleTrigger("Current Animation Changed", null);
 
         public bool recording;
         public bool focusOnLayer;

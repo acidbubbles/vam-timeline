@@ -22,6 +22,11 @@ namespace VamTimeline
                 animation.isPlayingChangedTrigger.trigger.triggerActionsParent = popupParent;
                 animation.isPlayingChangedTrigger.trigger.OpenTriggerActionsPanel();
             });
+            prefabFactory.CreateButton("On Current Animation Changed").button.onClick.AddListener(()=>
+            {
+                animation.currentAnimationChangedTrigger.trigger.triggerActionsParent = popupParent;
+                animation.currentAnimationChangedTrigger.trigger.OpenTriggerActionsPanel();
+            });
         }
     }
 }

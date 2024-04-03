@@ -62,10 +62,12 @@ namespace VamTimeline
 
             clipListChangedTrigger.Update();
             isPlayingChangedTrigger.Update();
+            currentAnimationChangedTrigger.Update();
             SyncTriggers(true);
 
             clipListChangedTrigger.trigger.Update();
             isPlayingChangedTrigger.trigger.Update();
+            currentAnimationChangedTrigger.trigger.Update();
 
             if (!allowAnimationProcessing || paused) return;
 
@@ -119,6 +121,7 @@ namespace VamTimeline
         {
             isPlayingChangedTrigger.Dispose();
             clipListChangedTrigger.Dispose();
+            currentAnimationChangedTrigger.Dispose();
 
             onAnimationSettingsChanged.RemoveAllListeners();
             onIsPlayingChanged.RemoveAllListeners();

@@ -957,6 +957,7 @@ namespace VamTimeline
                 {
                     chooser.Value.val = "";
                 }
+                animation.currentAnimationChangedTrigger.Trigger();
             }
         }
 
@@ -987,6 +988,7 @@ namespace VamTimeline
                 chooser.val = "";
             else
                 chooser.val = args.after.animationName;
+            animation.currentAnimationChangedTrigger.Trigger();
         }
 
         private void OnPauseChanged()
