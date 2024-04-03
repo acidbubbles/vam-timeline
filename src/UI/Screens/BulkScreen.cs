@@ -10,7 +10,7 @@ namespace VamTimeline
         public const string ScreenName = "Bulk";
 
         private const string _offsetControllerUILabel = "Start offset controllers mode...";
-        private const string _offsetControllerUIOfsettingLabel = "Apply recorded offset...";
+        private const string _offsetControllerUIOffsetLabel = "Apply recorded offset...";
 
         private static bool _offsetting;
         private static string _lastOffsetMode;
@@ -61,7 +61,7 @@ namespace VamTimeline
             _offsetModeJSON = new JSONStorableStringChooser("Offset mode", new List<string> { OffsetOperations.ChangePivotMode, OffsetOperations.OffsetMode, OffsetOperations.RepositionMode }, _lastOffsetMode ?? OffsetOperations.RepositionMode, "Offset mode", val => _lastOffsetMode = val);
             prefabFactory.CreatePopup(_offsetModeJSON, false, true, 230f, true);
 
-            _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOfsettingLabel : _offsetControllerUILabel);
+            _offsetControllerUI = prefabFactory.CreateButton(_offsetting ? _offsetControllerUIOffsetLabel : _offsetControllerUILabel);
             _offsetControllerUI.button.onClick.AddListener(OffsetController);
         }
 
@@ -84,7 +84,7 @@ namespace VamTimeline
         {
             _startJSON = new JSONStorableFloat("Selection starts at", 0f, val =>
             {
-                var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
+                var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).FirstOrDefault();
                 _startJSON.valNoCallback = closest;
                 if (_startJSON.val > _endJSON.val) _endJSON.valNoCallback = _startJSON.val;
                 SelectionModified();
@@ -94,8 +94,8 @@ namespace VamTimeline
 
             _endJSON = new JSONStorableFloat("Selection ends at", 0f, val =>
             {
-                var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).First();
-                _endJSON.valNoCallback = closest;
+                var closest = animationEditContext.GetAllOrSelectedTargets().Select(t => t.GetTimeClosestTo(val)).OrderBy(t => Mathf.Abs(val - t)).FirstOrDefault();
+                _endJSON.valNoCallback = closest == 0 ? current.animationLength : closest;
                 if (_endJSON.val < _startJSON.val) _startJSON.valNoCallback = _endJSON.val;
                 SelectionModified();
             }, 0f, current.animationLength);
@@ -235,7 +235,7 @@ namespace VamTimeline
 
             if (_offsetSnapshot == null) return;
 
-            _offsetControllerUI.label = _offsetControllerUIOfsettingLabel;
+            _offsetControllerUI.label = _offsetControllerUIOffsetLabel;
             _offsetting = true;
         }
 
@@ -265,6 +265,14 @@ namespace VamTimeline
         protected override void OnCurrentAnimationChanged(AtomAnimationEditContext.CurrentAnimationChangedEventArgs args)
         {
             base.OnCurrentAnimationChanged(args);
+
+            _startJSON.max = current.animationLength;
+            _endJSON.max = current.animationLength;
+
+            if (current.animationLength < _startJSON.valNoCallback)
+            {
+                _startJSON.valNoCallback = 0;
+            }
 
             if (current.animationLength < _endJSON.valNoCallback)
             {
