@@ -45,6 +45,7 @@ namespace VamTimeline
         public readonly Dictionary<int, IndexedSegment> segmentsById = new Dictionary<int, IndexedSegment>();
         public bool useSegment;
         public readonly List<int> segmentIds = new List<int>();
+        public readonly List<int> segmentIdsExcludeShared = new List<int>();
         public readonly List<string> segmentNames = new List<string>();
         public readonly IList<List<AtomAnimationClip>> clipsGroupedByLayer = new List<List<AtomAnimationClip>>();
         public readonly List<string> clipNames = new List<string>();
@@ -85,6 +86,7 @@ namespace VamTimeline
             _clipsByFloatParam.Clear();
             segmentNames.Clear();
             segmentIds.Clear();
+            segmentIdsExcludeShared.Clear();
 
             if (_pendingBulkUpdate) return;
 
@@ -100,6 +102,8 @@ namespace VamTimeline
                         segmentsById.Add(clip.animationSegmentId, segment);
                         segmentNames.Add(clip.animationSegment);
                         segmentIds.Add(clip.animationSegmentId);
+                        if (clip.animationSegment != AtomAnimationClip.SharedAnimationSegment)
+                            segmentIdsExcludeShared.Add(clip.animationSegmentId);
                     }
                     segment.Add(clip);
                 }

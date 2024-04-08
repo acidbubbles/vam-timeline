@@ -27,6 +27,8 @@ namespace VamTimeline
         private JSONStorableAction _previousAnimationJSON;
         private JSONStorableAction _nextAnimationInMainLayerJSON;
         private JSONStorableAction _previousAnimationInMainLayerJSON;
+        private JSONStorableAction _nextSegmentJSON;
+        private JSONStorableAction _previousSegmentJSON;
         private JSONStorableFloat _scrubberJSON;
         private JSONStorableFloat _timeJSON;
         private JSONStorableAction _playJSON;
@@ -321,6 +323,20 @@ namespace VamTimeline
                 animationEditContext.GoToPreviousAnimation(animation.clips[0].animationLayerQualifiedId);
             });
             RegisterAction(_previousAnimationInMainLayerJSON);
+
+            _nextSegmentJSON = new JSONStorableAction(StorableNames.NextSegment, () =>
+            {
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.NextSegment}'");
+                animationEditContext.GoToNextAnimation(animation.clips[0].animationSegmentId);
+            });
+            RegisterAction(_nextSegmentJSON);
+
+            _previousSegmentJSON = new JSONStorableAction(StorableNames.PreviousSegment, () =>
+            {
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PreviousSegment}'");
+                animationEditContext.GoToPreviousAnimation(animation.clips[0].animationSegmentId);
+            });
+            RegisterAction(_previousSegmentJSON);
 
             _scrubberJSON = new JSONStorableFloat(StorableNames.Scrubber, 0f, v => animationEditContext.clipTime = v.Snap(animationEditContext.snap), 0f, AtomAnimationClip.DefaultAnimationLength)
             {
@@ -1231,6 +1247,8 @@ namespace VamTimeline
             bindings.Add(new JSONStorableAction("NextAnimationInCurrentLayer", () => animationEditContext.GoToNextAnimation(animationEditContext.current.animationLayerQualifiedId)));
             bindings.Add(new JSONStorableAction("PreviousAnimationInMainLayer", _previousAnimationInMainLayerJSON.actionCallback));
             bindings.Add(new JSONStorableAction("NextAnimationInMainLayer", _nextAnimationInMainLayerJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("PreviousSegment", _previousSegmentJSON.actionCallback));
+            bindings.Add(new JSONStorableAction("NextSegment", _nextSegmentJSON.actionCallback));
             bindings.Add(new JSONStorableAction("Select_Animation#1", () => animationEditContext.SelectAnimation(animationEditContext.currentLayer.Skip(0).FirstOrDefault())));
             bindings.Add(new JSONStorableAction("Select_Animation#2", () => animationEditContext.SelectAnimation(animationEditContext.currentLayer.Skip(1).FirstOrDefault())));
             bindings.Add(new JSONStorableAction("Select_Animation#3", () => animationEditContext.SelectAnimation(animationEditContext.currentLayer.Skip(2).FirstOrDefault())));

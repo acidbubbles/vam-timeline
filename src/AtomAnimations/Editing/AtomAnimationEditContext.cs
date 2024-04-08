@@ -370,6 +370,32 @@ namespace VamTimeline
                 SelectAnimation(next);
         }
 
+        public void GoToPreviousSegment(int currentSegmentId)
+        {
+            if (animation.index.segmentIdsExcludeShared.Count < 2) return;
+            var index = animation.index.segmentIdsExcludeShared.IndexOf(currentSegmentId);
+            if (index <= 0) return;
+            var prevSegmentId = animation.index.segmentIdsExcludeShared[index - 1];
+            var clip = animation.clips.FirstOrDefault(c => c.animationSegmentId == prevSegmentId);
+            if (animation.isPlaying)
+                animation.PlayClip(clip, true);
+            else
+                SelectAnimation(clip);
+        }
+
+        public void GoToNextSegment(int currentSegmentId)
+        {
+            if (animation.index.segmentIdsExcludeShared.Count < 2) return;
+            var index = animation.index.segmentIdsExcludeShared.IndexOf(currentSegmentId);
+            if (index >= animation.index.segmentIdsExcludeShared.Count - 1) return;
+            var nextSegmentId = animation.index.segmentIdsExcludeShared[index + 1];
+            var clip = animation.clips.FirstOrDefault(c => c.animationSegmentId == nextSegmentId);
+            if (animation.isPlaying)
+                animation.PlayClip(clip, true);
+            else
+                SelectAnimation(clip);
+        }
+
         public AtomAnimationsClipsIndex.IndexedSegment currentSegment
         {
             get
