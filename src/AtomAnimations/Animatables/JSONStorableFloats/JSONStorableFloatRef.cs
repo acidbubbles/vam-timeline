@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace VamTimeline
@@ -24,6 +25,7 @@ namespace VamTimeline
         private float _nextCheck;
         private bool? _isMorph;
         private DAZMorph _asMorph;
+        public string lastKnownAtomUid => _lastKnownAtomUid;
 
         public JSONStorableFloatRef(Atom atom, string storableId, string floatParamName, bool owned, float? assignMinValueOnBound = null, float? assignMaxValueOnBound = null)
         {

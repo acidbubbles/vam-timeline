@@ -609,6 +609,18 @@ namespace VamTimeline
             var controllersJSON = new JSONArray();
             foreach (var target in clip.targetControllers)
             {
+                if (target.animatableRef == null)
+                {
+                    SuperController.LogError("Timeline: An controller reference is broken on clip " + clip.animationNameQualified + " and will be skipped.");
+                    continue;
+                }
+
+                if (target.position == null)
+                {
+                    SuperController.LogError("Timeline: An storable positional reference is broken on clip " + clip.animationNameQualified + " and will be skipped.");
+                    continue;
+                }
+
                 var controllerJSON = new JSONClass
                 {
                     { "Controller", target.animatableRef.name },
@@ -644,7 +656,7 @@ namespace VamTimeline
                     };
                 }
 
-                if (target.weight != 1f)
+                if (Mathf.Approximately(target.weight, 1f))
                 {
                     controllerJSON["Weight"] = target.weight.ToString(CultureInfo.InvariantCulture);
                 }
@@ -663,6 +675,12 @@ namespace VamTimeline
             var floatParamsJSON = new JSONArray();
             foreach (var target in clip.targetFloatParams)
             {
+                if (target.animatableRef == null)
+                {
+                    SuperController.LogError("Timeline: An storable reference is broken on clip " + clip.animationNameQualified + " and will be skipped.");
+                    continue;
+                }
+
                 var paramJSON = new JSONClass
                 {
                     { "Storable", target.animatableRef.storableId },
@@ -673,11 +691,24 @@ namespace VamTimeline
                 {
                     if (!target.animatableRef.EnsureAvailable(forceCheck: true))
                     {
-                        SuperController.LogError($"Timeline: Target {target.animatableRef.storableId} / {target.animatableRef.floatParamName} does not exist and will not be saved");
+                        if (target.animatableRef.lastKnownAtomUid != null)
+                            paramJSON["Atom"] = target.animatableRef.lastKnownAtomUid;
+                        else
+                            SuperController.LogError($"Timeline: Target {target.animatableRef.storableId} / {target.animatableRef.floatParamName} does not exist, this target in animation {clip.animationNameQualified} will be skipped.");
+                    }
+                    else if (target.animatableRef.storable != null && target.animatableRef.storable.containingAtom != null)
+                    {
+                        paramJSON["Atom"] = target.animatableRef.storable.containingAtom.uid;
+                    }
+                    else if(target.animatableRef.lastKnownAtomUid != null)
+                    {
+                        paramJSON["Atom"] = target.animatableRef.lastKnownAtomUid;
+                    }
+                    else
+                    {
+                        SuperController.LogError("Timeline: Target {target.animatableRef.storableId} / {target.animatableRef.floatParamName} does not have a valid atom reference, this target in animation {clip.animationNameQualified} will be skipped.");
                         continue;
                     }
-
-                    paramJSON["Atom"] = target.animatableRef.storable.containingAtom.uid;
                 }
 
                 if (target.group != null)
@@ -699,6 +730,12 @@ namespace VamTimeline
             var triggersJSON = new JSONArray();
             foreach (var target in clip.targetTriggers)
             {
+                if (target.animatableRef == null)
+                {
+                    SuperController.LogError("Timeline: An target reference is broken on clip " + clip.animationNameQualified + " and will be skipped.");
+                    continue;
+                }
+
                 var triggerJSON = new JSONClass
                 {
                     { "Name", target.name },
