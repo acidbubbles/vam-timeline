@@ -536,8 +536,16 @@ namespace VamTimeline
 					clipboard.Clear();
 					clipboard.time = time;
 					clipboard.entries.Add(entry);
-					if (time.IsSameFrame(0f) || time.IsSameFrame(current.animationLength)) return;
-					foreach (var target in GetAllOrSelectedTargets())
+                    foreach (var target in current.targetTriggers)
+                    {
+                        target.DeleteFrame(time);
+                        if (time.IsSameFrame(0f))
+                            target.CreateKeyframe(0);
+                        if (time.IsSameFrame(current.animationLength))
+                            target.CreateKeyframe(current.animationLength.ToMilliseconds());
+                    }
+                    if (time.IsSameFrame(0f) || time.IsSameFrame(current.animationLength)) return;
+					foreach (var target in GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
 					{
 						target.DeleteFrame(time);
 					}
