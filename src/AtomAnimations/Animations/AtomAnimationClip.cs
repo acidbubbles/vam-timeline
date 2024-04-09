@@ -305,7 +305,15 @@ namespace VamTimeline
                         {
                             if (curve.length != 2) continue;
                             var keyframe = curve.GetLastFrame();
-                            keyframe.curveType = value ? curve.GetFirstFrame().curveType : CurveTypeValues.CopyPrevious;
+                            if (value)
+                            {
+                                keyframe.curveType = curve.GetFirstFrame().curveType;
+
+                            }
+                            else
+                            {
+                                keyframe.curveType = CurveTypeValues.CopyPrevious;
+                            }
                             curve.SetLastFrame(keyframe);
                         }
                     }
@@ -324,6 +332,7 @@ namespace VamTimeline
                 UpdateForcedNextAnimationTime();
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(loop));
                 DirtyAll();
+                onAnimationKeyframesDirty.Invoke();
             }
         }
 
