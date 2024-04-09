@@ -487,7 +487,16 @@ namespace VamTimeline
             {
                 if (!CanEdit()) return;
                 var time = clipTime;
-                if (time.IsSameFrame(0f)) return;
+                foreach (var target in current.targetTriggers)
+                {
+                    target.DeleteFrame(time);
+                    if (time.IsSameFrame(0f))
+                        target.CreateKeyframe(0);
+                    if (time.IsSameFrame(current.animationLength))
+                        target.CreateKeyframe(current.animationLength.ToMilliseconds());
+                }
+                if (time.IsSameFrame(0f))
+                    return;
                 if (time.IsSameFrame(current.animationLength))
                 {
                     if (current.loop) return;
@@ -498,7 +507,7 @@ namespace VamTimeline
 
                     return;
                 }
-                foreach (var target in GetAllOrSelectedTargets())
+                foreach (var target in GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
                 {
                     target.DeleteFrame(time);
                 }
