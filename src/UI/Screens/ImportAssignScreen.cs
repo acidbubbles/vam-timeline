@@ -128,6 +128,10 @@ namespace VamTimeline
                 {
                     imported.ImportClip();
                 }
+
+                // When no non-shared segments, create one
+                if (animation.clips.Count == 0 || animation.clips.All(c => c.animationSegmentId == AtomAnimationClip.SharedAnimationSegmentId))
+                    animation.CreateClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment);
             }
             catch (Exception exc)
             {
@@ -146,6 +150,9 @@ namespace VamTimeline
 
         public override void OnDestroy()
         {
+            if (animation.clips.Count == 0)
+                animation.CreateClip(AtomAnimationClip.DefaultAnimationName, AtomAnimationClip.DefaultAnimationLayer, AtomAnimationClip.DefaultAnimationSegment);
+
             animation.animatables.locked = false;
             foreach (var imported in _imported)
             {
