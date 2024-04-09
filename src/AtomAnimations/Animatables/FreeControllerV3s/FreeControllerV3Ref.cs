@@ -7,7 +7,10 @@
         public readonly string lastKnownControllerName;
         public readonly FreeControllerV3 controller;
         public readonly JSONStorableFloat weightJSON;
-        public float scaledWeight = 1f;
+        public readonly JSONStorableFloat positionWeightJSON;
+        public readonly JSONStorableFloat rotationWeightJSON;
+        public float scaledPositionWeight = 1f;
+        public float scaledRotationWeight = 1f;
 
         public FreeControllerV3Ref(FreeControllerV3 controller, bool owned)
         {
@@ -19,7 +22,32 @@
             var weightJSONName = owned
                 ? $"Controller Weight {controller.name}"
                 : $"External Controller Weight {controller.containingAtom.name} / {controller.name}";
-            weightJSON = new JSONStorableFloat(weightJSONName, 1f, val => scaledWeight = val.ExponentialScale(0.1f, 1f), 0f, 1f)
+            weightJSON = new JSONStorableFloat(weightJSONName, 1f, val =>
+            {
+                val = val.ExponentialScale(0.1f, 1f);
+                scaledPositionWeight = val;
+                scaledRotationWeight = val;
+                if (positionWeightJSON != null) positionWeightJSON.valNoCallback = val;
+                if (rotationWeightJSON != null) rotationWeightJSON.valNoCallback = val;
+            }, 0f, 1f)
+            {
+                isStorable = false
+            };
+            positionWeightJSON = new JSONStorableFloat(weightJSONName + " (Position)", 1f, val =>
+            {
+                val = val.ExponentialScale(0.1f, 1f);
+                scaledPositionWeight = val;
+                weightJSON.valNoCallback = val;
+            }, 0f, 1f)
+            {
+                isStorable = false
+            };
+            rotationWeightJSON = new JSONStorableFloat(weightJSONName + " (Rotation)", 1f, val =>
+            {
+
+                val = val.ExponentialScale(0.1f, 1f);
+                scaledRotationWeight = val;
+            }, 0f, 1f)
             {
                 isStorable = false
             };

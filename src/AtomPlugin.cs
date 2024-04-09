@@ -695,8 +695,12 @@ namespace VamTimeline
 
             foreach (var animatable in animation.animatables.controllers.Where(c => c.weightJSON != null))
             {
-                if(IsFloatJSONParam(animatable.weightJSON.name)) continue;
-                RegisterFloat(animatable.weightJSON);
+                if (!IsFloatJSONParam(animatable.weightJSON.name))
+                    RegisterFloat(animatable.weightJSON);
+                if (!IsFloatJSONParam(animatable.positionWeightJSON.name))
+                    RegisterFloat(animatable.positionWeightJSON);
+                if (!IsFloatJSONParam(animatable.rotationWeightJSON.name))
+                    RegisterFloat(animatable.rotationWeightJSON);
             }
 
             // TODO: Removing would be better.

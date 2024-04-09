@@ -636,7 +636,7 @@ namespace VamTimeline
             if (_globalScaledWeight <= 0) return;
             foreach (var x in index.ByController())
             {
-                SampleController(x.Key.controller, x.Value, force, force ? 1f : x.Key.scaledWeight);
+                SampleController(x.Key.controller, x.Value, force, force ? 1f : x.Key.scaledPositionWeight, force ? 1f : x.Key.scaledRotationWeight);
             }
         }
 
@@ -681,7 +681,7 @@ namespace VamTimeline
         private float[] _rotationBlendWeights = new float[0];
 
         [MethodImpl(256)]
-        private void SampleController(FreeControllerV3 controller, IList<FreeControllerV3AnimationTarget> targets, bool force, float animatableWeight)
+        private void SampleController(FreeControllerV3 controller, IList<FreeControllerV3AnimationTarget> targets, bool force, float animatablePositionWeight, float animatableRotationWeight)
         {
             if (ReferenceEquals(controller, null)) return;
             var control = controller.control;
@@ -782,7 +782,7 @@ namespace VamTimeline
                 }
 
                 var controlWeight = animatedCount == 1 ? totalRotationControlWeights : totalRotationControlWeights / totalRotationBlendWeights;
-                var finalWeight = controlWeight * _globalScaledWeight * animatableWeight;
+                var finalWeight = controlWeight * _globalScaledWeight * animatableRotationWeight;
 
                 var rotation = Quaternion.Slerp(control.rotation, targetRotation, finalWeight);
                 control.rotation = rotation;
@@ -792,7 +792,7 @@ namespace VamTimeline
             {
                 var targetPosition = weightedPositionSum / totalPositionBlendWeights;
                 var controlWeight = animatedCount == 1 ? totalPositionControlWeights : (totalPositionControlWeights / totalPositionBlendWeights);
-                var finalWeight = controlWeight * _globalScaledWeight * animatableWeight;
+                var finalWeight = controlWeight * _globalScaledWeight * animatablePositionWeight;
 
                 var position = Vector3.Lerp(control.position, targetPosition, finalWeight);
                 control.position = position;
