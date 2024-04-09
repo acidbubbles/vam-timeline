@@ -30,7 +30,7 @@ namespace VamTimeline
 
             CreateExpandButton(row1.transform, "Parenting & more", () =>
             {
-                plugin.ChangeScreen(ControllerTargetSettingsScreen.ScreenName, target.animatableRef.controller);
+                plugin.ChangeScreen(ControllerTargetSettingsScreen.ScreenName, target);
             });
 
             var row2 = new GameObject();

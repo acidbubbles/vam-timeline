@@ -8,7 +8,7 @@ namespace VamTimeline
     public class ControllerTargetSettingsScreen : ScreenBase
     {
         public const string ScreenName = "Controller settings";
-        private static FreeControllerV3 _lastArg;
+        private static FreeControllerV3AnimationTarget _lastArg;
         private JSONStorableStringChooser _atomJSON;
         private JSONStorableStringChooser _rigidbodyJSON;
         private FreeControllerV3AnimationTarget _target;
@@ -19,8 +19,8 @@ namespace VamTimeline
         {
             base.Init(plugin, arg);
 
-            if (arg == null) arg = _lastArg; else _lastArg = (FreeControllerV3)arg;
-            _target = current.targetControllers.FirstOrDefault(t => t.animatableRef.controller == (FreeControllerV3)arg);
+            if (arg == null) arg = _lastArg; else _lastArg = (FreeControllerV3AnimationTarget)arg;
+            _target = (FreeControllerV3AnimationTarget)arg;
 
             CreateChangeScreenButton("<b><</b> <i>Back</i>", TargetsScreen.ScreenName);
 
@@ -198,6 +198,7 @@ namespace VamTimeline
         {
             base.OnCurrentAnimationChanged(args);
             ChangeScreen(TargetsScreen.ScreenName);
+            _target = args.after.targetControllers.FirstOrDefault(t => t.TargetsSameAs(_target));
         }
     }
 }
