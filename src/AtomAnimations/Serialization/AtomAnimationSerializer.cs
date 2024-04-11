@@ -656,7 +656,7 @@ namespace VamTimeline
                     };
                 }
 
-                if (Mathf.Approximately(target.weight, 1f))
+                if (!Mathf.Approximately(target.weight, 1f))
                 {
                     controllerJSON["Weight"] = target.weight.ToString(CultureInfo.InvariantCulture);
                 }
