@@ -19,6 +19,7 @@ namespace VamTimeline
         public readonly UnityEvent onClipsListChanged = new UnityEvent();
         public readonly UnityEvent onAnimationRebuilt = new UnityEvent();
         public readonly UnityEvent onPausedChanged = new UnityEvent();
+        public readonly UnityEvent onQueueFinished = new UnityEvent();
         public readonly AtomAnimationClipEvent onIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationClipEvent onClipIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationChangeClipEvent onMainClipPerLayerChanged = new AtomAnimationChangeClipEvent();
@@ -43,6 +44,10 @@ namespace VamTimeline
         public bool isPlaying { get; private set; }
         private string _playingAnimationSegment;
         public int playingAnimationSegmentId { get; private set; } = AtomAnimationClip.NoneAnimationSegmentId;
+
+        public List<string> animationQueue { get; } = new List<string>();
+        public int queueIndex { get; set; } = -1;
+        public bool isQueueActive { get; set; } = false;
 
         public bool IsPlayingAnimationSegment(string animationSegment)
         {

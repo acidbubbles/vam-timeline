@@ -12,14 +12,19 @@ namespace VamTimeline
 
         public void PlayClipByName(string animationName, bool seq)
         {
-            var clipsByName = index.ByName(animationName);
-            var clip = clipsByName.FirstOrDefault(c => c.animationSegment == playingAnimationSegment) ?? clipsByName.FirstOrDefault();
-            if (clip == null) return;
+            var clip = FindClipInPriorityOrder(animationName, playingAnimationSegmentId);
+            if (clip == null)
+            {
+                if (logger.general) logger.Log(logger.generalCategory, $"Could not find animation '{animationName}' to play by name.");
+                return;
+            }
+            DeactivateQueue();
             PlayClip(clip, seq);
         }
 
         public void PlayClipBySet(string animationName, string animationSet, string animationSegment, bool seq)
         {
+            DeactivateQueue();
             if (!index.segmentNames.Contains(animationSegment))
                 return;
 
@@ -28,6 +33,7 @@ namespace VamTimeline
 
         public void PlayClipBySet(int animationNameId, int animationSetId, int animationSegmentId, bool seq)
         {
+            DeactivateQueue();
             var siblings = GetMainAndBestSiblingPerLayer(animationSegmentId, animationNameId, animationSetId);
 
             if (animationSegmentId != playingAnimationSegmentId && animationSegmentId != AtomAnimationClip.SharedAnimationSegmentId && animationSegmentId != AtomAnimationClip.NoneAnimationSegmentId)
@@ -43,7 +49,7 @@ namespace VamTimeline
             {
                 var clip = siblings[i];
                 if (clip.target == null) continue;
-                if(isPlaying && clip.main != null)
+                if (isPlaying && clip.main != null)
                     PlayClipCore(clip.main, clip.target, seq, true, false);
                 else
                     PlayClipCore(null, clip.target, seq, true, false);
@@ -52,6 +58,7 @@ namespace VamTimeline
 
         public void PlayRandom(string groupName = null)
         {
+            DeactivateQueue();
             var candidates = clips
                 .Where(c => !c.playbackMainInLayer && (groupName == null || c.animationNameGroup == groupName))
                 .ToList();
@@ -63,7 +70,7 @@ namespace VamTimeline
             PlayClip(clip, true);
         }
 
-        public void PlayClip(AtomAnimationClip clip, bool seq, bool allowPreserveLoops = true)
+        public void PlayClip(AtomAnimationClip clip, bool seq, bool allowPreserveLoops = true, bool startingQueue = false)
         {
             paused = false;
             if (clip.playbackMainInLayer) return;
@@ -75,20 +82,27 @@ namespace VamTimeline
                 clip,
                 seq,
                 allowPreserveLoops,
-                true
+                true,
+                startingQueue
             );
         }
 
         public void PlaySegment(string segmentName, bool seq = true)
         {
+            DeactivateQueue();
             AtomAnimationsClipsIndex.IndexedSegment segment;
             if (!index.segmentsById.TryGetValue(segmentName.ToId(), out segment))
                 return;
             PlaySegment(segment.mainClip, seq);
         }
 
-        public void PlaySegment(AtomAnimationClip source, bool seq = true)
+        public void PlaySegment(AtomAnimationClip source, bool seq = true, bool startingQueue = false)
         {
+            if (!startingQueue)
+            {
+                DeactivateQueue();
+            }
+
             // Note: This needs to happen for other atoms to receive the peer message. Moving the invoke later (cleaner) will break existing scenes.
             sequencing = sequencing || seq;
             onSegmentPlayed.Invoke(source);
@@ -120,7 +134,7 @@ namespace VamTimeline
 
             foreach (var clip in clipsToPlay)
             {
-                PlayClipCore(null, clip, seq, false, false);
+                PlayClipCore(null, clip, seq, false, false, startingQueue);
             }
         }
 
@@ -128,8 +142,13 @@ namespace VamTimeline
 
         #region Playback (Core)
 
-        private void PlayClipCore(AtomAnimationClip previous, AtomAnimationClip next, bool seq, bool allowPreserveLoops, bool allowSibling)
+        private void PlayClipCore(AtomAnimationClip previous, AtomAnimationClip next, bool seq, bool allowPreserveLoops, bool allowSibling, bool startingQueue = false)
         {
+            if (!startingQueue)
+            {
+                DeactivateQueue();
+            }
+
             paused = false;
 
             if (previous != null && !previous.playbackMainInLayer)
@@ -152,12 +171,14 @@ namespace VamTimeline
                 sequencing = sequencing || seq;
                 fadeManager?.SyncFadeTime();
                 if (next.isOnSegment)
-                    PlaySegment(next, sequencing);
+                {
+                    PlaySegment(next, sequencing, startingQueue);
+                }
             }
 
             if (next.isOnSegment && !IsPlayingAnimationSegment(next.animationSegmentId))
             {
-                PlaySegment(next, sequencing);
+                PlaySegment(next, sequencing, startingQueue);
                 return;
             }
 
@@ -233,8 +254,6 @@ namespace VamTimeline
                 isPlayingChangedTrigger.SetActive(true);
             }
 
-            if (sequencing)
-                AssignNextAnimation(next);
 
             onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = previous, after = next });
 
@@ -246,12 +265,12 @@ namespace VamTimeline
                     c.playbackScheduledNextAnimation = null;
                     c.playbackScheduledNextTimeLeft = float.NaN;
                     BlendOut(c, 0);
-                    if(c.playbackMainInLayer)
+                    if (c.playbackMainInLayer)
                         onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = c, after = null });
                 }
             }
 
-            if (allowSibling && (sequencing || !focusOnLayer))
+            if (allowSibling && (sequencing || !focusOnLayer) && !isQueueActive)
                 PlaySiblings(next);
         }
 
@@ -353,6 +372,7 @@ namespace VamTimeline
                     sequencing = false;
                     paused = false;
                     applyNextPose = false;
+                    DeactivateQueue();
                     onIsPlayingChanged.Invoke(clip);
                     isPlayingChangedTrigger.SetActive(false);
                     _stopwatch.Stop();
@@ -365,6 +385,7 @@ namespace VamTimeline
         {
             _allowPlayingTermination = true;
             autoStop = 0f;
+            DeactivateQueue();
 
             foreach (var clip in clips)
             {
@@ -385,6 +406,7 @@ namespace VamTimeline
 
         public void ResetAll()
         {
+            DeactivateQueue();
             playTime = 0f;
             foreach (var clip in clips)
                 clip.Reset(true);
@@ -392,11 +414,19 @@ namespace VamTimeline
 
         public void StopAndReset()
         {
+            DeactivateQueue();
             if (isPlaying) StopAll();
             ResetAll();
         }
 
         #endregion
+
+        public void DeactivateQueue()
+        {
+            if (isQueueActive && logger.sequencing) logger.Log(logger.sequencingCategory, "Deactivating animation queue.");
+            isQueueActive = false;
+            queueIndex = -1;
+        }
 
         #region Animation state
 
@@ -518,7 +548,7 @@ namespace VamTimeline
             onClipIsPlayingChanged.Invoke(clip);
             if (logger.showPlayInfoInHelpText)
             {
-                if(index.segmentIds.Count > 1)
+                if (index.segmentIds.Count > 1)
                     logger.ShowTemporaryMessage($"Timeline: Play {clip.animationNameQualified}");
                 else if (index.ByName(clip.animationSegmentId, clip.animationNameId).Count == 1)
                     logger.ShowTemporaryMessage($"Timeline: Play {clip.animationName}");
@@ -604,7 +634,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
-                if(target.recording)
+                if (target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     return;
@@ -622,7 +652,7 @@ namespace VamTimeline
             if (totalBlendWeights > minimumDelta)
             {
                 var val = weightedSum / totalBlendWeights;
-                if(Mathf.Abs(val - floatParamRef.val) > minimumDelta)
+                if (Mathf.Abs(val - floatParamRef.val) > minimumDelta)
                 {
                     floatParamRef.val = Mathf.Lerp(floatParamRef.val, val, _globalScaledWeight);
                 }
@@ -704,7 +734,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
-                if(target.recording)
+                if (target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     continue;
@@ -799,7 +829,8 @@ namespace VamTimeline
             }
 
             if (force && (controller.currentPositionState == FreeControllerV3.PositionState.Comply ||
-                controller.currentRotationState == FreeControllerV3.RotationState.Comply)) {
+                controller.currentRotationState == FreeControllerV3.RotationState.Comply))
+            {
                 controller.PauseComply();
             }
         }

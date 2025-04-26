@@ -24,5 +24,7 @@ namespace VamTimeline
         public const string Weight = "Weight";
         public const string Locked = "Locked";
         public const string Paused = "Paused";
+        public const string AnimationQueue = "Animation Queue";
+        public const string AnimationQueueStart = "Start Animation Queue";
     }
 }
