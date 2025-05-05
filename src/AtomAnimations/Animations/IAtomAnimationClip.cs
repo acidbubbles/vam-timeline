@@ -8,6 +8,7 @@ namespace VamTimeline
     {
         string animationNameQualified { get; }
         bool loop { get; }
+        bool blendStartEnd { get; }
         bool playbackEnabled { get; }
         float playbackBlendWeight { get; }
         float playbackBlendWeightSmoothed { get; }
@@ -15,6 +16,8 @@ namespace VamTimeline
         float clipTime { get; }
         float scaledWeight { get; }
         UnityEvent onTargetsListChanged { get; }
+        float blendInDuration { get; }
+        float animationLength { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

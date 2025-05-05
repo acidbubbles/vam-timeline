@@ -43,7 +43,7 @@ namespace VamTimeline
             {
                 var clip = siblings[i];
                 if (clip.target == null) continue;
-                if(isPlaying && clip.main != null)
+                if (isPlaying && clip.main != null)
                     PlayClipCore(clip.main, clip.target, seq, true, false);
                 else
                     PlayClipCore(null, clip.target, seq, true, false);
@@ -246,7 +246,7 @@ namespace VamTimeline
                     c.playbackScheduledNextAnimation = null;
                     c.playbackScheduledNextTimeLeft = float.NaN;
                     BlendOut(c, 0);
-                    if(c.playbackMainInLayer)
+                    if (c.playbackMainInLayer)
                         onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = c, after = null });
                 }
             }
@@ -518,7 +518,7 @@ namespace VamTimeline
             onClipIsPlayingChanged.Invoke(clip);
             if (logger.showPlayInfoInHelpText)
             {
-                if(index.segmentIds.Count > 1)
+                if (index.segmentIds.Count > 1)
                     logger.ShowTemporaryMessage($"Timeline: Play {clip.animationNameQualified}");
                 else if (index.ByName(clip.animationSegmentId, clip.animationNameId).Count == 1)
                     logger.ShowTemporaryMessage($"Timeline: Play {clip.animationName}");
@@ -604,7 +604,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
-                if(target.recording)
+                if (target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     return;
@@ -613,7 +613,31 @@ namespace VamTimeline
                 var localScaledWeight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
                 if (localScaledWeight < float.Epsilon) continue;
 
-                var value = target.value.Evaluate(clip.clipTime);
+                float value;
+                var time = clip.clipTime;
+                var blendDuration = clip.blendInDuration;
+                var animationLength = clip.animationLength;
+
+                if (clip.loop && clip.blendStartEnd && blendDuration > 0.001f && animationLength > blendDuration)
+                {
+                    var blendStartTime = animationLength - blendDuration;
+                    if (time > blendStartTime)
+                    {
+                        var loopBlendWeight = Mathf.Clamp01((time - blendStartTime) / blendDuration);
+                        var valueEnd = target.value.Evaluate(time);
+                        var valueStart = target.value.Evaluate(0f);
+                        value = Mathf.Lerp(valueEnd, valueStart, loopBlendWeight);
+                    }
+                    else
+                    {
+                        value = target.value.Evaluate(time);
+                    }
+                }
+                else
+                {
+                    value = target.value.Evaluate(time);
+                }
+
                 var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
                 weightedSum += Mathf.Lerp(floatParamRef.val, value, localScaledWeight) * blendWeight;
                 totalBlendWeights += blendWeight;
@@ -622,7 +646,7 @@ namespace VamTimeline
             if (totalBlendWeights > minimumDelta)
             {
                 var val = weightedSum / totalBlendWeights;
-                if(Mathf.Abs(val - floatParamRef.val) > minimumDelta)
+                if (Mathf.Abs(val - floatParamRef.val) > minimumDelta)
                 {
                     floatParamRef.val = Mathf.Lerp(floatParamRef.val, val, _globalScaledWeight);
                 }
@@ -704,7 +728,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
-                if(target.recording)
+                if (target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     continue;
@@ -720,44 +744,91 @@ namespace VamTimeline
 
                 var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
 
-                if (target.targetsRotation && target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off)
-                {
-                    var rotLink = target.GetPositionParentRB();
-                    var hasRotLink = !ReferenceEquals(rotLink, null);
+                var time = clip.clipTime;
+                Vector3 currentTargetPosition = Vector3.zero;
+                Quaternion currentTargetRotation = Quaternion.identity;
+                bool requiresPositionProcessing = target.targetsPosition && target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off;
+                bool requiresRotationProcessing = target.targetsRotation && target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off;
 
-                    var targetRotation = target.EvaluateRotation(clip.clipTime);
+                if (requiresPositionProcessing)
+                {
+                    currentTargetPosition = target.EvaluatePosition(time);
+                }
+                if (requiresRotationProcessing)
+                {
+                    currentTargetRotation = target.EvaluateRotation(time);
+                }
+
+                var blendDuration = clip.blendInDuration;
+                var animationLength = clip.animationLength;
+                if (clip.loop && clip.blendStartEnd && blendDuration > 0.001f && animationLength > blendDuration)
+                {
+                    var blendStartTime = animationLength - blendDuration;
+                    if (time > blendStartTime)
+                    {
+                        var loopBlendWeight = Mathf.Clamp01((time - blendStartTime) / blendDuration);
+
+                        if (requiresPositionProcessing)
+                        {
+                            var posStart = target.EvaluatePosition(0f);
+
+                            currentTargetPosition = Vector3.Lerp(currentTargetPosition, posStart, loopBlendWeight);
+                        }
+                        if (requiresRotationProcessing)
+                        {
+                            var rotStart = target.EvaluateRotation(0f);
+                            if (Quaternion.Dot(currentTargetRotation, rotStart) < 0) rotStart = InverseSignQuaternion(rotStart);
+                            currentTargetRotation = Quaternion.Slerp(currentTargetRotation, rotStart, loopBlendWeight);
+                        }
+                    }
+                }
+
+                if (requiresRotationProcessing)
+                {
+                    var rotLink = target.GetRotationParentRB();
+                    var hasRotLink = !ReferenceEquals(rotLink, null);
+                    Quaternion finalTargetRotation;
+
                     if (hasRotLink)
                     {
-                        targetRotation = rotLink.rotation * targetRotation;
-                        _rotations[rotationCount] = targetRotation;
+                        finalTargetRotation = rotLink.rotation * currentTargetRotation;
+                    }
+                    else if (control.transform.parent != null)
+                    {
+                        finalTargetRotation = control.transform.parent.rotation * currentTargetRotation;
                     }
                     else
                     {
-                        _rotations[rotationCount] = control.transform.parent.rotation * targetRotation;
+                        finalTargetRotation = currentTargetRotation;
                     }
 
+                    _rotations[rotationCount] = finalTargetRotation;
                     _rotationBlendWeights[rotationCount] = blendWeight;
                     totalRotationBlendWeights += blendWeight;
                     totalRotationControlWeights += weight * blendWeight;
                     rotationCount++;
                 }
 
-                if (target.targetsPosition && target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off)
+                if (requiresPositionProcessing)
                 {
                     var posLink = target.GetPositionParentRB();
                     var hasPosLink = !ReferenceEquals(posLink, null);
+                    Vector3 finalTargetPosition;
 
-                    var targetPosition = target.EvaluatePosition(clip.clipTime);
                     if (hasPosLink)
                     {
-                        targetPosition = posLink.transform.TransformPoint(targetPosition);
+                        finalTargetPosition = posLink.transform.TransformPoint(currentTargetPosition);
+                    }
+                    else if (control.transform.parent != null)
+                    {
+                        finalTargetPosition = control.transform.parent.TransformPoint(currentTargetPosition);
                     }
                     else
                     {
-                        targetPosition = control.transform.parent.TransformPoint(targetPosition);
+                        finalTargetPosition = currentTargetPosition;
                     }
 
-                    weightedPositionSum += targetPosition * blendWeight;
+                    weightedPositionSum += finalTargetPosition * blendWeight;
                     totalPositionBlendWeights += blendWeight;
                     totalPositionControlWeights += weight * blendWeight;
                     animatedCount++;
@@ -799,10 +870,19 @@ namespace VamTimeline
             }
 
             if (force && (controller.currentPositionState == FreeControllerV3.PositionState.Comply ||
-                controller.currentRotationState == FreeControllerV3.RotationState.Comply)) {
+                controller.currentRotationState == FreeControllerV3.RotationState.Comply))
+            {
                 controller.PauseComply();
             }
         }
+
+
+        [MethodImpl(256)]
+        private static Quaternion InverseSignQuaternion(Quaternion q)
+        {
+            return new Quaternion(-q.x, -q.y, -q.z, -q.w);
+        }
+
 
         #endregion
     }

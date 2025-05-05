@@ -20,6 +20,7 @@ namespace VamTimeline
         private JSONStorableFloat _lengthJSON;
         private JSONStorableBool _ensureQuaternionContinuity;
         private JSONStorableBool _loop;
+        private JSONStorableBool _blendStartEndJSON;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _linkedAudioSourceJSON;
         private JSONStorableString _segmentNameJSON;
@@ -47,6 +48,7 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Options", 1);
             InitLoopUI();
+            InitBlendStartEndUI();
 
             prefabFactory.CreateHeader("Length", 1);
             InitAnimationLengthUI();
@@ -320,6 +322,15 @@ namespace VamTimeline
             _loopUI = prefabFactory.CreateToggle(_loop);
         }
 
+        private void InitBlendStartEndUI()
+        {
+            _blendStartEndJSON = new JSONStorableBool("Blend Start-End", current?.blendStartEnd ?? false, val =>
+            {
+                current.blendStartEnd = val;
+            });
+            prefabFactory.CreateToggle(_blendStartEndJSON);
+        }
+
         #endregion
 
         #region Callbacks
@@ -460,6 +471,7 @@ namespace VamTimeline
             _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
             _loop.valNoCallback = current.loop;
             _loopUI.toggle.interactable = !current.autoTransitionNext;
+            _blendStartEndJSON.valNoCallback = current.blendStartEnd;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAudioSourceJSON.valNoCallback = current.audioSourceControl != null ? current.audioSourceControl.containingAtom.uid : "";
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern != null ? current.animationPattern.containingAtom.uid : "";

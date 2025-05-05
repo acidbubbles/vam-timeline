@@ -29,6 +29,7 @@ namespace VamTimeline
 
         private readonly Logger _logger;
         private bool _loop = true;
+        private bool _blendStartEnd = false;
         private float _timeOffset;
         private string _nextAnimationName;
         private float _animationLength = DefaultAnimationLength;
@@ -333,6 +334,17 @@ namespace VamTimeline
                 if (!_skipNextAnimationSettingsModified) onAnimationSettingsChanged.Invoke(nameof(loop));
                 DirtyAll();
                 onAnimationKeyframesDirty.Invoke();
+            }
+        }
+
+        public bool blendStartEnd
+        {
+            get { return _blendStartEnd; }
+            set
+            {
+                if (_blendStartEnd == value) return;
+                _blendStartEnd = value;
+                onAnimationSettingsChanged.Invoke(nameof(blendStartEnd));
             }
         }
 
@@ -648,7 +660,7 @@ namespace VamTimeline
                 .Select(group =>
                 {
                     var first = group.First();
-                    return (IAtomAnimationTargetsList) new AtomAnimationTargetsList<IAtomAnimationTarget>(group) { label = first.group ?? first.animatableRefBase.groupLabel };
+                    return (IAtomAnimationTargetsList)new AtomAnimationTargetsList<IAtomAnimationTarget>(group) { label = first.group ?? first.animatableRefBase.groupLabel };
                 });
         }
 
@@ -1014,7 +1026,7 @@ namespace VamTimeline
             {
                 if (!target.dirty) continue;
 
-                if (loop)
+                if (loop && !blendStartEnd)
                     target.SetCurveSnapshot(animationLength, target.GetCurveSnapshot(0f), false);
 
                 target.ComputeCurves();
@@ -1039,7 +1051,7 @@ namespace VamTimeline
             {
                 if (!target.dirty) continue;
 
-                if (loop)
+                if (loop && !blendStartEnd)
                     target.SetCurveSnapshot(animationLength, target.GetCurveSnapshot(0), false);
 
                 target.value.ComputeCurves();
