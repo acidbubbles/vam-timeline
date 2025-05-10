@@ -30,6 +30,7 @@ src\AtomAnimations\Animations\SimpleTrigger.cs
 src\AtomAnimations\Animations\TimeModes.cs
 src\AtomAnimations\Animations\UnitySpecific.cs
 src\AtomAnimations\Animations\VamOverlaysFadeManager.cs
+src\AtomAnimations\Animations\AnimationQueueManager.cs
 src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingBase.cs
 src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingLooping.cs
 src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingNonLooping.cs

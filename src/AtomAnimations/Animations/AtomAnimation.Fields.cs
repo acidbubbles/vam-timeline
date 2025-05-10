@@ -19,6 +19,7 @@ namespace VamTimeline
         public readonly UnityEvent onClipsListChanged = new UnityEvent();
         public readonly UnityEvent onAnimationRebuilt = new UnityEvent();
         public readonly UnityEvent onPausedChanged = new UnityEvent();
+        public readonly UnityEvent onQueueFinished = new UnityEvent();
         public readonly AtomAnimationClipEvent onIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationClipEvent onClipIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationChangeClipEvent onMainClipPerLayerChanged = new AtomAnimationChangeClipEvent();
@@ -26,6 +27,13 @@ namespace VamTimeline
         public readonly AtomAnimationClipEvent onSegmentPlayed = new AtomAnimationClipEvent();
 
         public Logger logger;
+
+        public void SetLogger(Logger value)
+        {
+            logger = value;
+            if (QueueManager != null)
+                QueueManager.logger = value;
+        }
 
         public readonly SimpleTrigger isPlayingChangedTrigger = new SimpleTrigger("Start Playing", "Stop Playing");
         public readonly SimpleTrigger clipListChangedTrigger = new SimpleTrigger("Clips List Changed", null);
@@ -43,6 +51,8 @@ namespace VamTimeline
         public bool isPlaying { get; private set; }
         private string _playingAnimationSegment;
         public int playingAnimationSegmentId { get; private set; } = AtomAnimationClip.NoneAnimationSegmentId;
+
+        public AnimationQueueManager QueueManager { get; private set; }
 
         public bool IsPlayingAnimationSegment(string animationSegment)
         {
@@ -155,6 +165,7 @@ namespace VamTimeline
         {
             index = new AtomAnimationsClipsIndex(clips);
             animatables = new AnimatablesRegistry();
+            QueueManager = new AnimationQueueManager(this, index);
         }
 
     }

@@ -50,6 +50,8 @@ namespace VamTimeline
         public JSONStorableAction cutJSON { get; private set; }
         public JSONStorableAction copyJSON { get; private set; }
         public JSONStorableAction pasteJSON { get; private set; }
+        private JSONStorableString _animationQueueJSON;
+        private JSONStorableAction _animationQueueStartJSON;
 
         private JSONStorableFloat _scrubberAnalogControlJSON;
         private bool _scrubbing;
@@ -182,11 +184,11 @@ namespace VamTimeline
         {
             if (containingAtom.physicsSimulators.Length == 0) return false;
             var physicsSimulator = containingAtom.physicsSimulators[0];
-            #if(VAM_GT_1_20_0_9)
+#if (VAM_GT_1_20_0_9)
             if (!physicsSimulator.resetSimulation)
-            #else
+#else
             if (!physicsSimulator.pauseSimulation)
-            #endif
+#endif
             {
                 _physicsResetTimeout = 0;
                 return false;
@@ -278,6 +280,7 @@ namespace VamTimeline
                 if (string.IsNullOrEmpty(val)) return;
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
                 _legacyAnimationNext = val;
+                animation?.DeactivateQueue();
                 var clip = animation.index.ByName(animation.playingAnimationSegment, val).FirstOrDefault() ?? animation.index.ByName(val).FirstOrDefault();
                 if (clip == null) return;
                 if (animationEditContext.current != clip)
@@ -378,6 +381,7 @@ namespace VamTimeline
             _stopJSON = new JSONStorableAction(StorableNames.Stop, () =>
             {
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Stop}'");
+                animation.DeactivateQueue();
                 if (animation.isPlaying)
                     animation.StopAll();
                 else
@@ -388,6 +392,7 @@ namespace VamTimeline
             _stopIfPlayingJSON = new JSONStorableAction(StorableNames.StopIfPlaying, () =>
             {
                 if (!animation.isPlaying) return;
+                animation.DeactivateQueue();
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopIfPlaying}'");
                 animation.StopAll();
             });
@@ -396,6 +401,7 @@ namespace VamTimeline
             _stopAndResetJSON = new JSONStorableAction(StorableNames.StopAndReset, () =>
             {
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.StopAndReset}'");
+                animation.DeactivateQueue();
                 animationEditContext.StopAndReset();
                 peers.SendStopAndReset();
             });
@@ -454,10 +460,31 @@ namespace VamTimeline
                 animation.applyNextPose = true;
             });
             RegisterAction(_applyNextPoseJSON);
+
+            _animationQueueJSON = new JSONStorableString(StorableNames.AnimationQueue, "", AnimationQueueCallback)
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterString(_animationQueueJSON);
+
+            _animationQueueStartJSON = new JSONStorableAction(StorableNames.AnimationQueueStart, AnimationQueueStartCallback);
+            RegisterAction(_animationQueueStartJSON);
+        }
+
+        private void AnimationQueueCallback(string queueString)
+        {
+            animation.QueueManager.SetQueue(queueString);
+        }
+
+        private void AnimationQueueStartCallback()
+        {
+            animation.QueueManager.StartQueue(animation, animationEditContext.current);
         }
 
         private void StorablePlay(string storableName)
         {
+            animation.DeactivateQueue();
             if (animation.paused)
             {
                 animation.paused = false;
@@ -482,6 +509,13 @@ namespace VamTimeline
                     return;
                 }
             }
+
+            if (selected == null)
+            {
+                if (logger.general) logger.Log(logger.generalCategory, $"Triggered '{storableName}' but no default/specified animation found.");
+                return;
+            }
+
 
             animation.PlaySegment(selected);
         }
@@ -539,7 +573,7 @@ namespace VamTimeline
             if (animation != null) return;
             animation = gameObject.AddComponent<AtomAnimation>();
             if (animation == null) throw new InvalidOperationException("Could not add animation component");
-            animation.logger = logger;
+            animation.SetLogger(logger);
             animationEditContext = gameObject.AddComponent<AtomAnimationEditContext>();
             if (animationEditContext == null) throw new InvalidOperationException("Could not add animationEditContext component");
             animationEditContext.logger = logger;
@@ -552,6 +586,7 @@ namespace VamTimeline
             // NOTE: When using segments, it's valid to play a non-default animation on each layer, but if multiple segments are selected, then it can be a problem.
             foreach (var autoPlayClip in animation.clips.Where(c => c.autoPlay))
             {
+                animation.DeactivateQueue();
                 animation.PlayClip(autoPlayClip, true);
             }
         }
@@ -663,6 +698,7 @@ namespace VamTimeline
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
             animation.onWeightChanged.AddListener(OnWeightChanged);
             animation.animatables.onControllersListChanged.AddListener(OnControllersListChanged);
+            animation.QueueManager.onQueueFinished.AddListener(OnQueueFinished);
 
             OnControllersListChanged();
             OnClipsListChanged();
@@ -670,7 +706,7 @@ namespace VamTimeline
             OnSpeedChanged();
             OnWeightChanged();
 
-            if(_ui != null) _ui.Bind(animationEditContext);
+            if (_ui != null) _ui.Bind(animationEditContext);
             peers.animationEditContext = animationEditContext;
             if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
@@ -681,6 +717,12 @@ namespace VamTimeline
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
             SuperController.singleton.BroadcastMessage("OnActionsProviderAvailable", this, SendMessageOptions.DontRequireReceiver);
         }
+
+        private void OnQueueFinished()
+        {
+            peers.SendAnimationQueueFinished();
+        }
+
 
         private void DeregisterAction(AnimStorableActionMap action)
         {
@@ -810,7 +852,7 @@ namespace VamTimeline
                 // How to deal with nothing is playing? e.g. another segment?
             }
             var removed = _animByLayer.Select(kvp => kvp.Value).Where(jss => !choosers.Contains(jss));
-            foreach(var toRemove in removed)
+            foreach (var toRemove in removed)
             {
                 DeregisterStringChooser(toRemove);
             }
@@ -1219,7 +1261,7 @@ namespace VamTimeline
 
         public void OnBindingsListRequested(List<object> bindings)
         {
-            bindings.Add(new []
+            bindings.Add(new[]
             {
                 new KeyValuePair<string, string>("Namespace", "Timeline")
             });
@@ -1379,11 +1421,11 @@ namespace VamTimeline
 
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) SuperController.singleton.gameMode = SuperController.GameMode.Edit;
 
-            #if (VAM_GT_1_20)
+#if (VAM_GT_1_20)
             SuperController.singleton.SelectController(containingAtom.mainController, false, false, true);
-            #else
+#else
             SuperController.singleton.SelectController(containingAtom.mainController);
-            #endif
+#endif
             SuperController.singleton.ShowMainHUDAuto();
             StartCoroutine(WaitForUI());
         }
@@ -1395,7 +1437,7 @@ namespace VamTimeline
             {
                 yield return 0;
                 var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
-                if(selector == null) continue;
+                if (selector == null) continue;
                 selector.SetActiveTab("Plugins");
                 if (UITransform == null) continue;
             }

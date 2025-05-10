@@ -105,6 +105,7 @@
     <Compile Include="src\AtomAnimations\Animations\TimeModes.cs" />
     <Compile Include="src\AtomAnimations\Animations\UnitySpecific.cs" />
     <Compile Include="src\AtomAnimations\Animations\VamOverlaysFadeManager.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AnimationQueueManager.cs" />
     <Compile Include="src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingBase.cs" />
     <Compile Include="src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingLooping.cs" />
     <Compile Include="src\AtomAnimations\BezierCurves\Smoothing\BezierAnimationCurveSmoothingNonLooping.cs" />

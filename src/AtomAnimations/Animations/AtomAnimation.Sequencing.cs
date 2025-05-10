@@ -23,59 +23,88 @@ namespace VamTimeline
                 if (clip.playbackScheduledNextAnimation != null)
                     clipsQueued++;
 
-                if (pauseSequencing)
+                if (pauseSequencing && !QueueManager.IsActive)
                     continue;
 
-                if (!clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && float.IsNaN(clip.playbackScheduledNextTimeLeft) && !clip.infinite)
+                bool clipEndedNaturally = !clip.loop && clip.playbackEnabled && clip.clipTime >= clip.animationLength && float.IsNaN(clip.playbackScheduledNextTimeLeft) && !clip.infinite;
+
+                if (clip.playbackMainInLayer && clip.playbackScheduledNextAnimation != null)
                 {
-                    if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (non-looping complete)");
-                    clip.Leave();
-                    clip.Reset(true);
-                    onClipIsPlayingChanged.Invoke(clip);
-                    continue;
-                }
+                    var adjustedDeltaTime = deltaTime * clip.speed * globalSpeed;
+                    clip.playbackScheduledNextTimeLeft -= adjustedDeltaTime;
 
-                if (!clip.playbackMainInLayer || clip.playbackScheduledNextAnimation == null)
-                    continue;
-
-                var adjustedDeltaTime = deltaTime * clip.speed;
-                clip.playbackScheduledNextTimeLeft -= adjustedDeltaTime;
-
-                if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutAtRemaining)
-                {
-                    _scheduleFadeIn = float.MaxValue;
-                    clip.playbackScheduledFadeOutAtRemaining = float.NaN;
-                    if (fadeManager?.black == false)
+                    if (clip.playbackScheduledNextTimeLeft <= clip.playbackScheduledFadeOutAtRemaining)
                     {
-                        if(logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade out {clip.playbackScheduledNextTimeLeft:0.000}s before transition.");
-                        fadeManager.FadeOut();
+                        _scheduleFadeIn = float.MaxValue;
+                        clip.playbackScheduledFadeOutAtRemaining = float.NaN;
+                        if (fadeManager?.black == false)
+                        {
+                            if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade out {clip.playbackScheduledNextTimeLeft:0.000}s before transition.");
+                            fadeManager.FadeOut();
+                        }
+                    }
+
+                    if (clip.playbackScheduledNextTimeLeft <= 0)
+                    {
+                        var nextClip = clip.playbackScheduledNextAnimation;
+                        clip.playbackScheduledNextAnimation = null;
+                        clip.playbackScheduledNextTimeLeft = float.NaN;
+
+                        if (nextClip.isOnSegment && playingAnimationSegmentId != nextClip.animationSegmentId)
+                        {
+                            PlaySegment(nextClip, true, QueueManager.IsActive);
+                        }
+                        else
+                        {
+                            TransitionClips(clip, nextClip, 0f);
+                            if (!QueueManager.IsActive)
+                            {
+                                PlaySiblings(nextClip);
+                            }
+                        }
+
+                        if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayerId == index.segmentsById[nextClip.animationSegmentId].layerIds[0])
+                        {
+                            _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
+                        }
+                        continue;
                     }
                 }
-
-                if (clip.playbackScheduledNextTimeLeft > 0)
-                    continue;
-
-                var nextClip = clip.playbackScheduledNextAnimation;
-                clip.playbackScheduledNextAnimation = null;
-                clip.playbackScheduledNextTimeLeft = float.NaN;
-
-                if (nextClip.isOnSegment && playingAnimationSegmentId != nextClip.animationSegmentId)
+                else if (clipEndedNaturally)
                 {
-                    PlaySegment(nextClip);
+                    if (clip.playbackMainInLayer)
+                    {
+                        if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (non-looping main complete, no sequence/queue)");
+                        clip.Leave();
+                        clip.Reset(true);
+                        onClipIsPlayingChanged.Invoke(clip);
+                    }
+                    else
+                    {
+                        if (logger.general) logger.Log(logger.generalCategory, $"Leave '{clip.animationNameQualified}' (non-looping non-main complete)");
+                        clip.Leave();
+                        clip.Reset(true);
+                        onClipIsPlayingChanged.Invoke(clip);
+                    }
                 }
-                else
+                else if (clip.playbackEnabled && clip.playbackMainInLayer && clip.playbackScheduledNextAnimation == null)
                 {
-                    TransitionClips(clip, nextClip, 0f);
-                    PlaySiblings(nextClip);
-                }
-
-                if (nextClip.fadeOnTransition && fadeManager?.black == true && nextClip.animationLayerId == index.segmentsById[nextClip.animationSegmentId].layerIds[0])
-                {
-                    _scheduleFadeIn = playTime + fadeManager.halfBlackTime;
+                    if (QueueManager.IsActive)
+                    {
+                        AtomAnimationClip nextClipFromQueue = QueueManager.GetNextClipInQueue(clip);
+                        if (nextClipFromQueue != null)
+                        {
+                            ScheduleNextAnimationFromQueue(clip, nextClipFromQueue);
+                        }
+                    }
+                    else if (!pauseSequencing)
+                    {
+                        AssignNextAnimation(clip);
+                    }
                 }
             }
 
-            if (clipsPlaying == 0 && clipsQueued == 0)
+            if (clipsPlaying == 0 && clipsQueued == 0 && !QueueManager.IsActive)
             {
                 StopAll();
             }
@@ -99,6 +128,10 @@ namespace VamTimeline
                 {
                     to.animationPattern.SetBoolParamValue("loopOnce", false);
                     to.animationPattern.ResetAndPlay();
+                }
+                if (!QueueManager.IsActive)
+                {
+                    AssignNextAnimation(to);
                 }
                 return;
             }
@@ -134,7 +167,7 @@ namespace VamTimeline
 
             onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = from, after = to });
 
-            if (sequencing)
+            if (!QueueManager.IsActive)
             {
                 AssignNextAnimation(to);
             }
@@ -154,10 +187,13 @@ namespace VamTimeline
 
         private void AssignNextAnimation(AtomAnimationClip source)
         {
+            if (source == null) return;
+            if (source.playbackScheduledNextAnimation != null) return;
+
             if (source.nextAnimationNameId == -1) return;
             if (clips.Count == 1) return;
 
-            if (source.nextAnimationTime <= 0)
+            if (source.loop && source.nextAnimationTime <= 0)
                 return;
 
             if (source.nextAnimationNameId == AtomAnimationClip.SlaveAnimationNameId)
@@ -202,6 +238,12 @@ namespace VamTimeline
             if (next == null) return;
 
             ScheduleNextAnimation(source, next);
+        }
+
+        private void ScheduleNextAnimationFromQueue(AtomAnimationClip source, AtomAnimationClip next)
+        {
+            float nextTime = QueueManager.CalculateNextTimeForQueue(source, next, source.clipTime);
+            ScheduleNextAnimation(source, next, nextTime);
         }
 
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next)
@@ -249,6 +291,9 @@ namespace VamTimeline
 
         private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, float nextTime)
         {
+            if (source.playbackScheduledNextAnimation == next && Mathf.Approximately(source.playbackScheduledNextTimeLeft, nextTime))
+                return;
+
             source.playbackScheduledNextAnimation = next;
             source.playbackScheduledNextTimeLeft = nextTime;
             source.playbackScheduledFadeOutAtRemaining = float.NaN;
@@ -260,7 +305,7 @@ namespace VamTimeline
                 source.playbackScheduledFadeOutAtRemaining = (fadeManager.fadeOutTime + fadeManager.halfBlackTime) * source.speed * globalSpeed;
                 if (source.playbackScheduledNextTimeLeft < source.playbackScheduledFadeOutAtRemaining)
                 {
-                    if(logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade out instantly {source.playbackScheduledNextTimeLeft:0.000}s before transition.");
+                    if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Fade out instantly {source.playbackScheduledNextTimeLeft:0.000}s before transition.");
                     fadeManager.FadeOutInstant();
                     source.playbackScheduledFadeOutAtRemaining = float.NaN;
                 }

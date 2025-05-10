@@ -26,6 +26,28 @@ namespace VamTimeline
             return index.ByName(animationSegment, animationName).FirstOrDefault(c => c.animationLayer == animationLayer);
         }
 
+        public AtomAnimationClip FindClipInPriorityOrder(string name, int referenceSegmentId, string referenceLayerName = null)
+        {
+            var nameId = name.ToId();
+            if (referenceLayerName != null)
+            {
+                var clip = index.ByName(referenceSegmentId, nameId).FirstOrDefault(c => c.animationLayer == referenceLayerName);
+                if (clip != null) return clip;
+            }
+            var clipInSegment = index.ByName(referenceSegmentId, nameId).FirstOrDefault();
+            if (clipInSegment != null) return clipInSegment;
+
+            if (referenceSegmentId != AtomAnimationClip.SharedAnimationSegmentId)
+            {
+                var clipInShared = index.ByName(AtomAnimationClip.SharedAnimationSegmentId, nameId).FirstOrDefault();
+                if (clipInShared != null) return clipInShared;
+            }
+
+            var clipAnywhere = index.ByName(name).FirstOrDefault();
+            return clipAnywhere;
+        }
+
+
         #endregion
 
         #region Add/Remove Clips
@@ -60,7 +82,7 @@ namespace VamTimeline
             if (i == -1 || i > clips.Count)
                 throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
             clips.Insert(i, clip);
-            if(playingAnimationSegment == null)
+            if (playingAnimationSegment == null)
                 playingAnimationSegment = clip.animationSegment;
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
@@ -99,6 +121,9 @@ namespace VamTimeline
 
         public void Clear()
         {
+            DeactivateQueue();
+            QueueManager.Queue.Clear();
+
             var list = clips.ToList();
             for (var i = 0; i < list.Count; i++)
             {
