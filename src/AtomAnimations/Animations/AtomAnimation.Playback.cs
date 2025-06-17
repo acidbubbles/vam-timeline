@@ -49,7 +49,7 @@ namespace VamTimeline
             {
                 var clip = siblings[i];
                 if (clip.target == null) continue;
-                if (isPlaying && clip.main != null)
+                if(isPlaying && clip.main != null)
                     PlayClipCore(clip.main, clip.target, seq, true, false);
                 else
                     PlayClipCore(null, clip.target, seq, true, false);
@@ -270,7 +270,7 @@ namespace VamTimeline
                     c.playbackScheduledNextAnimation = null;
                     c.playbackScheduledNextTimeLeft = float.NaN;
                     BlendOut(c, 0);
-                    if (c.playbackMainInLayer)
+                    if(c.playbackMainInLayer)
                         onMainClipPerLayerChanged.Invoke(new AtomAnimationChangeClipEventArgs { before = c, after = null });
                 }
             }
@@ -551,7 +551,7 @@ namespace VamTimeline
             onClipIsPlayingChanged.Invoke(clip);
             if (logger.showPlayInfoInHelpText)
             {
-                if (index.segmentIds.Count > 1)
+                if(index.segmentIds.Count > 1)
                     logger.ShowTemporaryMessage($"Timeline: Play {clip.animationNameQualified}");
                 else if (index.ByName(clip.animationSegmentId, clip.animationNameId).Count == 1)
                     logger.ShowTemporaryMessage($"Timeline: Play {clip.animationName}");
@@ -637,7 +637,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
-                if (target.recording)
+                if(target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     return;
@@ -655,7 +655,7 @@ namespace VamTimeline
             if (totalBlendWeights > minimumDelta)
             {
                 var val = weightedSum / totalBlendWeights;
-                if (Mathf.Abs(val - floatParamRef.val) > minimumDelta)
+                if(Mathf.Abs(val - floatParamRef.val) > minimumDelta)
                 {
                     floatParamRef.val = Mathf.Lerp(floatParamRef.val, val, _globalScaledWeight);
                 }
@@ -737,7 +737,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 var clip = target.clip;
-                if (target.recording)
+                if(target.recording)
                 {
                     target.SetKeyframeToCurrent(clip.clipTime.Snap(), false);
                     continue;
@@ -832,8 +832,7 @@ namespace VamTimeline
             }
 
             if (force && (controller.currentPositionState == FreeControllerV3.PositionState.Comply ||
-                controller.currentRotationState == FreeControllerV3.RotationState.Comply))
-            {
+                controller.currentRotationState == FreeControllerV3.RotationState.Comply)) {
                 controller.PauseComply();
             }
         }

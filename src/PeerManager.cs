@@ -226,7 +226,7 @@ namespace VamTimeline
             if (!animation.isPlaying || !animation.IsPlayingAnimationSegment(animationSegment))
             {
                 var byName = animation.index.ByName(animationSegment, animationName);
-                if (byName.Count > 0)
+                if(byName.Count > 0)
                     animation.PlaySegment(byName[0], sequencing);
                 else
                     animation.PlaySegment(animationSegment, sequencing);
@@ -253,12 +253,12 @@ namespace VamTimeline
                 return;
             }
             var clips = animation.index.ByName((string)e[3], (string)e[1]);
-            for (var i = 0; i < clips.Count; i++)
+            for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
                 if (!clip.playbackMainInLayer)
                     animation.PlayClip(clip, true, false);
-                clip.clipTime = (float)e[2] + clip.timeOffset;
+                clip.clipTime = (float) e[2] + clip.timeOffset;
             }
         }
 
@@ -288,7 +288,7 @@ namespace VamTimeline
         private void ReceivePaused(object[] e)
         {
             if (!ValidateArgumentCount(e.Length, 2)) return;
-            animation.paused = (bool)e[1];
+            animation.paused = (bool) e[1];
         }
 
         public void SendStopAndReset()
@@ -318,7 +318,7 @@ namespace VamTimeline
         {
             if (!ValidateArgumentCount(e.Length, 4)) return;
             var clips = animation.index.ByName((string)e[3], (string)e[1]);
-            if (clips.Contains(animationEditContext.current))
+            if(clips.Contains(animationEditContext.current))
                 animationEditContext.clipTime = (float)e[2] + animationEditContext.current.timeOffset;
         }
 
@@ -411,7 +411,7 @@ namespace VamTimeline
             }
 
             var clips = animation.index.ByName(animationSegment, animationName);
-            for (var i = 0; i < clips.Count; i++)
+            for(var i = 0; i < clips.Count; i++)
             {
                 var clip = clips[i];
                 new ResizeAnimationOperations().CropOrExtendEnd(clip, (float)e[3]);

@@ -184,11 +184,11 @@ namespace VamTimeline
         {
             if (containingAtom.physicsSimulators.Length == 0) return false;
             var physicsSimulator = containingAtom.physicsSimulators[0];
-#if (VAM_GT_1_20_0_9)
+            #if(VAM_GT_1_20_0_9)
             if (!physicsSimulator.resetSimulation)
-#else
+            #else
             if (!physicsSimulator.pauseSimulation)
-#endif
+            #endif
             {
                 _physicsResetTimeout = 0;
                 return false;
@@ -706,7 +706,7 @@ namespace VamTimeline
             OnSpeedChanged();
             OnWeightChanged();
 
-            if (_ui != null) _ui.Bind(animationEditContext);
+            if(_ui != null) _ui.Bind(animationEditContext);
             peers.animationEditContext = animationEditContext;
             if (_freeControllerHook != null) _freeControllerHook.animationEditContext = animationEditContext;
             if (enabled) _freeControllerHook.enabled = true;
@@ -852,7 +852,7 @@ namespace VamTimeline
                 // How to deal with nothing is playing? e.g. another segment?
             }
             var removed = _animByLayer.Select(kvp => kvp.Value).Where(jss => !choosers.Contains(jss));
-            foreach (var toRemove in removed)
+            foreach(var toRemove in removed)
             {
                 DeregisterStringChooser(toRemove);
             }
@@ -1261,7 +1261,7 @@ namespace VamTimeline
 
         public void OnBindingsListRequested(List<object> bindings)
         {
-            bindings.Add(new[]
+            bindings.Add(new []
             {
                 new KeyValuePair<string, string>("Namespace", "Timeline")
             });
@@ -1421,11 +1421,11 @@ namespace VamTimeline
 
             if (SuperController.singleton.gameMode != SuperController.GameMode.Edit) SuperController.singleton.gameMode = SuperController.GameMode.Edit;
 
-#if (VAM_GT_1_20)
+            #if (VAM_GT_1_20)
             SuperController.singleton.SelectController(containingAtom.mainController, false, false, true);
-#else
+            #else
             SuperController.singleton.SelectController(containingAtom.mainController);
-#endif
+            #endif
             SuperController.singleton.ShowMainHUDAuto();
             StartCoroutine(WaitForUI());
         }
@@ -1437,7 +1437,7 @@ namespace VamTimeline
             {
                 yield return 0;
                 var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
-                if (selector == null) continue;
+                if(selector == null) continue;
                 selector.SetActiveTab("Plugins");
                 if (UITransform == null) continue;
                 break;

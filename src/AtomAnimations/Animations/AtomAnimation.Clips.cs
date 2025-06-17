@@ -82,7 +82,7 @@ namespace VamTimeline
             if (i == -1 || i > clips.Count)
                 throw new ArgumentOutOfRangeException($"Tried to add clip {clip.animationNameQualified} at position {i} but there are {clips.Count} clips");
             clips.Insert(i, clip);
-            if (playingAnimationSegment == null)
+            if(playingAnimationSegment == null)
                 playingAnimationSegment = clip.animationSegment;
             clip.onAnimationSettingsChanged.AddListener(OnAnimationSettingsChanged);
             clip.onAnimationKeyframesDirty.AddListener(OnAnimationKeyframesDirty);
