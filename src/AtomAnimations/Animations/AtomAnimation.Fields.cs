@@ -26,7 +26,7 @@ namespace VamTimeline
         public readonly UnityEvent onSegmentChanged = new UnityEvent();
         public readonly AtomAnimationClipEvent onSegmentPlayed = new AtomAnimationClipEvent();
 
-        public Logger logger;
+        public Logger logger { get; private set; }
 
         public void SetLogger(Logger value)
         {

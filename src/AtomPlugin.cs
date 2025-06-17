@@ -280,7 +280,7 @@ namespace VamTimeline
                 if (string.IsNullOrEmpty(val)) return;
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.Animation}' = '{val}'");
                 _legacyAnimationNext = val;
-                animation?.DeactivateQueue();
+                animation.DeactivateQueue();
                 var clip = animation.index.ByName(animation.playingAnimationSegment, val).FirstOrDefault() ?? animation.index.ByName(val).FirstOrDefault();
                 if (clip == null) return;
                 if (animationEditContext.current != clip)
@@ -1440,6 +1440,7 @@ namespace VamTimeline
                 if (selector == null) continue;
                 selector.SetActiveTab("Plugins");
                 if (UITransform == null) continue;
+                break;
             }
 
             if (UITransform.gameObject.activeSelf) yield break;
