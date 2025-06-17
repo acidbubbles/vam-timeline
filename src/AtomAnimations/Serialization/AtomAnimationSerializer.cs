@@ -363,7 +363,7 @@ namespace VamTimeline
                             continue;
                         }
                     }
-                    else if (keyframeJSON is JSONClass)
+                    else if(keyframeJSON is JSONClass)
                     {
                         var keyframeObject = (JSONClass)keyframeJSON;
                         // Separate time and value
@@ -702,7 +702,7 @@ namespace VamTimeline
                     {
                         paramJSON["Atom"] = target.animatableRef.storable.containingAtom.uid;
                     }
-                    else if (target.animatableRef.lastKnownAtomUid != null)
+                    else if(target.animatableRef.lastKnownAtomUid != null)
                     {
                         paramJSON["Atom"] = target.animatableRef.lastKnownAtomUid;
                     }
@@ -881,8 +881,8 @@ namespace VamTimeline
             // Encoding sizes
             _encodeSb.Append(EncodeSizes(hasValue, hasCurveType));
             WriteBytes(keyframe.time, _encodeSb);
-            if (hasValue) WriteBytes(keyframe.value, _encodeSb);
-            if (hasCurveType) WriteBytes((byte)keyframe.curveType, _encodeSb);
+            if(hasValue) WriteBytes(keyframe.value, _encodeSb);
+            if(hasCurveType) WriteBytes((byte)keyframe.curveType, _encodeSb);
 
             return _encodeSb.ToString();
         }
@@ -908,8 +908,8 @@ namespace VamTimeline
         private static char EncodeSizes(bool hasValue, bool hasCurveType)
         {
             var encodedValue = 0;
-            if (hasValue) encodedValue |= (1 << 0);  // Assigns '01' in binary (1 in decimal)
-            if (hasCurveType) encodedValue |= (1 << 1);  // Assigns '10' in binary (2 in decimal)
+            if(hasValue) encodedValue |= (1 << 0);  // Assigns '01' in binary (1 in decimal)
+            if(hasCurveType) encodedValue |= (1 << 1);  // Assigns '10' in binary (2 in decimal)
             return (char)('A' + encodedValue);
         }
 

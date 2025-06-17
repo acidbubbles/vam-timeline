@@ -660,7 +660,7 @@ namespace VamTimeline
                 .Select(group =>
                 {
                     var first = group.First();
-                    return (IAtomAnimationTargetsList)new AtomAnimationTargetsList<IAtomAnimationTarget>(group) { label = first.group ?? first.animatableRefBase.groupLabel };
+                    return (IAtomAnimationTargetsList) new AtomAnimationTargetsList<IAtomAnimationTarget>(group) { label = first.group ?? first.animatableRefBase.groupLabel };
                 });
         }
 
