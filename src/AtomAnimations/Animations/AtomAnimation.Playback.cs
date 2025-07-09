@@ -366,6 +366,7 @@ namespace VamTimeline
             _allowPlayingTermination = true;
             autoStop = 0f;
 
+            ClearQueue();
             foreach (var clip in clips)
             {
                 StopClip(clip);
@@ -385,6 +386,7 @@ namespace VamTimeline
 
         public void ResetAll()
         {
+            ClearQueue();
             playTime = 0f;
             foreach (var clip in clips)
                 clip.Reset(true);

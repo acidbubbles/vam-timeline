@@ -45,6 +45,8 @@ namespace VamTimeline
         private JSONStorableBool _pausedJSON;
         private JSONStorableBool _pauseSequencingJSON;
         private JSONStorableAction _applyNextPoseJSON;
+        private JSONStorableStringChooser _addToQueueJSON;
+        private JSONStorableAction _clearQueueJSON;
         private readonly Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         public JSONStorableAction deleteJSON { get; private set; }
         public JSONStorableAction cutJSON { get; private set; }
@@ -454,6 +456,34 @@ namespace VamTimeline
                 animation.applyNextPose = true;
             });
             RegisterAction(_applyNextPoseJSON);
+
+            _addToQueueJSON = new JSONStorableStringChooser(StorableNames.AddToQueue, new List<string>(), "", StorableNames.AddToQueue, val =>
+            {
+                if (val == "") return;
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.AddToQueue}': {val}");
+                _addToQueueJSON.valNoCallback = "";
+                var clip = animation.index.ByName(animation.playingAnimationSegment, val).FirstOrDefault() ?? animation.index.ByName(val).FirstOrDefault();
+                if (clip == null)
+                {
+                    SuperController.LogError($"Timeline: Atom '{containingAtom.uid}' failed to add animation '{val}' to queue: no animation found with that name.");
+                    return;
+                }
+                if (!animation.isPlaying)
+                    animation.PlayClip(clip, true);
+                else
+                    animation.AddToQueue(clip);
+            })
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterStringChooser(_addToQueueJSON);
+
+            _clearQueueJSON = new JSONStorableAction(StorableNames.ClearQueue, () =>
+            {
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.ClearQueue}'");
+                animation.ClearQueue();
+            });
         }
 
         private void StorablePlay(string storableName)
@@ -676,6 +706,7 @@ namespace VamTimeline
             if (enabled) _freeControllerHook.enabled = true;
 
             _animationJSON.valNoCallback = "";
+            _addToQueueJSON.valNoCallback = "";
 
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
@@ -735,6 +766,7 @@ namespace VamTimeline
             try
             {
                 _animationJSON.choices = animation.index.clipNames.ToList();
+                _addToQueueJSON.choices = animation.index.clipNames.ToList();
 
                 UpdateSegmentStorables();
 

@@ -151,6 +151,8 @@ namespace VamTimeline
         public bool forceBlendTime { get; set; }
         public bool pauseSequencing { get; set; }
 
+        private readonly List<AtomAnimationClip> _queue = new List<AtomAnimationClip>();
+
         public AtomAnimation()
         {
             index = new AtomAnimationsClipsIndex(clips);
