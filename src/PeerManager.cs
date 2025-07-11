@@ -578,6 +578,18 @@ namespace VamTimeline
             }
         }
 
+        public void SendAnimationQueueStarted()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[] { nameof(SendAnimationQueueStarted) });
+        }
+
+        public void SendAnimationQueueFinished()
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[] { nameof(SendAnimationQueueFinished) });
+        }
+
         private void Begin()
         {
             _sending++;

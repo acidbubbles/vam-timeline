@@ -34,6 +34,7 @@ namespace VamTimeline
             if (!_processingQueue)
             {
                 _processingQueue = true;
+                onQueueStarted.Invoke();
                 var clipTime = clip.clipTime - clip.timeOffset;
                 TransitionClips(current, clip, clipTime);
             }
@@ -51,9 +52,13 @@ namespace VamTimeline
 
         public void ClearQueue()
         {
-            _queue.Clear();
+            var wasProcessingQueue = _processingQueue;
             _processingQueue = false;
+            _queue.Clear();
             _lastQueuedClip = null;
+
+            if(wasProcessingQueue)
+                onQueueFinished.Invoke();
         }
 
         #endregion

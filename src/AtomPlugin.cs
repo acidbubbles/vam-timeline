@@ -693,6 +693,8 @@ namespace VamTimeline
             animation.onSpeedChanged.AddListener(OnSpeedChanged);
             animation.onWeightChanged.AddListener(OnWeightChanged);
             animation.animatables.onControllersListChanged.AddListener(OnControllersListChanged);
+            animation.onQueueStarted.AddListener(OnQueueStarted);
+            animation.onQueueFinished.AddListener(OnQueueFinished);
 
             OnControllersListChanged();
             OnClipsListChanged();
@@ -711,6 +713,16 @@ namespace VamTimeline
             peers.Ready();
             BroadcastToControllers(nameof(IRemoteControllerPlugin.OnTimelineAnimationReady));
             SuperController.singleton.BroadcastMessage("OnActionsProviderAvailable", this, SendMessageOptions.DontRequireReceiver);
+        }
+
+        private void OnQueueStarted()
+        {
+            peers.SendAnimationQueueStarted();
+        }
+
+        private void OnQueueFinished()
+        {
+            peers.SendAnimationQueueFinished();
         }
 
         private void DeregisterAction(AnimStorableActionMap action)
