@@ -30,6 +30,7 @@
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimation.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimation.Fields.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimation.Playback.cs",
+    "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimation.Queuing.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimation.Sequencing.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimationClip.cs",
     "Custom\\Scripts\\AcidBubbles\\Timeline\\src\\AtomAnimations\\Animations\\AtomAnimationsClipsIndex.cs",

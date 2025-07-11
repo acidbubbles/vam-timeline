@@ -94,6 +94,7 @@
     <Compile Include="src\AtomAnimations\Animations\AtomAnimation.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Fields.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Playback.cs" />
+    <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Queuing.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimation.Sequencing.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimationClip.cs" />
     <Compile Include="src\AtomAnimations\Animations\AtomAnimationsClipsIndex.cs" />
