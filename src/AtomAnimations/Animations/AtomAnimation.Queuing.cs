@@ -1,61 +1,66 @@
-﻿namespace VamTimeline
+﻿using System.Collections.Generic;
+
+namespace VamTimeline
 {
     public partial class AtomAnimation
     {
         #region Queueing
 
+        private string _queueName;
+        private readonly List<AtomAnimationClip> _queue = new List<AtomAnimationClip>();
         private bool _processingQueue;
-        private AtomAnimationClip _lastQueuedClip;
+
+        public void CreateQueue(string name)
+        {
+            ClearQueue();
+            _queueName = name;
+        }
 
         public void AddToQueue(AtomAnimationClip clip)
         {
-            var current = isPlaying
-                ? GetMainClipInLayer(index.ByLayerQualified(clip.animationLayerQualifiedId))
-                : null;
+            if (_queueName == null)
+                _queueName = "unnamed";
 
-            if (current == null)
+            _queue.Add(clip);
+        }
+
+        public void PlayQueue()
+        {
+            if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PlayQueue}' with queue '{_queueName}' containing {_queue.Count} clips.");
+
+            if (_queue.Count == 0)
             {
-                if (_lastQueuedClip.animationSegmentId == clip.animationSegmentId)
-                {
-                    SuperController.LogError(
-                        $"Timeline: Switching from a non-playing layer in a queue is not yet supported: {clip.animationNameQualified}");
-                    return;
-                }
-
-                current = _lastQueuedClip;
+                SuperController.LogError($"Timeline: Cannot play queue '{_queueName}', no clips in queue.");
+                ClearQueue();
+                return;
             }
 
-            _lastQueuedClip = clip;
+            var next = _queue[0];
+            _queue.RemoveAt(0);
 
-            // If we're not processing the queue yet, we can immediately transition to the new clip
-            if (!_processingQueue)
+            if (_queue.Count == 0)
             {
-                _processingQueue = true;
-                onQueueStarted.Invoke();
-                var clipTime = clip.clipTime - clip.timeOffset;
-                TransitionClips(current, clip, clipTime);
+                ClearQueue();
             }
-            // If we are processing the queue, make sure we will eventually pick up the new clip, otherwise configure the new clip immediately
-            else if (current.playbackScheduledNextAnimation == null)
-            {
-                ScheduleNextAnimation(current, clip, forQueue: true);
-            }
-            // Wait for the next animation to be scheduled
             else
             {
-                _queue.Add(clip);
+                _processingQueue = true;
             }
+
+            _processingQueue = true;
+            PlayClip(next, true);
         }
 
         public void ClearQueue()
         {
+            var queueName = _queueName;
             var wasProcessingQueue = _processingQueue;
             _processingQueue = false;
+            _queueName = null;
             _queue.Clear();
-            _lastQueuedClip = null;
 
             if (wasProcessingQueue)
-                onQueueFinished.Invoke();
+                onQueueFinished.Invoke(queueName);
         }
 
         #endregion

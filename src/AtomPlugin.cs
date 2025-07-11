@@ -45,7 +45,9 @@ namespace VamTimeline
         private JSONStorableBool _pausedJSON;
         private JSONStorableBool _pauseSequencingJSON;
         private JSONStorableAction _applyNextPoseJSON;
+        private JSONStorableString _createQueueJSON;
         private JSONStorableStringChooser _addToQueueJSON;
+        public JSONStorableAction _playQueueJSON;
         private JSONStorableAction _clearQueueJSON;
         private readonly Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         public JSONStorableAction deleteJSON { get; private set; }
@@ -457,6 +459,19 @@ namespace VamTimeline
             });
             RegisterAction(_applyNextPoseJSON);
 
+            _createQueueJSON = new JSONStorableString(StorableNames.CreateQueue, "", (string val) =>
+            {
+                if (string.IsNullOrEmpty(val)) return;
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.CreateQueue}': {val}");
+                _createQueueJSON.valNoCallback = "";
+                animation.CreateQueue(val);
+            })
+            {
+                isStorable = false,
+                isRestorable = false
+            };
+            RegisterString(_createQueueJSON);
+
             _addToQueueJSON = new JSONStorableStringChooser(StorableNames.AddToQueue, new List<string>(), "", StorableNames.AddToQueue, val =>
             {
                 if (val == "") return;
@@ -479,11 +494,18 @@ namespace VamTimeline
             };
             RegisterStringChooser(_addToQueueJSON);
 
+            _playQueueJSON = new JSONStorableAction(StorableNames.PlayQueue, () =>
+            {
+                animation.PlayQueue();
+            });
+            RegisterAction(_playQueueJSON);
+
             _clearQueueJSON = new JSONStorableAction(StorableNames.ClearQueue, () =>
             {
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.ClearQueue}'");
-                animation.ClearQueue();
+
             });
+            RegisterAction(_clearQueueJSON);
         }
 
         private void StorablePlay(string storableName)
@@ -715,14 +737,14 @@ namespace VamTimeline
             SuperController.singleton.BroadcastMessage("OnActionsProviderAvailable", this, SendMessageOptions.DontRequireReceiver);
         }
 
-        private void OnQueueStarted()
+        private void OnQueueStarted(string queueName)
         {
-            peers.SendAnimationQueueStarted();
+            peers.SendAnimationQueueStarted(queueName);
         }
 
-        private void OnQueueFinished()
+        private void OnQueueFinished(string queueName)
         {
-            peers.SendAnimationQueueFinished();
+            peers.SendAnimationQueueFinished(queueName);
         }
 
         private void DeregisterAction(AnimStorableActionMap action)

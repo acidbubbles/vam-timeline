@@ -7,6 +7,7 @@ namespace VamTimeline
 {
     public partial class AtomAnimation
     {
+        public class StringUnityEvent : UnityEvent<string> { }
         public class AtomAnimationClipEvent : UnityEvent<AtomAnimationClip> { }
         public class AtomAnimationChangeClipEventArgs { public AtomAnimationClip before; public AtomAnimationClip after; }
         public class AtomAnimationChangeClipEvent : UnityEvent<AtomAnimationChangeClipEventArgs> { }
@@ -19,8 +20,8 @@ namespace VamTimeline
         public readonly UnityEvent onClipsListChanged = new UnityEvent();
         public readonly UnityEvent onAnimationRebuilt = new UnityEvent();
         public readonly UnityEvent onPausedChanged = new UnityEvent();
-        public readonly UnityEvent onQueueStarted = new UnityEvent();
-        public readonly UnityEvent onQueueFinished = new UnityEvent();
+        public readonly StringUnityEvent onQueueStarted = new StringUnityEvent();
+        public readonly StringUnityEvent onQueueFinished = new StringUnityEvent();
         public readonly AtomAnimationClipEvent onIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationClipEvent onClipIsPlayingChanged = new AtomAnimationClipEvent();
         public readonly AtomAnimationChangeClipEvent onMainClipPerLayerChanged = new AtomAnimationChangeClipEvent();
@@ -152,8 +153,6 @@ namespace VamTimeline
         public bool syncWithPeers { get; set; } = true;
         public bool forceBlendTime { get; set; }
         public bool pauseSequencing { get; set; }
-
-        private readonly List<AtomAnimationClip> _queue = new List<AtomAnimationClip>();
 
         public AtomAnimation()
         {

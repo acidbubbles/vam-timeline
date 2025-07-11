@@ -18,7 +18,9 @@ namespace VamTimeline
         public const string Stop = "Stop";
         public const string StopIfPlaying = "Stop If Playing";
         public const string StopAndReset = "Stop And Reset";
+        public const string CreateQueue = "Create Queue";
         public const string AddToQueue = "Add To Queue";
+        public const string PlayQueue = "Play Queue";
         public const string ClearQueue = "Clear Queue";
         public const string NextFrame = "Next Frame";
         public const string PreviousFrame = "Previous Frame";
