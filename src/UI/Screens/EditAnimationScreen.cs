@@ -14,21 +14,23 @@ namespace VamTimeline
         private const string _changeLengthModeStretch = "Stretch";
         private const string _changeLengthModeLoop = "Loop";
 
+        private const string _loopNotLoop = "Do Not Loop";
+        private const string _loopLoop = "Loop (Cycle)";
+        private const string _loopLoopPreserveLast = "Loop (Repeat)";
+
         public override string screenId => ScreenName;
 
         private JSONStorableStringChooser _lengthModeJSON;
         private JSONStorableFloat _lengthJSON;
         private JSONStorableBool _ensureQuaternionContinuity;
-        private JSONStorableBool _loop;
-        private JSONStorableBool _preserveLastFrame;
+        private JSONStorableStringChooser _loop;
         private JSONStorableFloat _loopSelfBlend;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _linkedAudioSourceJSON;
         private JSONStorableString _segmentNameJSON;
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
-        private UIDynamicToggle _loopUI;
-        private UIDynamicToggle _preserveLastFrameUI;
+        private UIDynamicPopup _loopUI;
         private UIDynamicSlider _loopSelfBlendUI;
         private JSONStorableFloat _globalSpeedJSON;
         private JSONStorableFloat _localSpeedJSON;
@@ -318,24 +320,26 @@ namespace VamTimeline
 
         private void InitLoopUI()
         {
-            _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
-            {
-                current.loop = val;
-                #warning To merge into a drop down with loop
-                current.loopPreserveLastFrame = false;
+            _loop = new JSONStorableStringChooser(
+                "Loop",
+                new List<string>{_loopNotLoop, _loopLoop, _loopLoopPreserveLast},
+                _loopNotLoop,
+                "Loop",
+                val =>
+                {
+                if (current.autoTransitionNext)
+                {
+                    _loop.valNoCallback = "Locked: Auto Transition Next Enabled";
+                    return;
+                }
+                current.loop = val != _loopNotLoop;
+                current.loopPreserveLastFrame = val == _loopLoopPreserveLast;
             });
-            _loopUI = prefabFactory.CreateToggle(_loop);
+            _loopUI = prefabFactory.CreatePopup(_loop, false, false);
         }
 
         private void InitSelfBlendUI()
         {
-            #warning To merge into a drop down with loop
-            _preserveLastFrame = new JSONStorableBool("Preserve Last Frame", current?.loopPreserveLastFrame ?? false, val =>
-            {
-                current.loopPreserveLastFrame = val;
-            });
-            _preserveLastFrameUI = prefabFactory.CreateToggle(_preserveLastFrame);
-
             _loopSelfBlend = new JSONStorableFloat("Self Blend", current?.loopBlendSelfDuration ?? 0f, val =>
             {
                 current.loopBlendSelfDuration = val;
@@ -387,6 +391,7 @@ namespace VamTimeline
             _lengthJSON.valNoCallback = current.animationLength;
             current.DirtyAll();
 
+            current.loopBlendSelfDuration = Math.Min(current.loopBlendSelfDuration, newLength);
             animationEditContext.clipTime = Math.Min(time, newLength);
         }
 
@@ -482,12 +487,22 @@ namespace VamTimeline
                 _segmentNameJSON.valNoCallback = current.animationSegment;
             _lengthJSON.valNoCallback = current.animationLength;
             _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
-            _loop.valNoCallback = current.loop;
-            _loopUI.toggle.interactable = !current.autoTransitionNext;
-            _preserveLastFrame.valNoCallback = current.loopPreserveLastFrame;
-            _preserveLastFrameUI.toggle.interactable = current.loop;
+            if (current.loop)
+            {
+                if (current.loopPreserveLastFrame)
+                    _loop.valNoCallback = _loopLoopPreserveLast;
+                else
+                    _loop.valNoCallback = _loopLoop;
+            }
+            else
+            {
+                _loop.valNoCallback = _loopNotLoop;
+            }
+            if(current.autoTransitionNext)
+                _loop.valNoCallback = "Locked: Auto Transition Next Enabled";
             _loopSelfBlend.valNoCallback = current.loopBlendSelfDuration;
             _loopSelfBlendUI.slider.interactable = current.loop;
+            _loopSelfBlend.max = current.animationLength;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAudioSourceJSON.valNoCallback = current.audioSourceControl != null ? current.audioSourceControl.containingAtom.uid : "";
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern != null ? current.animationPattern.containingAtom.uid : "";

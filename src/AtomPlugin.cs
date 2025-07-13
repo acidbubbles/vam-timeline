@@ -1458,7 +1458,7 @@ namespace VamTimeline
             {
                 yield return 0;
                 var selector = containingAtom.gameObject.GetComponentInChildren<UITabSelector>();
-                if(selector == null) continue;
+                if (selector == null) continue;
                 selector.SetActiveTab("Plugins");
                 if (UITransform == null) continue;
             }
