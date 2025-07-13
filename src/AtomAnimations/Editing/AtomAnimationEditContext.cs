@@ -926,8 +926,10 @@ namespace VamTimeline
                     break;
                 }
             }
+
             if (nextTime.IsSameFrame(current.animationLength) && current.loop && !current.loopPreserveLastFrame)
                 return 0f;
+
             return nextTime;
         }
 

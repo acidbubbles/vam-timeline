@@ -26,7 +26,6 @@ namespace VamTimeline
         private JSONStorableString _animationSetJSON;
         private JSONStorableBool _transitionPreviousJSON;
         private JSONStorableBool _transitionNextJSON;
-        private JSONStorableBool _loopJSON;
         private JSONStorableBool _preserveLoopsJSON;
         private JSONStorableFloat _randomizeRangeJSON;
         private JSONStorableBool _fadeOnTransition;
@@ -43,7 +42,6 @@ namespace VamTimeline
             InitAutoPlayUI();
             InitBlendUI();
             InitTimeOffsetUI();
-            InitLoopUI();
             InitPreserveLoopsUI();
             InitUninterruptibleUI();
 
@@ -148,20 +146,6 @@ namespace VamTimeline
             _timeOffsetJSON = new JSONStorableFloat("Time offset", 0f, val => current.timeOffset = val, -1f, 1f, false);
             var timeOffsetUI = prefabFactory.CreateSlider(_timeOffsetJSON);
             timeOffsetUI.valueFormat = "F3";
-        }
-
-        private void InitLoopUI()
-        {
-            _loopJSON = new JSONStorableBool("Loop", true, val =>
-            {
-                #warning Use a drop down here too
-                current.loop = val;
-                if (!val)
-                    current.loopPreserveLastFrame = false;
-                #warning Verify, this should have preserve loop / length adjusted?
-                RoundNextTimeToNearestLoop();
-            });
-            prefabFactory.CreateToggle(_loopJSON);
         }
 
         private void InitPreserveLoopsUI()
@@ -511,7 +495,6 @@ namespace VamTimeline
             _uninterruptible.valNoCallback = current.uninterruptible;
             _transitionPreviousJSON.valNoCallback = current.autoTransitionPrevious;
             _transitionNextJSON.valNoCallback = current.autoTransitionNext;
-            _loopJSON.valNoCallback = current.loop;
             _preserveLoopsJSON.valNoCallback = current.loop ? current.preserveLoops : current.preserveLength;
             _nextAnimationJSON.valNoCallback = string.IsNullOrEmpty(current.nextAnimationName) ? _noNextAnimation : current.nextAnimationName;
             _nextAnimationJSON.choices = GetEligibleNextAnimations();
