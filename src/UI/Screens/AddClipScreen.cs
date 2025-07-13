@@ -122,6 +122,7 @@ namespace VamTimeline
             foreach (var created in operations.AddAnimation().AddAnimation(clipNameJSON.val, createPositionJSON.val, true, true, _createOnAllLayersJSON.val))
             {
                 created.source.loop = false;
+                created.source.loopPreserveLastFrame = false;
                 created.source.DirtyAll();
                 created.created.loop = false;
                 created.created.DirtyAll();

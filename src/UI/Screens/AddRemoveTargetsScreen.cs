@@ -461,7 +461,7 @@ namespace VamTimeline
                         added.SetKeyframeByTime(clip.animationLength, controllerPose.position, Quaternion.Euler(controllerPose.rotation));
                     }
 
-                    if (!clip.loop)
+                    if (!clip.loop || clip.loopPreserveLastFrame)
                         added.ChangeCurveByTime(clip.animationLength, CurveTypeValues.CopyPrevious);
                 }
             }

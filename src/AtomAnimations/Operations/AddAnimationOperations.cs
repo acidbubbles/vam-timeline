@@ -148,6 +148,7 @@ namespace VamTimeline
 
             var clip = _animation.CreateClip($"{source.animationName} > {next.animationName}", source.animationLayer, source.animationSegment, _animation.clips.IndexOf(source) + 1);
             clip.loop = false;
+            clip.loopPreserveLastFrame = false;
             clip.autoTransitionPrevious = _animation.index.segmentsById[source.animationSegmentId].layersMapById[source.animationLayerId].Any(c => c.nextAnimationNameId == source.animationNameId);
             clip.autoTransitionNext = source.nextAnimationName != null;
             clip.nextAnimationName = source.nextAnimationName;

@@ -29,7 +29,8 @@ namespace VamTimeline
 
         private readonly Logger _logger;
         private bool _loop = true;
-        private bool _blendStartEnd = false;
+        private bool _loopPreserveLastFrame;
+        private float _loopSelfBlendDuration;
         private float _timeOffset;
         private string _nextAnimationName;
         private float _animationLength = DefaultAnimationLength;
@@ -337,14 +338,25 @@ namespace VamTimeline
             }
         }
 
-        public bool blendStartEnd
+        public bool loopPreserveLastFrame
         {
-            get { return _blendStartEnd; }
+            get { return _loopPreserveLastFrame; }
             set
             {
-                if (_blendStartEnd == value) return;
-                _blendStartEnd = value;
-                onAnimationSettingsChanged.Invoke(nameof(blendStartEnd));
+                if (_loopPreserveLastFrame == value) return;
+                _loopPreserveLastFrame = value;
+                onAnimationSettingsChanged.Invoke(nameof(loopPreserveLastFrame));
+            }
+        }
+
+        public float loopBlendSelfDuration
+        {
+            get { return _loopSelfBlendDuration; }
+            set
+            {
+                if (_loopSelfBlendDuration == value) return;
+                _loopSelfBlendDuration = value;
+                onAnimationSettingsChanged.Invoke(nameof(loopBlendSelfDuration));
             }
         }
 
@@ -376,7 +388,11 @@ namespace VamTimeline
                 _skipNextAnimationSettingsModified = true;
                 try
                 {
-                    if (loop) loop = false;
+                    if (loop)
+                    {
+                        loop = false;
+                        loopPreserveLastFrame = false;
+                    }
                 }
                 finally
                 {
@@ -1026,7 +1042,7 @@ namespace VamTimeline
             {
                 if (!target.dirty) continue;
 
-                if (loop && !blendStartEnd)
+                if (loop && !_loopPreserveLastFrame)
                     target.SetCurveSnapshot(animationLength, target.GetCurveSnapshot(0f), false);
 
                 target.ComputeCurves();
@@ -1051,7 +1067,7 @@ namespace VamTimeline
             {
                 if (!target.dirty) continue;
 
-                if (loop && !blendStartEnd)
+                if (loop && !_loopPreserveLastFrame)
                     target.SetCurveSnapshot(animationLength, target.GetCurveSnapshot(0), false);
 
                 target.value.ComputeCurves();

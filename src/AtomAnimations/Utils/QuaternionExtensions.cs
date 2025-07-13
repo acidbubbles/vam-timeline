@@ -14,7 +14,7 @@ namespace VamTimeline
             //q and -q are the same rotation, but cannot be averaged, we have to make sure they are all the same.
             if (!AreQuaternionsClose(newRotation, firstRotation))
             {
-                newRotation = InverseSignQuaternion(newRotation);
+                newRotation = newRotation.InverseSignQuaternion();
             }
 
             //Average the values
@@ -45,7 +45,7 @@ namespace VamTimeline
 
         //Changes the sign of the quaternion components. This is not the same as the inverse.
         [MethodImpl(256)]
-        private static Quaternion InverseSignQuaternion(Quaternion q)
+        public static Quaternion InverseSignQuaternion(this Quaternion q)
         {
             return new Quaternion(-q.x, -q.y, -q.z, -q.w);
         }

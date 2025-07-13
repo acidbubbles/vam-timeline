@@ -18,8 +18,8 @@ namespace VamTimeline
         float blendInDuration { get; }
         float animationLength { get; }
 
-        bool preserveLoopLastFrame { get; }
-        float loopSelfBlendDuration { get; }
+        bool loopPreserveLastFrame { get; }
+        float loopBlendSelfDuration { get; }
 
         IEnumerable<IAtomAnimationTargetsList> GetTargetGroups();
     }

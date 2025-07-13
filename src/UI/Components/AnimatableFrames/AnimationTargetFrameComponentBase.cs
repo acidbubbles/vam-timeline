@@ -205,7 +205,7 @@ namespace VamTimeline
         {
             if (stopped)
             {
-                toggle.toggle.interactable = !clip.loop || time < clip.animationLength;
+                toggle.toggle.interactable = !(clip.loop && !clip.loopPreserveLastFrame) || time < clip.animationLength;
                 SetToggle(target.HasKeyframe(time.Snap()));
             }
             else

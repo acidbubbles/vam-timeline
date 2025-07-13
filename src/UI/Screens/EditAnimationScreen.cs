@@ -20,13 +20,16 @@ namespace VamTimeline
         private JSONStorableFloat _lengthJSON;
         private JSONStorableBool _ensureQuaternionContinuity;
         private JSONStorableBool _loop;
-        private JSONStorableBool _blendStartEndJSON;
+        private JSONStorableBool _preserveLastFrame;
+        private JSONStorableFloat _loopSelfBlend;
         private JSONStorableStringChooser _linkedAnimationPatternJSON;
         private JSONStorableStringChooser _linkedAudioSourceJSON;
         private JSONStorableString _segmentNameJSON;
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
         private UIDynamicToggle _loopUI;
+        private UIDynamicToggle _preserveLastFrameUI;
+        private UIDynamicSlider _loopSelfBlendUI;
         private JSONStorableFloat _globalSpeedJSON;
         private JSONStorableFloat _localSpeedJSON;
         private JSONStorableFloat _globalWeightJSON;
@@ -48,7 +51,7 @@ namespace VamTimeline
 
             prefabFactory.CreateHeader("Options", 1);
             InitLoopUI();
-            InitBlendStartEndUI();
+            InitSelfBlendUI();
 
             prefabFactory.CreateHeader("Length", 1);
             InitAnimationLengthUI();
@@ -318,17 +321,27 @@ namespace VamTimeline
             _loop = new JSONStorableBool("Loop", current?.loop ?? true, val =>
             {
                 current.loop = val;
+                #warning To merge into a drop down with loop
+                current.loopPreserveLastFrame = false;
             });
             _loopUI = prefabFactory.CreateToggle(_loop);
         }
 
-        private void InitBlendStartEndUI()
+        private void InitSelfBlendUI()
         {
-            _blendStartEndJSON = new JSONStorableBool("Blend Start-End", current?.blendStartEnd ?? false, val =>
+            #warning To merge into a drop down with loop
+            _preserveLastFrame = new JSONStorableBool("Preserve Last Frame", current?.loopPreserveLastFrame ?? false, val =>
             {
-                current.blendStartEnd = val;
+                current.loopPreserveLastFrame = val;
             });
-            prefabFactory.CreateToggle(_blendStartEndJSON);
+            _preserveLastFrameUI = prefabFactory.CreateToggle(_preserveLastFrame);
+
+            _loopSelfBlend = new JSONStorableFloat("Self Blend", current?.loopBlendSelfDuration ?? 0f, val =>
+            {
+                current.loopBlendSelfDuration = val;
+            }, 0f, 5f, false);
+            _loopSelfBlendUI = prefabFactory.CreateSlider(_loopSelfBlend);
+            _loopSelfBlendUI.valueFormat = "F3";
         }
 
         #endregion
@@ -471,7 +484,10 @@ namespace VamTimeline
             _lengthJSON.max = Mathf.Max((current.animationLength * 5f).Snap(10f), 10f);
             _loop.valNoCallback = current.loop;
             _loopUI.toggle.interactable = !current.autoTransitionNext;
-            _blendStartEndJSON.valNoCallback = current.blendStartEnd;
+            _preserveLastFrame.valNoCallback = current.loopPreserveLastFrame;
+            _preserveLastFrameUI.toggle.interactable = current.loop;
+            _loopSelfBlend.valNoCallback = current.loopBlendSelfDuration;
+            _loopSelfBlendUI.slider.interactable = current.loop;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAudioSourceJSON.valNoCallback = current.audioSourceControl != null ? current.audioSourceControl.containingAtom.uid : "";
             _linkedAnimationPatternJSON.valNoCallback = current.animationPattern != null ? current.animationPattern.containingAtom.uid : "";
