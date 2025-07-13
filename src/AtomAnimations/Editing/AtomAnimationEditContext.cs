@@ -499,7 +499,7 @@ namespace VamTimeline
                     return;
                 if (time.IsSameFrame(current.animationLength))
                 {
-                    if (current.loop) return;
+                    if (current.loop && !current.loopPreserveLastFrame) return;
                     foreach (var target in GetAllOrSelectedTargets().OfType<ICurveAnimationTarget>())
                     {
                         target.ChangeCurveByTime(current.animationLength, CurveTypeValues.CopyPrevious);
@@ -734,7 +734,7 @@ namespace VamTimeline
                 {
                     var target = clip.targetTriggers[triggerIndex];
                     if (!target.animatableRef.live) continue;
-                    target.Sync(current.clipTime, true, current.loop);
+                    target.Sync(current.clipTime, true, current.loop && !current.loopPreserveLastFrame);
                     target.SyncAudio(current.clipTime);
                     CancelInvoke(nameof(LeaveSampledTriggers));
                     Invoke(nameof(LeaveSampledTriggers), 0.2f);
@@ -926,7 +926,7 @@ namespace VamTimeline
                     break;
                 }
             }
-            if (nextTime.IsSameFrame(current.animationLength) && current.loop)
+            if (nextTime.IsSameFrame(current.animationLength) && current.loop && !current.loopPreserveLastFrame)
                 return 0f;
             return nextTime;
         }
@@ -938,7 +938,7 @@ namespace VamTimeline
             {
                 try
                 {
-                    return GetAllOrSelectedTargets().Select(t => t.GetAllKeyframesTime()).Select(c => c[c.Length - (current.loop ? 2 : 1)]).Max();
+                    return GetAllOrSelectedTargets().Select(t => t.GetAllKeyframesTime()).Select(c => c[c.Length - (current.loop && current.loopPreserveLastFrame ? 2 : 1)]).Max();
                 }
                 catch (InvalidOperationException)
                 {

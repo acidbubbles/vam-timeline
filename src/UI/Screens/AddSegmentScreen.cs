@@ -179,6 +179,7 @@ namespace VamTimeline
         {
             var clip = operations.Segments().Add(clipNameJSON.val, layerNameJSON.val, segmentNameJSON.val, createPositionJSON.val);
             clip.loop = false;
+            clip.loopPreserveLastFrame = false;
 
             foreach (var layer in currentSegment.layers.Select(l => l.Last()))
             {

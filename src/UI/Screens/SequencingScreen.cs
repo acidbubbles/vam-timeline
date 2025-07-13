@@ -154,7 +154,11 @@ namespace VamTimeline
         {
             _loopJSON = new JSONStorableBool("Loop", true, val =>
             {
+                #warning Use a drop down here too
                 current.loop = val;
+                if (!val)
+                    current.loopPreserveLastFrame = false;
+                #warning Verify, this should have preserve loop / length adjusted?
                 RoundNextTimeToNearestLoop();
             });
             prefabFactory.CreateToggle(_loopJSON);

@@ -427,7 +427,7 @@ namespace VamTimeline
 
                 keyframes = child.AddComponent<DopeSheetKeyframes>();
                 _keyframesRows.Add(keyframes);
-                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop);
+                keyframes.SetKeyframes(target.GetAllKeyframesTime(), _clip.loop && !_clip.loopPreserveLastFrame);
                 keyframes.SetRange(_animationEditContext.scrubberRange.rangeBegin, _animationEditContext.scrubberRange.rangeDuration);
                 keyframes.SetTime(_ms);
                 keyframes.style = _style;
@@ -439,7 +439,7 @@ namespace VamTimeline
                     target.onAnimationKeyframesRebuilt,
                     () =>
                     {
-                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), clip.loop);
+                        keyframes.SetKeyframes(target.GetAllKeyframesTime(), clip.loop && !clip.loopPreserveLastFrame);
                         keyframes.SetTime(_ms);
                         keyframes.SetVerticesDirty();
                     }

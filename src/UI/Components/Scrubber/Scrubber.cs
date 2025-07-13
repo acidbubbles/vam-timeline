@@ -206,7 +206,7 @@ namespace VamTimeline
             var time = clickedTime.Snap(final ? animationEditContext.snap : 0);
             if (time >= animationEditContext.current.animationLength - 0.001f)
             {
-                if (animationEditContext.current.loop)
+                if (animationEditContext.current.loop && !animationEditContext.current.loopPreserveLastFrame)
                     time = 0f;
                 else
                     time = animationEditContext.current.animationLength;

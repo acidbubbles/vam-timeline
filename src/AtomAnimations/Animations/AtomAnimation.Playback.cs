@@ -615,12 +615,12 @@ namespace VamTimeline
 
                 var value = target.value.Evaluate(clip.clipTime);
 
-                if (clip.loop && clip.loopSelfBlendDuration > 0.001f)
+                if (clip.loop && clip.loopBlendSelfDuration > 0.001f)
                 {
-                    var blendStartTime = clip.animationLength - clip.loopSelfBlendDuration;
+                    var blendStartTime = clip.animationLength - clip.loopBlendSelfDuration;
                     if (clip.clipTime > blendStartTime)
                     {
-                        var loopBlendWeight = Mathf.Clamp01((clip.clipTime - blendStartTime) / clip.loopSelfBlendDuration);
+                        var loopBlendWeight = Mathf.Clamp01((clip.clipTime - blendStartTime) / clip.loopBlendSelfDuration);
                         var valueStart = target.value.Evaluate(0f);
                         value = Mathf.Lerp(value, valueStart, loopBlendWeight);
                     }
@@ -742,14 +742,12 @@ namespace VamTimeline
                     ? target.EvaluateRotation(clip.clipTime)
                     : Quaternion.identity;
 
-                var blendDuration = clip.blendInDuration;
-                var animationLength = clip.animationLength;
-                if (clip.loop && clip.blendStartEnd && blendDuration > 0.001f && animationLength > blendDuration)
+                if (clip.loop && clip.loopBlendSelfDuration > 0.001f)
                 {
-                    var blendStartTime = animationLength - blendDuration;
+                    var blendStartTime = clip.animationLength - clip.loopBlendSelfDuration;
                     if (clip.clipTime > blendStartTime)
                     {
-                        var loopBlendWeight = Mathf.Clamp01((clip.clipTime - blendStartTime) / blendDuration);
+                        var loopBlendWeight = Mathf.Clamp01((clip.clipTime - blendStartTime) / clip.loopBlendSelfDuration);
 
                         if (requiresPositionProcessing)
                         {
@@ -760,7 +758,7 @@ namespace VamTimeline
                         if (requiresRotationProcessing)
                         {
                             var rotStart = target.EvaluateRotation(0f);
-                            if (Quaternion.Dot(currentTargetRotation, rotStart) < 0) rotStart = InverseSignQuaternion(rotStart);
+                            if (Quaternion.Dot(currentTargetRotation, rotStart) < 0) rotStart = rotStart.InverseSignQuaternion();
                             currentTargetRotation = Quaternion.Slerp(currentTargetRotation, rotStart, loopBlendWeight);
                         }
                     }
@@ -857,14 +855,6 @@ namespace VamTimeline
                 controller.PauseComply();
             }
         }
-
-
-        [MethodImpl(256)]
-        private static Quaternion InverseSignQuaternion(Quaternion q)
-        {
-            return new Quaternion(-q.x, -q.y, -q.z, -q.w);
-        }
-
 
         #endregion
     }

@@ -66,7 +66,7 @@ namespace VamTimeline
                 yield break;
             }
 
-            if(showStartMarkers && !_clip.loop) ShowStartMarkers(targets);
+            if(showStartMarkers && (!_clip.loop || _clip.loopPreserveLastFrame)) ShowStartMarkers(targets);
 
             for (var i = recordInSeconds; i > 0; i--)
             {
@@ -89,7 +89,7 @@ namespace VamTimeline
             AtomAnimationBackup.singleton.ClearBackup();
             RecordFirstKeyframe(targets);
             StartRecording(timeMode, recordExtendsLength, targets);
-            if(showStartMarkers && _clip.loop) ShowStartMarkers(targets);
+            if(showStartMarkers && (_clip.loop && !_clip.loopPreserveLastFrame)) ShowStartMarkers(targets);
 
             var lastRecordedTime = 0f;
             var recordLengthStr = _clip.infinite ? "∞" : _clip.animationLength.ToString("0.0");
@@ -161,7 +161,7 @@ namespace VamTimeline
             {
                 var target = targets[i];
                 target.SetKeyframeToCurrent(0);
-                if (_clip.loop)
+                if (_clip.loop && !_clip.loopPreserveLastFrame)
                     target.SetKeyframeToCurrent(_clip.animationLength);
             }
         }
@@ -177,7 +177,10 @@ namespace VamTimeline
             }
 
             if (isEmpty)
+            {
                 _clip.loop = false;
+                _clip.loopPreserveLastFrame = false;
+            }
             _clip.DirtyAll();
             _animation.RebuildAnimationNow();
 
@@ -194,7 +197,7 @@ namespace VamTimeline
             _animation.SetTemporaryTimeMode(timeMode);
             _peerManager.SendStartRecording(timeMode);
 
-            _animation.autoStop = recordExtendsLength ? 0 : (_clip.loop ? _clip.animationLength - 0.0009f : _clip.animationLength + 0.0009f);
+            _animation.autoStop = recordExtendsLength ? 0 : (_clip.loop && !_clip.loopPreserveLastFrame ? _clip.animationLength - 0.0009f : _clip.animationLength + 0.0009f);
             _animation.globalSpeed = 1f;
             _clip.recording = true;
             _clip.infinite = recordExtendsLength;

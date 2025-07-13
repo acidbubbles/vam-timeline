@@ -379,6 +379,8 @@ namespace VamTimeline
                  previousAnimationName, // 15
                  clip.animationSegment, // 16
                  clip.preserveLength, // 17
+                 clip.loopPreserveLastFrame, // 18
+                 clip.loopBlendSelfDuration, // 19
             });
         }
 
@@ -433,6 +435,8 @@ namespace VamTimeline
                 clip.uninterruptible = (bool)e[13];
                 clip.preserveLoops = (bool)e[14];
                 clip.preserveLength = (bool)e[17];
+                clip.loopPreserveLastFrame = (bool)e[18];
+                clip.loopBlendSelfDuration = (float)e[19];
             }
 
             animation.index.Rebuild();
