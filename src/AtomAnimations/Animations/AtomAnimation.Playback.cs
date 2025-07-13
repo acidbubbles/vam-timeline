@@ -613,29 +613,17 @@ namespace VamTimeline
                 var localScaledWeight = clip.temporarilyEnabled ? 1f : clip.scaledWeight;
                 if (localScaledWeight < float.Epsilon) continue;
 
-                float value;
-                var time = clip.clipTime;
-                var blendDuration = clip.blendInDuration;
-                var animationLength = clip.animationLength;
+                var value = target.value.Evaluate(clip.clipTime);
 
-                if (clip.loop && clip.blendStartEnd && blendDuration > 0.001f && animationLength > blendDuration)
+                if (clip.loop && clip.loopSelfBlendDuration > 0.001f)
                 {
-                    var blendStartTime = animationLength - blendDuration;
-                    if (time > blendStartTime)
+                    var blendStartTime = clip.animationLength - clip.loopSelfBlendDuration;
+                    if (clip.clipTime > blendStartTime)
                     {
-                        var loopBlendWeight = Mathf.Clamp01((time - blendStartTime) / blendDuration);
-                        var valueEnd = target.value.Evaluate(time);
+                        var loopBlendWeight = Mathf.Clamp01((clip.clipTime - blendStartTime) / clip.loopSelfBlendDuration);
                         var valueStart = target.value.Evaluate(0f);
-                        value = Mathf.Lerp(valueEnd, valueStart, loopBlendWeight);
+                        value = Mathf.Lerp(value, valueStart, loopBlendWeight);
                     }
-                    else
-                    {
-                        value = target.value.Evaluate(time);
-                    }
-                }
-                else
-                {
-                    value = target.value.Evaluate(time);
                 }
 
                 var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
@@ -744,29 +732,24 @@ namespace VamTimeline
 
                 var blendWeight = clip.temporarilyEnabled ? 1f : clip.playbackBlendWeightSmoothed;
 
-                var time = clip.clipTime;
-                Vector3 currentTargetPosition = Vector3.zero;
-                Quaternion currentTargetRotation = Quaternion.identity;
-                bool requiresPositionProcessing = target.targetsPosition && target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off;
-                bool requiresRotationProcessing = target.targetsRotation && target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off;
+                var requiresPositionProcessing = target.targetsPosition && target.controlPosition && controller.currentPositionState != FreeControllerV3.PositionState.Off;
+                var requiresRotationProcessing = target.targetsRotation && target.controlRotation && controller.currentRotationState != FreeControllerV3.RotationState.Off;
 
-                if (requiresPositionProcessing)
-                {
-                    currentTargetPosition = target.EvaluatePosition(time);
-                }
-                if (requiresRotationProcessing)
-                {
-                    currentTargetRotation = target.EvaluateRotation(time);
-                }
+                var currentTargetPosition = requiresPositionProcessing
+                    ? target.EvaluatePosition(clip.clipTime)
+                    : Vector3.zero;
+                var currentTargetRotation = requiresRotationProcessing
+                    ? target.EvaluateRotation(clip.clipTime)
+                    : Quaternion.identity;
 
                 var blendDuration = clip.blendInDuration;
                 var animationLength = clip.animationLength;
                 if (clip.loop && clip.blendStartEnd && blendDuration > 0.001f && animationLength > blendDuration)
                 {
                     var blendStartTime = animationLength - blendDuration;
-                    if (time > blendStartTime)
+                    if (clip.clipTime > blendStartTime)
                     {
-                        var loopBlendWeight = Mathf.Clamp01((time - blendStartTime) / blendDuration);
+                        var loopBlendWeight = Mathf.Clamp01((clip.clipTime - blendStartTime) / blendDuration);
 
                         if (requiresPositionProcessing)
                         {
