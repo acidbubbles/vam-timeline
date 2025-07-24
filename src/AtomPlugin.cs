@@ -47,7 +47,7 @@ namespace VamTimeline
         private JSONStorableAction _applyNextPoseJSON;
         private JSONStorableString _createQueueJSON;
         private JSONStorableStringChooser _addToQueueJSON;
-        public JSONStorableAction _playQueueJSON;
+        private JSONStorableAction _playQueueJSON;
         private JSONStorableAction _clearQueueJSON;
         private readonly Dictionary<int, JSONStorableStringChooser> _animByLayer = new Dictionary<int, JSONStorableStringChooser>();
         public JSONStorableAction deleteJSON { get; private set; }
@@ -483,10 +483,7 @@ namespace VamTimeline
                     SuperController.LogError($"Timeline: Atom '{containingAtom.uid}' failed to add animation '{val}' to queue: no animation found with that name.");
                     return;
                 }
-                if (!animation.isPlaying)
-                    animation.PlayClip(clip, true);
-                else
-                    animation.AddToQueue(clip);
+                animation.AddToQueue(clip);
             })
             {
                 isStorable = false,
