@@ -8,6 +8,8 @@ namespace VamTimeline
 
         private string _queueName;
         private readonly List<AtomAnimationClip> _queue = new List<AtomAnimationClip>();
+        private AtomAnimationClip _queueCurrent;
+        private AtomAnimationClip _queueNext;
         private bool _processingQueue;
 
         public void CreateQueue(string name)
@@ -57,6 +59,8 @@ namespace VamTimeline
             var wasProcessingQueue = _processingQueue;
             _processingQueue = false;
             _queueName = null;
+            _queueCurrent = null;
+            _queueNext = null;
             _queue.Clear();
 
             if (wasProcessingQueue)

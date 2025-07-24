@@ -159,9 +159,15 @@ namespace VamTimeline
             // When there is a queue, we follow up with the queued animation regardless of the sequencing settings
             if (_queue.Count > 0)
             {
+                // AssignNextAnimation can be called multiple times, this is a simple way to avoid keeping track of scope
+                if (source == _queueCurrent)
+                    return;
+
                 next = _queue[0];
                 if(source.animationSegmentId != next.animationSegmentId || source.animationLayerQualifiedId == next.animationLayerQualifiedId)
                 {
+                    _queueCurrent = source;
+                    _queueNext = next;
                     _queue.RemoveAt(0);
                     if (_queue.Count == 0) ClearQueue();
                     ScheduleNextAnimation(source, next, forQueue: true);
