@@ -141,7 +141,7 @@ namespace VamTimeline
         {
             if (_available)
             {
-                if (storable != null)
+                if (storable?.isActiveAndEnabled == true)
                 {
                     TryAssignMinMax();
                     return true;
