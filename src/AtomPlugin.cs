@@ -62,7 +62,7 @@ namespace VamTimeline
         private string _legacyAnimationNext;
         private FreeControllerV3Hook _freeControllerHook;
         public Logger logger { get; private set; }
-        public OperationsFactory operations => new OperationsFactory(containingAtom, animation, animationEditContext.current, peers);
+        public OperationsFactory operations => new OperationsFactory(containingAtom, animation, animationEditContext.current, peers, serializer);
 
         private class AnimStorableActionMap
         {
@@ -71,7 +71,19 @@ namespace VamTimeline
             public JSONStorableFloat speedJSON;
             public JSONStorableFloat weightJSON;
         }
+
+        public static class SilentImportConflictModes
+        {
+        public const string Overwrite = "Overwrite";
+        public const string Skip = "Skip";
+        public const string Rename = "Rename";
+        }
+
         private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
+
+        private JSONStorableString _silentImportPathJSON;
+        private JSONStorableStringChooser _silentImportConflictModeJSON;
+        private JSONStorableAction _silentImportActionJSON;
 
         #region Init
 
@@ -471,6 +483,18 @@ namespace VamTimeline
                 isRestorable = false
             };
             RegisterString(_createQueueJSON);
+            _silentImportPathJSON = new JSONStorableString("Silent Import File Path", "");
+            RegisterString(_silentImportPathJSON);
+
+            _silentImportConflictModeJSON = new JSONStorableStringChooser(
+                "Silent Import Conflict Mode",
+                new List<string> { SilentImportConflictModes.Overwrite, SilentImportConflictModes.Skip, SilentImportConflictModes.Rename },
+                SilentImportConflictModes.Overwrite,
+                "Silent Import Conflict Mode");
+            RegisterStringChooser(_silentImportConflictModeJSON);
+
+            _silentImportActionJSON = new JSONStorableAction("Perform Silent Import From File", PerformSilentImportFromFile);
+            RegisterAction(_silentImportActionJSON);
 
             _addToQueueJSON = new JSONStorableStringChooser(StorableNames.AddToQueue, new List<string>(), "", StorableNames.AddToQueue, val =>
             {
@@ -683,6 +707,49 @@ namespace VamTimeline
             finally
             {
                 _restoring = false;
+            }
+        }
+
+        #endregion
+
+        #region Silent Import
+
+        public void SilentImportFromJSON(string jsonContent, string conflictMode)
+        {
+            if (string.IsNullOrEmpty(jsonContent))
+            {
+                SuperController.LogError("Timeline: Silent import failed, JSON content is empty.");
+                return;
+            }
+
+            operations.SilentImport().Perform(jsonContent, conflictMode);
+        }
+
+        private void PerformSilentImportFromFile()
+        {
+            try
+            {
+                var path = _silentImportPathJSON.val;
+                if (string.IsNullOrEmpty(path))
+                {
+                    SuperController.LogError("Timeline: Silent Import File Path is not set.");
+                    return;
+                }
+
+                var json = SuperController.singleton.LoadJSON(path);
+                if (json == null)
+                {
+                    SuperController.LogError("Timeline: Failed to load JSON from path: " + path);
+                    return;
+                }
+
+                SilentImportFromJSON(json.ToString(), _silentImportConflictModeJSON.val);
+                // Free up memory immeditelly
+                json = null;
+            }
+            catch (Exception exc)
+            {
+                SuperController.LogError("Timeline: An error occurred during silent import from file: " + exc);
             }
         }
 

@@ -138,6 +138,7 @@
     <Compile Include="src\AtomAnimations\Operations\ResizeAnimationOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\SegmentsOperations.cs" />
     <Compile Include="src\AtomAnimations\Operations\TargetsOperations.cs" />
+    <Compile Include="src\AtomAnimations\Operations\SilentImportOperations.cs" />
     <Compile Include="src\AtomAnimations\Serialization\AtomAnimationSerializer.cs" />
     <Compile Include="src\AtomAnimations\Utils\FloatExtensions.cs" />
     <Compile Include="src\AtomAnimations\Utils\QuaternionExtensions.cs" />
