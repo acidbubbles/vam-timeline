@@ -1056,14 +1056,19 @@ namespace VamTimeline
         {
             if (clip.playbackEnabled)
             {
+                peers.SendClipPlaybackStarted(clip);
                 if (animation.master && animation.sequencing)
                     peers.SendMasterClipState(clip);
+            }
+            else
+            {
+                peers.SendClipPlaybackEnded(clip);
             }
         }
 
         private void OnMainClipPerLayerChanged(AtomAnimation.AtomAnimationChangeClipEventArgs args)
         {
-            var any = args.before ?? args.after;
+            var any = args.before ?? args.after; 
             JSONStorableStringChooser chooser;
             if (!_animByLayer.TryGetValue(any.animationLayerQualifiedId, out chooser))
                 return;
