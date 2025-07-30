@@ -602,6 +602,28 @@ namespace VamTimeline
             });
         }
 
+        public void SendClipPlaybackStarted(AtomAnimationClip clip)
+        {
+          if (syncing) return;
+            SendTimelineEvent(new object[]{
+                nameof(SendClipPlaybackStarted), // 0
+                clip.animationName,             // 1
+                clip.animationLayer,            // 2
+                clip.animationSegment           // 3
+            });
+        }
+
+        public void SendClipPlaybackEnded(AtomAnimationClip clip)
+        {
+            if (syncing) return;
+            SendTimelineEvent(new object[]{
+                nameof(SendClipPlaybackEnded), // 0
+                clip.animationName,           // 1
+                clip.animationLayer,          // 2
+                clip.animationSegment         // 3
+            });
+        }
+
         private void Begin()
         {
             _sending++;
