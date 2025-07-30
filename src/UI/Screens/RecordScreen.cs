@@ -13,12 +13,14 @@ namespace VamTimeline
         public readonly TimelineSetting<int> delayTimer = new TimelineSetting<int>("DelayTimer", 5);
         public readonly TimelineSetting<bool> hideMenu = new TimelineSetting<bool>("HideMenu", false);
         public readonly TimelineSetting<bool> showStartMarkers = new TimelineSetting<bool>("ShowStartMarkers", true);
+        public readonly TimelineSetting<int> timeMode = new TimelineSetting<int>("TimeMode", TimeModes.RealTime);
 
         public override void Load(JSONClass json)
         {
             delayTimer.Load(json);
             hideMenu.Load(json);
             showStartMarkers.Load(json);
+            timeMode.Load(json);
         }
 
         public override void Save(JSONClass json)
@@ -26,6 +28,7 @@ namespace VamTimeline
             delayTimer.Save(json);
             hideMenu.Save(json);
             showStartMarkers.Save(json);
+            timeMode.Save(json);
         }
     }
 
@@ -57,11 +60,13 @@ namespace VamTimeline
             var recordTimeModeJSON = new JSONStorableStringChooser(
                 "Time mode",
                 new List<string> { TimeModes.RealTime.ToString(), TimeModes.UnityTime.ToString() },
-                TimeModes.RealTime.ToString(),
+                RecordScreenSettings.singleton.timeMode.defaultValue.ToString(),
                 "Time mode"
             )
             {
-                displayChoices = new List<string> { "Real time (better timing)", "Game time (better sync with anim. patterns)" }
+                displayChoices = new List<string> { "Real time (better timing)", "Game time (better sync with anim. patterns)" },
+                valNoCallback = RecordScreenSettings.singleton.timeMode.value.ToString(),
+                setCallbackFunction = val => RecordScreenSettings.singleton.timeMode.value = int.Parse(val)
             };
             prefabFactory.CreatePopup(recordTimeModeJSON, false, false);
 
