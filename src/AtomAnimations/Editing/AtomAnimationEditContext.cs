@@ -487,7 +487,7 @@ namespace VamTimeline
             {
                 if (!CanEdit()) return;
                 var time = clipTime;
-                foreach (var target in current.targetTriggers)
+                foreach (var target in GetAllOrSelectedTargets().OfType<TriggersTrackAnimationTarget>())
                 {
                     target.DeleteFrame(time);
                     if (time.IsSameFrame(0f))
@@ -536,7 +536,7 @@ namespace VamTimeline
 					clipboard.Clear();
 					clipboard.time = time;
 					clipboard.entries.Add(entry);
-                    foreach (var target in current.targetTriggers)
+                    foreach (var target in GetAllOrSelectedTargets().OfType<TriggersTrackAnimationTarget>())
                     {
                         target.DeleteFrame(time);
                         if (time.IsSameFrame(0f))
