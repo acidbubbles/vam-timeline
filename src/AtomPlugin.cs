@@ -34,6 +34,7 @@ namespace VamTimeline
         private JSONStorableAction _playJSON;
         private JSONStorableBool _isPlayingJSON;
         private JSONStorableAction _playIfNotPlayingJSON;
+        private JSONStorableAction _playCurrentClipJSON;
         private JSONStorableAction _stopJSON;
         private JSONStorableAction _stopIfPlayingJSON;
         private JSONStorableAction _stopAndResetJSON;
@@ -377,6 +378,12 @@ namespace VamTimeline
                 StorablePlay(StorableNames.PlayIfNotPlaying);
             });
             RegisterAction(_playIfNotPlayingJSON);
+
+            _playCurrentClipJSON = new JSONStorableAction(StorableNames.PlayCurrentClip, () =>
+            {
+                if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PlayCurrentClip}' ({animationEditContext.current?.animationNameQualified})");
+                animationEditContext.PlayCurrentClip();
+            });
 
             _isPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, val =>
             {
@@ -1135,7 +1142,7 @@ namespace VamTimeline
 
         private void OnMainClipPerLayerChanged(AtomAnimation.AtomAnimationChangeClipEventArgs args)
         {
-            var any = args.before ?? args.after; 
+            var any = args.before ?? args.after;
             JSONStorableStringChooser chooser;
             if (!_animByLayer.TryGetValue(any.animationLayerQualifiedId, out chooser))
                 return;

@@ -14,6 +14,7 @@ namespace VamTimeline
         public const string Time = "Set Time";
         public const string Play = "Play";
         public const string PlayIfNotPlaying = "Play If Not Playing";
+        public const string PlayCurrentClip = "Play Current Clip";
         public const string IsPlaying = "Is Playing";
         public const string Stop = "Stop";
         public const string StopIfPlaying = "Stop If Playing";
