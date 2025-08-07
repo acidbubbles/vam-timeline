@@ -86,6 +86,12 @@ namespace VamTimeline
                     case nameof(SendTime):
                         ReceiveTime(e);
                         break;
+                    case nameof(SendClipPlaybackStarted):
+                        // Used by external plugins
+                        break;
+                    case nameof(SendClipPlaybackEnded):
+                        // Used by external plugins
+                        break;
                     case nameof(SendCurrentAnimation):
                         ReceiveCurrentAnimation(e);
                         break;
@@ -122,7 +128,7 @@ namespace VamTimeline
                     default:
                         if (!_reportedMissingEventOnce)
                         {
-                            SuperController.LogError($"Received message name {e[0]} but no handler exists for that event");
+                            SuperController.LogError($"Received message name {e[0]} in {_containingAtom.name} but no handler exists for that event. You may have mismatched versions of Timeline in your scene.");
                             _reportedMissingEventOnce = true;
                         }
                         break;
