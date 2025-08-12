@@ -384,6 +384,7 @@ namespace VamTimeline
                 if (logger.triggersReceived) logger.Log(logger.triggersCategory, $"Triggered '{StorableNames.PlayCurrentClip}' ({animationEditContext.current?.animationNameQualified})");
                 animationEditContext.PlayCurrentClip();
             });
+            RegisterAction(_playCurrentClipJSON);
 
             _isPlayingJSON = new JSONStorableBool(StorableNames.IsPlaying, false, val =>
             {
