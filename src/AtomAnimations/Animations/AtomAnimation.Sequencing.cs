@@ -166,11 +166,30 @@ namespace VamTimeline
                 next = _queue[0];
                 if(source.animationSegmentId != next.animationSegmentId || source.animationLayerQualifiedId == next.animationLayerQualifiedId)
                 {
+                    SuperController.LogError($"Queue source: {source.animationName} -> Next: {next.animationName}");
                     _queueCurrent = source;
-                    _queueNext = next;
+                    var queueTimes = _queueNextTimes;
+                    _queueNextTimes = 1;
                     _queue.RemoveAt(0);
+
+                    // Allow multiple queued animations with the same name (additional loops)
+                    while (_queue.Count > 0)
+                    {
+                        if (_queue[0].animationNameQualifiedId == next.animationNameQualifiedId)
+                        {
+                            SuperController.LogError($"Next repeated: {next.animationName} (count: {_queueNextTimes})");
+                            _queueNextTimes++;
+                            _queue.RemoveAt(0);
+                            continue;
+                        }
+                        break;
+                    }
+
                     if (_queue.Count == 0) ClearQueue();
-                    ScheduleNextAnimation(source, next, forQueue: true);
+
+                    SuperController.LogError($"Schedule queued animation '{source.animationName}' => {next.animationName} with {queueTimes} additional loops.");
+                    ScheduleNextAnimation(source, next, queueTimes: queueTimes);
+                    SuperController.LogError($"Transitioning to queued animation '{source.animationName}' int {next.playbackScheduledNextTimeLeft}.");
                     if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Transitioning to queued animation '{next.animationNameQualified}'");
                     return;
                 }
@@ -224,12 +243,16 @@ namespace VamTimeline
             ScheduleNextAnimation(source, next);
         }
 
-        private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, bool forQueue = false)
+        private void ScheduleNextAnimation(AtomAnimationClip source, AtomAnimationClip next, int queueTimes = 0)
         {
             var nextTime = source.nextAnimationTime;
             if (source.loop)
             {
-                if (source.preserveLoops || forQueue)
+                if (queueTimes > 0)
+                {
+                    nextTime += source.animationLength * queueTimes;
+                }
+                else if (source.preserveLoops)
                 {
                     if (source.nextAnimationTimeRandomize > 0f)
                     {
@@ -239,7 +262,6 @@ namespace VamTimeline
                     }
                     else
                     {
-
                         nextTime = nextTime.RoundToNearest(source.animationLength);
                     }
 
@@ -252,8 +274,12 @@ namespace VamTimeline
                 }
                 nextTime -= next.halfBlendInDuration;
             }
-            else if (forQueue)
+            else if (queueTimes > 0)
             {
+                if(queueTimes > 1)
+                {
+                    SuperController.LogError($"Timeline: Cannot schedule the same non-looping animation ({source.animationNameQualified} => {next.animationNameQualified}) in a queue multiple times ({queueTimes}).");
+                }
                 nextTime = Mathf.Min(source.animationLength - source.clipTime, source.animationLength - next.blendInDuration);
             }
             else
