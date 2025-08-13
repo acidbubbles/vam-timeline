@@ -15,8 +15,8 @@ namespace VamTimeline
         private const string _changeLengthModeLoop = "Loop";
 
         private const string _loopNotLoop = "Do Not Loop";
-        private const string _loopLoop = "Loop (Cycle)";
-        private const string _loopLoopPreserveLast = "Loop (Repeat)";
+        private const string _loopLoop = "Loop";
+        private const string _loopLoopPreserveLast = "Repeat (Preserve Last Frame)";
 
         public override string screenId => ScreenName;
 
