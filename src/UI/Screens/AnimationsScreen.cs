@@ -10,6 +10,8 @@ namespace VamTimeline
 
         public override string screenId => ScreenName;
 
+        private JSONStorableString _stringifiedQueue;
+
         public override void Init(IAtomPlugin plugin, object arg)
         {
             base.Init(plugin, arg);
@@ -49,12 +51,17 @@ namespace VamTimeline
                 prefabFactory.CreateSpacer();
             }
 
+            prefabFactory.CreateHeader("Queue", 1);
+
+            InitStringifiedQueue();
+
             prefabFactory.CreateHeader("Operations", 1);
 
             CreateChangeScreenButton("<i><b>Create</b> anims/layers/segments...</i>", AddAnimationsScreen.ScreenName);
             CreateChangeScreenButton("<i><b>Manage/reorder</b> animations...</i>", ManageAnimationsScreen.ScreenName);
 
             animation.onSegmentChanged.AddListener(ReloadScreen);
+            animation.onQueueUpdated.AddListener(UpdateStringifiedQueue);
         }
 
         #region Clips
@@ -170,10 +177,23 @@ namespace VamTimeline
 
         #endregion
 
+        private void InitStringifiedQueue()
+        {
+            _stringifiedQueue = new JSONStorableString("Queue State", "");
+            prefabFactory.CreateTextField(_stringifiedQueue);
+            UpdateStringifiedQueue();
+        }
+
+        private void UpdateStringifiedQueue()
+        {
+            _stringifiedQueue.val = animation.GetStringifiedQueue();
+        }
+
         public override void OnDestroy()
         {
             base.OnDestroy();
             animation.onSegmentChanged.RemoveListener(ReloadScreen);
+            animation.onQueueUpdated.RemoveListener(UpdateStringifiedQueue);
         }
     }
 }

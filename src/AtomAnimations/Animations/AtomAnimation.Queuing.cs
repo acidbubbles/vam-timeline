@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace VamTimeline
 {
@@ -12,10 +13,32 @@ namespace VamTimeline
         private int _queueNextTimes = 1;
         private bool _processingQueue;
 
+        public string GetStringifiedQueue()
+        {
+            if (_queue.Count == 0)
+            {
+                if (_queueName == null)
+                    return "Queue is empty";
+                else
+                    return $"Queue pending {_queueName}";
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Queue with {_queue.Count} items ({_queueName ?? "unnamed"})");
+
+            var qI = 1;
+            foreach(var clip in _queue)
+            {
+                sb.AppendLine($"{qI++}: {clip.animationName}");
+            }
+            return sb.ToString();
+        }
+
         public void CreateQueue(string name)
         {
             ClearQueue();
             _queueName = name;
+            onQueueUpdated.Invoke();
         }
 
         public void AddToQueue(AtomAnimationClip clip)
@@ -24,6 +47,7 @@ namespace VamTimeline
                 _queueName = "unnamed";
 
             _queue.Add(clip);
+            onQueueUpdated.Invoke();
         }
 
         public void PlayQueue()
@@ -62,6 +86,8 @@ namespace VamTimeline
             _queueCurrent = null;
             _queueNextTimes = 1;
             _queue.Clear();
+
+            onQueueUpdated.Invoke();
 
             if (wasProcessingQueue)
                 onQueueFinished.Invoke(queueName);

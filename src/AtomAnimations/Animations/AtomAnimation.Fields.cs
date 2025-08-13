@@ -20,6 +20,7 @@ namespace VamTimeline
         public readonly UnityEvent onClipsListChanged = new UnityEvent();
         public readonly UnityEvent onAnimationRebuilt = new UnityEvent();
         public readonly UnityEvent onPausedChanged = new UnityEvent();
+        public readonly UnityEvent onQueueUpdated = new UnityEvent();
         public readonly StringUnityEvent onQueueStarted = new StringUnityEvent();
         public readonly StringUnityEvent onQueueFinished = new StringUnityEvent();
         public readonly AtomAnimationClipEvent onIsPlayingChanged = new AtomAnimationClipEvent();

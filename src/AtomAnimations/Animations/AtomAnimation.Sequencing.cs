@@ -166,7 +166,6 @@ namespace VamTimeline
                 next = _queue[0];
                 if(source.animationSegmentId != next.animationSegmentId || source.animationLayerQualifiedId == next.animationLayerQualifiedId)
                 {
-                    SuperController.LogError($"Queue source: {source.animationName} -> Next: {next.animationName}");
                     _queueCurrent = source;
                     var queueTimes = _queueNextTimes;
                     _queueNextTimes = 1;
@@ -177,7 +176,6 @@ namespace VamTimeline
                     {
                         if (_queue[0].animationNameQualifiedId == next.animationNameQualifiedId)
                         {
-                            SuperController.LogError($"Next repeated: {next.animationName} (count: {_queueNextTimes})");
                             _queueNextTimes++;
                             _queue.RemoveAt(0);
                             continue;
@@ -186,10 +184,9 @@ namespace VamTimeline
                     }
 
                     if (_queue.Count == 0) ClearQueue();
+                    else onQueueUpdated.Invoke();
 
-                    SuperController.LogError($"Schedule queued animation '{source.animationName}' => {next.animationName} with {queueTimes} additional loops.");
                     ScheduleNextAnimation(source, next, queueTimes: queueTimes);
-                    SuperController.LogError($"Transitioning to queued animation '{source.animationName}' int {next.playbackScheduledNextTimeLeft}.");
                     if (logger.sequencing) logger.Log(logger.sequencingCategory, $"Transitioning to queued animation '{next.animationNameQualified}'");
                     return;
                 }
@@ -277,9 +274,7 @@ namespace VamTimeline
             else if (queueTimes > 0)
             {
                 if(queueTimes > 1)
-                {
                     SuperController.LogError($"Timeline: Cannot schedule the same non-looping animation ({source.animationNameQualified} => {next.animationNameQualified}) in a queue multiple times ({queueTimes}).");
-                }
                 nextTime = Mathf.Min(source.animationLength - source.clipTime, source.animationLength - next.blendInDuration);
             }
             else
