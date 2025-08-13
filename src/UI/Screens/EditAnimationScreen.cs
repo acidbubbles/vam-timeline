@@ -348,7 +348,7 @@ namespace VamTimeline
 
         private void InitSelfBlendUI()
         {
-            _loopSelfBlend = new JSONStorableFloat("Self Blend", current?.loopBlendSelfDuration ?? 0f, val =>
+            _loopSelfBlend = new JSONStorableFloat("Repeat: Self Blend", current?.loopBlendSelfDuration ?? 0f, val =>
             {
                 current.loopBlendSelfDuration = val;
             }, 0f, 5f, false);
@@ -509,7 +509,7 @@ namespace VamTimeline
             if(current.autoTransitionNext)
                 _loop.valNoCallback = "Locked: Auto Transition Next Enabled";
             _loopSelfBlend.valNoCallback = current.loopBlendSelfDuration;
-            _loopSelfBlendUI.slider.interactable = current.loop;
+            _loopSelfBlendUI.slider.interactable = current.loopPreserveLastFrame;
             _loopSelfBlend.max = current.animationLength;
             _ensureQuaternionContinuity.valNoCallback = current.ensureQuaternionContinuity;
             _linkedAudioSourceJSON.valNoCallback = current.audioSourceControl != null ? current.audioSourceControl.containingAtom.uid : "";
