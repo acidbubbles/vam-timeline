@@ -30,7 +30,6 @@ namespace VamTimeline
         private JSONStorableString _segmentNameJSON;
         private JSONStorableString _layerNameJSON;
         private JSONStorableString _animationNameJSON;
-        private UIDynamicPopup _loopUI;
         private UIDynamicSlider _loopSelfBlendUI;
         private JSONStorableFloat _globalSpeedJSON;
         private JSONStorableFloat _localSpeedJSON;
@@ -322,20 +321,29 @@ namespace VamTimeline
         {
             _loop = new JSONStorableStringChooser(
                 "Loop",
-                new List<string>{_loopNotLoop, _loopLoop, _loopLoopPreserveLast},
+                new List<string> { _loopNotLoop, _loopLoop, _loopLoopPreserveLast },
                 _loopNotLoop,
                 "Loop",
                 val =>
                 {
-                if (current.autoTransitionNext)
-                {
-                    _loop.valNoCallback = "Locked: Auto Transition Next Enabled";
-                    return;
-                }
-                current.loop = val != _loopNotLoop;
-                current.loopPreserveLastFrame = val == _loopLoopPreserveLast;
-            });
-            _loopUI = prefabFactory.CreatePopup(_loop, false, false);
+                    if (current.autoTransitionNext)
+                    {
+                        _loop.valNoCallback = "Locked: Auto Transition Next Enabled";
+                        return;
+                    }
+
+                    current.loop = val != _loopNotLoop;
+                    current.loopPreserveLastFrame = val == _loopLoopPreserveLast;
+                    if (current.loopPreserveLastFrame)
+                    {
+                        _loopSelfBlend.val = Mathf.Min(1, current.animationLength);
+                    }
+                    else
+                    {
+                        _loopSelfBlend.val = 0;
+                    }
+                });
+            prefabFactory.CreatePopup(_loop, false, false);
         }
 
         private void InitSelfBlendUI()
