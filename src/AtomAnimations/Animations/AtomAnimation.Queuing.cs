@@ -16,8 +16,25 @@ namespace VamTimeline
 
         public string GetStringifiedQueue()
         {
-            if (_queue.Count == 0)
+            var queueCount = _queue.Count;
+            if (queueCount == 0)
             {
+                if (_queueCurrent != null)
+                {
+                    var finishingSb = new StringBuilder();
+                    finishingSb.AppendLine("Queue finishing...");
+                    if (_queueCurrent != null)
+                    {
+                        finishingSb.AppendLine($"▶ {_queueCurrent.animationName} (Current)");
+                    }
+                    if (_queueNext != null)
+                    {
+                        finishingSb.AppendLine($"1: {_queueNext.animationName} (Next)");
+                    }
+
+                    return finishingSb.ToString();
+                }
+
                 if (_queueName == null)
                     return "Queue is empty";
                 else
@@ -25,12 +42,13 @@ namespace VamTimeline
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine($"Queue with {_queue.Count} items ({_queueName ?? "unnamed"})");
+            if (_queueNext != null) queueCount++;
+            sb.AppendLine($"Queue with {queueCount} items ({_queueName ?? "unnamed"})");
 
             var qI = 1;
             if (_queueCurrent != null)
             {
-                sb.AppendLine($"{qI++}: {_queueCurrent.animationName} (Current)");
+                sb.AppendLine($"▶ {_queueCurrent.animationName} (Current)");
             }
             if (_queueNext != null)
             {
@@ -92,8 +110,6 @@ namespace VamTimeline
             var wasProcessingQueue = _processingQueue;
             _processingQueue = false;
             _queueName = null;
-            _queueCurrent = null;
-            _queueNext = null;
             _queueNextTimes = 1;
             _queue.Clear();
 

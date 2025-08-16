@@ -390,6 +390,8 @@ namespace VamTimeline
             playTime = 0f;
             foreach (var clip in clips)
                 clip.Reset(true);
+            _queueCurrent = null;
+            _queueNext = null;
         }
 
         public void StopAndReset()

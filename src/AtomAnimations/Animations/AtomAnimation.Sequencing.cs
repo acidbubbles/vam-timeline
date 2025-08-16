@@ -192,6 +192,12 @@ namespace VamTimeline
                     return;
                 }
             }
+            else if (_queueNext == source)
+            {
+                _queueCurrent = null;
+                _queueNext = null;
+                onQueueUpdated.Invoke();
+            }
 
             if (source.nextAnimationNameId == -1) return;
             if (clips.Count == 1) return;
