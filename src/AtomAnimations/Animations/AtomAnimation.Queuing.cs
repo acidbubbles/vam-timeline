@@ -10,6 +10,7 @@ namespace VamTimeline
         private string _queueName;
         private readonly List<AtomAnimationClip> _queue = new List<AtomAnimationClip>();
         private AtomAnimationClip _queueCurrent;
+        private AtomAnimationClip _queueNext;
         private int _queueNextTimes = 1;
         private bool _processingQueue;
 
@@ -27,6 +28,14 @@ namespace VamTimeline
             sb.AppendLine($"Queue with {_queue.Count} items ({_queueName ?? "unnamed"})");
 
             var qI = 1;
+            if (_queueCurrent != null)
+            {
+                sb.AppendLine($"{qI++}: {_queueCurrent.animationName} (Current)");
+            }
+            if (_queueNext != null)
+            {
+                sb.AppendLine($"{qI++}: {_queueNext.animationName} (Next)");
+            }
             foreach(var clip in _queue)
             {
                 sb.AppendLine($"{qI++}: {clip.animationName}");
@@ -84,6 +93,7 @@ namespace VamTimeline
             _processingQueue = false;
             _queueName = null;
             _queueCurrent = null;
+            _queueNext = null;
             _queueNextTimes = 1;
             _queue.Clear();
 

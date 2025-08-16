@@ -167,6 +167,7 @@ namespace VamTimeline
                 if(source.animationSegmentId != next.animationSegmentId || source.animationLayerQualifiedId == next.animationLayerQualifiedId)
                 {
                     _queueCurrent = source;
+                    _queueNext = next;
                     var queueTimes = _queueNextTimes;
                     _queueNextTimes = 1;
                     _queue.RemoveAt(0);
