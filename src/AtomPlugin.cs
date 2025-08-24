@@ -75,9 +75,9 @@ namespace VamTimeline
 
         public static class SilentImportConflictModes
         {
-        public const string Overwrite = "Overwrite";
-        public const string Skip = "Skip";
-        public const string Rename = "Rename";
+            public const string Overwrite = "Overwrite";
+            public const string Skip = "Skip";
+            public const string Rename = "Rename";
         }
 
         private readonly List<AnimStorableActionMap> _clipStorables = new List<AnimStorableActionMap>();
@@ -722,15 +722,15 @@ namespace VamTimeline
 
         #region Silent Import
 
-        public void SilentImportFromJSON(string jsonContent, string conflictMode)
+        public void SilentImportFromJSON(JSONClass json, string conflictMode)
         {
-            if (string.IsNullOrEmpty(jsonContent))
+            if (json == null)
             {
                 SuperController.LogError("Timeline: Silent import failed, JSON content is empty.");
                 return;
             }
 
-            operations.SilentImport().Perform(jsonContent, conflictMode);
+            operations.SilentImport().Perform(json, conflictMode);
         }
 
         private void PerformSilentImportFromFile()
@@ -751,8 +751,8 @@ namespace VamTimeline
                     return;
                 }
 
-                SilentImportFromJSON(json.ToString(), _silentImportConflictModeJSON.val);
-                // Free up memory immeditelly
+                SilentImportFromJSON(json.AsObject, _silentImportConflictModeJSON.val);
+                // Free up memory immediately
                 json = null;
             }
             catch (Exception exc)
