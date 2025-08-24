@@ -10,19 +10,17 @@ namespace VamTimeline
         private readonly AtomAnimation _animation;
         private readonly AtomAnimationSerializer _serializer;
 
-         public SilentImportOperations(Atom containingAtom, AtomAnimation animation, AtomAnimationSerializer serializer)
+        public SilentImportOperations(Atom containingAtom, AtomAnimation animation, AtomAnimationSerializer serializer)
         {
             _containingAtom = containingAtom;
             _animation = animation;
             _serializer = serializer;
         }
 
-        public void Perform(string jsonContent, string conflictMode)
+        public void Perform(JSONClass json, string conflictMode)
         {
             try
             {
-                var json = JSON.Parse(jsonContent).AsObject;
-
                 if (json["AtomType"]?.Value != _containingAtom.type)
                 {
                     SuperController.LogError($"Timeline: Loaded animation for {json["AtomType"]} but current atom type is {_containingAtom.type}");
