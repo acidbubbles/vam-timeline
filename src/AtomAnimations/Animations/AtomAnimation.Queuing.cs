@@ -11,6 +11,7 @@ namespace VamTimeline
         private readonly List<AtomAnimationClip> _queue = new List<AtomAnimationClip>();
         private AtomAnimationClip _queueCurrent;
         private AtomAnimationClip _queueNext;
+        private string _queueNextQueueName;
         private int _queueNextTimes = 1;
         private bool _processingQueue;
 
@@ -88,11 +89,14 @@ namespace VamTimeline
                 return;
             }
 
+            onQueueStarted.Invoke(_queueName);
+
             var next = _queue[0];
             _queue.RemoveAt(0);
 
             if (_queue.Count == 0)
             {
+                onQueueFinished.Invoke(_queueName);
                 ClearQueue();
             }
             else
@@ -100,23 +104,17 @@ namespace VamTimeline
                 _processingQueue = true;
             }
 
-            _processingQueue = true;
             PlayClip(next, true);
         }
 
         public void ClearQueue()
         {
-            var queueName = _queueName;
-            var wasProcessingQueue = _processingQueue;
             _processingQueue = false;
             _queueName = null;
             _queueNextTimes = 1;
             _queue.Clear();
 
             onQueueUpdated.Invoke();
-
-            if (wasProcessingQueue)
-                onQueueFinished.Invoke(queueName);
         }
 
         #endregion

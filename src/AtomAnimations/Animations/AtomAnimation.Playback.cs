@@ -392,6 +392,7 @@ namespace VamTimeline
                 clip.Reset(true);
             _queueCurrent = null;
             _queueNext = null;
+            _queueNextQueueName = null;
         }
 
         public void StopAndReset()

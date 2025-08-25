@@ -168,6 +168,7 @@ namespace VamTimeline
                 {
                     _queueCurrent = source;
                     _queueNext = next;
+                    _queueNextQueueName = _queueName;
                     var queueTimes = _queueNextTimes;
                     _queueNextTimes = 1;
                     _queue.RemoveAt(0);
@@ -194,9 +195,12 @@ namespace VamTimeline
             }
             else if (_queueNext == source)
             {
+                var queueName = _queueNextQueueName;
                 _queueCurrent = null;
                 _queueNext = null;
+                _queueNextQueueName = null;
                 onQueueUpdated.Invoke();
+                onQueueFinished.Invoke(queueName);
             }
 
             if (source.nextAnimationNameId == -1) return;
